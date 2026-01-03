@@ -1,0 +1,17 @@
+*.iml
+.gradle
+.kotlin
+/local.properties
+.idea/*
+!.idea/codeStyles
+!.idea/dictionaries
+!.idea/.gitignore
+!.idea/.name
+.DS_Store
+/build
+/captures
+app/companieshouse.jks
+app/app-release.apk
+app/release
+*.xcworkspace
+xcuserdata

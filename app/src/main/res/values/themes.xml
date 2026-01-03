@@ -1,0 +1,4 @@
+<resources>
+
+	<style name="Theme.Purecipes" parent="@android:style/Theme.Material.Light.NoActionBar.TranslucentDecor" />
+</resources>
