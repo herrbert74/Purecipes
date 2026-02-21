@@ -28,10 +28,5 @@ As a home cook, I want clear, step-by-step cooking instructions with timers so I
 - Timer usage frequency
 - Step navigation ease of use
 
-## Estimated Effort
-- **Development**: 2-3 weeks
-- **Testing**: 1 week
-- **Launch**: Phase 1 (Must-Have Feature)
-
 ## Current Status: ACCEPTED
 Reason: Core cooking functionality essential for Phase 1 launch. This is the fundamental feature that defines the app's primary purpose.

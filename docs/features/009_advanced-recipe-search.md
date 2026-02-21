@@ -152,13 +152,6 @@ user_search_preferences (
 - **AI/ML**: For semantic search and recommendations
 - **Analytics**: Search behavior tracking and optimization
 
-## Estimated Effort
-- **Development**: 6-8 weeks
-- **UI/UX Design**: 2-3 weeks
-- **Backend Integration**: 2-3 weeks
-- **Testing**: 2 weeks
-- **Launch**: Phase 2 (Core Enhancement Feature)
-
 ## Technical Challenges
 - **Real-time Performance**: Maintaining fast search with complex filters
 - **Data Quality**: Ensuring accurate ingredient and metadata tagging

@@ -40,12 +40,6 @@ As a user following a recipe, I want to see a realistic image of the finished di
 - Image processing and optimization
 - Cloud storage for generated images
 
-## Estimated Effort
-- **Development**: 10-12 weeks
-- **API Integration**: 3 weeks
-- **Testing**: 4 weeks
-- **Launch**: Phase 3 (Advanced Features)
-
 ## Potential Challenges
 - API costs and rate limits
 - Image quality consistency

@@ -151,13 +151,6 @@ interface ExperimentManager {
 - **GDPR Compliance**: Right to opt out of experiments
 - **Transparency**: Clear communication about testing
 
-## Estimated Effort
-- **Phase 1 (Firebase)**: 2-3 weeks
-- **Phase 2 (Hybrid)**: 4-5 weeks
-- **Phase 3 (Advanced)**: 6-8 weeks
-- **Testing**: 2 weeks per phase
-- **Launch**: Phase 2 (Should-Have Feature)
-
 ## Potential Challenges
 - **Platform Consistency**: Ensuring consistent flag behavior
 - **Cache Management**: Handling offline scenarios

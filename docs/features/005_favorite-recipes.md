@@ -181,13 +181,6 @@ interface FavoritesRepository {
 - **Storage**: Local caching for offline access
 - **UI Components**: Cross-platform UI components
 
-## Estimated Effort
-- **Backend Development**: 2-3 weeks (API, database, sync)
-- **Mobile Development**: 3-4 weeks (Android & iOS)
-- **Web Development**: 2-3 weeks (web interface)
-- **Testing & QA**: 1-2 weeks
-- **Launch**: Phase 1 (High Priority Feature)
-
 ## Privacy and Data
 - **User Privacy**: Favorites are private by default
 - **Data Export**: Users can export their favorites data

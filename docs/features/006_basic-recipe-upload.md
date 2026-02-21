@@ -29,10 +29,5 @@ As a home cook, I want to create and save my own recipes so I can store my favor
 - User engagement with created recipes
 - Recipe editing activity
 
-## Estimated Effort
-- **Development**: 2-3 weeks
-- **Testing**: 1 week
-- **Launch**: Phase 1 (Must-Have Feature)
-
 ## Current Status: ACCEPTED
 Reason: Essential feature for users to create and personalize their recipe collection. Critical for Phase 1 launch.

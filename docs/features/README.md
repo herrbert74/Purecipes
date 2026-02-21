@@ -14,12 +14,6 @@ This directory contains detailed feature specifications for optional and future 
 
 Features are numbered sequentially: `XXX_feature-name.md`
 
-- `000`-`099`: Core authentication and AI features
-- `100`-`199`: User experience enhancements
-- `200`-`299`: Platform integrations
-- `300`-`399`: Social and community features
-- `400`-`499`: Monetization and premium features
-
 ## Feature Categories
 
 ### Authentication & Security
@@ -37,7 +31,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 ### Recipe Discovery & Import
 - Recipe website scraping (001)
 - Basic recipe search (004)
-- **Advanced recipe search with chip/tag filtering (008)**
+- **Advanced recipe search with chip/tag filtering (009)**
 - Search bar and filters
 - Search results and history
 - Real-time search suggestions

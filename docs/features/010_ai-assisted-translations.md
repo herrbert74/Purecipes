@@ -39,11 +39,6 @@ As a user who speaks multiple languages or wants to try recipes from different c
 - Measurement conversion libraries
 - Cultural adaptation datasets
 
-## Estimated Effort
-- **Development**: 4-6 weeks
-- **Testing**: 2 weeks
-- **Launch**: Phase 2 (Post-MVP)
-
 ## Potential Challenges
 - Cooking terminology accuracy
 - Cultural ingredient differences

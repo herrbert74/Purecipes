@@ -119,13 +119,6 @@ enum class AuthProvider {
 - **Backend Services**: JWT validation and user management
 - **Secure Storage**: Platform-specific secure storage
 
-## Estimated Effort
-- **Development**: 4-5 weeks
-- **Platform Integration**: 2 weeks (per platform)
-- **Security Testing**: 1 week
-- **Cross-Platform Testing**: 1 week
-- **Launch**: Phase 1 (Must-Have Feature)
-
 ## Privacy and Compliance
 - **GDPR Compliance**: User consent and data protection
 - **Data Minimization**: Collect only necessary user data

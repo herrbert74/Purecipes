@@ -28,10 +28,5 @@ As a user, I want to search for recipes by name, ingredients, or keywords so I c
 - Filter usage frequency
 - User satisfaction with search experience
 
-## Estimated Effort
-- **Development**: 2-3 weeks
-- **Testing**: 1 week
-- **Launch**: Phase 1 (Must-Have Feature)
-
 ## Current Status: ACCEPTED
 Reason: Essential feature for users to discover and access recipes in the app. Critical for Phase 1 launch.

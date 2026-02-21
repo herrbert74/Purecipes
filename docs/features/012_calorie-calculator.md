@@ -40,12 +40,6 @@ As a health-conscious user, I want to know the nutritional content of my recipes
 - User profile system
 - Dietary goal tracking
 
-## Estimated Effort
-- **Development**: 6-8 weeks
-- **Database Setup**: 2 weeks
-- **Testing**: 3 weeks
-- **Launch**: Phase 2 (Post-MVP)
-
 ## Potential Challenges
 - Ingredient accuracy and variations
 - Regional nutrition data differences

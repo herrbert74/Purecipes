@@ -234,12 +234,6 @@ class RecipeDatabaseService:
 - **User Responsibility**: Make users aware of copyright implications
 - **DMCA Compliance**: Implement takedown procedures
 
-## Estimated Effort
-- **Phase 0** (February-March): 2-3 weeks (Kotlin scripts, basic scraping, initial database)
-- **Phase 1** (April-June): 4-6 weeks (improved process, expanded sites, schema iterations)
-- **Phase 1 Final**: 1-2 weeks (finalized schema, optimized process)
-- **Launch**: Phase 0 MVP followed by Phase 1 enhancements
-
 ## Current Status: ACCEPTED
 Reason: Recipe scraping is approved as a Phase 0 MVP feature to establish the methodology and database foundation. This will provide substantial value by expanding the recipe database and improving user acquisition. The iterative approach through Phase 1 allows for continuous improvement while delivering early value.
 

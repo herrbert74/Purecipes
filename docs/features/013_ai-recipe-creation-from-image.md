@@ -40,12 +40,6 @@ As a home cook, I want to take a photo of a dish I see or ingredients I have, an
 - Ingredient recognition database
 - Camera permissions and integration
 
-## Estimated Effort
-- **Development**: 8-10 weeks
-- **Model Training**: 4 weeks
-- **Testing**: 3 weeks
-- **Launch**: Phase 3 (Advanced Features)
-
 ## Potential Challenges
 - Image quality variations
 - Complex dish recognition
