@@ -35,7 +35,10 @@ As a user, I want to import recipes from my favorite cooking websites so I can b
 ```json
 {
   "title": "Recipe Title",
-  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredient_groups": [
+    {"name": "", "ingredients": ["ingredient 1", "ingredient 2"]}
+  ],
+  "instruction_list": ["Step 1", "Step 2"],
   "instructions": "Step-by-step instructions",
   "total_time": 30,
   "prep_time": 15,
@@ -49,6 +52,8 @@ As a user, I want to import recipes from my favorite cooking websites so I can b
     "fat": 8
   },
   "language": "en",
+  "cuisine": "Italian",
+  "category": "Dinner",
   "links": {
     "canonical": "https://example.com/recipe"
   }
@@ -68,16 +73,34 @@ CREATE TABLE recipes (
     yields VARCHAR(100),
     image_url TEXT,
     language VARCHAR(10) DEFAULT 'en',
+    cuisine VARCHAR(100),
+    category VARCHAR(100),
     source_url TEXT UNIQUE,
     scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Ingredients table
-CREATE TABLE ingredients (
+-- Ingredient groups table
+CREATE TABLE ingredient_groups (
     id SERIAL PRIMARY KEY,
     recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    name TEXT,
+    order_index INTEGER
+);
+
+-- Ingredients table (per group)
+CREATE TABLE ingredients (
+    id SERIAL PRIMARY KEY,
+    ingredient_group_id INTEGER REFERENCES ingredient_groups(id) ON DELETE CASCADE,
     ingredient TEXT NOT NULL,
+    order_index INTEGER
+);
+
+-- Instruction steps table
+CREATE TABLE instruction_steps (
+    id SERIAL PRIMARY KEY,
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    step TEXT NOT NULL,
     order_index INTEGER
 );
 
