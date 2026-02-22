@@ -18,3 +18,4 @@ dependencyResolutionManagement {
 rootProject.name = "Purecipes"
 include(":app")
 include(":shared")
+include(":backend")
