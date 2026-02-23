@@ -290,31 +290,32 @@ POST   /api/ai/personalize       # Get personalized instructions
 - Simple Android UI for testing
 - Local backend setup
 
-### Phase 1: Core Features (Features 001-007)
+### Phase 1: Core Features (Features 001-010)
 - Feature 002: Authentication system
 - Feature 003: Basic step-by-step cooking
 - Feature 004: Recipe search and filtering
 - Feature 005: Favorite recipes
-- Feature 006: Recipe ratings and reviews
-- Feature 007: Offline recipe access
+- Feature 006: Basic recipe upload
+- Feature 007: Analytics
+- Feature 008: Measurement systems and unit conversion
+- Feature 009: Push notifications with Firebase Cloud Messaging
+- Feature 010: Basic monetisation with RevenueCat
 - iOS platform support via umbrella module
 - Backend API development
 
-### Phase 2: Advanced Features (Features 008-013) + Iteration
-- Feature 008: Measurement systems and unit conversion
-- Feature 009: Push notifications with Firebase Cloud Messaging
-- Feature 010: Advanced recipe search with chip/tag filtering
-- Feature 011: AI-assisted translations
-- Feature 012: Feature flag & A/B testing
-- Feature 013: Calorie calculator and nutrition tracking
+### Phase 2: Advanced Features (Features 011-014) + Iteration
+- Feature 011: Advanced recipe search with chip/tag filtering
+- Feature 012: AI-assisted translations
+- Feature 013: Feature flag & A/B testing
+- Feature 014: Calorie calculator and nutrition tracking
 - Iteration and refinement of Phase 0 and 1 features
 - Performance optimization
 - Testing and bug fixes
 
-### Phase 3: AI Integration & Polish (Features 014-016) + Iteration
-- Feature 014: AI recipe creation from image
-- Feature 015: Image creation from recipe
-- Feature 016: Smart kitchen integration
+### Phase 3: AI Integration & Polish (Features 015-017) + Iteration
+- Feature 015: AI recipe creation from image
+- Feature 016: Image creation from recipe
+- Feature 017: Smart kitchen integration
 - Iteration and refinement of Phase 0-2 features
 - Advanced UI/UX improvements
 - Production deployment preparation

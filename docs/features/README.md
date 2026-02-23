@@ -31,7 +31,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 ### Recipe Discovery & Import
 - Recipe website scraping (001)
 - Basic recipe search (004)
-- **Advanced recipe search with chip/tag filtering (010)**
+- **Advanced recipe search with chip/tag filtering (011)**
 - Search bar and filters
 - Search results and history
 - Real-time search suggestions
@@ -49,6 +49,13 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Personalized recipe recommendations
 - Social engagement notifications
 
+### Monetisation
+- **Basic freemium model with RevenueCat (010)**
+- Ad-supported free tier
+- Premium subscription features
+- Sponsorship and partnership framework
+- Cross-platform payment processing
+
 ### Analytics & Insights
 - Analytics (006)
 - User behavior tracking
@@ -57,26 +64,26 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Privacy-compliant data collection
 
 ### Experimentation & Optimization
-- Feature Flag & A/B Testing (011)
+- **Feature Flag & A/B Testing (013)**
 - Remote configuration management
 - Safe feature rollouts
 - User experience optimization
 - Cross-platform consistency
 
 ### AI & Machine Learning
-- AI-assisted translations (010)
-- Recipe creation from images (013)
-- Image generation from recipes (014)
+- **AI-assisted translations (012)**
+- **Recipe creation from images (015)**
+- **Image generation from recipes (016)**
 - Advanced personalization
 
 ### Health & Nutrition
-- Calorie calculator (012)
+- **Calorie calculator (014)**
 - Dietary restriction management
 - Allergy detection and alerts
 - Nutrition tracking
 
 ### Smart Kitchen Integration
-- IoT device connectivity (015)
+- **IoT device connectivity (017)**
 - Automated cooking guidance
 - Multi-device coordination
 - Voice control enhancements
