@@ -1,6 +1,6 @@
 # Feature Flag & A/B Testing
 
-## Status: <span style="color:orange;">� DRAFT</span>
+## Status: <span style="color:orange;">🟠 DRAFT</span>
 
 ## Feature Overview
 Comprehensive feature flag and A/B testing system to safely roll out features, experiment with different implementations, and optimize user experience through data-driven decisions.

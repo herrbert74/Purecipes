@@ -1,6 +1,6 @@
 # AI-Powered Calorie Calculator & Nutrition Tracker
 
-## Status: <span style="color:orange;">� DRAFT</span>
+## Status: <span style="color:orange;">🟠 DRAFT</span>
 
 ## Feature Overview
 Automatically calculate nutritional information for recipes, including calories, macronutrients, vitamins, and minerals. AI will analyze ingredients and portions to provide accurate nutritional data.

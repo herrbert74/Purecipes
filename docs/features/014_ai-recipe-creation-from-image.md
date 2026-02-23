@@ -1,6 +1,6 @@
 # AI Recipe Creation from Images
 
-## Status: <span style="color:orange;">� DRAFT</span>
+## Status: <span style="color:orange;">🟠 DRAFT</span>
 
 ## Feature Overview
 Allow users to upload photos of dishes or ingredients, and AI will automatically generate complete recipes with ingredients, instructions, and cooking times.

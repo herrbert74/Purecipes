@@ -1,6 +1,6 @@
 # AI-Assisted Recipe Translations
 
-## Status: <span style="color:orange;">� DRAFT</span>
+## Status: <span style="color:orange;">🟠 DRAFT</span>
 
 ## Feature Overview
 Automatically translate recipes between languages while preserving cooking terminology, measurements, and cultural context. The AI will understand cooking-specific terms and provide culturally appropriate translations.

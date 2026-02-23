@@ -300,19 +300,21 @@ POST   /api/ai/personalize       # Get personalized instructions
 - iOS platform support via umbrella module
 - Backend API development
 
-### Phase 2: Advanced Features (Features 008-012) + Iteration
-- Feature 008: Advanced recipe search with chip/tag filtering
-- Feature 009: Voice-guided cooking
-- Feature 010: Meal planning and calendar
-- Feature 011: Grocery list generation
-- Feature 012: Social features (sharing, following)
+### Phase 2: Advanced Features (Features 008-013) + Iteration
+- Feature 008: Measurement systems and unit conversion
+- Feature 009: Push notifications with Firebase Cloud Messaging
+- Feature 010: Advanced recipe search with chip/tag filtering
+- Feature 011: AI-assisted translations
+- Feature 012: Feature flag & A/B testing
+- Feature 013: Calorie calculator and nutrition tracking
 - Iteration and refinement of Phase 0 and 1 features
 - Performance optimization
 - Testing and bug fixes
 
-### Phase 3: AI Integration & Polish (Features 013-014) + Iteration
-- Feature 013: AI-powered recipe recommendations
-- Feature 014: Smart cooking assistant
+### Phase 3: AI Integration & Polish (Features 014-016) + Iteration
+- Feature 014: AI recipe creation from image
+- Feature 015: Image creation from recipe
+- Feature 016: Smart kitchen integration
 - Iteration and refinement of Phase 0-2 features
 - Advanced UI/UX improvements
 - Production deployment preparation

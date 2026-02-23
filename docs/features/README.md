@@ -5,7 +5,7 @@ This directory contains detailed feature specifications for optional and future 
 ## Status Color Coding
 
 - 🟢 **ACCEPTED** - Approved for development, in roadmap
-- � **DRAFT** - Initial idea, needs refinement
+- 🟠 **DRAFT** - Initial idea, needs refinement
 - 🔴 **ON HOLD** - Deferred due to technical, cost, or priority reasons
 - 🔵 **IN PROGRESS** - Currently under development
 - 🟣 **COMPLETED** - Feature has been implemented and shipped
@@ -31,7 +31,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 ### Recipe Discovery & Import
 - Recipe website scraping (001)
 - Basic recipe search (004)
-- **Advanced recipe search with chip/tag filtering (009)**
+- **Advanced recipe search with chip/tag filtering (010)**
 - Search bar and filters
 - Search results and history
 - Real-time search suggestions
@@ -42,6 +42,13 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Image upload functionality
 - Personal recipe collection
 
+### User Engagement & Communication
+- **Push notifications with Firebase Cloud Messaging (009)**
+- Cooking timer notifications
+- Meal planning reminders
+- Personalized recipe recommendations
+- Social engagement notifications
+
 ### Analytics & Insights
 - Analytics (006)
 - User behavior tracking
@@ -50,26 +57,26 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Privacy-compliant data collection
 
 ### Experimentation & Optimization
-- Feature Flag & A/B Testing (010)
+- Feature Flag & A/B Testing (011)
 - Remote configuration management
 - Safe feature rollouts
 - User experience optimization
 - Cross-platform consistency
 
 ### AI & Machine Learning
-- AI-assisted translations (009)
-- Recipe creation from images (012)
-- Image generation from recipes (013)
+- AI-assisted translations (010)
+- Recipe creation from images (013)
+- Image generation from recipes (014)
 - Advanced personalization
 
 ### Health & Nutrition
-- Calorie calculator (011)
+- Calorie calculator (012)
 - Dietary restriction management
 - Allergy detection and alerts
 - Nutrition tracking
 
 ### Smart Kitchen Integration
-- IoT device connectivity (014)
+- IoT device connectivity (015)
 - Automated cooking guidance
 - Multi-device coordination
 - Voice control enhancements
