@@ -6,6 +6,7 @@ plugins {
 	alias(libs.plugins.kotlin.composeCompiler)
 }
 
+@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 	jvmToolchain {
 		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
@@ -16,14 +17,14 @@ kotlin {
 //		}
 	}
 
-	// Temporarily commenting out wasm block
-	// wasmJs {
-	//     browser {
-	//         commonWebpackConfig {
-	//             outputFileName = "shared.js"
-	//         }
-	//     }
-	// }
+	wasmJs {
+		browser {
+			commonWebpackConfig {
+				outputFileName = "umbrella.js"
+			}
+		}
+		binaries.executable()
+	}
 
 	listOf(
 		iosX64(),
@@ -31,7 +32,7 @@ kotlin {
 		iosSimulatorArm64()
 	).forEach {
 		it.binaries.framework {
-			baseName = "shared"
+			baseName = "umbrella"
 			isStatic = true
 		}
 	}
@@ -58,24 +59,12 @@ kotlin {
 				implementation(libs.kotlinx.coroutinesAndroid)
 			}
 		}
-		// wasmJsMain is commented out as the wasmJs target is commented out
-		// val wasmJsMain by getting {
-		//     dependencies {
-		//         implementation(compose.html.core)
-		//     }
-		// }
-		// wasmJsTest is commented out as the wasmJs target is commented out
-		// val wasmJsTest by getting {
-		//     dependencies {
-		//         implementation(kotlin("test-wasmjs"))
-		//     }
-		// }
-		val iosMain by creating
+		val wasmJsMain by getting
 	}
 }
 
 android {
-	namespace = "com.purecipes.shared"
+	namespace = "com.purecipes.umbrella"
 	compileSdk = 36
 	defaultConfig {
 		minSdk = 24

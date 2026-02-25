@@ -2,9 +2,9 @@
 
 #common configuration
 
-versionCode = "11"
-versionName = "3.0"
-minSdkVersion = "24"
+versionCode = "1"
+versionName = "1.0"
+minSdkVersion = "28"
 compileSdkVersion = "36"
 targetSdkVersion = "36"
 
@@ -14,18 +14,18 @@ androidGradlePlugin = "8.13.2"
 #androidGradlePlugin = "7.3.1" # For IntelliJ plugin runIde
 coroutines = "1.10.2"
 jdk = "21"
-kotlin = "2.2.21"
+kotlin = "2.3.10"
 kotlinx-collections = "0.4.0"
 kotlinx-datetime = "0.7.1-0.6.x-compat"
-kotlinx-serialization = "1.9.0"
-ksp = "2.3.4"
+kotlinx-serialization = "1.10.0"
+ksp = "2.3.5"
 
 #other
 
-androidx-activity = "1.12.2"
-androidx-appcompat = "1.7.1"
-androidx-composeBom = "2025.12.01"
-androidx-composeMaterial3 = "1.5.0-alpha11" #For alpha releases only
+androidx-activity = "1.12.4"
+#androidx-appcompat = "1.7.1"
+androidx-composeBom = "2026.02.00"
+androidx-composeMaterial3 = "1.5.0-alpha14" #For alpha releases only
 #androidx-composeUi = "1.8.3" #For test libs not in the BOM
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
@@ -42,7 +42,7 @@ androidx-testEspresso = "3.7.0"
 babestudios-base = "3.2.1"
 buildKonfig = "0.17.1"
 #compose-screenshotTesting = "0.0.1-alpha09"
-chucker = "4.2.0"
+#chucker = "4.2.0"
 #coil = "2.7.0"
 crashlyticsPlugin = "3.0.6"
 #dagger = "2.51"
@@ -53,22 +53,22 @@ detekt-compose = "0.4.28"
 diamondedge-logging = "2.1.0"
 essenty = "2.5.0"
 #facebook = "16.1.2"
-firebaseBom = "34.7.0"
+firebaseBom = "34.9.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
-jetBrainsCompose = "1.9.3"
+jetBrainsCompose = "1.10.1"
 jUnit = "4.13.2"
-jUnit5 = "6.0.1"
+jUnit5 = "6.0.3"
 koin = "4.1.1"
-kotest = "6.0.7"
-kotlinResult = "1.1.20"
+kotest = "6.1.3"
+kotlinResult = "2.1.0"
 #kotlinRetry = "2.0.1"
-ktor = "3.3.3"
-ktorfit = "2.7.1"
-#metro = "0.7.7"
+ktor = "3.4.0"
+ktorfit = "2.7.2"
+metro = "0.10.4"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
-mokkery = "3.0.0"
+mokkery = "3.2.0"
 multiplatform-settings = "1.3.0"
 mviKotlin = "4.3.0"
 okhttp = "5.3.2"
@@ -84,7 +84,7 @@ androidx-activity = { module = "androidx.activity:activity", version.ref = "andr
 #androidx-activityKtx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-annotation = "androidx.annotation:annotation:1.9.1"
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+#androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 #androidx-appCompatResources = { group = "androidx.appcompat", name = "appcompat-resources", version.ref = "androidx-appcompat" }
 #androidx-browser = "androidx.browser:browser:1.8.0"
 #androidx-cardView = "androidx.cardview:cardview:1.0.0"
@@ -199,8 +199,8 @@ baBeStudios-baseData = { module ="io.bitbucket.babestudios:base-data", version.r
 baBeStudios-baseAndroid = { module ="io.bitbucket.babestudios:base-android", version.ref = "babestudios-base"}
 baBeStudios-baseCompose = { module ="io.bitbucket.babestudios:base-compose", version.ref = "babestudios-base"}
 
-chucker-library = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
-chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
+#chucker-library = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
+#chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
 
 #coil-base = { module = "io.coil-kt:coil-base", version.ref = "coil" }
 #coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
@@ -319,13 +319,10 @@ ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-l
 
 #lottie = "com.airbnb.android:lottie:6.6.7"
 
-mvikotlin-core = { module = "com.arkivanov.mvikotlin:mvikotlin", version.ref = "mviKotlin" }
-mvikotlin-main = { module = "com.arkivanov.mvikotlin:mvikotlin-main", version.ref = "mviKotlin" }
-#mvikotlin-rx = { module = "com.arkivanov.mvikotlin:rx", version.ref = "mviKotlin" }
-#mvikotlin-rxInternal = { module = "com.arkivanov.mvikotlin:rx-internal", version.ref = "mviKotlin" }
-#mvikotlin-utilsInternal = { module = "com.arkivanov.mvikotlin:utils-internal", version.ref = "mviKotlin" }
-mvikotlin-coroutines = { module = "com.arkivanov.mvikotlin:mvikotlin-extensions-coroutines", version.ref = "mviKotlin" }
-mvikotlin-logging = { module = "com.arkivanov.mvikotlin:mvikotlin-logging", version.ref = "mviKotlin" }
+metro-gradlePlugin = { module = "dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin", version.ref = "metro" }
+metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
+metrox-viewmodel = { module = "dev.zacsweers.metro:metrox-viewmodel", version.ref = "metro" }
+metrox-viewmodelCompose = { module = "dev.zacsweers.metro:metrox-viewmodel-compose", version.ref = "metro" }
 
 #mockk-core = { module = "io.mockk:mockk", version.ref = "mockk" }
 #mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
@@ -379,12 +376,12 @@ androidLibrary = { id = "com.android.library", version.ref = "androidGradlePlugi
 jetBrainsCompose = { id = "org.jetbrains.compose", version.ref = "jetBrainsCompose" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-#kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 #ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
-#metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
+metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 #mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 #parcelize-darwin = { id = "com.arkivanov.parcelize.darwin", version.ref = "parcelize-darwin" }
 #touchlab-skie = { id = "co.touchlab.skie", version.ref = "skie" }
