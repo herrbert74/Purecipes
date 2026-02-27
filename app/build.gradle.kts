@@ -3,6 +3,7 @@ plugins {
 	alias(libs.plugins.kotlin.android)
 	alias(libs.plugins.ksp)
 	alias(libs.plugins.kotlin.composeCompiler)
+	alias(libs.plugins.metro)
 }
 
 android {
@@ -36,6 +37,7 @@ android {
 }
 
 dependencies {
+	implementation(project(":feature:search"))
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
@@ -46,4 +48,5 @@ dependencies {
 	implementation(libs.androidx.composeMaterial3)
 	implementation(libs.androidx.composeMaterialIconsCore)
 	implementation(libs.androidx.composeMaterialIconsExtended)
+	implementation(libs.metro.runtime)
 }

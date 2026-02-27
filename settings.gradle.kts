@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google()
@@ -7,10 +9,10 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
         mavenCentral()
+        google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
@@ -20,3 +22,4 @@ include(":app")
 include(":backend")
 include(":umbrella")
 include(":base:kotlin")
+include(":feature:search")

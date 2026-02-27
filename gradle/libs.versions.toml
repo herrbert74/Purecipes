@@ -297,12 +297,13 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-serializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
-#ktor-clientAndroid = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-clientAndroid = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 #ktor-clientAuth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-clientCore = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-clientLogging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 ktor-clientOkhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
-#ktor-clientDarwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
+ktor-clientDarwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
+ktor-clientJs = { group = "io.ktor", name = "ktor-client-js", version.ref = "ktor" }
 ktor-clientMock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 ktor-clientContentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-http = { group = "io.ktor", name = "ktor-http", version.ref = "ktor" }
@@ -312,8 +313,9 @@ ktor-serialization = { group = "io.ktor", name = "ktor-serialization", version.r
 ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" }
 
 ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-annotations", version.ref = "ktorfit"}
-#ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit"}
+ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit"}
 ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit"}
+ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit"}
 
 #leakCanary = "com.squareup.leakcanary:leakcanary-android:2.14"
 
@@ -380,7 +382,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-#ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
+ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 #mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 #parcelize-darwin = { id = "com.arkivanov.parcelize.darwin", version.ref = "parcelize-darwin" }

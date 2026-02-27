@@ -17,6 +17,7 @@ dependencies {
 	implementation("io.ktor:ktor-server-core-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-netty-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-content-negotiation-jvm:${libs.versions.ktor.get()}")
+	implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.get()}")

@@ -9,22 +9,34 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.Json
 
 fun main() {
+	val host = System.getenv("PURECIPES_BACKEND_HOST") ?: "0.0.0.0"
 	val port = System.getenv("PURECIPES_BACKEND_PORT")?.toIntOrNull() ?: 8080
-	embeddedServer(Netty, port = port) {
+	println("Starting Purecipes backend on http://$host:$port")
+	embeddedServer(Netty, host = host, port = port) {
 		module()
 	}.start(wait = true)
 }
 
 fun Application.module() {
 	install(CallLogging)
+	install(CORS) {
+		anyHost()
+		allowMethod(HttpMethod.Get)
+		allowHeader(HttpHeaders.ContentType)
+		allowHeader(HttpHeaders.Accept)
+		allowNonSimpleContentTypes = true
+	}
 	install(ContentNegotiation) {
 		json(
 			Json {
