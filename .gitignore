@@ -20,3 +20,7 @@ xcuserdata
 *.xcodeproj/*
 *.xcodeproj/project.pbxproj
 *.xcworkspace/contents.xcworkspacedata
+
+# Build outputs
+/backend/bin/
+/base/kotlin/bin/
