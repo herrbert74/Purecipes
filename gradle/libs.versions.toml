@@ -24,8 +24,8 @@ ksp = "2.3.5"
 
 androidx-activity = "1.12.4"
 #androidx-appcompat = "1.7.1"
-androidx-composeBom = "2026.02.00"
-androidx-composeMaterial3 = "1.5.0-alpha14" #For alpha releases only
+androidx-composeBom = "2026.02.01"
+androidx-composeMaterial3 = "1.5.0-alpha15" #For alpha releases only
 #androidx-composeUi = "1.8.3" #For test libs not in the BOM
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
@@ -43,7 +43,7 @@ babestudios-base = "3.2.1"
 buildKonfig = "0.17.1"
 #compose-screenshotTesting = "0.0.1-alpha09"
 #chucker = "4.2.0"
-#coil = "2.7.0"
+coil = "3.4.0"
 crashlyticsPlugin = "3.0.6"
 #dagger = "2.51"
 decompose = "3.4.0"
@@ -53,7 +53,7 @@ detekt-compose = "0.4.28"
 diamondedge-logging = "2.1.0"
 essenty = "2.5.0"
 #facebook = "16.1.2"
-firebaseBom = "34.9.0"
+firebaseBom = "34.10.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
@@ -199,12 +199,10 @@ baBeStudios-baseData = { module ="io.bitbucket.babestudios:base-data", version.r
 baBeStudios-baseAndroid = { module ="io.bitbucket.babestudios:base-android", version.ref = "babestudios-base"}
 baBeStudios-baseCompose = { module ="io.bitbucket.babestudios:base-compose", version.ref = "babestudios-base"}
 
-#chucker-library = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
-#chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
-
-#coil-base = { module = "io.coil-kt:coil-base", version.ref = "coil" }
-#coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
-#coil-compose-base = { module = "io.coil-kt:coil-compose-base", version.ref = "coil" }
+coil-base = { module = "io.coil-kt.coil3:coil-base", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-compose-base = { module = "io.coil-kt.coil3:coil-compose-base", version.ref = "coil" }
+coil-networkKtor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 #dagger-core = { module = "com.google.dagger:dagger", version.ref = "dagger" }
 #dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "dagger" }

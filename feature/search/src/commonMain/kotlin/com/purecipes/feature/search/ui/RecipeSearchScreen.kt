@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,8 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.search.model.RecipeSummary
@@ -132,18 +135,15 @@ private fun RecipeRow(recipe: RecipeSummary) {
 			horizontalArrangement = Arrangement.spacedBy(12.dp),
 			verticalAlignment = Alignment.CenterVertically,
 		) {
-			Box(
+			AsyncImage(
+				model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
+				contentDescription = recipe.title,
 				modifier = Modifier
 					.size(56.dp)
-					.clip(MaterialTheme.shapes.medium)
+					.clip(RoundedCornerShape(8.dp))
 					.background(MaterialTheme.colorScheme.secondaryContainer),
-				contentAlignment = Alignment.Center,
-			) {
-				Text(
-					text = "IMG",
-					style = MaterialTheme.typography.labelMedium,
-				)
-			}
+				contentScale = ContentScale.Crop,
+			)
 
 			Column(modifier = Modifier.weight(1f)) {
 				Text(

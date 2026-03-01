@@ -13,6 +13,7 @@ plugins {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
+	applyDefaultHierarchyTemplate()
 	jvmToolchain {
 		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 	}
@@ -35,6 +36,8 @@ kotlin {
 				implementation(compose.foundation)
 				implementation(compose.material3)
 				implementation(compose.ui)
+				implementation(libs.coil.compose)
+				implementation(libs.coil.networkKtor3)
 				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
@@ -56,21 +59,14 @@ kotlin {
 				implementation(libs.ktor.clientOkhttp)
 			}
 		}
-		val iosMain by creating {
-			dependsOn(commonMain)
+		val iosMain by getting {
 			dependencies {
 				implementation(libs.ktor.clientDarwin)
 			}
 		}
-		val iosX64Main by getting {
-			dependsOn(iosMain)
-		}
-		val iosArm64Main by getting {
-			dependsOn(iosMain)
-		}
-		val iosSimulatorArm64Main by getting {
-			dependsOn(iosMain)
-		}
+//		val iosX64Main by getting
+//		val iosArm64Main by getting
+//		val iosSimulatorArm64Main by getting
 		val wasmJsMain by getting {
 			dependencies {
 				implementation(libs.ktor.clientJs)

@@ -2,6 +2,7 @@ plugins {
 	kotlin("jvm")
 	alias(libs.plugins.kotlin.serialization)
 	application
+	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 kotlin {
@@ -31,4 +32,15 @@ dependencies {
 
 application {
 	mainClass.set("com.purecipes.backend.MainKt")
+}
+
+tasks.shadowJar {
+	archiveClassifier.set("")
+	mergeServiceFiles()
+}
+
+tasks.jar {
+	manifest {
+		attributes["Main-Class"] = "com.purecipes.backend.MainKt"
+	}
 }

@@ -12,7 +12,11 @@ class RecipeSearchViewControllerFactory {
 		val httpClient = createRecipeSearchHttpClient()
 		val client = createRecipeSearchClient(httpClient)
 		val repository = RecipeSearchRepository(client.api)
-		return ComposeUIViewController {
+		return ComposeUIViewController(
+			configure = {
+				enforceStrictPlistSanityCheck = false
+			}
+		) {
 			RecipeSearchRoot(repository = repository)
 		}
 	}
