@@ -77,6 +77,8 @@ okhttp = "5.3.2"
 #robolectric = "4.15.1"
 #skie = "0.10.4"
 uri-kmp = "0.0.21"
+kotlinStdlib = "2.3.10"
+core = "1.7.0"
 
 [libraries]
 
@@ -351,6 +353,8 @@ okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 #robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uri-kmp" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+core = { group = "androidx.test", name = "core", version.ref = "core" }
 
 #timber = "com.jakewharton.timber:timber:5.0.1"
 
@@ -382,6 +386,8 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
+android-lint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
 #mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 #parcelize-darwin = { id = "com.arkivanov.parcelize.darwin", version.ref = "parcelize-darwin" }
 #touchlab-skie = { id = "co.touchlab.skie", version.ref = "skie" }

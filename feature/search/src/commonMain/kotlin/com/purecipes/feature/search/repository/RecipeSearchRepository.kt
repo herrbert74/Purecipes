@@ -3,11 +3,12 @@ package com.purecipes.feature.search.repository
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.feature.search.model.RecipeSummary
-import com.purecipes.feature.search.network.RecipeSearchApi
+import com.purecipes.shared.data.network.PurecipesApi
+import dev.zacsweers.metro.Inject
 import kotlinx.io.IOException
 
-class RecipeSearchRepository(
-	private val api: RecipeSearchApi,
+class RecipeSearchRepository @Inject constructor(
+	private val api: PurecipesApi,
 ) {
 	suspend fun search(query: String): SearchOutcome<List<RecipeSummary>> {
 		val trimmedQuery = query.trim()

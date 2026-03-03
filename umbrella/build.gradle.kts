@@ -4,6 +4,7 @@ plugins {
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
+	alias(libs.plugins.metro)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
@@ -43,6 +44,7 @@ kotlin {
 		val commonMain by getting {
 			dependencies {
 				api(project(":feature:search"))
+				api(project(":shared:data"))
 				implementation(compose.runtime)
 				implementation(compose.foundation)
 				implementation(compose.material3)

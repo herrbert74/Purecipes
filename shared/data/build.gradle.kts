@@ -1,14 +1,18 @@
-@file:Suppress("DEPRECATION")
-
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.kotlin.serialization)
-	alias(libs.plugins.jetBrainsCompose)
-	alias(libs.plugins.kotlin.composeCompiler)
 	alias(libs.plugins.ksp)
+	alias(libs.plugins.ktorfit)
 	alias(libs.plugins.metro)
-//	alias(libs.plugins.ktorfit)
+}
+
+/**
+ * Temporary fix for Ktorfit KSP issue, which is still not resolved in Ktorfit 2.7.2
+ * https://github.com/Foso/Ktorfit/issues/1010
+ */
+ktorfit {
+	compilerPluginVersion.set("2.3.3")
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
@@ -18,7 +22,9 @@ kotlin {
 		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 	}
 
-	androidTarget()
+	androidTarget {
+//		publishLibraryVariants("release")
+	}
 
 	wasmJs {
 		browser()
@@ -32,19 +38,12 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				implementation(project(":shared:data"))
-				implementation(compose.runtime)
-				implementation(compose.foundation)
-				implementation(compose.material3)
-				implementation(compose.ui)
-				implementation(libs.coil.compose)
-				implementation(libs.coil.networkKtor3)
-				implementation(libs.kotlinResult.result)
-				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientContentNegotiation)
 				implementation(libs.ktor.serializationKotlinxJson)
+				implementation(libs.ktorfit.lib)
+				implementation(libs.ktorfit.annotations)
 			}
 		}
 		val commonTest by getting {
@@ -63,9 +62,6 @@ kotlin {
 				implementation(libs.ktor.clientDarwin)
 			}
 		}
-//		val iosX64Main by getting
-//		val iosArm64Main by getting
-//		val iosSimulatorArm64Main by getting
 		val wasmJsMain by getting {
 			dependencies {
 				implementation(libs.ktor.clientJs)
@@ -74,9 +70,19 @@ kotlin {
 	}
 }
 
+dependencies {
+	add("kspCommonMainMetadata", libs.ktorfit.ksp)
+	add("kspAndroid", libs.ktorfit.ksp)
+	add("kspIosX64", libs.ktorfit.ksp)
+	add("kspIosArm64", libs.ktorfit.ksp)
+	add("kspIosSimulatorArm64", libs.ktorfit.ksp)
+	add("kspWasmJs", libs.ktorfit.ksp)
+}
+
 android {
-	namespace = "com.purecipes.feature.search"
+	namespace = "com.purecipes.shared.data"
 	compileSdk = 36
+
 	defaultConfig {
 		minSdk = 24
 	}
