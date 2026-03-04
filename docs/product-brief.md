@@ -107,26 +107,29 @@ Traditional recipe apps present information in a one-size-fits-all manner, creat
 - Feature 003: Basic step-by-step cooking interface
 - Feature 004: Recipe search and filtering
 - Feature 005: Favorite recipes management
-- Feature 006: Recipe ratings and reviews
-- Feature 007: Offline recipe access
+- Feature 006: Basic recipe upload
+- Feature 007: Analytics
+- Feature 008: Measurement systems and unit conversion
+- Feature 009: Push notifications with Firebase Cloud Messaging
+- Feature 010: Basic monetisation with RevenueCat
 - Cross-platform synchronization
 - Android and iOS deployment
 - **Public Launch**
 
 ### Phase 2: Advanced Features & Iteration
-- Feature 008: Advanced recipe search with chip/tag filtering
-- Feature 009: Voice-guided cooking (basic commands)
-- Feature 010: Meal planning and calendar
-- Feature 011: Grocery list generation
-- Feature 012: Social features (sharing, following)
+- Feature 011: Advanced recipe search with chip/tag filtering
+- Feature 012: AI-assisted translations
+- Feature 013: Feature flag & A/B testing
+- Feature 014: Calorie calculator and nutrition tracking
 - Text-to-speech cooking instructions
 - Multi-language support (English, Spanish, French)
 - Iteration and refinement of Phase 0 and 1 features
 - Performance optimization
 
 ### Phase 3: AI Integration & Polish
-- Feature 013: AI-powered recipe recommendations
-- Feature 014: Smart cooking assistant
+- Feature 015: AI recipe creation from image
+- Feature 016: Image creation from recipe
+- Feature 017: Smart kitchen integration
 - Full personalization engine
 - Advanced accessibility features
 - Advanced voice recognition

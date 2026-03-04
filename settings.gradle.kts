@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google()
@@ -9,12 +11,16 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
         mavenCentral()
+        google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
 
 rootProject.name = "Purecipes"
 include(":app")
-include(":shared")
+include(":backend")
+include(":umbrella")
+include(":base:kotlin")
+include(":feature:search")
+include(":shared:data")

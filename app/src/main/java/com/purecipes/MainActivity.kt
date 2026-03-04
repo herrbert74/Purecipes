@@ -7,41 +7,34 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.purecipes.feature.search.repository.RecipeSearchRepository
+import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.ui.theme.PurecipesTheme
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.createGraph
 
 class MainActivity : ComponentActivity() {
+
+	@Inject
+	lateinit var repository: RecipeSearchRepository
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		enableEdgeToEdge()
+
+		val graph = createGraph<PurecipesAppGraph>()
+		graph.inject(this)
+
 		setContent {
 			PurecipesTheme {
 				Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-					Greeting(
-						name = "Android",
-						modifier = Modifier.padding(innerPadding)
+					RecipeSearchScreen(
+						modifier = Modifier.padding(innerPadding),
+						repository = repository,
 					)
 				}
 			}
 		}
-	}
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-	Text(
-		text = "Hello $name!",
-		modifier = modifier
-	)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-	PurecipesTheme {
-		Greeting("Android")
 	}
 }

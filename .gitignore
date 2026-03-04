@@ -9,9 +9,18 @@
 !.idea/.name
 .DS_Store
 /build
+/*/build/
+**/build/
 /captures
 app/companieshouse.jks
 app/app-release.apk
 app/release
 *.xcworkspace
 xcuserdata
+*.xcodeproj/*
+*.xcodeproj/project.pbxproj
+*.xcworkspace/contents.xcworkspacedata
+
+# Build outputs
+/backend/bin/
+/base/kotlin/bin/
