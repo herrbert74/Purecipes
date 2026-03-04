@@ -36,7 +36,7 @@ kotlin {
 	iosSimulatorArm64()
 
 	sourceSets {
-		val commonMain by getting {
+		commonMain {
 			dependencies {
 				implementation(libs.kotlinx.serializationJson)
 				implementation(libs.ktor.clientCore)
@@ -46,23 +46,23 @@ kotlin {
 				implementation(libs.ktorfit.annotations)
 			}
 		}
-		val commonTest by getting {
+		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
 			}
 		}
-		val androidMain by getting {
+		androidMain {
 			dependencies {
 				implementation(project(":base:kotlin"))
 				implementation(libs.ktor.clientOkhttp)
 			}
 		}
-		val iosMain by getting {
+		iosMain {
 			dependencies {
 				implementation(libs.ktor.clientDarwin)
 			}
 		}
-		val wasmJsMain by getting {
+		wasmJsMain {
 			dependencies {
 				implementation(libs.ktor.clientJs)
 			}

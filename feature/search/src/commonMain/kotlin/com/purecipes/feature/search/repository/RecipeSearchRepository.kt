@@ -7,9 +7,8 @@ import com.purecipes.shared.data.network.PurecipesApi
 import dev.zacsweers.metro.Inject
 import kotlinx.io.IOException
 
-class RecipeSearchRepository @Inject constructor(
-	private val api: PurecipesApi,
-) {
+@Inject
+class RecipeSearchRepository(private val api: PurecipesApi) {
 	suspend fun search(query: String): SearchOutcome<List<RecipeSummary>> {
 		val trimmedQuery = query.trim()
 		if (trimmedQuery.isBlank()) return Ok(emptyList())

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.androidLibrary)
@@ -8,7 +6,6 @@ plugins {
 	alias(libs.plugins.kotlin.composeCompiler)
 	alias(libs.plugins.ksp)
 	alias(libs.plugins.metro)
-//	alias(libs.plugins.ktorfit)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
@@ -30,13 +27,13 @@ kotlin {
 	iosSimulatorArm64()
 
 	sourceSets {
-		val commonMain by getting {
+		commonMain {
 			dependencies {
 				implementation(project(":shared:data"))
-				implementation(compose.runtime)
-				implementation(compose.foundation)
-				implementation(compose.material3)
-				implementation(compose.ui)
+				implementation(libs.jetbrains.composeFoundation)
+				implementation(libs.jetbrains.composeMaterial3)
+				implementation(libs.jetbrains.composeRuntime)
+				implementation(libs.jetbrains.composeUi)
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.kotlinResult.result)
@@ -47,30 +44,17 @@ kotlin {
 				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
-		val commonTest by getting {
+		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
 			}
 		}
-		val androidMain by getting {
-			dependencies {
-				implementation(project(":base:kotlin"))
-				implementation(libs.ktor.clientOkhttp)
-			}
-		}
-		val iosMain by getting {
-			dependencies {
-				implementation(libs.ktor.clientDarwin)
-			}
-		}
-//		val iosX64Main by getting
-//		val iosArm64Main by getting
-//		val iosSimulatorArm64Main by getting
-		val wasmJsMain by getting {
-			dependencies {
-				implementation(libs.ktor.clientJs)
-			}
-		}
+//		androidMain
+//		iosMain
+//		iosX64Main
+//		iosArm64Main
+//		iosSimulatorArm64Main
+//		wasmJsMain
 	}
 }
 

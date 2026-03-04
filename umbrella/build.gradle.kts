@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.androidLibrary)
@@ -14,9 +16,9 @@ kotlin {
 		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 	}
 	androidTarget {
-//		compilerOptions {
-//			jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
-//		}
+		compilerOptions {
+			jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
+		}
 	}
 
 	wasmJs {
@@ -41,30 +43,30 @@ kotlin {
 	}
 
 	sourceSets {
-		val commonMain by getting {
+		commonMain {
 			dependencies {
 				api(project(":feature:search"))
 				api(project(":shared:data"))
-				implementation(compose.runtime)
-				implementation(compose.foundation)
-				implementation(compose.material3)
-				implementation(compose.materialIconsExtended)
+				implementation(libs.jetbrains.composeFoundation)
+				implementation(libs.jetbrains.composeMaterial3)
+				implementation(libs.jetbrains.composeMaterialIconsExtended)
+				implementation(libs.jetbrains.composeRuntime)
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}
-		val commonTest by getting {
+		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
 			}
 		}
-		val androidMain by getting {
+		androidMain {
 			dependencies {
 				implementation(libs.androidx.core)
 				implementation(libs.kotlinx.coroutinesAndroid)
 			}
 		}
-		val iosMain by getting {
+		iosMain {
 			dependencies {
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientDarwin)
@@ -72,10 +74,10 @@ kotlin {
 				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
-//		val iosX64Main by getting
-//		val iosArm64Main by getting
-//		val iosSimulatorArm64Main by getting
-		val wasmJsMain by getting {
+//		iosX64Main
+//		iosArm64Main
+//		iosSimulatorArm64Main
+		wasmJsMain {
 			dependencies {
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientContentNegotiation)

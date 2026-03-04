@@ -167,7 +167,7 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 #androidx-roomRuntime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 #androidx-roomTesting = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
 
-androidx-savedState  = "androidx.savedstate:savedstate:1.4.0"
+androidx-savedState = "androidx.savedstate:savedstate:1.4.0"
 #androidx-splash = "androidx.core:core-splashscreen:1.0.1"
 #androidx-sqlite = "androidx.sqlite:sqlite:2.5.2"
 #androidx-startup = "androidx.startup:startup-runtime:1.2.0"
@@ -196,10 +196,10 @@ androidx-testRunner = { module = "androidx.test:runner", version.ref = "androidx
 #autobind-android-testing = { module = "se.ansman.dagger.auto:android-testing", version.ref = "autoBind" }
 #autobind-compiler = { module = "se.ansman.dagger.auto:compiler", version.ref = "autoBind" }
 
-baBeStudios-baseKotlin = { module ="io.bitbucket.babestudios:base-kotlin", version.ref = "babestudios-base"}
-baBeStudios-baseData = { module ="io.bitbucket.babestudios:base-data", version.ref = "babestudios-base"}
-baBeStudios-baseAndroid = { module ="io.bitbucket.babestudios:base-android", version.ref = "babestudios-base"}
-baBeStudios-baseCompose = { module ="io.bitbucket.babestudios:base-compose", version.ref = "babestudios-base"}
+baBeStudios-baseKotlin = { module = "io.bitbucket.babestudios:base-kotlin", version.ref = "babestudios-base" }
+baBeStudios-baseData = { module = "io.bitbucket.babestudios:base-data", version.ref = "babestudios-base" }
+baBeStudios-baseAndroid = { module = "io.bitbucket.babestudios:base-android", version.ref = "babestudios-base" }
+baBeStudios-baseCompose = { module = "io.bitbucket.babestudios:base-compose", version.ref = "babestudios-base" }
 
 coil-base = { module = "io.coil-kt.coil3:coil-base", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -261,6 +261,12 @@ hamcrest = "org.hamcrest:hamcrest-core:1.3"
 
 #javaPoet = { module = "com.squareup:javapoet", version.ref = "javaPoet" } ":1.13.0"
 
+jetbrains-composeFoundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetBrainsCompose" }
+jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version ="1.10.0-alpha05" }
+jetbrains-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetBrainsCompose" }
+jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetBrainsCompose" }
+jetbrains-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }
+
 jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
 #jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
@@ -292,7 +298,7 @@ kotlinResult-result = { module = "com.michael-bull.kotlin-result:kotlin-result",
 kotlinx-coroutinesAndroid = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-kotlinx-collectionsImmutableJvm = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref ="kotlinx-collections" }
+kotlinx-collectionsImmutableJvm = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
@@ -312,10 +318,10 @@ ktor-serializationKotlinxJson = { group = "io.ktor", name = "ktor-serialization-
 ktor-serialization = { group = "io.ktor", name = "ktor-serialization", version.ref = "ktor" }
 ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" }
 
-ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-annotations", version.ref = "ktorfit"}
-ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit"}
-ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit"}
-ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit"}
+ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-annotations", version.ref = "ktorfit" }
+ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit" }
+ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
+ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
 
 #leakCanary = "com.squareup.leakcanary:leakcanary-android:2.14"
 
