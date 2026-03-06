@@ -30,6 +30,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				implementation(project(":shared:data"))
+				implementation(project(":shared:ui"))
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
 				implementation(libs.jetbrains.composeRuntime)

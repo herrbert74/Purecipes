@@ -266,6 +266,11 @@ jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:materia
 jetbrains-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetBrainsCompose" }
 jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetBrainsCompose" }
 jetbrains-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }
+jetbrains-composeResources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetBrainsCompose" }
+jetbrains-composeMaterial3WindowSizeClass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "jetBrainsCompose" }
+jetbrains-composeUiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref ="jetBrainsCompose" }
+jetbrains-composeBackhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "jetBrainsCompose" }
+
 
 jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }

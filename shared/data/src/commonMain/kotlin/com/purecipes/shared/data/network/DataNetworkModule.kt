@@ -32,6 +32,6 @@ interface DataNetworkModule {
 			.baseUrl(if (backendBaseUrl.endsWith("/")) backendBaseUrl else "$backendBaseUrl/")
 			.httpClient(httpClient)
 			.build()
-		return ktorfit.create<PurecipesApi>()
+		return ktorfit.createPurecipesApi()
 	}
 }

@@ -34,13 +34,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.search.model.RecipeSummary
 import com.purecipes.feature.search.repository.RecipeSearchRepository
+import com.purecipes.shared.ui.component.BodyText
+import com.purecipes.shared.ui.component.TitleText
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,6 +81,8 @@ fun RecipeSearchScreen(
 			.padding(16.dp),
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
+		TitleText("This is the title")
+		BodyText("This is the body")
 		SearchBar(
 			query = query,
 			onQueryChange = { query = it },
@@ -146,16 +149,12 @@ private fun RecipeRow(recipe: RecipeSummary) {
 			)
 
 			Column(modifier = Modifier.weight(1f)) {
-				Text(
-					text = recipe.title,
-					style = MaterialTheme.typography.titleMedium,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
+				TitleText(
+					text = recipe.title
 				)
 				Spacer(modifier = Modifier.height(2.dp))
-				Text(
+				BodyText(
 					text = recipe.cuisine ?: "Unknown cuisine",
-					style = MaterialTheme.typography.bodyMedium,
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 				)
 			}
