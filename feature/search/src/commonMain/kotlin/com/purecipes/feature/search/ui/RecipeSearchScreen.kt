@@ -114,25 +114,26 @@ fun RecipeSearchScreen(
 			expanded = true,
 			onExpandedChange = {},
 			modifier = Modifier.fillMaxWidth(),
-		) {}
+		) {
 
-		when {
-			isSearching -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-				CircularProgressIndicator()
-			}
+			when {
+				isSearching -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+					CircularProgressIndicator()
+				}
 
-			errorMessage != null -> Text(
-				text = errorMessage ?: "Unknown error",
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.error,
-			)
+				errorMessage != null -> Text(
+					text = errorMessage ?: "Unknown error",
+					style = MaterialTheme.typography.bodyMedium,
+					color = MaterialTheme.colorScheme.error,
+				)
 
-			else -> LazyColumn(
-				verticalArrangement = Arrangement.spacedBy(8.dp),
-				contentPadding = PaddingValues(bottom = 16.dp),
-			) {
-				items(recipes, key = { it.id }) { recipe ->
-					RecipeRow(recipe = recipe)
+				else -> LazyColumn(
+					verticalArrangement = Arrangement.spacedBy(8.dp),
+					contentPadding = PaddingValues(bottom = 16.dp),
+				) {
+					items(recipes, key = { it.id }) { recipe ->
+						RecipeRow(recipe = recipe)
+					}
 				}
 			}
 		}

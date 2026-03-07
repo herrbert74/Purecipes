@@ -379,7 +379,7 @@ core = { group = "androidx.test", name = "core", version.ref = "core" }
 androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 #androidKotlinMultiPlatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
 androidLibrary = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-#buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
+buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 #compose-screenshotTesting = { id = "com.android.compose.screenshot", version.ref = "compose-screenshotTesting" }
 #crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsPlugin" }
 #dagger-hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
