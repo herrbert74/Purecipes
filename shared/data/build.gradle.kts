@@ -23,7 +23,7 @@ kotlin {
 	}
 
 	androidTarget {
-//		publishLibraryVariants("release")
+		// publishLibraryVariants("release")
 	}
 
 	wasmJs {

@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package com.purecipes.shared.ui.theme
 
 import androidx.compose.ui.graphics.Color
@@ -217,10 +219,3 @@ val surfaceContainerLowDarkHighContrast = Color(0xFF261D1F)
 val surfaceContainerDarkHighContrast = Color(0xFF382E2F)
 val surfaceContainerHighDarkHighContrast = Color(0xFF43393A)
 val surfaceContainerHighestDarkHighContrast = Color(0xFF4F4446)
-
-
-
-
-
-
-

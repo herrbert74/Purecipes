@@ -2,8 +2,10 @@ package com.purecipes.backend
 
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.routes.recipeRoutes
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
-import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -14,14 +16,13 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.Json
+
+private const val BACKEND_PORT = 8080
 
 fun main() {
 	val host = System.getenv("PURECIPES_BACKEND_HOST") ?: "0.0.0.0"
-	val port = System.getenv("PURECIPES_BACKEND_PORT")?.toIntOrNull() ?: 8080
+	val port = System.getenv("PURECIPES_BACKEND_PORT")?.toIntOrNull() ?: BACKEND_PORT
 	println("Starting Purecipes backend on http://$host:$port")
 	embeddedServer(Netty, host = host, port = port) {
 		module()

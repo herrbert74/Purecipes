@@ -47,4 +47,3 @@ fun getAppTypography(): Typography {
 		labelSmall = baseline.labelSmall.copy(fontFamily = cabinFontFamily),
 	)
 }
-

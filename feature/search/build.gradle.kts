@@ -50,12 +50,12 @@ kotlin {
 				implementation(kotlin("test"))
 			}
 		}
-//		androidMain
-//		iosMain
-//		iosX64Main
-//		iosArm64Main
-//		iosSimulatorArm64Main
-//		wasmJsMain
+		// androidMain
+		// iosMain
+		// iosX64Main
+		// iosArm64Main
+		// iosSimulatorArm64Main
+		// wasmJsMain
 	}
 }
 

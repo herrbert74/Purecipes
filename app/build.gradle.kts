@@ -39,6 +39,7 @@ android {
 dependencies {
 	implementation(project(":feature:search"))
 	implementation(project(":shared:data"))
+	implementation(project(":shared:ui"))
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)

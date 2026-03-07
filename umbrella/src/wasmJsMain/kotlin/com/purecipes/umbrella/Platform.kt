@@ -1,5 +1,5 @@
 package com.purecipes.umbrella
 
 actual class Platform actual constructor() {
-    actual val platform: String = "Web (Wasm)"
+    actual val platformName: String = "Web (Wasm)"
 }

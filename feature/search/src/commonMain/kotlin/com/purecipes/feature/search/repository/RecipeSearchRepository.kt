@@ -9,6 +9,7 @@ import kotlinx.io.IOException
 
 @Inject
 class RecipeSearchRepository(private val api: PurecipesApi) {
+
 	suspend fun search(query: String): SearchOutcome<List<RecipeSummary>> {
 		val trimmedQuery = query.trim()
 		if (trimmedQuery.isBlank()) return Ok(emptyList())
@@ -24,9 +25,9 @@ class RecipeSearchRepository(private val api: PurecipesApi) {
 				)
 			}
 			Ok(results)
-		} catch (error: IOException) {
+		} catch (_: IOException) {
 			Err(SearchFailure.IoFailure)
-		} catch (error: Throwable) {
+		} catch (@Suppress("TooGenericExceptionCaught") error: Throwable) {
 			Err(SearchFailure.ServerError(error.message ?: "Search failed"))
 		}
 	}

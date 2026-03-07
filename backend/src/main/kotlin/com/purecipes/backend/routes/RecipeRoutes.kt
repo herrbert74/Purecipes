@@ -3,11 +3,14 @@ package com.purecipes.backend.routes
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.repository.RecipeRepository
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+
+private const val HIGHEST_RESULT_COUNT_LIMIT = 200
+
+private const val DEFAULT_RESULT_COUNT_LIMIT = 50
 
 fun Route.recipeRoutes(db: Db) {
 	val repo = RecipeRepository(db.dataSource)
@@ -19,7 +22,8 @@ fun Route.recipeRoutes(db: Db) {
 				call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing query parameter: query"))
 				return@get
 			}
-			val limit = call.request.queryParameters["limit"]?.toIntOrNull()?.coerceIn(1, 200) ?: 50
+			val limit = call.request.queryParameters["limit"]?.toIntOrNull()?.coerceIn(1, HIGHEST_RESULT_COUNT_LIMIT)
+				?: DEFAULT_RESULT_COUNT_LIMIT
 			call.respond(repo.searchByKeyword(query, limit))
 		}
 	}

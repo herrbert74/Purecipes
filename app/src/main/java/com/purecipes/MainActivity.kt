@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.purecipes.feature.search.repository.RecipeSearchRepository
 import com.purecipes.feature.search.ui.RecipeSearchScreen
-import com.purecipes.ui.theme.PurecipesTheme
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.createGraph
 

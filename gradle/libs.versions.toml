@@ -18,7 +18,7 @@ kotlin = "2.3.10"
 kotlinx-collections = "0.4.0"
 kotlinx-datetime = "0.7.1-0.6.x-compat"
 kotlinx-serialization = "1.10.0"
-ksp = "2.3.5"
+ksp = "2.3.6"
 
 #other
 
@@ -235,8 +235,8 @@ gson = "com.google.code.gson:gson:2.13.2"
 #googlePlay-appUpdateKtx = "com.google.android.play:app-update-ktx:2.1.0"
 #googlePlay-servicesAnalytics = "com.google.android.gms:play-services-analytics:18.1.1"
 #googlePlay-servicesLocation = "com.google.android.gms:play-services-location:21.3.0"
-googlePlay-servicesMaps = "com.google.android.gms:play-services-maps:19.2.0"
-googlePlay-servicesMapsCompose = "com.google.maps.android:maps-compose:7.0.0"
+googlePlay-servicesMaps = "com.google.android.gms:play-services-maps:20.0.0"
+googlePlay-servicesMapsCompose = "com.google.maps.android:maps-compose:8.2.0"
 #googlePlay-servicesAds = "com.google.android.gms:play-services-ads:24.4.0"
 #googlePlay-servicesAuth = "com.google.android.gms:play-services-auth:20.2.0"
 #googlePlay-servicesTagManager = "com.google.android.gms:play-services-tagmanager:18.0.1"
@@ -385,7 +385,7 @@ androidLibrary = { id = "com.android.library", version.ref = "androidGradlePlugi
 #dagger-hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 #dependencyAnalysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" } #fine-grained plugin
 #dependencyAnalysisBuildHealth = { id = "com.autonomousapps.build-health", version.ref = "dependency-analysis" } #settings plugin
-#detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 #gradleDoctor = { id = "com.osacky.doctor", version.ref = "gradleDoctor" }
 #graphql = { id = "com.apollographql.apollo", version.ref = "graphql" }
 jetBrainsCompose = { id = "org.jetbrains.compose", version.ref = "jetBrainsCompose" }

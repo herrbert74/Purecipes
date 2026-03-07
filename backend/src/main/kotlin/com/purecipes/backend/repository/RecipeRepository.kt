@@ -1,7 +1,7 @@
 package com.purecipes.backend.repository
 
 import com.purecipes.backend.model.RecipeSummaryDto
-import java.sql.Connection
+import java.sql.PreparedStatement
 import javax.sql.DataSource
 
 class RecipeRepository(
@@ -20,28 +20,37 @@ class RecipeRepository(
 			LIMIT ?
 		""".trimIndent()
 
-		dataSource.connection.use { conn ->
-			conn.prepareStatement(sql).use { ps ->
-				ps.setString(1, like)
-				ps.setString(2, like)
-				ps.setInt(3, limit)
+		return searchRecipes(sql, like, limit)
+	}
 
-				ps.executeQuery().use { rs ->
-					val results = ArrayList<RecipeSummaryDto>()
-					while (rs.next()) {
-						results.add(
-							RecipeSummaryDto(
-								id = rs.getInt("id"),
-								title = rs.getString("title"),
-								cuisine = rs.getString("cuisine"),
-								imageUrl = rs.getString("image_url"),
-								totalTime = rs.getObject("total_time") as? Int,
-							)
-						)
-					}
-					return results
-				}
-			}
+	@Suppress("MagicNumber")
+	private fun searchRecipes(
+		sql: String,
+		like: String,
+		limit: Int
+	): ArrayList<RecipeSummaryDto> = dataSource.connection.use { conn ->
+		conn.prepareStatement(sql).use { ps ->
+			ps.setString(1, like)
+			ps.setString(2, like)
+			ps.setInt(3, limit)
+
+			return executeQuery(ps)
 		}
+	}
+
+	private fun executeQuery(ps: PreparedStatement): ArrayList<RecipeSummaryDto> = ps.executeQuery().use { rs ->
+		val results = ArrayList<RecipeSummaryDto>()
+		while (rs.next()) {
+			results.add(
+				RecipeSummaryDto(
+					id = rs.getInt("id"),
+					title = rs.getString("title"),
+					cuisine = rs.getString("cuisine"),
+					imageUrl = rs.getString("image_url"),
+					totalTime = rs.getObject("total_time") as? Int,
+				)
+			)
+		}
+		return results
 	}
 }

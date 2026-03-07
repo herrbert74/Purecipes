@@ -74,9 +74,9 @@ kotlin {
 				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
-//		iosX64Main
-//		iosArm64Main
-//		iosSimulatorArm64Main
+		// iosX64Main
+		// iosArm64Main
+		// iosSimulatorArm64Main
 		wasmJsMain {
 			dependencies {
 				implementation(libs.ktor.clientCore)
