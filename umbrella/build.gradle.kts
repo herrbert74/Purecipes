@@ -1,12 +1,43 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.buildKonfig)
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
 	alias(libs.plugins.metro)
+}
+
+private val supportedBuildTypes = setOf("debug", "staging", "release")
+
+private fun Project.currentPurecipesBuildType(): String {
+	val requestedBuildType = androidBuildTypeFromTasks()
+		?: providers.gradleProperty("purecipes.buildType").orNull
+		?: System.getenv("PURECIPES_BUILD_TYPE")
+
+	return requestedBuildType
+		?.lowercase()
+		?.takeIf { it in supportedBuildTypes }
+		?: "debug"
+}
+
+private fun Project.androidBuildTypeFromTasks(): String? {
+	val taskRequests = gradle.startParameter.taskRequests.toString()
+	val match = Regex("(?:assemble|bundle|install|compile|test|lint|connected)\\w*(Debug|Staging|Release)").find(taskRequests)
+		?: Regex("\\b(Debug|Staging|Release)\\b").find(taskRequests)
+
+	return match?.groupValues?.last()?.lowercase()
+}
+
+buildkonfig {
+	packageName = "com.purecipes.umbrella"
+
+	defaultConfigs {
+		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
+	}
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)

@@ -1,5 +1,6 @@
 package com.purecipes.shared.data.network
 
+import com.purecipes.shared.data.config.PurecipesConfig
 import de.jensklingenberg.ktorfit.Ktorfit
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
@@ -27,7 +28,8 @@ interface DataNetworkModule {
 	}
 
 	@Provides
-	fun providePurecipesApi(httpClient: HttpClient): PurecipesApi {
+	fun providePurecipesApi(httpClient: HttpClient, purecipesConfig: PurecipesConfig): PurecipesApi {
+		val backendBaseUrl = backendBaseUrl(purecipesConfig.buildType())
 		val ktorfit = Ktorfit.Builder()
 			.baseUrl(if (backendBaseUrl.endsWith("/")) backendBaseUrl else "$backendBaseUrl/")
 			.httpClient(httpClient)

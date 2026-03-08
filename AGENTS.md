@@ -74,3 +74,17 @@ ask for confirmation if a suppression can be added or a rule can be changed.
 Be careful when adding imports or moving classes between packages. Imports not only needed to be updated, 
 but also arranged in alphabetical order.
 The libraries in the version catalog are also ordered alphabetically by their ids.
+Follow Kotlin naming conventions and Detekt naming rules directly in code.
+In particular, `const val` names must use `UPPER_SNAKE_CASE`, including private constants in platform-specific source sets.
+If a Detekt or Kotlin-style issue recurs, add a short repo-specific rule here so future agents do not repeat it.
+Reference docs:
+https://kotlinlang.org/docs/coding-conventions.html
+https://detekt.dev/docs/intro/
+
+## Rule: Wasm Tooling
+
+Wasm builds use a system-installed Node.js and Yarn Classic.
+Do not re-enable Kotlin's automatic Node/Yarn downloads, because this project uses `RepositoriesMode.FAIL_ON_PROJECT_REPOS` and the downloader adds project repositories.
+Use Corepack to provision Yarn Classic: `corepack enable` and `corepack prepare yarn@1.22.22 --activate`.
+Do not switch the Wasm tooling to Yarn 4+, because the current Kotlin Gradle npm install flow still uses Yarn Classic flags such as `--ignore-scripts`.
+If Wasm tasks fail on a machine, first verify `node --version`, `npm --version`, and `yarn --version` are available on `PATH`.

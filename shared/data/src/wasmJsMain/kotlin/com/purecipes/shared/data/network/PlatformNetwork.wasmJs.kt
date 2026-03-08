@@ -1,3 +1,5 @@
 package com.purecipes.shared.data.network
 
-actual val backendBaseUrl: String = "http://localhost:9090/"
+private const val LOCAL_BACKEND_BASE_URL = "http://localhost:9090/"
+
+actual fun localBackendBaseUrl(): String = LOCAL_BACKEND_BASE_URL

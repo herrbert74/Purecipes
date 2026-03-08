@@ -27,11 +27,18 @@ android {
 			isMinifyEnabled = false
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
+		create("staging") {
+			initWith(getByName("release"))
+			isDebuggable = true
+			signingConfig = signingConfigs.getByName("debug")
+			matchingFallbacks += listOf("release")
+		}
 	}
 	kotlin {
 		jvmToolchain(21)
 	}
 	buildFeatures {
+		buildConfig = true
 		compose = true
 	}
 }

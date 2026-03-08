@@ -115,7 +115,6 @@ fun RecipeSearchScreen(
 			onExpandedChange = {},
 			modifier = Modifier.fillMaxWidth(),
 		) {
-
 			when {
 				isSearching -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 					CircularProgressIndicator()

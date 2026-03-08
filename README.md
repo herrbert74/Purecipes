@@ -19,6 +19,29 @@ Run it locally:
 PURECIPES_BACKEND_PORT=9090 java -jar backend/build/libs/backend.jar
 ```
 
+### 🌐 Wasm
+
+Wasm builds use a system-installed Node.js and Yarn Classic instead of letting the Kotlin Gradle plugin download them.
+This avoids repository conflicts with `RepositoriesMode.FAIL_ON_PROJECT_REPOS`.
+
+Install Node.js on macOS with Homebrew:
+
+```
+brew install node
+node --version
+npm --version
+```
+
+Enable Yarn Classic with Corepack:
+
+```
+corepack enable
+corepack prepare yarn@1.22.22 --activate
+yarn --version
+```
+
+The project is currently verified with Node 24 and Yarn 1.22.22.
+
 ## 📚 Tech stack
 
 - UI developed in [Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/)
