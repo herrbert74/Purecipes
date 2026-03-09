@@ -6,7 +6,8 @@
   ],
   "ignoreDeps": [
     "org.hamcrest:hamcrest",
-    "org.hamcrest:hamcrest-core"
+    "org.hamcrest:hamcrest-core",
+    "io.nlopez.compose.rules:detekt"
   ],
   "packageRules": [
     {
