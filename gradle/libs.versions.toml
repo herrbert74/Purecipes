@@ -57,14 +57,15 @@ firebaseBom = "34.10.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
-jetBrainsCompose = "1.10.1"
+jetBrainsCompose = "1.10.2"
+jetbrains-navigation3 = "1.1.0-alpha03"
 jUnit = "4.13.2"
 jUnit5 = "6.0.3"
 koin = "4.1.1"
-kotest = "6.1.3"
+kotest = "6.1.6"
 kotlinResult = "2.1.0"
 #kotlinRetry = "2.0.1"
-ktor = "3.4.0"
+ktor = "3.4.1"
 ktorfit = "2.7.2"
 metro = "0.10.4"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
@@ -150,12 +151,8 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 #androidx-media = "androidx.media:media:1.7.0"
 #androidx-mediaRouter = "androidx.mediarouter:mediarouter:1.8.1"
 
-#androidx-navigationCommon = { module = "androidx.navigation:navigation-common", version.ref = "androidx-navigation" }
-#androidx-navigationCompose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
-#androidx-navigationFragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidx-navigation" }
-#androidx-navigationRuntime = { module = "androidx.navigation:navigation-runtime", version.ref = "androidx-navigation" }
-#androidx-navigationTesting = { module = "androidx.navigation:navigation-testing", version.ref = "androidx-navigation" }
-#androidx-navigationUiKtx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidx-navigation" }
+jetbrainsAndroidX-navigation3Runtime = { module = "org.jetbrains.androidx.navigation3:navigation3-runtime", version.ref = "jetbrains-navigation3" }
+jetbrainsAndroidX-navigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-navigation3" }
 
 #androidx-paletteKtx = { group = "androidx.palette", name = "palette-ktx", version.ref = "androidx-paletteKtx" }
 #androidx-preferenceKtx = "androidx.preference:preference-ktx:1.2.1"

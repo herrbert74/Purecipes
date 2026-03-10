@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+	implementation(project(":feature:main"))
 	implementation(project(":feature:search"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))

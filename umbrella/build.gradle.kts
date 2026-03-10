@@ -62,13 +62,13 @@ kotlin {
 	}
 
 	listOf(
-		iosX64(),
 		iosArm64(),
 		iosSimulatorArm64()
 	).forEach {
 		it.binaries.framework {
 			baseName = "umbrella"
 			isStatic = true
+			export(project(":feature:main"))
 			export(project(":feature:search"))
 		}
 	}
@@ -76,12 +76,14 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:main"))
 				api(project(":feature:search"))
 				api(project(":shared:data"))
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
 				implementation(libs.jetbrains.composeMaterialIconsExtended)
 				implementation(libs.jetbrains.composeRuntime)
+
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
 			}
@@ -105,7 +107,6 @@ kotlin {
 				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
-		// iosX64Main
 		// iosArm64Main
 		// iosSimulatorArm64Main
 		wasmJsMain {

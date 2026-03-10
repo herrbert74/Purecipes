@@ -4,8 +4,6 @@ plugins {
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
-	alias(libs.plugins.ksp)
-	alias(libs.plugins.metro)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
@@ -28,20 +26,16 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				implementation(project(":shared:data"))
+				api(project(":feature:search"))
+				api(project(":shared:data"))
 				implementation(project(":shared:ui"))
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
+				implementation(libs.jetbrains.composeMaterialIconsExtended)
 				implementation(libs.jetbrains.composeRuntime)
-				implementation(libs.jetbrains.composeUi)
-				implementation(libs.coil.compose)
-				implementation(libs.coil.networkKtor3)
-				implementation(libs.kotlinResult.result)
+				implementation(libs.jetbrainsAndroidX.navigation3Ui)
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
-				implementation(libs.ktor.clientCore)
-				implementation(libs.ktor.clientContentNegotiation)
-				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
 		commonTest {
@@ -49,17 +43,11 @@ kotlin {
 				implementation(kotlin("test"))
 			}
 		}
-		// androidMain
-		// iosMain
-		// iosX64Main
-		// iosArm64Main
-		// iosSimulatorArm64Main
-		// wasmJsMain
 	}
 }
 
 android {
-	namespace = "com.purecipes.feature.search"
+	namespace = "com.purecipes.feature.main"
 	compileSdk = 36
 	defaultConfig {
 		minSdk = 24
