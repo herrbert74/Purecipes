@@ -37,12 +37,17 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				implementation(project(":base:kotlin"))
+				implementation(libs.kotlinResult.result)
+				implementation(libs.kotlinRetry)
+				implementation(libs.kotlinx.collectionsImmutable)
 				implementation(libs.kotlinx.serializationJson)
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientContentNegotiation)
 				implementation(libs.ktor.serializationKotlinxJson)
-				implementation(libs.ktorfit.lib)
 				implementation(libs.ktorfit.annotations)
+				implementation(libs.ktorfit.convertersResponse)
+				implementation(libs.ktorfit.lib)
 			}
 		}
 		commonTest {
@@ -84,4 +89,8 @@ android {
 	defaultConfig {
 		minSdk = 24
 	}
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+	compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.contracts.ExperimentalContracts")
 }

@@ -1,18 +1,49 @@
 plugins {
-	kotlin("jvm")
-	alias(libs.plugins.metro)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.metro)
 }
 
+@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	jvmToolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-	}
+    applyDefaultHierarchyTemplate()
+
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
+    }
+
+    // targets used across the project
+    androidTarget()
+
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(libs.kotlinResult.result)
+                api(libs.kotlinx.coroutinesCore)
+                api(libs.metro.runtime)
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
-dependencies {
-	api(libs.kotlinResult.result)
-	api(libs.kotlinx.coroutinesCore)
-	api(libs.metro.runtime)
+android {
+    namespace = "com.purecipes.base.kotlin"
+    compileSdk = 36
 
-	testImplementation(kotlin("test"))
+    defaultConfig {
+        minSdk = 24
+    }
 }

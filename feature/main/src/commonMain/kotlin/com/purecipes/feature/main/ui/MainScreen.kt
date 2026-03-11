@@ -38,13 +38,13 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
 @Composable
-fun MainScreen(recipeSearchRepository: RecipeSearchRepository) {
+fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifier = Modifier) {
 	PurecipesTheme {
 		val backStack = rememberMainBackStack()
 		val currentDestination = backStack.lastOrNull()
 
 		Scaffold(
-			modifier = Modifier.fillMaxSize(),
+			modifier = modifier.fillMaxSize(),
 			bottomBar = {
 				NavigationBar {
 					mainTabs.forEach { tab ->
