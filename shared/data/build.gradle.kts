@@ -53,6 +53,9 @@ kotlin {
 		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
+				implementation(libs.kotest.assertionsCore)
+				implementation(libs.kotlinx.coroutinesTest)
+				implementation(libs.ktor.clientMock)
 			}
 		}
 		androidMain {
@@ -76,7 +79,8 @@ kotlin {
 
 dependencies {
 	add("kspCommonMainMetadata", libs.ktorfit.ksp)
-	add("kspAndroid", libs.ktorfit.ksp)
+	add("kspAndroidDebug", libs.ktorfit.ksp)
+	add("kspAndroidRelease", libs.ktorfit.ksp)
 	add("kspIosArm64", libs.ktorfit.ksp)
 	add("kspIosSimulatorArm64", libs.ktorfit.ksp)
 	add("kspWasmJs", libs.ktorfit.ksp)

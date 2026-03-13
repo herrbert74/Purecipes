@@ -4,6 +4,7 @@ import com.purecipes.backend.db.Db
 import com.purecipes.backend.routes.recipeRoutes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -15,6 +16,7 @@ import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 
@@ -29,7 +31,7 @@ fun main() {
 	}.start(wait = true)
 }
 
-fun Application.module() {
+fun Application.module(extraRoutes: Route.() -> Unit = {}) {
 	install(CallLogging)
 	install(CORS) {
 		anyHost()
@@ -48,15 +50,21 @@ fun Application.module() {
 	}
 	install(StatusPages) {
 		exception<Throwable> { call, cause ->
-			call.respond(mapOf("error" to (cause.message ?: "Unexpected error")))
+			call.respond(
+				HttpStatusCode.InternalServerError,
+				ErrorResponse(
+					message = "Unexpected error",
+					detail = cause.message
+				)
+			)
 		}
 	}
 
-	val db = Db.create()
 	routing {
 		get("/health") {
 			call.respond(mapOf("status" to "ok"))
 		}
-		recipeRoutes(db)
+		recipeRoutes { Db.create() }
+		extraRoutes()
 	}
 }

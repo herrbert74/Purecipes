@@ -15,7 +15,7 @@ interface SingletonModule {
 
 	@IoDispatcher
 	@Provides
-	fun providesIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+	fun providesIoDispatcher(): CoroutineDispatcher = ioDispatcher()
 
 	@MainDispatcher
 	@Provides

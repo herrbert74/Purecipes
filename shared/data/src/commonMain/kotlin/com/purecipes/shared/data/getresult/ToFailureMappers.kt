@@ -2,21 +2,20 @@ package com.purecipes.shared.data.getresult
 
 import com.purecipes.base.kotlin.result.Failure
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlinx.io.IOException
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /**
  * Handle only expected Exceptions, throw Errors and other Exceptions, like CancellationException
  */
-fun Throwable.handle() = when (this) {
-    // is HttpException -> {
-    //     val errorJson = this.response()?.errorBody()?.string() ?: ""
-    //     val errorBody = Json.decodeFromString<ErrorBody>(errorJson)
-    //     Failure.ServerError(errorBody.status_message)
-    // }
-    is IOException -> Failure.IoFailure
-    else -> throw this
+suspend fun Throwable.handle() = when (this) {
+	is IOException -> Failure.IoFailure
+	is ResponseException -> response.handle()
+	else -> throw this
 }
 
 /**
@@ -25,9 +24,39 @@ fun Throwable.handle() = when (this) {
  */
 suspend fun HttpResponse.handle(): Failure = when (status) {
     HttpStatusCode.NotModified -> Failure.NotModified
-    else -> {
-        // read the body as text so callers can log or present it
-        val errorText = body<String>()
-        Failure.ServerError(errorText)
-    }
+    else -> Failure.ServerError(errorMessage())
 }
+
+private suspend fun HttpResponse.errorMessage(): String {
+    val errorText = body<String>()
+
+    if (status.value !in 400..499) {
+        return errorText
+    }
+
+    if (errorText.isBlank()) {
+        return status.description
+    }
+
+    val errorBody = runCatching {
+        json.decodeFromString(ApiErrorBody.serializer(), errorText)
+    }.getOrNull()
+
+    return errorBody?.detail
+        ?: errorBody?.message
+        ?: errorBody?.error
+        ?: errorText
+}
+
+private val json = Json {
+    ignoreUnknownKeys = true
+    explicitNulls = false
+}
+
+@Serializable
+@Suppress("PropertyName", "ConstructorParameterNaming")
+private data class ApiErrorBody(
+    val detail: String? = null,
+    val error: String? = null,
+    val message: String? = null,
+)
