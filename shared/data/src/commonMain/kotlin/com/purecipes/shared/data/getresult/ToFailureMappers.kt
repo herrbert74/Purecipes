@@ -37,7 +37,7 @@ suspend fun HttpResponse.handle(): Failure = when (status) {
 private suspend fun HttpResponse.errorMessage(): String {
 	val errorText = body<String>()
 
-	if (status.value !in BadRequest.value ..< InternalServerError.value) {
+	if (status.value !in BadRequest.value..<InternalServerError.value) {
 		return errorText
 	}
 
