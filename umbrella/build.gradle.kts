@@ -26,7 +26,8 @@ private fun Project.currentPurecipesBuildType(): String {
 
 private fun Project.androidBuildTypeFromTasks(): String? {
 	val taskRequests = gradle.startParameter.taskRequests.toString()
-	val match = Regex("(?:assemble|bundle|install|compile|test|lint|connected)\\w*(Debug|Staging|Release)").find(taskRequests)
+	val match = Regex("(?:assemble|bundle|install|compile|test|lint|connected)\\w*(Debug|Staging|Release)")
+		.find(taskRequests)
 		?: Regex("\\b(Debug|Staging|Release)\\b").find(taskRequests)
 
 	return match?.groupValues?.last()?.lowercase()
@@ -69,7 +70,7 @@ kotlin {
 			baseName = "umbrella"
 			isStatic = true
 			export(project(":feature:main"))
-			export(project(":feature:search"))
+			export(project(":feature:search:domain"))
 		}
 	}
 
@@ -77,7 +78,8 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:main"))
-				api(project(":feature:search"))
+				api(project(":feature:search:domain"))
+				implementation(project(":feature:search:data"))
 				api(project(":shared:data"))
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)

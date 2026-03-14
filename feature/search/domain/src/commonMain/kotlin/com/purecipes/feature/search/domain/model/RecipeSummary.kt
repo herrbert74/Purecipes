@@ -1,4 +1,4 @@
-package com.purecipes.feature.search.model
+package com.purecipes.feature.search.domain.model
 
 data class RecipeSummary(
 	val id: Int,

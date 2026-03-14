@@ -43,8 +43,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
-import com.purecipes.feature.search.model.RecipeSummary
-import com.purecipes.feature.search.repository.RecipeSearchRepository
+import com.purecipes.feature.search.domain.model.RecipeSummary
+import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.TitleText
 import kotlinx.coroutines.launch

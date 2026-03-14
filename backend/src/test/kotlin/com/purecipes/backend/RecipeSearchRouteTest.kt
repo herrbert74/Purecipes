@@ -16,10 +16,7 @@ class RecipeSearchRouteTest {
 		val response = client.get("/recipes/search")
 		assertEquals(HttpStatusCode.BadRequest, response.status)
 		assertEquals(
-			"{" +
-				"\"message\":\"Invalid request\"," +
-				"\"detail\":\"Missing query parameter: query\"" +
-			"}",
+			"""{"message":"Invalid request","detail":"Missing query parameter: query"}""",
 			response.bodyAsText()
 		)
 	}
@@ -30,7 +27,6 @@ class RecipeSearchRouteTest {
 
 		val response = client.get("/health")
 		assertEquals(HttpStatusCode.OK, response.status)
-		// Keep it loose; serialization config might vary.
 		response.bodyAsText()
 	}
 
@@ -47,10 +43,7 @@ class RecipeSearchRouteTest {
 		val response = client.get("/boom")
 		assertEquals(HttpStatusCode.InternalServerError, response.status)
 		assertEquals(
-			"{" +
-				"\"message\":\"Unexpected error\"," +
-				"\"detail\":\"kaboom\"" +
-			"}",
+			"""{"message":"Unexpected error","detail":"kaboom"}""",
 			response.bodyAsText()
 		)
 	}

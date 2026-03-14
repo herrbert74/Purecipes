@@ -29,7 +29,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.purecipes.feature.search.repository.RecipeSearchRepository
+import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.serialization.Serializable

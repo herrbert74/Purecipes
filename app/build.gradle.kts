@@ -45,7 +45,7 @@ android {
 
 dependencies {
 	implementation(project(":feature:main"))
-	implementation(project(":feature:search"))
+	implementation(project(":feature:search:data"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))
 	implementation(libs.androidx.core)

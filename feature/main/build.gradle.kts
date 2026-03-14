@@ -26,7 +26,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				api(project(":feature:search"))
+				api(project(":feature:search:domain"))
+				implementation(project(":feature:search:ui"))
 				api(project(":shared:data"))
 				implementation(project(":shared:ui"))
 				implementation(libs.jetbrains.composeFoundation)

@@ -5,7 +5,9 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.mapError
 import com.github.michaelbull.result.runCatching
 import com.purecipes.shared.data.getresult.handle
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.CancellationException
+import kotlinx.io.IOException
 
 /**
  * [runCatching] version that handles expected Exceptions and rethrows everything else, including
@@ -13,8 +15,10 @@ import kotlinx.coroutines.CancellationException
  */
 suspend inline fun <V> runCatchingApi(crossinline block: suspend () -> V) = try {
 	Ok(block())
-} catch (throwable: Throwable) {
-	Err(throwable.handle())
+} catch (exception: IOException) {
+	Err(exception.handle())
+} catch (exception: ResponseException) {
+	Err(exception.handle())
 }
 
 /**
@@ -24,8 +28,10 @@ suspend inline fun <V> runCatchingApi(crossinline block: suspend () -> V) = try 
  */
 suspend inline fun <T, V> T.runCatchingApi(crossinline block: suspend T.() -> V) = try {
 	Ok(block())
-} catch (throwable: Throwable) {
-	Err(throwable.handle())
+} catch (exception: IOException) {
+	Err(exception.handle())
+} catch (exception: ResponseException) {
+	Err(exception.handle())
 }
 
 /**
@@ -39,6 +45,6 @@ inline fun <V> runCatchingUnit(block: () -> V) = runCatching(block)
 			throw it
 		}
 
-		//Timber.d("zsoltbertalan* runCatchingUnit: ${it.message}")
+		// Timber.d("zsoltbertalan* runCatchingUnit: ${it.message}")
 		it
 	}

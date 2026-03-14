@@ -2,8 +2,9 @@ plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.kotlin.serialization)
-	alias(libs.plugins.ksp)
+	// Applied before KSP to avoid Ktorfit issue #1030 auto-registering the deprecated root `ksp` configuration.
 	alias(libs.plugins.ktorfit)
+	alias(libs.plugins.ksp)
 	alias(libs.plugins.metro)
 }
 
@@ -13,6 +14,16 @@ plugins {
  */
 ktorfit {
 	compilerPluginVersion.set("2.3.3")
+}
+
+/**
+ * Part of the issue #1030 workaround: once Ktorfit stops adding Android MPP dependencies to `ksp`,
+ * this manual KSP configuration can be removed together with the extra task wiring and dependency block below.
+ * https://github.com/Foso/Ktorfit/issues/1030
+ */
+ksp {
+	arg("Ktorfit_Errors", "1")
+	arg("Ktorfit_QualifiedTypeName", false.toString())
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
@@ -36,6 +47,8 @@ kotlin {
 
 	sourceSets {
 		commonMain {
+			// Issue #1030 workaround: mirror the source dir that the Ktorfit plugin normally wires for metadata generation.
+			kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin"))
 			dependencies {
 				implementation(project(":base:kotlin"))
 				implementation(libs.kotlinResult.result)
@@ -77,6 +90,19 @@ kotlin {
 	}
 }
 
+// Issue #1030 workaround: make metadata generation run before Kotlin compilation tasks that consume generated Ktorfit code.
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+	if (name != "kspCommonMainKotlinMetadata") {
+		dependsOn("kspCommonMainKotlinMetadata")
+	}
+}
+
+// Issue #1030 workaround: Gradle 9 task validation also requires explicit ordering for KSP tasks themselves.
+tasks.matching { it.name.startsWith("ksp") && it.name != "kspCommonMainKotlinMetadata" }.configureEach {
+	dependsOn("kspCommonMainKotlinMetadata")
+}
+
+// Issue #1030 workaround: target-specific KSP dependencies replace Ktorfit's deprecated internal `dependencies.add("ksp", ...)`.
 dependencies {
 	add("kspCommonMainMetadata", libs.ktorfit.ksp)
 	add("kspAndroidDebug", libs.ktorfit.ksp)

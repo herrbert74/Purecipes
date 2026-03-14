@@ -3,7 +3,9 @@ package com.purecipes.shared.data.util
 import com.github.michaelbull.result.Err
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.shared.data.getresult.handle
+import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
@@ -11,7 +13,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
@@ -69,9 +70,9 @@ class KotlinResultTest {
 		)
 
 		try {
-			val response = client.get("https://example.com/error")
-
-			response.handle() shouldBe Failure.ServerError("bad request")
+			client.get("https://example.com/error").body<String>()
+		} catch (exception: io.ktor.client.plugins.ClientRequestException) {
+			exception.response.handle() shouldBe Failure.ServerError("bad request")
 		} finally {
 			client.close()
 		}
@@ -93,9 +94,9 @@ class KotlinResultTest {
 		)
 
 		try {
-			val response = client.get("https://example.com/cache")
-
-			response.handle() shouldBe Failure.NotModified
+			client.get("https://example.com/cache").body<String>()
+		} catch (exception: io.ktor.client.plugins.RedirectResponseException) {
+			exception.response.handle() shouldBe Failure.NotModified
 		} finally {
 			client.close()
 		}
