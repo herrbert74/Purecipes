@@ -6,6 +6,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -16,14 +17,7 @@ interface DataNetworkModule {
 	@Provides
 	fun provideHttpClient(): HttpClient {
 		return HttpClient {
-			install(ContentNegotiation) {
-				json(
-					Json {
-						ignoreUnknownKeys = true
-						explicitNulls = false
-					}
-				)
-			}
+			configurePurecipesHttpClient()
 		}
 	}
 
@@ -36,4 +30,17 @@ interface DataNetworkModule {
 			.build()
 		return ktorfit.createPurecipesApi()
 	}
+}
+
+internal fun HttpClientConfig<*>.configurePurecipesHttpClient() {
+	expectSuccess = true
+
+	install(ContentNegotiation) {
+		json(purecipesJson())
+	}
+}
+
+internal fun purecipesJson() = Json {
+	ignoreUnknownKeys = true
+	explicitNulls = false
 }

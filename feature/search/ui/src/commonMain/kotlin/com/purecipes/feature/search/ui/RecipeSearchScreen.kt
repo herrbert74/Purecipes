@@ -62,7 +62,7 @@ fun RecipeSearchScreen(
 	var isSearching by remember { mutableStateOf(false) }
 	var isSearchBarActive by rememberSaveable { mutableStateOf(false) }
 	var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-	val recipes = rememberSaveable { mutableStateListOf<RecipeSummary>() }
+	val recipes = remember { mutableStateListOf<RecipeSummary>() }
 
 	fun searchNow() {
 		coroutineScope.launch {

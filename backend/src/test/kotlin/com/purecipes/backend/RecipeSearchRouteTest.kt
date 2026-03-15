@@ -60,4 +60,5 @@ class RecipeSearchRouteTest {
 			response.bodyAsText()
 		)
 	}
+
 }
