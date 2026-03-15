@@ -34,6 +34,7 @@ import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
 import com.purecipes.feature.recipedetails.ui.StepByStepCookingRoute
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.ui.RecipeSearchScreen
+import com.purecipes.shared.ui.component.HandleSystemBack
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -44,11 +45,16 @@ import kotlinx.serialization.modules.subclass
 fun MainScreen(
 	recipeSearchRepository: RecipeSearchRepository,
 	recipeDetailsRepository: RecipeDetailsRepository,
+	onExitRequested: () -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	PurecipesTheme {
 		val backStack = rememberMainBackStack()
 		val currentDestination = backStack.lastOrNull()
+		HandleSystemBack(
+			enabled = currentDestination == SearchDestination,
+			onBack = onExitRequested,
+		)
 
 		Scaffold(
 			modifier = modifier.fillMaxSize(),

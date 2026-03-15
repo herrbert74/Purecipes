@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
 			MainScreen(
 				recipeSearchRepository = graph.recipeSearchRepository,
 				recipeDetailsRepository = graph.recipeDetailsRepository,
+				onExitRequested = ::finish,
 			)
 		}
 	}

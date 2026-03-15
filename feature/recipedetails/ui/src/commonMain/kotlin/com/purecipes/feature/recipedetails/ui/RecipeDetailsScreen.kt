@@ -42,6 +42,7 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.ui.component.BackNavigationButton
 
 @Composable
 fun RecipeDetailsRoute(
@@ -72,9 +73,7 @@ fun RecipeDetailsRoute(
 			TopAppBar(
 				title = { Text(text = "Recipe details") },
 				navigationIcon = {
-					TextButton(onClick = onBack) {
-						Text(text = "Back")
-					}
+					BackNavigationButton(onBack = onBack)
 				},
 			)
 		},

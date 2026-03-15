@@ -93,7 +93,7 @@ fun RecipeSearchScreen(
 					query = searchQuery,
 					onQueryChange = { searchQuery = it },
 					onSearch = { searchNow() },
-					expanded = true,
+					expanded = isSearchBarActive,
 					onExpandedChange = {
 						isSearchBarActive = it
 						if (!isSearchBarActive) {
@@ -111,32 +111,61 @@ fun RecipeSearchScreen(
 					},
 				)
 			},
-			expanded = true,
-			onExpandedChange = {},
+			expanded = isSearchBarActive,
+			onExpandedChange = { isSearchBarActive = it },
 			modifier = Modifier.fillMaxWidth(),
 		) {
-			when {
-				isSearching -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-					CircularProgressIndicator()
-				}
+			SearchResultsContent(
+				isSearching = isSearching,
+				errorMessage = errorMessage,
+				recipes = recipes,
+				onRecipeSelect = onRecipeSelect,
+			)
+		}
 
-				errorMessage != null -> Text(
-					text = errorMessage ?: "Unknown error",
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.error,
+		if (!isSearchBarActive) {
+			SearchResultsContent(
+				isSearching = isSearching,
+				errorMessage = errorMessage,
+				recipes = recipes,
+				onRecipeSelect = onRecipeSelect,
+				modifier = Modifier.weight(1f),
+			)
+		}
+	}
+}
+
+@Composable
+private fun SearchResultsContent(
+	isSearching: Boolean,
+	errorMessage: String?,
+	recipes: List<RecipeSummary>,
+	onRecipeSelect: (Int) -> Unit,
+	modifier: Modifier = Modifier,
+) {
+	when {
+		isSearching -> Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+			CircularProgressIndicator()
+		}
+
+		errorMessage != null -> Box(modifier = modifier.fillMaxWidth()) {
+			Text(
+				text = errorMessage,
+				style = MaterialTheme.typography.bodyMedium,
+				color = MaterialTheme.colorScheme.error,
+			)
+		}
+
+		else -> LazyColumn(
+			modifier = modifier.fillMaxWidth(),
+			verticalArrangement = Arrangement.spacedBy(8.dp),
+			contentPadding = PaddingValues(bottom = 16.dp),
+		) {
+			items(recipes, key = { it.id }) { recipe ->
+				RecipeRow(
+					recipe = recipe,
+					onClick = { onRecipeSelect(recipe.id) },
 				)
-
-				else -> LazyColumn(
-					verticalArrangement = Arrangement.spacedBy(8.dp),
-					contentPadding = PaddingValues(bottom = 16.dp),
-				) {
-					items(recipes, key = { it.id }) { recipe ->
-						RecipeRow(
-							recipe = recipe,
-							onClick = { onRecipeSelect(recipe.id) },
-						)
-					}
-				}
 			}
 		}
 	}

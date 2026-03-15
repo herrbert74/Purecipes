@@ -41,6 +41,11 @@ kotlin {
 				implementation(kotlin("test"))
 			}
 		}
+		androidMain {
+			dependencies {
+				implementation(libs.jetbrains.composeMaterialIconsExtended)
+			}
+		}
 		androidInstrumentedTest {
 			dependencies {
 				implementation(libs.androidx.composeUiTestJunit4Android)

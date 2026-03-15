@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +33,7 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.ui.component.BackNavigationButton
 
 @Composable
 fun StepByStepCookingRoute(
@@ -65,9 +65,7 @@ fun StepByStepCookingRoute(
 			TopAppBar(
 				title = { Text(text = "Step-by-step cooking") },
 				navigationIcon = {
-					TextButton(onClick = onBack) {
-						Text(text = "Back")
-					}
+					BackNavigationButton(onBack = onBack)
 				},
 			)
 		},
