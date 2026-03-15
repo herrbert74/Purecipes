@@ -1,5 +1,8 @@
-package com.purecipes.feature.search.domain.model
+package com.purecipes.shared.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RecipeSummary(
 	val id: Int,
 	val title: String,

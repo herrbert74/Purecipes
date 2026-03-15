@@ -32,5 +32,34 @@ fun Route.recipeRoutes(dbProvider: () -> Db) {
 			val repo = RecipeRepository(dbProvider().dataSource)
 			call.respond(repo.searchByKeyword(query, limit))
 		}
+
+		get("/{id}") {
+			val recipeId = call.parameters["id"]?.toIntOrNull()
+			if (recipeId == null) {
+				call.respond(
+					HttpStatusCode.BadRequest,
+					ErrorResponse(
+						message = "Invalid request",
+						detail = "Recipe id must be a number"
+					)
+				)
+				return@get
+			}
+
+			val repo = RecipeRepository(dbProvider().dataSource)
+			val recipe = repo.getRecipeDetails(recipeId)
+			if (recipe == null) {
+				call.respond(
+					HttpStatusCode.NotFound,
+					ErrorResponse(
+						message = "Recipe not found",
+						detail = "No recipe found for id: $recipeId"
+					)
+				)
+				return@get
+			}
+
+			call.respond(recipe)
+		}
 	}
 }

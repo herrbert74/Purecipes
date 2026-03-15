@@ -26,7 +26,7 @@ androidx-activity = "1.12.4"
 #androidx-appcompat = "1.7.1"
 androidx-composeBom = "2026.02.01"
 androidx-composeMaterial3 = "1.5.0-alpha15" #For alpha releases only
-#androidx-composeUi = "1.8.3" #For test libs not in the BOM
+androidx-composeUiAndroidTest = "1.8.3"
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
 #androidx-hilt = "1.2.0"
@@ -116,8 +116,8 @@ androidx-composeUiToolingPreview = { group = "androidx.compose.ui", name = "ui-t
 androidx-composeUiUnit = { group = "androidx.compose.ui", name = "ui-unit" }
 
 #Not in BOM as of 2023.10.01 !!!
-#androidx-composeUiTestAndroid = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "androidx-composeUi" }
-#androidx-composeUiTestJunit4Android = { group = "androidx.compose.ui", name = "ui-test-junit4-android", version.ref = "androidx-composeUi" } #createComposeRule
+androidx-composeUiTestJunit4Android = { group = "androidx.compose.ui", name = "ui-test-junit4-android", version.ref = "androidx-composeUiAndroidTest" }
+androidx-composeUiTestManifestAndroid = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "androidx-composeUiAndroidTest" }
 
 #In BOM, but alpha is often needed
 androidx-composeMaterial3 = { module = "androidx.compose.material3:material3", version.ref = "androidx-composeMaterial3" }

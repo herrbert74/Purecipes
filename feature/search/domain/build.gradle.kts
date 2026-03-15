@@ -24,6 +24,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":base:kotlin"))
+				api(project(":shared:domain"))
 			}
 		}
 		commonTest {

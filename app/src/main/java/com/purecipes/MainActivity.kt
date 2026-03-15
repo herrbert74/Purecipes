@@ -16,7 +16,10 @@ class MainActivity : ComponentActivity() {
 		val graph = createGraph<PurecipesAppGraph>()
 
 		setContent {
-			MainScreen(recipeSearchRepository = graph.recipeSearchRepository)
+			MainScreen(
+				recipeSearchRepository = graph.recipeSearchRepository,
+				recipeDetailsRepository = graph.recipeDetailsRepository,
+			)
 		}
 	}
 }

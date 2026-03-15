@@ -29,6 +29,9 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
+import com.purecipes.feature.recipedetails.ui.StepByStepCookingRoute
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.shared.ui.theme.PurecipesTheme
@@ -38,7 +41,11 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
 @Composable
-fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifier = Modifier) {
+fun MainScreen(
+	recipeSearchRepository: RecipeSearchRepository,
+	recipeDetailsRepository: RecipeDetailsRepository,
+	modifier: Modifier = Modifier,
+) {
 	PurecipesTheme {
 		val backStack = rememberMainBackStack()
 		val currentDestination = backStack.lastOrNull()
@@ -49,10 +56,11 @@ fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifie
 				NavigationBar {
 					mainTabs.forEach { tab ->
 						NavigationBarItem(
-							selected = currentDestination == tab.destination,
+							selected = tab.isSelected(currentDestination),
 							onClick = {
-								if (backStack.lastOrNull() != tab.destination) {
-									backStack[backStack.lastIndex] = tab.destination
+								if (!tab.isSelected(currentDestination) || backStack.lastOrNull() != tab.destination) {
+									backStack.clear()
+									backStack += tab.destination
 								}
 							},
 							icon = {
@@ -77,6 +85,28 @@ fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifie
 						RecipeSearchScreen(
 							modifier = Modifier.fillMaxSize(),
 							repository = recipeSearchRepository,
+							onRecipeSelect = { recipeId ->
+								backStack += RecipeDetailsDestination(recipeId)
+							},
+						)
+					}
+					entry<RecipeDetailsDestination> { destination ->
+						RecipeDetailsRoute(
+							recipeId = destination.recipeId,
+							repository = recipeDetailsRepository,
+							onBack = { backStack.popLast() },
+							onStartCooking = { recipeId ->
+								backStack += RecipeCookingDestination(recipeId)
+							},
+							modifier = Modifier.fillMaxSize(),
+						)
+					}
+					entry<RecipeCookingDestination> { destination ->
+						StepByStepCookingRoute(
+							recipeId = destination.recipeId,
+							repository = recipeDetailsRepository,
+							onBack = { backStack.popLast() },
+							modifier = Modifier.fillMaxSize(),
 						)
 					}
 					entry<FavoritesDestination> {
@@ -113,6 +143,8 @@ private fun rememberMainBackStack() = rememberNavBackStack(
 			serializersModule = SerializersModule {
 				polymorphic(baseClass = NavKey::class) {
 					subclass(SearchDestination.serializer())
+					subclass(RecipeDetailsDestination.serializer())
+					subclass(RecipeCookingDestination.serializer())
 					subclass(FavoritesDestination.serializer())
 					subclass(CreateDestination.serializer())
 					subclass(AccountDestination.serializer())
@@ -160,8 +192,16 @@ private fun PlaceholderScreen(
 
 private sealed interface MainDestination : NavKey
 
+private sealed interface SearchFlowDestination : MainDestination
+
 @Serializable
-private object SearchDestination : MainDestination
+private object SearchDestination : SearchFlowDestination
+
+@Serializable
+private data class RecipeDetailsDestination(val recipeId: Int) : SearchFlowDestination
+
+@Serializable
+private data class RecipeCookingDestination(val recipeId: Int) : SearchFlowDestination
 
 @Serializable
 private object FavoritesDestination : MainDestination
@@ -200,3 +240,14 @@ private val mainTabs = listOf(
 		icon = Icons.Filled.Person,
 	),
 )
+
+private fun MainTab.isSelected(currentDestination: NavKey?): Boolean = when (destination) {
+	SearchDestination -> currentDestination is SearchFlowDestination
+	else -> currentDestination == destination
+}
+
+private fun MutableList<NavKey>.popLast() {
+	if (size > 1) {
+		removeAt(lastIndex)
+	}
+}

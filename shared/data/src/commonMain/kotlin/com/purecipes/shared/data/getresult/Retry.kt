@@ -14,7 +14,8 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 /**
- * Calls the specified function [block] and returns its [Result], handling any [Err] returned from the [block] function
+ * Calls the specified function [block] and returns its [com.github.michaelbull.result.Result],
+ * handling any [com.github.michaelbull.result.Err] returned from the [block] function
  * execution retrying the invocation according to [instructions][RetryInstruction] from the [policy].
  */
 suspend inline fun <V, E> retry(policy: RetryPolicy<E>, block: () -> Result<V, E>): Result<V, E> {

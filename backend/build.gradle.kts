@@ -14,6 +14,7 @@ kotlin {
 dependencies {
 	implementation(libs.kotlinx.coroutinesCore)
 	implementation(libs.kotlinx.serializationJson)
+	implementation(project(":shared:domain"))
 
 	implementation("io.ktor:ktor-server-core-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-netty-jvm:${libs.versions.ktor.get()}")

@@ -70,6 +70,7 @@ kotlin {
 			baseName = "umbrella"
 			isStatic = true
 			export(project(":feature:main"))
+			export(project(":feature:recipedetails:domain"))
 			export(project(":feature:search:domain"))
 		}
 	}
@@ -78,8 +79,10 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:main"))
+				api(project(":feature:recipedetails:domain"))
+				api(project(":feature:recipedetails:data"))
 				api(project(":feature:search:domain"))
-				implementation(project(":feature:search:data"))
+				api(project(":feature:search:data"))
 				api(project(":shared:data"))
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)

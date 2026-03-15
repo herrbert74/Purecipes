@@ -14,7 +14,10 @@ class RecipeSearchViewControllerFactory {
 				enforceStrictPlistSanityCheck = false
 			}
 		) {
-			MainScreen(recipeSearchRepository = graph.recipeSearchRepository)
+			MainScreen(
+				recipeSearchRepository = graph.recipeSearchRepository,
+				recipeDetailsRepository = graph.recipeDetailsRepository,
+			)
 		}
 	}
 }

@@ -26,6 +26,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:recipedetails:domain"))
+				implementation(project(":feature:recipedetails:ui"))
 				api(project(":feature:search:domain"))
 				implementation(project(":feature:search:ui"))
 				api(project(":shared:data"))

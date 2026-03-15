@@ -1,6 +1,7 @@
 package com.purecipes.feature.search.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -43,17 +43,17 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
-import com.purecipes.feature.search.domain.model.RecipeSummary
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
+import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.TitleText
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeSearchScreen(
 	repository: RecipeSearchRepository,
 	modifier: Modifier = Modifier,
+	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
 ) {
 	val coroutineScope = rememberCoroutineScope()
@@ -131,7 +131,10 @@ fun RecipeSearchScreen(
 					contentPadding = PaddingValues(bottom = 16.dp),
 				) {
 					items(recipes, key = { it.id }) { recipe ->
-						RecipeRow(recipe = recipe)
+						RecipeRow(
+							recipe = recipe,
+							onClick = { onRecipeSelect(recipe.id) },
+						)
 					}
 				}
 			}
@@ -140,9 +143,11 @@ fun RecipeSearchScreen(
 }
 
 @Composable
-private fun RecipeRow(recipe: RecipeSummary) {
+private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 	Card(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = Modifier
+			.fillMaxWidth()
+			.clickable(onClick = onClick),
 		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
@@ -168,7 +173,10 @@ private fun RecipeRow(recipe: RecipeSummary) {
 				)
 				Spacer(modifier = Modifier.height(2.dp))
 				BodyText(
-					text = recipe.cuisine ?: "Unknown cuisine",
+					text = listOfNotNull(
+						recipe.cuisine ?: "Unknown cuisine",
+						recipe.totalTime?.let { "$it min" },
+					).joinToString(separator = " • "),
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 				)
 			}
