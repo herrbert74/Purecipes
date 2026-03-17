@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -139,7 +140,7 @@ fun RecipeSearchScreen(
 private fun SearchResultsContent(
 	isSearching: Boolean,
 	errorMessage: String?,
-	recipes: List<RecipeSummary>,
+	recipes: SnapshotStateList<RecipeSummary>,
 	onRecipeSelect: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 ) {

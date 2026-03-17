@@ -45,15 +45,15 @@ import kotlinx.serialization.modules.subclass
 fun MainScreen(
 	recipeSearchRepository: RecipeSearchRepository,
 	recipeDetailsRepository: RecipeDetailsRepository,
-	onExitRequested: () -> Unit = {},
 	modifier: Modifier = Modifier,
+	onExitRequest: () -> Unit = {},
 ) {
 	PurecipesTheme {
 		val backStack = rememberMainBackStack()
 		val currentDestination = backStack.lastOrNull()
 		HandleSystemBack(
 			enabled = currentDestination == SearchDestination,
-			onBack = onExitRequested,
+			onBack = onExitRequest,
 		)
 
 		Scaffold(
