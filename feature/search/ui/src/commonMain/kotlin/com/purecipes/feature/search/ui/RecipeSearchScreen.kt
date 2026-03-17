@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,14 +22,6 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,13 +32,10 @@ import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.TitleText
-import kotlinx.coroutines.launch
 
 @Composable
 fun RecipeSearchScreen(
@@ -57,30 +44,7 @@ fun RecipeSearchScreen(
 	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
 ) {
-	val coroutineScope = rememberCoroutineScope()
-
-	var searchQuery by rememberSaveable { mutableStateOf("") }
-	var isSearching by remember { mutableStateOf(false) }
-	var isSearchBarActive by rememberSaveable { mutableStateOf(false) }
-	var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-	val recipes = remember { mutableStateListOf<RecipeSummary>() }
-
-	fun searchNow() {
-		coroutineScope.launch {
-			isSearching = true
-			errorMessage = null
-			val outcome = repository.search(searchQuery)
-			recipes.clear()
-			recipes.addAll(outcome.get() ?: emptyList())
-			errorMessage = outcome.getError()?.message
-			isSearching = false
-			isSearchBarActive = false
-		}
-	}
-
-	LaunchedEffect(Unit) {
-		searchNow()
-	}
+	val viewModel = recipeSearchViewModel(repository)
 
 	Column(
 		modifier = modifier
@@ -91,13 +55,16 @@ fun RecipeSearchScreen(
 		SearchBar(
 			inputField = {
 				SearchBarDefaults.InputField(
-					query = searchQuery,
-					onQueryChange = { searchQuery = it },
-					onSearch = { searchNow() },
-					expanded = isSearchBarActive,
+					query = viewModel.searchQuery,
+					onQueryChange = viewModel::onSearchQueryChange,
+					onSearch = { query ->
+						viewModel.onSearchQueryChange(query)
+						viewModel.searchNow()
+					},
+					expanded = viewModel.isSearchBarActive,
 					onExpandedChange = {
-						isSearchBarActive = it
-						if (!isSearchBarActive) {
+						viewModel.onSearchBarExpandedChange(it)
+						if (!viewModel.isSearchBarActive) {
 							closeScreen()
 						}
 					},
@@ -112,23 +79,23 @@ fun RecipeSearchScreen(
 					},
 				)
 			},
-			expanded = isSearchBarActive,
-			onExpandedChange = { isSearchBarActive = it },
+			expanded = viewModel.isSearchBarActive,
+			onExpandedChange = { viewModel.onSearchBarExpandedChange(it) },
 			modifier = Modifier.fillMaxWidth(),
 		) {
 			SearchResultsContent(
-				isSearching = isSearching,
-				errorMessage = errorMessage,
-				recipes = recipes,
+				isSearching = viewModel.isSearching,
+				errorMessage = viewModel.errorMessage,
+				recipes = viewModel.recipes,
 				onRecipeSelect = onRecipeSelect,
 			)
 		}
 
-		if (!isSearchBarActive) {
+		if (!viewModel.isSearchBarActive) {
 			SearchResultsContent(
-				isSearching = isSearching,
-				errorMessage = errorMessage,
-				recipes = recipes,
+				isSearching = viewModel.isSearching,
+				errorMessage = viewModel.errorMessage,
+				recipes = viewModel.recipes,
 				onRecipeSelect = onRecipeSelect,
 				modifier = Modifier.weight(1f),
 			)
@@ -199,9 +166,8 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 
 			Column(modifier = Modifier.weight(1f)) {
 				TitleText(
-					text = recipe.title
+					text = recipe.title,
 				)
-				Spacer(modifier = Modifier.height(2.dp))
 				BodyText(
 					text = listOfNotNull(
 						recipe.cuisine ?: "Unknown cuisine",

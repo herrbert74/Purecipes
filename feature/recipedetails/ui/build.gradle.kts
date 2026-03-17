@@ -27,6 +27,8 @@ kotlin {
 			dependencies {
 				api(project(":feature:recipedetails:domain"))
 				implementation(project(":shared:ui"))
+				implementation(libs.jetbrains.androidXLifecycleViewmodel)
+				implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
 				implementation(libs.jetbrains.composeRuntime)
@@ -34,11 +36,13 @@ kotlin {
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.kotlinResult.result)
+				implementation(libs.kotlinx.coroutinesCore)
 			}
 		}
 		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
+				implementation(libs.kotlinx.coroutinesTest)
 			}
 		}
 		androidMain {

@@ -49,10 +49,11 @@ fun MainScreen(
 	onExitRequest: () -> Unit = {},
 ) {
 	PurecipesTheme {
+		val viewModel = mainViewModel()
 		val backStack = rememberMainBackStack()
 		val currentDestination = backStack.lastOrNull()
 		HandleSystemBack(
-			enabled = currentDestination == SearchDestination,
+			enabled = viewModel.shouldExit(currentDestination),
 			onBack = onExitRequest,
 		)
 
@@ -63,12 +64,7 @@ fun MainScreen(
 					mainTabs.forEach { tab ->
 						NavigationBarItem(
 							selected = tab.isSelected(currentDestination),
-							onClick = {
-								if (!tab.isSelected(currentDestination) || backStack.lastOrNull() != tab.destination) {
-									backStack.clear()
-									backStack += tab.destination
-								}
-							},
+							onClick = { viewModel.onTabSelected(backStack, currentDestination, tab) },
 							icon = {
 								Icon(
 									imageVector = tab.icon,
@@ -91,19 +87,15 @@ fun MainScreen(
 						RecipeSearchScreen(
 							modifier = Modifier.fillMaxSize(),
 							repository = recipeSearchRepository,
-							onRecipeSelect = { recipeId ->
-								backStack += RecipeDetailsDestination(recipeId)
-							},
+							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}
 					entry<RecipeDetailsDestination> { destination ->
 						RecipeDetailsRoute(
 							recipeId = destination.recipeId,
 							repository = recipeDetailsRepository,
-							onBack = { backStack.popLast() },
-							onStartCooking = { recipeId ->
-								backStack += RecipeCookingDestination(recipeId)
-							},
+							onBack = { viewModel.onBack(backStack) },
+							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -111,7 +103,7 @@ fun MainScreen(
 						StepByStepCookingRoute(
 							recipeId = destination.recipeId,
 							repository = recipeDetailsRepository,
-							onBack = { backStack.popLast() },
+							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -196,35 +188,35 @@ private fun PlaceholderScreen(
 	}
 }
 
-private sealed interface MainDestination : NavKey
+internal sealed interface MainDestination : NavKey
 
-private sealed interface SearchFlowDestination : MainDestination
-
-@Serializable
-private object SearchDestination : SearchFlowDestination
+internal sealed interface SearchFlowDestination : MainDestination
 
 @Serializable
-private data class RecipeDetailsDestination(val recipeId: Int) : SearchFlowDestination
+internal object SearchDestination : SearchFlowDestination
 
 @Serializable
-private data class RecipeCookingDestination(val recipeId: Int) : SearchFlowDestination
+internal data class RecipeDetailsDestination(val recipeId: Int) : SearchFlowDestination
 
 @Serializable
-private object FavoritesDestination : MainDestination
+internal data class RecipeCookingDestination(val recipeId: Int) : SearchFlowDestination
 
 @Serializable
-private object CreateDestination : MainDestination
+internal object FavoritesDestination : MainDestination
 
 @Serializable
-private object AccountDestination : MainDestination
+internal object CreateDestination : MainDestination
 
-private data class MainTab(
+@Serializable
+internal object AccountDestination : MainDestination
+
+internal data class MainTab(
 	val destination: MainDestination,
 	val label: String,
 	val icon: ImageVector,
 )
 
-private val mainTabs = listOf(
+internal val mainTabs = listOf(
 	MainTab(
 		destination = SearchDestination,
 		label = "Search",
@@ -247,13 +239,7 @@ private val mainTabs = listOf(
 	),
 )
 
-private fun MainTab.isSelected(currentDestination: NavKey?): Boolean = when (destination) {
+internal fun MainTab.isSelected(currentDestination: NavKey?): Boolean = when (destination) {
 	SearchDestination -> currentDestination is SearchFlowDestination
 	else -> currentDestination == destination
-}
-
-private fun MutableList<NavKey>.popLast() {
-	if (size > 1) {
-		removeAt(lastIndex)
-	}
 }

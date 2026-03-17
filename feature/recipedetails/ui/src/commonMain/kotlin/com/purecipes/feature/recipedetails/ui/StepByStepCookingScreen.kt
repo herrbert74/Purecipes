@@ -18,19 +18,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
@@ -42,22 +33,7 @@ fun StepByStepCookingRoute(
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	var isLoading by remember(recipeId) { mutableStateOf(true) }
-	var recipeDetails by remember(recipeId) { mutableStateOf<RecipeDetails?>(null) }
-	var errorMessage by remember(recipeId) { mutableStateOf<String?>(null) }
-	var currentStepIndex by rememberSaveable(recipeId) { mutableIntStateOf(0) }
-
-	LaunchedEffect(recipeId, repository) {
-		isLoading = true
-		errorMessage = null
-		recipeDetails = null
-
-		val outcome = repository.getRecipeDetails(recipeId)
-		recipeDetails = outcome.get()
-		errorMessage = outcome.getError()?.message
-		currentStepIndex = 0
-		isLoading = false
-	}
+	val viewModel = stepByStepCookingViewModel(recipeId, repository)
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -71,7 +47,7 @@ fun StepByStepCookingRoute(
 		},
 	) { innerPadding ->
 		when {
-			isLoading -> Box(
+			viewModel.isLoading -> Box(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
@@ -80,29 +56,21 @@ fun StepByStepCookingRoute(
 				CircularProgressIndicator()
 			}
 
-			errorMessage != null -> RecipeCookingMessage(
-				message = errorMessage ?: "Unknown error",
+			viewModel.errorMessage != null -> RecipeCookingMessage(
+				message = viewModel.errorMessage ?: "Unknown error",
 				modifier = Modifier.padding(innerPadding),
 			)
 
-			recipeDetails == null || recipeDetails?.steps.isNullOrEmpty() -> RecipeCookingMessage(
+			viewModel.recipeDetails == null || viewModel.recipeDetails?.steps.isNullOrEmpty() -> RecipeCookingMessage(
 				message = "No cooking steps available yet.",
 				modifier = Modifier.padding(innerPadding),
 			)
 
 			else -> StepByStepCookingScreen(
-				recipe = recipeDetails ?: return@Scaffold,
-				currentStepIndex = currentStepIndex,
-				onPrevious = {
-					if (currentStepIndex > 0) {
-						currentStepIndex -= 1
-					}
-				},
-				onNext = {
-					if (recipeDetails != null && currentStepIndex < recipeDetails!!.steps.lastIndex) {
-						currentStepIndex += 1
-					}
-				},
+				recipe = viewModel.recipeDetails ?: return@Scaffold,
+				currentStepIndex = viewModel.currentStepIndex,
+				onPrevious = viewModel::previousStep,
+				onNext = viewModel::nextStep,
 				onFinish = onBack,
 				modifier = Modifier.padding(innerPadding),
 			)

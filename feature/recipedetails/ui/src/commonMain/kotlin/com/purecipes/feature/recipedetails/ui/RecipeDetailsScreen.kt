@@ -26,19 +26,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
@@ -52,20 +45,7 @@ fun RecipeDetailsRoute(
 	onStartCooking: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	var isLoading by remember(recipeId) { mutableStateOf(true) }
-	var recipeDetails by remember(recipeId) { mutableStateOf<RecipeDetails?>(null) }
-	var errorMessage by remember(recipeId) { mutableStateOf<String?>(null) }
-
-	LaunchedEffect(recipeId, repository) {
-		isLoading = true
-		errorMessage = null
-		recipeDetails = null
-
-		val outcome = repository.getRecipeDetails(recipeId)
-		recipeDetails = outcome.get()
-		errorMessage = outcome.getError()?.message
-		isLoading = false
-	}
+	val viewModel = recipeDetailsViewModel(recipeId, repository)
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -79,7 +59,7 @@ fun RecipeDetailsRoute(
 		},
 	) { innerPadding ->
 		when {
-			isLoading -> Box(
+			viewModel.isLoading -> Box(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
@@ -88,14 +68,14 @@ fun RecipeDetailsRoute(
 				CircularProgressIndicator()
 			}
 
-			errorMessage != null -> RecipeDetailsMessageScreen(
-				message = errorMessage ?: "Unknown error",
+			viewModel.errorMessage != null -> RecipeDetailsMessageScreen(
+				message = viewModel.errorMessage ?: "Unknown error",
 				onBack = onBack,
 				modifier = Modifier.padding(innerPadding),
 			)
 
-			recipeDetails != null -> RecipeDetailsScreen(
-				recipe = recipeDetails ?: return@Scaffold,
+			viewModel.recipeDetails != null -> RecipeDetailsScreen(
+				recipe = viewModel.recipeDetails ?: return@Scaffold,
 				onStartCooking = { onStartCooking(recipeId) },
 				modifier = Modifier.padding(innerPadding),
 			)

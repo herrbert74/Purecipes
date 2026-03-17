@@ -27,6 +27,8 @@ kotlin {
 			dependencies {
 				api(project(":feature:search:domain"))
 				implementation(project(":shared:ui"))
+				implementation(libs.jetbrains.androidXLifecycleViewmodel)
+				implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
 				implementation(libs.jetbrains.composeRuntime)
@@ -40,6 +42,7 @@ kotlin {
 		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
+				implementation(libs.kotlinx.coroutinesTest)
 			}
 		}
 	}
