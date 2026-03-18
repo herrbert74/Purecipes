@@ -1,15 +1,10 @@
 plugins {
-	alias(libs.plugins.kotlin.multiplatform)
+	id("convention.kmp")
 	alias(libs.plugins.androidLibrary)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	applyDefaultHierarchyTemplate()
-	jvmToolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-	}
-
 	androidTarget()
 
 	wasmJs {
@@ -25,11 +20,6 @@ kotlin {
 			dependencies {
 				api(project(":base:kotlin"))
 				api(project(":shared:domain"))
-			}
-		}
-		commonTest {
-			dependencies {
-				implementation(kotlin("test"))
 			}
 		}
 	}

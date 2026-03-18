@@ -1,16 +1,11 @@
 plugins {
-	alias(libs.plugins.kotlin.multiplatform)
+	id("convention.kmp")
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.kotlin.serialization)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	applyDefaultHierarchyTemplate()
-	jvmToolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-	}
-
 	androidTarget()
 	jvm()
 
@@ -26,11 +21,6 @@ kotlin {
 		commonMain {
 			dependencies {
 				implementation(libs.kotlinx.serializationJson)
-			}
-		}
-		commonTest {
-			dependencies {
-				implementation(kotlin("test"))
 			}
 		}
 	}

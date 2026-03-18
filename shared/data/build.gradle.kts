@@ -1,5 +1,5 @@
 plugins {
-	alias(libs.plugins.kotlin.multiplatform)
+	id("convention.kmp")
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.kotlin.serialization)
 	// Applied before KSP to avoid Ktorfit issue #1030 auto-registering the deprecated root `ksp` configuration.
@@ -28,11 +28,6 @@ ksp {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	applyDefaultHierarchyTemplate()
-	jvmToolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-	}
-
 	androidTarget {
 		// publishLibraryVariants("release")
 	}
@@ -58,6 +53,7 @@ kotlin {
 				implementation(libs.kotlinx.serializationJson)
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientContentNegotiation)
+				implementation(libs.ktor.clientLogging)
 				implementation(libs.ktor.serializationKotlinxJson)
 				implementation(libs.ktorfit.annotations)
 				implementation(libs.ktorfit.convertersResponse)
@@ -66,7 +62,6 @@ kotlin {
 		}
 		commonTest {
 			dependencies {
-				implementation(kotlin("test"))
 				implementation(libs.kotest.assertionsCore)
 				implementation(libs.kotlinx.coroutinesTest)
 				implementation(libs.ktor.clientMock)

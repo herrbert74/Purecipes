@@ -1,5 +1,5 @@
 plugins {
-	alias(libs.plugins.kotlin.multiplatform)
+	id("convention.kmp")
 	alias(libs.plugins.android.kotlin.multiplatform.library)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
@@ -71,12 +71,6 @@ kotlin {
 				implementation(libs.jetbrains.composeUi)
 				implementation(libs.jetbrains.composeMaterial3)
 				implementation(libs.jetbrains.composeResources)
-			}
-		}
-
-		commonTest {
-			dependencies {
-				implementation(libs.kotlin.test)
 			}
 		}
 

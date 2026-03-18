@@ -1,17 +1,11 @@
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
+    id("convention.kmp")
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.metro)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-    applyDefaultHierarchyTemplate()
-
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-    }
-
     // targets used across the project
     androidTarget()
 
@@ -29,11 +23,6 @@ kotlin {
                 api(libs.kotlinResult.result)
                 api(libs.kotlinx.coroutinesCore)
                 api(libs.metro.runtime)
-            }
-        }
-        commonTest {
-            dependencies {
-                implementation(kotlin("test"))
             }
         }
     }

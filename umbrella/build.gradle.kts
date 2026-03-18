@@ -2,7 +2,7 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-	alias(libs.plugins.kotlin.multiplatform)
+	id("convention.kmp")
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.buildKonfig)
 	alias(libs.plugins.kotlin.serialization)
@@ -43,10 +43,6 @@ buildkonfig {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	applyDefaultHierarchyTemplate()
-	jvmToolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-	}
 	androidTarget {
 		compilerOptions {
 			jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
@@ -91,11 +87,6 @@ kotlin {
 
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
-			}
-		}
-		commonTest {
-			dependencies {
-				implementation(kotlin("test"))
 			}
 		}
 		androidMain {

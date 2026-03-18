@@ -1,5 +1,5 @@
 plugins {
-	alias(libs.plugins.kotlin.multiplatform)
+	id("convention.kmp")
 	alias(libs.plugins.androidLibrary)
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.jetBrainsCompose)
@@ -8,11 +8,6 @@ plugins {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	applyDefaultHierarchyTemplate()
-	jvmToolchain {
-		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
-	}
-
 	androidTarget()
 
 	wasmJs {
@@ -41,11 +36,6 @@ kotlin {
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
-			}
-		}
-		commonTest {
-			dependencies {
-				implementation(kotlin("test"))
 			}
 		}
 		androidMain {
