@@ -84,8 +84,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # This is not needed for GitHubHostedRunner anymore
+      #- name: Setup Android SDK
+      # uses: android-actions/setup-android@v3
+
+      # BUT this might be needed for SelfHostedRunner if we move to it
+      # https://github.com/amyu/setup-android
 
       - name: Enable KVM group perms
         run: |
