@@ -16,14 +16,17 @@ primary goal of the app to make it easier for users to follow recipe instruction
 * **umbrella** - Works as an umbrella library for the iosApp, contains the Wasm entry point, plus Jetpack 
   **navigation**.
 * **feature** modules (and submodules for **domain**, **data**, and **ui**):
-    * **search**
-    * **To be determined**
+  * **search**
+  * **recipe details**
+  * **step-by-step cooking**
+  * **new recipe**
 * **Submodules** within above features.
-    * **domain** - Contains the **shared** **domain model**, the **api interface**, and optionally **use cases**. Domain depends only on itself and all interaction it does is via _dependency
+  * **domain** - Contains the feature **api interfaces** and optionally **use cases**. Domain depends only on itself and all interaction it does is via _dependency
       inversion_.
-    * **data** - Contains the (**db**, **network**, etc) modules.
-    * **ui** - Presentation layer
+  * **data** - Contains the (**db**, **network**, etc) modules.
+  * **ui** - Presentation layer
 * **shared** - **Shared** domain, UI and data modules specific to this app.
+  * **shared/domain** - Contains domain classes shared between backend and apps.
 * **base** - Kotlin and Android base classes, reusable in any apps, but not extracted to separate library yet. 
 
 ## Rule: Naming
@@ -52,12 +55,27 @@ for the Result class from the kotlin-result library. We use this library because
 The Google Pagination library is overcomplicated and inflexible. We use a few custom classes instead.
 When using pagination, refer to classes in package 'com.purecipes.shared.ui.component.paging'.
 
-## Rule: DTOs and domain classes
+## Rule: Change validation
 
-Do not change the names of DTO parameters to follow Kotlin naming patterns. Instead, keep the API names and 
-suppress detekt with @Suppress("PropertyName", "ConstructorParameterNaming"), but only if needed, typically 
-when the API uses underscores.
-Use the correct pattern only in the domain model classes.
+Validate every change, but match the scope to the task.
+
+For focused maintenance tasks such as fixing Detekt issues, small bug fixes, or adding/changing unit tests, a focused validation is acceptable: run Detekt only, or run the affected old/new tests, or run the smallest relevant build target.
+
+For new features and larger refactors, run complete validation:
+- `./gradlew detektAll`
+- build the Android app
+- build the iOS app
+- run the whole test suite
+
+New features should also add new automated tests. Prefer both unit tests and UI tests when UI behavior changes. The repo currently has too little test coverage, and new work should improve that.
+
+## Rule: Domain classes
+
+Because we control both the backend and the apps, shared business entities should live in a common domain layer instead of separate DTO layers.
+
+Use `shared/domain` for domain classes that are used by both backend and app code. Do not create duplicate DTOs for the same concept in backend or client modules unless there is a real transport-specific need.
+
+Feature domain modules should contain feature APIs: repository interfaces, use cases, and other feature-facing abstractions. Shared entities returned by those APIs should come from `shared/domain`.
 
 ## Rule: Comments
 
@@ -80,6 +98,11 @@ If a Detekt or Kotlin-style issue recurs, add a short repo-specific rule here so
 Reference docs:
 https://kotlinlang.org/docs/coding-conventions.html
 https://detekt.dev/docs/intro/
+
+## Rule: Centralize compiler opt-ins
+
+Do not scatter repeated `@OptIn(...)` annotations through source files when the whole module needs the same experimental API.
+Prefer centralizing those opt-ins in the module build file via compiler arguments so the source stays cleaner and the policy is consistent.
 
 ## Rule: Wasm Tooling
 

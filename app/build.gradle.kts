@@ -45,6 +45,7 @@ android {
 
 dependencies {
 	implementation(project(":feature:main"))
+	implementation(project(":feature:recipedetails:data"))
 	implementation(project(":feature:search:data"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))

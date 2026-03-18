@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class RecipeSearchRouteTest {
+
 	@Test
 	fun `missing query yields 400`() = testApplication {
 		application { module() }
@@ -47,4 +48,17 @@ class RecipeSearchRouteTest {
 			response.bodyAsText()
 		)
 	}
+
+	@Test
+	fun `invalid recipe id yields 400`() = testApplication {
+		application { module() }
+
+		val response = client.get("/recipes/not-a-number")
+		assertEquals(HttpStatusCode.BadRequest, response.status)
+		assertEquals(
+			"""{"message":"Invalid request","detail":"Recipe id must be a number"}""",
+			response.bodyAsText()
+		)
+	}
+
 }

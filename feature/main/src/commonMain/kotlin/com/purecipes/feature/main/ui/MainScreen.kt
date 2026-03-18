@@ -29,8 +29,12 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
+import com.purecipes.feature.recipedetails.ui.StepByStepCookingRoute
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.ui.RecipeSearchScreen
+import com.purecipes.shared.ui.component.HandleSystemBack
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -38,10 +42,20 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
 @Composable
-fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifier = Modifier) {
+fun MainScreen(
+	recipeSearchRepository: RecipeSearchRepository,
+	recipeDetailsRepository: RecipeDetailsRepository,
+	modifier: Modifier = Modifier,
+	onExitRequest: () -> Unit = {},
+) {
 	PurecipesTheme {
+		val viewModel = mainViewModel()
 		val backStack = rememberMainBackStack()
 		val currentDestination = backStack.lastOrNull()
+		HandleSystemBack(
+			enabled = viewModel.shouldExit(currentDestination),
+			onBack = onExitRequest,
+		)
 
 		Scaffold(
 			modifier = modifier.fillMaxSize(),
@@ -49,12 +63,8 @@ fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifie
 				NavigationBar {
 					mainTabs.forEach { tab ->
 						NavigationBarItem(
-							selected = currentDestination == tab.destination,
-							onClick = {
-								if (backStack.lastOrNull() != tab.destination) {
-									backStack[backStack.lastIndex] = tab.destination
-								}
-							},
+							selected = tab.isSelected(currentDestination),
+							onClick = { viewModel.onTabSelected(backStack, currentDestination, tab) },
 							icon = {
 								Icon(
 									imageVector = tab.icon,
@@ -77,6 +87,24 @@ fun MainScreen(recipeSearchRepository: RecipeSearchRepository, modifier: Modifie
 						RecipeSearchScreen(
 							modifier = Modifier.fillMaxSize(),
 							repository = recipeSearchRepository,
+							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
+						)
+					}
+					entry<RecipeDetailsDestination> { destination ->
+						RecipeDetailsRoute(
+							recipeId = destination.recipeId,
+							repository = recipeDetailsRepository,
+							onBack = { viewModel.onBack(backStack) },
+							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
+							modifier = Modifier.fillMaxSize(),
+						)
+					}
+					entry<RecipeCookingDestination> { destination ->
+						StepByStepCookingRoute(
+							recipeId = destination.recipeId,
+							repository = recipeDetailsRepository,
+							onBack = { viewModel.onBack(backStack) },
+							modifier = Modifier.fillMaxSize(),
 						)
 					}
 					entry<FavoritesDestination> {
@@ -113,6 +141,8 @@ private fun rememberMainBackStack() = rememberNavBackStack(
 			serializersModule = SerializersModule {
 				polymorphic(baseClass = NavKey::class) {
 					subclass(SearchDestination.serializer())
+					subclass(RecipeDetailsDestination.serializer())
+					subclass(RecipeCookingDestination.serializer())
 					subclass(FavoritesDestination.serializer())
 					subclass(CreateDestination.serializer())
 					subclass(AccountDestination.serializer())
@@ -158,27 +188,35 @@ private fun PlaceholderScreen(
 	}
 }
 
-private sealed interface MainDestination : NavKey
+internal sealed interface MainDestination : NavKey
+
+internal sealed interface SearchFlowDestination : MainDestination
 
 @Serializable
-private object SearchDestination : MainDestination
+internal object SearchDestination : SearchFlowDestination
 
 @Serializable
-private object FavoritesDestination : MainDestination
+internal data class RecipeDetailsDestination(val recipeId: Int) : SearchFlowDestination
 
 @Serializable
-private object CreateDestination : MainDestination
+internal data class RecipeCookingDestination(val recipeId: Int) : SearchFlowDestination
 
 @Serializable
-private object AccountDestination : MainDestination
+internal object FavoritesDestination : MainDestination
 
-private data class MainTab(
+@Serializable
+internal object CreateDestination : MainDestination
+
+@Serializable
+internal object AccountDestination : MainDestination
+
+internal data class MainTab(
 	val destination: MainDestination,
 	val label: String,
 	val icon: ImageVector,
 )
 
-private val mainTabs = listOf(
+internal val mainTabs = listOf(
 	MainTab(
 		destination = SearchDestination,
 		label = "Search",
@@ -200,3 +238,8 @@ private val mainTabs = listOf(
 		icon = Icons.Filled.Person,
 	),
 )
+
+internal fun MainTab.isSelected(currentDestination: NavKey?): Boolean = when (destination) {
+	SearchDestination -> currentDestination is SearchFlowDestination
+	else -> currentDestination == destination
+}

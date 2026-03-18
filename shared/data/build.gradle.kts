@@ -51,6 +51,7 @@ kotlin {
 			kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin"))
 			dependencies {
 				implementation(project(":base:kotlin"))
+				api(project(":shared:domain"))
 				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinRetry)
 				implementation(libs.kotlinx.collectionsImmutable)
@@ -121,6 +122,6 @@ android {
 	}
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
 	compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.contracts.ExperimentalContracts")
 }

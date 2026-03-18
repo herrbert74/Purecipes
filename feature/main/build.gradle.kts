@@ -26,15 +26,19 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:recipedetails:domain"))
+				implementation(project(":feature:recipedetails:ui"))
 				api(project(":feature:search:domain"))
 				implementation(project(":feature:search:ui"))
 				api(project(":shared:data"))
 				implementation(project(":shared:ui"))
+				implementation(libs.jetbrains.androidXLifecycleViewmodel)
+				implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
 				implementation(libs.jetbrains.composeMaterialIconsExtended)
 				implementation(libs.jetbrains.composeRuntime)
-				implementation(libs.jetbrainsAndroidX.navigation3Ui)
+				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
 			}
@@ -42,6 +46,11 @@ kotlin {
 		commonTest {
 			dependencies {
 				implementation(kotlin("test"))
+			}
+		}
+		androidMain {
+			dependencies {
+				implementation(libs.androidx.activityCompose)
 			}
 		}
 	}
