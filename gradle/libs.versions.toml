@@ -14,7 +14,7 @@ androidGradlePlugin = "8.13.2"
 #androidGradlePlugin = "7.3.1" # For IntelliJ plugin runIde
 coroutines = "1.10.2"
 jdk = "21"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kotlinx-collections = "0.4.0"
 kotlinx-datetime = "0.7.1-0.6.x-compat"
 kotlinx-serialization = "1.10.0"
@@ -22,11 +22,11 @@ ksp = "2.3.6"
 
 #other
 
-androidx-activity = "1.12.4"
+androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
-androidx-composeBom = "2026.02.01"
+androidx-composeBom = "2026.03.00"
 androidx-composeMaterial3 = "1.5.0-alpha15" #For alpha releases only
-androidx-composeUiAndroidTest = "1.8.3"
+androidx-composeUiAndroidTest = "1.10.5"
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
 #androidx-hilt = "1.2.0"
@@ -46,7 +46,7 @@ buildKonfig = "0.17.1"
 coil = "3.4.0"
 crashlyticsPlugin = "3.0.6"
 #dagger = "2.51"
-decompose = "3.4.0"
+decompose = "3.5.0"
 dependencyAnalysis = "3.5.1"
 detekt = "1.23.8"
 detekt-compose = "0.4.28"
@@ -57,20 +57,20 @@ firebaseBom = "34.10.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
-jetbrains-androidXLifecycle = "2.9.6"
-jetBrains-compose = "1.10.2"
-jetbrains-navigation3 = "1.1.0-alpha03"
+jetbrains-androidXLifecycle = "2.10.0"
+jetBrains-compose = "1.10.3"
+jetbrains-navigation3 = "1.1.0-SNAPSHOT+default"
 jUnit = "4.13.2"
 jUnit5 = "6.0.3"
-koin = "4.1.1"
-kotest = "6.1.6"
-kotlinResult = "2.1.0"
+koin = "4.2.0"
+kotest = "6.1.7"
+kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.4.1"
 ktorfit = "2.7.2"
-metro = "0.10.4"
+metro = "0.11.4"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
-mokkery = "3.2.0"
+mokkery = "3.3.0"
 multiplatform-settings = "1.3.0"
 mviKotlin = "4.3.0"
 okhttp = "5.3.2"
@@ -79,7 +79,7 @@ okhttp = "5.3.2"
 #robolectric = "4.15.1"
 #skie = "0.10.4"
 uri-kmp = "0.0.21"
-kotlinStdlib = "2.3.10"
+kotlinStdlib = "2.3.20"
 core = "1.7.0"
 
 [libraries]
@@ -127,7 +127,7 @@ androidx-composeMaterial3 = { module = "androidx.compose.material3:material3", v
 #androidx-constraintLayout = "androidx.constraintlayout:constraintlayout:2.2.1"
 androidx-constraintLayoutCompose = "androidx.constraintlayout:constraintlayout-compose:1.1.1"
 
-androidx-core = "androidx.core:core:1.17.0" #Bundle
+androidx-core = "androidx.core:core:1.18.0" #Bundle
 #androidx-coreKtx = "androidx.core:core-ktx:1.16.0" #Bundle
 
 #androidx-datastore = "androidx.datastore:datastore-preferences:1.1.7"
@@ -231,7 +231,7 @@ gson = "com.google.code.gson:gson:2.13.2"
 #googlePlay-servicesAnalytics = "com.google.android.gms:play-services-analytics:18.1.1"
 #googlePlay-servicesLocation = "com.google.android.gms:play-services-location:21.3.0"
 googlePlay-servicesMaps = "com.google.android.gms:play-services-maps:20.0.0"
-googlePlay-servicesMapsCompose = "com.google.maps.android:maps-compose:8.2.0"
+googlePlay-servicesMapsCompose = "com.google.maps.android:maps-compose:8.2.2"
 #googlePlay-servicesAds = "com.google.android.gms:play-services-ads:24.4.0"
 #googlePlay-servicesAuth = "com.google.android.gms:play-services-auth:20.2.0"
 #googlePlay-servicesTagManager = "com.google.android.gms:play-services-tagmanager:18.0.1"
@@ -262,7 +262,7 @@ jetbrains-androidXNavigation3Runtime = { module = "org.jetbrains.androidx.naviga
 jetbrains-androidXNavigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-navigation3" }
 
 jetbrains-composeFoundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetBrains-compose" }
-jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version ="1.10.0-alpha05" }
+jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version ="1.10.0-SNAPSHOT+update-templates-demos" }
 jetbrains-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetBrains-compose" }
 jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetBrains-compose" }
 jetbrains-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }

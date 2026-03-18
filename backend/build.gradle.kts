@@ -2,7 +2,7 @@ plugins {
 	kotlin("jvm")
 	alias(libs.plugins.kotlin.serialization)
 	application
-	id("com.gradleup.shadow") version "9.3.2"
+	id("com.gradleup.shadow") version "9.4.0"
 }
 
 kotlin {
@@ -24,8 +24,8 @@ dependencies {
 	implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.get()}")
 
-	implementation("com.zaxxer:HikariCP:6.3.0")
-	implementation("org.postgresql:postgresql:42.7.5")
+	implementation("com.zaxxer:HikariCP:6.3.3")
+	implementation("org.postgresql:postgresql:42.7.10")
 
 	testImplementation(kotlin("test"))
 	testImplementation("io.ktor:ktor-server-test-host-jvm:${libs.versions.ktor.get()}")
