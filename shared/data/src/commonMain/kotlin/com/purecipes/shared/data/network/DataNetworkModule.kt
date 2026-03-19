@@ -1,6 +1,5 @@
 package com.purecipes.shared.data.network
 
-import com.diamondedge.logging.LogLevel
 import com.diamondedge.logging.Logger
 import com.diamondedge.logging.logging
 import com.purecipes.shared.data.config.PurecipesConfig
@@ -20,9 +19,7 @@ interface DataNetworkModule {
 
 	@Provides
 	fun provideHttpClient(): HttpClient {
-		return HttpClient {
-			configurePurecipesHttpClient()
-		}
+		return createPurecipesHttpClient()
 	}
 
 	@Provides
@@ -35,6 +32,8 @@ interface DataNetworkModule {
 		return ktorfit.createPurecipesApi()
 	}
 }
+
+internal expect fun createPurecipesHttpClient(): HttpClient
 
 internal fun HttpClientConfig<*>.configurePurecipesHttpClient() {
 	expectSuccess = true
