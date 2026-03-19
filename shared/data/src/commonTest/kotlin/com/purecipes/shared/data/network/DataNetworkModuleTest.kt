@@ -1,5 +1,8 @@
 package com.purecipes.shared.data.network
 
+import com.diamondedge.logging.FixedLogLevel
+import com.diamondedge.logging.KmLogging
+import com.diamondedge.logging.PrintLogger
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.shared.data.getresult.handle
 import com.purecipes.shared.domain.model.RecipeDetails
@@ -15,10 +18,16 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class DataNetworkModuleTest {
+
+	@BeforeTest
+	fun setup() {
+		KmLogging.setLoggers(PrintLogger(FixedLogLevel(true)))
+	}
 
 	@Test
 	fun `configured http client throws response exception for details 404`() = runTest {

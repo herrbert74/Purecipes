@@ -1,6 +1,5 @@
 package com.purecipes.feature.search.data.repository
 
-import com.diamondedge.logging.Logger
 import com.github.michaelbull.result.Ok
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
@@ -15,7 +14,6 @@ class RecipeSearchAccessor(private val api: PurecipesApi) : RecipeSearchReposito
 		if (trimmedQuery.isBlank()) return Ok(emptyList())
 
 		return runCatchingApi {
-
 			api.search(trimmedQuery)
 		}
 	}
