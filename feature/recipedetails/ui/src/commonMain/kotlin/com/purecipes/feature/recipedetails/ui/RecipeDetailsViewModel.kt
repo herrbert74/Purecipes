@@ -10,7 +10,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
-import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 
 internal class RecipeDetailsViewModel(
 	private val recipeId: Int,
-	private val repository: RecipeDetailsRepository,
+	private val getRecipeDetails: GetRecipeDetailsUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -50,7 +50,7 @@ internal class RecipeDetailsViewModel(
 			errorMessage = null
 			recipeDetails = null
 
-			val outcome = repository.getRecipeDetails(recipeId)
+			val outcome = getRecipeDetails(recipeId)
 			recipeDetails = outcome.get()
 			errorMessage = outcome.getError()?.message
 			isLoading = false
@@ -67,15 +67,15 @@ internal class RecipeDetailsViewModel(
 @Composable
 internal fun recipeDetailsViewModel(
 	recipeId: Int,
-	repository: RecipeDetailsRepository,
+	getRecipeDetails: GetRecipeDetailsUseCase,
 ): RecipeDetailsViewModel {
 	return viewModel(
-		key = "RecipeDetailsViewModel:$recipeId:${repository.hashCode()}",
+		key = "RecipeDetailsViewModel:$recipeId:${getRecipeDetails.hashCode()}",
 		factory = viewModelFactory {
 			initializer {
 				RecipeDetailsViewModel(
 					recipeId = recipeId,
-					repository = repository,
+					getRecipeDetails = getRecipeDetails,
 				)
 			}
 		},

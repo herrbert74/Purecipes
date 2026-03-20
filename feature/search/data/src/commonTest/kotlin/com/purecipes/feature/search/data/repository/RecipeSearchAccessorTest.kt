@@ -2,6 +2,7 @@ package com.purecipes.feature.search.data.repository
 
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import com.purecipes.feature.search.data.datasource.RecipeSearchRemoteDataSource
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -25,7 +26,7 @@ class RecipeSearchAccessorTest {
 				)
 			),
 		)
-		val accessor = RecipeSearchAccessor(api)
+		val accessor = RecipeSearchAccessor(RecipeSearchRemoteDataSource(api))
 
 		val outcome = accessor.search("   ")
 

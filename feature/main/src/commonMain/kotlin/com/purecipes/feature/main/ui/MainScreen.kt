@@ -29,10 +29,10 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
 import com.purecipes.feature.recipedetails.ui.StepByStepCookingRoute
-import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
+import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.shared.ui.component.HandleSystemBack
 import com.purecipes.shared.ui.theme.PurecipesTheme
@@ -43,8 +43,8 @@ import kotlinx.serialization.modules.subclass
 
 @Composable
 fun MainScreen(
-	recipeSearchRepository: RecipeSearchRepository,
-	recipeDetailsRepository: RecipeDetailsRepository,
+	searchRecipes: SearchRecipesUseCase,
+	getRecipeDetails: GetRecipeDetailsUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 ) {
@@ -86,14 +86,14 @@ fun MainScreen(
 					entry<SearchDestination> {
 						RecipeSearchScreen(
 							modifier = Modifier.fillMaxSize(),
-							repository = recipeSearchRepository,
+							searchRecipes = searchRecipes,
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}
 					entry<RecipeDetailsDestination> { destination ->
 						RecipeDetailsRoute(
 							recipeId = destination.recipeId,
-							repository = recipeDetailsRepository,
+							getRecipeDetails = getRecipeDetails,
 							onBack = { viewModel.onBack(backStack) },
 							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
 							modifier = Modifier.fillMaxSize(),
@@ -102,7 +102,7 @@ fun MainScreen(
 					entry<RecipeCookingDestination> { destination ->
 						StepByStepCookingRoute(
 							recipeId = destination.recipeId,
-							repository = recipeDetailsRepository,
+							getRecipeDetails = getRecipeDetails,
 							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
 						)
@@ -213,29 +213,24 @@ internal object AccountDestination : MainDestination
 internal data class MainTab(
 	val destination: MainDestination,
 	val label: String,
-	val icon: ImageVector,
 )
 
 internal val mainTabs = listOf(
 	MainTab(
 		destination = SearchDestination,
 		label = "Search",
-		icon = Icons.Filled.Search,
 	),
 	MainTab(
 		destination = FavoritesDestination,
 		label = "Favorites",
-		icon = Icons.Filled.Favorite,
 	),
 	MainTab(
 		destination = CreateDestination,
 		label = "Create",
-		icon = Icons.Filled.Add,
 	),
 	MainTab(
 		destination = AccountDestination,
 		label = "Account",
-		icon = Icons.Filled.Person,
 	),
 )
 
@@ -243,3 +238,13 @@ internal fun MainTab.isSelected(currentDestination: NavKey?): Boolean = when (de
 	SearchDestination -> currentDestination is SearchFlowDestination
 	else -> currentDestination == destination
 }
+
+private val MainTab.icon: ImageVector
+	get() = when (destination) {
+		SearchDestination -> Icons.Filled.Search
+		FavoritesDestination -> Icons.Filled.Favorite
+		CreateDestination -> Icons.Filled.Add
+		AccountDestination -> Icons.Filled.Person
+		is RecipeDetailsDestination -> Icons.Filled.Favorite
+		is RecipeCookingDestination -> Icons.Filled.Favorite
+	}

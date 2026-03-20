@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,9 +22,10 @@ class RecipeDetailsViewModelTest {
 	@Test
 	fun `details view model loads recipe details`() = runTest {
 		val recipe = sampleRecipeDetails()
+		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = recipe.id,
-			repository = FakeRecipeDetailsRepository(Ok(recipe)),
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			coroutineScope = this,
 		)
 
@@ -36,9 +38,10 @@ class RecipeDetailsViewModelTest {
 
 	@Test
 	fun `details view model exposes repository error`() = runTest {
+		val repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed")))
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = 42,
-			repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed"))),
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			coroutineScope = this,
 		)
 

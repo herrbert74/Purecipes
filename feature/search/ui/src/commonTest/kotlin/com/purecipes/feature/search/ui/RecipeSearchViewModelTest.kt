@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
+import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.RecipeSummary
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -34,7 +35,7 @@ class RecipeSearchViewModelTest {
 			),
 		)
 		val viewModel = RecipeSearchViewModel(
-			repository = repository,
+			searchRecipes = SearchRecipesUseCase(repository),
 			coroutineScope = this,
 		)
 
@@ -54,7 +55,7 @@ class RecipeSearchViewModelTest {
 			result = Err(Failure.ServerError("Search failed")),
 		)
 		val viewModel = RecipeSearchViewModel(
-			repository = repository,
+			searchRecipes = SearchRecipesUseCase(repository),
 			coroutineScope = this,
 		)
 

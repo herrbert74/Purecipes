@@ -32,19 +32,19 @@ import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
+import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.TitleText
 
 @Composable
 fun RecipeSearchScreen(
-	repository: RecipeSearchRepository,
+	searchRecipes: SearchRecipesUseCase,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
 ) {
-	val viewModel = recipeSearchViewModel(repository)
+	val viewModel = recipeSearchViewModel(searchRecipes)
 
 	Column(
 		modifier = modifier

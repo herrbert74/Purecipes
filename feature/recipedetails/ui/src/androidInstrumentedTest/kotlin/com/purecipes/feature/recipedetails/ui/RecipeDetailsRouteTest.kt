@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performScrollTo
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import org.junit.Rule
@@ -22,7 +23,8 @@ class RecipeDetailsRouteTest {
 		composeRule.setContent {
 			RecipeDetailsRoute(
 				recipeId = 7,
-				repository = FakeRecipeDetailsRepository(
+				getRecipeDetails = GetRecipeDetailsUseCase(
+					FakeRecipeDetailsRepository(
 					RecipeDetails(
 						id = 7,
 						title = "Roasted Carrots",
@@ -38,6 +40,7 @@ class RecipeDetailsRouteTest {
 						totalTime = 35,
 						yields = "4 servings",
 						cuisine = "Mediterranean",
+					)
 					)
 				),
 				onBack = {},

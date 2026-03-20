@@ -10,8 +10,8 @@ fun main() {
 	val graph = createGraph<WasmAppGraph>()
 	ComposeViewport(content = {
 		MainScreen(
-			recipeSearchRepository = graph.recipeSearchRepository,
-			recipeDetailsRepository = graph.recipeDetailsRepository,
+			searchRecipes = graph.searchRecipesUseCase,
+			getRecipeDetails = graph.getRecipeDetailsUseCase,
 		)
 	})
 }

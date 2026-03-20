@@ -7,6 +7,16 @@ primary goal of the app to make it easier for users to follow recipe instruction
 
 - Use **tabs** instead of spaces for tabs.
 
+## Additional Agent Guidance
+
+`AGENTS.md` is the entry point for agent instructions in this repository.
+
+Keep detailed, tool-agnostic guidance under:
+- `.agents/instructions/` for durable repository rules.
+- `.agents/skills/` for task-specific guidance that extends these rules.
+
+Agents should treat those files as extensions of this document when the task matches them.
+
 ---
 
 ## Project structure
@@ -40,6 +50,7 @@ Add suffixes to designate types and prefixes for designate the features.
 * DataSources using the above have the suffixes RemoteDataSource and LocalDataSource.
 * The DataSource interfaces have the suffix DataSource, and nested within them are the interfaces Local and Remote.
 * The Repository interfaces using the DataSources have the suffix Repository, while their implementations have the suffix Accessor.
+* Use cases have the suffix UseCase.
 
 ### Presentation classes
 
@@ -76,6 +87,14 @@ Because we control both the backend and the apps, shared business entities shoul
 Use `shared/domain` for domain classes that are used by both backend and app code. Do not create duplicate DTOs for the same concept in backend or client modules unless there is a real transport-specific need.
 
 Feature domain modules should contain feature APIs: repository interfaces, use cases, and other feature-facing abstractions. Shared entities returned by those APIs should come from `shared/domain`.
+
+## Rule: Feature layering
+
+Use the feature layers consistently as `data source -> repository -> use case -> presentation`.
+
+Data sources are the place for DTO or DBO to domain mapping, `Outcome` wrapping, threading or execution-context concerns not already handled lower in the stack, and other data-oriented transformations.
+
+Use cases sit between repositories and presentation. They can merge several repository or use-case calls and apply presentation-facing transformations. For now, add a use case for each repository flow even when it is only a pass-through.
 
 ## Rule: Comments
 

@@ -2,6 +2,7 @@ package com.purecipes.feature.recipedetails.data.repository
 
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import com.purecipes.feature.recipedetails.data.datasource.RecipeDetailsRemoteDataSource
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
@@ -31,7 +32,7 @@ class RecipeDetailsAccessorTest {
 			yields = "2 servings",
 			cuisine = "Italian",
 		)
-		val accessor = RecipeDetailsAccessor(FakePurecipesApi(expected))
+		val accessor = RecipeDetailsAccessor(RecipeDetailsRemoteDataSource(FakePurecipesApi(expected)))
 
 		val outcome = accessor.getRecipeDetails(42)
 

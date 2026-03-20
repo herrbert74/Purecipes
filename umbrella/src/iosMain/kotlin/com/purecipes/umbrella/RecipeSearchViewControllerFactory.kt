@@ -15,8 +15,8 @@ class RecipeSearchViewControllerFactory {
 			}
 		) {
 			MainScreen(
-				recipeSearchRepository = graph.recipeSearchRepository,
-				recipeDetailsRepository = graph.recipeDetailsRepository,
+				searchRecipes = graph.searchRecipesUseCase,
+				getRecipeDetails = graph.getRecipeDetailsUseCase,
 			)
 		}
 	}

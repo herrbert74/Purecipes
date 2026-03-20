@@ -32,7 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
@@ -40,12 +40,12 @@ import com.purecipes.shared.ui.component.BackNavigationButton
 @Composable
 fun RecipeDetailsRoute(
 	recipeId: Int,
-	repository: RecipeDetailsRepository,
+	getRecipeDetails: GetRecipeDetailsUseCase,
 	onBack: () -> Unit,
 	onStartCooking: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val viewModel = recipeDetailsViewModel(recipeId, repository)
+	val viewModel = recipeDetailsViewModel(recipeId, getRecipeDetails)
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),

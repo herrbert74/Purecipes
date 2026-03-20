@@ -17,8 +17,8 @@ class MainActivity : ComponentActivity() {
 
 		setContent {
 			MainScreen(
-				recipeSearchRepository = graph.recipeSearchRepository,
-				recipeDetailsRepository = graph.recipeDetailsRepository,
+				searchRecipes = graph.searchRecipesUseCase,
+				getRecipeDetails = graph.getRecipeDetailsUseCase,
 				onExitRequest = ::finish,
 			)
 		}

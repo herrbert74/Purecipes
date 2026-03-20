@@ -22,18 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
 
 @Composable
 fun StepByStepCookingRoute(
 	recipeId: Int,
-	repository: RecipeDetailsRepository,
+	getRecipeDetails: GetRecipeDetailsUseCase,
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val viewModel = stepByStepCookingViewModel(recipeId, repository)
+	val viewModel = stepByStepCookingViewModel(recipeId, getRecipeDetails)
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),

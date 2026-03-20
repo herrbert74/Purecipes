@@ -3,6 +3,7 @@ package com.purecipes.feature.recipedetails.ui
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
+import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -16,9 +17,10 @@ class StepByStepCookingViewModelTest {
 	@Test
 	fun `step by step view model advances and clamps navigation`() = runTest {
 		val recipe = sampleRecipeDetails()
+		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val viewModel = StepByStepCookingViewModel(
 			recipeId = recipe.id,
-			repository = FakeRecipeDetailsRepository(Ok(recipe)),
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			coroutineScope = this,
 		)
 

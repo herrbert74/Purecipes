@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
-import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
+import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.RecipeSummary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 internal class RecipeSearchViewModel(
-	private val repository: RecipeSearchRepository,
+	private val searchRecipes: SearchRecipesUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -57,7 +57,7 @@ internal class RecipeSearchViewModel(
 		scope.launch {
 			isSearching = true
 			errorMessage = null
-			val outcome = repository.search(searchQuery)
+			val outcome = searchRecipes(searchQuery)
 			recipes.clear()
 			recipes.addAll(outcome.get() ?: emptyList())
 			errorMessage = outcome.getError()?.message
@@ -74,12 +74,12 @@ internal class RecipeSearchViewModel(
 }
 
 @Composable
-internal fun recipeSearchViewModel(repository: RecipeSearchRepository): RecipeSearchViewModel {
+internal fun recipeSearchViewModel(searchRecipes: SearchRecipesUseCase): RecipeSearchViewModel {
 	return viewModel(
-		key = "RecipeSearchViewModel:${repository.hashCode()}",
+		key = "RecipeSearchViewModel:${searchRecipes.hashCode()}",
 		factory = viewModelFactory {
 			initializer {
-				RecipeSearchViewModel(repository = repository)
+				RecipeSearchViewModel(searchRecipes = searchRecipes)
 			}
 		},
 	)
