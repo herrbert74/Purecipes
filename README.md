@@ -42,6 +42,12 @@ yarn --version
 
 The project is currently verified with Node 24 and Yarn 1.22.22.
 
+Run the application
+
+```
+./gradlew :umbrella:wasmJsBrowserDevelopmentRun
+```
+
 ## 📚 Tech stack
 
 - UI developed in [Compose Multiplatform](https://kotlinlang.org/compose-multiplatform/)
