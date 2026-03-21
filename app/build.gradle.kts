@@ -1,11 +1,9 @@
 plugins {
 	alias(libs.plugins.androidApplication)
-	alias(libs.plugins.kotlin.android)
-	alias(libs.plugins.ksp)
-	alias(libs.plugins.kotlin.composeCompiler)
-	alias(libs.plugins.metro)
+        alias(libs.plugins.ksp)
+        alias(libs.plugins.kotlin.composeCompiler)
+        alias(libs.plugins.metro)
 }
-
 android {
 	namespace = "com.purecipes"
 	compileSdk {

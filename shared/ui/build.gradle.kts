@@ -1,6 +1,6 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.android.kotlin.multiplatform.library)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
 	alias(libs.plugins.android.lint)
@@ -14,11 +14,7 @@ kotlin {
 	// See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
 	androidLibrary {
 		namespace = "com.purecipes.shared.ui"
-		compileSdk {
-			version = release(36) {
-				minorApiLevel = 1
-			}
-		}
+		compileSdk = 36
 		minSdk = 24
 
 		withHostTestBuilder {

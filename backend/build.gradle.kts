@@ -41,6 +41,7 @@ tasks.shadowJar {
 }
 
 tasks.jar {
+	archiveClassifier.set("original")
 	manifest {
 		attributes["Main-Class"] = "com.purecipes.backend.MainKt"
 	}

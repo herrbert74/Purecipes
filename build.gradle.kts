@@ -16,7 +16,7 @@ plugins {
 	alias(libs.plugins.jetBrainsCompose) apply false
 	alias(libs.plugins.ksp) apply false
 	alias(libs.plugins.kotlin.jvm) apply false
-	alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary) apply false
 	alias(libs.plugins.android.lint) apply false
 	id("convention.detekt")
 }
@@ -35,4 +35,9 @@ rootProject.plugins.withType<YarnPlugin> {
 
 rootProject.plugins.withType<WasmYarnPlugin> {
 	rootProject.the<WasmYarnRootEnvSpec>().download.set(false)
+}
+
+@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.binaryen.BinaryenPlugin> {
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.wasm.binaryen.BinaryenEnvSpec>().download.set(false)
 }

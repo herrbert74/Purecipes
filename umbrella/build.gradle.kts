@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.buildKonfig)
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.jetBrainsCompose)
@@ -43,11 +43,14 @@ buildkonfig {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	androidTarget {
-		compilerOptions {
-			jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
-		}
-	}
+	android {
+        namespace = "com.purecipes.umbrella"
+        compileSdk = 36
+        minSdk = 24
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jdk.get()))
+        }
+    }
 
 	wasmJs {
 		browser {
@@ -112,14 +115,6 @@ kotlin {
 				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
-	}
-}
-
-android {
-	namespace = "com.purecipes.umbrella"
-	compileSdk = 36
-	defaultConfig {
-		minSdk = 24
 	}
 }
 
