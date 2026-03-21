@@ -1,13 +1,22 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	androidTarget()
+    androidLibrary {
+        namespace = "com.purecipes.feature.recipedetails.ui"
+        compileSdk = 36
+        minSdk = 24
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
+    }
 
 	wasmJs {
 		browser()
@@ -55,17 +64,8 @@ kotlin {
 	}
 }
 
-android {
-	namespace = "com.purecipes.feature.recipedetails.ui"
-	compileSdk = 36
-	defaultConfig {
-		minSdk = 24
-		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-	}
-}
-
 dependencies {
-	debugImplementation(libs.androidx.composeUiTestManifestAndroid)
+	// debugImplementation(libs.androidx.composeUiTestManifestAndroid)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {

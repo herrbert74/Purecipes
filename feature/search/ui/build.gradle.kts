@@ -1,13 +1,17 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	androidTarget()
+	android {
+        namespace = "com.purecipes.feature.search.ui"
+        compileSdk = 36
+        minSdk = 24
+    }
 
 	wasmJs {
 		browser()
@@ -39,14 +43,6 @@ kotlin {
 				implementation(libs.kotlinx.coroutinesTest)
 			}
 		}
-	}
-}
-
-android {
-	namespace = "com.purecipes.feature.search.ui"
-	compileSdk = 36
-	defaultConfig {
-		minSdk = 24
 	}
 }
 

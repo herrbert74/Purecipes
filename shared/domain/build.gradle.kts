@@ -1,12 +1,16 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.kotlin.serialization)
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	androidTarget()
+	android {
+        namespace = "com.purecipes.shared.domain"
+        compileSdk = 36
+        minSdk = 24
+    }
 	jvm()
 
 	wasmJs {
@@ -23,13 +27,5 @@ kotlin {
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}
-	}
-}
-
-android {
-	namespace = "com.purecipes.shared.domain"
-	compileSdk = 36
-	defaultConfig {
-		minSdk = 24
 	}
 }

@@ -1,6 +1,6 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidLibrary)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.kotlin.serialization)
 	// Applied before KSP to avoid Ktorfit issue #1030 auto-registering the deprecated root `ksp` configuration.
 	alias(libs.plugins.ktorfit)
@@ -28,9 +28,11 @@ ksp {
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-	androidTarget {
-		// publishLibraryVariants("release")
-	}
+	android {
+        namespace = "com.purecipes.shared.data"
+        compileSdk = 36
+        minSdk = 24
+    }
 
 	wasmJs {
 		browser()
@@ -101,20 +103,8 @@ tasks.matching { it.name.startsWith("ksp") && it.name != "kspCommonMainKotlinMet
 // Issue #1030 workaround: target-specific KSP dependencies replace Ktorfit's deprecated internal `dependencies.add("ksp", ...)`.
 dependencies {
 	add("kspCommonMainMetadata", libs.ktorfit.ksp)
-	add("kspAndroidDebug", libs.ktorfit.ksp)
-	add("kspAndroidRelease", libs.ktorfit.ksp)
-	add("kspIosArm64", libs.ktorfit.ksp)
-	add("kspIosSimulatorArm64", libs.ktorfit.ksp)
+        add("kspAndroidMain", libs.ktorfit.ksp)
 	add("kspWasmJs", libs.ktorfit.ksp)
-}
-
-android {
-	namespace = "com.purecipes.shared.data"
-	compileSdk = 36
-
-	defaultConfig {
-		minSdk = 24
-	}
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
