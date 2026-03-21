@@ -122,3 +122,13 @@ android {
 		minSdk = 24
 	}
 }
+
+configurations.configureEach {
+	if (name == "COMPOSE_SKIKO_JS_WASM_RUNTIME") {
+		resolutionStrategy.eachDependency {
+			if (requested.group == "org.jetbrains.skiko") {
+				useVersion(libs.versions.skiko.get())
+			}
+		}
+	}
+}

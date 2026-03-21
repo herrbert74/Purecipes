@@ -3,6 +3,8 @@ package com.purecipes.feature.main.ui
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation3.runtime.NavKey
 
 internal class MainViewModel : ViewModel() {
@@ -36,4 +38,8 @@ internal class MainViewModel : ViewModel() {
 }
 
 @Composable
-internal fun mainViewModel(): MainViewModel = viewModel()
+internal fun mainViewModel(): MainViewModel = viewModel(
+	factory = viewModelFactory {
+		initializer { MainViewModel() }
+	},
+)
