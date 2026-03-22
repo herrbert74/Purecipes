@@ -1,11 +1,12 @@
 package convention
 
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 
 plugins {
-	id("org.jetbrains.kotlin.multiplatform")
+	alias(libs.plugins.kotlin.multiplatform)
 }
 
 tasks.withType<Kotlin2JsCompile>().configureEach {
@@ -13,14 +14,21 @@ tasks.withType<Kotlin2JsCompile>().configureEach {
 		doFirst {
 			incremental = false
 			javaClass.methods.firstOrNull {
-				it.name == "setIncrementalJsKlib\$kotlin_gradle_plugin_common"
+				it.name == $$"setIncrementalJsKlib$kotlin_gradle_plugin_common"
 			}?.invoke(this, false)
 		}
 	}
 }
 
+@OptIn(ExperimentalWasmDsl::class)
 extensions.configure<KotlinMultiplatformExtension> {
 	applyDefaultHierarchyTemplate()
+	iosArm64()
+	iosSimulatorArm64()
+	wasmJs {
+		browser()
+		binaries.executable()
+	}
 	jvmToolchain {
 		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 	}

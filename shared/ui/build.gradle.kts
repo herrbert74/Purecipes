@@ -1,3 +1,6 @@
+import org.gradle.kotlin.dsl.named
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
 	id("convention.kmp")
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
@@ -6,7 +9,6 @@ plugins {
 	alias(libs.plugins.android.lint)
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 
 	// Target declarations - add or remove as needed below. These define
@@ -29,11 +31,6 @@ kotlin {
 		androidResources.enable = true
 	}
 
-	wasmJs {
-		browser()
-		binaries.executable()
-	}
-
 	// For iOS targets, this is also where you should
 	// configure native binary output. For more information, see:
 	// https://kotlinlang.org/docs/multiplatform-build-native-binaries.html#build-xcframeworks
@@ -43,13 +40,13 @@ kotlin {
 	// https://developer.android.com/kotlin/multiplatform/migrate
 	val xcfName = "uiKit"
 
-	iosArm64 {
+	targets.named<KotlinNativeTarget>("iosArm64") {
 		binaries.framework {
 			baseName = xcfName
 		}
 	}
 
-	iosSimulatorArm64 {
+	targets.named<KotlinNativeTarget>("iosSimulatorArm64") {
 		binaries.framework {
 			baseName = xcfName
 		}

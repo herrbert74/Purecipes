@@ -3,21 +3,13 @@ plugins {
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 	android {
-        namespace = "com.purecipes.feature.recipedetails.domain"
-        compileSdk = 36
-        minSdk = 24
-    }
-
-	wasmJs {
-		browser()
-		binaries.executable()
+		namespace = "com.purecipes.feature.recipedetails.domain"
+		compileSdk = 36
+		minSdk = 24
 	}
 
-	iosArm64()
-	iosSimulatorArm64()
 
 	sourceSets {
 		commonMain {

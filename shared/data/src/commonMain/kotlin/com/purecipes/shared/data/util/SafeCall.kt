@@ -19,20 +19,20 @@ import io.ktor.http.isSuccess
  * @return [Outcome] where [DOMAIN] does NOT contain any response metadata.
  */
 suspend inline fun <reified REMOTE, DOMAIN> safeCall(
-    crossinline makeNetworkRequest: suspend () -> HttpResponse,
-    crossinline mapper: REMOTE.() -> DOMAIN,
+	crossinline makeNetworkRequest: suspend () -> HttpResponse,
+	crossinline mapper: REMOTE.() -> DOMAIN,
 ): Outcome<DOMAIN> {
-    return runCatchingApi {
-        makeNetworkRequest()
-    }.andThen { response ->
-        if (response.status.isSuccess()) {
-            Ok(response.body<REMOTE>())
-        } else {
-            Err(response.handle())
-        }
-    }.map {
-        it.mapper()
-    }
+	return runCatchingApi {
+		makeNetworkRequest()
+	}.andThen { response ->
+		if (response.status.isSuccess()) {
+			Ok(response.body<REMOTE>())
+		} else {
+			Err(response.handle())
+		}
+	}.map {
+		it.mapper()
+	}
 }
 
 /**
@@ -48,18 +48,18 @@ suspend inline fun <reified REMOTE, DOMAIN> safeCall(
  * should be introduced, if the amount of the data in the domain (or presentation) is a concern.
  */
 suspend inline fun <REMOTE, DOMAIN> safeCallWithMetadata(
-    crossinline makeNetworkRequest: suspend () -> HttpResponse,
-    crossinline mapper: HttpResponse.() -> DOMAIN,
+	crossinline makeNetworkRequest: suspend () -> HttpResponse,
+	crossinline mapper: HttpResponse.() -> DOMAIN,
 ): Outcome<DOMAIN> {
-    return runCatchingApi {
-        makeNetworkRequest()
-    }.andThen { response ->
-        if (response.status.isSuccess()) {
-            Ok(response)
-        } else {
-            Err(response.handle())
-        }
-    }.map {
-        it.mapper()
-    }
+	return runCatchingApi {
+		makeNetworkRequest()
+	}.andThen { response ->
+		if (response.status.isSuccess()) {
+			Ok(response)
+		} else {
+			Err(response.handle())
+		}
+	}.map {
+		it.mapper()
+	}
 }

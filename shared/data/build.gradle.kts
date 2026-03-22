@@ -26,21 +26,12 @@ ksp {
 	arg("Ktorfit_QualifiedTypeName", false.toString())
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 	android {
-        namespace = "com.purecipes.shared.data"
-        compileSdk = 36
-        minSdk = 24
-    }
-
-	wasmJs {
-		browser()
-		binaries.executable()
+		namespace = "com.purecipes.shared.data"
+		compileSdk = 36
+		minSdk = 24
 	}
-
-	iosArm64()
-	iosSimulatorArm64()
 
 	sourceSets {
 		commonMain {
@@ -103,7 +94,7 @@ tasks.matching { it.name.startsWith("ksp") && it.name != "kspCommonMainKotlinMet
 // Issue #1030 workaround: target-specific KSP dependencies replace Ktorfit's deprecated internal `dependencies.add("ksp", ...)`.
 dependencies {
 	add("kspCommonMainMetadata", libs.ktorfit.ksp)
-        add("kspAndroidMain", libs.ktorfit.ksp)
+	add("kspAndroidMain", libs.ktorfit.ksp)
 	add("kspWasmJs", libs.ktorfit.ksp)
 }
 

@@ -4,21 +4,13 @@ plugins {
 	alias(libs.plugins.metro)
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 	android {
-        namespace = "com.purecipes.feature.search.data"
-        compileSdk = 36
-        minSdk = 24
-    }
-
-	wasmJs {
-		browser()
-		binaries.executable()
+		namespace = "com.purecipes.feature.search.data"
+		compileSdk = 36
+		minSdk = 24
 	}
 
-	iosArm64()
-	iosSimulatorArm64()
 
 	sourceSets {
 		commonMain {

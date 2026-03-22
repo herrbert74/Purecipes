@@ -5,26 +5,18 @@ plugins {
 	alias(libs.plugins.kotlin.composeCompiler)
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
-    androidLibrary {
-        namespace = "com.purecipes.feature.recipedetails.ui"
-        compileSdk = 36
-        minSdk = 24
-        withDeviceTestBuilder {
-            sourceSetTreeName = "test"
-        }.configure {
-            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        }
-    }
-
-	wasmJs {
-		browser()
-		binaries.executable()
+	androidLibrary {
+		namespace = "com.purecipes.feature.recipedetails.ui"
+		compileSdk = 36
+		minSdk = 24
+		withDeviceTestBuilder {
+			sourceSetTreeName = "test"
+		}.configure {
+			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+		}
 	}
 
-	iosArm64()
-	iosSimulatorArm64()
 
 	sourceSets {
 		commonMain {

@@ -399,7 +399,6 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
-android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
 android-lint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
 #mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 #parcelize-darwin = { id = "com.arkivanov.parcelize.darwin", version.ref = "parcelize-darwin" }

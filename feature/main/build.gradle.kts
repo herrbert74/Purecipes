@@ -6,21 +6,12 @@ plugins {
 	alias(libs.plugins.kotlin.composeCompiler)
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 	android {
-        namespace = "com.purecipes.feature.main"
-        compileSdk = 36
-        minSdk = 24
-    }
-
-	wasmJs {
-		browser()
-		binaries.executable()
+		namespace = "com.purecipes.feature.main"
+		compileSdk = 36
+		minSdk = 24
 	}
-
-	iosArm64()
-	iosSimulatorArm64()
 
 	sourceSets {
 		commonMain {

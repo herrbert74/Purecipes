@@ -1,5 +1,8 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmJsTargetDsl
 
 plugins {
 	id("convention.kmp")
@@ -41,36 +44,33 @@ buildkonfig {
 	}
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
 kotlin {
 	android {
-        namespace = "com.purecipes.umbrella"
-        compileSdk = 36
-        minSdk = 24
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jdk.get()))
-        }
-    }
+		namespace = "com.purecipes.umbrella"
+		compileSdk = 36
+		minSdk = 24
+		compilerOptions {
+			jvmTarget.set(JvmTarget.fromTarget(libs.versions.jdk.get()))
+		}
+	}
 
-	wasmJs {
+	targets.named<KotlinWasmJsTargetDsl>("wasmJs") {
 		browser {
 			commonWebpackConfig {
 				outputFileName = "umbrella.js"
 			}
 		}
-		binaries.executable()
 	}
 
-	listOf(
-		iosArm64(),
-		iosSimulatorArm64()
-	).forEach {
-		it.binaries.framework {
-			baseName = "umbrella"
-			isStatic = true
-			export(project(":feature:main"))
-			export(project(":feature:recipedetails:domain"))
-			export(project(":feature:search:domain"))
+	listOf("iosArm64", "iosSimulatorArm64").forEach { targetName ->
+		targets.named<KotlinNativeTarget>(targetName) {
+			binaries.framework {
+				baseName = "umbrella"
+				isStatic = true
+				export(project(":feature:main"))
+				export(project(":feature:recipedetails:domain"))
+				export(project(":feature:search:domain"))
+			}
 		}
 	}
 
