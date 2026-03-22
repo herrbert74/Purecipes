@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnRootEnvSpec
 
 plugins {
 	alias(libs.plugins.androidApplication) apply false
-	alias(libs.plugins.androidLibrary) apply false
 	alias(libs.plugins.buildKonfig) apply false
 	alias(libs.plugins.kotlin.android) apply false
 	alias(libs.plugins.kotlin.multiplatform) apply false

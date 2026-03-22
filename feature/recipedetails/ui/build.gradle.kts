@@ -6,7 +6,7 @@ plugins {
 }
 
 kotlin {
-	androidLibrary {
+	android {
 		namespace = "com.purecipes.feature.recipedetails.ui"
 		compileSdk = 36
 		minSdk = 24
