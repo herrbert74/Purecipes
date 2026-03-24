@@ -11,7 +11,6 @@ kotlin {
 		minSdk = 24
 	}
 
-
 	sourceSets {
 		commonMain {
 			dependencies {
