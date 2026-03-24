@@ -1,4 +1,4 @@
-package com.purecipes.feature.recipedetails.ui
+package com.purecipes.feature.cooking.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

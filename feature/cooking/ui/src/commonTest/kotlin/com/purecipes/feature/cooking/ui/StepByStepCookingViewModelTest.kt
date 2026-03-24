@@ -1,9 +1,10 @@
-package com.purecipes.feature.recipedetails.ui
+package com.purecipes.feature.cooking.ui
 
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -46,3 +47,20 @@ class StepByStepCookingViewModelTest {
 		override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> = result
 	}
 }
+
+private fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(
+	id = 42,
+	title = "Tomato Pasta",
+	description = "Simple dinner.",
+	imageUrl = "https://example.com/pasta.jpg",
+	ingredientGroups = listOf(
+		IngredientGroup(
+			name = "Sauce",
+			ingredients = listOf("2 tomatoes", "1 garlic clove"),
+		),
+	),
+	steps = listOf("Boil pasta", "Make sauce", "Serve"),
+	totalTime = 25,
+	yields = "2 servings",
+	cuisine = "Italian",
+)

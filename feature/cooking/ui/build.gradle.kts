@@ -1,14 +1,13 @@
 plugins {
 	id("convention.kmp")
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
-	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.jetBrainsCompose)
 	alias(libs.plugins.kotlin.composeCompiler)
 }
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.main"
+		namespace = "com.purecipes.feature.cooking.ui"
 		compileSdk = 36
 		minSdk = 24
 	}
@@ -16,28 +15,26 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				implementation(project(":feature:cooking:ui"))
 				api(project(":feature:recipedetails:domain"))
-				implementation(project(":feature:recipedetails:ui"))
-				api(project(":feature:search:domain"))
-				implementation(project(":feature:search:ui"))
-				api(project(":shared:data"))
 				implementation(project(":shared:ui"))
 				implementation(libs.jetbrains.androidXLifecycleViewmodel)
 				implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
 				implementation(libs.jetbrains.composeFoundation)
 				implementation(libs.jetbrains.composeMaterial3)
-				implementation(libs.jetbrains.composeMaterialIconsExtended)
 				implementation(libs.jetbrains.composeRuntime)
-				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.jetbrains.composeUi)
+				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinx.coroutinesCore)
-				implementation(libs.kotlinx.serializationJson)
 			}
 		}
-		androidMain {
+		commonTest {
 			dependencies {
-				implementation(libs.androidx.activityCompose)
+				implementation(libs.kotlinx.coroutinesTest)
 			}
 		}
 	}
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+	compilerOptions.freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
 }

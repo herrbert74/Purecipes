@@ -113,6 +113,7 @@ but also arranged in alphabetical order.
 The libraries in the version catalog are also ordered alphabetically by their ids.
 Follow Kotlin naming conventions and Detekt naming rules directly in code.
 In particular, `const val` names must use `UPPER_SNAKE_CASE`, including private constants in platform-specific source sets.
+Ensure every text file you create or edit ends with exactly one trailing newline so Detekt does not report `NewLineAtEndOfFile`.
 If a Detekt or Kotlin-style issue recurs, add a short repo-specific rule here so future agents do not repeat it.
 Reference docs:
 https://kotlinlang.org/docs/coding-conventions.html
