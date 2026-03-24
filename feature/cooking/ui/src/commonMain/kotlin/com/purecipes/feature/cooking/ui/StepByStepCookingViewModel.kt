@@ -57,6 +57,11 @@ internal class StepByStepCookingViewModel(
 		}
 	}
 
+	fun setCurrentStep(stepIndex: Int) {
+		val lastIndex = recipeDetails?.steps?.lastIndex ?: return
+		currentStepIndex = stepIndex.coerceIn(0, lastIndex)
+	}
+
 	private fun loadRecipe() {
 		scope.launch {
 			isLoading = true

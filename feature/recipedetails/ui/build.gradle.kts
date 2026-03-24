@@ -44,8 +44,9 @@ kotlin {
 				implementation(libs.jetbrains.composeMaterialIconsExtended)
 			}
 		}
-		androidInstrumentedTest {
+		named("androidDeviceTest") {
 			dependencies {
+				implementation(libs.androidx.composeUiTestManifestAndroid)
 				implementation(libs.androidx.composeUiTestJunit4Android)
 				implementation(libs.androidx.testEspresso.core)
 				implementation(libs.androidx.testExtJUnit)
@@ -55,10 +56,12 @@ kotlin {
 	}
 }
 
-dependencies {
-	// debugImplementation(libs.androidx.composeUiTestManifestAndroid)
-}
-
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
 	compilerOptions.freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+}
+
+tasks.configureEach {
+	if (name == "copyAndroidDeviceTestComposeResourcesToAndroidAssets" || name == "prepareComposeResourcesTaskForAndroidDeviceTest") {
+		enabled = false
+	}
 }

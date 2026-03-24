@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 class StepByStepCookingViewModelTest {
 
 	@Test
-	fun `step by step view model advances and clamps navigation`() = runTest {
+	fun stepByStepViewModelAdvancesAndClampsNavigation() = runTest {
 		val recipe = sampleRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val viewModel = StepByStepCookingViewModel(
@@ -38,6 +38,28 @@ class StepByStepCookingViewModelTest {
 
 		viewModel.previousStep()
 		assertEquals(recipe.steps.lastIndex - 1, viewModel.currentStepIndex)
+	}
+
+	@Test
+	fun stepByStepViewModelSetsAndClampsCurrentPage() = runTest {
+		val recipe = sampleRecipeDetails()
+		val repository = FakeRecipeDetailsRepository(Ok(recipe))
+		val viewModel = StepByStepCookingViewModel(
+			recipeId = recipe.id,
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			coroutineScope = this,
+		)
+
+		advanceUntilIdle()
+
+		viewModel.setCurrentStep(1)
+		assertEquals(1, viewModel.currentStepIndex)
+
+		viewModel.setCurrentStep(99)
+		assertEquals(recipe.steps.lastIndex, viewModel.currentStepIndex)
+
+		viewModel.setCurrentStep(-1)
+		assertEquals(0, viewModel.currentStepIndex)
 	}
 
 	private class FakeRecipeDetailsRepository(

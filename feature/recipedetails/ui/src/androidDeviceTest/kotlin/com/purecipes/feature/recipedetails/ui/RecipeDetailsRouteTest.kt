@@ -19,29 +19,29 @@ class RecipeDetailsRouteTest {
 	val composeRule = createComposeRule()
 
 	@Test
-	fun recipe_details_route_shows_title_ingredients_and_steps() {
+	fun recipeDetailsRouteShowsTitleIngredientsAndSteps() {
 		composeRule.setContent {
 			RecipeDetailsRoute(
 				recipeId = 7,
 				getRecipeDetails = GetRecipeDetailsUseCase(
 					FakeRecipeDetailsRepository(
-					RecipeDetails(
-						id = 7,
-						title = "Roasted Carrots",
-						description = "Sweet and savory side dish.",
-						imageUrl = null,
-						ingredientGroups = listOf(
-							IngredientGroup(
-								name = "Ingredients",
-								ingredients = listOf("6 carrots", "2 tbsp olive oil"),
-							)
+						RecipeDetails(
+							id = 7,
+							title = "Roasted Carrots",
+							description = "Sweet and savory side dish.",
+							imageUrl = null,
+							ingredientGroups = listOf(
+								IngredientGroup(
+									name = "Ingredients",
+									ingredients = listOf("6 carrots", "2 tbsp olive oil"),
+								),
+							),
+							steps = listOf("Trim the carrots", "Roast until tender"),
+							totalTime = 35,
+							yields = "4 servings",
+							cuisine = "Mediterranean",
 						),
-						steps = listOf("Trim the carrots", "Roast until tender"),
-						totalTime = 35,
-						yields = "4 servings",
-						cuisine = "Mediterranean",
-					)
-					)
+					),
 				),
 				onBack = {},
 				onStartCooking = {},

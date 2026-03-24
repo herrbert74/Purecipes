@@ -1,25 +1,31 @@
 package com.purecipes.feature.cooking.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
@@ -39,7 +45,7 @@ fun StepByStepCookingRoute(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Step-by-step cooking") },
+				title = { Text(text = viewModel.recipeDetails?.title.orEmpty()) },
 				navigationIcon = {
 					BackNavigationButton(onBack = onBack)
 				},
@@ -69,9 +75,7 @@ fun StepByStepCookingRoute(
 			else -> StepByStepCookingScreen(
 				recipe = viewModel.recipeDetails ?: return@Scaffold,
 				currentStepIndex = viewModel.currentStepIndex,
-				onPrevious = viewModel::previousStep,
-				onNext = viewModel::nextStep,
-				onFinish = onBack,
+				onStepChange = viewModel::setCurrentStep,
 				modifier = Modifier.padding(innerPadding),
 			)
 		}
@@ -82,12 +86,20 @@ fun StepByStepCookingRoute(
 private fun StepByStepCookingScreen(
 	recipe: RecipeDetails,
 	currentStepIndex: Int,
-	onPrevious: () -> Unit,
-	onNext: () -> Unit,
-	onFinish: () -> Unit,
+	onStepChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val isLastStep = currentStepIndex == recipe.steps.lastIndex
+	val pagerState = rememberPagerState(
+		initialPage = currentStepIndex,
+		pageCount = { recipe.steps.size },
+	)
+	val currentOnStepChange by rememberUpdatedState(onStepChange)
+
+	LaunchedEffect(pagerState.currentPage) {
+		if (pagerState.currentPage != currentStepIndex) {
+			currentOnStepChange(pagerState.currentPage)
+		}
+	}
 
 	Column(
 		modifier = modifier
@@ -96,52 +108,55 @@ private fun StepByStepCookingScreen(
 		verticalArrangement = Arrangement.spacedBy(20.dp),
 	) {
 		Text(
-			text = recipe.title,
-			style = MaterialTheme.typography.headlineSmall,
-		)
-		Text(
-			text = "Step ${currentStepIndex + 1} of ${recipe.steps.size}",
+			text = "${currentStepIndex + 1} of ${recipe.steps.size}",
 			style = MaterialTheme.typography.titleMedium,
 			color = MaterialTheme.colorScheme.primary,
 		)
-		Card(
+		PagerIndicator(
+			currentStepIndex = currentStepIndex,
+			stepCount = recipe.steps.size,
 			modifier = Modifier.fillMaxWidth(),
-			colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-		) {
-			Text(
-				text = recipe.steps[currentStepIndex],
-				modifier = Modifier.padding(24.dp),
-				style = MaterialTheme.typography.bodyLarge,
-			)
-		}
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
-		) {
-			OutlinedButton(
-				onClick = onPrevious,
-				enabled = currentStepIndex > 0,
-				modifier = Modifier.weight(1f),
+		)
+		HorizontalPager(
+			state = pagerState,
+			modifier = Modifier
+				.fillMaxWidth()
+				.weight(1f),
+		) { page ->
+			Card(
+				modifier = Modifier.fillMaxSize(),
+				colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
 			) {
-				Text(text = "Previous")
-			}
-
-			if (isLastStep) {
-				Button(
-					onClick = onFinish,
-					modifier = Modifier.weight(1f),
-				) {
-					Text(text = "Finish")
-				}
-			} else {
-				Button(
-					onClick = onNext,
-					modifier = Modifier.weight(1f),
-				) {
-					Text(text = "Next")
-				}
+				Text(
+					text = recipe.steps[page],
+					modifier = Modifier.padding(24.dp),
+					style = MaterialTheme.typography.bodyLarge,
+				)
 			}
 		}
+	}
+}
+
+@Composable
+private fun PagerIndicator(
+	currentStepIndex: Int,
+	stepCount: Int,
+	modifier: Modifier = Modifier,
+) {
+	val progress = (currentStepIndex + 1) / stepCount.toFloat()
+
+	Box(
+		modifier = modifier
+			.clip(MaterialTheme.shapes.extraLarge)
+			.background(MaterialTheme.colorScheme.surfaceContainerHighest)
+			.height(8.dp),
+	) {
+		Box(
+			modifier = Modifier
+				.fillMaxWidth(progress)
+				.fillMaxHeight()
+				.background(MaterialTheme.colorScheme.primary),
+		)
 	}
 }
 
