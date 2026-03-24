@@ -1,8 +1,8 @@
 package com.purecipes.shared.data.getresult
 
 import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import com.github.michaelbull.retry.attempt.Attempt
 import com.github.michaelbull.retry.attempt.firstAttempt
 import com.github.michaelbull.retry.instruction.ContinueRetrying
@@ -27,9 +27,9 @@ suspend inline fun <V, E> retry(policy: RetryPolicy<E>, block: () -> Result<V, E
 
 	while (true) {
 		val result = block()
-		result.onSuccess {
+		result.onOk {
 			return result
-		}.onFailure { error ->
+		}.onErr { error ->
 			if (attempt == null) {
 				attempt = firstAttempt()
 			}

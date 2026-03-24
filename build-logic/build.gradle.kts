@@ -8,5 +8,7 @@ kotlin {
 
 dependencies {
 	implementation(libs.plugins.detekt.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })
+	implementation(libs.plugins.jetBrainsCompose.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })
 	implementation(libs.plugins.kotlin.multiplatform.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })
+	implementation(libs.plugins.kotlin.composeCompiler.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })
 }
