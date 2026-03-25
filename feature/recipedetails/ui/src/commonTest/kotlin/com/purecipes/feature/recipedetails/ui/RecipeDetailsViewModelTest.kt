@@ -20,7 +20,7 @@ import kotlin.test.assertNull
 class RecipeDetailsViewModelTest {
 
 	@Test
-	fun `details view model loads recipe details`() = runTest {
+	fun detailsViewModelLoadsRecipeDetails() = runTest {
 		val recipe = sampleRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val viewModel = RecipeDetailsViewModel(
@@ -37,7 +37,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun `details view model exposes repository error`() = runTest {
+	fun detailsViewModelExposesRepositoryError() = runTest {
 		val repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed")))
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = 42,

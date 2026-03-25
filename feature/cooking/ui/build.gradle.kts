@@ -6,19 +6,22 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.search.ui"
+		namespace = "com.purecipes.feature.cooking.ui"
 		compileSdk = 36
 		minSdk = 24
+		withDeviceTestBuilder {
+			sourceSetTreeName = "test"
+		}.configure {
+			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+		}
 	}
 
 	sourceSets {
 		commonMain {
 			dependencies {
-				api(project(":feature:search:domain"))
+				api(project(":feature:recipedetails:domain"))
 				implementation(project(":shared:ui"))
 				implementation(libs.jetbrains.androidXLifecycleViewmodel)
-				implementation(libs.coil.compose)
-				implementation(libs.coil.networkKtor3)
 				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinx.coroutinesCore)
 			}
@@ -27,6 +30,8 @@ kotlin {
 			dependencies {
 				implementation(libs.kotlinx.coroutinesTest)
 			}
+		}
+		named("androidDeviceTest") {
 		}
 	}
 }

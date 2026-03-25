@@ -3,9 +3,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
 	id("convention.kmp")
+	id("convention.compose")
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
-	alias(libs.plugins.jetBrainsCompose)
-	alias(libs.plugins.kotlin.composeCompiler)
 	alias(libs.plugins.android.lint)
 }
 
@@ -61,16 +60,11 @@ kotlin {
 		commonMain {
 			dependencies {
 				implementation(libs.kotlin.stdlib)
-				implementation(libs.jetbrains.composeUi)
-				implementation(libs.jetbrains.composeMaterial3)
-				implementation(libs.jetbrains.composeResources)
 			}
 		}
 
 		androidMain {
 			dependencies {
-				implementation(libs.androidx.activityCompose)
-				implementation(libs.jetbrains.composeMaterialIconsExtended)
 			}
 		}
 

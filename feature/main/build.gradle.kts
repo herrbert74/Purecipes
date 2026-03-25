@@ -1,9 +1,8 @@
 plugins {
 	id("convention.kmp")
+	id("convention.compose")
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.kotlin.serialization)
-	alias(libs.plugins.jetBrainsCompose)
-	alias(libs.plugins.kotlin.composeCompiler)
 }
 
 kotlin {
@@ -16,6 +15,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				implementation(project(":feature:cooking:ui"))
 				api(project(":feature:recipedetails:domain"))
 				implementation(project(":feature:recipedetails:ui"))
 				api(project(":feature:search:domain"))
@@ -23,19 +23,9 @@ kotlin {
 				api(project(":shared:data"))
 				implementation(project(":shared:ui"))
 				implementation(libs.jetbrains.androidXLifecycleViewmodel)
-				implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
-				implementation(libs.jetbrains.composeFoundation)
-				implementation(libs.jetbrains.composeMaterial3)
-				implementation(libs.jetbrains.composeMaterialIconsExtended)
-				implementation(libs.jetbrains.composeRuntime)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
-			}
-		}
-		androidMain {
-			dependencies {
-				implementation(libs.androidx.activityCompose)
 			}
 		}
 	}

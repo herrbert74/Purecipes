@@ -29,9 +29,9 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
-import com.purecipes.feature.recipedetails.ui.StepByStepCookingRoute
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.shared.ui.component.HandleSystemBack

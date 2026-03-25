@@ -1,4 +1,4 @@
-package com.purecipes.feature.recipedetails.ui
+package com.purecipes.feature.cooking.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,6 +55,11 @@ internal class StepByStepCookingViewModel(
 		if (currentStepIndex < details.steps.lastIndex) {
 			currentStepIndex += 1
 		}
+	}
+
+	fun setCurrentStep(stepIndex: Int) {
+		val lastIndex = recipeDetails?.steps?.lastIndex ?: return
+		currentStepIndex = stepIndex.coerceIn(0, lastIndex)
 	}
 
 	private fun loadRecipe() {

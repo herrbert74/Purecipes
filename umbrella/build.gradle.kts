@@ -6,11 +6,10 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmJsTargetDsl
 
 plugins {
 	id("convention.kmp")
+	id("convention.compose")
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.buildKonfig)
 	alias(libs.plugins.kotlin.serialization)
-	alias(libs.plugins.jetBrainsCompose)
-	alias(libs.plugins.kotlin.composeCompiler)
 	alias(libs.plugins.metro)
 }
 
@@ -83,10 +82,6 @@ kotlin {
 				api(project(":feature:search:domain"))
 				api(project(":feature:search:data"))
 				api(project(":shared:data"))
-				implementation(libs.jetbrains.composeFoundation)
-				implementation(libs.jetbrains.composeMaterial3)
-				implementation(libs.jetbrains.composeMaterialIconsExtended)
-				implementation(libs.jetbrains.composeRuntime)
 
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
