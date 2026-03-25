@@ -1,6 +1,8 @@
 package com.purecipes.backend
 
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.routing.get
@@ -54,6 +56,30 @@ class RecipeSearchRouteTest {
 		application { module() }
 
 		val response = client.get("/recipes/not-a-number")
+		assertEquals(HttpStatusCode.BadRequest, response.status)
+		assertEquals(
+			"""{"message":"Invalid request","detail":"Recipe id must be a number"}""",
+			response.bodyAsText()
+		)
+	}
+
+	@Test
+	fun `invalid favorite recipe id yields 400 on add`() = testApplication {
+		application { module() }
+
+		val response = client.post("/favorites/not-a-number")
+		assertEquals(HttpStatusCode.BadRequest, response.status)
+		assertEquals(
+			"""{"message":"Invalid request","detail":"Recipe id must be a number"}""",
+			response.bodyAsText()
+		)
+	}
+
+	@Test
+	fun `invalid favorite recipe id yields 400 on delete`() = testApplication {
+		application { module() }
+
+		val response = client.delete("/favorites/not-a-number")
 		assertEquals(HttpStatusCode.BadRequest, response.status)
 		assertEquals(
 			"""{"message":"Invalid request","detail":"Recipe id must be a number"}""",

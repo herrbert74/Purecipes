@@ -10,8 +10,11 @@ fun main() {
 	val graph = createGraph<WasmAppGraph>()
 	ComposeViewport(content = {
 		MainScreen(
+			addFavoriteRecipe = graph.addFavoriteRecipeUseCase,
+			getFavoriteRecipes = graph.getFavoriteRecipesUseCase,
 			searchRecipes = graph.searchRecipesUseCase,
 			getRecipeDetails = graph.getRecipeDetailsUseCase,
+			removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
 		)
 	})
 }

@@ -26,7 +26,30 @@ class Db private constructor(
 				isAutoCommit = true
 				validate()
 			}
-			return Db(HikariDataSource(config))
+			val dataSource = HikariDataSource(config)
+			ensureSchema(dataSource)
+			return Db(dataSource)
+		}
+
+		private fun ensureSchema(dataSource: DataSource) {
+			dataSource.connection.use { connection ->
+				connection.createStatement().use { statement ->
+					statement.execute(
+						"""
+							CREATE TABLE IF NOT EXISTS favorites (
+								recipe_id INTEGER PRIMARY KEY REFERENCES recipes(id) ON DELETE CASCADE,
+								created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+							)
+						""".trimIndent()
+					)
+					statement.execute(
+						"""
+							CREATE INDEX IF NOT EXISTS idx_favorites_created_at
+							ON favorites (created_at DESC)
+						""".trimIndent()
+					)
+				}
+			}
 		}
 	}
 }

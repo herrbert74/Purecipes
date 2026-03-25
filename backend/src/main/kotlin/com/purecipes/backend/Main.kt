@@ -1,6 +1,7 @@
 package com.purecipes.backend
 
 import com.purecipes.backend.db.Db
+import com.purecipes.backend.routes.favoriteRoutes
 import com.purecipes.backend.routes.recipeRoutes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -35,7 +36,9 @@ fun Application.module(extraRoutes: Route.() -> Unit = {}) {
 	install(CallLogging)
 	install(CORS) {
 		anyHost()
+		allowMethod(HttpMethod.Delete)
 		allowMethod(HttpMethod.Get)
+		allowMethod(HttpMethod.Post)
 		allowHeader(HttpHeaders.ContentType)
 		allowHeader(HttpHeaders.Accept)
 		allowNonSimpleContentTypes = true
@@ -64,6 +67,7 @@ fun Application.module(extraRoutes: Route.() -> Unit = {}) {
 		get("/health") {
 			call.respond(mapOf("status" to "ok"))
 		}
+		favoriteRoutes { Db.create() }
 		recipeRoutes { Db.create() }
 		extraRoutes()
 	}

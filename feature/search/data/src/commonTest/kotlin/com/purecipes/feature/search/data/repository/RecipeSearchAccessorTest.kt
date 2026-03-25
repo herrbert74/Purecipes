@@ -49,5 +49,17 @@ class RecipeSearchAccessorTest {
 		override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
 			error("Not needed in this test")
 		}
+
+		override suspend fun getFavorites(): List<RecipeSummary> {
+			error("Not needed in this test")
+		}
+
+		override suspend fun addFavorite(recipeId: Int) {
+			error("Not needed in this test")
+		}
+
+		override suspend fun removeFavorite(recipeId: Int) {
+			error("Not needed in this test")
+		}
 	}
 }

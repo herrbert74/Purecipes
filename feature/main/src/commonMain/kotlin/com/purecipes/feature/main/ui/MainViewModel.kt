@@ -9,14 +9,10 @@ import androidx.navigation3.runtime.NavKey
 
 internal class MainViewModel : ViewModel() {
 
-	fun shouldExit(currentDestination: NavKey?): Boolean = currentDestination == SearchDestination
+	fun shouldExit(backStack: List<NavKey>): Boolean = backStack.size == 1 && backStack.firstOrNull() == SearchDestination
 
-	fun onTabSelected(
-		backStack: MutableList<NavKey>,
-		currentDestination: NavKey?,
-		tab: MainTab,
-	) {
-		if (!tab.isSelected(currentDestination) || backStack.lastOrNull() != tab.destination) {
+	fun onTabSelected(backStack: MutableList<NavKey>, tab: MainTab) {
+		if (backStack.size != 1 || backStack.firstOrNull() != tab.destination) {
 			backStack.clear()
 			backStack += tab.destination
 		}
