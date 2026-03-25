@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmJsTargetDsl
 plugins {
 	id("convention.kmp")
 	id("convention.compose")
-	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.buildKonfig)
 	alias(libs.plugins.kotlin.serialization)
 	alias(libs.plugins.metro)

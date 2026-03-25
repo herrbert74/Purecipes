@@ -1,5 +1,6 @@
 package convention
 
+import libs
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -7,6 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
+	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 }
 
 tasks.withType<Kotlin2JsCompile>().configureEach {

@@ -4,15 +4,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
 	id("convention.kmp")
 	id("convention.compose")
-	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.android.lint)
 }
 
 kotlin {
-
-	// Target declarations - add or remove as needed below. These define
-	// which platforms this KMP module supports.
-	// See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
 	android {
 		namespace = "com.purecipes.shared.ui"
 		compileSdk = 36

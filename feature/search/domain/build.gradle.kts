@@ -1,6 +1,5 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 }
 
 kotlin {

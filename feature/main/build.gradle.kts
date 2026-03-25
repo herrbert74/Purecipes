@@ -1,7 +1,6 @@
 plugins {
 	id("convention.kmp")
 	id("convention.compose")
-	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.kotlin.serialization)
 }
 

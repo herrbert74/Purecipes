@@ -1,6 +1,5 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
 	alias(libs.plugins.kotlin.serialization)
 	// Applied before KSP to avoid Ktorfit issue #1030 auto-registering the deprecated root `ksp` configuration.
 	alias(libs.plugins.ktorfit)
