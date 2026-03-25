@@ -1,5 +1,5 @@
 plugins {
-	id("convention.kmp")
+	id("convention.domain")
 }
 
 kotlin {
@@ -7,14 +7,5 @@ kotlin {
 		namespace = "com.purecipes.feature.search.domain"
 		compileSdk = 36
 		minSdk = 24
-	}
-
-	sourceSets {
-		commonMain {
-			dependencies {
-				api(project(":base:kotlin"))
-				api(project(":shared:domain"))
-			}
-		}
 	}
 }

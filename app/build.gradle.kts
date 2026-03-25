@@ -2,7 +2,7 @@ plugins {
 	alias(libs.plugins.androidApplication)
 	alias(libs.plugins.ksp)
 	id("org.jetbrains.kotlin.plugin.compose")
-	alias(libs.plugins.metro)
+	id("dev.zacsweers.metro")
 }
 android {
 	namespace = "com.purecipes"

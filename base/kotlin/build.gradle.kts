@@ -1,6 +1,6 @@
 plugins {
 	id("convention.kmp")
-	alias(libs.plugins.metro)
+	id("dev.zacsweers.metro")
 }
 
 kotlin {

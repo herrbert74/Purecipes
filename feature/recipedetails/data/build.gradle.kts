@@ -1,6 +1,5 @@
 plugins {
-	id("convention.kmp")
-	alias(libs.plugins.metro)
+	id("convention.data")
 }
 
 kotlin {
@@ -14,14 +13,9 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:recipedetails:domain"))
-				implementation(project(":shared:data"))
-				implementation(libs.kotlinResult.result)
 			}
 		}
 		commonTest {
-			dependencies {
-				implementation(libs.kotlinx.coroutinesTest)
-			}
 		}
 	}
 }

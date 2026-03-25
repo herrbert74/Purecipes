@@ -1,6 +1,5 @@
 plugins {
-	id("convention.kmp")
-	id("convention.compose")
+	id("convention.ui")
 }
 
 kotlin {
@@ -19,22 +18,13 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:recipedetails:domain"))
-				implementation(project(":shared:ui"))
-				implementation(libs.jetbrains.androidXLifecycleViewmodel)
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
-				implementation(libs.kotlinResult.result)
-				implementation(libs.kotlinx.coroutinesCore)
 			}
 		}
 		commonTest {
-			dependencies {
-				implementation(libs.kotlinx.coroutinesTest)
-			}
 		}
 		androidMain {
-			dependencies {
-			}
 		}
 		named("androidDeviceTest") {
 		}

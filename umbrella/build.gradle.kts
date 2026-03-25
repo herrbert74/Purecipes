@@ -9,7 +9,7 @@ plugins {
 	id("convention.compose")
 	alias(libs.plugins.buildKonfig)
 	alias(libs.plugins.kotlin.serialization)
-	alias(libs.plugins.metro)
+	id("dev.zacsweers.metro")
 }
 
 private val supportedBuildTypes = setOf("debug", "staging", "release")

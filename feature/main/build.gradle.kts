@@ -1,6 +1,5 @@
 plugins {
-	id("convention.kmp")
-	id("convention.compose")
+	id("convention.ui")
 	alias(libs.plugins.kotlin.serialization)
 }
 
@@ -20,10 +19,7 @@ kotlin {
 				api(project(":feature:search:domain"))
 				implementation(project(":feature:search:ui"))
 				api(project(":shared:data"))
-				implementation(project(":shared:ui"))
-				implementation(libs.jetbrains.androidXLifecycleViewmodel)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
-				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}
