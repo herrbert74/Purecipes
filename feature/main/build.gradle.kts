@@ -6,8 +6,6 @@ plugins {
 kotlin {
 	android {
 		namespace = "com.purecipes.feature.main"
-		compileSdk = 36
-		minSdk = 24
 	}
 
 	sourceSets {

@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.androidKotlinMultiPlatformLibrary)
+	id("convention.android")
 }
 
 tasks.withType<Kotlin2JsCompile>().configureEach {

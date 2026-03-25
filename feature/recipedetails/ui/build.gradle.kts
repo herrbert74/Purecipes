@@ -5,8 +5,6 @@ plugins {
 kotlin {
 	android {
 		namespace = "com.purecipes.feature.recipedetails.ui"
-		compileSdk = 36
-		minSdk = 24
 		withDeviceTestBuilder {
 			sourceSetTreeName = "test"
 		}.configure {

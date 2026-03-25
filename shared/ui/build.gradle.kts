@@ -10,8 +10,6 @@ plugins {
 kotlin {
 	android {
 		namespace = "com.purecipes.shared.ui"
-		compileSdk = 36
-		minSdk = 24
 
 		withHostTestBuilder {
 		}

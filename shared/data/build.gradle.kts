@@ -28,8 +28,6 @@ ksp {
 kotlin {
 	android {
 		namespace = "com.purecipes.shared.data"
-		compileSdk = 36
-		minSdk = 24
 	}
 
 	sourceSets {

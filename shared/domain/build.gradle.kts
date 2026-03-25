@@ -6,8 +6,6 @@ plugins {
 kotlin {
 	android {
 		namespace = "com.purecipes.shared.domain"
-		compileSdk = 36
-		minSdk = 24
 	}
 	jvm()
 

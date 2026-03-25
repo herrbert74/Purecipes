@@ -45,8 +45,6 @@ buildkonfig {
 kotlin {
 	android {
 		namespace = "com.purecipes.umbrella"
-		compileSdk = 36
-		minSdk = 24
 		compilerOptions {
 			jvmTarget.set(JvmTarget.fromTarget(libs.versions.jdk.get()))
 		}
