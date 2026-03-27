@@ -64,6 +64,7 @@ kotlin {
 				baseName = "umbrella"
 				isStatic = true
 				export(project(":feature:main"))
+				export(project(":feature:auth:domain"))
 				export(project(":feature:recipedetails:domain"))
 				export(project(":feature:search:domain"))
 			}
@@ -73,6 +74,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:auth:domain"))
+				api(project(":feature:auth:data"))
 				api(project(":feature:main"))
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:recipedetails:data"))

@@ -22,18 +22,22 @@ plugins {
 
 rootProject.plugins.withType<NodeJsRootPlugin> {
 	rootProject.the<NodeJsEnvSpec>().download.set(false)
+	rootProject.the<NodeJsEnvSpec>().downloadBaseUrl = null
 }
 
 rootProject.plugins.withType<WasmNodeJsRootPlugin> {
 	rootProject.the<WasmNodeJsEnvSpec>().download.set(false)
+	rootProject.the<WasmNodeJsEnvSpec>().downloadBaseUrl = null
 }
 
 rootProject.plugins.withType<YarnPlugin> {
 	rootProject.the<YarnRootEnvSpec>().download.set(false)
+	rootProject.the<YarnRootEnvSpec>().downloadBaseUrl = null
 }
 
 rootProject.plugins.withType<WasmYarnPlugin> {
 	rootProject.the<WasmYarnRootEnvSpec>().download.set(false)
+	rootProject.the<WasmYarnRootEnvSpec>().downloadBaseUrl = null
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)

@@ -2,6 +2,8 @@ package com.purecipes.shared.data.config
 
 interface PurecipesConfig {
 	fun buildType(): PurecipesBuildType
+
+	fun googleWebClientId(): String? = null
 }
 
 enum class PurecipesBuildType {
