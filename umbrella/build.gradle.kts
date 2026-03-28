@@ -14,6 +14,14 @@ plugins {
 
 private val supportedBuildTypes = setOf("debug", "staging", "release")
 
+private fun Project.googleWebClientId(): String {
+	return providers.gradleProperty("purecipes.googleWebClientId")
+		.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orNull
+		.orEmpty()
+}
+
 private fun Project.currentPurecipesBuildType(): String {
 	val requestedBuildType = androidBuildTypeFromTasks()
 		?: providers.gradleProperty("purecipes.buildType").orNull
@@ -39,6 +47,7 @@ buildkonfig {
 
 	defaultConfigs {
 		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
+		buildConfigField(STRING, "purecipesGoogleWebClientId", googleWebClientId())
 	}
 }
 

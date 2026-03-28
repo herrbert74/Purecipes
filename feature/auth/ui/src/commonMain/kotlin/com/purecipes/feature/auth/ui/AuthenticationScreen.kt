@@ -129,7 +129,7 @@ private fun SignedOutAuthenticationContent(
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
 	onEmailAuthenticationSubmit: () -> Unit,
-	onGoogleSignInResult: (String?, String, String?) -> Unit,
+	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 	onDeferredProviderClick: (AuthProvider) -> Unit,
 ) {
@@ -173,7 +173,7 @@ private fun SignedOutAuthenticationContent(
 private fun AuthenticationProviderButtons(
 	isGoogleConfigured: Boolean,
 	onEmailProviderClick: () -> Unit,
-	onGoogleSignInResult: (String?, String, String?) -> Unit,
+	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 	onDeferredProviderClick: (AuthProvider) -> Unit,
 ) {
@@ -316,16 +316,6 @@ private fun SignedInAuthenticationContent(
 		ProfileHeader(user = user)
 		HorizontalDivider()
 		Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-			Text(
-				text = user.displayName,
-				style = MaterialTheme.typography.headlineSmall,
-				fontWeight = FontWeight.SemiBold,
-			)
-			Text(
-				text = user.email,
-				style = MaterialTheme.typography.bodyLarge,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-			)
 			AssistChip(
 				onClick = {},
 				label = { Text(text = user.provider.name.lowercase().replaceFirstChar { it.titlecase() }) },
@@ -358,11 +348,12 @@ private fun ProfileHeader(user: AuthUser) {
 		ProfileAvatar(user = user)
 		Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
 			Text(
-				text = "Signed in",
-				style = MaterialTheme.typography.titleMedium,
+				text = user.displayName,
+				style = MaterialTheme.typography.headlineSmall,
+				fontWeight = FontWeight.SemiBold,
 			)
 			Text(
-				text = "Your account details are available here until onboarding moves this flow.",
+				text = user.email,
 				style = MaterialTheme.typography.bodyMedium,
 				color = MaterialTheme.colorScheme.onSurfaceVariant,
 			)

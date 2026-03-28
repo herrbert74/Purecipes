@@ -98,8 +98,7 @@ class AuthenticationViewModelTest {
 			coroutineScope = viewModelScope,
 		)
 
-		viewModel.onGoogleSignInResult(email = null, displayName = "", profileImageUrl = null)
-
+		viewModel.onGoogleSignInResult(idToken = null, email = null, displayName = "", profileImageUrl = null)
 		assertEquals("Google sign-in was cancelled.", viewModel.message)
 		assertTrue(viewModel.authenticationState is AuthenticationState.SignedOut)
 		viewModelScope.cancel()
@@ -136,7 +135,7 @@ class AuthenticationViewModelTest {
 
 		override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
 			val user = AuthUser(
-				id = profile.email.orEmpty(),
+				id = profile.idToken,
 				email = profile.email.orEmpty(),
 				displayName = profile.displayName,
 				firstName = null,

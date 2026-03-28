@@ -122,11 +122,12 @@ internal class AuthenticationViewModel(
 	}
 
 	fun onGoogleSignInResult(
+		idToken: String?,
 		email: String?,
 		displayName: String,
 		profileImageUrl: String?,
 	) {
-		if (email.isNullOrBlank()) {
+		if (idToken.isNullOrBlank()) {
 			message = "Google sign-in was cancelled."
 			return
 		}
@@ -134,6 +135,7 @@ internal class AuthenticationViewModel(
 			isBusy = true
 			val result = signInWithGoogle(
 				GoogleAuthenticationProfile(
+					idToken = idToken,
 					email = email,
 					displayName = displayName,
 					profileImageUrl = profileImageUrl,

@@ -1,15 +1,22 @@
 package com.purecipes.feature.auth.data.repository
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
+import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.auth.data.datasource.AuthenticationDataSource
+import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
+import com.purecipes.shared.domain.model.VerifiedGoogleUser
 import kotlinx.coroutines.flow.StateFlow
 
 class AuthenticationAccessor(
 	private val localDataSource: AuthenticationDataSource.Local,
+	private val remoteDataSource: AuthenticationDataSource.Remote,
 ) : AuthenticationRepository {
 
 	override val authenticationState: StateFlow<AuthenticationState> = localDataSource.authenticationState
@@ -28,10 +35,35 @@ class AuthenticationAccessor(
 	}
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
-		return localDataSource.signInWithGoogle(profile)
+		val verifiedUserResult = remoteDataSource.signInWithGoogle(profile.idToken)
+		val failure = verifiedUserResult.getError()
+		if (failure != null) {
+			return Err(failure)
+		}
+		val verifiedUser = verifiedUserResult.get()
+			?: return Err(Failure.UnexpectedFailure)
+		return localDataSource.signInWithGoogle(verifiedUser.toAuthUser())
 	}
 
 	override suspend fun signOut() {
 		localDataSource.signOut()
 	}
+}
+
+private fun VerifiedGoogleUser.toAuthUser(): AuthUser {
+	val normalizedEmail = email.trim().lowercase()
+	val resolvedDisplayName = displayName.ifBlank {
+		normalizedEmail.substringBefore('@').replaceFirstChar {
+			if (it.isLowerCase()) it.titlecase() else it.toString()
+		}
+	}
+	return AuthUser(
+		id = id,
+		email = normalizedEmail,
+		displayName = resolvedDisplayName,
+		firstName = firstName,
+		familyName = familyName,
+		profileImageUrl = profileImageUrl,
+		provider = AuthProvider.GOOGLE,
+	)
 }

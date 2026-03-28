@@ -16,6 +16,97 @@ Implement secure, seamless authentication across all platforms using KMPAuth for
 - iOS Google is also shown in the UI, but it stays unavailable until the native Google Sign-In dependency is wired into the iOS app.
 - There is no separate profile-name field at this stage. The app uses first name plus family name for email accounts, or the provider display name for Google accounts.
 
+## Google Sign-In Setup Summary
+
+### What the app expects today
+- The current implementation reads `googleWebClientId()` from `PurecipesConfig`.
+- That value is now populated from one of these inputs, in this order:
+    1. Gradle property `purecipes.googleWebClientId`
+    2. Gradle property `PURECIPES_GOOGLE_WEB_CLIENT_ID`
+    3. Environment variable `PURECIPES_GOOGLE_WEB_CLIENT_ID`
+- The value is compiled into Android `BuildConfig` and umbrella `BuildKonfig`, then exposed to Android, iOS, and Wasm through the shared config interface.
+
+### What is secret and what is not
+- The Google web client ID is not a secret. It is safe to compile into the app.
+- A Google OAuth client secret must never be shipped in the app.
+- Firebase web `apiKey` is also not a secret. It identifies the Firebase app, but it does not grant privileged backend access by itself.
+- Private service credentials must stay on the backend or in CI secrets, not in the client app.
+
+### Recommended local configuration
+- Add the client ID to your user Gradle properties file or an uncommitted project override.
+- Example in `~/.gradle/gradle.properties`:
+
+```properties
+purecipes.googleWebClientId=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+```
+
+- You can also export it as an environment variable:
+
+```bash
+export PURECIPES_GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+```
+
+### Do you need Firebase for the current Google button?
+- Not necessarily for the current staged Android and Wasm Google flow. The current button only needs a valid Google web client ID.
+- You do need Firebase if you want one unified authentication backend, Firebase Auth session handling, or the KMPAuth Apple and Facebook flows that rely on Firebase-backed setup.
+
+## Firebase Connection Checklist
+
+### 1. Create the Firebase project
+1. Create a Firebase project for Purecipes.
+2. Enable Authentication.
+3. Enable the Google sign-in provider in Firebase Authentication.
+
+### 2. Register apps in Firebase
+1. Add the Android app with package name `com.purecipes`.
+2. Add the iOS app with the final iOS bundle identifier you plan to ship.
+3. Add a Web app for Wasm/browser usage.
+
+### 3. Collect the platform config artifacts
+- Android Firebase SDK setup uses `google-services.json`.
+- iOS Firebase SDK setup uses `GoogleService-Info.plist`.
+- Web Firebase SDK setup uses the Firebase web config object with values like `apiKey`, `authDomain`, `projectId`, and `appId`.
+
+### 4. Decide which integration path you want
+
+#### Path A: Keep the current staged Google flow first
+- Set `purecipes.googleWebClientId`.
+- Validate Android and Wasm sign-in.
+- Postpone Firebase Auth session exchange until later.
+
+#### Path B: Move to Firebase-backed auth
+- Add Firebase SDK wiring per platform.
+- Exchange the Google sign-in result for a Firebase credential.
+- Persist the authenticated Firebase user/session instead of the current in-memory user state.
+- This path also lines up with enabling Apple and Facebook later.
+
+## What still needs to be implemented for full Firebase-backed auth
+
+### Android
+- If you use Firebase SDK directly, add `google-services.json` and the Google services Gradle plugin.
+- If you stay on the current staged path, the client ID property is enough for now.
+
+### iOS
+- Add the native Google Sign-In dependency.
+- Add Firebase iOS SDK if you want Firebase Auth-backed sessions.
+- Add `GoogleService-Info.plist` if Firebase SDK is used.
+- Update the iOS actual Google button from unavailable to live once the native dependency is present.
+- For native Google Sign-In, the iOS app must forward callback URLs to `GIDSignIn.sharedInstance.handle(url)`.
+- The iOS app must declare the reversed iOS client ID in `CFBundleURLTypes`.
+- `GoogleService-Info.plist` is the easiest source for the iOS `CLIENT_ID` and `REVERSED_CLIENT_ID` values.
+- The current blocker in this repository is native SDK visibility, not Firebase project setup: the Kotlin iOS target also needs access to the Google Sign-In SDK before the existing Kotlin `iosMain` auth button can be turned on.
+- Adding the Swift package only to the Xcode app target is not enough on its own, because the shared Kotlin iOS framework is linked by Gradle before the Xcode app target is built.
+
+### Wasm/Web
+- If you use Firebase Auth on web, provide the Firebase web config object.
+- The current staged path still only needs the Google web client ID.
+
+## Recommended order of work
+1. Create the Google/Firebase project and obtain the web client ID.
+2. Set `purecipes.googleWebClientId` locally and verify Android plus Wasm Google sign-in.
+3. Decide whether you want Firebase Auth as the real source of truth now, or later together with Apple and Facebook.
+4. If yes, add Firebase SDK setup for Android, iOS, and web, then replace the in-memory auth state with Firebase-backed session handling.
+
 ## User Story
 As a user, I want to sign in quickly and securely using my existing social accounts so I can access my recipes and preferences across all my devices.
 

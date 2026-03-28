@@ -8,6 +8,6 @@ internal expect fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal expect fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
 	onUnavailable: () -> Unit,
 )

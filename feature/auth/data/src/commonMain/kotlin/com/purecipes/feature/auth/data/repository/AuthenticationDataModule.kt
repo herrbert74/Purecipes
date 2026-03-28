@@ -1,6 +1,7 @@
 package com.purecipes.feature.auth.data.repository
 
 import com.purecipes.feature.auth.data.datasource.AuthenticationDataSource
+import com.purecipes.feature.auth.data.datasource.AuthenticationRemoteDataSource
 import com.purecipes.feature.auth.data.datasource.AuthenticationStore
 import com.purecipes.feature.auth.data.datasource.AuthenticationStoreHolder
 import com.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDataSource
@@ -10,6 +11,7 @@ import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import com.purecipes.shared.data.network.PurecipesApi
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -28,8 +30,16 @@ interface AuthenticationDataModule {
 	}
 
 	@Provides
-	fun provideAuthenticationRepository(localDataSource: AuthenticationDataSource.Local): AuthenticationRepository {
-		return AuthenticationAccessor(localDataSource)
+	fun provideAuthenticationRemoteDataSource(api: PurecipesApi): AuthenticationDataSource.Remote {
+		return AuthenticationRemoteDataSource(api)
+	}
+
+	@Provides
+	fun provideAuthenticationRepository(
+		localDataSource: AuthenticationDataSource.Local,
+		remoteDataSource: AuthenticationDataSource.Remote,
+	): AuthenticationRepository {
+		return AuthenticationAccessor(localDataSource, remoteDataSource)
 	}
 
 	@Provides

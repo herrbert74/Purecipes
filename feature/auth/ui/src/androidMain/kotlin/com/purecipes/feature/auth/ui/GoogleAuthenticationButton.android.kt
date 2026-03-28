@@ -23,13 +23,14 @@ internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal actual fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
 	onUnavailable: () -> Unit,
 ) {
 	if (isConfigured) {
 		GoogleButtonUiContainer(
 			onGoogleSignInResult = { googleUser ->
 				onGoogleSignInResult(
+					googleUser?.idToken,
 					googleUser?.email,
 					googleUser?.displayName.orEmpty(),
 					googleUser?.profilePicUrl,

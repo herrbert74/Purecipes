@@ -47,18 +47,19 @@ class AuthenticationUseCasesTest {
 	}
 
 	@Test
-	fun `google sign in rejects missing email`() = runTest {
+	fun `google sign in rejects missing id token`() = runTest {
 		val useCase = SignInWithGoogleUseCase(FakeAuthenticationRepository())
 
 		val result = useCase(
 			GoogleAuthenticationProfile(
+				idToken = "",
 				email = null,
 				displayName = "Taylor Baker",
 				profileImageUrl = null,
 			),
 		)
 
-		assertEquals("Google did not return an email address", result.getError()?.message)
+		assertEquals("Google sign-in did not return an ID token", result.getError()?.message)
 	}
 
 	private class FakeAuthenticationRepository : AuthenticationRepository {
@@ -92,7 +93,7 @@ class AuthenticationUseCasesTest {
 		override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
 			return Ok(
 				AuthUser(
-					id = profile.email.orEmpty(),
+					id = profile.idToken,
 					email = profile.email.orEmpty(),
 					displayName = profile.displayName,
 					firstName = null,

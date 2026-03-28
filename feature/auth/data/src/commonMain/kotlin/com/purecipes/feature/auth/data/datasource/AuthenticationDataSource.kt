@@ -7,7 +7,10 @@ import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
-import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
+import com.purecipes.shared.data.network.PurecipesApi
+import com.purecipes.shared.data.util.runCatchingApi
+import com.purecipes.shared.domain.model.GoogleSignInRequest
+import com.purecipes.shared.domain.model.VerifiedGoogleUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,10 +29,28 @@ interface AuthenticationDataSource {
 			password: String,
 		): Outcome<AuthUser>
 
-		suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser>
+		suspend fun signInWithGoogle(user: AuthUser): Outcome<AuthUser>
 
 		suspend fun signOut()
 	}
+
+	interface Remote {
+
+		suspend fun signInWithGoogle(idToken: String): Outcome<VerifiedGoogleUser>
+
+		suspend fun signOut()
+	}
+}
+
+class AuthenticationRemoteDataSource(
+	private val api: PurecipesApi,
+) : AuthenticationDataSource.Remote {
+
+	override suspend fun signInWithGoogle(idToken: String): Outcome<VerifiedGoogleUser> = runCatchingApi {
+		api.signInWithGoogle(GoogleSignInRequest(idToken = idToken.trim()))
+	}
+
+	override suspend fun signOut() = Unit
 }
 
 class AuthenticationStore {
@@ -94,21 +115,25 @@ class InMemoryAuthenticationLocalDataSource(
 		return Ok(user)
 	}
 
-	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
-		val email = profile.email?.normalizedEmail()
-			?: return Err(Failure.ServerError("Google did not return an email address"))
-		val existingAccount = store.accountsByEmail[email]
-		val user = if (existingAccount != null) {
-			existingAccount.toAuthUser(
-				provider = AuthProvider.GOOGLE,
-				displayName = profile.displayName.ifBlank { existingAccount.fullName() },
-				profileImageUrl = profile.profileImageUrl,
+	override suspend fun signInWithGoogle(user: AuthUser): Outcome<AuthUser> {
+		val normalizedEmail = user.email.normalizedEmail()
+		val existingAccount = store.accountsByEmail[normalizedEmail]
+		val resolvedUser = if (existingAccount != null) {
+			user.copy(
+				email = normalizedEmail,
+				displayName = user.displayName.ifBlank { existingAccount.fullName() },
+				firstName = user.firstName ?: existingAccount.firstName,
+				familyName = user.familyName ?: existingAccount.familyName,
+				profileImageUrl = user.profileImageUrl ?: existingAccount.profileImageUrl,
 			)
 		} else {
-			profile.toAuthUser(email)
+			user.copy(
+				email = normalizedEmail,
+				displayName = user.displayName.ifBlank { normalizedEmail.fallbackDisplayName() },
+			)
 		}
-		store.authenticationState.value = AuthenticationState.SignedIn(user)
-		return Ok(user)
+		store.authenticationState.value = AuthenticationState.SignedIn(resolvedUser)
+		return Ok(resolvedUser)
 	}
 
 	override suspend fun signOut() {
@@ -132,34 +157,10 @@ private fun EmailAccountRecord.toAuthUser(
 	)
 }
 
-private fun GoogleAuthenticationProfile.toAuthUser(email: String): AuthUser {
-	val names = splitDisplayName(displayName)
-	val resolvedDisplayName = displayName.ifBlank {
-		email.substringBefore('@').replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-	}
-	return AuthUser(
-		id = email,
-		email = email,
-		displayName = resolvedDisplayName,
-		firstName = names.first,
-		familyName = names.second,
-		profileImageUrl = profileImageUrl,
-		provider = AuthProvider.GOOGLE,
-	)
-}
-
-private fun splitDisplayName(displayName: String): Pair<String?, String?> {
-	val parts = displayName
-		.trim()
-		.split(' ')
-		.filter { it.isNotBlank() }
-	return when {
-		parts.isEmpty() -> null to null
-		parts.size == 1 -> parts.first() to null
-		else -> parts.first() to parts.drop(1).joinToString(" ")
-	}
-}
-
 private fun EmailAccountRecord.fullName(): String = "$firstName $familyName"
 
 private fun String.normalizedEmail(): String = trim().lowercase()
+
+private fun String.fallbackDisplayName(): String {
+	return substringBefore('@').replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+}

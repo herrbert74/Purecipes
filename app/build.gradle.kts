@@ -4,6 +4,28 @@ plugins {
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("dev.zacsweers.metro")
 }
+
+private fun Project.googleWebClientId(): String {
+	return providers.gradleProperty("purecipes.googleWebClientId")
+		.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun String.asBuildConfigString(): String {
+	return buildString {
+		append('"')
+		for (character in this@asBuildConfigString) {
+			if (character == '"' || character == '\\') {
+				append('\\')
+			}
+			append(character)
+		}
+		append('"')
+	}
+}
+
 android {
 	namespace = "com.purecipes"
 	compileSdk {
@@ -16,6 +38,7 @@ android {
 		targetSdk = 36
 		versionCode = 1
 		versionName = "1.0"
+		buildConfigField("String", "PURECIPES_GOOGLE_WEB_CLIENT_ID", googleWebClientId().asBuildConfigString())
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}

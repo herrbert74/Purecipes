@@ -23,6 +23,10 @@ dependencies {
 	implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.get()}")
 	implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.get()}")
+	implementation("io.ktor:ktor-client-cio-jvm:${libs.versions.ktor.get()}")
+	implementation("io.ktor:ktor-client-content-negotiation-jvm:${libs.versions.ktor.get()}")
+	implementation("io.ktor:ktor-client-core-jvm:${libs.versions.ktor.get()}")
+	implementation("io.ktor:ktor-client-logging-jvm:${libs.versions.ktor.get()}")
 
 	implementation("com.zaxxer:HikariCP:7.0.2")
 	implementation("org.postgresql:postgresql:42.7.10")

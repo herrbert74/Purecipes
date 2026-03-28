@@ -24,6 +24,7 @@ sealed interface AuthenticationState {
 }
 
 data class GoogleAuthenticationProfile(
+	val idToken: String,
 	val email: String?,
 	val displayName: String,
 	val profileImageUrl: String?,

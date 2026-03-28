@@ -58,8 +58,8 @@ class SignInWithGoogleUseCase(
 ) {
 
 	suspend operator fun invoke(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
-		if (profile.email.isNullOrBlank()) {
-			return Err(Failure.ServerError("Google did not return an email address"))
+		if (profile.idToken.isBlank()) {
+			return Err(Failure.ServerError("Google sign-in did not return an ID token"))
 		}
 		return repository.signInWithGoogle(profile)
 	}
