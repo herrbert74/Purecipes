@@ -64,7 +64,7 @@ kotlin {
 		getByName("androidDeviceTest") {
 			dependencies {
 				implementation(libs.androidx.testRunner)
-				implementation(libs.core)
+				implementation(libs.androidx.testCore)
 				implementation(libs.androidx.testExtJUnit)
 			}
 		}

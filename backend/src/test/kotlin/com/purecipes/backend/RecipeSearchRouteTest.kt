@@ -36,11 +36,11 @@ class RecipeSearchRouteTest {
 	@Test
 	fun `unhandled exception yields message and detail`() = testApplication {
 		application {
-			module {
+			module(extraRoutes = {
 				get("/boom") {
 					error("kaboom")
 				}
-			}
+			})
 		}
 
 		val response = client.get("/boom")

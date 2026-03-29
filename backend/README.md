@@ -5,6 +5,7 @@
 Set environment variables (defaults shown):
 
 - `PURECIPES_BACKEND_PORT` (default: `8080`)
+- `PURECIPES_GOOGLE_WEB_CLIENT_ID` (required for Google sign-in verification)
 - `PURECIPES_DB_URL` (default: `jdbc:postgresql://localhost:5432/purecipes`)
 - `PURECIPES_DB_USER` (default: `postgres`)
 - `PURECIPES_DB_PASSWORD` (default: `postgres`)
@@ -14,6 +15,20 @@ Start the server:
 
 ```bash
 ./gradlew :backend:run
+```
+
+The Google web client ID can also come from Gradle properties, using the same lookup order as the app modules:
+
+- `purecipes.googleWebClientId`
+- `PURECIPES_GOOGLE_WEB_CLIENT_ID`
+- environment variable `PURECIPES_GOOGLE_WEB_CLIENT_ID`
+
+When you launch the packaged backend via the shadow jar, Gradle properties are embedded into the jar at build time through a generated resource. If you change the client ID property, rebuild the jar before restarting the backend.
+
+When running the mobile and Wasm app against the local backend, start it on port `9090` so it matches the current debug client configuration:
+
+```bash
+PURECIPES_BACKEND_PORT=9090 ./gradlew :backend:run
 ```
 
 Health check:

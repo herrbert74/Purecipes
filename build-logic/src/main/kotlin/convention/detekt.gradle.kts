@@ -31,6 +31,7 @@ tasks.register<Detekt>("detektAll") {
 		"$rootDir/config/detekt/formatting-detekt-config.yml"
 	)
 	exclude("**/kotlin-js-store/**")
+	exclude("**/.kotlin/**")
 	exclude("**/resources/**")
 	exclude("**/build/**")
 	exclude("**/bin/**")

@@ -4,8 +4,10 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.mapError
 import com.github.michaelbull.result.runCatching
+import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.shared.data.getresult.handle
 import io.ktor.client.plugins.ResponseException
+import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
 
@@ -19,6 +21,8 @@ suspend inline fun <V> runCatchingApi(crossinline block: suspend () -> V) = try 
 	Err(exception.handle())
 } catch (exception: ResponseException) {
 	Err(exception.handle())
+	} catch (exception: JsonConvertException) {
+	Err(Failure.ServerError(exception.message ?: "Unexpected server response"))
 }
 
 /**
@@ -32,6 +36,8 @@ suspend inline fun <T, V> T.runCatchingApi(crossinline block: suspend T.() -> V)
 	Err(exception.handle())
 } catch (exception: ResponseException) {
 	Err(exception.handle())
+	} catch (exception: JsonConvertException) {
+	Err(Failure.ServerError(exception.message ?: "Unexpected server response"))
 }
 
 /**

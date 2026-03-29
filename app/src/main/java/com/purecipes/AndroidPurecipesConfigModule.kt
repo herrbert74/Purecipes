@@ -13,6 +13,10 @@ interface AndroidPurecipesConfigModule {
 	fun providePurecipesConfig(): PurecipesConfig {
 		return object : PurecipesConfig {
 			override fun buildType() = purecipesBuildType(BuildConfig.BUILD_TYPE)
+
+			override fun googleWebClientId(): String? {
+				return BuildConfig.PURECIPES_GOOGLE_WEB_CLIENT_ID.takeIf { it.isNotBlank() }
+			}
 		}
 	}
 }

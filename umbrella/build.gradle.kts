@@ -14,6 +14,14 @@ plugins {
 
 private val supportedBuildTypes = setOf("debug", "staging", "release")
 
+private fun Project.googleWebClientId(): String {
+	return providers.gradleProperty("purecipes.googleWebClientId")
+		.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orNull
+		.orEmpty()
+}
+
 private fun Project.currentPurecipesBuildType(): String {
 	val requestedBuildType = androidBuildTypeFromTasks()
 		?: providers.gradleProperty("purecipes.buildType").orNull
@@ -39,6 +47,7 @@ buildkonfig {
 
 	defaultConfigs {
 		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
+		buildConfigField(STRING, "purecipesGoogleWebClientId", googleWebClientId())
 	}
 }
 
@@ -64,6 +73,7 @@ kotlin {
 				baseName = "umbrella"
 				isStatic = true
 				export(project(":feature:main"))
+				export(project(":feature:auth:domain"))
 				export(project(":feature:favorites:domain"))
 				export(project(":feature:recipedetails:domain"))
 				export(project(":feature:search:domain"))
@@ -74,6 +84,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:auth:domain"))
+				api(project(":feature:auth:data"))
 				api(project(":feature:main"))
 				api(project(":feature:favorites:domain"))
 				api(project(":feature:favorites:data"))
