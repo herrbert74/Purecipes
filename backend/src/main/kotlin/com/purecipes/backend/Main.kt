@@ -1,6 +1,11 @@
 package com.purecipes.backend
 
+import com.purecipes.backend.auth.GoogleIdTokenVerifier
+import com.purecipes.backend.auth.GoogleTokenInfoGoogleIdTokenVerifier
+import com.purecipes.backend.auth.JdbcSessionService
+import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
+import com.purecipes.backend.routes.authenticationRoutes
 import com.purecipes.backend.routes.recipeRoutes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -31,11 +36,18 @@ fun main() {
 	}.start(wait = true)
 }
 
-fun Application.module(extraRoutes: Route.() -> Unit = {}) {
+fun Application.module(
+	extraRoutes: Route.() -> Unit = {},
+	db: Db = Db.create(),
+	googleIdTokenVerifier: GoogleIdTokenVerifier = GoogleTokenInfoGoogleIdTokenVerifier(),
+	sessionService: SessionService = JdbcSessionService(db.dataSource),
+) {
 	install(CallLogging)
 	install(CORS) {
 		anyHost()
 		allowMethod(HttpMethod.Get)
+		allowMethod(HttpMethod.Post)
+		allowHeader(HttpHeaders.Authorization)
 		allowHeader(HttpHeaders.ContentType)
 		allowHeader(HttpHeaders.Accept)
 		allowNonSimpleContentTypes = true
@@ -59,12 +71,14 @@ fun Application.module(extraRoutes: Route.() -> Unit = {}) {
 			)
 		}
 	}
+	sessionService.ensureSchema()
 
 	routing {
 		get("/health") {
 			call.respond(mapOf("status" to "ok"))
 		}
-		recipeRoutes { Db.create() }
+		authenticationRoutes(googleIdTokenVerifier, sessionService)
+		recipeRoutes { db }
 		extraRoutes()
 	}
 }

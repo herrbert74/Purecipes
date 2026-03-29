@@ -20,6 +20,8 @@ xcuserdata
 *.xcodeproj/*
 *.xcodeproj/project.pbxproj
 *.xcworkspace/contents.xcworkspacedata
+/iosApp/PurecipesIOSApp/Pods/
+/feature/auth/ui/ui.podspec
 
 # Build outputs
 /backend/bin/

@@ -1,0 +1,9 @@
+package com.purecipes.feature.auth.ui
+
+import androidx.compose.runtime.Composable
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+
+@Composable
+internal expect fun FacebookAuthenticationButton(
+	onResult: (Result<ExternalAuthenticationProfile?>) -> Unit,
+)

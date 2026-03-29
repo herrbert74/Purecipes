@@ -29,6 +29,13 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
+import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
+import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import com.purecipes.feature.auth.ui.AuthenticationScreen
 import com.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
@@ -43,8 +50,15 @@ import kotlinx.serialization.modules.subclass
 
 @Composable
 fun MainScreen(
+	observeAuthenticationState: ObserveAuthenticationStateUseCase,
+	signInWithEmail: SignInWithEmailUseCase,
+	registerWithEmail: RegisterWithEmailUseCase,
+	signInWithExternalProvider: SignInWithExternalProviderUseCase,
+	signInWithGoogle: SignInWithGoogleUseCase,
+	signOut: SignOutUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	googleWebClientId: String?,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 ) {
@@ -122,10 +136,15 @@ fun MainScreen(
 						)
 					}
 					entry<AccountDestination> {
-						PlaceholderScreen(
-							title = "Account",
-							subtitle = "Not implemented yet",
-							icon = Icons.Filled.Person,
+						AuthenticationScreen(
+							observeAuthenticationState = observeAuthenticationState,
+							signInWithEmail = signInWithEmail,
+							registerWithEmail = registerWithEmail,
+							signInWithExternalProvider = signInWithExternalProvider,
+							signInWithGoogle = signInWithGoogle,
+							signOut = signOut,
+							googleWebClientId = googleWebClientId,
+							modifier = Modifier.fillMaxSize(),
 						)
 					}
 				},
