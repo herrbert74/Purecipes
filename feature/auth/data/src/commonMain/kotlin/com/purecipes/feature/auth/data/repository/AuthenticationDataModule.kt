@@ -5,6 +5,7 @@ import com.purecipes.feature.auth.data.datasource.AuthenticationRemoteDataSource
 import com.purecipes.feature.auth.data.datasource.AuthenticationStore
 import com.purecipes.feature.auth.data.datasource.AuthenticationStoreHolder
 import com.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDataSource
+import com.purecipes.feature.auth.data.datasource.toAuthenticationState
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
@@ -13,6 +14,7 @@ import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.shared.data.network.PurecipesApi
+import com.purecipes.shared.data.session.SessionTokenStore
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -21,13 +23,19 @@ import dev.zacsweers.metro.Provides
 interface AuthenticationDataModule {
 
 	@Provides
-	fun provideAuthenticationStore(): AuthenticationStore {
-		return AuthenticationStoreHolder.store
+	fun provideAuthenticationStore(sessionTokenStore: SessionTokenStore): AuthenticationStore {
+		return AuthenticationStoreHolder.store.apply {
+			authenticationState.value = sessionTokenStore.currentSession()?.toAuthenticationState()
+				?: authenticationState.value
+		}
 	}
 
 	@Provides
-	fun provideAuthenticationLocalDataSource(store: AuthenticationStore): AuthenticationDataSource.Local {
-		return InMemoryAuthenticationLocalDataSource(store)
+	fun provideAuthenticationLocalDataSource(
+		store: AuthenticationStore,
+		sessionTokenStore: SessionTokenStore,
+	): AuthenticationDataSource.Local {
+		return InMemoryAuthenticationLocalDataSource(store, sessionTokenStore)
 	}
 
 	@Provides

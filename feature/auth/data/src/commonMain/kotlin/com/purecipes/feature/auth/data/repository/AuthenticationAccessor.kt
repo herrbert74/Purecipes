@@ -6,13 +6,11 @@ import com.github.michaelbull.result.getError
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.auth.data.datasource.AuthenticationDataSource
-import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
-import com.purecipes.shared.domain.model.VerifiedGoogleUser
 import kotlinx.coroutines.flow.StateFlow
 
 class AuthenticationAccessor(
@@ -43,7 +41,7 @@ class AuthenticationAccessor(
 		}
 		val verifiedUser = verifiedUserResult.get()
 			?: return Err(Failure.UnexpectedFailure)
-		return localDataSource.signInWithExternalProvider(verifiedUser.toAuthUser())
+		return localDataSource.signInWithBackendSession(verifiedUser)
 	}
 
 	override suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
@@ -53,24 +51,6 @@ class AuthenticationAccessor(
 	override suspend fun signOut() {
 		localDataSource.signOut()
 	}
-}
-
-private fun VerifiedGoogleUser.toAuthUser(): AuthUser {
-	val normalizedEmail = email.trim().lowercase()
-	val resolvedDisplayName = displayName.ifBlank {
-		normalizedEmail.substringBefore('@').replaceFirstChar {
-			if (it.isLowerCase()) it.titlecase() else it.toString()
-		}
-	}
-	return AuthUser(
-		id = id,
-		email = normalizedEmail,
-		displayName = resolvedDisplayName,
-		firstName = firstName,
-		familyName = familyName,
-		profileImageUrl = profileImageUrl,
-		provider = AuthProvider.GOOGLE,
-	)
 }
 
 private fun ExternalAuthenticationProfile.toAuthUser(): AuthUser {

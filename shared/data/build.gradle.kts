@@ -48,6 +48,7 @@ kotlin {
 				implementation(libs.ktorfit.annotations)
 				implementation(libs.ktorfit.convertersResponse)
 				implementation(libs.ktorfit.lib)
+				implementation(libs.multiplatformSettings.noargs)
 			}
 		}
 		commonTest {

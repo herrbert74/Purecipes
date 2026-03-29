@@ -1,9 +1,9 @@
 package com.purecipes.shared.data.network
 
+import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
-import com.purecipes.shared.domain.model.VerifiedGoogleUser
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Headers
@@ -24,5 +24,11 @@ interface PurecipesApi {
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("auth/google")
-	suspend fun signInWithGoogle(@Body request: GoogleSignInRequest): VerifiedGoogleUser
+	suspend fun signInWithGoogle(@Body request: GoogleSignInRequest): AuthenticatedSession
+
+	@GET("auth/session")
+	suspend fun getCurrentSession(): AuthenticatedSession
+
+	@POST("auth/sign-out")
+	suspend fun signOut()
 }

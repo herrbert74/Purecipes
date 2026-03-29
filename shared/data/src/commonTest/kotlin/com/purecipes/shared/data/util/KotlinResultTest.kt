@@ -13,6 +13,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
@@ -52,6 +53,13 @@ class KotlinResultTest {
 		} finally {
 			client.close()
 		}
+	}
+
+	@Test
+	fun `runCatchingApi maps json conversion exception to server error`() = runTest {
+		runCatchingApi<Int> {
+			throw JsonConvertException("Unexpected server response")
+		} shouldBe Err(Failure.ServerError("Unexpected server response"))
 	}
 
 	@Test
