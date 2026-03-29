@@ -7,11 +7,13 @@ import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +44,7 @@ class AuthenticationViewModelTest {
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			registerWithEmail = RegisterWithEmailUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			signOut = SignOutUseCase(repository),
 			coroutineScope = viewModelScope,
@@ -64,24 +67,22 @@ class AuthenticationViewModelTest {
 	}
 
 	@Test
-	fun `deferred provider exposes a message`() = runTest {
+	fun `external provider cancellation exposes a message`() = runTest {
 		val repository = FakeAuthenticationRepository()
 		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			registerWithEmail = RegisterWithEmailUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			signOut = SignOutUseCase(repository),
 			coroutineScope = viewModelScope,
 		)
 
-		viewModel.onDeferredProviderSelected(AuthProvider.APPLE)
+		viewModel.onExternalProviderSignInResult(AuthProvider.APPLE, Result.success(null))
 
-		assertEquals(
-			"Apple sign-in will be enabled after the Firebase-backed provider setup is added.",
-			viewModel.message,
-		)
+		assertEquals("Apple sign-in was cancelled.", viewModel.message)
 		viewModelScope.cancel()
 	}
 
@@ -93,6 +94,7 @@ class AuthenticationViewModelTest {
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			registerWithEmail = RegisterWithEmailUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			signOut = SignOutUseCase(repository),
 			coroutineScope = viewModelScope,
@@ -142,6 +144,20 @@ class AuthenticationViewModelTest {
 				familyName = null,
 				profileImageUrl = profile.profileImageUrl,
 				provider = AuthProvider.GOOGLE,
+			)
+			state.value = AuthenticationState.SignedIn(user)
+			return Ok(user)
+		}
+
+		override suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
+			val user = AuthUser(
+				id = profile.id,
+				email = profile.email.orEmpty(),
+				displayName = profile.displayName.orEmpty(),
+				firstName = null,
+				familyName = null,
+				profileImageUrl = profile.profileImageUrl,
+				provider = profile.provider,
 			)
 			state.value = AuthenticationState.SignedIn(user)
 			return Ok(user)

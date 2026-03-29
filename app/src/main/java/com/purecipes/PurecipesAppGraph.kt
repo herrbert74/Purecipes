@@ -4,6 +4,7 @@ import com.purecipes.feature.auth.data.repository.AuthenticationDataModule
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.feature.recipedetails.data.repository.RecipeDetailsDataModule
@@ -25,6 +26,8 @@ interface PurecipesAppGraph : AuthenticationDataModule, DataNetworkModule, Recip
 	val registerWithEmailUseCase: RegisterWithEmailUseCase
 
 	val signInWithEmailUseCase: SignInWithEmailUseCase
+
+	val signInWithExternalProviderUseCase: SignInWithExternalProviderUseCase
 
 	val signInWithGoogleUseCase: SignInWithGoogleUseCase
 

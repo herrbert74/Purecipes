@@ -3,8 +3,10 @@ package com.purecipes.feature.auth.domain.usecase
 import com.github.michaelbull.result.Err
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import kotlinx.coroutines.flow.StateFlow
@@ -65,12 +67,44 @@ class SignInWithGoogleUseCase(
 	}
 }
 
+class SignInWithExternalProviderUseCase(
+	private val repository: AuthenticationRepository,
+) {
+
+	suspend operator fun invoke(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
+		if (profile.id.isBlank()) {
+			return Err(Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return a user id"))
+		}
+		val email = profile.email?.trim().orEmpty()
+		if (email.isBlank()) {
+			return Err(Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return an email address"))
+		}
+		return repository.signInWithExternalProvider(
+			profile.copy(
+				id = profile.id.trim(),
+				email = email,
+				displayName = profile.displayName?.trim(),
+				profileImageUrl = profile.profileImageUrl?.trim()?.takeIf { it.isNotBlank() },
+			),
+		)
+	}
+}
+
 class SignOutUseCase(
 	private val repository: AuthenticationRepository,
 ) {
 
 	suspend operator fun invoke() {
 		repository.signOut()
+	}
+}
+
+private fun AuthProvider.providerDisplayName(): String {
+	return when (this) {
+		AuthProvider.EMAIL -> "Email"
+		AuthProvider.GOOGLE -> "Google"
+		AuthProvider.APPLE -> "Apple"
+		AuthProvider.FACEBOOK -> "Facebook"
 	}
 }
 

@@ -9,6 +9,7 @@ import com.purecipes.feature.auth.data.datasource.AuthenticationDataSource
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import com.purecipes.shared.domain.model.VerifiedGoogleUser
@@ -42,7 +43,11 @@ class AuthenticationAccessor(
 		}
 		val verifiedUser = verifiedUserResult.get()
 			?: return Err(Failure.UnexpectedFailure)
-		return localDataSource.signInWithGoogle(verifiedUser.toAuthUser())
+		return localDataSource.signInWithExternalProvider(verifiedUser.toAuthUser())
+	}
+
+	override suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
+		return localDataSource.signInWithExternalProvider(profile.toAuthUser())
 	}
 
 	override suspend fun signOut() {
@@ -65,5 +70,22 @@ private fun VerifiedGoogleUser.toAuthUser(): AuthUser {
 		familyName = familyName,
 		profileImageUrl = profileImageUrl,
 		provider = AuthProvider.GOOGLE,
+	)
+}
+
+private fun ExternalAuthenticationProfile.toAuthUser(): AuthUser {
+	val normalizedEmail = email?.trim()?.lowercase().orEmpty()
+	val resolvedDisplayName = displayName?.trim().takeUnless { it.isNullOrBlank() }
+		?: normalizedEmail.substringBefore('@').replaceFirstChar {
+			if (it.isLowerCase()) it.titlecase() else it.toString()
+		}
+	return AuthUser(
+		id = id.trim(),
+		email = normalizedEmail,
+		displayName = resolvedDisplayName,
+		firstName = null,
+		familyName = null,
+		profileImageUrl = profileImageUrl,
+		provider = provider,
 	)
 }

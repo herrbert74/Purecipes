@@ -34,14 +34,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
-import com.mmk.kmpauth.uihelper.facebook.FacebookSignInButton
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 
@@ -50,6 +50,7 @@ fun AuthenticationScreen(
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
+	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
 	googleWebClientId: String?,
@@ -60,6 +61,7 @@ fun AuthenticationScreen(
 		observeAuthenticationState = observeAuthenticationState,
 		signInWithEmail = signInWithEmail,
 		registerWithEmail = registerWithEmail,
+		signInWithExternalProvider = signInWithExternalProvider,
 		signInWithGoogle = signInWithGoogle,
 		signOut = signOut,
 	)
@@ -89,9 +91,9 @@ fun AuthenticationScreen(
 						onEmailChange = viewModel::onEmailChange,
 						onPasswordChange = viewModel::onPasswordChange,
 						onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
+						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
-						onDeferredProviderClick = viewModel::onDeferredProviderSelected,
 					)
 
 				is AuthenticationState.SignedIn ->
@@ -129,9 +131,9 @@ private fun SignedOutAuthenticationContent(
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
 	onEmailAuthenticationSubmit: () -> Unit,
+	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
-	onDeferredProviderClick: (AuthProvider) -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		Text(
@@ -146,9 +148,9 @@ private fun SignedOutAuthenticationContent(
 		AuthenticationProviderButtons(
 			isGoogleConfigured = isGoogleConfigured,
 			onEmailProviderClick = onEmailProviderClick,
+			onExternalProviderSignInResult = onExternalProviderSignInResult,
 			onGoogleSignInResult = onGoogleSignInResult,
 			onGoogleUnavailableClick = onGoogleUnavailableClick,
-			onDeferredProviderClick = onDeferredProviderClick,
 		)
 		if (isEmailFormVisible) {
 			EmailAuthenticationForm(
@@ -173,9 +175,9 @@ private fun SignedOutAuthenticationContent(
 private fun AuthenticationProviderButtons(
 	isGoogleConfigured: Boolean,
 	onEmailProviderClick: () -> Unit,
+	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
-	onDeferredProviderClick: (AuthProvider) -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 		FilledTonalButton(
@@ -191,17 +193,11 @@ private fun AuthenticationProviderButtons(
 			onGoogleSignInResult = onGoogleSignInResult,
 			onUnavailable = onGoogleUnavailableClick,
 		)
-		AppleSignInButton(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(52.dp),
-			onClick = { onDeferredProviderClick(AuthProvider.APPLE) },
+		AppleAuthenticationButton(
+			onResult = { result -> onExternalProviderSignInResult(AuthProvider.APPLE, result) },
 		)
-		FacebookSignInButton(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(52.dp),
-			onClick = { onDeferredProviderClick(AuthProvider.FACEBOOK) },
+		FacebookAuthenticationButton(
+			onResult = { result -> onExternalProviderSignInResult(AuthProvider.FACEBOOK, result) },
 		)
 	}
 }

@@ -8,6 +8,7 @@ import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +63,23 @@ class AuthenticationUseCasesTest {
 		assertEquals("Google sign-in did not return an ID token", result.getError()?.message)
 	}
 
+	@Test
+	fun `external provider sign in rejects missing email`() = runTest {
+		val useCase = SignInWithExternalProviderUseCase(FakeAuthenticationRepository())
+
+		val result = useCase(
+			ExternalAuthenticationProfile(
+				provider = AuthProvider.APPLE,
+				id = "apple-user",
+				email = null,
+				displayName = "Taylor Baker",
+				profileImageUrl = null,
+			),
+		)
+
+		assertEquals("Apple sign-in did not return an email address", result.getError()?.message)
+	}
+
 	private class FakeAuthenticationRepository : AuthenticationRepository {
 
 		override val authenticationState: StateFlow<AuthenticationState> =
@@ -100,6 +118,20 @@ class AuthenticationUseCasesTest {
 					familyName = null,
 					profileImageUrl = profile.profileImageUrl,
 					provider = AuthProvider.GOOGLE,
+				),
+			)
+		}
+
+		override suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
+			return Ok(
+				AuthUser(
+					id = profile.id,
+					email = profile.email.orEmpty(),
+					displayName = profile.displayName.orEmpty(),
+					firstName = null,
+					familyName = null,
+					profileImageUrl = profile.profileImageUrl,
+					provider = profile.provider,
 				),
 			)
 		}

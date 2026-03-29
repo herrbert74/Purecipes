@@ -6,13 +6,12 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.serialization.kotlinx.json.json
-import java.util.Properties
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.util.Properties
 
 private const val BACKEND_CONFIG_RESOURCE = "purecipes-backend.properties"
 private const val GOOGLE_WEB_CLIENT_ID_PROPERTY = "purecipes.googleWebClientId"

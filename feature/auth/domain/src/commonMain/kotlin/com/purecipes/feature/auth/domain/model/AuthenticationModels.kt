@@ -29,3 +29,11 @@ data class GoogleAuthenticationProfile(
 	val displayName: String,
 	val profileImageUrl: String?,
 )
+
+data class ExternalAuthenticationProfile(
+	val provider: AuthProvider,
+	val id: String,
+	val email: String?,
+	val displayName: String?,
+	val profileImageUrl: String?,
+)

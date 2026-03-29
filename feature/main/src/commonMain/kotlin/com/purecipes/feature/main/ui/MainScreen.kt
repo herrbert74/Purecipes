@@ -32,6 +32,7 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.feature.auth.ui.AuthenticationScreen
@@ -52,6 +53,7 @@ fun MainScreen(
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
+	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
 	searchRecipes: SearchRecipesUseCase,
@@ -138,6 +140,7 @@ fun MainScreen(
 							observeAuthenticationState = observeAuthenticationState,
 							signInWithEmail = signInWithEmail,
 							registerWithEmail = registerWithEmail,
+							signInWithExternalProvider = signInWithExternalProvider,
 							signInWithGoogle = signInWithGoogle,
 							signOut = signOut,
 							googleWebClientId = googleWebClientId,

@@ -1,5 +1,6 @@
 plugins {
 	alias(libs.plugins.androidApplication)
+	alias(libs.plugins.googleServices)
 	alias(libs.plugins.ksp)
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("dev.zacsweers.metro")
@@ -74,6 +75,7 @@ dependencies {
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
+	implementation(libs.kmpauth.facebook)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.androidx.composeUi)
 	implementation(libs.androidx.composeUiGraphics)

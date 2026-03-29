@@ -29,7 +29,7 @@ interface AuthenticationDataSource {
 			password: String,
 		): Outcome<AuthUser>
 
-		suspend fun signInWithGoogle(user: AuthUser): Outcome<AuthUser>
+		suspend fun signInWithExternalProvider(user: AuthUser): Outcome<AuthUser>
 
 		suspend fun signOut()
 	}
@@ -115,7 +115,7 @@ class InMemoryAuthenticationLocalDataSource(
 		return Ok(user)
 	}
 
-	override suspend fun signInWithGoogle(user: AuthUser): Outcome<AuthUser> {
+	override suspend fun signInWithExternalProvider(user: AuthUser): Outcome<AuthUser> {
 		val normalizedEmail = user.email.normalizedEmail()
 		val existingAccount = store.accountsByEmail[normalizedEmail]
 		val resolvedUser = if (existingAccount != null) {

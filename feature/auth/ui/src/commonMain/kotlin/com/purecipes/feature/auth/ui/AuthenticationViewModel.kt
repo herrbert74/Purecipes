@@ -11,10 +11,12 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthenticationState
+import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +34,7 @@ internal class AuthenticationViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val signInWithEmail: SignInWithEmailUseCase,
 	private val registerWithEmail: RegisterWithEmailUseCase,
+	private val signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	private val signInWithGoogle: SignInWithGoogleUseCase,
 	private val signOut: SignOutUseCase,
 	coroutineScope: CoroutineScope? = null,
@@ -113,14 +116,6 @@ internal class AuthenticationViewModel(
 		message = "Google sign-in needs a configured Web Client ID before it can be enabled."
 	}
 
-	fun onDeferredProviderSelected(provider: AuthProvider) {
-		message = when (provider) {
-			AuthProvider.APPLE -> "Apple sign-in will be enabled after the Firebase-backed provider setup is added."
-			AuthProvider.FACEBOOK -> "Facebook sign-in will be enabled after the Firebase-backed provider setup is added."
-			else -> null
-		}
-	}
-
 	fun onGoogleSignInResult(
 		idToken: String?,
 		email: String?,
@@ -142,6 +137,25 @@ internal class AuthenticationViewModel(
 				),
 			)
 			message = result.getError()?.message
+			isBusy = false
+		}
+	}
+
+	fun onExternalProviderSignInResult(provider: AuthProvider, result: Result<ExternalAuthenticationProfile?>) {
+		val failure = result.exceptionOrNull()
+		if (failure != null) {
+			message = failure.message ?: "${provider.providerDisplayName()} sign-in failed."
+			return
+		}
+		val profile = result.getOrNull()
+		if (profile == null) {
+			message = "${provider.providerDisplayName()} sign-in was cancelled."
+			return
+		}
+		scope.launch {
+			isBusy = true
+			val signInResult = signInWithExternalProvider(profile)
+			message = signInResult.getError()?.message
 			isBusy = false
 		}
 	}
@@ -178,6 +192,7 @@ internal fun authenticationViewModel(
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
+	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
 ): AuthenticationViewModel {
@@ -189,10 +204,20 @@ internal fun authenticationViewModel(
 					observeAuthenticationState = observeAuthenticationState,
 					signInWithEmail = signInWithEmail,
 					registerWithEmail = registerWithEmail,
+					signInWithExternalProvider = signInWithExternalProvider,
 					signInWithGoogle = signInWithGoogle,
 					signOut = signOut,
 				)
 			}
 		},
 	)
+}
+
+private fun AuthProvider.providerDisplayName(): String {
+	return when (this) {
+		AuthProvider.EMAIL -> "Email"
+		AuthProvider.GOOGLE -> "Google"
+		AuthProvider.APPLE -> "Apple"
+		AuthProvider.FACEBOOK -> "Facebook"
+	}
 }

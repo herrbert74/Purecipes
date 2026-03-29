@@ -9,6 +9,7 @@ import com.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.shared.data.network.PurecipesApi
@@ -55,6 +56,11 @@ interface AuthenticationDataModule {
 	@Provides
 	fun provideRegisterWithEmailUseCase(repository: AuthenticationRepository): RegisterWithEmailUseCase {
 		return RegisterWithEmailUseCase(repository)
+	}
+
+	@Provides
+	fun provideSignInWithExternalProviderUseCase(repository: AuthenticationRepository): SignInWithExternalProviderUseCase {
+		return SignInWithExternalProviderUseCase(repository)
 	}
 
 	@Provides

@@ -18,6 +18,7 @@ class RecipeSearchViewControllerFactory {
 				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
 				signInWithEmail = graph.signInWithEmailUseCase,
 				registerWithEmail = graph.registerWithEmailUseCase,
+				signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
 				signInWithGoogle = graph.signInWithGoogleUseCase,
 				signOut = graph.signOutUseCase,
 				searchRecipes = graph.searchRecipesUseCase,
