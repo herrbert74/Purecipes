@@ -9,9 +9,14 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.serialization.kotlinx.json.json
+import java.util.Properties
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+
+private const val BACKEND_CONFIG_RESOURCE = "purecipes-backend.properties"
+private const val GOOGLE_WEB_CLIENT_ID_PROPERTY = "purecipes.googleWebClientId"
+private const val GOOGLE_WEB_CLIENT_ID_ENV = "PURECIPES_GOOGLE_WEB_CLIENT_ID"
 
 interface GoogleIdTokenVerifier {
 
@@ -38,7 +43,7 @@ class GoogleTokenInfoGoogleIdTokenVerifier(
 			)
 		}
 	},
-	private val expectedAudience: String? = System.getenv("PURECIPES_GOOGLE_WEB_CLIENT_ID"),
+	private val expectedAudience: String? = resolveGoogleWebClientId(),
 ) : GoogleIdTokenVerifier {
 
 	override suspend fun verify(idToken: String): GoogleIdTokenVerificationResult {
@@ -63,6 +68,31 @@ class GoogleTokenInfoGoogleIdTokenVerifier(
 		} catch (_: ClientRequestException) {
 			null
 		}
+	}
+}
+
+internal fun resolveGoogleWebClientId(
+	systemProperty: (String) -> String? = System::getProperty,
+	environmentVariable: (String) -> String? = System::getenv,
+	resourceProperty: (String) -> String? = ::readBundledBackendProperty,
+): String? {
+	return systemProperty(GOOGLE_WEB_CLIENT_ID_PROPERTY)
+		?: systemProperty(GOOGLE_WEB_CLIENT_ID_ENV)
+		?: environmentVariable(GOOGLE_WEB_CLIENT_ID_ENV)
+		?: resourceProperty(GOOGLE_WEB_CLIENT_ID_PROPERTY)
+}
+
+private fun readBundledBackendProperty(key: String): String? {
+	val stream = GoogleTokenInfoGoogleIdTokenVerifier::class.java.classLoader
+		.getResourceAsStream(BACKEND_CONFIG_RESOURCE)
+		?: return null
+
+	return stream.use {
+		Properties()
+			.apply { load(it) }
+			.getProperty(key)
+			?.trim()
+			?.takeIf { value -> value.isNotBlank() }
 	}
 }
 

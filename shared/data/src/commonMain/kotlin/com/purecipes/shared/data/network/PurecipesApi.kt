@@ -6,6 +6,7 @@ import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.VerifiedGoogleUser
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
@@ -21,6 +22,7 @@ interface PurecipesApi {
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails
 
+	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("auth/google")
 	suspend fun signInWithGoogle(@Body request: GoogleSignInRequest): VerifiedGoogleUser
 }

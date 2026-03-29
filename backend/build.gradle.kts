@@ -1,8 +1,30 @@
+import org.gradle.api.tasks.WriteProperties
+
 plugins {
 	kotlin("jvm")
 	alias(libs.plugins.kotlin.serialization)
 	application
 	id("com.gradleup.shadow") version "9.4.0"
+}
+
+private fun Project.googleWebClientId() = providers.gradleProperty("purecipes.googleWebClientId")
+		.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+		.orElse("")
+
+val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resources/backend")
+
+sourceSets {
+	main {
+		resources.srcDir(generatedBackendResourcesDir)
+	}
+}
+
+val generateBackendRuntimeConfig by tasks.registering(WriteProperties::class) {
+	val outputFile = generatedBackendResourcesDir.map { it.file("purecipes-backend.properties").asFile }
+	destinationFile = outputFile.get()
+	encoding = "UTF-8"
+	property("purecipes.googleWebClientId", googleWebClientId())
 }
 
 kotlin {
@@ -37,6 +59,14 @@ dependencies {
 
 application {
 	mainClass.set("com.purecipes.backend.MainKt")
+	applicationDefaultJvmArgs = googleWebClientId().orNull
+		?.takeIf { it.isNotBlank() }
+		?.let { listOf("-Dpurecipes.googleWebClientId=$it") }
+		.orEmpty()
+}
+
+tasks.processResources {
+	dependsOn(generateBackendRuntimeConfig)
 }
 
 tasks.shadowJar {
