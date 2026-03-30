@@ -4,7 +4,7 @@ plugins {
 	kotlin("jvm")
 	alias(libs.plugins.kotlin.serialization)
 	application
-	id("com.gradleup.shadow") version "9.4.0"
+	alias(libs.plugins.shadow)
 }
 
 private fun Project.googleWebClientId() = providers.gradleProperty("purecipes.googleWebClientId")
@@ -34,30 +34,31 @@ kotlin {
 }
 
 dependencies {
-	implementation(libs.kotlinx.coroutinesCore)
-	implementation(libs.kotlinx.serializationJson)
 	implementation(project(":shared:domain"))
 
-	implementation("io.ktor:ktor-server-core-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-server-netty-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-server-content-negotiation-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-client-cio-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-client-content-negotiation-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-client-core-jvm:${libs.versions.ktor.get()}")
-	implementation("io.ktor:ktor-client-logging-jvm:${libs.versions.ktor.get()}")
+	implementation(libs.hikariCp)
+	implementation(libs.kotlinx.coroutinesCore)
+	implementation(libs.kotlinx.serializationJson)
+	implementation(libs.ktor.clientCio)
+	implementation(libs.ktor.clientContentNegotiation)
+	implementation(libs.ktor.clientCore)
+	implementation(libs.ktor.clientLogging)
+	implementation(libs.ktor.serializationKotlinxJson)
 
-	implementation("com.zaxxer:HikariCP:7.0.2")
-	implementation("org.postgresql:postgresql:42.7.10")
+	implementation(libs.ktor.serverCallLogging)
+	implementation(libs.ktor.serverContentNegotiation)
+	implementation(libs.ktor.serverCore)
+	implementation(libs.ktor.serverCors)
+	implementation(libs.ktor.serverNetty)
+	implementation(libs.ktor.serverStatusPages)
 
-	testImplementation("com.h2database:h2:2.3.232")
+	implementation(libs.postgresql)
+
 	testImplementation(kotlin("test"))
-	testImplementation("io.ktor:ktor-server-test-host-jvm:${libs.versions.ktor.get()}")
-	testImplementation("org.testcontainers:postgresql:1.21.3")
-	testImplementation("org.testcontainers:testcontainers:1.21.3")
+	testImplementation(libs.h2)
+	testImplementation(libs.ktor.serverTestHost)
+	testImplementation(libs.testcontainers)
+	testImplementation(libs.testcontainers.postgresql)
 }
 
 application {

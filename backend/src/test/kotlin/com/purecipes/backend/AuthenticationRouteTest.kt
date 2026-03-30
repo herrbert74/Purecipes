@@ -85,7 +85,9 @@ class AuthenticationRouteTest {
 					"provider":"GOOGLE"
 				}
 			}
-			""".trimIndent().lines().joinToString(separator = "")
+			""".trimIndent().lines().joinToString(separator = "") {
+				it.trim()
+			}
 		assertEquals(
 			expectedResponseBody,
 			response.bodyAsText(),
@@ -175,7 +177,9 @@ class AuthenticationRouteTest {
 					"provider":"GOOGLE"
 				}
 			}
-			""".trimIndent().lines().joinToString(separator = "")
+			""".trimIndent().lines().joinToString(separator = "") {
+				it.trim()
+			}
 		assertEquals(
 			expectedResponseBody,
 			response.bodyAsText(),

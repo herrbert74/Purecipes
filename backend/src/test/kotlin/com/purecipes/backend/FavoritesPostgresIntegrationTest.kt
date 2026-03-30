@@ -19,7 +19,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assume.assumeTrue
 import org.testcontainers.DockerClientFactory
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
+import org.testcontainers.utility.DockerImageName
 import javax.sql.DataSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,18 +33,13 @@ class FavoritesPostgresIntegrationTest {
 	fun `postgres favorites endpoints require bearer token`() {
 		assumeTrue(isDockerAvailable())
 
-		val container = PostgreSQLContainer("postgres:17-alpine").apply {
-			withDatabaseName("purecipes_test")
-			withUsername("postgres")
-			withPassword("postgres")
-			start()
-		}
+		val container = createPostgresContainer()
 
 		val dataSource = HikariDataSource(
 			HikariConfig().apply {
-				jdbcUrl = container.jdbcUrl
-				username = container.username
-				password = container.password
+				jdbcUrl = container.getJdbcUrl()
+				username = container.getUsername()
+				password = container.getPassword()
 				maximumPoolSize = 2
 				isAutoCommit = true
 				validate()
@@ -86,7 +82,7 @@ class FavoritesPostgresIntegrationTest {
 			}
 		} finally {
 			dataSource.close()
-			container.stop()
+			container.close()
 		}
 	}
 
@@ -94,18 +90,13 @@ class FavoritesPostgresIntegrationTest {
 	fun `postgres add favorite is scoped to authenticated user`() {
 		assumeTrue(isDockerAvailable())
 
-		val container = PostgreSQLContainer("postgres:17-alpine").apply {
-			withDatabaseName("purecipes_test")
-			withUsername("postgres")
-			withPassword("postgres")
-			start()
-		}
+		val container = createPostgresContainer()
 
 		val dataSource = HikariDataSource(
 			HikariConfig().apply {
-				jdbcUrl = container.jdbcUrl
-				username = container.username
-				password = container.password
+				jdbcUrl = container.getJdbcUrl()
+				username = container.getUsername()
+				password = container.getPassword()
 				maximumPoolSize = 2
 				isAutoCommit = true
 				validate()
@@ -210,9 +201,17 @@ class FavoritesPostgresIntegrationTest {
 			}
 		} finally {
 			dataSource.close()
-			container.stop()
+			container.close()
 		}
 	}
+
+	private fun createPostgresContainer(): PostgreSQLContainer =
+		PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine")).apply {
+			withDatabaseName("purecipes_test")
+			withUsername("postgres")
+			withPassword("postgres")
+			start()
+		}
 
 	private fun seedRecipeTables(dataSource: DataSource) {
 		dataSource.connection.use { connection ->

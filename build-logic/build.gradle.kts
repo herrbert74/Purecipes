@@ -7,7 +7,7 @@ kotlin {
 }
 
 dependencies {
-	implementation("com.android.tools.build:gradle:${libs.versions.androidGradlePlugin.get()}")
+	implementation(libs.agp)
 	implementation(libs.plugins.detekt.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })
 	implementation(libs.plugins.jetBrainsCompose.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })
 	implementation(libs.plugins.kotlin.multiplatform.get().run { "$pluginId:$pluginId.gradle.plugin:$version" })

@@ -57,7 +57,9 @@ class FavoritesSessionIntegrationTest {
 					"isFavorite":true
 				}
 			]
-			""".trimIndent().lines().joinToString(separator = "")
+			""".trimIndent().lines().joinToString(separator = "") {
+				it.trim()
+			}
 		assertEquals(
 			expectedFavoritesBody,
 			firstFavoritesResponse.bodyAsText(),
