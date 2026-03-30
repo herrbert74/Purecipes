@@ -21,7 +21,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -56,18 +58,27 @@ fun FavoritesScreen(
 		}
 	}
 
-	if (sessionKey == null) {
-		FavoritesSignedOutContent(modifier = modifier)
-		return
-	}
+	Scaffold(
+		modifier = modifier.fillMaxSize(),
+		topBar = {
+			TopAppBar(
+				title = { Text(text = "Favorites") },
+			)
+		},
+	) { innerPadding ->
+		if (sessionKey == null) {
+			FavoritesSignedOutContent(modifier = Modifier.padding(innerPadding))
+			return@Scaffold
+		}
 
-	FavoritesContent(
-		isLoading = viewModel.isLoading,
-		errorMessage = viewModel.errorMessage,
-		recipes = viewModel.recipes,
-		modifier = modifier,
-		onRecipeSelect = onRecipeSelect,
-	)
+		FavoritesContent(
+			isLoading = viewModel.isLoading,
+			errorMessage = viewModel.errorMessage,
+			recipes = viewModel.recipes,
+			modifier = Modifier.padding(innerPadding),
+			onRecipeSelect = onRecipeSelect,
+		)
+	}
 }
 
 @Composable
@@ -211,12 +222,6 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 				)
 			}
-
-			Icon(
-				imageVector = Icons.Filled.Favorite,
-				contentDescription = null,
-				tint = MaterialTheme.colorScheme.primary,
-			)
 		}
 	}
 }
