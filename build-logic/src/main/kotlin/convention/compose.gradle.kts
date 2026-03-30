@@ -42,7 +42,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 }
 
 tasks.configureEach {
-	if (name == "copyAndroidDeviceTestComposeResourcesToAndroidAssets" || name == "prepareComposeResourcesTaskForAndroidDeviceTest") {
+	if (name == "copyAndroidDeviceTestComposeResourcesToAndroidAssets" ||
+		name == "prepareComposeResourcesTaskForAndroidDeviceTest"
+	) {
 		enabled = false
 	}
 }

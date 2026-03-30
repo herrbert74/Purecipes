@@ -38,7 +38,7 @@ class FavoritesViewModelTest {
 		viewModel.loadFavorites()
 		advanceUntilIdle()
 
-		assertEquals(expected, viewModel.recipes)
+		assertEquals(expected, viewModel.recipes.toList())
 		assertNull(viewModel.errorMessage)
 		assertFalse(viewModel.isLoading)
 	}
@@ -56,7 +56,7 @@ class FavoritesViewModelTest {
 		advanceUntilIdle()
 
 		assertEquals("Favorites failed", viewModel.errorMessage)
-		assertEquals(emptyList(), viewModel.recipes)
+		assertEquals(emptyList(), viewModel.recipes.toList())
 		assertFalse(viewModel.isLoading)
 	}
 

@@ -27,10 +27,10 @@ class RecipeRepository(
 		return searchRecipes(sql, like, limit)
 	}
 
-	fun getRecipeDetails(recipeId: Int): RecipeDetails? = dataSource.connection.use { conn ->
+	fun getRecipeDetails(recipeId: Int, userId: Long? = null): RecipeDetails? = dataSource.connection.use { conn ->
 		val recipeRecord = loadRecipeRecord(conn, recipeId) ?: return@use null
 		val ingredientGroups = loadIngredientGroupsForRecipe(conn, recipeId)
-		val isFavorite = isFavorite(conn, recipeId)
+		val isFavorite = isFavorite(conn, recipeId, userId)
 		val steps = loadStepsForRecipe(conn, recipeId, recipeRecord.instructions)
 
 		RecipeDetails(
@@ -52,31 +52,34 @@ class RecipeRepository(
 		)
 	}
 
-	fun getFavoriteRecipes(): List<RecipeSummary> = dataSource.connection.use { conn ->
+	fun getFavoriteRecipes(userId: Long): List<RecipeSummary> = dataSource.connection.use { conn ->
 		conn.prepareStatement(favoritesSql).use { ps ->
+			ps.setLong(1, userId)
 			ps.executeQuery().use(::readFavoriteRecipes)
 		}
 	}
 
-	fun addFavorite(recipeId: Int): Boolean = dataSource.connection.use { conn ->
+	fun addFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
 		if (!recipeExists(conn, recipeId)) {
 			return@use false
 		}
 
 		conn.prepareStatement(addFavoriteSql).use { ps ->
-			ps.setInt(1, recipeId)
+			ps.setLong(1, userId)
+			ps.setInt(2, recipeId)
 			ps.executeUpdate()
 		}
 		true
 	}
 
-	fun removeFavorite(recipeId: Int): Boolean = dataSource.connection.use { conn ->
+	fun removeFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
 		if (!recipeExists(conn, recipeId)) {
 			return@use false
 		}
 
 		conn.prepareStatement(removeFavoriteSql).use { ps ->
-			ps.setInt(1, recipeId)
+			ps.setLong(1, userId)
+			ps.setInt(2, recipeId)
 			ps.executeUpdate()
 		}
 		true
@@ -196,9 +199,13 @@ class RecipeRepository(
 		}
 	}
 
-	private fun isFavorite(conn: java.sql.Connection, recipeId: Int): Boolean {
+	private fun isFavorite(conn: java.sql.Connection, recipeId: Int, userId: Long?): Boolean {
+		if (userId == null) {
+			return false
+		}
 		return conn.prepareStatement(isFavoriteSql).use { ps ->
-			ps.setInt(1, recipeId)
+			ps.setLong(1, userId)
+			ps.setInt(2, recipeId)
 			ps.executeQuery().use { rs ->
 				rs.next() && rs.getBoolean("is_favorite")
 			}
@@ -280,15 +287,16 @@ class RecipeRepository(
 	private companion object {
 
 		const val addFavoriteSql = """
-			INSERT INTO favorites (recipe_id)
-			VALUES (?)
-			ON CONFLICT (recipe_id) DO NOTHING
+			INSERT INTO favorites (user_id, recipe_id)
+			VALUES (?, ?)
+			ON CONFLICT (user_id, recipe_id) DO NOTHING
 		"""
 
 		const val favoritesSql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time
 			FROM favorites f
 			INNER JOIN recipes r ON r.id = f.recipe_id
+			WHERE f.user_id = ?
 			ORDER BY f.created_at DESC
 		"""
 
@@ -296,7 +304,8 @@ class RecipeRepository(
 			SELECT EXISTS(
 				SELECT 1
 				FROM favorites
-				WHERE recipe_id = ?
+				WHERE user_id = ?
+					AND recipe_id = ?
 			) AS is_favorite
 		"""
 
@@ -314,7 +323,8 @@ class RecipeRepository(
 
 		const val removeFavoriteSql = """
 			DELETE FROM favorites
-			WHERE recipe_id = ?
+			WHERE user_id = ?
+				AND recipe_id = ?
 		"""
 
 		const val ingredientGroupsSql = """

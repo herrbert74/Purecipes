@@ -1,5 +1,7 @@
 package com.purecipes.backend.auth
 
+import com.purecipes.backend.db.APP_USERS_TABLE_SQL
+import com.purecipes.backend.db.AUTH_SESSIONS_TABLE_SQL
 import com.purecipes.shared.domain.model.AuthenticatedBackendUser
 import com.purecipes.shared.domain.model.AuthenticatedSession
 import java.security.MessageDigest
@@ -221,33 +223,6 @@ class JdbcSessionService(
 		private const val INDEX_FIFTH = 5
 		private const val INDEX_SIXTH = 6
 		private const val INDEX_SEVENTH = 7
-
-		private const val APP_USERS_TABLE_SQL = """
-			CREATE TABLE IF NOT EXISTS app_users (
-				id BIGSERIAL PRIMARY KEY,
-				provider VARCHAR(32) NOT NULL,
-				external_user_id TEXT NOT NULL,
-				email TEXT NOT NULL,
-				display_name TEXT NOT NULL,
-				first_name TEXT,
-				family_name TEXT,
-				profile_image_url TEXT,
-				created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				UNIQUE(provider, external_user_id)
-			)
-		"""
-
-		private const val AUTH_SESSIONS_TABLE_SQL = """
-			CREATE TABLE IF NOT EXISTS auth_sessions (
-				id BIGSERIAL PRIMARY KEY,
-				user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
-				access_token_hash CHAR(64) NOT NULL UNIQUE,
-				created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				expires_at TIMESTAMP NOT NULL,
-				revoked_at TIMESTAMP
-			)
-		"""
 
 		private const val FIND_USER_SQL = """
 			SELECT id

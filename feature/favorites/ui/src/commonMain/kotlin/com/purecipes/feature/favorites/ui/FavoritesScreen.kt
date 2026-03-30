@@ -41,13 +41,24 @@ import com.purecipes.shared.ui.component.TitleText
 fun FavoritesScreen(
 	getFavoriteRecipes: GetFavoriteRecipesUseCase,
 	refreshSignal: Int,
+	sessionKey: String?,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
 ) {
-	val viewModel = favoritesViewModel(getFavoriteRecipes)
+	val viewModel = favoritesViewModel(
+		getFavoriteRecipes = getFavoriteRecipes,
+		sessionKey = sessionKey,
+	)
 
-	LaunchedEffect(refreshSignal) {
-		viewModel.loadFavorites()
+	LaunchedEffect(refreshSignal, sessionKey) {
+		if (sessionKey != null) {
+			viewModel.loadFavorites()
+		}
+	}
+
+	if (sessionKey == null) {
+		FavoritesSignedOutContent(modifier = modifier)
+		return
 	}
 
 	FavoritesContent(
@@ -57,6 +68,38 @@ fun FavoritesScreen(
 		modifier = modifier,
 		onRecipeSelect = onRecipeSelect,
 	)
+}
+
+@Composable
+private fun FavoritesSignedOutContent(modifier: Modifier = Modifier) {
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.padding(24.dp),
+		contentAlignment = Alignment.Center,
+	) {
+		Column(
+			horizontalAlignment = Alignment.CenterHorizontally,
+			verticalArrangement = Arrangement.spacedBy(12.dp),
+		) {
+			Icon(
+				imageVector = Icons.Filled.Favorite,
+				contentDescription = "Favorites",
+				modifier = Modifier.size(56.dp),
+				tint = MaterialTheme.colorScheme.primary,
+			)
+			Text(
+				text = "Sign in to view favorites",
+				style = MaterialTheme.typography.headlineSmall,
+			)
+			Text(
+				text = "Favorites are tied to your session, so each account keeps its own saved recipes.",
+				style = MaterialTheme.typography.bodyLarge,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				textAlign = TextAlign.Center,
+			)
+		}
+	}
 }
 
 @Composable

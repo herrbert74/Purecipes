@@ -1,6 +1,7 @@
 package com.purecipes.backend.routes
 
 import com.purecipes.backend.ErrorResponse
+import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.repository.RecipeRepository
 import io.ktor.http.HttpStatusCode
@@ -13,7 +14,10 @@ private const val HIGHEST_RESULT_COUNT_LIMIT = 200
 
 private const val DEFAULT_RESULT_COUNT_LIMIT = 50
 
-fun Route.recipeRoutes(dbProvider: () -> Db) {
+fun Route.recipeRoutes(
+	sessionService: SessionService,
+	dbProvider: () -> Db,
+) {
 	route("/recipes") {
 		get("/search") {
 			val query = call.request.queryParameters["query"]?.trim().orEmpty()
@@ -47,7 +51,10 @@ fun Route.recipeRoutes(dbProvider: () -> Db) {
 			}
 
 			val repo = RecipeRepository(dbProvider().dataSource)
-			val recipe = repo.getRecipeDetails(recipeId)
+			val recipe = repo.getRecipeDetails(
+				recipeId = recipeId,
+				userId = call.optionalAuthenticatedUserId(sessionService),
+			)
 			if (recipe == null) {
 				call.respond(
 					HttpStatusCode.NotFound,

@@ -51,11 +51,13 @@ import com.purecipes.shared.ui.component.BackNavigationButton
 fun RecipeDetailsRoute(
 	recipeId: Int,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
+	canManageFavorites: Boolean,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	onBack: () -> Unit,
 	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	sessionKey: String?,
 	modifier: Modifier = Modifier,
 ) {
 	val viewModel = recipeDetailsViewModel(
@@ -63,6 +65,7 @@ fun RecipeDetailsRoute(
 		addFavoriteRecipe = addFavoriteRecipe,
 		getRecipeDetails = getRecipeDetails,
 		removeFavoriteRecipe = removeFavoriteRecipe,
+		sessionKey = sessionKey,
 	)
 	val currentOnFavoriteChange by rememberUpdatedState(onFavoriteChange)
 
@@ -80,7 +83,7 @@ fun RecipeDetailsRoute(
 				actions = {
 					IconButton(
 						onClick = viewModel::toggleFavorite,
-						enabled = viewModel.recipeDetails != null && !viewModel.isFavoriteUpdating,
+						enabled = canManageFavorites && viewModel.recipeDetails != null && !viewModel.isFavoriteUpdating,
 					) {
 						Icon(
 							imageVector = if (viewModel.recipeDetails?.isFavorite == true) {
@@ -124,6 +127,7 @@ fun RecipeDetailsRoute(
 			)
 
 			viewModel.recipeDetails != null -> RecipeDetailsScreen(
+				canManageFavorites = canManageFavorites,
 				favoriteErrorMessage = viewModel.favoriteErrorMessage,
 				isFavoriteUpdating = viewModel.isFavoriteUpdating,
 				recipe = viewModel.recipeDetails ?: return@Scaffold,
@@ -143,6 +147,7 @@ fun RecipeDetailsRoute(
 
 @Composable
 private fun RecipeDetailsScreen(
+	canManageFavorites: Boolean,
 	favoriteErrorMessage: String?,
 	isFavoriteUpdating: Boolean,
 	recipe: RecipeDetails,
@@ -197,11 +202,13 @@ private fun RecipeDetailsScreen(
 				}
 				Button(
 					onClick = onToggleFavorite,
-					enabled = !isFavoriteUpdating,
+					enabled = canManageFavorites && !isFavoriteUpdating,
 					modifier = Modifier.fillMaxWidth(),
 				) {
 					Text(
-						text = if (recipe.isFavorite) {
+						text = if (!canManageFavorites) {
+							"Sign in to save favorites"
+						} else if (recipe.isFavorite) {
 							"Remove from favorites"
 						} else {
 							"Add to favorites"

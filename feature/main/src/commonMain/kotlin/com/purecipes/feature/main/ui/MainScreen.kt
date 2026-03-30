@@ -18,6 +18,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
@@ -76,7 +78,13 @@ fun MainScreen(
 		val viewModel = mainViewModel()
 		val backStack = rememberMainBackStack()
 		val rootDestination = backStack.firstOrNull()
+		val authenticationState by observeAuthenticationState().collectAsState()
 		var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
+		val sessionKey = when (val state = authenticationState) {
+			is AuthenticationState.SignedIn -> state.user.id
+			AuthenticationState.SignedOut -> null
+		}
+		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 		HandleSystemBack(
 			enabled = viewModel.shouldExit(backStack),
 			onBack = onExitRequest,
@@ -119,11 +127,13 @@ fun MainScreen(
 						RecipeDetailsRoute(
 							recipeId = destination.recipeId,
 							addFavoriteRecipe = addFavoriteRecipe,
+							canManageFavorites = canManageFavorites,
 							getRecipeDetails = getRecipeDetails,
 							onBack = { viewModel.onBack(backStack) },
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
 							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
 							removeFavoriteRecipe = removeFavoriteRecipe,
+							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -139,6 +149,7 @@ fun MainScreen(
 						FavoritesScreen(
 							getFavoriteRecipes = getFavoriteRecipes,
 							refreshSignal = favoritesRefreshSignal,
+							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)

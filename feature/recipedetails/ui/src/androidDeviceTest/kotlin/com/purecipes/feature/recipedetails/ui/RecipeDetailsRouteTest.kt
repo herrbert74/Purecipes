@@ -6,10 +6,14 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
+import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.domain.model.RecipeSummary
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,9 +24,12 @@ class RecipeDetailsRouteTest {
 
 	@Test
 	fun recipeDetailsRouteShowsTitleIngredientsAndSteps() {
+		val favoritesRepository = FakeFavoritesRepository()
 		composeRule.setContent {
 			RecipeDetailsRoute(
 				recipeId = 7,
+				addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
+				canManageFavorites = true,
 				getRecipeDetails = GetRecipeDetailsUseCase(
 					FakeRecipeDetailsRepository(
 						RecipeDetails(
@@ -44,7 +51,10 @@ class RecipeDetailsRouteTest {
 					),
 				),
 				onBack = {},
+				onFavoriteChange = {},
 				onStartCooking = {},
+				removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+				sessionKey = "user-7",
 			)
 		}
 
@@ -62,5 +72,14 @@ class RecipeDetailsRouteTest {
 		override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> {
 			return Ok(recipeDetails)
 		}
+	}
+
+	private class FakeFavoritesRepository : FavoritesRepository {
+
+		override suspend fun addFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+
+		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
+
+		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
 	}
 }

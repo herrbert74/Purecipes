@@ -108,9 +108,23 @@ internal fun recipeDetailsViewModel(
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	sessionKey: String?,
 ): RecipeDetailsViewModel {
+	val viewModelKey =
+		buildString {
+			append("RecipeDetailsViewModel:")
+			append(recipeId)
+			append(':')
+			append(addFavoriteRecipe.hashCode())
+			append(':')
+			append(getRecipeDetails.hashCode())
+			append(':')
+			append(removeFavoriteRecipe.hashCode())
+			append(':')
+			append(sessionKey ?: "signed-out")
+		}
 	return viewModel(
-		key = "RecipeDetailsViewModel:$recipeId:${addFavoriteRecipe.hashCode()}:${getRecipeDetails.hashCode()}:${removeFavoriteRecipe.hashCode()}",
+		key = viewModelKey,
 		factory = viewModelFactory {
 			initializer {
 				RecipeDetailsViewModel(

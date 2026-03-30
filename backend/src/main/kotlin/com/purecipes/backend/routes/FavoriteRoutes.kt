@@ -1,6 +1,7 @@
 package com.purecipes.backend.routes
 
 import com.purecipes.backend.ErrorResponse
+import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.repository.RecipeRepository
 import io.ktor.http.HttpStatusCode
@@ -11,11 +12,15 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 
-fun Route.favoriteRoutes(dbProvider: () -> Db) {
+fun Route.favoriteRoutes(
+	sessionService: SessionService,
+	dbProvider: () -> Db,
+) {
 	route("/favorites") {
 		get {
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@get
 			val repo = RecipeRepository(dbProvider().dataSource)
-			call.respond(repo.getFavoriteRecipes())
+			call.respond(repo.getFavoriteRecipes(userId))
 		}
 
 		post("/{id}") {
@@ -31,8 +36,9 @@ fun Route.favoriteRoutes(dbProvider: () -> Db) {
 				return@post
 			}
 
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@post
 			val repo = RecipeRepository(dbProvider().dataSource)
-			if (!repo.addFavorite(recipeId)) {
+			if (!repo.addFavorite(userId = userId, recipeId = recipeId)) {
 				call.respond(
 					HttpStatusCode.NotFound,
 					ErrorResponse(
@@ -59,8 +65,9 @@ fun Route.favoriteRoutes(dbProvider: () -> Db) {
 				return@delete
 			}
 
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@delete
 			val repo = RecipeRepository(dbProvider().dataSource)
-			if (!repo.removeFavorite(recipeId)) {
+			if (!repo.removeFavorite(userId = userId, recipeId = recipeId)) {
 				call.respond(
 					HttpStatusCode.NotFound,
 					ErrorResponse(

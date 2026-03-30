@@ -80,8 +80,8 @@ fun Application.module(
 			call.respond(mapOf("status" to "ok"))
 		}
 		authenticationRoutes(googleIdTokenVerifier, sessionService)
-		favoriteRoutes { Db.create() }
-		recipeRoutes { Db.create() }
+		favoriteRoutes(sessionService) { db }
+		recipeRoutes(sessionService) { db }
 		extraRoutes()
 	}
 }

@@ -55,9 +55,12 @@ internal class FavoritesViewModel(
 }
 
 @Composable
-internal fun favoritesViewModel(getFavoriteRecipes: GetFavoriteRecipesUseCase): FavoritesViewModel {
+internal fun favoritesViewModel(
+	getFavoriteRecipes: GetFavoriteRecipesUseCase,
+	sessionKey: String?,
+): FavoritesViewModel {
 	return viewModel(
-		key = "FavoritesViewModel:${getFavoriteRecipes.hashCode()}",
+		key = "FavoritesViewModel:${getFavoriteRecipes.hashCode()}:${sessionKey ?: "signed-out"}",
 		factory = viewModelFactory {
 			initializer {
 				FavoritesViewModel(getFavoriteRecipes = getFavoriteRecipes)

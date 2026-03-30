@@ -53,8 +53,11 @@ dependencies {
 	implementation("com.zaxxer:HikariCP:7.0.2")
 	implementation("org.postgresql:postgresql:42.7.10")
 
+	testImplementation("com.h2database:h2:2.3.232")
 	testImplementation(kotlin("test"))
 	testImplementation("io.ktor:ktor-server-test-host-jvm:${libs.versions.ktor.get()}")
+	testImplementation("org.testcontainers:postgresql:1.21.3")
+	testImplementation("org.testcontainers:testcontainers:1.21.3")
 }
 
 application {

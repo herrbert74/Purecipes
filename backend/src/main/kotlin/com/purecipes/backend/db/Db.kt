@@ -12,6 +12,11 @@ class Db private constructor(
 
 	companion object {
 
+		internal fun fromDataSource(dataSource: DataSource): Db {
+			ensureSchema(dataSource)
+			return Db(dataSource)
+		}
+
 		fun create(): Db {
 			val url = System.getenv("PURECIPES_DB_URL") ?: "jdbc:postgresql://localhost:5432/purecipes"
 			val user = System.getenv("PURECIPES_DB_USER") ?: "postgres"
@@ -34,20 +39,9 @@ class Db private constructor(
 		private fun ensureSchema(dataSource: DataSource) {
 			dataSource.connection.use { connection ->
 				connection.createStatement().use { statement ->
-					statement.execute(
-						"""
-							CREATE TABLE IF NOT EXISTS favorites (
-								recipe_id INTEGER PRIMARY KEY REFERENCES recipes(id) ON DELETE CASCADE,
-								created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-							)
-						""".trimIndent()
-					)
-					statement.execute(
-						"""
-							CREATE INDEX IF NOT EXISTS idx_favorites_created_at
-							ON favorites (created_at DESC)
-						""".trimIndent()
-					)
+					statement.execute(APP_USERS_TABLE_SQL)
+					statement.execute(FAVORITES_TABLE_SQL)
+					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
 				}
 			}
 		}
