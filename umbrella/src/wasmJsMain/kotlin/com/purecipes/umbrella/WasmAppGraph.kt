@@ -38,16 +38,13 @@ interface WasmAppGraph :
 
 	val signOutUseCase: SignOutUseCase
 
-	interface WasmAppGraph : DataNetworkModule, FavoritesDataModule, RecipeDetailsDataModule, SearchDataModule {
+	val addFavoriteRecipeUseCase: AddFavoriteRecipeUseCase
 
-		val addFavoriteRecipeUseCase: AddFavoriteRecipeUseCase
+	val getFavoriteRecipesUseCase: GetFavoriteRecipesUseCase
 
-		val getFavoriteRecipesUseCase: GetFavoriteRecipesUseCase
+	val getRecipeDetailsUseCase: GetRecipeDetailsUseCase
 
-		val getRecipeDetailsUseCase: GetRecipeDetailsUseCase
+	val removeFavoriteRecipeUseCase: RemoveFavoriteRecipeUseCase
 
-		val removeFavoriteRecipeUseCase: RemoveFavoriteRecipeUseCase
-
-		val searchRecipesUseCase: SearchRecipesUseCase
-	}
+	val searchRecipesUseCase: SearchRecipesUseCase
 }

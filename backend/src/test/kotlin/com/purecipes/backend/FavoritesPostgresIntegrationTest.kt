@@ -38,8 +38,8 @@ class FavoritesPostgresIntegrationTest {
 		val dataSource = HikariDataSource(
 			HikariConfig().apply {
 				jdbcUrl = container.getJdbcUrl()
-				username = container.getUsername()
-				password = container.getPassword()
+				username = container.username
+				password = container.password
 				maximumPoolSize = 2
 				isAutoCommit = true
 				validate()
@@ -95,8 +95,8 @@ class FavoritesPostgresIntegrationTest {
 		val dataSource = HikariDataSource(
 			HikariConfig().apply {
 				jdbcUrl = container.getJdbcUrl()
-				username = container.getUsername()
-				password = container.getPassword()
+				username = container.username
+				password = container.password
 				maximumPoolSize = 2
 				isAutoCommit = true
 				validate()

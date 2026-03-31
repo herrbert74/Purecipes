@@ -61,10 +61,10 @@ internal class RecipeDetailsViewModel(
 	fun toggleFavorite() {
 		val currentRecipe = recipeDetails ?: return
 		if (isFavoriteUpdating) return
+		isFavoriteUpdating = true
+		favoriteErrorMessage = null
 
 		scope.launch {
-			isFavoriteUpdating = true
-			favoriteErrorMessage = null
 			val outcome = if (currentRecipe.isFavorite) {
 				removeFavoriteRecipe(currentRecipe.id)
 			} else {

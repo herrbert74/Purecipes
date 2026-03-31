@@ -12,6 +12,7 @@ import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -82,6 +83,38 @@ class RecipeDetailsViewModelTest {
 		assertNull(viewModel.favoriteErrorMessage)
 	}
 
+	@Test
+	fun toggleFavoriteMarksUpdatingSynchronously() = runTest {
+		val repository = FakeRecipeDetailsRepository(Ok(sampleRecipeDetails()))
+		val favoriteStarted = CompletableDeferred<Unit>()
+		val finishFavorite = CompletableDeferred<Unit>()
+		val favoritesRepository = BlockingFavoritesRepository(favoriteStarted, finishFavorite)
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = 42,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+			coroutineScope = this,
+		)
+
+		advanceUntilIdle()
+		viewModel.toggleFavorite()
+
+		assertTrue(viewModel.isFavoriteUpdating)
+		assertNull(viewModel.favoriteErrorMessage)
+		assertFalse(favoriteStarted.isCompleted)
+
+		advanceUntilIdle()
+		assertTrue(favoriteStarted.isCompleted)
+		assertTrue(viewModel.isFavoriteUpdating)
+
+		finishFavorite.complete(Unit)
+		advanceUntilIdle()
+
+		assertFalse(viewModel.isFavoriteUpdating)
+		assertTrue(viewModel.recipeDetails?.isFavorite == true)
+	}
+
 	private class FakeRecipeDetailsRepository(
 		private val result: Outcome<RecipeDetails>,
 	) : RecipeDetailsRepository {
@@ -92,6 +125,22 @@ class RecipeDetailsViewModelTest {
 	private class FakeFavoritesRepository : FavoritesRepository {
 
 		override suspend fun addFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+
+		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
+
+		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+	}
+
+	private class BlockingFavoritesRepository(
+		private val favoriteStarted: CompletableDeferred<Unit>,
+		private val finishFavorite: CompletableDeferred<Unit>,
+	) : FavoritesRepository {
+
+		override suspend fun addFavorite(recipeId: Int): Outcome<Unit> {
+			favoriteStarted.complete(Unit)
+			finishFavorite.await()
+			return Ok(Unit)
+		}
 
 		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
 

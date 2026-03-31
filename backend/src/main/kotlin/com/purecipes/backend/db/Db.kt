@@ -40,6 +40,7 @@ class Db private constructor(
 			dataSource.connection.use { connection ->
 				connection.createStatement().use { statement ->
 					statement.execute(APP_USERS_TABLE_SQL)
+					statement.execute(AUTH_SESSIONS_TABLE_SQL)
 					statement.execute(FAVORITES_TABLE_SQL)
 					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
 				}
