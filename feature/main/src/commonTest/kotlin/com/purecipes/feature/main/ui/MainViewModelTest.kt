@@ -12,8 +12,8 @@ class MainViewModelTest {
 
 	@Test
 	fun `should exit only on search root`() {
-		assertTrue(viewModel.shouldExit(SearchDestination))
-		assertFalse(viewModel.shouldExit(RecipeDetailsDestination(42)))
+		assertTrue(viewModel.shouldExit(listOf(SearchDestination)))
+		assertFalse(viewModel.shouldExit(listOf(SearchDestination, RecipeDetailsDestination(42))))
 	}
 
 	@Test
@@ -22,7 +22,6 @@ class MainViewModelTest {
 
 		viewModel.onTabSelected(
 			backStack = backStack,
-			currentDestination = backStack.last(),
 			tab = mainTabs.first { it.destination == FavoritesDestination },
 		)
 

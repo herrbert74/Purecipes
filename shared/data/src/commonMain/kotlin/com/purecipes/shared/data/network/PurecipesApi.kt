@@ -5,6 +5,7 @@ import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import de.jensklingenberg.ktorfit.http.Body
+import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.POST
@@ -31,4 +32,13 @@ interface PurecipesApi {
 
 	@POST("auth/sign-out")
 	suspend fun signOut()
+
+	@GET("favorites")
+	suspend fun getFavorites(): List<RecipeSummary>
+
+	@POST("favorites/{id}")
+	suspend fun addFavorite(@Path("id") recipeId: Int)
+
+	@DELETE("favorites/{id}")
+	suspend fun removeFavorite(@Path("id") recipeId: Int)
 }

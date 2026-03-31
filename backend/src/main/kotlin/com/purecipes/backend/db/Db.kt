@@ -12,6 +12,11 @@ class Db private constructor(
 
 	companion object {
 
+		internal fun fromDataSource(dataSource: DataSource): Db {
+			ensureSchema(dataSource)
+			return Db(dataSource)
+		}
+
 		fun create(): Db {
 			val url = System.getenv("PURECIPES_DB_URL") ?: "jdbc:postgresql://localhost:5432/purecipes"
 			val user = System.getenv("PURECIPES_DB_USER") ?: "postgres"
@@ -26,7 +31,20 @@ class Db private constructor(
 				isAutoCommit = true
 				validate()
 			}
-			return Db(HikariDataSource(config))
+			val dataSource = HikariDataSource(config)
+			ensureSchema(dataSource)
+			return Db(dataSource)
+		}
+
+		private fun ensureSchema(dataSource: DataSource) {
+			dataSource.connection.use { connection ->
+				connection.createStatement().use { statement ->
+					statement.execute(APP_USERS_TABLE_SQL)
+					statement.execute(AUTH_SESSIONS_TABLE_SQL)
+					statement.execute(FAVORITES_TABLE_SQL)
+					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
+				}
+			}
 		}
 	}
 }

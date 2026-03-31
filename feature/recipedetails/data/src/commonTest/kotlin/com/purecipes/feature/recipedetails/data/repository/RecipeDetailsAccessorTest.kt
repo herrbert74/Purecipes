@@ -4,6 +4,8 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.data.datasource.RecipeDetailsRemoteDataSource
 import com.purecipes.shared.data.network.PurecipesApi
+import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -50,6 +52,30 @@ class RecipeDetailsAccessorTest {
 
 		override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
 			return details
+		}
+
+		override suspend fun signInWithGoogle(request: GoogleSignInRequest): AuthenticatedSession {
+			error("Not needed in this test")
+		}
+
+		override suspend fun getCurrentSession(): AuthenticatedSession {
+			error("Not needed in this test")
+		}
+
+		override suspend fun signOut() {
+			error("Not needed in this test")
+		}
+
+		override suspend fun getFavorites(): List<RecipeSummary> {
+			return emptyList()
+		}
+
+		override suspend fun addFavorite(recipeId: Int) {
+			error("Not needed in this test")
+		}
+
+		override suspend fun removeFavorite(recipeId: Int) {
+			error("Not needed in this test")
 		}
 	}
 }

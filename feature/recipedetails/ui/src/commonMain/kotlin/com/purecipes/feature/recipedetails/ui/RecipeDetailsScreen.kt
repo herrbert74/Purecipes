@@ -15,10 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,12 +31,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
@@ -40,18 +50,60 @@ import com.purecipes.shared.ui.component.BackNavigationButton
 @Composable
 fun RecipeDetailsRoute(
 	recipeId: Int,
+	addFavoriteRecipe: AddFavoriteRecipeUseCase,
+	canManageFavorites: Boolean,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	onBack: () -> Unit,
+	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
+	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	sessionKey: String?,
 	modifier: Modifier = Modifier,
 ) {
-	val viewModel = recipeDetailsViewModel(recipeId, getRecipeDetails)
+	val viewModel = recipeDetailsViewModel(
+		recipeId = recipeId,
+		addFavoriteRecipe = addFavoriteRecipe,
+		getRecipeDetails = getRecipeDetails,
+		removeFavoriteRecipe = removeFavoriteRecipe,
+		sessionKey = sessionKey,
+	)
+	val currentOnFavoriteChange by rememberUpdatedState(onFavoriteChange)
+
+	LaunchedEffect(viewModel.favoriteChangeCount) {
+		if (viewModel.favoriteChangeCount > 0) {
+			currentOnFavoriteChange()
+		}
+	}
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
 				title = { Text(text = "Recipe details") },
+				actions = {
+					IconButton(
+						onClick = viewModel::toggleFavorite,
+						enabled = canManageFavorites && viewModel.recipeDetails != null && !viewModel.isFavoriteUpdating,
+					) {
+						Icon(
+							imageVector = if (viewModel.recipeDetails?.isFavorite == true) {
+								Icons.Filled.Favorite
+							} else {
+								Icons.Outlined.FavoriteBorder
+							},
+							contentDescription = if (viewModel.recipeDetails?.isFavorite == true) {
+								"Remove from favorites"
+							} else {
+								"Add to favorites"
+							},
+							tint = if (viewModel.recipeDetails?.isFavorite == true) {
+								MaterialTheme.colorScheme.primary
+							} else {
+								MaterialTheme.colorScheme.onSurfaceVariant
+							},
+						)
+					}
+				},
 				navigationIcon = {
 					BackNavigationButton(onBack = onBack)
 				},
@@ -75,8 +127,12 @@ fun RecipeDetailsRoute(
 			)
 
 			viewModel.recipeDetails != null -> RecipeDetailsScreen(
+				canManageFavorites = canManageFavorites,
+				favoriteErrorMessage = viewModel.favoriteErrorMessage,
+				isFavoriteUpdating = viewModel.isFavoriteUpdating,
 				recipe = viewModel.recipeDetails ?: return@Scaffold,
 				onStartCooking = { onStartCooking(recipeId) },
+				onToggleFavorite = viewModel::toggleFavorite,
 				modifier = Modifier.padding(innerPadding),
 			)
 
@@ -91,8 +147,12 @@ fun RecipeDetailsRoute(
 
 @Composable
 private fun RecipeDetailsScreen(
+	canManageFavorites: Boolean,
+	favoriteErrorMessage: String?,
+	isFavoriteUpdating: Boolean,
 	recipe: RecipeDetails,
 	onStartCooking: () -> Unit,
+	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	LazyColumn(
@@ -132,12 +192,36 @@ private fun RecipeDetailsScreen(
 		}
 
 		item {
-			Button(
-				onClick = onStartCooking,
-				enabled = recipe.steps.isNotEmpty(),
-				modifier = Modifier.fillMaxWidth(),
-			) {
-				Text(text = "Start cooking")
+			Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+				Button(
+					onClick = onStartCooking,
+					enabled = recipe.steps.isNotEmpty(),
+					modifier = Modifier.fillMaxWidth(),
+				) {
+					Text(text = "Start cooking")
+				}
+				Button(
+					onClick = onToggleFavorite,
+					enabled = canManageFavorites && !isFavoriteUpdating,
+					modifier = Modifier.fillMaxWidth(),
+				) {
+					Text(
+						text = if (!canManageFavorites) {
+							"Sign in to save favorites"
+						} else if (recipe.isFavorite) {
+							"Remove from favorites"
+						} else {
+							"Add to favorites"
+						},
+					)
+				}
+				favoriteErrorMessage?.let {
+					Text(
+						text = it,
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.error,
+					)
+				}
 			}
 		}
 

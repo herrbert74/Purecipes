@@ -9,4 +9,5 @@ data class RecipeSummary(
 	val cuisine: String?,
 	val imageUrl: String?,
 	val totalTime: Int?,
+	val isFavorite: Boolean = false,
 )

@@ -18,7 +18,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,6 +33,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
@@ -37,6 +42,10 @@ import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.feature.auth.ui.AuthenticationScreen
 import com.purecipes.feature.cooking.ui.StepByStepCookingRoute
+import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
+import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.ui.FavoritesScreen
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
@@ -56,18 +65,28 @@ fun MainScreen(
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
+	addFavoriteRecipe: AddFavoriteRecipeUseCase,
+	getFavoriteRecipes: GetFavoriteRecipesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
+	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 ) {
 	PurecipesTheme {
 		val viewModel = mainViewModel()
 		val backStack = rememberMainBackStack()
-		val currentDestination = backStack.lastOrNull()
+		val rootDestination = backStack.firstOrNull()
+		val authenticationState by observeAuthenticationState().collectAsState()
+		var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
+		val sessionKey = when (val state = authenticationState) {
+			is AuthenticationState.SignedIn -> state.user.id
+			AuthenticationState.SignedOut -> null
+		}
+		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 		HandleSystemBack(
-			enabled = viewModel.shouldExit(currentDestination),
+			enabled = viewModel.shouldExit(backStack),
 			onBack = onExitRequest,
 		)
 
@@ -77,8 +96,8 @@ fun MainScreen(
 				NavigationBar {
 					mainTabs.forEach { tab ->
 						NavigationBarItem(
-							selected = tab.isSelected(currentDestination),
-							onClick = { viewModel.onTabSelected(backStack, currentDestination, tab) },
+							selected = tab.isSelected(rootDestination),
+							onClick = { viewModel.onTabSelected(backStack, tab) },
 							icon = {
 								Icon(
 									imageVector = tab.icon,
@@ -107,9 +126,14 @@ fun MainScreen(
 					entry<RecipeDetailsDestination> { destination ->
 						RecipeDetailsRoute(
 							recipeId = destination.recipeId,
+							addFavoriteRecipe = addFavoriteRecipe,
+							canManageFavorites = canManageFavorites,
 							getRecipeDetails = getRecipeDetails,
 							onBack = { viewModel.onBack(backStack) },
+							onFavoriteChange = { favoritesRefreshSignal += 1 },
 							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
+							removeFavoriteRecipe = removeFavoriteRecipe,
+							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -122,10 +146,12 @@ fun MainScreen(
 						)
 					}
 					entry<FavoritesDestination> {
-						PlaceholderScreen(
-							title = "Favorites",
-							subtitle = "Not implemented yet",
-							icon = Icons.Filled.Favorite,
+						FavoritesScreen(
+							getFavoriteRecipes = getFavoriteRecipes,
+							refreshSignal = favoritesRefreshSignal,
+							sessionKey = sessionKey,
+							modifier = Modifier.fillMaxSize(),
+							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}
 					entry<CreateDestination> {
@@ -253,10 +279,7 @@ internal val mainTabs = listOf(
 	),
 )
 
-internal fun MainTab.isSelected(currentDestination: NavKey?): Boolean = when (destination) {
-	SearchDestination -> currentDestination is SearchFlowDestination
-	else -> currentDestination == destination
-}
+internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = rootDestination == destination
 
 private val MainTab.icon: ImageVector
 	get() = when (destination) {

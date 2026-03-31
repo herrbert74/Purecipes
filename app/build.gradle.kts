@@ -68,6 +68,7 @@ android {
 dependencies {
 	implementation(project(":feature:auth:data"))
 	implementation(project(":feature:main"))
+	implementation(project(":feature:favorites:data"))
 	implementation(project(":feature:recipedetails:data"))
 	implementation(project(":feature:search:data"))
 	implementation(project(":shared:data"))

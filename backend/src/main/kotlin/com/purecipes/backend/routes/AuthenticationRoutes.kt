@@ -5,10 +5,8 @@ import com.purecipes.backend.auth.GoogleIdTokenVerificationResult
 import com.purecipes.backend.auth.GoogleIdTokenVerifier
 import com.purecipes.backend.auth.SessionService
 import com.purecipes.shared.domain.model.GoogleSignInRequest
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.ContentConvertException
-import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -93,22 +91,4 @@ fun Route.authenticationRoutes(
 			call.respond(HttpStatusCode.NoContent)
 		}
 	}
-}
-
-private suspend fun io.ktor.server.application.ApplicationCall.respondUnauthorized(detail: String) {
-	respond(
-		HttpStatusCode.Unauthorized,
-		ErrorResponse(
-			message = "Unauthorized",
-			detail = detail,
-		),
-	)
-}
-
-private fun io.ktor.server.application.ApplicationCall.bearerToken(): String? {
-	val authorizationHeader = request.header(HttpHeaders.Authorization)?.trim().orEmpty()
-	if (!authorizationHeader.startsWith("Bearer ", ignoreCase = true)) {
-		return null
-	}
-	return authorizationHeader.substringAfter(' ').trim().takeIf { it.isNotBlank() }
 }

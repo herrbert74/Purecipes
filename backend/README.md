@@ -43,3 +43,11 @@ Recipe search:
 curl "http://localhost:8080/recipes/search?query=italian"
 curl "http://localhost:8080/recipes/search?query=chicken&limit=20"
 ```
+
+Favorites:
+
+```bash
+curl http://localhost:8080/favorites
+curl -X POST http://localhost:8080/favorites/42
+curl -X DELETE http://localhost:8080/favorites/42
+```

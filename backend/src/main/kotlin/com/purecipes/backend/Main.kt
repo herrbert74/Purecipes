@@ -6,6 +6,7 @@ import com.purecipes.backend.auth.JdbcSessionService
 import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.routes.authenticationRoutes
+import com.purecipes.backend.routes.favoriteRoutes
 import com.purecipes.backend.routes.recipeRoutes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -45,6 +46,7 @@ fun Application.module(
 	install(CallLogging)
 	install(CORS) {
 		anyHost()
+		allowMethod(HttpMethod.Delete)
 		allowMethod(HttpMethod.Get)
 		allowMethod(HttpMethod.Post)
 		allowHeader(HttpHeaders.Authorization)
@@ -78,7 +80,8 @@ fun Application.module(
 			call.respond(mapOf("status" to "ok"))
 		}
 		authenticationRoutes(googleIdTokenVerifier, sessionService)
-		recipeRoutes { db }
+		favoriteRoutes(sessionService) { db }
+		recipeRoutes(sessionService) { db }
 		extraRoutes()
 	}
 }

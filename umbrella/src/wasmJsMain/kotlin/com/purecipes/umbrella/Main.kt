@@ -16,9 +16,12 @@ fun main() {
 			signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
 			signInWithGoogle = graph.signInWithGoogleUseCase,
 			signOut = graph.signOutUseCase,
+			addFavoriteRecipe = graph.addFavoriteRecipeUseCase,
+			getFavoriteRecipes = graph.getFavoriteRecipesUseCase,
 			searchRecipes = graph.searchRecipesUseCase,
 			getRecipeDetails = graph.getRecipeDetailsUseCase,
 			googleWebClientId = graph.purecipesConfig.googleWebClientId(),
+			removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
 		)
 	})
 }

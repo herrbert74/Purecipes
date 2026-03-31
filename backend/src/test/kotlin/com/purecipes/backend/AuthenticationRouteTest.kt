@@ -70,8 +70,26 @@ class AuthenticationRouteTest {
 		}
 
 		assertEquals(HttpStatusCode.OK, response.status)
+		val expectedResponseBody =
+			"""
+			{
+				"accessToken":"session-token-1",
+				"expiresAtEpochSeconds":4102444800,
+				"user":{
+					"id":"1",
+					"email":"taylor@example.com",
+					"displayName":"Taylor Baker",
+					"firstName":"Taylor",
+					"familyName":"Baker",
+					"profileImageUrl":"https://example.com/avatar.png",
+					"provider":"GOOGLE"
+				}
+			}
+			""".trimIndent().lines().joinToString(separator = "") {
+				it.trim()
+			}
 		assertEquals(
-			"""{"accessToken":"session-token-1","expiresAtEpochSeconds":4102444800,"user":{"id":"1","email":"taylor@example.com","displayName":"Taylor Baker","firstName":"Taylor","familyName":"Baker","profileImageUrl":"https://example.com/avatar.png","provider":"GOOGLE"}}""",
+			expectedResponseBody,
 			response.bodyAsText(),
 		)
 	}
@@ -144,8 +162,26 @@ class AuthenticationRouteTest {
 		}
 
 		assertEquals(HttpStatusCode.OK, response.status)
+		val expectedResponseBody =
+			"""
+			{
+				"accessToken":"${session.accessToken}",
+				"expiresAtEpochSeconds":${session.expiresAtEpochSeconds},
+				"user":{
+					"id":"1",
+					"email":"taylor@example.com",
+					"displayName":"Taylor Baker",
+					"firstName":"Taylor",
+					"familyName":"Baker",
+					"profileImageUrl":"https://example.com/avatar.png",
+					"provider":"GOOGLE"
+				}
+			}
+			""".trimIndent().lines().joinToString(separator = "") {
+				it.trim()
+			}
 		assertEquals(
-			"""{"accessToken":"${session.accessToken}","expiresAtEpochSeconds":${session.expiresAtEpochSeconds},"user":{"id":"1","email":"taylor@example.com","displayName":"Taylor Baker","firstName":"Taylor","familyName":"Baker","profileImageUrl":"https://example.com/avatar.png","provider":"GOOGLE"}}""",
+			expectedResponseBody,
 			response.bodyAsText(),
 		)
 	}
@@ -230,6 +266,7 @@ class AuthenticationRouteTest {
 		override fun revokeSession(accessToken: String): Boolean = sessions.remove(accessToken) != null
 
 		private companion object {
+
 			private const val FAR_FUTURE_EPOCH_SECONDS = 4_102_444_800
 		}
 	}
