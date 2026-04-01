@@ -12,6 +12,8 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:newrecipe:domain"))
+					implementation(libs.kotlinResult.result)
+					implementation(libs.ktor.clientCore)
 			}
 		}
 	}

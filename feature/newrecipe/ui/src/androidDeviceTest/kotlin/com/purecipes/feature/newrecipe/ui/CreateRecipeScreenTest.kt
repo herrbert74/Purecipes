@@ -1,6 +1,8 @@
 package com.purecipes.feature.newrecipe.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -35,12 +37,65 @@ class CreateRecipeScreenTest {
 
 		composeRule.onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
 		composeRule.onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
+		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsDisplayed()
 		composeRule.onNodeWithTag("createRecipeStepsField").performTextInput("Trim the carrots\nRoast until tender")
 		composeRule.onNodeWithTag("createRecipeSaveButton").performClick()
 
 		composeRule.onNodeWithText("Roasted Carrots").assertIsDisplayed()
 		composeRule.onNodeWithText("Recipe uploaded.").assertIsDisplayed()
 		composeRule.onNodeWithText("Edit").assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenDisablesFormWhileImageImportIsInProgress() {
+		val repository = FakeCreatedRecipeRepository()
+		composeRule.setContent {
+			CreateRecipeScreen(
+				canUploadRecipes = true,
+				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				rememberImagePicker = { _, onImportStateChange, _ ->
+					object : RecipeImagePickerLauncher {
+						override fun launch() {
+							onImportStateChange(true)
+						}
+					}
+				},
+			)
+		}
+
+		composeRule.onNodeWithTag("createRecipeImagePickButton").performClick()
+
+		composeRule.onNodeWithText("Importing image").assertIsDisplayed()
+		composeRule.onNodeWithText("Preparing image preview...").assertIsDisplayed()
+		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsNotEnabled()
+		composeRule.onNodeWithTag("createRecipeSaveButton").assertIsNotEnabled()
+	}
+
+	@Test
+	fun createRecipeScreenShowsImageImportErrorAndReEnablesForm() {
+		val repository = FakeCreatedRecipeRepository()
+		composeRule.setContent {
+			CreateRecipeScreen(
+				canUploadRecipes = true,
+				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				rememberImagePicker = { _, onImportStateChange, onPickerError ->
+					object : RecipeImagePickerLauncher {
+						override fun launch() {
+							onImportStateChange(true)
+							onPickerError("Could not import the selected image.")
+						}
+					}
+				},
+			)
+		}
+
+		composeRule.onNodeWithTag("createRecipeImagePickButton").performClick()
+
+		composeRule.onNodeWithText("Could not import the selected image.").assertIsDisplayed()
+		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
+		composeRule.onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
 	}
 
 	private class FakeCreatedRecipeRepository : CreatedRecipeRepository {

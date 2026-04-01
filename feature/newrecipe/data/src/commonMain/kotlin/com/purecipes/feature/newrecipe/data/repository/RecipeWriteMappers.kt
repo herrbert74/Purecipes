@@ -4,7 +4,7 @@ import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 
-internal fun SaveCreatedRecipeRequest.toRecipeWriteRequest(): RecipeWriteRequest {
+internal fun SaveCreatedRecipeRequest.toRecipeWriteRequest(imageUrl: String? = this.imageUrl): RecipeWriteRequest {
 	return RecipeWriteRequest(
 		title = title,
 		description = description,

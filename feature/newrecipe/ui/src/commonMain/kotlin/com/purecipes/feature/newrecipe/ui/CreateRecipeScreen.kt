@@ -30,6 +30,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +48,8 @@ import com.purecipes.shared.domain.model.RecipeDetails
 
 private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
 private const val DESCRIPTION_FIELD_TAG = "createRecipeDescriptionField"
+private const val IMAGE_PICK_BUTTON_TAG = "createRecipeImagePickButton"
+private const val IMAGE_CLEAR_BUTTON_TAG = "createRecipeImageClearButton"
 private const val IMAGE_FIELD_TAG = "createRecipeImageField"
 private const val INGREDIENTS_FIELD_TAG = "createRecipeIngredientsField"
 private const val SAVE_BUTTON_TAG = "createRecipeSaveButton"
@@ -52,12 +58,19 @@ private const val TITLE_FIELD_TAG = "createRecipeTitleField"
 private const val TOTAL_TIME_FIELD_TAG = "createRecipeTotalTimeField"
 private const val YIELDS_FIELD_TAG = "createRecipeYieldsField"
 
+typealias RememberRecipeImagePicker = @Composable (
+	onImageSelect: (String) -> Unit,
+	onImportStateChange: (Boolean) -> Unit,
+	onPickerError: (String) -> Unit,
+) -> RecipeImagePickerLauncher?
+
 @Composable
 fun CreateRecipeScreen(
 	canUploadRecipes: Boolean,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	modifier: Modifier = Modifier,
+	rememberImagePicker: RememberRecipeImagePicker = ::rememberRecipeImagePicker,
 ) {
 	if (!canUploadRecipes) {
 		Scaffold(
@@ -76,6 +89,22 @@ fun CreateRecipeScreen(
 	val viewModel = createRecipeViewModel(
 		getCreatedRecipes = getCreatedRecipes,
 		saveCreatedRecipe = saveCreatedRecipe,
+	)
+	var pickerErrorMessage by remember { mutableStateOf<String?>(null) }
+	var isImportingImage by remember { mutableStateOf(false) }
+	val imagePickerLauncher = rememberImagePicker(
+		{ imagePath ->
+			isImportingImage = false
+			pickerErrorMessage = null
+			viewModel.onImageUrlChange(imagePath)
+		},
+		{ isImporting ->
+			isImportingImage = isImporting
+		},
+		{ message ->
+			isImportingImage = false
+			pickerErrorMessage = message
+		},
 	)
 
 	Scaffold(
@@ -108,16 +137,36 @@ fun CreateRecipeScreen(
 						cuisineInput = viewModel.cuisineInput,
 						descriptionInput = viewModel.descriptionInput,
 						formErrorMessage = viewModel.formErrorMessage,
+						isImportingImage = isImportingImage,
+						imagePickerErrorMessage = pickerErrorMessage,
 						imageUrlInput = viewModel.imageUrlInput,
 						ingredientsInput = viewModel.ingredientsInput,
 						isEditing = viewModel.isEditing,
 						isSaving = viewModel.isSaving,
+						onClearImageClick = {
+							isImportingImage = false
+							pickerErrorMessage = null
+							viewModel.onImageUrlChange("")
+						},
 						onCuisineChange = viewModel::onCuisineChange,
 						onDescriptionChange = viewModel::onDescriptionChange,
-						onImageUrlChange = viewModel::onImageUrlChange,
+						onImageUrlChange = { value ->
+							isImportingImage = false
+							pickerErrorMessage = null
+							viewModel.onImageUrlChange(value)
+						},
+						onPickImageClick = imagePickerLauncher?.let { launcher ->
+							{
+								launcher.launch()
+							}
+						},
 						onIngredientsChange = viewModel::onIngredientsChange,
 						onSaveClick = viewModel::saveRecipe,
-						onStartNewClick = viewModel::startNewRecipe,
+						onStartNewClick = {
+							isImportingImage = false
+							pickerErrorMessage = null
+							viewModel.startNewRecipe()
+						},
 						onStepsChange = viewModel::onStepsChange,
 						onTitleChange = viewModel::onTitleChange,
 						onTotalTimeChange = viewModel::onTotalTimeChange,
@@ -169,13 +218,17 @@ private fun CreateRecipeForm(
 	cuisineInput: String,
 	descriptionInput: String,
 	formErrorMessage: String?,
+	isImportingImage: Boolean,
+	imagePickerErrorMessage: String?,
 	imageUrlInput: String,
 	ingredientsInput: String,
 	isEditing: Boolean,
 	isSaving: Boolean,
+	onClearImageClick: () -> Unit,
 	onCuisineChange: (String) -> Unit,
 	onDescriptionChange: (String) -> Unit,
 	onImageUrlChange: (String) -> Unit,
+	onPickImageClick: (() -> Unit)?,
 	onIngredientsChange: (String) -> Unit,
 	onSaveClick: () -> Unit,
 	onStartNewClick: () -> Unit,
@@ -201,7 +254,8 @@ private fun CreateRecipeForm(
 				style = MaterialTheme.typography.headlineSmall,
 			)
 			Text(
-				text = "Write one ingredient or one step per line. Recipes are uploaded to your account.",
+				text = "Write one ingredient or one step per line. Recipes are uploaded to your account, " +
+					"and local image paths are uploaded as image files.",
 				style = MaterialTheme.typography.bodyMedium,
 				color = MaterialTheme.colorScheme.onSurfaceVariant,
 			)
@@ -230,19 +284,70 @@ private fun CreateRecipeForm(
 				modifier = Modifier
 					.fillMaxWidth()
 					.testTag(IMAGE_FIELD_TAG),
-				label = { Text(text = "Image URL or local path") },
+				label = { Text(text = "Image URL or local file path") },
 				singleLine = true,
 			)
 
-			if (imageUrlInput.isNotBlank()) {
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.spacedBy(12.dp),
+			) {
+				if (onPickImageClick != null) {
+					FilledTonalButton(
+						onClick = onPickImageClick,
+						enabled = !isSaving && !isImportingImage,
+						modifier = Modifier
+							.weight(1f)
+							.testTag(IMAGE_PICK_BUTTON_TAG),
+					) {
+						if (isImportingImage) {
+							CircularProgressIndicator(
+								modifier = Modifier.size(18.dp),
+								strokeWidth = 2.dp,
+							)
+							Text(text = "Importing image")
+						} else {
+							Text(text = "Choose image")
+						}
+					}
+				}
+				if (imageUrlInput.isNotBlank()) {
+					TextButton(
+						onClick = onClearImageClick,
+						enabled = !isSaving && !isImportingImage,
+						modifier = Modifier.testTag(IMAGE_CLEAR_BUTTON_TAG),
+					) {
+						Text(text = "Clear image")
+					}
+				}
+			}
+
+			if (isImportingImage) {
+				ImageImportPlaceholder()
+			}
+
+			if (imageUrlInput.isNotBlank() && !isImportingImage) {
 				AsyncImage(
-					model = imageUrlInput.trim(),
+					model = imagePreviewModel(imageUrlInput),
 					contentDescription = titleInput.ifBlank { "Recipe image preview" },
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(180.dp)
 						.clip(RoundedCornerShape(16.dp)),
 					contentScale = ContentScale.Crop,
+				)
+			}
+
+			ImageImportStatus(
+				imageUrlInput = imageUrlInput,
+				isImportingImage = isImportingImage,
+			)
+
+			imagePickerErrorMessage?.let {
+				Text(
+					text = it,
+					style = MaterialTheme.typography.bodyMedium,
+					color = MaterialTheme.colorScheme.error,
 				)
 			}
 
@@ -320,7 +425,7 @@ private fun CreateRecipeForm(
 			) {
 				Button(
 					onClick = onSaveClick,
-					enabled = !isSaving,
+					enabled = !isSaving && !isImportingImage,
 					modifier = Modifier
 						.weight(1f)
 						.testTag(SAVE_BUTTON_TAG),
@@ -336,6 +441,65 @@ private fun CreateRecipeForm(
 			}
 		}
 	}
+}
+
+@Composable
+private fun ImageImportPlaceholder() {
+	Card(
+		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+	) {
+		Box(
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(180.dp),
+			contentAlignment = Alignment.Center,
+		) {
+			Column(
+				horizontalAlignment = Alignment.CenterHorizontally,
+				verticalArrangement = Arrangement.spacedBy(12.dp),
+			) {
+				CircularProgressIndicator()
+				Text(
+					text = "Preparing image preview...",
+					style = MaterialTheme.typography.bodyMedium,
+					color = MaterialTheme.colorScheme.onSurfaceVariant,
+				)
+			}
+		}
+	}
+}
+
+@Composable
+private fun ImageImportStatus(imageUrlInput: String, isImportingImage: Boolean) {
+	val statusText = when {
+		isImportingImage -> "Importing the selected image before upload."
+		imageUrlInput.isBlank() -> null
+		imageUrlInput.isRemoteImageUrl() -> "This image will be used from its remote URL."
+		else -> "This local image will upload with the recipe when you save it."
+	}
+
+	statusText?.let {
+		Text(
+			text = it,
+			style = MaterialTheme.typography.bodyMedium,
+			color = MaterialTheme.colorScheme.onSurfaceVariant,
+		)
+	}
+}
+
+private fun imagePreviewModel(imageUrlInput: String): String {
+	val trimmedInput = imageUrlInput.trim()
+	return if (trimmedInput.isRemoteImageUrl() ||
+		trimmedInput.startsWith("file://", ignoreCase = true)
+	) {
+		trimmedInput
+	} else {
+		"file://$trimmedInput"
+	}
+}
+
+private fun String.isRemoteImageUrl(): Boolean {
+	return startsWith("http://", ignoreCase = true) || startsWith("https://", ignoreCase = true)
 }
 
 @Composable

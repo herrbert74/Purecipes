@@ -4,6 +4,8 @@ import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.shared.domain.model.AuthenticatedBackendUser
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -11,11 +13,13 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
 import org.h2.jdbcx.JdbcDataSource
+import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -24,11 +28,13 @@ class RecipeUploadRouteTest {
 	@Test
 	fun `recipe upload endpoints require bearer token`() = testApplication {
 		val db = createDb()
+		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
 
 		application {
 			module(
 				db = db,
 				sessionService = FakeSessionService(),
+				recipeImageStorage = recipeImageStorage,
 			)
 		}
 
@@ -57,6 +63,25 @@ class RecipeUploadRouteTest {
 		}.also {
 			assertEquals(HttpStatusCode.Unauthorized, it.status)
 		}
+
+		client.post("/recipe-images") {
+			setBody(
+				MultiPartFormDataContent(
+					formData {
+						append(
+							"image",
+							byteArrayOf(1, 2, 3),
+							Headers.build {
+								append(HttpHeaders.ContentDisposition, "filename=image.jpg")
+								append(HttpHeaders.ContentType, ContentType.Image.JPEG.toString())
+							},
+						)
+					},
+				),
+			)
+		}.also {
+			assertEquals(HttpStatusCode.Unauthorized, it.status)
+		}
 	}
 
 	@Test
@@ -64,11 +89,13 @@ class RecipeUploadRouteTest {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService()
+		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
 
 		application {
 			module(
 				db = db,
 				sessionService = sessionService,
+				recipeImageStorage = recipeImageStorage,
 			)
 		}
 
@@ -89,14 +116,17 @@ class RecipeUploadRouteTest {
 			)
 		}
 		assertEquals(HttpStatusCode.Created, createResponse.status)
-		assertBodyContains(createResponse.bodyAsText(), """"title":"Roasted Carrots"""")
-		assertBodyContains(createResponse.bodyAsText(), """"description":"Sweet and savory side dish."""")
+		assertBodyContains(createResponse.bodyAsText(), jsonField("title", "Roasted Carrots"))
+		assertBodyContains(
+			createResponse.bodyAsText(),
+			jsonField("description", "Sweet and savory side dish."),
+		)
 
 		val mineResponse = client.get("/recipes/mine") {
 			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
 		}
 		assertEquals(HttpStatusCode.OK, mineResponse.status)
-		assertBodyContains(mineResponse.bodyAsText(), """"title":"Roasted Carrots"""")
+		assertBodyContains(mineResponse.bodyAsText(), jsonField("title", "Roasted Carrots"))
 
 		val updateResponse = client.put("/recipes/1") {
 			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
@@ -112,8 +142,47 @@ class RecipeUploadRouteTest {
 			)
 		}
 		assertEquals(HttpStatusCode.OK, updateResponse.status)
-		assertBodyContains(updateResponse.bodyAsText(), """"title":"Honey Roasted Carrots"""")
-		assertBodyContains(updateResponse.bodyAsText(), """"description":"Updated side dish."""")
+		assertBodyContains(updateResponse.bodyAsText(), jsonField("title", "Honey Roasted Carrots"))
+		assertBodyContains(updateResponse.bodyAsText(), jsonField("description", "Updated side dish."))
+	}
+
+	@Test
+	fun `authenticated user can upload recipe image`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService()
+		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+				recipeImageStorage = recipeImageStorage,
+			)
+		}
+
+		val uploadResponse = client.post("/recipe-images") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+			setBody(
+				MultiPartFormDataContent(
+					formData {
+						append(
+							"image",
+							byteArrayOf(1, 2, 3, 4),
+							Headers.build {
+								append(HttpHeaders.ContentDisposition, "filename=carrots.jpg")
+								append(HttpHeaders.ContentType, ContentType.Image.JPEG.toString())
+							},
+						)
+					},
+				),
+			)
+		}
+
+		assertEquals(HttpStatusCode.Created, uploadResponse.status)
+		val responseBody = uploadResponse.bodyAsText()
+		assertBodyContains(responseBody, """"imageUrl":""")
+		assertBodyContains(responseBody, "/uploads/recipes/")
 	}
 
 	private fun createDb(): Db {
@@ -162,6 +231,8 @@ class RecipeUploadRouteTest {
 		}
 	}
 
+	private fun jsonField(name: String, value: String): String = """"$name":"$value"""
+
 	private class FakeSessionService : SessionService {
 
 		val session = AuthenticatedSession(
@@ -192,7 +263,9 @@ class RecipeUploadRouteTest {
 			return session
 		}
 
-		override fun getSession(accessToken: String): AuthenticatedSession? = session.takeIf { it.accessToken == accessToken }
+		override fun getSession(accessToken: String): AuthenticatedSession? {
+			return session.takeIf { it.accessToken == accessToken }
+		}
 
 		override fun revokeSession(accessToken: String): Boolean = accessToken == session.accessToken
 	}
