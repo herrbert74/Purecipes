@@ -1,13 +1,16 @@
 package com.purecipes.feature.newrecipe.ui
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
@@ -18,6 +21,9 @@ import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import org.junit.Rule
 import org.junit.Test
+
+private const val STEP_REORDER_DRAG_DISTANCE = -140f
+private const val STEP_REORDER_LONG_PRESS_MILLIS = 700L
 
 class CreateRecipeScreenTest {
 
@@ -38,7 +44,9 @@ class CreateRecipeScreenTest {
 		composeRule.onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
 		composeRule.onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
 		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsDisplayed()
-		composeRule.onNodeWithTag("createRecipeStepsField").performTextInput("Trim the carrots\nRoast until tender")
+		composeRule.onNodeWithTag("createRecipeStepField0").performTextInput("Trim the carrots")
+		composeRule.onNodeWithTag("createRecipeAddStepButton").performClick()
+		composeRule.onNodeWithTag("createRecipeStepField1").performTextInput("Roast until tender")
 		composeRule.onNodeWithTag("createRecipeSaveButton").performClick()
 
 		composeRule.onNodeWithText("Roasted Carrots").assertIsDisplayed()
@@ -113,6 +121,48 @@ class CreateRecipeScreenTest {
 
 		composeRule.onNodeWithText("No cuisine").assertIsDisplayed()
 		composeRule.onNodeWithText("Italian").assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenAddsAnotherStepField() {
+		val repository = FakeCreatedRecipeRepository()
+		composeRule.setContent {
+			CreateRecipeScreen(
+				canUploadRecipes = true,
+				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			)
+		}
+
+		composeRule.onNodeWithTag("createRecipeAddStepButton").performClick()
+
+		composeRule.onNodeWithTag("createRecipeStepField1").assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenReordersSteps() {
+		val repository = FakeCreatedRecipeRepository()
+		composeRule.setContent {
+			CreateRecipeScreen(
+				canUploadRecipes = true,
+				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			)
+		}
+
+		composeRule.onNodeWithTag("createRecipeStepField0").performTextInput("First")
+		composeRule.onNodeWithTag("createRecipeAddStepButton").performClick()
+		composeRule.onNodeWithTag("createRecipeStepField1").performTextInput("Second")
+		composeRule.onNodeWithTag("createRecipeReorderStepButton1").performTouchInput {
+			down(center)
+			advanceEventTime(STEP_REORDER_LONG_PRESS_MILLIS)
+			moveBy(Offset(x = 0f, y = STEP_REORDER_DRAG_DISTANCE))
+			up()
+		}
+		composeRule.waitForIdle()
+
+		composeRule.onNodeWithTag("createRecipeStepField0").assertTextContains("Second")
+		composeRule.onNodeWithTag("createRecipeStepField1").assertTextContains("First")
 	}
 
 	private class FakeCreatedRecipeRepository : CreatedRecipeRepository {

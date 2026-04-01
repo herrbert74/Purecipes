@@ -43,8 +43,7 @@ internal class CreateRecipeViewModel(
 	var ingredientsInput by mutableStateOf("")
 		private set
 
-	var stepsInput by mutableStateOf("")
-		private set
+	val stepInputs = mutableStateListOf("")
 
 	var totalTimeInput by mutableStateOf("")
 		private set
@@ -98,8 +97,47 @@ internal class CreateRecipeViewModel(
 		ingredientsInput = value
 	}
 
-	fun onStepsChange(value: String) {
-		stepsInput = value
+	fun onStepChange(index: Int, value: String) {
+		stepInputs[index] = value
+	}
+
+	fun addStep() {
+		stepInputs.add("")
+	}
+
+	fun removeStep(index: Int) {
+		if (stepInputs.size == 1) {
+			stepInputs[0] = ""
+		} else {
+			stepInputs.removeAt(index)
+		}
+	}
+
+	fun moveStep(fromIndex: Int, toIndex: Int) {
+		if (
+			fromIndex == toIndex ||
+			fromIndex !in stepInputs.indices ||
+			toIndex !in stepInputs.indices
+		) {
+			return
+		}
+
+		val step = stepInputs.removeAt(fromIndex)
+		stepInputs.add(index = toIndex, element = step)
+	}
+
+	fun moveStepUp(index: Int) {
+		if (index <= 0 || index >= stepInputs.size) {
+			return
+		}
+		moveStep(fromIndex = index, toIndex = index - 1)
+	}
+
+	fun moveStepDown(index: Int) {
+		if (index < 0 || index >= stepInputs.lastIndex) {
+			return
+		}
+		moveStep(fromIndex = index, toIndex = index + 1)
 	}
 
 	fun onTotalTimeChange(value: String) {
@@ -120,7 +158,8 @@ internal class CreateRecipeViewModel(
 		descriptionInput = recipe.description
 		imageUrlInput = recipe.imageUrl.orEmpty()
 		ingredientsInput = recipe.ingredientGroups.flatMap { it.ingredients }.joinToString(separator = "\n")
-		stepsInput = recipe.steps.joinToString(separator = "\n")
+		stepInputs.clear()
+		stepInputs.addAll(recipe.steps.ifEmpty { listOf("") })
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
 		yieldsInput = recipe.yields.orEmpty()
 		selectedCuisine = recipe.cuisine
@@ -134,7 +173,8 @@ internal class CreateRecipeViewModel(
 		descriptionInput = ""
 		imageUrlInput = ""
 		ingredientsInput = ""
-		stepsInput = ""
+		stepInputs.clear()
+		stepInputs.add("")
 		totalTimeInput = ""
 		yieldsInput = ""
 		selectedCuisine = null
@@ -167,7 +207,7 @@ internal class CreateRecipeViewModel(
 					description = descriptionInput,
 					imageUrl = imageUrlInput,
 					ingredients = ingredientsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList(),
-					steps = stepsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList(),
+					steps = stepInputs.map(String::trim).filter(String::isNotEmpty),
 					totalTime = totalTimeInput.trim().takeIf { it.isNotEmpty() }?.toIntOrNull(),
 					yields = yieldsInput,
 					cuisine = selectedCuisine,
@@ -212,7 +252,7 @@ internal class CreateRecipeViewModel(
 			"Add a recipe title.".takeIf { titleInput.isBlank() },
 			"Add a recipe description.".takeIf { descriptionInput.isBlank() },
 			"Add at least one cooking step.".takeIf {
-				stepsInput.lineSequence().map(String::trim).none(String::isNotEmpty)
+				stepInputs.map(String::trim).none(String::isNotEmpty)
 			},
 			"Total time must be a whole number.".takeIf {
 				totalTimeInput.isNotBlank() && totalTimeInput.trim().toIntOrNull() == null

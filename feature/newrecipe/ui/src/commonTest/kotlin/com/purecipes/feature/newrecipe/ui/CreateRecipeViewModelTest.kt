@@ -66,7 +66,9 @@ class CreateRecipeViewModelTest {
 		viewModel.onTitleChange("Tomato Pasta")
 		viewModel.onDescriptionChange("Quick weeknight dinner.")
 		viewModel.onIngredientsChange("200 g pasta\n2 tomatoes")
-		viewModel.onStepsChange("Boil the pasta\nFinish with the tomatoes")
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.addStep()
+		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
 		viewModel.saveRecipe()
 
 		advanceUntilIdle()
@@ -96,6 +98,41 @@ class CreateRecipeViewModelTest {
 		assertEquals(1, viewModel.recipes.size)
 		assertEquals("Creamy Tomato Pasta", viewModel.recipes.single().title)
 		assertTrue(viewModel.isEditing)
+	}
+
+	@Test
+	fun `add step appends a new editable step`() = runTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = CreateRecipeViewModel(
+			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			coroutineScope = this,
+		)
+
+		advanceUntilIdle()
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.addStep()
+		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
+
+		assertEquals(listOf("Boil the pasta", "Finish with the tomatoes"), viewModel.stepInputs.toList())
+	}
+
+	@Test
+	fun `move step up reorders the list`() = runTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = CreateRecipeViewModel(
+			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			coroutineScope = this,
+		)
+
+		advanceUntilIdle()
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.addStep()
+		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
+		viewModel.moveStepUp(index = 1)
+
+		assertEquals(listOf("Finish with the tomatoes", "Boil the pasta"), viewModel.stepInputs.toList())
 	}
 
 	private class FakeCreatedRecipeRepository(
