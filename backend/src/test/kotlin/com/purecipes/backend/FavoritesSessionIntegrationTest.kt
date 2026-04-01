@@ -107,12 +107,14 @@ class FavoritesSessionIntegrationTest {
 						CREATE TABLE recipes (
 							id INTEGER PRIMARY KEY,
 							title VARCHAR(255) NOT NULL,
+							description TEXT,
 							instructions TEXT,
 							total_time INTEGER,
 							yields VARCHAR(255),
 							image_url VARCHAR(512),
 							cuisine VARCHAR(255),
 							category VARCHAR(255),
+							created_by_user_id BIGINT,
 							created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 						)
 					""".trimIndent(),
@@ -152,6 +154,7 @@ class FavoritesSessionIntegrationTest {
 						INSERT INTO recipes (
 							id,
 							title,
+							description,
 							instructions,
 							total_time,
 							yields,
@@ -161,6 +164,7 @@ class FavoritesSessionIntegrationTest {
 						) VALUES (
 							1,
 							'Tomato Pasta',
+							'Quick weeknight dinner.',
 							'Boil pasta\nMake sauce',
 							25,
 							'2 servings',

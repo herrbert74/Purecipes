@@ -49,6 +49,7 @@ fun Application.module(
 		allowMethod(HttpMethod.Delete)
 		allowMethod(HttpMethod.Get)
 		allowMethod(HttpMethod.Post)
+		allowMethod(HttpMethod.Put)
 		allowHeader(HttpHeaders.Authorization)
 		allowHeader(HttpHeaders.ContentType)
 		allowHeader(HttpHeaders.Accept)
