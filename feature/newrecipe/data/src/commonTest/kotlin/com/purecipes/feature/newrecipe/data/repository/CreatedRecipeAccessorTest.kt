@@ -12,6 +12,7 @@ import com.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
@@ -43,7 +44,7 @@ class CreatedRecipeAccessorTest {
 				steps = listOf("Boil the pasta", "Finish with the tomatoes"),
 				totalTime = 20,
 				yields = "2 servings",
-				cuisine = "Italian",
+				cuisine = Cuisine.ITALIAN,
 			),
 		).get()
 

@@ -9,6 +9,7 @@ import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -162,5 +163,5 @@ internal fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(
 	steps = listOf("Boil pasta", "Make sauce", "Serve"),
 	totalTime = 25,
 	yields = "2 servings",
-	cuisine = "Italian",
+	cuisine = Cuisine.ITALIAN,
 )

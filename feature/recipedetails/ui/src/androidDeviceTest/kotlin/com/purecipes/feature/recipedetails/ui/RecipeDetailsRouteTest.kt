@@ -11,6 +11,7 @@ import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -46,7 +47,7 @@ class RecipeDetailsRouteTest {
 							steps = listOf("Trim the carrots", "Roast until tender"),
 							totalTime = 35,
 							yields = "4 servings",
-							cuisine = "Mediterranean",
+							cuisine = Cuisine.MEDITERRANEAN,
 						),
 					),
 				),

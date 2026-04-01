@@ -216,7 +216,7 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 				TitleText(text = recipe.title)
 				BodyText(
 					text = listOfNotNull(
-						recipe.cuisine ?: "Unknown cuisine",
+						recipe.cuisine?.displayName ?: "Unknown cuisine",
 						recipe.totalTime?.let { "$it min" },
 					).joinToString(separator = " • "),
 					color = MaterialTheme.colorScheme.onSurfaceVariant,

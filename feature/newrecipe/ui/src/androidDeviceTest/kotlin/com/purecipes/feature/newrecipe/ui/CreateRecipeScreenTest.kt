@@ -98,6 +98,23 @@ class CreateRecipeScreenTest {
 		composeRule.onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
 	}
 
+	@Test
+	fun createRecipeScreenOpensCuisinePicker() {
+		val repository = FakeCreatedRecipeRepository()
+		composeRule.setContent {
+			CreateRecipeScreen(
+				canUploadRecipes = true,
+				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			)
+		}
+
+		composeRule.onNodeWithTag("createRecipeCuisineField").performClick()
+
+		composeRule.onNodeWithText("No cuisine").assertIsDisplayed()
+		composeRule.onNodeWithText("Italian").assertIsDisplayed()
+	}
+
 	private class FakeCreatedRecipeRepository : CreatedRecipeRepository {
 
 		private val recipes = mutableListOf<RecipeDetails>()

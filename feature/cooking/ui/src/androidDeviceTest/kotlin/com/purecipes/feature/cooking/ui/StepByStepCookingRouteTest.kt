@@ -9,6 +9,7 @@ import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import org.junit.Rule
@@ -40,7 +41,7 @@ class StepByStepCookingRouteTest {
 							steps = listOf("Trim the carrots", "Roast until tender"),
 							totalTime = 35,
 							yields = "4 servings",
-							cuisine = "Mediterranean",
+							cuisine = Cuisine.MEDITERRANEAN,
 						),
 					),
 				),

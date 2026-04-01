@@ -1,5 +1,6 @@
 package com.purecipes.backend.repository
 
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -188,7 +189,7 @@ class RecipeRepository(
 			id = recipeRecord.id,
 			title = recipeRecord.title,
 			description = recipeRecord.description ?: buildDescription(
-				cuisine = recipeRecord.cuisine,
+				cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
 				category = recipeRecord.category,
 				totalTime = recipeRecord.totalTime,
 				yields = recipeRecord.yields,
@@ -198,7 +199,7 @@ class RecipeRepository(
 			steps = steps,
 			totalTime = recipeRecord.totalTime,
 			yields = recipeRecord.yields,
-			cuisine = recipeRecord.cuisine,
+			cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
 			isFavorite = isFavorite,
 		)
 	}
@@ -225,7 +226,7 @@ class RecipeRepository(
 				RecipeSummary(
 					id = rs.getInt("id"),
 					title = rs.getString("title"),
-					cuisine = rs.getString("cuisine"),
+					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
 				)
@@ -390,7 +391,7 @@ class RecipeRepository(
 			ps.setObject(FOURTH_PARAMETER_INDEX, request.totalTime)
 			ps.setString(FIFTH_PARAMETER_INDEX, request.yields?.trim())
 			ps.setString(SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
-			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.trim())
+			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
 			ps.setLong(EIGHTH_PARAMETER_INDEX, userId)
 			ps.executeUpdate()
 			ps.generatedId()
@@ -405,7 +406,7 @@ class RecipeRepository(
 			ps.setObject(FOURTH_PARAMETER_INDEX, request.totalTime)
 			ps.setString(FIFTH_PARAMETER_INDEX, request.yields?.trim())
 			ps.setString(SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
-			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.trim())
+			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
 			ps.setInt(EIGHTH_PARAMETER_INDEX, recipeId)
 			ps.executeUpdate()
 		}
@@ -434,13 +435,13 @@ class RecipeRepository(
 	}
 
 	private fun buildDescription(
-		cuisine: String?,
+		cuisine: Cuisine?,
 		category: String?,
 		totalTime: Int?,
 		yields: String?,
 	): String {
 		val introParts = listOfNotNull(
-			cuisine?.takeIf { it.isNotBlank() },
+			cuisine?.displayName,
 			category?.takeIf { it.isNotBlank() },
 		)
 		val intro = when {
@@ -470,7 +471,7 @@ class RecipeRepository(
 				RecipeSummary(
 					id = rs.getInt("id"),
 					title = rs.getString("title"),
-					cuisine = rs.getString("cuisine"),
+					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
 					isFavorite = true,

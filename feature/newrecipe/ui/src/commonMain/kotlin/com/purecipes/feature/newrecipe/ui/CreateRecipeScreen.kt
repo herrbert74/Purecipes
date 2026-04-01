@@ -16,14 +16,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeDetails
 
 private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
@@ -134,7 +139,7 @@ fun CreateRecipeScreen(
 			) {
 				item {
 					CreateRecipeForm(
-						cuisineInput = viewModel.cuisineInput,
+						selectedCuisine = viewModel.selectedCuisine,
 						descriptionInput = viewModel.descriptionInput,
 						formErrorMessage = viewModel.formErrorMessage,
 						isImportingImage = isImportingImage,
@@ -215,7 +220,7 @@ fun CreateRecipeScreen(
 
 @Composable
 private fun CreateRecipeForm(
-	cuisineInput: String,
+	selectedCuisine: Cuisine?,
 	descriptionInput: String,
 	formErrorMessage: String?,
 	isImportingImage: Boolean,
@@ -225,7 +230,7 @@ private fun CreateRecipeForm(
 	isEditing: Boolean,
 	isSaving: Boolean,
 	onClearImageClick: () -> Unit,
-	onCuisineChange: (String) -> Unit,
+	onCuisineChange: (Cuisine?) -> Unit,
 	onDescriptionChange: (String) -> Unit,
 	onImageUrlChange: (String) -> Unit,
 	onPickImageClick: (() -> Unit)?,
@@ -355,14 +360,12 @@ private fun CreateRecipeForm(
 				modifier = Modifier.fillMaxWidth(),
 				horizontalArrangement = Arrangement.spacedBy(12.dp),
 			) {
-				OutlinedTextField(
-					value = cuisineInput,
-					onValueChange = onCuisineChange,
+				CuisinePicker(
+					selectedCuisine = selectedCuisine,
+					onCuisineChange = onCuisineChange,
 					modifier = Modifier
 						.weight(1f)
 						.testTag(CUISINE_FIELD_TAG),
-					label = { Text(text = "Cuisine") },
-					singleLine = true,
 				)
 				OutlinedTextField(
 					value = totalTimeInput,
@@ -630,7 +633,7 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 			)
 			Text(
 				text = listOfNotNull(
-					recipe.cuisine?.takeIf { it.isNotBlank() },
+					recipe.cuisine?.displayName,
 					recipe.totalTime?.let { "$it min" },
 					recipe.yields?.takeIf { it.isNotBlank() },
 					recipe.steps.size.takeIf { it > 0 }?.let { "$it steps" },
@@ -649,6 +652,70 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 					)
 					Text(text = "Edit")
 				}
+			}
+		}
+	}
+}
+
+@Composable
+private fun CuisinePicker(
+	selectedCuisine: Cuisine?,
+	onCuisineChange: (Cuisine?) -> Unit,
+	modifier: Modifier = Modifier,
+) {
+	var isExpanded by remember { mutableStateOf(false) }
+
+	Box(modifier = modifier) {
+		Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+			Text(
+				text = "Cuisine",
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+			OutlinedButton(
+				onClick = { isExpanded = true },
+				modifier = Modifier.fillMaxWidth(),
+			) {
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.CenterVertically,
+				) {
+					Text(
+						text = selectedCuisine?.displayName ?: "Select cuisine",
+						color = if (selectedCuisine == null) {
+							MaterialTheme.colorScheme.onSurfaceVariant
+						} else {
+							MaterialTheme.colorScheme.onSurface
+						},
+					)
+					Icon(
+						imageVector = Icons.Filled.ArrowDropDown,
+						contentDescription = null,
+					)
+				}
+			}
+		}
+
+		DropdownMenu(
+			expanded = isExpanded,
+			onDismissRequest = { isExpanded = false },
+		) {
+			DropdownMenuItem(
+				text = { Text(text = "No cuisine") },
+				onClick = {
+					onCuisineChange(null)
+					isExpanded = false
+				},
+			)
+			Cuisine.entries.forEach { cuisine ->
+				DropdownMenuItem(
+					text = { Text(text = cuisine.displayName) },
+					onClick = {
+						onCuisineChange(cuisine)
+						isExpanded = false
+					},
+				)
 			}
 		}
 	}

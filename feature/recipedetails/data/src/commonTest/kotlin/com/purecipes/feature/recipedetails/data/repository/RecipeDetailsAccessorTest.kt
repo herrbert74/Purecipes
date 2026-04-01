@@ -5,10 +5,12 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.data.datasource.RecipeDetailsRemoteDataSource
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.RecipeWriteRequest
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,7 +34,7 @@ class RecipeDetailsAccessorTest {
 			steps = listOf("Boil pasta", "Make sauce"),
 			totalTime = 25,
 			yields = "2 servings",
-			cuisine = "Italian",
+			cuisine = Cuisine.ITALIAN,
 		)
 		val accessor = RecipeDetailsAccessor(RecipeDetailsRemoteDataSource(FakePurecipesApi(expected)))
 
@@ -52,6 +54,18 @@ class RecipeDetailsAccessorTest {
 
 		override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
 			return details
+		}
+
+		override suspend fun getCreatedRecipes(): List<RecipeDetails> {
+			error("Not needed in this test")
+		}
+
+		override suspend fun createRecipe(request: RecipeWriteRequest): RecipeDetails {
+			error("Not needed in this test")
+		}
+
+		override suspend fun updateRecipe(recipeId: Int, request: RecipeWriteRequest): RecipeDetails {
+			error("Not needed in this test")
 		}
 
 		override suspend fun signInWithGoogle(request: GoogleSignInRequest): AuthenticatedSession {

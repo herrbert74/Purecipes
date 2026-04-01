@@ -255,7 +255,7 @@ private fun RecipeDetailsScreen(
 @Composable
 private fun RecipeMetadataRow(recipe: RecipeDetails) {
 	val items = listOfNotNull(
-		recipe.cuisine?.takeIf { it.isNotBlank() },
+		recipe.cuisine?.displayName,
 		recipe.totalTime?.let { "$it min" },
 		recipe.yields?.takeIf { it.isNotBlank() },
 	)

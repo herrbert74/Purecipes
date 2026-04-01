@@ -14,6 +14,7 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +52,7 @@ internal class CreateRecipeViewModel(
 	var yieldsInput by mutableStateOf("")
 		private set
 
-	var cuisineInput by mutableStateOf("")
+	var selectedCuisine by mutableStateOf<Cuisine?>(null)
 		private set
 
 	var isLoading by mutableStateOf(true)
@@ -109,8 +110,8 @@ internal class CreateRecipeViewModel(
 		yieldsInput = value
 	}
 
-	fun onCuisineChange(value: String) {
-		cuisineInput = value
+	fun onCuisineChange(value: Cuisine?) {
+		selectedCuisine = value
 	}
 
 	fun editRecipe(recipe: RecipeDetails) {
@@ -122,7 +123,7 @@ internal class CreateRecipeViewModel(
 		stepsInput = recipe.steps.joinToString(separator = "\n")
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
 		yieldsInput = recipe.yields.orEmpty()
-		cuisineInput = recipe.cuisine.orEmpty()
+		selectedCuisine = recipe.cuisine
 		formErrorMessage = null
 		successMessage = null
 	}
@@ -136,7 +137,7 @@ internal class CreateRecipeViewModel(
 		stepsInput = ""
 		totalTimeInput = ""
 		yieldsInput = ""
-		cuisineInput = ""
+		selectedCuisine = null
 		formErrorMessage = null
 		successMessage = null
 	}
@@ -169,7 +170,7 @@ internal class CreateRecipeViewModel(
 					steps = stepsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList(),
 					totalTime = totalTimeInput.trim().takeIf { it.isNotEmpty() }?.toIntOrNull(),
 					yields = yieldsInput,
-					cuisine = cuisineInput,
+					cuisine = selectedCuisine,
 				),
 			)
 

@@ -5,9 +5,11 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.favorites.data.datasource.FavoritesRemoteDataSource
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.RecipeWriteRequest
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,7 +23,7 @@ class FavoritesAccessorTest {
 			RecipeSummary(
 				id = 42,
 				title = "Tomato Pasta",
-				cuisine = "Italian",
+				cuisine = Cuisine.ITALIAN,
 				imageUrl = "https://example.com/pasta.jpg",
 				totalTime = 25,
 				isFavorite = true,
@@ -44,6 +46,18 @@ class FavoritesAccessorTest {
 		}
 
 		override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
+			error("Not needed in this test")
+		}
+
+		override suspend fun getCreatedRecipes(): List<RecipeDetails> {
+			error("Not needed in this test")
+		}
+
+		override suspend fun createRecipe(request: RecipeWriteRequest): RecipeDetails {
+			error("Not needed in this test")
+		}
+
+		override suspend fun updateRecipe(recipeId: Int, request: RecipeWriteRequest): RecipeDetails {
 			error("Not needed in this test")
 		}
 

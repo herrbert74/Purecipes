@@ -1,5 +1,7 @@
 package com.purecipes.feature.newrecipe.domain.model
 
+import com.purecipes.shared.domain.model.Cuisine
+
 data class SaveCreatedRecipeRequest(
 	val recipeId: Int? = null,
 	val title: String,
@@ -9,5 +11,5 @@ data class SaveCreatedRecipeRequest(
 	val steps: List<String> = emptyList(),
 	val totalTime: Int? = null,
 	val yields: String? = null,
-	val cuisine: String? = null,
+	val cuisine: Cuisine? = null,
 )

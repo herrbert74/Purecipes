@@ -5,9 +5,11 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.search.data.datasource.RecipeSearchRemoteDataSource
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.RecipeWriteRequest
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +24,7 @@ class RecipeSearchAccessorTest {
 				RecipeSummary(
 					id = 1,
 					title = "Should not be used",
-					cuisine = "Test",
+					cuisine = Cuisine.AMERICAN,
 					imageUrl = null,
 					totalTime = 10,
 				)
@@ -49,6 +51,18 @@ class RecipeSearchAccessorTest {
 		}
 
 		override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
+			error("Not needed in this test")
+		}
+
+		override suspend fun getCreatedRecipes(): List<RecipeDetails> {
+			error("Not needed in this test")
+		}
+
+		override suspend fun createRecipe(request: RecipeWriteRequest): RecipeDetails {
+			error("Not needed in this test")
+		}
+
+		override suspend fun updateRecipe(recipeId: Int, request: RecipeWriteRequest): RecipeDetails {
 			error("Not needed in this test")
 		}
 

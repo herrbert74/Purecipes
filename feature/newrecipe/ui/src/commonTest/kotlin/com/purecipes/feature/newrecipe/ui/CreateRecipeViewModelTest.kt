@@ -6,6 +6,7 @@ import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -141,5 +142,5 @@ private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(
 	steps = listOf("Boil the pasta", "Finish with the tomatoes"),
 	totalTime = 20,
 	yields = "2 servings",
-	cuisine = "Italian",
+	cuisine = Cuisine.ITALIAN,
 )
