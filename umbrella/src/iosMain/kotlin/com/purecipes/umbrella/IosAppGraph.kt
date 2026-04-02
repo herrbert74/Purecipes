@@ -11,6 +11,9 @@ import com.purecipes.feature.favorites.data.repository.FavoritesDataModule
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.newrecipe.data.repository.NewRecipeDataModule
+import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
+import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.feature.recipedetails.data.repository.RecipeDetailsDataModule
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.search.data.repository.SearchDataModule
@@ -22,7 +25,12 @@ import dev.zacsweers.metro.DependencyGraph
 
 @DependencyGraph(AppScope::class)
 interface IosAppGraph :
-	AuthenticationDataModule, DataNetworkModule, FavoritesDataModule, RecipeDetailsDataModule, SearchDataModule {
+	AuthenticationDataModule,
+	DataNetworkModule,
+	FavoritesDataModule,
+	NewRecipeDataModule,
+	RecipeDetailsDataModule,
+	SearchDataModule {
 
 	val purecipesConfig: PurecipesConfig
 
@@ -42,9 +50,13 @@ interface IosAppGraph :
 
 	val getFavoriteRecipesUseCase: GetFavoriteRecipesUseCase
 
+	val getCreatedRecipesUseCase: GetCreatedRecipesUseCase
+
 	val getRecipeDetailsUseCase: GetRecipeDetailsUseCase
 
 	val removeFavoriteRecipeUseCase: RemoveFavoriteRecipeUseCase
+
+	val saveCreatedRecipeUseCase: SaveCreatedRecipeUseCase
 
 	val searchRecipesUseCase: SearchRecipesUseCase
 }

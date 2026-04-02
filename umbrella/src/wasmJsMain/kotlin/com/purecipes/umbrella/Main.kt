@@ -17,11 +17,13 @@ fun main() {
 			signInWithGoogle = graph.signInWithGoogleUseCase,
 			signOut = graph.signOutUseCase,
 			addFavoriteRecipe = graph.addFavoriteRecipeUseCase,
+			getCreatedRecipes = graph.getCreatedRecipesUseCase,
 			getFavoriteRecipes = graph.getFavoriteRecipesUseCase,
 			searchRecipes = graph.searchRecipesUseCase,
 			getRecipeDetails = graph.getRecipeDetailsUseCase,
 			googleWebClientId = graph.purecipesConfig.googleWebClientId(),
 			removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
+			saveCreatedRecipe = graph.saveCreatedRecipeUseCase,
 		)
 	})
 }

@@ -41,6 +41,12 @@ class Db private constructor(
 				connection.createStatement().use { statement ->
 					statement.execute(APP_USERS_TABLE_SQL)
 					statement.execute(AUTH_SESSIONS_TABLE_SQL)
+					statement.execute(RECIPES_TABLE_SQL)
+					statement.execute(RECIPES_ADD_DESCRIPTION_SQL)
+					statement.execute(RECIPES_ADD_CREATED_BY_USER_ID_SQL)
+					statement.execute(INGREDIENT_GROUPS_TABLE_SQL)
+					statement.execute(INGREDIENTS_TABLE_SQL)
+					statement.execute(INSTRUCTION_STEPS_TABLE_SQL)
 					statement.execute(FAVORITES_TABLE_SQL)
 					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
 				}

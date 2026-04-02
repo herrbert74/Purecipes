@@ -6,6 +6,7 @@ import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -24,7 +25,7 @@ class FavoritesViewModelTest {
 			RecipeSummary(
 				id = 42,
 				title = "Tomato Pasta",
-				cuisine = "Italian",
+				cuisine = Cuisine.ITALIAN,
 				imageUrl = null,
 				totalTime = 25,
 				isFavorite = true,

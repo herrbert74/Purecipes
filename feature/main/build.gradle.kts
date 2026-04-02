@@ -16,6 +16,8 @@ kotlin {
 				implementation(project(":feature:cooking:ui"))
 				api(project(":feature:favorites:domain"))
 				implementation(project(":feature:favorites:ui"))
+				api(project(":feature:newrecipe:domain"))
+				implementation(project(":feature:newrecipe:ui"))
 				api(project(":feature:recipedetails:domain"))
 				implementation(project(":feature:recipedetails:ui"))
 				api(project(":feature:search:domain"))

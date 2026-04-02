@@ -7,6 +7,7 @@ import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.routes.authenticationRoutes
 import com.purecipes.backend.routes.favoriteRoutes
+import com.purecipes.backend.routes.recipeImageRoutes
 import com.purecipes.backend.routes.recipeRoutes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -15,6 +16,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.staticFiles
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -42,6 +44,7 @@ fun Application.module(
 	db: Db = Db.create(),
 	googleIdTokenVerifier: GoogleIdTokenVerifier = GoogleTokenInfoGoogleIdTokenVerifier(),
 	sessionService: SessionService = JdbcSessionService(db.dataSource),
+	recipeImageStorage: RecipeImageStorage = RecipeImageStorage(),
 ) {
 	install(CallLogging)
 	install(CORS) {
@@ -49,6 +52,7 @@ fun Application.module(
 		allowMethod(HttpMethod.Delete)
 		allowMethod(HttpMethod.Get)
 		allowMethod(HttpMethod.Post)
+		allowMethod(HttpMethod.Put)
 		allowHeader(HttpHeaders.Authorization)
 		allowHeader(HttpHeaders.ContentType)
 		allowHeader(HttpHeaders.Accept)
@@ -76,11 +80,13 @@ fun Application.module(
 	sessionService.ensureSchema()
 
 	routing {
+		staticFiles("/uploads/recipes", recipeImageStorage.directory().toFile())
 		get("/health") {
 			call.respond(mapOf("status" to "ok"))
 		}
 		authenticationRoutes(googleIdTokenVerifier, sessionService)
 		favoriteRoutes(sessionService) { db }
+		recipeImageRoutes(sessionService, recipeImageStorage)
 		recipeRoutes(sessionService) { db }
 		extraRoutes()
 	}

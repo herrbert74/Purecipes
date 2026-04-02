@@ -170,7 +170,7 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 				)
 				BodyText(
 					text = listOfNotNull(
-						recipe.cuisine ?: "Unknown cuisine",
+						recipe.cuisine?.displayName ?: "Unknown cuisine",
 						recipe.totalTime?.let { "$it min" },
 					).joinToString(separator = " • "),
 					color = MaterialTheme.colorScheme.onSurfaceVariant,

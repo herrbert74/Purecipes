@@ -6,6 +6,7 @@ import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -27,7 +28,7 @@ class RecipeSearchViewModelTest {
 					RecipeSummary(
 						id = 7,
 						title = "Tomato Pasta",
-						cuisine = "Italian",
+						cuisine = Cuisine.ITALIAN,
 						imageUrl = null,
 						totalTime = 20,
 					),

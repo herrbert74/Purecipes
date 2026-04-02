@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,5 +85,5 @@ private fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(
 	steps = listOf("Boil pasta", "Make sauce", "Serve"),
 	totalTime = 25,
 	yields = "2 servings",
-	cuisine = "Italian",
+	cuisine = Cuisine.ITALIAN,
 )

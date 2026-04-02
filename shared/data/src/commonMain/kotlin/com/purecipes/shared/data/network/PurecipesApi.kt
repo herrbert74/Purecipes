@@ -4,11 +4,13 @@ import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.RecipeWriteRequest
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.POST
+import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
 
@@ -22,6 +24,17 @@ interface PurecipesApi {
 
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails
+
+	@GET("recipes/mine")
+	suspend fun getCreatedRecipes(): List<RecipeDetails>
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("recipes")
+	suspend fun createRecipe(@Body request: RecipeWriteRequest): RecipeDetails
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@PUT("recipes/{id}")
+	suspend fun updateRecipe(@Path("id") recipeId: Int, @Body request: RecipeWriteRequest): RecipeDetails
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("auth/google")
