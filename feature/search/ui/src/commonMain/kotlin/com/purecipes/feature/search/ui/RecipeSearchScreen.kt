@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
@@ -40,11 +41,12 @@ import com.purecipes.shared.ui.component.TitleText
 @Composable
 fun RecipeSearchScreen(
 	searchRecipes: SearchRecipesUseCase,
+	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
 ) {
-	val viewModel = recipeSearchViewModel(searchRecipes)
+	val viewModel = recipeSearchViewModel(searchRecipes, trackEvent)
 
 	Column(
 		modifier = modifier

@@ -14,6 +14,30 @@ private fun Project.googleWebClientId(): String {
 		.orEmpty()
 }
 
+private fun Project.gaMeasurementId(): String {
+	return providers.gradleProperty("purecipes.gaMeasurementId")
+		.orElse(providers.gradleProperty("PURECIPES_GA_MEASUREMENT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_GA_MEASUREMENT_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.mixpanelProjectToken(): String {
+	return providers.gradleProperty("purecipes.mixpanelProjectToken")
+		.orElse(providers.gradleProperty("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
+		.orElse(providers.environmentVariable("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.usercentricsSettingsId(): String {
+	return providers.gradleProperty("purecipes.usercentricsSettingsId")
+		.orElse(providers.gradleProperty("PURECIPES_USERCENTRICS_SETTINGS_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_USERCENTRICS_SETTINGS_ID"))
+		.orNull
+		.orEmpty()
+}
+
 private fun String.asBuildConfigString(): String {
 	return buildString {
 		append('"')
@@ -40,6 +64,9 @@ android {
 		versionCode = 1
 		versionName = "1.0"
 		buildConfigField("String", "PURECIPES_GOOGLE_WEB_CLIENT_ID", googleWebClientId().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_MIXPANEL_PROJECT_TOKEN", mixpanelProjectToken().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
@@ -67,6 +94,7 @@ android {
 
 dependencies {
 	implementation(project(":feature:auth:data"))
+	implementation(project(":feature:analytics:data"))
 	implementation(project(":feature:main"))
 	implementation(project(":feature:favorites:data"))
 	implementation(project(":feature:newrecipe:data"))

@@ -11,6 +11,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:analytics:domain"))
+				implementation(project(":feature:analytics:ui"))
 				api(project(":feature:auth:domain"))
 				implementation(project(":feature:auth:ui"))
 				implementation(project(":feature:cooking:ui"))

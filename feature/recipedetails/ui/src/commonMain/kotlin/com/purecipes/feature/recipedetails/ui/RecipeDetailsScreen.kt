@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
@@ -53,6 +54,7 @@ fun RecipeDetailsRoute(
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	canManageFavorites: Boolean,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	trackEvent: TrackEventUseCase,
 	onBack: () -> Unit,
 	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
@@ -65,6 +67,7 @@ fun RecipeDetailsRoute(
 		addFavoriteRecipe = addFavoriteRecipe,
 		getRecipeDetails = getRecipeDetails,
 		removeFavoriteRecipe = removeFavoriteRecipe,
+		trackEvent = trackEvent,
 		sessionKey = sessionKey,
 	)
 	val currentOnFavoriteChange by rememberUpdatedState(onFavoriteChange)

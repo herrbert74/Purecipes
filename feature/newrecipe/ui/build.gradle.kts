@@ -10,9 +10,10 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:analytics:domain"))
 				api(project(":feature:newrecipe:domain"))
-					implementation(libs.coil.compose)
-					implementation(libs.coil.networkKtor3)
+				implementation(libs.coil.compose)
+				implementation(libs.coil.networkKtor3)
 			}
 		}
 	}

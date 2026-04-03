@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
@@ -36,10 +37,11 @@ import com.purecipes.shared.ui.component.BackNavigationButton
 fun StepByStepCookingRoute(
 	recipeId: Int,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	trackEvent: TrackEventUseCase,
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val viewModel = stepByStepCookingViewModel(recipeId, getRecipeDetails)
+	val viewModel = stepByStepCookingViewModel(recipeId, getRecipeDetails, trackEvent)
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),

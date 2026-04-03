@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
@@ -26,6 +28,7 @@ internal class RecipeDetailsViewModel(
 	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -74,6 +77,12 @@ internal class RecipeDetailsViewModel(
 			if (outcome.getError() == null) {
 				recipeDetails = currentRecipe.copy(isFavorite = !currentRecipe.isFavorite)
 				favoriteChangeCount += 1
+				trackEvent(
+					AnalyticsEvent.FavoriteChanged(
+						recipeId = currentRecipe.id,
+						isFavorite = !currentRecipe.isFavorite,
+					),
+				)
 			} else {
 				favoriteErrorMessage = outcome.getError()?.message
 			}
@@ -90,6 +99,9 @@ internal class RecipeDetailsViewModel(
 
 			val outcome = getRecipeDetails(recipeId)
 			recipeDetails = outcome.get()
+			if (recipeDetails != null) {
+				trackEvent(AnalyticsEvent.RecipeViewed(recipeId))
+			}
 			errorMessage = outcome.getError()?.message
 			isLoading = false
 		}
@@ -108,6 +120,7 @@ internal fun recipeDetailsViewModel(
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	trackEvent: TrackEventUseCase,
 	sessionKey: String?,
 ): RecipeDetailsViewModel {
 	val viewModelKey =
@@ -121,6 +134,8 @@ internal fun recipeDetailsViewModel(
 			append(':')
 			append(removeFavoriteRecipe.hashCode())
 			append(':')
+			append(trackEvent.hashCode())
+			append(':')
 			append(sessionKey ?: "signed-out")
 		}
 	return viewModel(
@@ -132,6 +147,7 @@ internal fun recipeDetailsViewModel(
 					addFavoriteRecipe = addFavoriteRecipe,
 					getRecipeDetails = getRecipeDetails,
 					removeFavoriteRecipe = removeFavoriteRecipe,
+					trackEvent = trackEvent,
 				)
 			}
 		},
