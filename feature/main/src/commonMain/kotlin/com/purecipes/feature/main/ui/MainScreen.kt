@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -32,7 +31,6 @@ import com.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import com.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import com.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import com.purecipes.feature.analytics.ui.ConsentPreferencesScreen
 import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
@@ -182,20 +180,15 @@ fun MainScreen(
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
-					entry<PrivacyDestination> {
-						ConsentPreferencesScreen(
-							observeConsentState = observeConsentState,
-							showConsentForm = showConsentForm,
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
 					entry<AccountDestination> {
 						AuthenticationScreen(
+							observeConsentState = observeConsentState,
 							observeAuthenticationState = observeAuthenticationState,
 							signInWithEmail = signInWithEmail,
 							registerWithEmail = registerWithEmail,
 							signInWithExternalProvider = signInWithExternalProvider,
 							signInWithGoogle = signInWithGoogle,
+							showConsentForm = showConsentForm,
 							signOut = signOut,
 							googleWebClientId = googleWebClientId,
 							modifier = Modifier.fillMaxSize(),
@@ -218,7 +211,6 @@ private fun rememberMainBackStack() = rememberNavBackStack(
 					subclass(RecipeCookingDestination.serializer())
 					subclass(FavoritesDestination.serializer())
 					subclass(CreateDestination.serializer())
-						subclass(PrivacyDestination.serializer())
 					subclass(AccountDestination.serializer())
 				}
 			}
@@ -247,9 +239,6 @@ internal object FavoritesDestination : MainDestination
 internal object CreateDestination : MainDestination
 
 @Serializable
-internal object PrivacyDestination : MainDestination
-
-@Serializable
 internal object AccountDestination : MainDestination
 
 internal data class MainTab(
@@ -271,10 +260,6 @@ internal val mainTabs = listOf(
 		label = "Create",
 	),
 	MainTab(
-		destination = PrivacyDestination,
-		label = "Privacy",
-	),
-	MainTab(
 		destination = AccountDestination,
 		label = "Account",
 	),
@@ -287,7 +272,6 @@ private val MainTab.icon: ImageVector
 		SearchDestination -> Icons.Filled.Search
 		FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
-		PrivacyDestination -> Icons.Filled.Lock
 		AccountDestination -> Icons.Filled.Person
 		is RecipeDetailsDestination -> Icons.Filled.Favorite
 		is RecipeCookingDestination -> Icons.Filled.Favorite
