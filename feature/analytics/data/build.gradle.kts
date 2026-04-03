@@ -3,6 +3,16 @@ plugins {
 	id("org.jetbrains.kotlin.native.cocoapods")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+	if (name.contains("Ios")) {
+		compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+	}
+	if (name.contains("WasmJs")) {
+		compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.js.ExperimentalWasmJsInterop")
+	}
+}
+
 kotlin {
 	cocoapods {
 		version = "1.0"
@@ -11,7 +21,9 @@ kotlin {
 		ios.deploymentTarget = "26.0"
 		podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
 		pod("FirebaseAnalytics")
-		pod("Mixpanel-swift")
+		pod("Mixpanel-swift") {
+			moduleName = "Mixpanel"
+		}
 		pod("Usercentrics")
 		pod("UsercentricsUI")
 	}

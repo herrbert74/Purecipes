@@ -1,6 +1,14 @@
 package com.purecipes.feature.analytics.data.datasource
 
+import cocoapods.Usercentrics.UsercentricsUpdatedConsentPayload
+import cocoapods.Usercentrics.UsercentricsUsercentricsEvent
+import cocoapods.Usercentrics.UsercentricsUsercentricsKt
+import cocoapods.Usercentrics.UsercentricsUsercentricsLoggerLevel
+import cocoapods.Usercentrics.UsercentricsUsercentricsOptions
+import cocoapods.Usercentrics.UsercentricsUsercentricsReadyStatus
+import cocoapods.Usercentrics.UsercentricsUsercentricsServiceConsent
 import com.purecipes.feature.analytics.domain.model.ConsentState
+import com.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
 import com.purecipes.shared.data.config.PurecipesConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -9,8 +17,11 @@ internal actual class PlatformConsentDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
 ) : ConsentDataSource {
 
+	private val settingsId = purecipesConfig.usercentricsSettingsId().orEmpty()
+	private var isConfigured = false
+	private var consentUpdatedSubscription: Any? = null
 	private val mutableConsentState = MutableStateFlow(
-		if (purecipesConfig.usercentricsSettingsId().isNullOrBlank()) {
+		if (settingsId.isBlank()) {
 			ConsentState.NOT_REQUIRED
 		} else {
 			ConsentState.UNKNOWN
@@ -20,14 +31,74 @@ internal actual class PlatformConsentDataSource actual constructor(
 	actual override val consentState: StateFlow<ConsentState> = mutableConsentState
 
 	actual override fun refreshConsent() {
-		if (mutableConsentState.value == ConsentState.UNKNOWN) {
-			mutableConsentState.value = ConsentState.REQUIRED
+		if (settingsId.isBlank()) {
+			mutableConsentState.value = ConsentState.NOT_REQUIRED
+			return
 		}
+		configureIfNeeded()
+		UsercentricsUsercentricsKt.isReadyOnSuccess(
+			onSuccess = { status ->
+				mutableConsentState.value = status.toConsentState()
+			},
+			onFailure = {
+				mutableConsentState.value = ConsentState.UNKNOWN
+			},
+		)
 	}
 
 	actual override fun showConsentForm() {
-		if (mutableConsentState.value != ConsentState.NOT_REQUIRED) {
-			mutableConsentState.value = ConsentState.OBTAINED
+		if (settingsId.isBlank()) {
+			mutableConsentState.value = ConsentState.NOT_REQUIRED
+			return
 		}
+		configureIfNeeded()
+		IosAnalyticsNativeBridge.showConsentForm()
+	}
+
+	private fun configureIfNeeded() {
+		if (isConfigured) {
+			return
+		}
+		val options = UsercentricsUsercentricsOptions(settingsId = settingsId)
+		options.loggerLevel = UsercentricsUsercentricsLoggerLevel.none
+		UsercentricsUsercentricsKt.configureOptions(options)
+		consentUpdatedSubscription = UsercentricsUsercentricsEvent.shared.onConsentUpdatedCallback(
+			callback = { payload ->
+				mutableConsentState.value = payload.toConsentState()
+			},
+		)
+		isConfigured = true
+	}
+}
+
+
+private fun UsercentricsUsercentricsReadyStatus?.toConsentState(): ConsentState {
+	if (this == null) {
+		return ConsentState.UNKNOWN
+	}
+	if (shouldCollectConsent) {
+		return ConsentState.REQUIRED
+	}
+	return consentStateFrom(consents)
+}
+
+
+private fun UsercentricsUpdatedConsentPayload?.toConsentState(): ConsentState {
+	if (this == null) {
+		return ConsentState.UNKNOWN
+	}
+	return consentStateFrom(consents)
+}
+
+
+private fun consentStateFrom(consents: Any?): ConsentState {
+	val serviceConsents = (consents as? List<*>)
+		.orEmpty()
+		.filterIsInstance<UsercentricsUsercentricsServiceConsent>()
+	val nonEssentialConsents = serviceConsents.filterNot { it.isEssential }
+	return when {
+		nonEssentialConsents.isEmpty() -> ConsentState.OBTAINED
+		nonEssentialConsents.any { it.status } -> ConsentState.OBTAINED
+		else -> ConsentState.DENIED
 	}
 }
