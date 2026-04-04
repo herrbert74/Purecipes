@@ -1,7 +1,6 @@
 package com.purecipes.feature.analytics.data.repository
 
 import com.purecipes.feature.analytics.data.datasource.AnalyticsDataSource
-import com.purecipes.feature.analytics.data.datasource.ConsentDataSource
 import com.purecipes.feature.analytics.data.datasource.Ga4AnalyticsDataSource
 import com.purecipes.feature.analytics.data.datasource.MixpanelAnalyticsDataSource
 import com.purecipes.feature.analytics.data.datasource.PlatformConsentDataSource
@@ -21,13 +20,8 @@ import dev.zacsweers.metro.Provides
 interface AnalyticsDataModule {
 
 	@Provides
-	fun provideConsentDataSource(purecipesConfig: PurecipesConfig): ConsentDataSource {
-		return PlatformConsentDataSource(purecipesConfig)
-	}
-
-	@Provides
-	fun provideConsentRepository(consentDataSource: ConsentDataSource): ConsentRepository {
-		return ConsentAccessor(consentDataSource)
+	fun provideConsentRepository(purecipesConfig: PurecipesConfig): ConsentRepository {
+		return ConsentAccessor(PlatformConsentDataSource(purecipesConfig))
 	}
 
 	@Provides

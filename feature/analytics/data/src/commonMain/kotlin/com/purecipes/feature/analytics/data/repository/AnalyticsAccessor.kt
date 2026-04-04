@@ -24,7 +24,7 @@ internal class AnalyticsAccessor(
 		val isEnabled = consentRepository.currentConsentState().allowsAnalytics()
 		analyticsDataSources.forEach {
 			it.setTrackingEnabled(isEnabled)
-			it.setUserId(userId)
+			it.setUserId(if (isEnabled) userId else null)
 		}
 	}
 }

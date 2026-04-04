@@ -43,4 +43,26 @@ class AnalyticsPropertiesSerializationTest {
 			actual = properties.toAnalyticsJson(),
 		)
 	}
+
+	@Test
+	fun `serializes empty map to empty json object`() {
+		val properties = emptyMap<String, AnalyticsValue>()
+
+		assertEquals(
+			expected = "{}",
+			actual = properties.toAnalyticsJson(),
+		)
+	}
+
+	@Test
+	fun `escapes carriage return in text values`() {
+		val properties = mapOf(
+			"text" to AnalyticsValue.TextValue("line1\rline2"),
+		)
+
+		assertEquals(
+			expected = "{\"text\":\"line1\\rline2\"}",
+			actual = properties.toAnalyticsJson(),
+		)
+	}
 }

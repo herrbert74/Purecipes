@@ -273,6 +273,6 @@ private val MainTab.icon: ImageVector
 		FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
 		AccountDestination -> Icons.Filled.Person
-		is RecipeDetailsDestination -> Icons.Filled.Favorite
-		is RecipeCookingDestination -> Icons.Filled.Favorite
+		is RecipeDetailsDestination -> error("RecipeDetailsDestination is not a tab destination")
+		is RecipeCookingDestination -> error("RecipeCookingDestination is not a tab destination")
 	}

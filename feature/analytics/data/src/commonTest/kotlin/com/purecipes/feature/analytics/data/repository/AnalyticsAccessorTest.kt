@@ -28,6 +28,34 @@ class AnalyticsAccessorTest {
 	}
 
 	@Test
+	fun `trackEvent skips dispatch when consent is unknown`() {
+		val dataSource = RecordingAnalyticsDataSource()
+		val accessor = AnalyticsAccessor(
+			analyticsDataSources = listOf(dataSource),
+			consentRepository = FakeConsentRepository(ConsentState.UNKNOWN),
+		)
+
+		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
+
+		assertEquals(false, dataSource.lastTrackingEnabled)
+		assertNull(dataSource.lastTrackedEventName)
+	}
+
+	@Test
+	fun `trackEvent skips dispatch when consent is required`() {
+		val dataSource = RecordingAnalyticsDataSource()
+		val accessor = AnalyticsAccessor(
+			analyticsDataSources = listOf(dataSource),
+			consentRepository = FakeConsentRepository(ConsentState.REQUIRED),
+		)
+
+		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
+
+		assertEquals(false, dataSource.lastTrackingEnabled)
+		assertNull(dataSource.lastTrackedEventName)
+	}
+
+	@Test
 	fun `trackEvent dispatches typed properties when consent allows analytics`() {
 		val dataSource = RecordingAnalyticsDataSource()
 		val accessor = AnalyticsAccessor(
@@ -49,6 +77,21 @@ class AnalyticsAccessorTest {
 	}
 
 	@Test
+	fun `trackEvent dispatches to all data sources when consent allows analytics`() {
+		val first = RecordingAnalyticsDataSource()
+		val second = RecordingAnalyticsDataSource()
+		val accessor = AnalyticsAccessor(
+			analyticsDataSources = listOf(first, second),
+			consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
+		)
+
+		accessor.trackEvent(AnalyticsEvent.CookingStarted(recipeId = 5))
+
+		assertEquals("cooking_started", first.lastTrackedEventName)
+		assertEquals("cooking_started", second.lastTrackedEventName)
+	}
+
+	@Test
 	fun `setUserId propagates enabled state and user id`() {
 		val dataSource = RecordingAnalyticsDataSource()
 		val accessor = AnalyticsAccessor(
@@ -60,6 +103,20 @@ class AnalyticsAccessorTest {
 
 		assertEquals(true, dataSource.lastTrackingEnabled)
 		assertEquals("user-123", dataSource.lastUserId)
+	}
+
+	@Test
+	fun `setUserId clears user id when consent denies analytics`() {
+		val dataSource = RecordingAnalyticsDataSource()
+		val accessor = AnalyticsAccessor(
+			analyticsDataSources = listOf(dataSource),
+			consentRepository = FakeConsentRepository(ConsentState.DENIED),
+		)
+
+		accessor.setUserId("user-123")
+
+		assertEquals(false, dataSource.lastTrackingEnabled)
+		assertNull(dataSource.lastUserId)
 	}
 
 	private class RecordingAnalyticsDataSource : AnalyticsDataSource {

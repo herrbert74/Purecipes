@@ -7,6 +7,7 @@ import com.usercentrics.sdk.BannerSettings
 import com.usercentrics.sdk.Usercentrics
 import com.usercentrics.sdk.UsercentricsBanner
 import com.usercentrics.sdk.UsercentricsOptions
+import com.usercentrics.sdk.UsercentricsServiceConsent
 import com.usercentrics.sdk.models.common.UsercentricsLoggerLevel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,7 +58,7 @@ internal actual class PlatformConsentDataSource actual constructor(
 			mutableConsentState.value = if (response == null) {
 				ConsentState.UNKNOWN
 			} else {
-				ConsentState.OBTAINED
+				response.consents.toConsentState()
 			}
 		}
 	}
@@ -74,5 +75,14 @@ internal actual class PlatformConsentDataSource actual constructor(
 			),
 		)
 		isInitialized = true
+	}
+}
+
+private fun List<UsercentricsServiceConsent>.toConsentState(): ConsentState {
+	val nonEssentialConsents = filterNot { it.isEssential }
+	return when {
+		nonEssentialConsents.isEmpty() -> ConsentState.OBTAINED
+		nonEssentialConsents.any { it.status } -> ConsentState.OBTAINED
+		else -> ConsentState.DENIED
 	}
 }
