@@ -22,6 +22,30 @@ private fun Project.googleWebClientId(): String {
 		.orEmpty()
 }
 
+private fun Project.gaMeasurementId(): String {
+	return providers.gradleProperty("purecipes.gaMeasurementId")
+		.orElse(providers.gradleProperty("PURECIPES_GA_MEASUREMENT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_GA_MEASUREMENT_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.mixpanelProjectToken(): String {
+	return providers.gradleProperty("purecipes.mixpanelProjectToken")
+		.orElse(providers.gradleProperty("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
+		.orElse(providers.environmentVariable("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.usercentricsSettingsId(): String {
+	return providers.gradleProperty("purecipes.usercentricsSettingsId")
+		.orElse(providers.gradleProperty("PURECIPES_USERCENTRICS_SETTINGS_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_USERCENTRICS_SETTINGS_ID"))
+		.orNull
+		.orEmpty()
+}
+
 private fun Project.currentPurecipesBuildType(): String {
 	val requestedBuildType = androidBuildTypeFromTasks()
 		?: providers.gradleProperty("purecipes.buildType").orNull
@@ -48,6 +72,9 @@ buildkonfig {
 	defaultConfigs {
 		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
 		buildConfigField(STRING, "purecipesGoogleWebClientId", googleWebClientId())
+		buildConfigField(STRING, "purecipesGaMeasurementId", gaMeasurementId())
+		buildConfigField(STRING, "purecipesMixpanelProjectToken", mixpanelProjectToken())
+		buildConfigField(STRING, "purecipesUsercentricsSettingsId", usercentricsSettingsId())
 	}
 }
 
@@ -72,6 +99,7 @@ kotlin {
 			binaries.framework {
 				baseName = "umbrella"
 				isStatic = true
+				export(project(":feature:analytics:domain"))
 				export(project(":feature:main"))
 				export(project(":feature:auth:domain"))
 				export(project(":feature:favorites:domain"))
@@ -85,6 +113,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:analytics:domain"))
+				api(project(":feature:analytics:data"))
 				api(project(":feature:auth:domain"))
 				api(project(":feature:auth:data"))
 				api(project(":feature:main"))

@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.RecipeSummary
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +23,7 @@ import kotlinx.coroutines.launch
 
 internal class RecipeSearchViewModel(
 	private val searchRecipes: SearchRecipesUseCase,
+	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -60,6 +63,7 @@ internal class RecipeSearchViewModel(
 			val outcome = searchRecipes(searchQuery)
 			recipes.clear()
 			recipes.addAll(outcome.get() ?: emptyList())
+			trackEvent(AnalyticsEvent.SearchPerformed(query = searchQuery, resultCount = recipes.size))
 			errorMessage = outcome.getError()?.message
 			isSearching = false
 			isSearchBarActive = false
@@ -74,12 +78,18 @@ internal class RecipeSearchViewModel(
 }
 
 @Composable
-internal fun recipeSearchViewModel(searchRecipes: SearchRecipesUseCase): RecipeSearchViewModel {
+internal fun recipeSearchViewModel(
+	searchRecipes: SearchRecipesUseCase,
+	trackEvent: TrackEventUseCase,
+): RecipeSearchViewModel {
 	return viewModel(
-		key = "RecipeSearchViewModel:${searchRecipes.hashCode()}",
+		key = "RecipeSearchViewModel:${searchRecipes.hashCode()}:${trackEvent.hashCode()}",
 		factory = viewModelFactory {
 			initializer {
-				RecipeSearchViewModel(searchRecipes = searchRecipes)
+				RecipeSearchViewModel(
+					searchRecipes = searchRecipes,
+					trackEvent = trackEvent,
+				)
 			}
 		},
 	)

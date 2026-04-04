@@ -15,7 +15,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-					api(project(":feature:favorites:domain"))
+				api(project(":feature:analytics:domain"))
+				api(project(":feature:favorites:domain"))
 				api(project(":feature:recipedetails:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)

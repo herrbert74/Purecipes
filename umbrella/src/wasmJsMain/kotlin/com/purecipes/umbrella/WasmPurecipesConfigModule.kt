@@ -17,6 +17,18 @@ interface WasmPurecipesConfigModule {
 			override fun googleWebClientId(): String? {
 				return BuildKonfig.purecipesGoogleWebClientId.takeIf { it.isNotBlank() }
 			}
+
+			override fun gaMeasurementId(): String? {
+				return BuildKonfig.purecipesGaMeasurementId.takeIf { it.isNotBlank() }
+			}
+
+			override fun mixpanelProjectToken(): String? {
+				return BuildKonfig.purecipesMixpanelProjectToken.takeIf { it.isNotBlank() }
+			}
+
+			override fun usercentricsSettingsId(): String? {
+				return BuildKonfig.purecipesUsercentricsSettingsId.takeIf { it.isNotBlank() }
+			}
 		}
 	}
 }

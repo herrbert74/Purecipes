@@ -15,7 +15,11 @@ class RecipeSearchViewControllerFactory {
 			}
 		) {
 			MainScreen(
+				observeConsentState = graph.observeConsentStateUseCase,
 				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
+				refreshConsent = graph.refreshConsentUseCase,
+				setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
+				showConsentForm = graph.showConsentFormUseCase,
 				signInWithEmail = graph.signInWithEmailUseCase,
 				registerWithEmail = graph.registerWithEmailUseCase,
 				signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
@@ -29,6 +33,7 @@ class RecipeSearchViewControllerFactory {
 				googleWebClientId = graph.purecipesConfig.googleWebClientId(),
 				removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
 				saveCreatedRecipe = graph.saveCreatedRecipeUseCase,
+				trackEvent = graph.trackEventUseCase,
 			)
 		}
 	}

@@ -17,6 +17,18 @@ interface AndroidPurecipesConfigModule {
 			override fun googleWebClientId(): String? {
 				return BuildConfig.PURECIPES_GOOGLE_WEB_CLIENT_ID.takeIf { it.isNotBlank() }
 			}
+
+			override fun gaMeasurementId(): String? {
+				return BuildConfig.PURECIPES_GA_MEASUREMENT_ID.takeIf { it.isNotBlank() }
+			}
+
+			override fun mixpanelProjectToken(): String? {
+				return BuildConfig.PURECIPES_MIXPANEL_PROJECT_TOKEN.takeIf { it.isNotBlank() }
+			}
+
+			override fun usercentricsSettingsId(): String? {
+				return BuildConfig.PURECIPES_USERCENTRICS_SETTINGS_ID.takeIf { it.isNotBlank() }
+			}
 		}
 	}
 }

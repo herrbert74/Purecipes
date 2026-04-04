@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.shared.domain.model.Cuisine
@@ -96,6 +97,7 @@ fun CreateRecipeScreen(
 	canUploadRecipes: Boolean,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	rememberImagePicker: RememberRecipeImagePicker = ::rememberRecipeImagePicker,
 ) {
@@ -116,6 +118,7 @@ fun CreateRecipeScreen(
 	val viewModel = createRecipeViewModel(
 		getCreatedRecipes = getCreatedRecipes,
 		saveCreatedRecipe = saveCreatedRecipe,
+		trackEvent = trackEvent,
 	)
 	var pickerErrorMessage by remember { mutableStateOf<String?>(null) }
 	var isImportingImage by remember { mutableStateOf(false) }

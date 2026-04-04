@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +24,7 @@ import kotlinx.coroutines.launch
 internal class StepByStepCookingViewModel(
 	private val recipeId: Int,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
+	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -70,6 +73,9 @@ internal class StepByStepCookingViewModel(
 
 			val outcome = getRecipeDetails(recipeId)
 			recipeDetails = outcome.get()
+			if (recipeDetails != null) {
+				trackEvent(AnalyticsEvent.CookingStarted(recipeId))
+			}
 			errorMessage = outcome.getError()?.message
 			currentStepIndex = 0
 			isLoading = false
@@ -87,14 +93,16 @@ internal class StepByStepCookingViewModel(
 internal fun stepByStepCookingViewModel(
 	recipeId: Int,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	trackEvent: TrackEventUseCase,
 ): StepByStepCookingViewModel {
 	return viewModel(
-		key = "StepByStepCookingViewModel:$recipeId:${getRecipeDetails.hashCode()}",
+		key = "StepByStepCookingViewModel:$recipeId:${getRecipeDetails.hashCode()}:${trackEvent.hashCode()}",
 		factory = viewModelFactory {
 			initializer {
 				StepByStepCookingViewModel(
 					recipeId = recipeId,
 					getRecipeDetails = getRecipeDetails,
+					trackEvent = trackEvent,
 				)
 			}
 		},

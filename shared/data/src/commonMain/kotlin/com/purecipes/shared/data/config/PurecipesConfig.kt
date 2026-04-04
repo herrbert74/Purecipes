@@ -4,6 +4,12 @@ interface PurecipesConfig {
 	fun buildType(): PurecipesBuildType
 
 	fun googleWebClientId(): String? = null
+
+	fun gaMeasurementId(): String? = null
+
+	fun mixpanelProjectToken(): String? = null
+
+	fun usercentricsSettingsId(): String? = null
 }
 
 enum class PurecipesBuildType {

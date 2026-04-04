@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 internal class CreateRecipeViewModel(
 	private val getCreatedRecipes: GetCreatedRecipesUseCase,
 	private val saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -218,6 +221,12 @@ internal class CreateRecipeViewModel(
 			if (savedRecipe != null) {
 				replaceRecipe(savedRecipe)
 				editRecipe(savedRecipe)
+				trackEvent(
+					AnalyticsEvent.RecipeSaved(
+						recipeId = savedRecipe.id,
+						isEditing = wasEditing,
+					),
+				)
 				successMessage = if (wasEditing) {
 					"Recipe updated."
 				} else {
@@ -271,14 +280,24 @@ internal class CreateRecipeViewModel(
 internal fun createRecipeViewModel(
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	trackEvent: TrackEventUseCase,
 ): CreateRecipeViewModel {
+	val viewModelKey = buildString {
+		append("CreateRecipeViewModel:")
+		append(getCreatedRecipes.hashCode())
+		append(":")
+		append(saveCreatedRecipe.hashCode())
+		append(":")
+		append(trackEvent.hashCode())
+	}
 	return viewModel(
-		key = "CreateRecipeViewModel:${getCreatedRecipes.hashCode()}:${saveCreatedRecipe.hashCode()}",
+		key = viewModelKey,
 		factory = viewModelFactory {
 			initializer {
 				CreateRecipeViewModel(
 					getCreatedRecipes = getCreatedRecipes,
 					saveCreatedRecipe = saveCreatedRecipe,
+					trackEvent = trackEvent,
 				)
 			}
 		},

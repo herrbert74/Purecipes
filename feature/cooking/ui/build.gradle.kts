@@ -15,6 +15,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:analytics:domain"))
 				api(project(":feature:recipedetails:domain"))
 			}
 		}

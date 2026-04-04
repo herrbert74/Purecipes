@@ -13,6 +13,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,6 +26,11 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import com.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
+import com.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import com.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
@@ -54,7 +60,11 @@ import kotlinx.serialization.modules.subclass
 
 @Composable
 fun MainScreen(
+	observeConsentState: ObserveConsentStateUseCase,
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
+	refreshConsent: RefreshConsentUseCase,
+	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	showConsentForm: ShowConsentFormUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
@@ -68,6 +78,7 @@ fun MainScreen(
 	googleWebClientId: String?,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 ) {
@@ -80,6 +91,12 @@ fun MainScreen(
 		val sessionKey = when (val state = authenticationState) {
 			is AuthenticationState.SignedIn -> state.user.id
 			AuthenticationState.SignedOut -> null
+		}
+		LaunchedEffect(Unit) {
+			refreshConsent()
+		}
+		LaunchedEffect(sessionKey) {
+			setAnalyticsUserId(sessionKey)
 		}
 		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 		HandleSystemBack(
@@ -117,6 +134,7 @@ fun MainScreen(
 						RecipeSearchScreen(
 							modifier = Modifier.fillMaxSize(),
 							searchRecipes = searchRecipes,
+							trackEvent = trackEvent,
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}
@@ -126,6 +144,7 @@ fun MainScreen(
 							addFavoriteRecipe = addFavoriteRecipe,
 							canManageFavorites = canManageFavorites,
 							getRecipeDetails = getRecipeDetails,
+							trackEvent = trackEvent,
 							onBack = { viewModel.onBack(backStack) },
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
 							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
@@ -138,6 +157,7 @@ fun MainScreen(
 						StepByStepCookingRoute(
 							recipeId = destination.recipeId,
 							getRecipeDetails = getRecipeDetails,
+							trackEvent = trackEvent,
 							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
 						)
@@ -156,16 +176,19 @@ fun MainScreen(
 							canUploadRecipes = canManageFavorites,
 							getCreatedRecipes = getCreatedRecipes,
 							saveCreatedRecipe = saveCreatedRecipe,
+							trackEvent = trackEvent,
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
 					entry<AccountDestination> {
 						AuthenticationScreen(
+							observeConsentState = observeConsentState,
 							observeAuthenticationState = observeAuthenticationState,
 							signInWithEmail = signInWithEmail,
 							registerWithEmail = registerWithEmail,
 							signInWithExternalProvider = signInWithExternalProvider,
 							signInWithGoogle = signInWithGoogle,
+							showConsentForm = showConsentForm,
 							signOut = signOut,
 							googleWebClientId = googleWebClientId,
 							modifier = Modifier.fillMaxSize(),
@@ -250,6 +273,6 @@ private val MainTab.icon: ImageVector
 		FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
 		AccountDestination -> Icons.Filled.Person
-		is RecipeDetailsDestination -> Icons.Filled.Favorite
-		is RecipeCookingDestination -> Icons.Filled.Favorite
+		is RecipeDetailsDestination -> error("RecipeDetailsDestination is not a tab destination")
+		is RecipeCookingDestination -> error("RecipeCookingDestination is not a tab destination")
 	}

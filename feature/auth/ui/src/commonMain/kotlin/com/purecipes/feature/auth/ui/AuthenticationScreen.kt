@@ -24,6 +24,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +36,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.purecipes.feature.analytics.domain.model.ConsentState
+import com.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import com.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthUser
 import com.purecipes.feature.auth.domain.model.AuthenticationState
@@ -47,16 +52,19 @@ import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 
 @Composable
 fun AuthenticationScreen(
+	observeConsentState: ObserveConsentStateUseCase,
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
+	showConsentForm: ShowConsentFormUseCase,
 	signOut: SignOutUseCase,
 	googleWebClientId: String?,
 	modifier: Modifier = Modifier,
 ) {
 	InitializeGoogleAuthenticationProvider(googleWebClientId)
+	val consentState by observeConsentState().collectAsState()
 	val viewModel = authenticationViewModel(
 		observeAuthenticationState = observeAuthenticationState,
 		signInWithEmail = signInWithEmail,
@@ -76,6 +84,7 @@ fun AuthenticationScreen(
 			when (val state = viewModel.authenticationState) {
 				AuthenticationState.SignedOut ->
 					SignedOutAuthenticationContent(
+						consentState = consentState,
 						emailAuthenticationMode = viewModel.emailAuthenticationMode,
 						isEmailFormVisible = viewModel.isEmailFormVisible,
 						firstName = viewModel.firstName,
@@ -94,12 +103,15 @@ fun AuthenticationScreen(
 						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
+						onManagePrivacySettings = { showConsentForm() },
 					)
 
 				is AuthenticationState.SignedIn ->
 					SignedInAuthenticationContent(
+						consentState = consentState,
 						user = state.user,
 						isBusy = viewModel.isBusy,
+						onManagePrivacySettings = { showConsentForm() },
 						onSignOut = viewModel::signOut,
 					)
 			}
@@ -116,6 +128,7 @@ fun AuthenticationScreen(
 
 @Composable
 private fun SignedOutAuthenticationContent(
+	consentState: ConsentState,
 	emailAuthenticationMode: EmailAuthenticationMode,
 	isEmailFormVisible: Boolean,
 	firstName: String,
@@ -133,6 +146,7 @@ private fun SignedOutAuthenticationContent(
 	onEmailAuthenticationSubmit: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+	onManagePrivacySettings: () -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -168,6 +182,11 @@ private fun SignedOutAuthenticationContent(
 				onEmailAuthenticationSubmit = onEmailAuthenticationSubmit,
 			)
 		}
+		HorizontalDivider()
+		PrivacySettingsContent(
+			consentState = consentState,
+			onManagePrivacySettings = onManagePrivacySettings,
+		)
 	}
 }
 
@@ -300,8 +319,10 @@ private fun EmailAuthenticationForm(
 
 @Composable
 private fun SignedInAuthenticationContent(
+	consentState: ConsentState,
 	user: AuthUser,
 	isBusy: Boolean,
+	onManagePrivacySettings: () -> Unit,
 	onSignOut: () -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -317,6 +338,11 @@ private fun SignedInAuthenticationContent(
 				label = { Text(text = user.provider.name.lowercase().replaceFirstChar { it.titlecase() }) },
 			)
 		}
+		HorizontalDivider()
+		PrivacySettingsContent(
+			consentState = consentState,
+			onManagePrivacySettings = onManagePrivacySettings,
+		)
 		Button(
 			modifier = Modifier.fillMaxWidth(),
 			onClick = onSignOut,
@@ -331,6 +357,40 @@ private fun SignedInAuthenticationContent(
 				Text(text = "Sign out")
 			}
 		}
+	}
+}
+
+@Composable
+private fun PrivacySettingsContent(
+	consentState: ConsentState,
+	onManagePrivacySettings: () -> Unit,
+) {
+	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+		Text(
+			text = "Privacy",
+			style = MaterialTheme.typography.titleLarge,
+		)
+		Text(
+			text = consentState.toDisplayText(),
+			style = MaterialTheme.typography.bodyLarge,
+			color = MaterialTheme.colorScheme.onSurfaceVariant,
+		)
+		OutlinedButton(
+			modifier = Modifier.fillMaxWidth(),
+			onClick = onManagePrivacySettings,
+		) {
+			Text(text = "Manage privacy settings")
+		}
+	}
+}
+
+private fun ConsentState.toDisplayText(): String {
+	return when (this) {
+		ConsentState.UNKNOWN -> "Consent status is not available yet."
+		ConsentState.REQUIRED -> "Consent is required before analytics can run."
+		ConsentState.OBTAINED -> "Consent has been granted for analytics."
+		ConsentState.DENIED -> "Consent has been denied for analytics."
+		ConsentState.NOT_REQUIRED -> "Consent is not required for analytics on this device."
 	}
 }
 

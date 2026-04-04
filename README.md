@@ -78,6 +78,19 @@ Let's take a look in each major part of the application:
 * **shared** - **Shared** domain, UI and data modules specific to this app.
 * **base** - Kotlin and Android base classes, reusable in any apps, but not extracted to separate library yet.
 
+## 📈 Analytics and consent
+
+The app reads analytics configuration from the platform-specific build config layer:
+
+* Android uses `BuildConfig` fields from `app/build.gradle.kts`.
+* iOS and Wasm use `BuildKonfig` values from `umbrella/build.gradle.kts`.
+* The same config keys are used across targets:
+  * `PURECIPES_GA_MEASUREMENT_ID` / `purecipesGaMeasurementId`
+  * `PURECIPES_MIXPANEL_PROJECT_TOKEN` / `purecipesMixpanelProjectToken`
+  * `PURECIPES_USERCENTRICS_SETTINGS_ID` / `purecipesUsercentricsSettingsId`
+
+These values are loaded from either Gradle properties or environment variables.
+
 ## 👀 Others
 
 TBC

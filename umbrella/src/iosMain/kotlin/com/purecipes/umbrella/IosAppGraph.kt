@@ -1,5 +1,11 @@
 package com.purecipes.umbrella
 
+import com.purecipes.feature.analytics.data.repository.AnalyticsDataModule
+import com.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import com.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
+import com.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import com.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.auth.data.repository.AuthenticationDataModule
 import com.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import com.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
@@ -25,6 +31,7 @@ import dev.zacsweers.metro.DependencyGraph
 
 @DependencyGraph(AppScope::class)
 interface IosAppGraph :
+	AnalyticsDataModule,
 	AuthenticationDataModule,
 	DataNetworkModule,
 	FavoritesDataModule,
@@ -33,6 +40,16 @@ interface IosAppGraph :
 	SearchDataModule {
 
 	val purecipesConfig: PurecipesConfig
+
+	val observeConsentStateUseCase: ObserveConsentStateUseCase
+
+	val refreshConsentUseCase: RefreshConsentUseCase
+
+	val setAnalyticsUserIdUseCase: SetAnalyticsUserIdUseCase
+
+	val showConsentFormUseCase: ShowConsentFormUseCase
+
+	val trackEventUseCase: TrackEventUseCase
 
 	val observeAuthenticationStateUseCase: ObserveAuthenticationStateUseCase
 

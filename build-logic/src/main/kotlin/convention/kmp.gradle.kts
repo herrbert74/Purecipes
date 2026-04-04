@@ -1,9 +1,10 @@
 package convention
 
 import libs
-import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsPlugin
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 
 plugins {
@@ -20,6 +21,13 @@ tasks.withType<Kotlin2JsCompile>().configureEach {
 				it.name == $$"setIncrementalJsKlib$kotlin_gradle_plugin_common"
 			}?.invoke(this, false)
 		}
+	}
+}
+
+plugins.withType<WasmNodeJsPlugin> {
+	extensions.configure<WasmNodeJsEnvSpec>(WasmNodeJsEnvSpec.EXTENSION_NAME) {
+		download.set(false)
+		downloadBaseUrl.set(null as String?)
 	}
 }
 

@@ -73,6 +73,7 @@ kotlinRetry = "2.0.2"
 ktor = "3.4.2"
 ktorfit = "2.7.2"
 metro = "0.12.0"
+mixpanelAndroid = "8.2.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.3.0"
 multiplatform-settings = "1.3.0"
@@ -87,6 +88,7 @@ skiko = "0.9.43"
 #skie = "0.10.4"
 testcontainers = "2.0.4"
 uri-kmp = "0.0.21"
+usercentrics = "2.21.0"
 core = "1.7.0"
 
 [libraries]
@@ -344,6 +346,7 @@ metro-gradlePlugin = { module = "dev.zacsweers.metro:dev.zacsweers.metro.gradle.
 metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 metrox-viewmodel = { module = "dev.zacsweers.metro:metrox-viewmodel", version.ref = "metro" }
 metrox-viewmodelCompose = { module = "dev.zacsweers.metro:metrox-viewmodel-compose", version.ref = "metro" }
+mixpanelAndroid = { module = "com.mixpanel.android:mixpanel-android", version.ref = "mixpanelAndroid" }
 
 #mockk-core = { module = "io.mockk:mockk", version.ref = "mockk" }
 #mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
@@ -377,6 +380,7 @@ testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 
 uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uri-kmp" }
+usercentricsUi = { module = "com.usercentrics.sdk:usercentrics-ui", version.ref = "usercentrics" }
 
 #timber = "com.jakewharton.timber:timber:5.0.1"
 
