@@ -33,7 +33,8 @@ internal actual class Ga4AnalyticsDataSource actual constructor(
 	}
 }
 
-@JsFun("""
+@JsFun(
+	"""
 	(measurementId) => {
 		if (!measurementId || !globalThis.document || globalThis.__purecipesGaInitialized) {
 			return;
@@ -48,25 +49,30 @@ internal actual class Ga4AnalyticsDataSource actual constructor(
 		globalThis.gtag('config', measurementId);
 		globalThis.__purecipesGaInitialized = true;
 	}
-""")
+"""
+)
 private external fun ga4EnsureInitialized(measurementId: String)
 
-@JsFun("""
+@JsFun(
+	"""
 	(eventName, propertiesJson) => {
 		if (!globalThis.gtag) {
 			return;
 		}
 		globalThis.gtag('event', eventName, propertiesJson ? JSON.parse(propertiesJson) : {});
 	}
-""")
+"""
+)
 private external fun ga4TrackEvent(eventName: String, propertiesJson: String)
 
-@JsFun("""
+@JsFun(
+	"""
 	(userId) => {
 		if (!globalThis.gtag) {
 			return;
 		}
 		globalThis.gtag('set', 'user_properties', userId ? { user_id: userId } : {});
 	}
-""")
+"""
+)
 private external fun ga4SetUserId(userId: String?)

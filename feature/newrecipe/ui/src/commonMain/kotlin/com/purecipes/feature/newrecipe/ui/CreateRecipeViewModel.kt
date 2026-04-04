@@ -282,8 +282,16 @@ internal fun createRecipeViewModel(
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	trackEvent: TrackEventUseCase,
 ): CreateRecipeViewModel {
+	val viewModelKey = buildString {
+		append("CreateRecipeViewModel:")
+		append(getCreatedRecipes.hashCode())
+		append(":")
+		append(saveCreatedRecipe.hashCode())
+		append(":")
+		append(trackEvent.hashCode())
+	}
 	return viewModel(
-		key = "CreateRecipeViewModel:${getCreatedRecipes.hashCode()}:${saveCreatedRecipe.hashCode()}:${trackEvent.hashCode()}",
+		key = viewModelKey,
 		factory = viewModelFactory {
 			initializer {
 				CreateRecipeViewModel(

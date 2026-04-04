@@ -1,12 +1,11 @@
 package convention
 
 import libs
-import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsPlugin
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)

@@ -149,9 +149,11 @@ class AnalyticsAccessorTest {
 		override fun currentConsentState(): ConsentState = state.value
 
 		override fun refreshConsent() {
+			// no-op
 		}
 
 		override fun showConsentForm() {
+			// no-op
 		}
 	}
 }

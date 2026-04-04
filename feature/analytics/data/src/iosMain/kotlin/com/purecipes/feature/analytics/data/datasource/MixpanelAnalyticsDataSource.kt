@@ -1,7 +1,7 @@
 package com.purecipes.feature.analytics.data.datasource
 
-import com.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
 import com.purecipes.feature.analytics.domain.model.AnalyticsValue
+import com.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
 import com.purecipes.shared.data.config.PurecipesConfig
 
 internal actual class MixpanelAnalyticsDataSource actual constructor(

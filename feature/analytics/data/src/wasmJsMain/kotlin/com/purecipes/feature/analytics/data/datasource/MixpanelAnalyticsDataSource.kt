@@ -46,7 +46,8 @@ internal actual class MixpanelAnalyticsDataSource actual constructor(
 	}
 }
 
-@JsFun("""
+@JsFun(
+	"""
 	(token) => {
 		if (!token || !globalThis.document || globalThis.__purecipesMixpanelInit) {
 			return;
@@ -60,51 +61,62 @@ internal actual class MixpanelAnalyticsDataSource actual constructor(
 		document.head.appendChild(script);
 		globalThis.__purecipesMixpanelInit = true;
 	}
-""")
+"""
+)
 private external fun mixpanelEnsureInitialized(token: String)
 
-@JsFun("""
+@JsFun(
+	"""
 	(eventName, propertiesJson) => {
 		if (!globalThis.mixpanel) {
 			return;
 		}
 		globalThis.mixpanel.track(eventName, propertiesJson ? JSON.parse(propertiesJson) : {});
 	}
-""")
+"""
+)
 private external fun mixpanelTrackEvent(eventName: String, propertiesJson: String)
 
-@JsFun("""
+@JsFun(
+	"""
 	(userId) => {
 		if (globalThis.mixpanel) {
 			globalThis.mixpanel.identify(userId);
 		}
 	}
-""")
+"""
+)
 private external fun mixpanelIdentify(userId: String)
 
-@JsFun("""
+@JsFun(
+	"""
 	() => {
 		if (globalThis.mixpanel) {
 			globalThis.mixpanel.reset();
 		}
 	}
-""")
+"""
+)
 private external fun mixpanelReset()
 
-@JsFun("""
+@JsFun(
+	"""
 	() => {
 		if (globalThis.mixpanel) {
 			globalThis.mixpanel.opt_in_tracking();
 		}
 	}
-""")
+"""
+)
 private external fun mixpanelOptInTracking()
 
-@JsFun("""
+@JsFun(
+	"""
 	() => {
 		if (globalThis.mixpanel) {
 			globalThis.mixpanel.opt_out_tracking();
 		}
 	}
-""")
+"""
+)
 private external fun mixpanelOptOutTracking()

@@ -71,7 +71,6 @@ internal actual class PlatformConsentDataSource actual constructor(
 	}
 }
 
-
 private fun UsercentricsUsercentricsReadyStatus?.toConsentState(): ConsentState {
 	if (this == null) {
 		return ConsentState.UNKNOWN
@@ -82,14 +81,12 @@ private fun UsercentricsUsercentricsReadyStatus?.toConsentState(): ConsentState 
 	return consentStateFrom(consents)
 }
 
-
 private fun UsercentricsUpdatedConsentPayload?.toConsentState(): ConsentState {
 	if (this == null) {
 		return ConsentState.UNKNOWN
 	}
 	return consentStateFrom(consents)
 }
-
 
 private fun consentStateFrom(consents: Any?): ConsentState {
 	val serviceConsents = (consents as? List<*>)

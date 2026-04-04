@@ -15,7 +15,7 @@ class AnalyticsPropertiesSerializationTest {
 		)
 
 		assertEquals(
-			expected = "{\"query\":\"pasta\",\"result_count\":4,\"is_favorite\":true}",
+			expected = """{"query":"pasta","result_count":4,"is_favorite":true}""",
 			actual = properties.toAnalyticsJson(),
 		)
 	}
@@ -23,11 +23,11 @@ class AnalyticsPropertiesSerializationTest {
 	@Test
 	fun `escapes quotes slashes and control characters in text values`() {
 		val properties = mapOf(
-			"text" to AnalyticsValue.TextValue("He said \"hi\"\\next\nline\tindent"),
+			"text" to AnalyticsValue.TextValue("""He said \"hi\"\\next\nline\tindent"""),
 		)
 
 		assertEquals(
-			expected = "{\"text\":\"He said \\\"hi\\\"\\\\next\\nline\\tindent\"}",
+			expected = """{"text":"He said \"hi\"\\next\nline\tindent"}""",
 			actual = properties.toAnalyticsJson(),
 		)
 	}
@@ -39,7 +39,7 @@ class AnalyticsPropertiesSerializationTest {
 		)
 
 		assertEquals(
-			expected = "{\"recipe\\\"id\":42}",
+			expected = """{"recipe\"id":42}""",
 			actual = properties.toAnalyticsJson(),
 		)
 	}
@@ -61,7 +61,7 @@ class AnalyticsPropertiesSerializationTest {
 		)
 
 		assertEquals(
-			expected = "{\"text\":\"line1\\rline2\"}",
+			expected = """{"text":"line1\rline2"}""",
 			actual = properties.toAnalyticsJson(),
 		)
 	}

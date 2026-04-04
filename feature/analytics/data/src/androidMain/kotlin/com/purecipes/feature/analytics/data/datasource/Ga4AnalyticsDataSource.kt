@@ -2,8 +2,8 @@ package com.purecipes.feature.analytics.data.datasource
 
 import android.os.Bundle
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.purecipes.feature.analytics.domain.model.AnalyticsValue
 import com.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
+import com.purecipes.feature.analytics.domain.model.AnalyticsValue
 import com.purecipes.shared.data.config.PurecipesConfig
 
 internal actual class Ga4AnalyticsDataSource actual constructor(
