@@ -15,5 +15,10 @@ kotlin {
 				implementation(libs.coil.networkKtor3)
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
 	}
 }

@@ -1,15 +1,13 @@
 package com.purecipes.feature.cooking.ui
 
 import com.github.michaelbull.result.Ok
-import com.purecipes.base.kotlin.result.Outcome
-import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
-import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -68,19 +66,6 @@ class StepByStepCookingViewModelTest {
 		assertEquals(0, viewModel.currentStepIndex)
 	}
 
-	private class FakeRecipeDetailsRepository(
-		private val result: Outcome<RecipeDetails>,
-	) : RecipeDetailsRepository {
-
-		override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> = result
-	}
-
-	private class FakeAnalyticsRepository : AnalyticsRepository {
-
-		override fun trackEvent(event: AnalyticsEvent) = Unit
-
-		override fun setUserId(userId: String?) = Unit
-	}
 }
 
 private fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(

@@ -23,10 +23,16 @@ kotlin {
 			}
 		}
 		commonTest {
+				dependencies {
+					implementation(project(":shared:testfixtures"))
+				}
 		}
 		androidMain {
 		}
 		named("androidDeviceTest") {
+				dependencies {
+					implementation(project(":shared:testfixtures"))
+				}
 		}
 	}
 }

@@ -19,7 +19,15 @@ kotlin {
 				api(project(":feature:recipedetails:domain"))
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
 		named("androidDeviceTest") {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
 		}
 	}
 }

@@ -33,6 +33,11 @@ kotlin {
 				implementation(libs.kmpauth.uihelper)
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
 		androidMain {
 			dependencies {
 				implementation(project.dependencies.platform(libs.firebaseBom))

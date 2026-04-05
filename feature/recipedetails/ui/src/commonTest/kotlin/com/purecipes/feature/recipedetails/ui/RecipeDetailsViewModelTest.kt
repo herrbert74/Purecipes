@@ -4,18 +4,17 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
-import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
-import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -123,26 +122,10 @@ class RecipeDetailsViewModelTest {
 		assertTrue(viewModel.recipeDetails?.isFavorite == true)
 	}
 
-	private class FakeRecipeDetailsRepository(
-		private val result: Outcome<RecipeDetails>,
-	) : RecipeDetailsRepository {
-
-		override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> = result
-	}
-
-	private class FakeFavoritesRepository : FavoritesRepository {
-
-		override suspend fun addFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
-
-		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
-
-		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
-	}
-
 	private class BlockingFavoritesRepository(
 		private val favoriteStarted: CompletableDeferred<Unit>,
 		private val finishFavorite: CompletableDeferred<Unit>,
-	) : FavoritesRepository {
+	) : com.purecipes.feature.favorites.domain.repository.FavoritesRepository {
 
 		override suspend fun addFavorite(recipeId: Int): Outcome<Unit> {
 			favoriteStarted.complete(Unit)
@@ -153,13 +136,6 @@ class RecipeDetailsViewModelTest {
 		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
-	}
-
-	private class FakeAnalyticsRepository : AnalyticsRepository {
-
-		override fun trackEvent(event: AnalyticsEvent) = Unit
-
-		override fun setUserId(userId: String?) = Unit
 	}
 }
 

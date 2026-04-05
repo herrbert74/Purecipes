@@ -11,17 +11,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
-import com.github.michaelbull.result.Ok
-import com.purecipes.base.kotlin.result.Outcome
-import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
-import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
-import com.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
-import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
 import org.junit.Rule
 import org.junit.Test
 
@@ -174,34 +168,4 @@ class CreateRecipeScreenTest {
 		composeRule.onNodeWithTag("createRecipeStepField1").assertTextContains("First")
 	}
 
-	private class FakeCreatedRecipeRepository : CreatedRecipeRepository {
-
-		private val recipes = mutableListOf<RecipeDetails>()
-
-		override suspend fun getCreatedRecipes(): Outcome<List<RecipeDetails>> = Ok(recipes.toList())
-
-		override suspend fun saveCreatedRecipe(request: SaveCreatedRecipeRequest): Outcome<RecipeDetails> {
-			val recipe = RecipeDetails(
-				id = request.recipeId ?: -1,
-				title = request.title,
-				description = request.description,
-				imageUrl = request.imageUrl,
-				ingredientGroups = listOf(IngredientGroup(ingredients = request.ingredients)),
-				steps = request.steps,
-				totalTime = request.totalTime,
-				yields = request.yields,
-				cuisine = request.cuisine,
-			)
-			recipes.removeAll { it.id == recipe.id }
-			recipes.add(index = 0, element = recipe)
-			return Ok(recipe)
-		}
-	}
-
-	private class FakeAnalyticsRepository : AnalyticsRepository {
-
-		override fun trackEvent(event: AnalyticsEvent) = Unit
-
-		override fun setUserId(userId: String?) = Unit
-	}
 }

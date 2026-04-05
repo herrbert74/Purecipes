@@ -4,9 +4,7 @@ import com.purecipes.feature.analytics.data.datasource.AnalyticsDataSource
 import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.model.AnalyticsValue
 import com.purecipes.feature.analytics.domain.model.ConsentState
-import com.purecipes.feature.analytics.domain.repository.ConsentRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -140,20 +138,4 @@ class AnalyticsAccessorTest {
 		}
 	}
 
-	private class FakeConsentRepository(initialState: ConsentState) : ConsentRepository {
-
-		private val state = MutableStateFlow(initialState)
-
-		override fun observeConsentState(): StateFlow<ConsentState> = state
-
-		override fun currentConsentState(): ConsentState = state.value
-
-		override fun refreshConsent() {
-			// no-op
-		}
-
-		override fun showConsentForm() {
-			// no-op
-		}
-	}
 }

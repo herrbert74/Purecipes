@@ -39,6 +39,11 @@ kotlin {
 				implementation(libs.kotlinx.coroutinesCore)
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
 		androidMain {
 			dependencies {
 				implementation(project.dependencies.platform(libs.firebaseBom))

@@ -3,14 +3,13 @@ package com.purecipes.feature.search.ui
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
-import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
-import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -83,10 +82,4 @@ class RecipeSearchViewModelTest {
 		}
 	}
 
-	private class FakeAnalyticsRepository : AnalyticsRepository {
-
-		override fun trackEvent(event: AnalyticsEvent) = Unit
-
-		override fun setUserId(userId: String?) = Unit
-	}
 }
