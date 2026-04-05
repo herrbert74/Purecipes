@@ -7,6 +7,9 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
@@ -45,6 +48,7 @@ class StepByStepCookingRouteTest {
 						),
 					),
 				),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				onBack = {},
 			)
 		}
@@ -68,5 +72,12 @@ class StepByStepCookingRouteTest {
 		override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> {
 			return Ok(recipeDetails)
 		}
+	}
+
+	private class FakeAnalyticsRepository : AnalyticsRepository {
+
+		override fun trackEvent(event: AnalyticsEvent) = Unit
+
+		override fun setUserId(userId: String?) = Unit
 	}
 }

@@ -27,7 +27,7 @@ class AnalyticsPropertiesSerializationTest {
 		)
 
 		assertEquals(
-			expected = """{"text":"He said \"hi\"\\next\nline\tindent"}""",
+			expected = """{"text":"He said \\\"hi\\\"\\\\next\\nline\\tindent"}""",
 			actual = properties.toAnalyticsJson(),
 		)
 	}

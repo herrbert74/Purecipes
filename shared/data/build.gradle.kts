@@ -69,6 +69,11 @@ kotlin {
 				implementation(libs.ktor.clientDarwin)
 			}
 		}
+		jvmMain {
+			dependencies {
+				implementation(libs.ktor.clientCio)
+			}
+		}
 		wasmJsMain {
 			dependencies {
 				implementation(libs.ktor.clientJs)

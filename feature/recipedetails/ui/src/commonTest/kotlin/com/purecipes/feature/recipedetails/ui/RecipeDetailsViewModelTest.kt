@@ -4,6 +4,9 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
@@ -35,6 +38,7 @@ class RecipeDetailsViewModelTest {
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -53,6 +57,7 @@ class RecipeDetailsViewModelTest {
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -72,6 +77,7 @@ class RecipeDetailsViewModelTest {
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -95,6 +101,7 @@ class RecipeDetailsViewModelTest {
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -146,6 +153,13 @@ class RecipeDetailsViewModelTest {
 		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+	}
+
+	private class FakeAnalyticsRepository : AnalyticsRepository {
+
+		override fun trackEvent(event: AnalyticsEvent) = Unit
+
+		override fun setUserId(userId: String?) = Unit
 	}
 }
 

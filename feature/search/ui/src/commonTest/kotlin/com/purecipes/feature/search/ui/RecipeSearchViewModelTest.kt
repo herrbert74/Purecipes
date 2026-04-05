@@ -3,6 +3,9 @@ package com.purecipes.feature.search.ui
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
@@ -37,6 +40,7 @@ class RecipeSearchViewModelTest {
 		)
 		val viewModel = RecipeSearchViewModel(
 			searchRecipes = SearchRecipesUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -57,6 +61,7 @@ class RecipeSearchViewModelTest {
 		)
 		val viewModel = RecipeSearchViewModel(
 			searchRecipes = SearchRecipesUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -76,5 +81,12 @@ class RecipeSearchViewModelTest {
 			queries += query
 			return result
 		}
+	}
+
+	private class FakeAnalyticsRepository : AnalyticsRepository {
+
+		override fun trackEvent(event: AnalyticsEvent) = Unit
+
+		override fun setUserId(userId: String?) = Unit
 	}
 }

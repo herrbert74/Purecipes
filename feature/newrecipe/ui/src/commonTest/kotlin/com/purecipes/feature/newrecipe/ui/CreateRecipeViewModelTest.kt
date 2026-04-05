@@ -2,6 +2,9 @@ package com.purecipes.feature.newrecipe.ui
 
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
@@ -28,6 +31,7 @@ class CreateRecipeViewModelTest {
 		val viewModel = CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -43,6 +47,7 @@ class CreateRecipeViewModelTest {
 		val viewModel = CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -59,6 +64,7 @@ class CreateRecipeViewModelTest {
 		val viewModel = CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -85,6 +91,7 @@ class CreateRecipeViewModelTest {
 		val viewModel = CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -106,6 +113,7 @@ class CreateRecipeViewModelTest {
 		val viewModel = CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -123,6 +131,7 @@ class CreateRecipeViewModelTest {
 		val viewModel = CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
 		)
 
@@ -163,6 +172,13 @@ class CreateRecipeViewModelTest {
 			storedRecipes.add(index = 0, element = recipe)
 			return Ok(recipe)
 		}
+	}
+
+	private class FakeAnalyticsRepository : AnalyticsRepository {
+
+		override fun trackEvent(event: AnalyticsEvent) = Unit
+
+		override fun setUserId(userId: String?) = Unit
 	}
 }
 

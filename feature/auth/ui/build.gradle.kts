@@ -33,26 +33,26 @@ kotlin {
 				implementation(libs.kmpauth.uihelper)
 			}
 		}
-			androidMain {
-				dependencies {
-					implementation(project.dependencies.platform(libs.firebaseBom))
-					implementation(libs.firebaseAuth)
-					implementation(libs.kmpauth.firebase)
-					implementation(libs.kmpauth.firebaseFacebook)
-					implementation(libs.kmpauth.google)
-				}
+		androidMain {
+			dependencies {
+				implementation(project.dependencies.platform(libs.firebaseBom))
+				implementation(libs.firebaseAuth)
+				implementation(libs.kmpauth.firebase)
+				implementation(libs.kmpauth.firebaseFacebook)
+				implementation(libs.kmpauth.google)
 			}
-			iosMain {
-				dependencies {
-					implementation(libs.kmpauth.firebase)
-					implementation(libs.kmpauth.firebaseFacebook)
-					implementation(libs.kmpauth.google)
-				}
+		}
+		iosMain {
+			dependencies {
+				implementation(libs.kmpauth.firebase)
+				implementation(libs.kmpauth.firebaseFacebook)
+				implementation(libs.kmpauth.google)
 			}
-			wasmJsMain {
-				dependencies {
-					implementation(libs.kmpauth.google)
-				}
+		}
+		wasmJsMain {
+			dependencies {
+				implementation(libs.kmpauth.google)
 			}
+		}
 	}
 }

@@ -13,6 +13,9 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
@@ -38,6 +41,7 @@ class CreateRecipeScreenTest {
 				canUploadRecipes = true,
 				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			)
 		}
 
@@ -62,6 +66,7 @@ class CreateRecipeScreenTest {
 				canUploadRecipes = true,
 				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				rememberImagePicker = { _, onImportStateChange, _ ->
 					object : RecipeImagePickerLauncher {
 						override fun launch() {
@@ -88,6 +93,7 @@ class CreateRecipeScreenTest {
 				canUploadRecipes = true,
 				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				rememberImagePicker = { _, onImportStateChange, onPickerError ->
 					object : RecipeImagePickerLauncher {
 						override fun launch() {
@@ -114,6 +120,7 @@ class CreateRecipeScreenTest {
 				canUploadRecipes = true,
 				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			)
 		}
 
@@ -131,6 +138,7 @@ class CreateRecipeScreenTest {
 				canUploadRecipes = true,
 				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			)
 		}
 
@@ -147,6 +155,7 @@ class CreateRecipeScreenTest {
 				canUploadRecipes = true,
 				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			)
 		}
 
@@ -187,5 +196,12 @@ class CreateRecipeScreenTest {
 			recipes.add(index = 0, element = recipe)
 			return Ok(recipe)
 		}
+	}
+
+	private class FakeAnalyticsRepository : AnalyticsRepository {
+
+		override fun trackEvent(event: AnalyticsEvent) = Unit
+
+		override fun setUserId(userId: String?) = Unit
 	}
 }

@@ -7,7 +7,6 @@ kotlin {
 	android {
 		namespace = "com.purecipes.shared.domain"
 	}
-	jvm()
 
 	sourceSets {
 		commonMain {

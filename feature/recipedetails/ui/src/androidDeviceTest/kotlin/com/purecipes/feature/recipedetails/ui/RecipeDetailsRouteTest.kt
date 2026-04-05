@@ -6,6 +6,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
+import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import com.purecipes.feature.analytics.domain.repository.AnalyticsRepository
+import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
@@ -56,6 +59,7 @@ class RecipeDetailsRouteTest {
 				onStartCooking = {},
 				removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 				sessionKey = "user-7",
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			)
 		}
 
@@ -82,5 +86,12 @@ class RecipeDetailsRouteTest {
 		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+	}
+
+	private class FakeAnalyticsRepository : AnalyticsRepository {
+
+		override fun trackEvent(event: AnalyticsEvent) = Unit
+
+		override fun setUserId(userId: String?) = Unit
 	}
 }
