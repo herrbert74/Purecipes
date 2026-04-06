@@ -9,7 +9,11 @@ import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForM
 import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import com.purecipes.feature.settings.data.datasource.MeasurementPreferencesDataSource
+import com.purecipes.feature.settings.data.datasource.MeasurementPreferencesRemoteDataSource
+import com.purecipes.feature.settings.data.datasource.PurecipesMeasurementPreferencesRemoteDataSource
 import com.purecipes.feature.settings.data.datasource.SettingsMeasurementPreferencesDataSource
+import com.purecipes.shared.data.network.PurecipesApi
+import com.purecipes.shared.data.session.SessionTokenStore
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -23,10 +27,21 @@ interface SettingsDataModule {
 	}
 
 	@Provides
+	fun provideMeasurementPreferencesRemoteDataSource(api: PurecipesApi): MeasurementPreferencesRemoteDataSource {
+		return PurecipesMeasurementPreferencesRemoteDataSource(api)
+	}
+
+	@Provides
 	fun provideMeasurementPreferencesRepository(
 		localDataSource: MeasurementPreferencesDataSource,
+		remoteDataSource: MeasurementPreferencesRemoteDataSource,
+		sessionTokenStore: SessionTokenStore,
 	): MeasurementPreferencesRepository {
-		return MeasurementPreferencesAccessor(localDataSource)
+		return MeasurementPreferencesAccessor(
+			localDataSource = localDataSource,
+			remoteDataSource = remoteDataSource,
+			sessionTokenStore = sessionTokenStore,
+		)
 	}
 
 	@Provides

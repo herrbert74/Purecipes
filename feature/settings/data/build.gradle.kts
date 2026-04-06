@@ -11,7 +11,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
-				api(project(":shared:domain"))
+				api(project(":feature:settings:domain"))
 				implementation(libs.multiplatformSettings.noargs)
 				implementation(libs.kotlinx.serializationJson)
 			}

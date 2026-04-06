@@ -48,6 +48,11 @@ class Db private constructor(
 					statement.execute(INGREDIENTS_TABLE_SQL)
 					statement.execute(INSTRUCTION_STEPS_TABLE_SQL)
 					statement.execute(FAVORITES_TABLE_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_TABLE_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_ADD_PREFERRED_SYSTEM_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_ADD_FORMAT_HANDLING_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_ADD_DETECTED_COUNTRY_CODE_SQL)
+					statement.execute(MEASUREMENT_PREFERENCE_SEEN_RECIPES_TABLE_SQL)
 					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
 				}
 			}

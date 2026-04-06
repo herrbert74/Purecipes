@@ -6,7 +6,6 @@ import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class SettingsMeasurementPreferencesDataSource(
@@ -15,9 +14,13 @@ class SettingsMeasurementPreferencesDataSource(
 		ignoreUnknownKeys = true
 		explicitNulls = false
 	},
+	private val preferencesKey: String = DEFAULT_PREFERENCES_KEY,
 ) : MeasurementPreferencesDataSource {
 
-	private val preferencesFlow = MutableStateFlow(loadPreferences())
+	private val preferencesFlow = sharedPreferencesFlow(
+		preferencesKey = preferencesKey,
+		preferences = loadPreferences(),
+	)
 
 	override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> = preferencesFlow
 
@@ -40,7 +43,7 @@ class SettingsMeasurementPreferencesDataSource(
 	}
 
 	private fun loadPreferences(): MeasurementPreferences {
-		return settings.getStringOrNull(PREFERENCES_KEY)
+		return settings.getStringOrNull(preferencesKey)
 			?.let { stored -> runCatching { json.decodeFromString<MeasurementPreferences>(stored) }.getOrNull() }
 			?: defaultPreferences()
 	}
@@ -54,7 +57,7 @@ class SettingsMeasurementPreferencesDataSource(
 	}
 
 	private fun persist(preferences: MeasurementPreferences) {
-		settings[PREFERENCES_KEY] = json.encodeToString(preferences)
+		settings[preferencesKey] = json.encodeToString(preferences)
 		preferencesFlow.value = preferences
 	}
 
@@ -64,7 +67,18 @@ class SettingsMeasurementPreferencesDataSource(
 
 	private companion object {
 
-		const val PREFERENCES_KEY = "purecipes.measurement.preferences"
+		const val DEFAULT_PREFERENCES_KEY = "purecipes.measurement.preferences"
 		const val UNITED_STATES_COUNTRY_CODE = "US"
+
+		val sharedPreferencesFlows = mutableMapOf<String, MutableStateFlow<MeasurementPreferences>>()
+
+		fun sharedPreferencesFlow(
+			preferencesKey: String,
+			preferences: MeasurementPreferences,
+		): MutableStateFlow<MeasurementPreferences> {
+			return sharedPreferencesFlows.getOrPut(preferencesKey) {
+				MutableStateFlow(preferences)
+			}
+		}
 	}
 }
