@@ -16,5 +16,10 @@ kotlin {
 					implementation(libs.ktor.clientCore)
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:dataTestFixtures"))
+			}
+		}
 	}
 }

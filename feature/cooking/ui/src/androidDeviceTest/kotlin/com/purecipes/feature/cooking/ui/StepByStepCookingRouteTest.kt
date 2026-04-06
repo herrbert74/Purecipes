@@ -6,12 +6,19 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import com.purecipes.feature.measurement.domain.repository.MeasurementPreferencesRepository
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MeasurementPreferences
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 
@@ -22,6 +29,7 @@ class StepByStepCookingRouteTest {
 
 	@Test
 	fun cookingRouteShowsRecipeTitleProgressAndSwipeableSteps() {
+		val measurementRepository = FakeMeasurementPreferencesRepository()
 		composeRule.setContent {
 			StepByStepCookingRoute(
 				recipeId = 9,
@@ -45,6 +53,8 @@ class StepByStepCookingRouteTest {
 						),
 					),
 				),
+				getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+				processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				onBack = {},
 			)
@@ -60,6 +70,27 @@ class StepByStepCookingRouteTest {
 
 		composeRule.onNodeWithText("2 of 2").assertIsDisplayed()
 		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()
+	}
+
+	private class FakeMeasurementPreferencesRepository : MeasurementPreferencesRepository {
+
+		private val flow = MutableStateFlow(
+			MeasurementPreferences(
+				preferredSystem = MeasurementSystem.METRIC,
+			),
+		)
+
+		override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> = flow
+
+		override suspend fun getMeasurementPreferences(): MeasurementPreferences = flow.value
+
+		override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {
+			flow.value = preferences
+		}
+
+		override suspend fun resetMeasurementPreferences() = Unit
+
+		override suspend fun markMismatchNotificationSeen(recipeId: Int) = Unit
 	}
 
 }

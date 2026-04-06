@@ -44,10 +44,16 @@ class Db private constructor(
 					statement.execute(RECIPES_TABLE_SQL)
 					statement.execute(RECIPES_ADD_DESCRIPTION_SQL)
 					statement.execute(RECIPES_ADD_CREATED_BY_USER_ID_SQL)
+					statement.execute(RECIPES_ADD_MEASUREMENT_SYSTEM_SQL)
 					statement.execute(INGREDIENT_GROUPS_TABLE_SQL)
 					statement.execute(INGREDIENTS_TABLE_SQL)
 					statement.execute(INSTRUCTION_STEPS_TABLE_SQL)
 					statement.execute(FAVORITES_TABLE_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_TABLE_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_ADD_PREFERRED_SYSTEM_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_ADD_FORMAT_HANDLING_SQL)
+					statement.execute(MEASUREMENT_PREFERENCES_ADD_DETECTED_COUNTRY_CODE_SQL)
+					statement.execute(MEASUREMENT_PREFERENCE_SEEN_RECIPES_TABLE_SQL)
 					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
 				}
 			}

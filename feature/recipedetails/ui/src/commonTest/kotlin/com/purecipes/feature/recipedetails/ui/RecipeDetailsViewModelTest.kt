@@ -7,9 +7,15 @@ import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.measurement.domain.repository.MeasurementPreferencesRepository
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MeasurementPreferences
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -17,6 +23,8 @@ import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -32,10 +40,14 @@ class RecipeDetailsViewModelTest {
 	fun detailsViewModelLoadsRecipeDetails() = runTest {
 		val recipe = sampleRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
+		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = recipe.id,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
@@ -51,10 +63,14 @@ class RecipeDetailsViewModelTest {
 	@Test
 	fun detailsViewModelExposesRepositoryError() = runTest {
 		val repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed")))
+		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
@@ -71,10 +87,14 @@ class RecipeDetailsViewModelTest {
 	fun toggleFavoriteUpdatesRecipeState() = runTest {
 		val repository = FakeRecipeDetailsRepository(Ok(sampleRecipeDetails()))
 		val favoritesRepository = FakeFavoritesRepository()
+		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
@@ -95,10 +115,14 @@ class RecipeDetailsViewModelTest {
 		val favoriteStarted = CompletableDeferred<Unit>()
 		val finishFavorite = CompletableDeferred<Unit>()
 		val favoritesRepository = BlockingFavoritesRepository(favoriteStarted, finishFavorite)
+		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			coroutineScope = this,
@@ -136,6 +160,29 @@ class RecipeDetailsViewModelTest {
 		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+	}
+
+	private class FakeMeasurementPreferencesRepository(
+		private val defaults: MeasurementPreferences = MeasurementPreferences(
+			preferredSystem = MeasurementSystem.METRIC,
+		),
+	) : MeasurementPreferencesRepository {
+
+		private val flow = MutableStateFlow(defaults)
+
+		override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> = flow
+
+		override suspend fun getMeasurementPreferences(): MeasurementPreferences = flow.value
+
+		override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {
+			flow.value = preferences
+		}
+
+		override suspend fun resetMeasurementPreferences() {
+			flow.value = defaults
+		}
+
+		override suspend fun markMismatchNotificationSeen(recipeId: Int) = Unit
 	}
 }
 

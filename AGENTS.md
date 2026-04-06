@@ -6,6 +6,7 @@ primary goal of the app to make it easier for users to follow recipe instruction
 ## Core Principles
 
 - Use **tabs** instead of spaces for tabs.
+- Formatting adherence is a correctness requirement, not a cleanup task. Before every edit, match the file's existing formatting exactly and preserve the alignment style already in use.
 
 ## Additional Agent Guidance
 
@@ -114,6 +115,36 @@ The libraries in the version catalog are also ordered alphabetically by their id
 Follow Kotlin naming conventions and Detekt naming rules directly in code.
 In particular, `const val` names must use `UPPER_SNAKE_CASE`, including private constants in platform-specific source sets.
 Ensure every text file you create or edit ends with exactly one trailing newline so Detekt does not report `NewLineAtEndOfFile`.
+Formatting must be treated as a hard constraint during editing, especially in `.kt` and `.kts` files.
+In Kotlin and Gradle Kotlin DSL files, add exactly one indentation level per block level and keep new sibling entries aligned with existing siblings. Do not add extra indentation for visual grouping or continuation unless the file already does so in that exact location.
+Examples:
+```kotlin
+dependencies {
+  api(project(":feature:analytics:data"))
+  api(project(":feature:measurement:data"))
+}
+
+kotlin {
+  sourceSets {
+    commonMain.dependencies {
+      implementation(libs.kotlinx.coroutines.core)
+    }
+  }
+}
+```
+Keep flat lists flat in `.kts` files, including `export(...)`, `api(...)`, `implementation(...)`, and similar sibling entries.
+Examples:
+```kotlin
+listOf(
+  "a",
+  "b",
+  "c",
+)
+
+export(project(":feature:auth:domain"))
+export(project(":feature:measurement:domain"))
+```
+Different file formats keep their own formatting rules. YAML, JSON, Markdown, and other space-indented formats must preserve their native spacing and alignment instead of using Kotlin or Gradle tab rules.
 If a Detekt or Kotlin-style issue recurs, add a short repo-specific rule here so future agents do not repeat it.
 Reference docs:
 https://kotlinlang.org/docs/coding-conventions.html

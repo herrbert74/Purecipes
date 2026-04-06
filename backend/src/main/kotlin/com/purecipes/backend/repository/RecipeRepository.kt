@@ -2,6 +2,7 @@ package com.purecipes.backend.repository
 
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
@@ -20,7 +21,7 @@ class RecipeRepository(
 
 		val like = "%${trimmed.lowercase()}%"
 		val sql = """
-			SELECT id, title, cuisine, image_url, total_time
+			SELECT id, title, cuisine, image_url, total_time, measurement_system
 			FROM recipes
 			WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
 			ORDER BY created_at DESC
@@ -142,6 +143,7 @@ class RecipeRepository(
 					imageUrl = rs.getNullableString("image_url"),
 					cuisine = rs.getNullableString("cuisine"),
 					category = rs.getNullableString("category"),
+					measurementSystem = rs.getNullableMeasurementSystem("measurement_system"),
 				)
 			}
 		}
@@ -173,6 +175,7 @@ class RecipeRepository(
 			imageUrl = getNullableString("image_url"),
 			cuisine = getNullableString("cuisine"),
 			category = getNullableString("category"),
+			measurementSystem = getNullableMeasurementSystem("measurement_system"),
 		)
 	}
 
@@ -182,6 +185,7 @@ class RecipeRepository(
 		userId: Long?,
 	): RecipeDetails {
 		val ingredientGroups = loadIngredientGroupsForRecipe(conn, recipeRecord.id)
+		val measurementSystem = recipeRecord.measurementSystem ?: detectMeasurementSystem(ingredientGroups)
 		val isFavorite = isFavorite(conn, recipeRecord.id, userId)
 		val steps = loadStepsForRecipe(conn, recipeRecord.id, recipeRecord.instructions)
 
@@ -200,6 +204,7 @@ class RecipeRepository(
 			totalTime = recipeRecord.totalTime,
 			yields = recipeRecord.yields,
 			cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
+			measurementSystem = measurementSystem,
 			isFavorite = isFavorite,
 		)
 	}
@@ -222,13 +227,16 @@ class RecipeRepository(
 	private fun executeQuery(ps: PreparedStatement): ArrayList<RecipeSummary> = ps.executeQuery().use { rs ->
 		val results = ArrayList<RecipeSummary>()
 		while (rs.next()) {
+			val recipeId = rs.getInt("id")
 			results.add(
 				RecipeSummary(
-					id = rs.getInt("id"),
+					id = recipeId,
 					title = rs.getString("title"),
 					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
+					measurementSystem =
+						rs.getNullableMeasurementSystem("measurement_system") ?: loadMeasurementSystemForRecipe(recipeId),
 				)
 			)
 		}
@@ -385,6 +393,7 @@ class RecipeRepository(
 
 	private fun insertRecipe(conn: java.sql.Connection, userId: Long, request: RecipeWriteRequest): Int {
 		return conn.prepareStatement(createRecipeSql, Statement.RETURN_GENERATED_KEYS).use { ps ->
+			val measurementSystem = detectMeasurementSystem(request.ingredientGroups)
 			ps.setString(FIRST_PARAMETER_INDEX, request.title.trim())
 			ps.setString(SECOND_PARAMETER_INDEX, request.description.trim())
 			ps.setString(THIRD_PARAMETER_INDEX, request.steps.joinToString(separator = "\n"))
@@ -392,7 +401,8 @@ class RecipeRepository(
 			ps.setString(FIFTH_PARAMETER_INDEX, request.yields?.trim())
 			ps.setString(SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
 			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
-			ps.setLong(EIGHTH_PARAMETER_INDEX, userId)
+			ps.setString(EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
+			ps.setLong(NINTH_PARAMETER_INDEX, userId)
 			ps.executeUpdate()
 			ps.generatedId()
 		}
@@ -400,6 +410,7 @@ class RecipeRepository(
 
 	private fun updateRecipeRow(conn: java.sql.Connection, recipeId: Int, request: RecipeWriteRequest) {
 		conn.prepareStatement(updateRecipeSql).use { ps ->
+			val measurementSystem = detectMeasurementSystem(request.ingredientGroups)
 			ps.setString(FIRST_PARAMETER_INDEX, request.title.trim())
 			ps.setString(SECOND_PARAMETER_INDEX, request.description.trim())
 			ps.setString(THIRD_PARAMETER_INDEX, request.steps.joinToString(separator = "\n"))
@@ -407,7 +418,8 @@ class RecipeRepository(
 			ps.setString(FIFTH_PARAMETER_INDEX, request.yields?.trim())
 			ps.setString(SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
 			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
-			ps.setInt(EIGHTH_PARAMETER_INDEX, recipeId)
+			ps.setString(EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
+			ps.setInt(NINTH_PARAMETER_INDEX, recipeId)
 			ps.executeUpdate()
 		}
 	}
@@ -464,21 +476,53 @@ class RecipeRepository(
 	private fun ResultSet.getNullableString(columnLabel: String): String? =
 		getString(columnLabel)?.trim()?.takeIf { it.isNotEmpty() }
 
+	private fun ResultSet.getNullableMeasurementSystem(columnLabel: String): MeasurementSystem? =
+		getNullableString(columnLabel)?.let(MeasurementSystem::valueOf)
+
 	private fun readFavoriteRecipes(rs: ResultSet): List<RecipeSummary> {
 		val results = ArrayList<RecipeSummary>()
 		while (rs.next()) {
+			val recipeId = rs.getInt("id")
 			results.add(
 				RecipeSummary(
-					id = rs.getInt("id"),
+					id = recipeId,
 					title = rs.getString("title"),
 					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
+					measurementSystem =
+						rs.getNullableMeasurementSystem("measurement_system") ?: loadMeasurementSystemForRecipe(recipeId),
 					isFavorite = true,
 				)
 			)
 		}
 		return results
+	}
+
+	private fun loadMeasurementSystemForRecipe(recipeId: Int): MeasurementSystem? = dataSource.connection.use { conn ->
+		detectMeasurementSystem(loadIngredientGroupsForRecipe(conn, recipeId))
+	}
+
+	private fun detectMeasurementSystem(ingredientGroups: List<IngredientGroup>): MeasurementSystem? {
+		var imperialHits = 0
+		var metricHits = 0
+		ingredientGroups.asSequence()
+			.flatMap { it.ingredients.asSequence() }
+			.forEach { ingredient ->
+				val normalized = ingredient.lowercase()
+				if (IMPERIAL_UNIT_REGEX.containsMatchIn(normalized)) {
+					imperialHits += 1
+				}
+				if (METRIC_UNIT_REGEX.containsMatchIn(normalized)) {
+					metricHits += 1
+				}
+			}
+		return when {
+			imperialHits == 0 && metricHits == 0 -> null
+			imperialHits > 0 && metricHits > 0 -> MeasurementSystem.MIXED
+			imperialHits > 0 -> MeasurementSystem.IMPERIAL
+			else -> MeasurementSystem.METRIC
+		}
 	}
 
 	private data class RecipeRecord(
@@ -491,6 +535,7 @@ class RecipeRepository(
 		val imageUrl: String?,
 		val cuisine: String?,
 		val category: String?,
+		val measurementSystem: MeasurementSystem?,
 	)
 
 	private data class IngredientGroupAccumulator(
@@ -508,6 +553,7 @@ class RecipeRepository(
 		const val SIXTH_PARAMETER_INDEX = 6
 		const val SEVENTH_PARAMETER_INDEX = 7
 		const val EIGHTH_PARAMETER_INDEX = 8
+		const val NINTH_PARAMETER_INDEX = 9
 
 		const val addFavoriteSql = """
 			INSERT INTO favorites (user_id, recipe_id)
@@ -516,7 +562,7 @@ class RecipeRepository(
 		"""
 
 		const val favoritesSql = """
-			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time
+			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
 			FROM favorites f
 			INNER JOIN recipes r ON r.id = f.recipe_id
 			WHERE f.user_id = ?
@@ -524,7 +570,7 @@ class RecipeRepository(
 		"""
 
 		const val createdRecipesSql = """
-			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine, category
+			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine, category, measurement_system
 			FROM recipes
 			WHERE created_by_user_id = ?
 			ORDER BY created_at DESC, id DESC
@@ -540,14 +586,16 @@ class RecipeRepository(
 		"""
 
 		const val recipeSql = """
-			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine, category
+			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine, category, measurement_system
 			FROM recipes
 			WHERE id = ?
 		"""
 
 		const val createRecipeSql = """
-			INSERT INTO recipes (title, description, instructions, total_time, yields, image_url, cuisine, created_by_user_id)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			INSERT INTO recipes (
+				title, description, instructions, total_time, yields, image_url, cuisine, measurement_system, created_by_user_id
+			)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		"""
 
 		const val updateRecipeSql = """
@@ -558,7 +606,8 @@ class RecipeRepository(
 				total_time = ?,
 				yields = ?,
 				image_url = ?,
-				cuisine = ?
+				cuisine = ?,
+				measurement_system = ?
 			WHERE id = ?
 		"""
 
@@ -629,5 +678,19 @@ class RecipeRepository(
 			INSERT INTO instruction_steps (recipe_id, step, order_index)
 			VALUES (?, ?, ?)
 		"""
+
+		val IMPERIAL_UNIT_REGEX = Regex(
+			pattern =
+				"(?<!\\p{L})(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|" +
+					"pounds?|pound|lbs?|lb|fahrenheit|°f)\\b",
+			options = setOf(RegexOption.IGNORE_CASE),
+		)
+
+		val METRIC_UNIT_REGEX = Regex(
+			pattern =
+				"(?<!\\p{L})(kilograms?|kilogram|kg|grams?|gram|g|milliliters?|milliliter|" +
+					"ml|liters?|liter|l|celsius|°c)\\b",
+			options = setOf(RegexOption.IGNORE_CASE),
+		)
 	}
 }

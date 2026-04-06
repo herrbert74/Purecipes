@@ -2,6 +2,7 @@ package com.purecipes.shared.data.network
 
 import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.GoogleSignInRequest
+import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
@@ -54,4 +55,11 @@ interface PurecipesApi {
 
 	@DELETE("favorites/{id}")
 	suspend fun removeFavorite(@Path("id") recipeId: Int)
+
+	@GET("settings/measurement")
+	suspend fun getMeasurementPreferences(): MeasurementPreferences
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@PUT("settings/measurement")
+	suspend fun saveMeasurementPreferences(@Body preferences: MeasurementPreferences): MeasurementPreferences
 }

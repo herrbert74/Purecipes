@@ -13,7 +13,12 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.shared.domain.model.MeasurementPreferences
+import com.purecipes.shared.domain.model.MeasurementSystem
+import com.purecipes.shared.domain.model.RecipeFormatHandling
 import com.purecipes.shared.domain.model.RecipeSummary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +27,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 internal class RecipeSearchViewModel(
+	private val filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
+	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val searchRecipes: SearchRecipesUseCase,
 	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
@@ -42,6 +49,9 @@ internal class RecipeSearchViewModel(
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
 
+	var measurementFilterLabel by mutableStateOf<String?>(null)
+		private set
+
 	val recipes = mutableStateListOf<RecipeSummary>()
 
 	init {
@@ -60,9 +70,11 @@ internal class RecipeSearchViewModel(
 		scope.launch {
 			isSearching = true
 			errorMessage = null
+			val preferences = getMeasurementPreferences()
 			val outcome = searchRecipes(searchQuery)
 			recipes.clear()
-			recipes.addAll(outcome.get() ?: emptyList())
+			recipes.addAll(filterRecipesForMeasurementPreferences(outcome.get() ?: emptyList(), preferences))
+			measurementFilterLabel = preferences.filterSummary()
 			trackEvent(AnalyticsEvent.SearchPerformed(query = searchQuery, resultCount = recipes.size))
 			errorMessage = outcome.getError()?.message
 			isSearching = false
@@ -75,18 +87,42 @@ internal class RecipeSearchViewModel(
 			scope.cancel()
 		}
 	}
+
+	private fun MeasurementPreferences.filterSummary(): String? {
+		return when (formatHandling) {
+			RecipeFormatHandling.FILTER_OUT -> {
+				val systemLabel = if (preferredSystem == MeasurementSystem.IMPERIAL) "imperial" else "metric"
+				"Showing $systemLabel recipes only"
+			}
+
+			RecipeFormatHandling.CONVERT_TO_PREFERRED -> "Recipe details will use your preferred measurements"
+			RecipeFormatHandling.KEEP_AS_IS -> null
+		}
+	}
 }
 
 @Composable
 internal fun recipeSearchViewModel(
+	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	trackEvent: TrackEventUseCase,
 ): RecipeSearchViewModel {
+	val viewModelKey = buildString {
+		append("RecipeSearchViewModel:")
+		append(searchRecipes.hashCode())
+		append(':')
+		append(getMeasurementPreferences.hashCode())
+		append(':')
+		append(trackEvent.hashCode())
+	}
 	return viewModel(
-		key = "RecipeSearchViewModel:${searchRecipes.hashCode()}:${trackEvent.hashCode()}",
+		key = viewModelKey,
 		factory = viewModelFactory {
 			initializer {
 				RecipeSearchViewModel(
+					filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
+					getMeasurementPreferences = getMeasurementPreferences,
 					searchRecipes = searchRecipes,
 					trackEvent = trackEvent,
 				)

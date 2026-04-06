@@ -18,6 +18,8 @@ kotlin {
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:favorites:domain"))
 				api(project(":feature:recipedetails:domain"))
+				api(project(":feature:settings:domain"))
+				api(project(":shared:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 			}

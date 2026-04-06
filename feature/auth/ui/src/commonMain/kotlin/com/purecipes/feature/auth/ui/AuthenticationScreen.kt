@@ -13,16 +13,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,6 +66,7 @@ fun AuthenticationScreen(
 	signInWithGoogle: SignInWithGoogleUseCase,
 	showConsentForm: ShowConsentFormUseCase,
 	signOut: SignOutUseCase,
+	onOpenSettings: () -> Unit,
 	googleWebClientId: String?,
 	modifier: Modifier = Modifier,
 ) {
@@ -73,54 +80,72 @@ fun AuthenticationScreen(
 		signInWithGoogle = signInWithGoogle,
 		signOut = signOut,
 	)
-	Surface(modifier = modifier.fillMaxSize()) {
-		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.verticalScroll(rememberScrollState())
-				.padding(24.dp),
-			verticalArrangement = Arrangement.spacedBy(20.dp),
-		) {
-			when (val state = viewModel.authenticationState) {
-				AuthenticationState.SignedOut ->
-					SignedOutAuthenticationContent(
-						consentState = consentState,
-						emailAuthenticationMode = viewModel.emailAuthenticationMode,
-						isEmailFormVisible = viewModel.isEmailFormVisible,
-						firstName = viewModel.firstName,
-						familyName = viewModel.familyName,
-						email = viewModel.email,
-						password = viewModel.password,
-						isBusy = viewModel.isBusy,
-						isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
-						onEmailProviderClick = viewModel::onEmailProviderSelected,
-						onEmailAuthenticationModeChange = viewModel::onEmailAuthenticationModeSelected,
-						onFirstNameChange = viewModel::onFirstNameChange,
-						onFamilyNameChange = viewModel::onFamilyNameChange,
-						onEmailChange = viewModel::onEmailChange,
-						onPasswordChange = viewModel::onPasswordChange,
-						onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
-						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
-						onGoogleSignInResult = viewModel::onGoogleSignInResult,
-						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
-						onManagePrivacySettings = { showConsentForm() },
-					)
+	Scaffold(
+		modifier = modifier.fillMaxSize(),
+		topBar = {
+			TopAppBar(
+				title = { Text(text = "Account") },
+				actions = {
+					IconButton(onClick = onOpenSettings) {
+						Icon(
+							imageVector = Icons.Filled.Settings,
+							contentDescription = "Open settings",
+						)
+					}
+				},
+			)
+		},
+	) { innerPadding ->
+		Surface(modifier = Modifier.fillMaxSize()) {
+			Column(
+				modifier = Modifier
+					.fillMaxSize()
+					.verticalScroll(rememberScrollState())
+					.padding(innerPadding)
+					.padding(24.dp),
+				verticalArrangement = Arrangement.spacedBy(20.dp),
+			) {
+				when (val state = viewModel.authenticationState) {
+					AuthenticationState.SignedOut ->
+						SignedOutAuthenticationContent(
+							consentState = consentState,
+							emailAuthenticationMode = viewModel.emailAuthenticationMode,
+							isEmailFormVisible = viewModel.isEmailFormVisible,
+							firstName = viewModel.firstName,
+							familyName = viewModel.familyName,
+							email = viewModel.email,
+							password = viewModel.password,
+							isBusy = viewModel.isBusy,
+							isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
+							onEmailProviderClick = viewModel::onEmailProviderSelected,
+							onEmailAuthenticationModeChange = viewModel::onEmailAuthenticationModeSelected,
+							onFirstNameChange = viewModel::onFirstNameChange,
+							onFamilyNameChange = viewModel::onFamilyNameChange,
+							onEmailChange = viewModel::onEmailChange,
+							onPasswordChange = viewModel::onPasswordChange,
+							onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
+							onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
+							onGoogleSignInResult = viewModel::onGoogleSignInResult,
+							onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
+							onManagePrivacySettings = { showConsentForm() },
+						)
 
-				is AuthenticationState.SignedIn ->
-					SignedInAuthenticationContent(
-						consentState = consentState,
-						user = state.user,
-						isBusy = viewModel.isBusy,
-						onManagePrivacySettings = { showConsentForm() },
-						onSignOut = viewModel::signOut,
+					is AuthenticationState.SignedIn ->
+						SignedInAuthenticationContent(
+							consentState = consentState,
+							user = state.user,
+							isBusy = viewModel.isBusy,
+							onManagePrivacySettings = { showConsentForm() },
+							onSignOut = viewModel::signOut,
+						)
+				}
+				viewModel.message?.let { message ->
+					Text(
+						text = message,
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.error,
 					)
-			}
-			viewModel.message?.let { message ->
-				Text(
-					text = message,
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.error,
-				)
+				}
 			}
 		}
 	}
@@ -150,10 +175,6 @@ private fun SignedOutAuthenticationContent(
 	onGoogleUnavailableClick: () -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-		Text(
-			text = "Account",
-			style = MaterialTheme.typography.headlineMedium,
-		)
 		Text(
 			text = "Choose how you want to sign in. Email registration uses your first and family name as the display name.",
 			style = MaterialTheme.typography.bodyLarge,
@@ -326,10 +347,6 @@ private fun SignedInAuthenticationContent(
 	onSignOut: () -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-		Text(
-			text = "Profile",
-			style = MaterialTheme.typography.headlineMedium,
-		)
 		ProfileHeader(user = user)
 		HorizontalDivider()
 		Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

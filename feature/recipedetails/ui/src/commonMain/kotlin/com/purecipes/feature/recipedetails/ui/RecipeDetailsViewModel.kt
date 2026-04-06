@@ -15,8 +15,13 @@ import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.domain.model.RecipeFormatHandling
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +32,9 @@ internal class RecipeDetailsViewModel(
 	private val recipeId: Int,
 	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
+	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	private val markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
+	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
@@ -41,6 +49,12 @@ internal class RecipeDetailsViewModel(
 	var recipeDetails by mutableStateOf<RecipeDetails?>(null)
 		private set
 
+	var isRecipeConverted by mutableStateOf(false)
+		private set
+
+	var showMeasurementMismatchDialog by mutableStateOf(false)
+		private set
+
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
 
@@ -53,12 +67,38 @@ internal class RecipeDetailsViewModel(
 	var favoriteChangeCount by mutableIntStateOf(0)
 		private set
 
+	private var baseRecipeDetails: RecipeDetails? = null
+
+	private var measurementPreferences: MeasurementPreferences? = null
+
 	init {
 		loadRecipe()
 	}
 
 	fun retry() {
 		loadRecipe()
+	}
+
+	fun dismissMeasurementMismatchDialog() {
+		showMeasurementMismatchDialog = false
+		scope.launch {
+			markMeasurementMismatchSeen(recipeId)
+		}
+	}
+
+	fun convertCurrentRecipe() {
+		val rawRecipe = baseRecipeDetails ?: return
+		val preferences = measurementPreferences ?: return
+		val processed = processRecipeDetailsForMeasurementPreferences(
+			recipe = rawRecipe,
+			preferences = preferences.copy(formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED),
+		)
+		recipeDetails = processed.recipe
+		isRecipeConverted = processed.isConverted
+		showMeasurementMismatchDialog = false
+		scope.launch {
+			markMeasurementMismatchSeen(recipeId)
+		}
 	}
 
 	fun toggleFavorite() {
@@ -75,6 +115,7 @@ internal class RecipeDetailsViewModel(
 			}
 
 			if (outcome.getError() == null) {
+					baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = !currentRecipe.isFavorite)
 				recipeDetails = currentRecipe.copy(isFavorite = !currentRecipe.isFavorite)
 				favoriteChangeCount += 1
 				trackEvent(
@@ -96,9 +137,20 @@ internal class RecipeDetailsViewModel(
 			errorMessage = null
 			favoriteErrorMessage = null
 			recipeDetails = null
+				showMeasurementMismatchDialog = false
 
+				measurementPreferences = getMeasurementPreferences()
 			val outcome = getRecipeDetails(recipeId)
-			recipeDetails = outcome.get()
+				baseRecipeDetails = outcome.get()
+				val processedRecipe = baseRecipeDetails?.let { loadedRecipe ->
+					processRecipeDetailsForMeasurementPreferences(
+						recipe = loadedRecipe,
+						preferences = measurementPreferences ?: return@let null,
+					)
+				}
+				recipeDetails = processedRecipe?.recipe
+				isRecipeConverted = processedRecipe?.isConverted == true
+				showMeasurementMismatchDialog = processedRecipe?.shouldShowMismatchNotification == true
 			if (recipeDetails != null) {
 				trackEvent(AnalyticsEvent.RecipeViewed(recipeId))
 			}
@@ -119,6 +171,9 @@ internal fun recipeDetailsViewModel(
 	recipeId: Int,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
+	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	trackEvent: TrackEventUseCase,
 	sessionKey: String?,
@@ -131,6 +186,8 @@ internal fun recipeDetailsViewModel(
 			append(addFavoriteRecipe.hashCode())
 			append(':')
 			append(getRecipeDetails.hashCode())
+			append(':')
+			append(getMeasurementPreferences.hashCode())
 			append(':')
 			append(removeFavoriteRecipe.hashCode())
 			append(':')
@@ -146,6 +203,9 @@ internal fun recipeDetailsViewModel(
 					recipeId = recipeId,
 					addFavoriteRecipe = addFavoriteRecipe,
 					getRecipeDetails = getRecipeDetails,
+					getMeasurementPreferences = getMeasurementPreferences,
+					markMeasurementMismatchSeen = markMeasurementMismatchSeen,
+					processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
 					removeFavoriteRecipe = removeFavoriteRecipe,
 					trackEvent = trackEvent,
 				)

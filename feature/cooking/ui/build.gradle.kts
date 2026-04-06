@@ -17,6 +17,8 @@ kotlin {
 			dependencies {
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:recipedetails:domain"))
+				api(project(":feature:settings:domain"))
+				api(project(":shared:domain"))
 			}
 		}
 		commonTest {

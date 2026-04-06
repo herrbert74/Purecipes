@@ -13,5 +13,10 @@ kotlin {
 				api(project(":feature:favorites:domain"))
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:dataTestFixtures"))
+			}
+		}
 	}
 }

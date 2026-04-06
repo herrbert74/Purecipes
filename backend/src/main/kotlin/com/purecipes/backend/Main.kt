@@ -9,6 +9,7 @@ import com.purecipes.backend.routes.authenticationRoutes
 import com.purecipes.backend.routes.favoriteRoutes
 import com.purecipes.backend.routes.recipeImageRoutes
 import com.purecipes.backend.routes.recipeRoutes
+import com.purecipes.backend.routes.settingsRoutes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -88,6 +89,7 @@ fun Application.module(
 		favoriteRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)
 		recipeRoutes(sessionService) { db }
+		settingsRoutes(sessionService) { db }
 		extraRoutes()
 	}
 }

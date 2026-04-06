@@ -1,5 +1,4 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmJsTargetDsl
@@ -106,6 +105,7 @@ kotlin {
 				export(project(":feature:newrecipe:domain"))
 				export(project(":feature:recipedetails:domain"))
 				export(project(":feature:search:domain"))
+				export(project(":shared:domain"))
 			}
 		}
 	}
@@ -126,7 +126,9 @@ kotlin {
 				api(project(":feature:recipedetails:data"))
 				api(project(":feature:search:domain"))
 				api(project(":feature:search:data"))
+				api(project(":feature:settings:data"))
 				api(project(":shared:data"))
+				api(project(":shared:domain"))
 
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.serializationJson)

@@ -17,6 +17,13 @@ import com.purecipes.feature.favorites.data.repository.FavoritesDataModule
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import com.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import com.purecipes.feature.newrecipe.data.repository.NewRecipeDataModule
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -24,6 +31,7 @@ import com.purecipes.feature.recipedetails.data.repository.RecipeDetailsDataModu
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.search.data.repository.SearchDataModule
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.feature.settings.data.repository.SettingsDataModule
 import com.purecipes.shared.data.config.PurecipesConfig
 import com.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metro.AppScope
@@ -37,6 +45,7 @@ interface WasmAppGraph :
 	FavoritesDataModule,
 	NewRecipeDataModule,
 	RecipeDetailsDataModule,
+	SettingsDataModule,
 	SearchDataModule {
 
 	val purecipesConfig: PurecipesConfig
@@ -67,11 +76,25 @@ interface WasmAppGraph :
 
 	val getFavoriteRecipesUseCase: GetFavoriteRecipesUseCase
 
+	val filterRecipesForMeasurementPreferencesUseCase: FilterRecipesForMeasurementPreferencesUseCase
+
+	val getMeasurementPreferencesUseCase: GetMeasurementPreferencesUseCase
+
 	val getCreatedRecipesUseCase: GetCreatedRecipesUseCase
 
 	val getRecipeDetailsUseCase: GetRecipeDetailsUseCase
 
+	val markMeasurementMismatchSeenUseCase: MarkMeasurementMismatchSeenUseCase
+
+	val observeMeasurementPreferencesUseCase: ObserveMeasurementPreferencesUseCase
+
+	val processRecipeDetailsForMeasurementPreferencesUseCase: ProcessRecipeDetailsForMeasurementPreferencesUseCase
+
+	val resetMeasurementPreferencesUseCase: ResetMeasurementPreferencesUseCase
+
 	val removeFavoriteRecipeUseCase: RemoveFavoriteRecipeUseCase
+
+	val saveMeasurementPreferencesUseCase: SaveMeasurementPreferencesUseCase
 
 	val saveCreatedRecipeUseCase: SaveCreatedRecipeUseCase
 

@@ -36,6 +36,36 @@ internal const val FAVORITES_TABLE_SQL = """
 	)
 """
 
+internal const val MEASUREMENT_PREFERENCES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS measurement_preferences (
+		user_id BIGINT PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE,
+		preferred_system VARCHAR(32) NOT NULL,
+		format_handling VARCHAR(32) NOT NULL DEFAULT 'KEEP_AS_IS',
+		detected_country_code VARCHAR(8),
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val MEASUREMENT_PREFERENCES_ADD_PREFERRED_SYSTEM_SQL = """
+	ALTER TABLE measurement_preferences ADD COLUMN IF NOT EXISTS preferred_system VARCHAR(32)
+"""
+
+internal const val MEASUREMENT_PREFERENCES_ADD_FORMAT_HANDLING_SQL = """
+	ALTER TABLE measurement_preferences ADD COLUMN IF NOT EXISTS format_handling VARCHAR(32)
+"""
+
+internal const val MEASUREMENT_PREFERENCES_ADD_DETECTED_COUNTRY_CODE_SQL = """
+	ALTER TABLE measurement_preferences ADD COLUMN IF NOT EXISTS detected_country_code VARCHAR(8)
+"""
+
+internal const val MEASUREMENT_PREFERENCE_SEEN_RECIPES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS measurement_preference_seen_recipes (
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		recipe_id INTEGER NOT NULL,
+		PRIMARY KEY (user_id, recipe_id)
+	)
+"""
+
 internal const val RECIPES_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS recipes (
 		id SERIAL PRIMARY KEY,
@@ -47,6 +77,7 @@ internal const val RECIPES_TABLE_SQL = """
 		image_url VARCHAR(512),
 		cuisine VARCHAR(255),
 		category VARCHAR(255),
+		measurement_system VARCHAR(32),
 		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)
@@ -58,6 +89,10 @@ internal const val RECIPES_ADD_DESCRIPTION_SQL = """
 
 internal const val RECIPES_ADD_CREATED_BY_USER_ID_SQL = """
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL
+"""
+
+internal const val RECIPES_ADD_MEASUREMENT_SYSTEM_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS measurement_system VARCHAR(32)
 """
 
 internal const val INGREDIENT_GROUPS_TABLE_SQL = """

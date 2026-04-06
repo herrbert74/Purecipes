@@ -33,20 +33,30 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.TitleText
 
 @Composable
 fun RecipeSearchScreen(
+	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
 ) {
-	val viewModel = recipeSearchViewModel(searchRecipes, trackEvent)
+	val viewModel = recipeSearchViewModel(
+		filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
+		getMeasurementPreferences = getMeasurementPreferences,
+		searchRecipes = searchRecipes,
+		trackEvent = trackEvent,
+	)
 
 	Column(
 		modifier = modifier
@@ -54,6 +64,13 @@ fun RecipeSearchScreen(
 			.padding(16.dp),
 		verticalArrangement = Arrangement.spacedBy(12.dp),
 	) {
+		viewModel.measurementFilterLabel?.let { label ->
+			Text(
+				text = label,
+				style = MaterialTheme.typography.bodyMedium,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
 		SearchBar(
 			inputField = {
 				SearchBarDefaults.InputField(
@@ -177,7 +194,22 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 					).joinToString(separator = " • "),
 					color = MaterialTheme.colorScheme.onSurfaceVariant,
 				)
+				recipe.measurementSystem?.let { measurementSystem ->
+					Text(
+						text = measurementSystem.displayName(),
+						style = MaterialTheme.typography.labelMedium,
+						color = MaterialTheme.colorScheme.primary,
+					)
+				}
 			}
 		}
+	}
+}
+
+private fun MeasurementSystem.displayName(): String {
+	return when (this) {
+		MeasurementSystem.IMPERIAL -> "Imperial"
+		MeasurementSystem.METRIC -> "Metric"
+		MeasurementSystem.MIXED -> "Mixed"
 	}
 }

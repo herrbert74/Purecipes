@@ -9,5 +9,6 @@ data class RecipeSummary(
 	val cuisine: Cuisine?,
 	val imageUrl: String?,
 	val totalTime: Int?,
+	val measurementSystem: MeasurementSystem? = null,
 	val isFavorite: Boolean = false,
 )
