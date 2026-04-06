@@ -207,5 +207,9 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 }
 
 private fun MeasurementSystem.displayName(): String {
-	return if (this == MeasurementSystem.IMPERIAL) "Imperial" else "Metric"
+	return when (this) {
+		MeasurementSystem.IMPERIAL -> "Imperial"
+		MeasurementSystem.METRIC -> "Metric"
+		MeasurementSystem.MIXED -> "Mixed"
+	}
 }

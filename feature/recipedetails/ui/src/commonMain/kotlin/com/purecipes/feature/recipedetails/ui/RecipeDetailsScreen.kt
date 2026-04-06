@@ -327,6 +327,7 @@ private fun MeasurementSystem.displayName(isRecipeConverted: Boolean): String {
 	return when (this) {
 		MeasurementSystem.IMPERIAL -> if (isRecipeConverted) "Converted to imperial" else "Imperial"
 		MeasurementSystem.METRIC -> if (isRecipeConverted) "Converted to metric" else "Metric"
+		MeasurementSystem.MIXED -> "Mixed"
 	}
 }
 

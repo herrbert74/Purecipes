@@ -17,7 +17,10 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 	): ProcessedRecipeDetails {
 		val originalMeasurementSystem = recipe.measurementSystem
 		val preferredSystem = preferences.preferredSystem
-		val isMismatch = originalMeasurementSystem != null && originalMeasurementSystem != preferredSystem
+		val isMismatch =
+			originalMeasurementSystem != null &&
+				originalMeasurementSystem != MeasurementSystem.MIXED &&
+				originalMeasurementSystem != preferredSystem
 
 		if (!isMismatch) {
 			return ProcessedRecipeDetails(
@@ -97,11 +100,14 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 			val convertedValue = when (targetSystem) {
 				MeasurementSystem.IMPERIAL -> imperialTemperatureFromCelsius(rawValue)
 				MeasurementSystem.METRIC -> metricTemperatureFromFahrenheit(rawValue)
+				MeasurementSystem.MIXED -> rawValue
 			}
 			val convertedUnit = if (targetSystem == MeasurementSystem.IMPERIAL) {
 				IMPERIAL_TEMPERATURE_LABEL
-			} else {
+			} else if (targetSystem == MeasurementSystem.METRIC) {
 				METRIC_TEMPERATURE_LABEL
+			} else {
+				rawUnit
 			}
 			convertedText = convertedText.replaceRange(
 				match.range,
@@ -116,6 +122,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 		unitInfo: UnitInfo,
 		targetSystem: MeasurementSystem,
 	): String? {
+		if (targetSystem == MeasurementSystem.MIXED) return null
 		val baseValue = value * unitInfo.toBaseFactor
 		return when (unitInfo.dimension) {
 			MeasurementDimension.WEIGHT -> if (targetSystem == MeasurementSystem.METRIC) {

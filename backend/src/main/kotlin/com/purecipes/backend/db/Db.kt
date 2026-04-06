@@ -44,6 +44,7 @@ class Db private constructor(
 					statement.execute(RECIPES_TABLE_SQL)
 					statement.execute(RECIPES_ADD_DESCRIPTION_SQL)
 					statement.execute(RECIPES_ADD_CREATED_BY_USER_ID_SQL)
+					statement.execute(RECIPES_ADD_MEASUREMENT_SYSTEM_SQL)
 					statement.execute(INGREDIENT_GROUPS_TABLE_SQL)
 					statement.execute(INGREDIENTS_TABLE_SQL)
 					statement.execute(INSTRUCTION_STEPS_TABLE_SQL)

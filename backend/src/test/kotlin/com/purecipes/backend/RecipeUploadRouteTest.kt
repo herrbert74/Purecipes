@@ -107,6 +107,11 @@ class RecipeUploadRouteTest {
 					{
 						"title": "Roasted Carrots",
 						"description": "Sweet and savory side dish.",
+						"ingredientGroups": [
+							{
+								"ingredients": ["8 cups (1.9L) vegetable stock"]
+							}
+						],
 						"steps": ["Trim the carrots", "Roast until tender"],
 						"imageUrl": "https://example.com/carrots.jpg",
 						"cuisine": "Mediterranean",
@@ -116,11 +121,21 @@ class RecipeUploadRouteTest {
 			)
 		}
 		assertEquals(HttpStatusCode.Created, createResponse.status)
-		assertBodyContains(createResponse.bodyAsText(), jsonField("title", "Roasted Carrots"))
+		val createResponseBody = createResponse.bodyAsText()
+		assertBodyContains(createResponseBody, jsonField("title", "Roasted Carrots"))
 		assertBodyContains(
-			createResponse.bodyAsText(),
+			createResponseBody,
 			jsonField("description", "Sweet and savory side dish."),
 		)
+		assertBodyContains(createResponseBody, jsonField("measurementSystem", "MIXED"))
+		db.dataSource.connection.use { connection ->
+			connection.prepareStatement("SELECT measurement_system FROM recipes WHERE id = ?").use { statement ->
+				statement.setInt(1, 1)
+				val resultSet = statement.executeQuery()
+				assertEquals(true, resultSet.next())
+				assertEquals("MIXED", resultSet.getString(1))
+			}
+		}
 
 		val mineResponse = client.get("/recipes/mine") {
 			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
@@ -136,14 +151,29 @@ class RecipeUploadRouteTest {
 					{
 						"title": "Honey Roasted Carrots",
 						"description": "Updated side dish.",
+						"ingredientGroups": [
+							{
+								"ingredients": ["1900 mL vegetable stock"]
+							}
+						],
 						"steps": ["Trim the carrots", "Roast with honey"]
 					}
 				""".trimIndent(),
 			)
 		}
 		assertEquals(HttpStatusCode.OK, updateResponse.status)
-		assertBodyContains(updateResponse.bodyAsText(), jsonField("title", "Honey Roasted Carrots"))
-		assertBodyContains(updateResponse.bodyAsText(), jsonField("description", "Updated side dish."))
+		val updateResponseBody = updateResponse.bodyAsText()
+		assertBodyContains(updateResponseBody, jsonField("title", "Honey Roasted Carrots"))
+		assertBodyContains(updateResponseBody, jsonField("description", "Updated side dish."))
+		assertBodyContains(updateResponseBody, jsonField("measurementSystem", "METRIC"))
+		db.dataSource.connection.use { connection ->
+			connection.prepareStatement("SELECT measurement_system FROM recipes WHERE id = ?").use { statement ->
+				statement.setInt(1, 1)
+				val resultSet = statement.executeQuery()
+				assertEquals(true, resultSet.next())
+				assertEquals("METRIC", resultSet.getString(1))
+			}
+		}
 	}
 
 	@Test

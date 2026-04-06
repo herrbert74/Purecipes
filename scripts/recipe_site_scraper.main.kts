@@ -641,13 +641,49 @@ fun parseNumber(value: String?): Double? {
 	return match.value.toDoubleOrNull()
 }
 
+fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<String>>>): String? {
+	var imperialHits = 0
+	var metricHits = 0
+	ingredientGroups.asSequence()
+		.flatMap { (_, ingredients) -> ingredients.asSequence() }
+		.forEach { ingredient ->
+			val normalized = ingredient.lowercase()
+			if (imperialUnitRegex.containsMatchIn(normalized)) {
+				imperialHits += 1
+			}
+			if (metricUnitRegex.containsMatchIn(normalized)) {
+				metricHits += 1
+			}
+		}
+	return when {
+		imperialHits == 0 && metricHits == 0 -> null
+		imperialHits > 0 && metricHits > 0 -> "MIXED"
+		imperialHits > 0 -> "IMPERIAL"
+		else -> "METRIC"
+	}
+}
+
 fun saveRecipe(connection: Connection, recipe: RecipeData): Boolean {
 	if (isDuplicate(connection, recipe.sourceUrl)) return false
+	val measurementSystem = detectMeasurementSystem(recipe.ingredientGroups)
 
 	val recipeId = connection.prepareStatement(
 		"""
-        INSERT INTO recipes (title, instructions, total_time, prep_time, cook_time, yields, image_url, language, cuisine, category, source_url)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO recipes (
+			title,
+			instructions,
+			total_time,
+			prep_time,
+			cook_time,
+			yields,
+			image_url,
+			language,
+			cuisine,
+			category,
+			source_url,
+			measurement_system
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         RETURNING id
         """.trimIndent()
 	).use { ps ->
@@ -662,6 +698,7 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Boolean {
 		ps.setString(9, recipe.cuisine)
 		ps.setString(10, recipe.category)
 		ps.setString(11, recipe.sourceUrl)
+		ps.setString(12, measurementSystem)
 		ps.executeQuery().use { rs ->
 			rs.next()
 			rs.getInt(1)
@@ -753,6 +790,20 @@ fun openConnection(config: Config): Connection {
 		DriverManager.getConnection(jdbcUrl)
 	}
 }
+
+val imperialUnitRegex = Regex(
+	pattern =
+		"(?<!\\p{L})(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|" +
+			"pounds?|pound|lbs?|lb|fahrenheit|°f)\\b",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+val metricUnitRegex = Regex(
+	pattern =
+		"(?<!\\p{L})(kilograms?|kilogram|kg|grams?|gram|g|milliliters?|milliliter|" +
+			"ml|liters?|liter|l|celsius|°c)\\b",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
 
 fun precheckExistingUrls(config: Config, urls: List<String>): Set<String> {
 	if (urls.isEmpty()) return emptySet()

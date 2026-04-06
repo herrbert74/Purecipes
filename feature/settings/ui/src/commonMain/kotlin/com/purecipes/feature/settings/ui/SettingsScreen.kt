@@ -258,6 +258,7 @@ private fun MeasurementPreferences.measurementSummary(): String {
 	val systemLabel = when (preferredSystem) {
 		MeasurementSystem.METRIC -> "Metric"
 		MeasurementSystem.IMPERIAL -> "Imperial"
+		MeasurementSystem.MIXED -> "Mixed"
 	}
 	return "Detected region: $region. Current preference: $systemLabel."
 }
