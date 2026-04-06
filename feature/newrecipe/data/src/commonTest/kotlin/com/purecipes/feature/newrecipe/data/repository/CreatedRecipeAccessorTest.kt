@@ -10,14 +10,8 @@ import com.purecipes.feature.newrecipe.data.image.RecipeImagePathLoader
 import com.purecipes.feature.newrecipe.data.image.RecipeImageUpload
 import com.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
-import com.purecipes.shared.data.network.PurecipesApi
-import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import com.purecipes.shared.domain.model.Cuisine
-import com.purecipes.shared.domain.model.GoogleSignInRequest
-import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.RecipeDetails
-import com.purecipes.shared.domain.model.RecipeSummary
-import com.purecipes.shared.domain.model.RecipeWriteRequest
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -140,51 +134,6 @@ class CreatedRecipeAccessorTest {
 		assertEquals("Could not read the image file from the provided local path.", outcome.getError()?.message)
 	}
 
-	private class FakePurecipesApi : PurecipesApi {
-
-		private val recipes = mutableListOf<RecipeDetails>()
-
-		override suspend fun search(query: String, limit: Int): List<RecipeSummary> = emptyList()
-
-		override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
-			return recipes.first { it.id == recipeId }
-		}
-
-		override suspend fun getCreatedRecipes(): List<RecipeDetails> = recipes.toList()
-
-		override suspend fun createRecipe(request: RecipeWriteRequest): RecipeDetails {
-			val recipe = request.toRecipeDetails(id = 1)
-			recipes.clear()
-			recipes += recipe
-			return recipe
-		}
-
-		override suspend fun updateRecipe(recipeId: Int, request: RecipeWriteRequest): RecipeDetails {
-			val recipe = request.toRecipeDetails(id = recipeId)
-			recipes.removeAll { it.id == recipeId }
-			recipes += recipe
-			return recipe
-		}
-
-		override suspend fun signInWithGoogle(request: GoogleSignInRequest): AuthenticatedSession {
-			error("Not needed in test")
-		}
-
-		override suspend fun getCurrentSession(): AuthenticatedSession {
-			error("Not needed in test")
-		}
-
-		override suspend fun signOut() {
-			error("Not needed in test")
-		}
-
-		override suspend fun getFavorites(): List<RecipeSummary> = emptyList()
-
-		override suspend fun addFavorite(recipeId: Int) = Unit
-
-		override suspend fun removeFavorite(recipeId: Int) = Unit
-	}
-
 	private class FakeRecipeImagePathLoader(
 		private val result: com.purecipes.base.kotlin.result.Outcome<RecipeImageUpload> = Ok(
 			RecipeImageUpload(
@@ -210,18 +159,4 @@ class CreatedRecipeAccessorTest {
 
 		override suspend fun upload(image: RecipeImageUpload) = Ok(uploadedUrl)
 	}
-}
-
-private fun RecipeWriteRequest.toRecipeDetails(id: Int): RecipeDetails {
-	return RecipeDetails(
-		id = id,
-		title = title,
-		description = description,
-		imageUrl = imageUrl,
-		ingredientGroups = ingredientGroups.ifEmpty { listOf(IngredientGroup()) },
-		steps = steps,
-		totalTime = totalTime,
-		yields = yields,
-		cuisine = cuisine,
-	)
 }
