@@ -13,6 +13,8 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +26,8 @@ import kotlinx.coroutines.launch
 internal class StepByStepCookingViewModel(
 	private val recipeId: Int,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
+	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
@@ -71,8 +75,11 @@ internal class StepByStepCookingViewModel(
 			errorMessage = null
 			recipeDetails = null
 
+				val preferences = getMeasurementPreferences()
 			val outcome = getRecipeDetails(recipeId)
-			recipeDetails = outcome.get()
+				recipeDetails = outcome.get()?.let { recipe ->
+					processRecipeDetailsForMeasurementPreferences(recipe, preferences).recipe
+				}
 			if (recipeDetails != null) {
 				trackEvent(AnalyticsEvent.CookingStarted(recipeId))
 			}
@@ -93,15 +100,29 @@ internal class StepByStepCookingViewModel(
 internal fun stepByStepCookingViewModel(
 	recipeId: Int,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	trackEvent: TrackEventUseCase,
 ): StepByStepCookingViewModel {
+	val viewModelKey = buildString {
+		append("StepByStepCookingViewModel:")
+		append(recipeId)
+		append(':')
+		append(getRecipeDetails.hashCode())
+		append(':')
+		append(getMeasurementPreferences.hashCode())
+		append(':')
+		append(trackEvent.hashCode())
+	}
 	return viewModel(
-		key = "StepByStepCookingViewModel:$recipeId:${getRecipeDetails.hashCode()}:${trackEvent.hashCode()}",
+		key = viewModelKey,
 		factory = viewModelFactory {
 			initializer {
 				StepByStepCookingViewModel(
 					recipeId = recipeId,
 					getRecipeDetails = getRecipeDetails,
+					getMeasurementPreferences = getMeasurementPreferences,
+					processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
 					trackEvent = trackEvent,
 				)
 			}

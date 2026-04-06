@@ -2,6 +2,7 @@ package com.purecipes.backend.repository
 
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
@@ -182,6 +183,7 @@ class RecipeRepository(
 		userId: Long?,
 	): RecipeDetails {
 		val ingredientGroups = loadIngredientGroupsForRecipe(conn, recipeRecord.id)
+		val measurementSystem = detectMeasurementSystem(ingredientGroups)
 		val isFavorite = isFavorite(conn, recipeRecord.id, userId)
 		val steps = loadStepsForRecipe(conn, recipeRecord.id, recipeRecord.instructions)
 
@@ -200,6 +202,7 @@ class RecipeRepository(
 			totalTime = recipeRecord.totalTime,
 			yields = recipeRecord.yields,
 			cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
+			measurementSystem = measurementSystem,
 			isFavorite = isFavorite,
 		)
 	}
@@ -222,13 +225,15 @@ class RecipeRepository(
 	private fun executeQuery(ps: PreparedStatement): ArrayList<RecipeSummary> = ps.executeQuery().use { rs ->
 		val results = ArrayList<RecipeSummary>()
 		while (rs.next()) {
+			val recipeId = rs.getInt("id")
 			results.add(
 				RecipeSummary(
-					id = rs.getInt("id"),
+					id = recipeId,
 					title = rs.getString("title"),
 					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
+					measurementSystem = loadMeasurementSystemForRecipe(recipeId),
 				)
 			)
 		}
@@ -467,18 +472,45 @@ class RecipeRepository(
 	private fun readFavoriteRecipes(rs: ResultSet): List<RecipeSummary> {
 		val results = ArrayList<RecipeSummary>()
 		while (rs.next()) {
+			val recipeId = rs.getInt("id")
 			results.add(
 				RecipeSummary(
-					id = rs.getInt("id"),
+					id = recipeId,
 					title = rs.getString("title"),
 					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
+					measurementSystem = loadMeasurementSystemForRecipe(recipeId),
 					isFavorite = true,
 				)
 			)
 		}
 		return results
+	}
+
+	private fun loadMeasurementSystemForRecipe(recipeId: Int): MeasurementSystem? = dataSource.connection.use { conn ->
+		detectMeasurementSystem(loadIngredientGroupsForRecipe(conn, recipeId))
+	}
+
+	private fun detectMeasurementSystem(ingredientGroups: List<IngredientGroup>): MeasurementSystem? {
+		var imperialHits = 0
+		var metricHits = 0
+		ingredientGroups.asSequence()
+			.flatMap { it.ingredients.asSequence() }
+			.forEach { ingredient ->
+				val normalized = ingredient.lowercase()
+				if (IMPERIAL_UNIT_REGEX.containsMatchIn(normalized)) {
+					imperialHits += 1
+				}
+				if (METRIC_UNIT_REGEX.containsMatchIn(normalized)) {
+					metricHits += 1
+				}
+			}
+		return when {
+			imperialHits == 0 && metricHits == 0 -> null
+			imperialHits >= metricHits -> MeasurementSystem.IMPERIAL
+			else -> MeasurementSystem.METRIC
+		}
 	}
 
 	private data class RecipeRecord(
@@ -629,5 +661,15 @@ class RecipeRepository(
 			INSERT INTO instruction_steps (recipe_id, step, order_index)
 			VALUES (?, ?, ?)
 		"""
+
+		val IMPERIAL_UNIT_REGEX = Regex(
+			pattern = "\\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|pounds?|pound|lbs?|lb|fahrenheit|°f)\\b",
+			options = setOf(RegexOption.IGNORE_CASE),
+		)
+
+		val METRIC_UNIT_REGEX = Regex(
+			pattern = "\\b(kilograms?|kilogram|kg|grams?|gram|g|milliliters?|milliliter|ml|liters?|liter|celsius|°c)\\b",
+			options = setOf(RegexOption.IGNORE_CASE),
+		)
 	}
 }

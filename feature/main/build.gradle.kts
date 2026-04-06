@@ -25,6 +25,8 @@ kotlin {
 				api(project(":feature:search:domain"))
 				implementation(project(":feature:search:ui"))
 				api(project(":shared:data"))
+				api(project(":shared:domain"))
+				implementation(project(":feature:settings:ui"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.serializationJson)
 			}

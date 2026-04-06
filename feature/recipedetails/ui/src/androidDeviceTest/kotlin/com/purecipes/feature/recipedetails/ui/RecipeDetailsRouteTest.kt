@@ -7,13 +7,21 @@ import androidx.compose.ui.test.performScrollTo
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.measurement.domain.repository.MeasurementPreferencesRepository
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MeasurementPreferences
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 
@@ -25,6 +33,7 @@ class RecipeDetailsRouteTest {
 	@Test
 	fun recipeDetailsRouteShowsTitleIngredientsAndSteps() {
 		val favoritesRepository = FakeFavoritesRepository()
+		val measurementRepository = FakeMeasurementPreferencesRepository()
 		composeRule.setContent {
 			RecipeDetailsRoute(
 				recipeId = 7,
@@ -50,9 +59,13 @@ class RecipeDetailsRouteTest {
 						),
 					),
 				),
+				getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+				markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+				onOpenMeasurementPreferences = {},
 				onBack = {},
 				onFavoriteChange = {},
 				onStartCooking = {},
+				processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 				removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 				sessionKey = "user-7",
 				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
@@ -64,6 +77,27 @@ class RecipeDetailsRouteTest {
 		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
 		composeRule.onNodeWithText("- 6 carrots").performScrollTo().assertIsDisplayed()
 		composeRule.onNodeWithText("Roast until tender").performScrollTo().assertIsDisplayed()
+	}
+
+	private class FakeMeasurementPreferencesRepository : MeasurementPreferencesRepository {
+
+		private val flow = MutableStateFlow(
+			MeasurementPreferences(
+				preferredSystem = MeasurementSystem.METRIC,
+			),
+		)
+
+		override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> = flow
+
+		override suspend fun getMeasurementPreferences(): MeasurementPreferences = flow.value
+
+		override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {
+			flow.value = preferences
+		}
+
+		override suspend fun resetMeasurementPreferences() = Unit
+
+		override suspend fun markMismatchNotificationSeen(recipeId: Int) = Unit
 	}
 
 }

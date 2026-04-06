@@ -100,6 +100,7 @@ dependencies {
 	implementation(project(":feature:newrecipe:data"))
 	implementation(project(":feature:recipedetails:data"))
 	implementation(project(":feature:search:data"))
+	implementation(project(":feature:settings:data"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))
 	implementation(libs.androidx.core)

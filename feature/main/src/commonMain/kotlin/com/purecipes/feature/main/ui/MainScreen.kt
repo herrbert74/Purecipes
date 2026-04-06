@@ -44,6 +44,13 @@ import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.ui.FavoritesScreen
+import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import com.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.feature.newrecipe.ui.CreateRecipeScreen
@@ -51,6 +58,7 @@ import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.search.ui.RecipeSearchScreen
+import com.purecipes.feature.settings.ui.SettingsScreen
 import com.purecipes.shared.ui.component.HandleSystemBack
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.serialization.Serializable
@@ -62,6 +70,7 @@ import kotlinx.serialization.modules.subclass
 fun MainScreen(
 	observeConsentState: ObserveConsentStateUseCase,
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
+	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
@@ -71,12 +80,18 @@ fun MainScreen(
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
+	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	getFavoriteRecipes: GetFavoriteRecipesUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
+	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
+	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
+	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
@@ -132,6 +147,8 @@ fun MainScreen(
 				entryProvider = entryProvider {
 					entry<SearchDestination> {
 						RecipeSearchScreen(
+							filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
+							getMeasurementPreferences = getMeasurementPreferences,
 							modifier = Modifier.fillMaxSize(),
 							searchRecipes = searchRecipes,
 							trackEvent = trackEvent,
@@ -144,6 +161,10 @@ fun MainScreen(
 							addFavoriteRecipe = addFavoriteRecipe,
 							canManageFavorites = canManageFavorites,
 							getRecipeDetails = getRecipeDetails,
+							getMeasurementPreferences = getMeasurementPreferences,
+							markMeasurementMismatchSeen = markMeasurementMismatchSeen,
+							onOpenMeasurementPreferences = { viewModel.onOpenSettings(backStack) },
+							processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
 							trackEvent = trackEvent,
 							onBack = { viewModel.onBack(backStack) },
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
@@ -157,6 +178,8 @@ fun MainScreen(
 						StepByStepCookingRoute(
 							recipeId = destination.recipeId,
 							getRecipeDetails = getRecipeDetails,
+							getMeasurementPreferences = getMeasurementPreferences,
+							processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
 							trackEvent = trackEvent,
 							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
@@ -190,7 +213,17 @@ fun MainScreen(
 							signInWithGoogle = signInWithGoogle,
 							showConsentForm = showConsentForm,
 							signOut = signOut,
+							onOpenSettings = { viewModel.onOpenSettings(backStack) },
 							googleWebClientId = googleWebClientId,
+							modifier = Modifier.fillMaxSize(),
+						)
+					}
+					entry<AccountSettingsDestination> {
+						SettingsScreen(
+							observeMeasurementPreferences = observeMeasurementPreferences,
+							resetMeasurementPreferences = resetMeasurementPreferences,
+							saveMeasurementPreferences = saveMeasurementPreferences,
+							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -212,6 +245,7 @@ private fun rememberMainBackStack() = rememberNavBackStack(
 					subclass(FavoritesDestination.serializer())
 					subclass(CreateDestination.serializer())
 					subclass(AccountDestination.serializer())
+					subclass(AccountSettingsDestination.serializer())
 				}
 			}
 		}
@@ -240,6 +274,9 @@ internal object CreateDestination : MainDestination
 
 @Serializable
 internal object AccountDestination : MainDestination
+
+@Serializable
+internal object AccountSettingsDestination : MainDestination
 
 internal data class MainTab(
 	val destination: MainDestination,
@@ -273,6 +310,7 @@ private val MainTab.icon: ImageVector
 		FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
 		AccountDestination -> Icons.Filled.Person
+		AccountSettingsDestination -> error("AccountSettingsDestination is not a tab destination")
 		is RecipeDetailsDestination -> error("RecipeDetailsDestination is not a tab destination")
 		is RecipeCookingDestination -> error("RecipeCookingDestination is not a tab destination")
 	}

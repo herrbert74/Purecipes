@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,8 +44,12 @@ import coil3.compose.AsyncImage
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
 
@@ -54,6 +59,10 @@ fun RecipeDetailsRoute(
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	canManageFavorites: Boolean,
 	getRecipeDetails: GetRecipeDetailsUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
+	onOpenMeasurementPreferences: () -> Unit,
+	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	trackEvent: TrackEventUseCase,
 	onBack: () -> Unit,
 	onFavoriteChange: () -> Unit,
@@ -66,6 +75,9 @@ fun RecipeDetailsRoute(
 		recipeId = recipeId,
 		addFavoriteRecipe = addFavoriteRecipe,
 		getRecipeDetails = getRecipeDetails,
+		getMeasurementPreferences = getMeasurementPreferences,
+		markMeasurementMismatchSeen = markMeasurementMismatchSeen,
+		processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
 		removeFavoriteRecipe = removeFavoriteRecipe,
 		trackEvent = trackEvent,
 		sessionKey = sessionKey,
@@ -113,6 +125,30 @@ fun RecipeDetailsRoute(
 			)
 		},
 	) { innerPadding ->
+		if (viewModel.showMeasurementMismatchDialog) {
+			AlertDialog(
+				onDismissRequest = viewModel::dismissMeasurementMismatchDialog,
+				confirmButton = {
+					Button(onClick = viewModel::convertCurrentRecipe) {
+						Text(text = "Convert recipe")
+					}
+				},
+				dismissButton = {
+					TextButton(onClick = viewModel::dismissMeasurementMismatchDialog) {
+						Text(text = "Keep original")
+					}
+				},
+				title = { Text(text = "Measurement system mismatch") },
+				text = {
+					Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+						Text(text = "This recipe uses measurements outside your preferred system.")
+						TextButton(onClick = onOpenMeasurementPreferences) {
+							Text(text = "Update my preferences")
+						}
+					}
+				},
+			)
+		}
 		when {
 			viewModel.isLoading -> Box(
 				modifier = Modifier
@@ -133,6 +169,7 @@ fun RecipeDetailsRoute(
 				canManageFavorites = canManageFavorites,
 				favoriteErrorMessage = viewModel.favoriteErrorMessage,
 				isFavoriteUpdating = viewModel.isFavoriteUpdating,
+				isRecipeConverted = viewModel.isRecipeConverted,
 				recipe = viewModel.recipeDetails ?: return@Scaffold,
 				onStartCooking = { onStartCooking(recipeId) },
 				onToggleFavorite = viewModel::toggleFavorite,
@@ -153,6 +190,7 @@ private fun RecipeDetailsScreen(
 	canManageFavorites: Boolean,
 	favoriteErrorMessage: String?,
 	isFavoriteUpdating: Boolean,
+	isRecipeConverted: Boolean,
 	recipe: RecipeDetails,
 	onStartCooking: () -> Unit,
 	onToggleFavorite: () -> Unit,
@@ -191,7 +229,7 @@ private fun RecipeDetailsScreen(
 		}
 
 		item {
-			RecipeMetadataRow(recipe = recipe)
+			RecipeMetadataRow(recipe = recipe, isRecipeConverted = isRecipeConverted)
 		}
 
 		item {
@@ -256,11 +294,12 @@ private fun RecipeDetailsScreen(
 }
 
 @Composable
-private fun RecipeMetadataRow(recipe: RecipeDetails) {
+private fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean) {
 	val items = listOfNotNull(
 		recipe.cuisine?.displayName,
 		recipe.totalTime?.let { "$it min" },
 		recipe.yields?.takeIf { it.isNotBlank() },
+		recipe.measurementSystem?.displayName(isRecipeConverted),
 	)
 
 	if (items.isEmpty()) return
@@ -281,6 +320,13 @@ private fun RecipeMetadataRow(recipe: RecipeDetails) {
 				)
 			}
 		}
+	}
+}
+
+private fun MeasurementSystem.displayName(isRecipeConverted: Boolean): String {
+	return when (this) {
+		MeasurementSystem.IMPERIAL -> if (isRecipeConverted) "Converted to imperial" else "Imperial"
+		MeasurementSystem.METRIC -> if (isRecipeConverted) "Converted to metric" else "Metric"
 	}
 }
 

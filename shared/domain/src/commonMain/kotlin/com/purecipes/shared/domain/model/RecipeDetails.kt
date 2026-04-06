@@ -19,5 +19,6 @@ data class RecipeDetails(
 	val totalTime: Int? = null,
 	val yields: String? = null,
 	val cuisine: Cuisine? = null,
+	val measurementSystem: MeasurementSystem? = null,
 	val isFavorite: Boolean = false,
 )

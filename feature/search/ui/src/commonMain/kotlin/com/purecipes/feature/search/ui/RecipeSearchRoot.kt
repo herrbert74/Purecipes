@@ -3,15 +3,21 @@ package com.purecipes.feature.search.ui
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
+import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 
 @Composable
 fun RecipeSearchRoot(
+	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
+	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	trackEvent: TrackEventUseCase,
 ) {
 	MaterialTheme {
 		RecipeSearchScreen(
+			filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
+			getMeasurementPreferences = getMeasurementPreferences,
 			searchRecipes = searchRecipes,
 			trackEvent = trackEvent,
 		)
