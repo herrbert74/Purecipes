@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -35,8 +36,12 @@ import androidx.compose.ui.unit.dp
 import com.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
+import com.purecipes.shared.domain.model.NotificationPreferences
 import com.purecipes.shared.domain.model.RecipeFormatHandling
 import kotlinx.coroutines.launch
 
@@ -45,6 +50,9 @@ fun SettingsScreen(
 	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
+	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
+	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
+	sendTestNotification: SendTestNotificationUseCase,
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
@@ -64,11 +72,150 @@ fun SettingsScreen(
 			)
 		},
 	) { innerPadding ->
-		MeasurementPreferencesSection(
-			observeMeasurementPreferences = observeMeasurementPreferences,
-			resetMeasurementPreferences = resetMeasurementPreferences,
-			saveMeasurementPreferences = saveMeasurementPreferences,
-			modifier = Modifier.padding(innerPadding),
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.verticalScroll(rememberScrollState())
+				.padding(innerPadding)
+				.padding(horizontal = 20.dp, vertical = 16.dp),
+			verticalArrangement = Arrangement.spacedBy(16.dp),
+		) {
+			MeasurementPreferencesSection(
+				observeMeasurementPreferences = observeMeasurementPreferences,
+				resetMeasurementPreferences = resetMeasurementPreferences,
+				saveMeasurementPreferences = saveMeasurementPreferences,
+			)
+			NotificationPreferencesSection(
+				observeNotificationPreferences = observeNotificationPreferences,
+				saveNotificationPreferences = saveNotificationPreferences,
+				sendTestNotification = sendTestNotification,
+			)
+		}
+	}
+}
+
+@Composable
+private fun NotificationPreferencesSection(
+	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
+	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
+	sendTestNotification: SendTestNotificationUseCase,
+	modifier: Modifier = Modifier,
+) {
+	val preferences by observeNotificationPreferences().collectAsState(initial = NotificationPreferences())
+	val scope = rememberCoroutineScope()
+
+	Surface(
+		modifier = modifier.fillMaxWidth(),
+		shape = MaterialTheme.shapes.large,
+		tonalElevation = 2.dp,
+	) {
+		Column(
+			modifier = Modifier.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(14.dp),
+		) {
+			Text(
+				text = "Notifications",
+				style = MaterialTheme.typography.titleMedium,
+				fontWeight = FontWeight.SemiBold,
+			)
+			Text(
+				text = "Manage push notification settings across devices.",
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+
+			NotificationToggleRow(
+				label = "Enable All Notifications",
+				description = "Turn all notifications on or off globally",
+				checked = preferences.enableAll,
+				onCheckedChange = { checked ->
+					scope.launch {
+						saveNotificationPreferences(preferences.copy(enableAll = checked))
+					}
+				}
+			)
+
+			if (preferences.enableAll) {
+				HorizontalDivider()
+
+				NotificationToggleRow(
+					label = "Cooking Timers",
+					description = "Alerts when timers complete or steps change",
+					checked = preferences.enableTimers,
+					onCheckedChange = { checked ->
+						scope.launch {
+							saveNotificationPreferences(preferences.copy(enableTimers = checked))
+						}
+					}
+				)
+
+				NotificationToggleRow(
+					label = "Social Engagement",
+					description = "Comments and community interactions",
+					checked = preferences.enableSocial,
+					onCheckedChange = { checked ->
+						scope.launch {
+							saveNotificationPreferences(preferences.copy(enableSocial = checked))
+						}
+					}
+				)
+
+				NotificationToggleRow(
+					label = "Recipe Updates",
+					description = "New features, updates and suggestions",
+					checked = preferences.enableUpdates,
+					onCheckedChange = { checked ->
+						scope.launch {
+							saveNotificationPreferences(preferences.copy(enableUpdates = checked))
+						}
+					}
+				)
+				HorizontalDivider()
+
+				OutlinedButton(
+					modifier = Modifier.fillMaxWidth(),
+					onClick = { sendTestNotification("Testing 1 2 3", "Push notifications are working!") },
+					contentPadding = PaddingValues(vertical = 12.dp),
+				) {
+					Text(
+						text = "Send Test Notification",
+						style = MaterialTheme.typography.bodyMedium,
+					)
+				}
+			}
+		}
+	}
+}
+
+@Composable
+private fun NotificationToggleRow(
+	label: String,
+	description: String,
+	checked: Boolean,
+	onCheckedChange: (Boolean) -> Unit,
+) {
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(vertical = 4.dp),
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.SpaceBetween,
+	) {
+		Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+			Text(
+				text = label,
+				style = MaterialTheme.typography.bodyMedium,
+				fontWeight = FontWeight.Medium,
+			)
+			Text(
+				text = description,
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
+		Switch(
+			checked = checked,
+			onCheckedChange = onCheckedChange,
 		)
 	}
 }
@@ -84,55 +231,47 @@ private fun MeasurementPreferencesSection(
 	val scope = rememberCoroutineScope()
 	val currentPreferences = preferences ?: return
 
-	Column(
-		modifier = modifier
-			.fillMaxSize()
-			.verticalScroll(rememberScrollState())
-			.padding(horizontal = 20.dp, vertical = 16.dp),
-		verticalArrangement = Arrangement.spacedBy(16.dp),
+	Surface(
+		modifier = modifier.fillMaxWidth(),
+		shape = MaterialTheme.shapes.large,
+		tonalElevation = 2.dp,
 	) {
-		Surface(
-			modifier = Modifier.fillMaxWidth(),
-			shape = MaterialTheme.shapes.large,
-			tonalElevation = 2.dp,
+		Column(
+			modifier = Modifier.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(14.dp),
 		) {
-			Column(
-				modifier = Modifier.padding(16.dp),
-				verticalArrangement = Arrangement.spacedBy(14.dp),
+			Text(
+				text = "Measurements",
+				style = MaterialTheme.typography.titleMedium,
+				fontWeight = FontWeight.SemiBold,
+			)
+			Text(
+				text = currentPreferences.measurementSummary(),
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+			MeasurementSystemChooser(
+				preferences = currentPreferences,
+				onPreferencesChange = { updatedPreferences ->
+					scope.launch { saveMeasurementPreferences(updatedPreferences) }
+				},
+			)
+			HorizontalDivider()
+			RecipeFormatHandlingChooser(
+				preferences = currentPreferences,
+				onPreferencesChange = { updatedPreferences ->
+					scope.launch { saveMeasurementPreferences(updatedPreferences) }
+				},
+			)
+			OutlinedButton(
+				modifier = Modifier.fillMaxWidth(),
+				onClick = { scope.launch { resetMeasurementPreferences() } },
+				contentPadding = PaddingValues(vertical = 12.dp),
 			) {
 				Text(
-					text = "Measurements",
-					style = MaterialTheme.typography.titleMedium,
-					fontWeight = FontWeight.SemiBold,
+					text = "Reset to detected default",
+					style = MaterialTheme.typography.bodyMedium,
 				)
-				Text(
-					text = currentPreferences.measurementSummary(),
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
-				)
-				MeasurementSystemChooser(
-					preferences = currentPreferences,
-					onPreferencesChange = { updatedPreferences ->
-						scope.launch { saveMeasurementPreferences(updatedPreferences) }
-					},
-				)
-				HorizontalDivider()
-				RecipeFormatHandlingChooser(
-					preferences = currentPreferences,
-					onPreferencesChange = { updatedPreferences ->
-						scope.launch { saveMeasurementPreferences(updatedPreferences) }
-					},
-				)
-				OutlinedButton(
-					modifier = Modifier.fillMaxWidth(),
-					onClick = { scope.launch { resetMeasurementPreferences() } },
-					contentPadding = PaddingValues(vertical = 12.dp),
-				) {
-					Text(
-						text = "Reset to detected default",
-						style = MaterialTheme.typography.bodyMedium,
-					)
-				}
 			}
 		}
 	}

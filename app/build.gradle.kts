@@ -107,6 +107,7 @@ dependencies {
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
 	implementation(libs.kmpauth.facebook)
+	implementation(libs.kmpnotifier)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.androidx.composeUi)
 	implementation(libs.androidx.composeUiGraphics)

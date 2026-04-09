@@ -10,10 +10,19 @@ import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferen
 import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import com.purecipes.feature.settings.data.datasource.MeasurementPreferencesDataSource
 import com.purecipes.feature.settings.data.datasource.MeasurementPreferencesRemoteDataSource
+import com.purecipes.feature.settings.data.datasource.NotificationPreferencesDataSource
 import com.purecipes.feature.settings.data.datasource.PurecipesMeasurementPreferencesRemoteDataSource
 import com.purecipes.feature.settings.data.datasource.SettingsMeasurementPreferencesDataSource
+import com.purecipes.feature.settings.data.datasource.SettingsNotificationPreferencesDataSource
+import com.purecipes.feature.settings.domain.repository.NotificationPreferencesRepository
+import com.purecipes.feature.settings.domain.usecase.InitializeNotificationsUseCase
+import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import com.purecipes.shared.data.network.PurecipesApi
+import com.purecipes.shared.data.notification.KmpNotificationManager
 import com.purecipes.shared.data.session.SessionTokenStore
+import com.purecipes.shared.domain.notification.NotificationManager
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -88,5 +97,53 @@ interface SettingsDataModule {
 	@Provides
 	fun provideFilterRecipesForMeasurementPreferencesUseCase(): FilterRecipesForMeasurementPreferencesUseCase {
 		return FilterRecipesForMeasurementPreferencesUseCase()
+	}
+
+	@Provides
+	fun provideNotificationPreferencesDataSource(): NotificationPreferencesDataSource {
+		return SettingsNotificationPreferencesDataSource()
+	}
+
+	@Provides
+	fun provideNotificationPreferencesRepository(
+		localDataSource: NotificationPreferencesDataSource,
+	): NotificationPreferencesRepository {
+		return NotificationPreferencesAccessor(localDataSource)
+	}
+
+	@Provides
+	fun provideNotificationManager(
+		kmpNotificationManager: KmpNotificationManager,
+	): NotificationManager {
+		return kmpNotificationManager
+	}
+
+	@Provides
+	fun provideInitializeNotificationsUseCase(
+		notificationManager: NotificationManager,
+	): InitializeNotificationsUseCase {
+		return InitializeNotificationsUseCase(notificationManager)
+	}
+
+	@Provides
+	fun provideSendTestNotificationUseCase(
+		notificationManager: NotificationManager,
+	): SendTestNotificationUseCase {
+		return SendTestNotificationUseCase(notificationManager)
+	}
+
+	@Provides
+	fun provideObserveNotificationPreferencesUseCase(
+		repository: NotificationPreferencesRepository,
+	): ObserveNotificationPreferencesUseCase {
+		return ObserveNotificationPreferencesUseCase(repository)
+	}
+
+	@Provides
+	fun provideSaveNotificationPreferencesUseCase(
+		repository: NotificationPreferencesRepository,
+		notificationManager: NotificationManager,
+	): SaveNotificationPreferencesUseCase {
+		return SaveNotificationPreferencesUseCase(repository, notificationManager)
 	}
 }

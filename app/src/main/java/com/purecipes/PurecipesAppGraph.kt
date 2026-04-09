@@ -32,6 +32,10 @@ import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import com.purecipes.feature.search.data.repository.SearchDataModule
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.settings.data.repository.SettingsDataModule
+import com.purecipes.feature.settings.domain.usecase.InitializeNotificationsUseCase
+import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import com.purecipes.shared.data.config.PurecipesConfig
 import com.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metro.AppScope
@@ -88,6 +92,10 @@ interface PurecipesAppGraph :
 
 	val observeMeasurementPreferencesUseCase: ObserveMeasurementPreferencesUseCase
 
+	val initializeNotificationsUseCase: InitializeNotificationsUseCase
+
+	val observeNotificationPreferencesUseCase: ObserveNotificationPreferencesUseCase
+
 	val processRecipeDetailsForMeasurementPreferencesUseCase: ProcessRecipeDetailsForMeasurementPreferencesUseCase
 
 	val resetMeasurementPreferencesUseCase: ResetMeasurementPreferencesUseCase
@@ -95,6 +103,10 @@ interface PurecipesAppGraph :
 	val removeFavoriteRecipeUseCase: RemoveFavoriteRecipeUseCase
 
 	val saveMeasurementPreferencesUseCase: SaveMeasurementPreferencesUseCase
+
+	val saveNotificationPreferencesUseCase: SaveNotificationPreferencesUseCase
+
+	val sendTestNotificationUseCase: SendTestNotificationUseCase
 
 	val saveCreatedRecipeUseCase: SaveCreatedRecipeUseCase
 

@@ -13,6 +13,7 @@ fun main() {
 			observeConsentState = graph.observeConsentStateUseCase,
 			observeAuthenticationState = graph.observeAuthenticationStateUseCase,
 			observeMeasurementPreferences = graph.observeMeasurementPreferencesUseCase,
+			observeNotificationPreferences = graph.observeNotificationPreferencesUseCase,
 			refreshConsent = graph.refreshConsentUseCase,
 			setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
 			showConsentForm = graph.showConsentFormUseCase,
@@ -34,6 +35,8 @@ fun main() {
 			removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
 			resetMeasurementPreferences = graph.resetMeasurementPreferencesUseCase,
 			saveMeasurementPreferences = graph.saveMeasurementPreferencesUseCase,
+			saveNotificationPreferences = graph.saveNotificationPreferencesUseCase,
+			sendTestNotification = graph.sendTestNotificationUseCase,
 			saveCreatedRecipe = graph.saveCreatedRecipeUseCase,
 			trackEvent = graph.trackEventUseCase,
 		)
