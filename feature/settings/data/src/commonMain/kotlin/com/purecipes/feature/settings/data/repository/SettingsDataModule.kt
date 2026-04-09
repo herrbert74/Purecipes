@@ -15,6 +15,7 @@ import com.purecipes.feature.settings.data.datasource.PurecipesMeasurementPrefer
 import com.purecipes.feature.settings.data.datasource.SettingsMeasurementPreferencesDataSource
 import com.purecipes.feature.settings.data.datasource.SettingsNotificationPreferencesDataSource
 import com.purecipes.feature.settings.domain.repository.NotificationPreferencesRepository
+import com.purecipes.feature.settings.domain.usecase.InitializeNotificationsUseCase
 import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import com.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
@@ -115,6 +116,13 @@ interface SettingsDataModule {
 		kmpNotificationManager: KmpNotificationManager,
 	): NotificationManager {
 		return kmpNotificationManager
+	}
+
+	@Provides
+	fun provideInitializeNotificationsUseCase(
+		notificationManager: NotificationManager,
+	): InitializeNotificationsUseCase {
+		return InitializeNotificationsUseCase(notificationManager)
 	}
 
 	@Provides

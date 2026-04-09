@@ -32,6 +32,7 @@ import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import com.purecipes.feature.search.data.repository.SearchDataModule
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.settings.data.repository.SettingsDataModule
+import com.purecipes.feature.settings.domain.usecase.InitializeNotificationsUseCase
 import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import com.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
@@ -90,6 +91,8 @@ interface PurecipesAppGraph :
 	val markMeasurementMismatchSeenUseCase: MarkMeasurementMismatchSeenUseCase
 
 	val observeMeasurementPreferencesUseCase: ObserveMeasurementPreferencesUseCase
+
+	val initializeNotificationsUseCase: InitializeNotificationsUseCase
 
 	val observeNotificationPreferencesUseCase: ObserveNotificationPreferencesUseCase
 
