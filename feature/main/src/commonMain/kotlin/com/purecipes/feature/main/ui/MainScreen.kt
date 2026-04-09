@@ -58,6 +58,9 @@ import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.search.ui.RecipeSearchScreen
+import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
+import com.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import com.purecipes.feature.settings.ui.SettingsScreen
 import com.purecipes.shared.ui.component.HandleSystemBack
 import com.purecipes.shared.ui.theme.PurecipesTheme
@@ -71,6 +74,7 @@ fun MainScreen(
 	observeConsentState: ObserveConsentStateUseCase,
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
+	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
@@ -92,6 +96,8 @@ fun MainScreen(
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
+	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
+	sendTestNotification: SendTestNotificationUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
@@ -223,6 +229,9 @@ fun MainScreen(
 							observeMeasurementPreferences = observeMeasurementPreferences,
 							resetMeasurementPreferences = resetMeasurementPreferences,
 							saveMeasurementPreferences = saveMeasurementPreferences,
+							saveNotificationPreferences = saveNotificationPreferences,
+							observeNotificationPreferences = observeNotificationPreferences,
+							sendTestNotification = sendTestNotification,
 							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
 						)

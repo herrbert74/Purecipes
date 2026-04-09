@@ -106,6 +106,7 @@ kotlin {
 				export(project(":feature:recipedetails:domain"))
 				export(project(":feature:search:domain"))
 				export(project(":shared:domain"))
+				export(project(":shared:data"))
 			}
 		}
 	}

@@ -7,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.mmk.kmpauth.core.KMPAuth
 import com.mmk.kmpauth.facebook.handleFacebookActivityResult
+import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
+import com.mmk.kmpnotifier.notification.NotifierManager
 import com.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import com.purecipes.feature.main.ui.MainScreen
 import dev.zacsweers.metro.createGraph
@@ -15,6 +17,7 @@ class MainActivity : ComponentActivity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		NotifierManager.onCreateOrOnNewIntent(intent)
 		enableEdgeToEdge()
 
 		val graph = createGraph<PurecipesAppGraph>()
@@ -24,6 +27,7 @@ class MainActivity : ComponentActivity() {
 				observeConsentState = graph.observeConsentStateUseCase,
 				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
 				observeMeasurementPreferences = graph.observeMeasurementPreferencesUseCase,
+				observeNotificationPreferences = graph.observeNotificationPreferencesUseCase,
 				refreshConsent = graph.refreshConsentUseCase,
 				setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
 				showConsentForm = graph.showConsentFormUseCase,
@@ -45,11 +49,18 @@ class MainActivity : ComponentActivity() {
 				removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
 				resetMeasurementPreferences = graph.resetMeasurementPreferencesUseCase,
 				saveMeasurementPreferences = graph.saveMeasurementPreferencesUseCase,
+				saveNotificationPreferences = graph.saveNotificationPreferencesUseCase,
+				sendTestNotification = graph.sendTestNotificationUseCase,
 				saveCreatedRecipe = graph.saveCreatedRecipeUseCase,
 				trackEvent = graph.trackEventUseCase,
 				onExitRequest = ::finish,
 			)
 		}
+	}
+
+	override fun onNewIntent(intent: Intent) {
+		super.onNewIntent(intent)
+		NotifierManager.onCreateOrOnNewIntent(intent)
 	}
 
 	override fun onStart() {
