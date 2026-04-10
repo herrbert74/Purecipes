@@ -40,4 +40,5 @@ tasks.register<Detekt>("detektAll") {
 dependencies {
 	detektPlugins(libs.detekt.compose)
 	detektPlugins(libs.detekt.formatting)
+	detektPlugins(project(":rules"))
 }

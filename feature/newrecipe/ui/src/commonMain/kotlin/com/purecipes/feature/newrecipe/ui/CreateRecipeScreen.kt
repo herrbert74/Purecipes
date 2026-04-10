@@ -290,8 +290,9 @@ private fun CreateRecipeForm(
 				style = MaterialTheme.typography.headlineSmall,
 			)
 			Text(
-				text = "Write one ingredient per line and add cooking steps below. Recipes are uploaded to your account, " +
-					"and local image paths are uploaded as image files.",
+				text = """Write one ingredient per line and add cooking steps below. Recipes are uploaded to your
+					| account, and local image paths are uploaded as image files.
+				""".trimIndent(),
 				style = MaterialTheme.typography.bodyMedium,
 				color = MaterialTheme.colorScheme.onSurfaceVariant,
 			)

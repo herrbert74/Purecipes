@@ -12,7 +12,7 @@ config:
   warningsAsErrors: false
   checkExhaustiveness: false
   # when writing own rules with new properties, exclude the property path e.g.: 'my_rule_set,.*>.*>[my_property]'
-  excludes: "flickslate.*,flickslate>.*>.*"
+  excludes: "purecipes.*,purecipes>.*>.*"
 
 processors:
   active: true
@@ -625,7 +625,7 @@ style:
     active: false
     maxChainedCalls: 5
   MaxLineLength:
-    active: true
+    active: false
     maxLineLength: 120
     excludePackageStatements: true
     excludeImportStatements: true
@@ -686,9 +686,9 @@ style:
     max: 2
     excludeGuardClauses: false
   TrailingWhitespace:
-    active: false
+    active: true
   TrimMultilineRawString:
-    active: false
+    active: true
     trimmingMethods:
       - 'trimIndent'
       - 'trimMargin'
@@ -780,7 +780,7 @@ style:
     excludeImports:
       - 'java.util.*'
 
-flickslate:
+purecipes:
   active: true
   NoSpaceIndentation:
     active: true

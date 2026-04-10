@@ -98,7 +98,8 @@ fun RecipeDetailsRoute(
 				actions = {
 					IconButton(
 						onClick = viewModel::toggleFavorite,
-						enabled = canManageFavorites && viewModel.recipeDetails != null && !viewModel.isFavoriteUpdating,
+						enabled = canManageFavorites && viewModel.recipeDetails != null &&
+							!viewModel.isFavoriteUpdating,
 					) {
 						Icon(
 							imageVector = if (viewModel.recipeDetails?.isFavorite == true) {

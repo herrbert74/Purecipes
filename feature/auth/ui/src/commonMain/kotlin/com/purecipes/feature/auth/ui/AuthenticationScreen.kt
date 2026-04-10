@@ -176,7 +176,9 @@ private fun SignedOutAuthenticationContent(
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 		Text(
-			text = "Choose how you want to sign in. Email registration uses your first and family name as the display name.",
+			text = """Choose how you want to sign in.
+				| Email registration uses your first and family name as the display name.
+			""".trimIndent(),
 			style = MaterialTheme.typography.bodyLarge,
 			color = MaterialTheme.colorScheme.onSurfaceVariant,
 		)

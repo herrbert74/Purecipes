@@ -17,7 +17,9 @@ class FilterRecipesForMeasurementPreferencesUseCase {
 
 		return recipes.filter { summary ->
 			val recipeSystem = summary.measurementSystem
-			recipeSystem == null || recipeSystem == MeasurementSystem.MIXED || recipeSystem == preferences.preferredSystem
+			recipeSystem == null ||
+				recipeSystem == MeasurementSystem.MIXED ||
+				recipeSystem == preferences.preferredSystem
 		}
 	}
 }

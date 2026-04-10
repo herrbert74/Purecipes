@@ -125,33 +125,33 @@ fun printUsageAndExit(message: String? = null): Nothing {
 	}
 	System.err.println(
 		"""
-        Usage:
-          kotlin scripts/recipe_site_scraper.main.kts -- <website> <output_dir> [options]
+	Usage:
+		kotlin scripts/recipe_site_scraper.main.kts -- <website> <output_dir> [options]
 
-        Options:
-          --mode postgres|ndjson                    Default: postgres
-          --urls-file <path>                        Optional pre-discovered URL list
-          --simplescraper-endpoint <url>            Default: https://simplescraper.io/extracturls
-          --simplescraper-api-key <key>             Or set SIMPLESCRAPER_API_KEY
-          --simplescraper-timeout <seconds>         Default: 30
-          --recipe-url-pattern <regex>              Default: /recipe/
-          --max-urls <n>                            Default: 50 (<=0 means no limit)
-          --sleep-seconds <decimal>                 Default: 0.4
+	Options:
+		--mode postgres|ndjson                    Default: postgres
+		--urls-file <path>                        Optional pre-discovered URL list
+		--simplescraper-endpoint <url>            Default: https://simplescraper.io/extracturls
+		--simplescraper-api-key <key>             Or set SIMPLESCRAPER_API_KEY
+		--simplescraper-timeout <seconds>         Default: 30
+		--recipe-url-pattern <regex>              Default: /recipe/
+		--max-urls <n>                            Default: 50 (<=0 means no limit)
+		--sleep-seconds <decimal>                 Default: 0.4
 
-          --db-dsn <jdbc-url>
-          --db-host <host>                          Default: localhost
-          --db-port <port>                          Default: 5432
-          --db-name <name>                          Default: purecipes
-          --db-user <user>                          Default: postgres
-          --db-password <password>                  Default: postgres
-          --precheck-db true|false                  Default: true (postgres mode)
+		--db-dsn <jdbc-url>
+		--db-host <host>                          Default: localhost
+		--db-port <port>                          Default: 5432
+		--db-name <name>                          Default: purecipes
+		--db-user <user>                          Default: postgres
+		--db-password <password>                  Default: postgres
+		--precheck-db true|false                  Default: true (postgres mode)
 
-          --import-file <path>                      NDJSON target in --mode ndjson
+		--import-file <path>                      NDJSON target in --mode ndjson
 
-        Notes:
-          - Uses Python recipe-scrapers per URL, invoked from Kotlin script.
-          - Requires python3 + recipe-scrapers installed.
-        """.trimIndent()
+	Notes:
+		- Uses Python recipe-scrapers per URL, invoked from Kotlin script.
+		- Requires python3 + recipe-scrapers installed.
+	""".trimIndent()
 	)
 	kotlin.system.exitProcess(1)
 }
@@ -333,101 +333,101 @@ fun filterRecipeUrls(urls: List<String>, websiteUrl: String, pattern: Regex): Li
 
 fun scrapeRecipeWithPython(url: String): RecipeData? {
 	val py = """
-import json
-import sys
-from recipe_scrapers import scrape_me
+	import json
+	import sys
+	from recipe_scrapers import scrape_me
 
-url = sys.argv[1]
-try:
-    try:
-        s = scrape_me(url, wild_mode=True)
-    except TypeError:
-        s = scrape_me(url)
+	url = sys.argv[1]
+	try:
+		try:
+			s = scrape_me(url, wild_mode=True)
+		except TypeError:
+			s = scrape_me(url)
 
-    def safe(name, default=None):
-        fn = getattr(s, name, None)
-        if not callable(fn):
-            return default
-        try:
-            value = fn()
-            if value in (None, ""):
-                return default
-            return value
-        except Exception:
-            return default
+		def safe(name, default=None):
+			fn = getattr(s, name, None)
+			if not callable(fn):
+				return default
+			try:
+				value = fn()
+				if value in (None, ""):
+					return default
+				return value
+			except Exception:
+				return default
 
-    title = (safe("title", "") or "").strip()
+		title = (safe("title", "") or "").strip()
 
-    ingredient_groups = safe("ingredient_groups")
-    ingredients = safe("ingredients", []) or []
-    if ingredient_groups is None:
-        ingredient_groups = [(None, ingredients)]
-    else:
-        # Normalize to list of (name, [ingredients]) and filter blanks
-        normalized = []
-        try:
-            for g in ingredient_groups:
-                if isinstance(g, (list, tuple)) and len(g) == 2:
-                    name, items = g
-                elif isinstance(g, dict):
-                    name = g.get("name")
-                    items = g.get("ingredients")
-                else:
-                    name, items = None, g
+		ingredient_groups = safe("ingredient_groups")
+		ingredients = safe("ingredients", []) or []
+		if ingredient_groups is None:
+			ingredient_groups = [(None, ingredients)]
+		else:
+			# Normalize to list of (name, [ingredients]) and filter blanks
+			normalized = []
+			try:
+				for g in ingredient_groups:
+					if isinstance(g, (list, tuple)) and len(g) == 2:
+						name, items = g
+					elif isinstance(g, dict):
+						name = g.get("name")
+						items = g.get("ingredients")
+					else:
+						name, items = None, g
 
-                if items is None:
-                    items = []
-                items = [str(x).strip() for x in items if str(x).strip()]
-                if not items:
-                    continue
-                normalized.append((name, items))
-        except Exception:
-            normalized = [(None, [str(x).strip() for x in ingredients if str(x).strip()])]
-        ingredient_groups = normalized
+					if items is None:
+						items = []
+					items = [str(x).strip() for x in items if str(x).strip()]
+					if not items:
+						continue
+					normalized.append((name, items))
+			except Exception:
+				normalized = [(None, [str(x).strip() for x in ingredients if str(x).strip()])]
+			ingredient_groups = normalized
 
-    instruction_list = safe("instruction_list")
-    if instruction_list is None:
-        raw_instructions = (safe("instructions", "") or "").strip()
-        instruction_list = [x.strip() for x in raw_instructions.split("\n") if x.strip()]
-    else:
-        instruction_list = [str(x).strip() for x in instruction_list if str(x).strip()]
+		instruction_list = safe("instruction_list")
+		if instruction_list is None:
+			raw_instructions = (safe("instructions", "") or "").strip()
+			instruction_list = [x.strip() for x in raw_instructions.split("\n") if x.strip()]
+		else:
+			instruction_list = [str(x).strip() for x in instruction_list if str(x).strip()]
 
-    instructions = (safe("instructions", "") or "").strip()
-    if not instructions:
-        instructions = "\n".join(instruction_list).strip()
+		instructions = (safe("instructions", "") or "").strip()
+		if not instructions:
+			instructions = "\n".join(instruction_list).strip()
 
-    cuisine = safe("cuisine")
-    category = safe("category")
+		cuisine = safe("cuisine")
+		category = safe("category")
 
-    if not title or not ingredient_groups:
-        print("", end="")
-        raise SystemExit(0)
+		if not title or not ingredient_groups:
+			print("", end="")
+			raise SystemExit(0)
 
-    payload = {
-        "title": title,
-        "ingredient_groups": [
-            {"name": (n or ""), "ingredients": lst}
-            for (n, lst) in ingredient_groups
-        ],
-        "instruction_list": instruction_list,
-        "instructions": instructions,
-        "total_time": safe("total_time"),
-        "prep_time": safe("prep_time"),
-        "cook_time": safe("cook_time"),
-        "yields": safe("yields"),
-        "image": safe("image"),
-        "nutrients": safe("nutrients", {}) or {},
-        "language": safe("language", "en"),
-        "cuisine": cuisine,
-        "category": category,
-        "links": {"canonical": safe("canonical_url") or url},
-        "source_url": url
-    }
-    print(json.dumps(payload, ensure_ascii=False))
-except Exception as exc:
-    print(f"__SCRAPE_ERROR__:{type(exc).__name__}:{exc}")
-    raise SystemExit(2)
-""".trimIndent()
+		payload = {
+			"title": title,
+			"ingredient_groups": [
+				{"name": (n or ""), "ingredients": lst}
+				for (n, lst) in ingredient_groups
+			],
+			"instruction_list": instruction_list,
+			"instructions": instructions,
+			"total_time": safe("total_time"),
+			"prep_time": safe("prep_time"),
+			"cook_time": safe("cook_time"),
+			"yields": safe("yields"),
+			"image": safe("image"),
+			"nutrients": safe("nutrients", {}) or {},
+			"language": safe("language", "en"),
+			"cuisine": cuisine,
+			"category": category,
+			"links": {"canonical": safe("canonical_url") or url},
+			"source_url": url
+		}
+		print(json.dumps(payload, ensure_ascii=False))
+	except Exception as exc:
+		print(f"__SCRAPE_ERROR__:{type(exc).__name__}:{exc}")
+		raise SystemExit(2)
+	""".trimIndent()
 
 	val command = listOf("python3", "-c", py, url)
 	val process = ProcessBuilder(command)
@@ -571,56 +571,56 @@ fun parseRecipe(rawJson: String): RecipeData? {
 
 fun ensureSchema(connection: Connection) {
 	val sql = """
-    CREATE TABLE IF NOT EXISTS recipes (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        instructions TEXT,
-        total_time INTEGER,
-        prep_time INTEGER,
-        cook_time INTEGER,
-        yields VARCHAR(100),
-        image_url TEXT,
-        language VARCHAR(10) DEFAULT 'en',
-        cuisine VARCHAR(100),
-        category VARCHAR(100),
-        source_url TEXT UNIQUE,
-        scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+	CREATE TABLE IF NOT EXISTS recipes (
+		id SERIAL PRIMARY KEY,
+		title VARCHAR(255) NOT NULL,
+		instructions TEXT,
+		total_time INTEGER,
+		prep_time INTEGER,
+		cook_time INTEGER,
+		yields VARCHAR(100),
+		image_url TEXT,
+		language VARCHAR(10) DEFAULT 'en',
+		cuisine VARCHAR(100),
+		category VARCHAR(100),
+		source_url TEXT UNIQUE,
+		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
 
-    CREATE TABLE IF NOT EXISTS ingredient_groups (
-        id SERIAL PRIMARY KEY,
-        recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-        name TEXT,
-        order_index INTEGER
-    );
+	CREATE TABLE IF NOT EXISTS ingredient_groups (
+		id SERIAL PRIMARY KEY,
+		recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+		name TEXT,
+		order_index INTEGER
+	);
 
-    CREATE TABLE IF NOT EXISTS ingredients (
-        id SERIAL PRIMARY KEY,
-        ingredient_group_id INTEGER REFERENCES ingredient_groups(id) ON DELETE CASCADE,
-        ingredient TEXT NOT NULL,
-        order_index INTEGER
-    );
+	CREATE TABLE IF NOT EXISTS ingredients (
+		id SERIAL PRIMARY KEY,
+		ingredient_group_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+		ingredient TEXT NOT NULL,
+		order_index INTEGER
+	);
 
-    CREATE TABLE IF NOT EXISTS instruction_steps (
-        id SERIAL PRIMARY KEY,
-        recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-        step TEXT NOT NULL,
-        order_index INTEGER
-    );
+	CREATE TABLE IF NOT EXISTS instruction_steps (
+		id SERIAL PRIMARY KEY,
+		recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+		step TEXT NOT NULL,
+		order_index INTEGER
+	);
 
-    CREATE TABLE IF NOT EXISTS nutrition (
-        id SERIAL PRIMARY KEY,
-        recipe_id INTEGER UNIQUE REFERENCES recipes(id) ON DELETE CASCADE,
-        calories DECIMAL(10,2),
-        protein DECIMAL(10,2),
-        carbohydrates DECIMAL(10,2),
-        fat DECIMAL(10,2),
-        fiber DECIMAL(10,2),
-        sugar DECIMAL(10,2),
-        sodium DECIMAL(10,2)
-    );
-    """.trimIndent()
+	CREATE TABLE IF NOT EXISTS nutrition (
+		id SERIAL PRIMARY KEY,
+		recipe_id INTEGER UNIQUE REFERENCES recipes(id) ON DELETE CASCADE,
+		calories DECIMAL(10,2),
+		protein DECIMAL(10,2),
+		carbohydrates DECIMAL(10,2),
+		fat DECIMAL(10,2),
+		fiber DECIMAL(10,2),
+		sugar DECIMAL(10,2),
+		sodium DECIMAL(10,2)
+	);
+	""".trimIndent()
 
 	connection.createStatement().use { it.execute(sql) }
 	connection.commit()
@@ -684,8 +684,8 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Boolean {
 			measurement_system
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        RETURNING id
-        """.trimIndent()
+		RETURNING id
+		""".trimIndent()
 	).use { ps ->
 		ps.setString(1, recipe.title)
 		ps.setString(2, recipe.instructions)
@@ -747,9 +747,9 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Boolean {
 	val nutrients = recipe.nutrients
 	connection.prepareStatement(
 		"""
-        INSERT INTO nutrition (recipe_id, calories, protein, carbohydrates, fat, fiber, sugar, sodium)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """.trimIndent()
+		INSERT INTO nutrition (recipe_id, calories, protein, carbohydrates, fat, fiber, sugar, sodium)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		""".trimIndent()
 	).use { ps ->
 		ps.setInt(1, recipeId)
 		ps.setObject(2, parseNumber(nutrients["calories"]))

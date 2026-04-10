@@ -16,6 +16,8 @@ internal actual fun FacebookAuthenticationButton(
 		modifier = Modifier
 			.fillMaxWidth()
 			.height(52.dp),
-		onClick = { onResult(Result.failure(IllegalStateException("Facebook sign-in is not supported on this platform."))) },
+		onClick = {
+			onResult(Result.failure(IllegalStateException("Facebook sign-in is not supported on this platform.")))
+		},
 	)
 }

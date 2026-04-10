@@ -52,7 +52,9 @@ interface AuthenticationDataModule {
 	}
 
 	@Provides
-	fun provideObserveAuthenticationStateUseCase(repository: AuthenticationRepository): ObserveAuthenticationStateUseCase {
+	fun provideObserveAuthenticationStateUseCase(
+		repository: AuthenticationRepository
+	): ObserveAuthenticationStateUseCase {
 		return ObserveAuthenticationStateUseCase(repository)
 	}
 
@@ -67,7 +69,9 @@ interface AuthenticationDataModule {
 	}
 
 	@Provides
-	fun provideSignInWithExternalProviderUseCase(repository: AuthenticationRepository): SignInWithExternalProviderUseCase {
+	fun provideSignInWithExternalProviderUseCase(
+		repository: AuthenticationRepository
+	): SignInWithExternalProviderUseCase {
 		return SignInWithExternalProviderUseCase(repository)
 	}
 

@@ -73,11 +73,15 @@ class SignInWithExternalProviderUseCase(
 
 	suspend operator fun invoke(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
 		if (profile.id.isBlank()) {
-			return Err(Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return a user id"))
+			return Err(
+				Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return a user id")
+			)
 		}
 		val email = profile.email?.trim().orEmpty()
 		if (email.isBlank()) {
-			return Err(Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return an email address"))
+			return Err(
+				Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return an email address")
+			)
 		}
 		return repository.signInWithExternalProvider(
 			profile.copy(

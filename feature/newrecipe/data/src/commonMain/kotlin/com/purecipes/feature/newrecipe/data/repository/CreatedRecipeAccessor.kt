@@ -10,5 +10,6 @@ class CreatedRecipeAccessor(
 
 	override suspend fun getCreatedRecipes() = remoteDataSource.getCreatedRecipes()
 
-	override suspend fun saveCreatedRecipe(request: SaveCreatedRecipeRequest) = remoteDataSource.saveCreatedRecipe(request)
+	override suspend fun saveCreatedRecipe(request: SaveCreatedRecipeRequest) =
+		remoteDataSource.saveCreatedRecipe(request)
 }

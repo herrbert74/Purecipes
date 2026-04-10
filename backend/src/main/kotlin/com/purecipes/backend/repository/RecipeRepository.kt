@@ -235,8 +235,8 @@ class RecipeRepository(
 					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
-					measurementSystem =
-						rs.getNullableMeasurementSystem("measurement_system") ?: loadMeasurementSystemForRecipe(recipeId),
+					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
+						?: loadMeasurementSystemForRecipe(recipeId),
 				)
 			)
 		}
@@ -490,8 +490,8 @@ class RecipeRepository(
 					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
-					measurementSystem =
-						rs.getNullableMeasurementSystem("measurement_system") ?: loadMeasurementSystemForRecipe(recipeId),
+					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
+						?: loadMeasurementSystemForRecipe(recipeId),
 					isFavorite = true,
 				)
 			)

@@ -197,6 +197,8 @@ androidx-testRunner = { module = "androidx.test:runner", version.ref = "androidx
 #androidx-testOrchestrator = "androidx.test:orchestrator:1.5.1"
 #androidx-testUiAutomator = "androidx.test.uiautomator:uiautomator:2.3.0"
 
+assertj = "org.assertj:assertj-core:3.27.7"
+
 baBeStudios-baseKotlin = { module = "io.bitbucket.babestudios:base-kotlin", version.ref = "babestudios-base" }
 baBeStudios-baseData = { module = "io.bitbucket.babestudios:base-data", version.ref = "babestudios-base" }
 baBeStudios-baseAndroid = { module = "io.bitbucket.babestudios:base-android", version.ref = "babestudios-base" }
@@ -213,6 +215,7 @@ decompose-extensions = { module = "com.arkivanov.decompose:extensions-compose", 
 detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }
 detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detekt" }
 detekt-test = { module = "io.gitlab.arturbosch.detekt:detekt-test", version.ref = "detekt" }
+detekt-testUtils = { module = "io.gitlab.arturbosch.detekt:detekt-test-utils", version.ref = "detekt" }
 detekt-compose = { module = "io.nlopez.compose.rules:detekt", version.ref = "detekt-compose" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
@@ -276,8 +279,9 @@ jetbrains-composeBackhandler = { module = "org.jetbrains.compose.ui:ui-backhandl
 
 jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
-#jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
+jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
 #jUnit5-jupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit5" }
+jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.3" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
 kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }

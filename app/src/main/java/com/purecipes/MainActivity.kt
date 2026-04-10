@@ -59,7 +59,8 @@ class MainActivity : ComponentActivity() {
 				getRecipeDetails = graph.getRecipeDetailsUseCase,
 				googleWebClientId = graph.purecipesConfig.googleWebClientId(),
 				markMeasurementMismatchSeen = graph.markMeasurementMismatchSeenUseCase,
-				processRecipeDetailsForMeasurementPreferences = graph.processRecipeDetailsForMeasurementPreferencesUseCase,
+				processRecipeDetailsForMeasurementPreferences =
+					graph.processRecipeDetailsForMeasurementPreferencesUseCase,
 				removeFavoriteRecipe = graph.removeFavoriteRecipeUseCase,
 				resetMeasurementPreferences = graph.resetMeasurementPreferencesUseCase,
 				saveMeasurementPreferences = graph.saveMeasurementPreferencesUseCase,

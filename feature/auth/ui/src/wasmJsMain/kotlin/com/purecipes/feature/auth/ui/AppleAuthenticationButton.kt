@@ -16,6 +16,8 @@ internal actual fun AppleAuthenticationButton(
 		modifier = Modifier
 			.fillMaxWidth()
 			.height(52.dp),
-		onClick = { onResult(Result.failure(IllegalStateException("Apple sign-in is not supported on this platform."))) },
+		onClick = {
+			onResult(Result.failure(IllegalStateException("Apple sign-in is not supported on this platform.")))
+		},
 	)
 }

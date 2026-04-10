@@ -170,7 +170,8 @@ fun MainScreen(
 							getMeasurementPreferences = getMeasurementPreferences,
 							markMeasurementMismatchSeen = markMeasurementMismatchSeen,
 							onOpenMeasurementPreferences = { viewModel.onOpenSettings(backStack) },
-							processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
+							processRecipeDetailsForMeasurementPreferences =
+								processRecipeDetailsForMeasurementPreferences,
 							trackEvent = trackEvent,
 							onBack = { viewModel.onBack(backStack) },
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
@@ -185,7 +186,8 @@ fun MainScreen(
 							recipeId = destination.recipeId,
 							getRecipeDetails = getRecipeDetails,
 							getMeasurementPreferences = getMeasurementPreferences,
-							processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
+							processRecipeDetailsForMeasurementPreferences =
+								processRecipeDetailsForMeasurementPreferences,
 							trackEvent = trackEvent,
 							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
