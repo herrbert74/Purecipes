@@ -1,6 +1,6 @@
 # Advanced Recipe Search with Chip/Tag Filtering
 
-## Status: <span style="color:orange;">� DRAFT</span>
+## Status: <span style="color:orange;">🟢 ACCEPTED</span>
 
 ## Feature Overview
 Advanced recipe search functionality inspired by Supercook.com, featuring intelligent chip-based filtering system that allows users to find recipes based on ingredients they have available, dietary preferences, cooking time, difficulty level, and multiple other criteria. The system will provide real-time filtering with an intuitive tag-based interface.

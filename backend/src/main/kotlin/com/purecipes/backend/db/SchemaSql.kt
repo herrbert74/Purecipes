@@ -73,12 +73,17 @@ internal const val RECIPES_TABLE_SQL = """
 		description TEXT,
 		instructions TEXT,
 		total_time INTEGER,
+		prep_time INTEGER,
+		cook_time INTEGER,
 		yields VARCHAR(255),
 		image_url VARCHAR(512),
+		language VARCHAR(10) DEFAULT 'en',
 		cuisine VARCHAR(255),
 		category VARCHAR(255),
+		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
 		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
+		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)
 """
@@ -93,6 +98,26 @@ internal const val RECIPES_ADD_CREATED_BY_USER_ID_SQL = """
 
 internal const val RECIPES_ADD_MEASUREMENT_SYSTEM_SQL = """
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS measurement_system VARCHAR(32)
+"""
+
+internal const val RECIPES_ADD_PREP_TIME_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS prep_time INTEGER
+"""
+
+internal const val RECIPES_ADD_COOK_TIME_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS cook_time INTEGER
+"""
+
+internal const val RECIPES_ADD_LANGUAGE_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en'
+"""
+
+internal const val RECIPES_ADD_SOURCE_URL_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS source_url TEXT UNIQUE
+"""
+
+internal const val RECIPES_ADD_SCRAPED_AT_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 """
 
 internal const val INGREDIENT_GROUPS_TABLE_SQL = """
@@ -125,4 +150,18 @@ internal const val INSTRUCTION_STEPS_TABLE_SQL = """
 internal const val FAVORITES_USER_CREATED_AT_INDEX_SQL = """
 	CREATE INDEX IF NOT EXISTS idx_favorites_user_created_at
 	ON favorites (user_id, created_at DESC)
+"""
+
+internal const val NUTRITION_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS nutrition (
+		id SERIAL PRIMARY KEY,
+		recipe_id INTEGER UNIQUE REFERENCES recipes(id) ON DELETE CASCADE,
+		calories DECIMAL(10,2),
+		protein DECIMAL(10,2),
+		carbohydrates DECIMAL(10,2),
+		fat DECIMAL(10,2),
+		fiber DECIMAL(10,2),
+		sugar DECIMAL(10,2),
+		sodium DECIMAL(10,2)
+	)
 """

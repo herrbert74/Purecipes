@@ -2,6 +2,7 @@
 @file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 @file:DependsOn("org.postgresql:postgresql:42.7.10")
 
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -10,7 +11,9 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
+import java.io.IOException
 import java.net.URI
+import java.net.URISyntaxException
 import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -20,12 +23,36 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Locale
 
+data class SiteConfig(
+	val url: String,
+	val recipePattern: Regex,
+)
+
 val knownWebsites = mapOf(
-	"allrecipes" to "https://www.allrecipes.com",
-	"foodnetwork" to "https://www.foodnetwork.com",
-	"bonappetit" to "https://www.bonappetit.com",
-	"epicurious" to "https://www.epicurious.com",
-	"seriouseats" to "https://www.seriouseats.com"
+	"allrecipes" to SiteConfig(
+		url = "https://www.allrecipes.com",
+		recipePattern = Regex("^/recipe/\\d+/"),
+	),
+	"foodnetwork" to SiteConfig(
+		url = "https://foodnetwork.co.uk",
+		recipePattern = Regex("^/recipes/[^/]+$"),
+	),
+	"bonappetit" to SiteConfig(
+		url = "https://www.bonappetit.com",
+		recipePattern = Regex("^/recipe/[^/]+$"),
+	),
+	"epicurious" to SiteConfig(
+		url = "https://www.epicurious.com",
+		recipePattern = Regex("^/recipes/food/views/"),
+	),
+	"seriouseats" to SiteConfig(
+		url = "https://www.seriouseats.com",
+		recipePattern = Regex("^/[^/]+-recipe-\\d+$|^/recipes/"),
+	),
+	"mob" to SiteConfig(
+		url = "https://www.mob.co.uk",
+		recipePattern = Regex("^/recipes/(?!collections|categories)[^/]+$"),
+	),
 )
 
 val json = Json {
@@ -116,7 +143,7 @@ data class Config(
 	val dbUser: String?,
 	val dbPassword: String?,
 	val precheckDb: Boolean,
-	val importFile: String?
+	val debug: Boolean
 )
 
 fun printUsageAndExit(message: String? = null): Nothing {
@@ -129,7 +156,7 @@ fun printUsageAndExit(message: String? = null): Nothing {
 		kotlin scripts/recipe_site_scraper.main.kts -- <website> <output_dir> [options]
 
 	Options:
-		--mode postgres|ndjson                    Default: postgres
+		--mode web|json                            Default: web
 		--urls-file <path>                        Optional pre-discovered URL list
 		--simplescraper-endpoint <url>            Default: https://simplescraper.io/extracturls
 		--simplescraper-api-key <key>             Or set SIMPLESCRAPER_API_KEY
@@ -137,6 +164,7 @@ fun printUsageAndExit(message: String? = null): Nothing {
 		--recipe-url-pattern <regex>              Default: /recipe/
 		--max-urls <n>                            Default: 50 (<=0 means no limit)
 		--sleep-seconds <decimal>                 Default: 0.4
+		--debug true|false                        Default: false
 
 		--db-dsn <jdbc-url>
 		--db-host <host>                          Default: localhost
@@ -146,7 +174,9 @@ fun printUsageAndExit(message: String? = null): Nothing {
 		--db-password <password>                  Default: postgres
 		--precheck-db true|false                  Default: true (postgres mode)
 
-		--import-file <path>                      NDJSON target in --mode ndjson
+	Modes:
+		web   Scrape recipes from the web, save JSON files with DB IDs, and insert into Postgres.
+		json  Read previously saved JSON files from <output_dir>/recipes/ and insert them into Postgres.
 
 	Notes:
 		- Uses Python recipe-scrapers per URL, invoked from Kotlin script.
@@ -166,14 +196,14 @@ private val allowedOptions = setOf(
 	"--recipe-url-pattern",
 	"--max-urls",
 	"--sleep-seconds",
+	"--debug",
 	"--db-dsn",
 	"--db-host",
 	"--db-port",
 	"--db-name",
 	"--db-user",
 	"--db-password",
-	"--precheck-db",
-	"--import-file"
+	"--precheck-db"
 )
 
 fun parseOptions(scriptArgs: Array<String>): Config {
@@ -183,20 +213,13 @@ fun parseOptions(scriptArgs: Array<String>): Config {
 	val outputDir = scriptArgs[1]
 	val options = parseFlagArguments(scriptArgs.drop(2).toTypedArray())
 
-	val mode = (options["--mode"] ?: "postgres").also { m ->
-		if (m !in setOf("postgres", "ndjson")) printUsageAndExit("--mode must be postgres or ndjson")
-	}
-
-	val regex = try {
-		Regex(options["--recipe-url-pattern"] ?: "/recipe/", RegexOption.IGNORE_CASE)
-	} catch (_: Exception) {
-		printUsageAndExit("Invalid --recipe-url-pattern regex")
-	}
-
+	val mode = validateMode(options)
+	val regex = parseRecipeUrlPattern(options)
 	val maxUrls = options["--max-urls"]?.toIntOrExit("--max-urls must be an integer") ?: 50
-	val sleepMillis = options["--sleep-seconds"]?.toDoubleOrExit("--sleep-seconds must be a number")
-		?.let { (it * 1000).toLong() } ?: 400
+	val sleepMillis = (options["--sleep-seconds"]?.toDoubleOrExit("--sleep-seconds must be a number") ?: 0.4) * 1000
 	val timeout = options["--simplescraper-timeout"]?.toLongOrExit("--simplescraper-timeout must be an integer") ?: 30L
+	val dbPort = options["--db-port"]?.toIntOrExit("--db-port must be an integer") ?: 5432
+	val boolOptions = parseBoolOptions(options)
 
 	return Config(
 		website = website,
@@ -208,16 +231,37 @@ fun parseOptions(scriptArgs: Array<String>): Config {
 		simpleScraperTimeoutSeconds = timeout,
 		recipeUrlPattern = regex,
 		maxUrls = maxUrls,
-		sleepMillis = sleepMillis,
+		sleepMillis = sleepMillis.toLong(),
 		dbDsn = options["--db-dsn"],
 		dbHost = options["--db-host"] ?: "localhost",
-		dbPort = (options["--db-port"] ?: "5432").toIntOrExit("--db-port must be an integer"),
+		dbPort = dbPort,
 		dbName = options["--db-name"] ?: "purecipes",
 		dbUser = options["--db-user"] ?: "postgres",
 		dbPassword = options["--db-password"] ?: "postgres",
-		precheckDb = (options["--precheck-db"] ?: "true").equals("true", ignoreCase = true),
-		importFile = options["--import-file"]?.let(::expandPath)
+		precheckDb = boolOptions["precheck"] ?: true,
+		debug = boolOptions["debug"] ?: false
 	)
+}
+
+private fun validateMode(options: Map<String, String>): String {
+	val mode = options["--mode"] ?: "web"
+	if (mode !in setOf("web", "json")) printUsageAndExit("--mode must be web or json")
+	return mode
+}
+
+private fun parseRecipeUrlPattern(options: Map<String, String>): Regex {
+	return try {
+		Regex(options["--recipe-url-pattern"] ?: "/recipe/", RegexOption.IGNORE_CASE)
+	} catch (_: Exception) {
+		printUsageAndExit("Invalid --recipe-url-pattern regex")
+	}
+}
+
+private fun parseBoolOptions(options: Map<String, String>): Map<String, Boolean> {
+	val boolOpts = mutableMapOf<String, Boolean>()
+	boolOpts["precheck"] = (options["--precheck-db"] ?: "true").equals("true", ignoreCase = true)
+	boolOpts["debug"] = (options["--debug"] ?: "false").equals("true", ignoreCase = true)
+	return boolOpts
 }
 
 // helper extensions to reduce boilerplate and complexity
@@ -259,9 +303,9 @@ fun normalizeWebsite(input: String): String {
 	val deFlagged = trimmed.removePrefix("--")
 	val lower = deFlagged.lowercase(Locale.getDefault())
 	val result = when {
-		knownWebsites[lower] != null -> knownWebsites[lower]!!
+		knownWebsites[lower] != null -> knownWebsites[lower]!!.url
 		trimmed.startsWith("http://") || trimmed.startsWith("https://") -> trimmed.trimEnd('/')
-		else -> knownWebsites[trimmed.lowercase(Locale.getDefault())] ?: "https://${trimmed.trimEnd('/')}"
+		else -> knownWebsites[trimmed.lowercase(Locale.getDefault())]?.url ?: "https://${trimmed.trimEnd('/')}"
 	}
 	return result
 }
@@ -313,36 +357,101 @@ fun extractUrls(config: Config, websiteUrl: String): List<String> {
 
 fun filterRecipeUrls(urls: List<String>, websiteUrl: String, pattern: Regex): List<String> {
 	val host = URI(websiteUrl).host?.removePrefix("www.") ?: ""
-	return urls.asSequence()
+	val siteConfig = knownWebsites.values.find { host.isNotBlank() && URI(it.url).host?.removePrefix("www.") == host }
+	val effectivePattern = siteConfig?.recipePattern ?: pattern
+	val rejectionCounts = mutableMapOf<String, Int>()
+	val rejectionSamples = mutableMapOf<String, String>()
+	fun reject(reason: String, url: String): String? {
+		rejectionCounts[reason] = rejectionCounts.getOrDefault(reason, 0) + 1
+		rejectionSamples.putIfAbsent(reason, url)
+		return null
+	}
+
+	val filtered = urls.asSequence()
 		.distinct()
 		.mapNotNull { url ->
 			val candidate = try {
 				URI(url)
 			} catch (_: Exception) {
-				return@mapNotNull null
+				return@mapNotNull reject("invalid URL", url)
 			}
-			val candidateHost = candidate.host?.removePrefix("www.") ?: return@mapNotNull null
-			if (host.isNotBlank() && !candidateHost.contains(host)) return@mapNotNull null
+
+			val candidateHost = candidate.host?.removePrefix("www.") ?: return@mapNotNull reject(
+				"missing or invalid host",
+				url
+			)
+			if (host.isNotBlank() && !candidateHost.contains(host)) {
+				val reason = "host mismatch: expected containing '$host' but got '$candidateHost'"
+				return@mapNotNull reject(reason, url)
+			}
+
 			val path = candidate.path ?: ""
-			if (candidateHost.contains("allrecipes.com") && path.contains("/recipes/")) return@mapNotNull null
-			if (!pattern.containsMatchIn(path)) return@mapNotNull null
+			if (!effectivePattern.containsMatchIn(path)) {
+				return@mapNotNull reject("path does not match pattern '${effectivePattern.pattern}'", url)
+			}
+
 			url
 		}
 		.toList()
+
+	if (rejectionCounts.isNotEmpty()) {
+		val totalRejected = rejectionCounts.values.sum()
+		println("Filtered out $totalRejected URLs by reason:")
+		rejectionCounts.forEach { (reason, count) ->
+			println("  $count -> $reason (example: ${rejectionSamples[reason]})")
+		}
+	}
+
+	return filtered
 }
+
+val python3Candidates = listOf(
+	"python3",
+	"/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+	"/usr/local/bin/python3",
+	"/usr/bin/python3"
+)
+
+val resolvedPython3: String by lazy {
+	for (candidate in python3Candidates) {
+		val check = try {
+			ProcessBuilder(candidate, "-c", "from recipe_scrapers import scrape_html; print('ok')")
+				.redirectErrorStream(true)
+				.start()
+		} catch (_: Exception) {
+			continue
+		}
+		val out = check.inputStream.bufferedReader().readText().trim()
+		if (check.waitFor() == 0 && out == "ok") {
+			println("Using Python: $candidate")
+			return@lazy candidate
+		}
+	}
+	error("No python3 with recipe-scrapers found. Install with: python3 -m pip install recipe-scrapers")
+}
+
+fun findPython3WithRecipeScrapers(): String = resolvedPython3
 
 fun scrapeRecipeWithPython(url: String): RecipeData? {
 	val py = """
 	import json
+	import re
 	import sys
-	from recipe_scrapers import scrape_me
+	import urllib.request
+	from recipe_scrapers import scrape_html
 
 	url = sys.argv[1]
 	try:
-		try:
-			s = scrape_me(url, wild_mode=True)
-		except TypeError:
-			s = scrape_me(url)
+		req = urllib.request.Request(url, headers={
+			"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+		})
+		html = urllib.request.urlopen(req, timeout=30).read().decode("utf-8")
+		html = re.sub(
+			r'<script[^>]*type=["\x27]application/ld\+json["\x27][^>]*>\s*</script>',
+			"",
+			html,
+		)
+		s = scrape_html(html, org_url=url)
 
 		def safe(name, default=None):
 			fn = getattr(s, name, None)
@@ -357,13 +466,16 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 				return default
 
 		title = (safe("title", "") or "").strip()
+		title_missing = not title
 
 		ingredient_groups = safe("ingredient_groups")
 		ingredients = safe("ingredients", []) or []
 		if ingredient_groups is None:
 			ingredient_groups = [(None, ingredients)]
 		else:
-			# Normalize to list of (name, [ingredients]) and filter blanks
+			# Normalize to list of (name, [ingredients]) and filter blanks.
+			# If the recipe provides no grouped ingredients, fall back to the
+			# flat ingredients list so we still consider it valid.
 			normalized = []
 			try:
 				for g in ingredient_groups:
@@ -383,7 +495,13 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 					normalized.append((name, items))
 			except Exception:
 				normalized = [(None, [str(x).strip() for x in ingredients if str(x).strip()])]
+			if not normalized and ingredients:
+				normalized = [(None, [str(x).strip() for x in ingredients if str(x).strip()])]
 			ingredient_groups = normalized
+
+		if title_missing and ingredient_groups:
+			title = "Untitled Recipe"
+			print("__SCRAPE_NOTE__:missing title, using fallback title")
 
 		instruction_list = safe("instruction_list")
 		if instruction_list is None:
@@ -399,8 +517,8 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 		cuisine = safe("cuisine")
 		category = safe("category")
 
-		if not title or not ingredient_groups:
-			print("", end="")
+		if not ingredient_groups:
+			print("__SCRAPE_NO_DATA__:missing ingredients")
 			raise SystemExit(0)
 
 		payload = {
@@ -429,7 +547,8 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 		raise SystemExit(2)
 	""".trimIndent()
 
-	val command = listOf("python3", "-c", py, url)
+	val python3 = findPython3WithRecipeScrapers()
+	val command = listOf(python3, "-c", py, url)
 	val process = ProcessBuilder(command)
 		.redirectErrorStream(true)
 		.start()
@@ -440,11 +559,19 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 		if (output.contains("No module named 'recipe_scrapers'")) {
 			error("Missing Python dependency: recipe-scrapers. Install with: python3 -m pip install recipe-scrapers")
 		}
-		println("Python scrape failed for $url (exit=$code): ${output.take(300)}")
+		println("SCRAPE FAILED [exit=$code] $url")
+		println("  Reason: ${output.take(400)}")
 	} else if (output.startsWith("__SCRAPE_ERROR__:")) {
-		println("Python scrape failed for $url: ${output.removePrefix("__SCRAPE_ERROR__:").take(300)}")
+		val reason = output.removePrefix("__SCRAPE_ERROR__:").take(400)
+		println("SCRAPE ERROR $url")
+		println("  Reason: $reason")
+	} else if (output.startsWith("__SCRAPE_NO_DATA__")) {
+		val reason = output.removePrefix("__SCRAPE_NO_DATA__:").take(400)
+		println("SCRAPE NO DATA $url")
+		println("  Reason: $reason")
 	} else if (output.isBlank()) {
-		println("Python returned blank output for $url")
+		println("SCRAPE BLANK $url")
+		println("  Reason: Python returned no output")
 	} else {
 		return parseRecipe(output)
 	}
@@ -452,44 +579,31 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 }
 
 fun extractRecipeLinksFromCollectionPage(pageUrl: String, timeoutSeconds: Long): List<String> {
-	val base = try {
-		URI(pageUrl)
-	} catch (_: Exception) {
-		return emptyList()
-	}
-
-	val request = HttpRequest.newBuilder()
-		.uri(base)
-		.timeout(java.time.Duration.ofSeconds(timeoutSeconds))
-		.GET()
-		.build()
-
-	val response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
-	if (response.statusCode() !in 200..299) {
-		return emptyList()
-	}
-
+	val pageData = fetchPageWithValidation(pageUrl, timeoutSeconds) ?: return emptyList()
+	val baseHost = pageData.base.host?.removePrefix("www.") ?: return emptyList()
 	val hrefRegex = Regex("""href\s*=\s*"([^\"]+)"""", RegexOption.IGNORE_CASE)
+	val siteConfig = knownWebsites.values.find { URI(it.url).host?.removePrefix("www.") == baseHost }
+	val linkPattern = siteConfig?.recipePattern ?: Regex("/recipe/", RegexOption.IGNORE_CASE)
 	val seen = mutableSetOf<String>()
 	val links = mutableListOf<String>()
 
-	hrefRegex.findAll(response.body()).forEach { match ->
+	hrefRegex.findAll(pageData.body).forEach { match ->
 		val raw = match.groupValues[1].trim()
-		if (raw.isBlank()) return@forEach
-		if (raw.startsWith("#") || raw.startsWith("javascript:")) return@forEach
+		if (raw.isBlank() || raw.startsWith("#") || raw.startsWith("javascript:")) {
+			return@forEach
+		}
 
 		val resolved = try {
-			base.resolve(raw)
+			pageData.base.resolve(raw)
 		} catch (_: Exception) {
 			return@forEach
 		}
 
-		val host = resolved.host?.removePrefix("www.") ?: return@forEach
-		val baseHost = base.host?.removePrefix("www.") ?: return@forEach
-		if (!host.contains(baseHost)) return@forEach
+		val resolvedHost = resolved.host?.removePrefix("www.") ?: return@forEach
+		if (!resolvedHost.contains(baseHost)) return@forEach
 
-		val path = resolved.path?.lowercase(Locale.getDefault()) ?: return@forEach
-		if (!path.contains("/recipe/")) return@forEach
+		val path = resolved.path ?: return@forEach
+		if (!linkPattern.containsMatchIn(path)) return@forEach
 
 		val normalized = resolved.toString().substringBefore('#')
 		if (seen.add(normalized)) {
@@ -498,6 +612,40 @@ fun extractRecipeLinksFromCollectionPage(pageUrl: String, timeoutSeconds: Long):
 	}
 
 	return links
+}
+
+private data class PageData(val base: URI, val body: String)
+
+private fun fetchPageWithValidation(pageUrl: String, timeoutSeconds: Long): PageData? {
+	val (base, request) = resolvePageUri(pageUrl, timeoutSeconds) ?: return null
+
+	val response = try {
+		HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+	} catch (_: Exception) {
+		return null
+	}
+
+	return if (response.statusCode() in 200..299) {
+		PageData(base, response.body())
+	} else {
+		null
+	}
+}
+
+private fun resolvePageUri(pageUrl: String, timeoutSeconds: Long): Pair<URI, HttpRequest>? {
+	val base = try {
+		URI(pageUrl)
+	} catch (_: URISyntaxException) {
+		return null
+	}
+
+	val request = HttpRequest.newBuilder()
+		.uri(base)
+		.timeout(java.time.Duration.ofSeconds(timeoutSeconds))
+		.GET()
+		.build()
+
+	return base to request
 }
 
 fun parseInt(value: String?): Int? = value?.trim()?.toIntOrNull()
@@ -574,39 +722,41 @@ fun ensureSchema(connection: Connection) {
 	CREATE TABLE IF NOT EXISTS recipes (
 		id SERIAL PRIMARY KEY,
 		title VARCHAR(255) NOT NULL,
+		description TEXT,
 		instructions TEXT,
 		total_time INTEGER,
 		prep_time INTEGER,
 		cook_time INTEGER,
-		yields VARCHAR(100),
-		image_url TEXT,
+		yields VARCHAR(255),
+		image_url VARCHAR(512),
 		language VARCHAR(10) DEFAULT 'en',
-		cuisine VARCHAR(100),
-		category VARCHAR(100),
+		cuisine VARCHAR(255),
+		category VARCHAR(255),
 		source_url TEXT UNIQUE,
+		measurement_system VARCHAR(32),
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
 
 	CREATE TABLE IF NOT EXISTS ingredient_groups (
 		id SERIAL PRIMARY KEY,
-		recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-		name TEXT,
-		order_index INTEGER
+		recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+		name VARCHAR(255),
+		order_index INTEGER NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS ingredients (
 		id SERIAL PRIMARY KEY,
-		ingredient_group_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-		ingredient TEXT NOT NULL,
-		order_index INTEGER
+		ingredient_group_id INTEGER NOT NULL REFERENCES ingredient_groups(id) ON DELETE CASCADE,
+		ingredient VARCHAR(255),
+		order_index INTEGER NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS instruction_steps (
 		id SERIAL PRIMARY KEY,
-		recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-		step TEXT NOT NULL,
-		order_index INTEGER
+		recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+		step TEXT,
+		order_index INTEGER NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS nutrition (
@@ -663,8 +813,8 @@ fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<String>>>)
 	}
 }
 
-fun saveRecipe(connection: Connection, recipe: RecipeData): Boolean {
-	if (isDuplicate(connection, recipe.sourceUrl)) return false
+fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
+	if (isDuplicate(connection, recipe.sourceUrl)) return null
 	val measurementSystem = detectMeasurementSystem(recipe.ingredientGroups)
 
 	val recipeId = connection.prepareStatement(
@@ -763,7 +913,7 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Boolean {
 	}
 
 	connection.commit()
-	return true
+	return recipeId
 }
 
 fun buildJdbcUrl(config: Config): String {
@@ -830,28 +980,66 @@ private fun collectExistingUrls(connection: Connection, urls: List<String>): Set
 	}
 }
 
-fun runPostgresImport(config: Config, recipes: List<RecipeData>) {
+fun importJsonFilesToDb(config: Config, recipesDir: File) {
+	val jsonFiles = recipesDir.walkTopDown()
+		.filter { it.isFile && it.extension == "json" }
+		.toList()
+		.sortedBy { it.name }
+
+	if (jsonFiles.isEmpty()) {
+		println("No JSON files found under ${recipesDir.path}")
+		return
+	}
+
+	println("Found ${jsonFiles.size} JSON files to import")
+
 	openConnection(config).use { connection ->
 		connection.autoCommit = false
 		ensureSchema(connection)
-
-		var imported = 0
-		var duplicates = 0
-		for (recipe in recipes) {
-			val inserted = saveRecipe(connection, recipe)
-			if (inserted) imported++ else duplicates++
-		}
-		println("Database import complete. Imported=$imported Duplicates=$duplicates")
+		importFilesToConnection(connection, jsonFiles)
 	}
 }
 
-fun writeNdjson(targetFile: File, recipes: List<RecipeData>) {
-	targetFile.parentFile?.mkdirs()
-	targetFile.bufferedWriter().use { writer ->
-		recipes.forEach { recipe ->
-			writer.write(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
-			writer.newLine()
+fun importFilesToConnection(connection: Connection, jsonFiles: List<File>) {
+	var imported = 0
+	var duplicates = 0
+	var errors = 0
+	for (file in jsonFiles) {
+		val outcome = processRecipeFile(connection, file)
+		when (outcome) {
+			ImportOutcome.SUCCESS -> {
+				imported++
+				if (imported % 100 == 0) println("Imported $imported so far...")
+			}
+			ImportOutcome.DUPLICATE -> duplicates++
+			ImportOutcome.ERROR -> errors++
 		}
+	}
+	println("Import complete. Imported=$imported Duplicates=$duplicates Errors=$errors")
+}
+
+private enum class ImportOutcome {
+	SUCCESS, DUPLICATE, ERROR
+}
+
+private fun processRecipeFile(connection: Connection, file: File): ImportOutcome {
+	val recipe = safeParseRecipeFile(file)
+	return when {
+		recipe == null -> ImportOutcome.ERROR
+		saveRecipe(connection, recipe) != null -> ImportOutcome.SUCCESS
+		else -> ImportOutcome.DUPLICATE
+	}
+}
+
+private fun safeParseRecipeFile(file: File): RecipeData? {
+	return try {
+		parseRecipe(file.readText())
+	} catch (e: IOException) {
+		println("IMPORT ERROR ${file.path}: ${e.message?.take(200)}")
+		null
+	} catch (e: SerializationException) {
+		println("IMPORT ERROR ${file.path}: ${e.message?.take(200)}")
+		null
 	}
 }
 
@@ -860,12 +1048,22 @@ val websiteUrl = normalizeWebsite(config.website)
 val outputRoot = File(expandPath(config.outputDir)).apply { mkdirs() }
 val recipesDir = File(outputRoot, "recipes").apply { mkdirs() }
 
+if (config.mode == "json") {
+	println("Import mode: reading JSON files from ${recipesDir.path} into database")
+	importJsonFilesToDb(config, recipesDir)
+} else {
 println("Discovering URLs from $websiteUrl")
 val discovered = extractUrls(config, websiteUrl)
 println("Discovered ${discovered.size} candidate URLs")
 
+// `discovered` URLs are the raw set returned by the discovery service. They may
+// include listing pages, unrelated pages, duplicates, or pages from a different
+// subdomain. `filterRecipeUrls` applies host and path filtering to keep only
+// likely recipe pages for the configured website.
 val filtered = filterRecipeUrls(discovered, websiteUrl, config.recipeUrlPattern)
-val selectedAfterDbPrecheck = if (config.mode == "postgres" && config.precheckDb) {
+println("Filtered to ${filtered.size} recipe URLs after host/pattern filtering")
+
+val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb) {
 	val existing = precheckExistingUrls(config, filtered)
 	if (existing.isNotEmpty()) {
 		println("Pre-check: skipping ${existing.size} URLs already in database")
@@ -876,12 +1074,23 @@ val selectedAfterDbPrecheck = if (config.mode == "postgres" && config.precheckDb
 	if (config.maxUrls > 0) filtered.take(config.maxUrls) else filtered
 }
 
+// At this point we have already filtered discovered URLs down to recipe candidates.
+// If `selectedAfterDbPrecheck` is empty, it means either no URLs passed the host/pattern
+// rules or the database precheck excluded all remaining candidates.
 val queue = ArrayDeque(selectedAfterDbPrecheck)
 val processed = mutableSetOf<String>()
 println("Processing ${selectedAfterDbPrecheck.size} filtered recipe URLs")
 
-val scraped = mutableListOf<RecipeData>()
-var savedIndex = 0
+val dbConnection: Connection? = if (config.mode == "web") {
+	openConnection(config).also { conn ->
+		conn.autoCommit = false
+		ensureSchema(conn)
+	}
+} else {
+	null
+}
+
+val scraped = mutableListOf<Pair<RecipeData, Int?>>()
 while (queue.isNotEmpty()) {
 	val url = queue.removeFirst()
 	if (processed.add(url)) {
@@ -897,12 +1106,28 @@ while (queue.isNotEmpty()) {
 				println("Skipped: $url")
 			}
 		} else {
-			scraped += recipe
-			savedIndex += 1
-			val name = "%04d-%s.json".format(savedIndex, slugify(recipe.title).take(100))
-			val file = File(recipesDir, name)
-			file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
-			println("Saved: ${file.path}")
+			val dbId = dbConnection?.let { saveRecipe(it, recipe) }
+			scraped += (recipe to dbId)
+
+			val siteName = try {
+				URI(recipe.sourceUrl).host?.removePrefix("www.")?.lowercase(Locale.getDefault())?.ifBlank { "unknown" }
+			} catch (_: Exception) {
+				null
+			} ?: "unknown"
+			val siteDir = File(recipesDir, siteName).apply { mkdirs() }
+			if (dbId != null) {
+				val name = "%05d-%s.json".format(dbId, slugify(recipe.title).take(100))
+				val file = File(siteDir, name)
+				file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
+				println("Saved [db=$dbId]: ${file.path}")
+			} else if (dbConnection != null) {
+				println("Duplicate in DB, skipped file: ${recipe.sourceUrl}")
+			} else {
+				val name = "%s.json".format(slugify(recipe.title).take(100))
+				val file = File(siteDir, name)
+				file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
+				println("Saved: ${file.path}")
+			}
 
 			if (config.maxUrls > 0 && scraped.size >= config.maxUrls) {
 				println("Reached --max-urls limit (${config.maxUrls})")
@@ -913,12 +1138,11 @@ while (queue.isNotEmpty()) {
 	}
 }
 
+dbConnection?.close()
+
 println("Successfully scraped ${scraped.size} recipes")
 
-if (config.mode == "postgres") {
-	runPostgresImport(config, scraped)
-} else {
-	val importPath = config.importFile ?: File(outputRoot, "recipes.ndjson").path
-	writeNdjson(File(importPath), scraped)
-	println("Wrote NDJSON import file: $importPath")
+val alreadyInserted = scraped.count { (_, id) -> id != null }
+val duplicates = scraped.size - alreadyInserted
+println("Database import complete. Imported=$alreadyInserted Duplicates=$duplicates")
 }
