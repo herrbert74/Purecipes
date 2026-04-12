@@ -30,6 +30,8 @@ import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.feature.recipedetails.data.repository.RecipeDetailsDataModule
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.search.data.repository.SearchDataModule
+import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.settings.data.repository.SettingsDataModule
 import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
@@ -106,6 +108,10 @@ interface WasmAppGraph :
 	val sendTestNotificationUseCase: SendTestNotificationUseCase
 
 	val saveCreatedRecipeUseCase: SaveCreatedRecipeUseCase
+
+	val getSearchFiltersUseCase: GetSearchFiltersUseCase
+
+	val saveSearchFiltersUseCase: SaveSearchFiltersUseCase
 
 	val searchRecipesUseCase: SearchRecipesUseCase
 }

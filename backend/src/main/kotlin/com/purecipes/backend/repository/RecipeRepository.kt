@@ -1,11 +1,13 @@
 package com.purecipes.backend.repository
 
+import com.purecipes.shared.domain.model.CookingTimeRange
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
+import com.purecipes.shared.domain.model.SearchRequest
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
@@ -29,6 +31,93 @@ class RecipeRepository(
 		""".trimIndent()
 
 		return searchRecipes(sql, like, limit)
+	}
+
+	fun searchWithFilters(request: SearchRequest): List<RecipeSummary> {
+		val conditions = mutableListOf<String>()
+		val params = mutableListOf<Any>()
+		val filters = request.filters
+
+		if (request.query.isNotBlank()) {
+			val like = "%${request.query.trim().lowercase()}%"
+			conditions.add("(LOWER(r.title) LIKE ? OR LOWER(r.cuisine) LIKE ?)")
+			params.add(like)
+			params.add(like)
+		}
+
+		if (filters.cuisines.isNotEmpty() && filters.cuisines.size < Cuisine.entries.size) {
+			val placeholders = filters.cuisines.joinToString(",") { "?" }
+			conditions.add("r.cuisine IN ($placeholders)")
+			filters.cuisines.forEach { params.add(it.displayName) }
+		}
+
+		if (filters.cookingTimeRanges.isNotEmpty() && filters.cookingTimeRanges.size < CookingTimeRange.entries.size) {
+			val timeParts = filters.cookingTimeRanges.map { range ->
+				when (range) {
+					CookingTimeRange.UNDER_15 -> "r.total_time <= 15"
+					CookingTimeRange.UNDER_30 -> "r.total_time <= 30"
+					CookingTimeRange.UNDER_60 -> "r.total_time <= 60"
+					CookingTimeRange.OVER_60 -> "r.total_time > 60"
+				}
+			}
+			conditions.add("(${timeParts.joinToString(" OR ")})")
+		}
+
+		if (filters.includeIngredients.isNotEmpty()) {
+			val parts = filters.includeIngredients.map {
+				"""
+				EXISTS (
+					SELECT 1 FROM ingredient_groups ig
+					JOIN ingredients i ON i.ingredient_group_id = ig.id
+					WHERE ig.recipe_id = r.id AND LOWER(i.ingredient) LIKE ?
+				)
+				""".trimIndent()
+			}
+			conditions.add("(${parts.joinToString(" OR ")})")
+			filters.includeIngredients.forEach { ingredient ->
+				params.add("%${ingredient.trim().lowercase()}%")
+			}
+		}
+
+		filters.excludeIngredients.forEach { ingredient ->
+			val like = "%${ingredient.trim().lowercase()}%"
+			conditions.add(
+				"""
+				NOT EXISTS (
+					SELECT 1 FROM ingredient_groups ig
+					JOIN ingredients i ON i.ingredient_group_id = ig.id
+					WHERE ig.recipe_id = r.id AND LOWER(i.ingredient) LIKE ?
+				)
+				""".trimIndent(),
+			)
+			params.add(like)
+		}
+
+		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
+		val limit = request.limit.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
+
+		val sql = """
+			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
+			FROM recipes r
+			$whereClause
+			GROUP BY r.id
+			ORDER BY r.created_at DESC
+			LIMIT ?
+		""".trimIndent()
+
+		return dataSource.connection.use { conn ->
+			conn.prepareStatement(sql).use { ps ->
+				params.forEachIndexed { index, param ->
+					when (param) {
+						is String -> ps.setString(index + 1, param)
+						is Int -> ps.setInt(index + 1, param)
+						else -> error("Unsupported parameter type: ${param::class}")
+					}
+				}
+				ps.setInt(params.size + 1, limit)
+				return@use executeQuery(ps)
+			}
+		}
 	}
 
 	fun getRecipeDetails(recipeId: Int, userId: Long? = null): RecipeDetails? = dataSource.connection.use { conn ->
@@ -545,6 +634,7 @@ class RecipeRepository(
 
 	private companion object {
 
+		const val SEARCH_WITH_FILTERS_MAX_LIMIT = 200
 		const val FIRST_PARAMETER_INDEX = 1
 		const val SECOND_PARAMETER_INDEX = 2
 		const val THIRD_PARAMETER_INDEX = 3

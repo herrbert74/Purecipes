@@ -3,6 +3,8 @@ package com.purecipes.backend.repository
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeFormatHandling
+import com.purecipes.shared.domain.model.SearchFilters
+import kotlinx.serialization.json.Json
 import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
@@ -34,6 +36,44 @@ class SettingsRepository(
 				conn.rollback()
 			}
 			conn.autoCommit = originalAutoCommit
+		}
+	}
+
+	fun getSearchFilters(userId: Long): SearchFilters {
+		return dataSource.connection.use { conn ->
+			loadSearchFilters(conn, userId)
+		}
+	}
+
+	fun saveSearchFilters(userId: Long, filters: SearchFilters): SearchFilters {
+		val json = Json.encodeToString(SearchFilters.serializer(), filters)
+		dataSource.connection.use { conn ->
+			val updatedRows = conn.prepareStatement(UPDATE_SEARCH_FILTERS_SQL).use { ps ->
+				ps.setString(FIRST_PARAMETER_INDEX, json)
+				ps.setLong(SECOND_PARAMETER_INDEX, userId)
+				ps.executeUpdate()
+			}
+			if (updatedRows == 0) {
+				conn.prepareStatement(INSERT_SEARCH_FILTERS_SQL).use { ps ->
+					ps.setLong(FIRST_PARAMETER_INDEX, userId)
+					ps.setString(SECOND_PARAMETER_INDEX, json)
+					ps.executeUpdate()
+				}
+			}
+		}
+		return filters
+	}
+
+	private fun loadSearchFilters(conn: Connection, userId: Long): SearchFilters {
+		return conn.prepareStatement(GET_SEARCH_FILTERS_SQL).use { ps ->
+			ps.setLong(FIRST_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs ->
+				if (rs.next()) {
+					Json.decodeFromString<SearchFilters>(rs.getString("filters_json"))
+				} else {
+					SearchFilters()
+				}
+			}
 		}
 	}
 
@@ -157,6 +197,24 @@ class SettingsRepository(
 		const val INSERT_SEEN_RECIPE_ID_SQL = """
 			INSERT INTO measurement_preference_seen_recipes (user_id, recipe_id)
 			VALUES (?, ?)
+		"""
+
+		const val GET_SEARCH_FILTERS_SQL = """
+			SELECT filters_json
+			FROM search_filters
+			WHERE user_id = ?
+		"""
+
+		const val UPDATE_SEARCH_FILTERS_SQL = """
+			UPDATE search_filters
+			SET filters_json = ?,
+				updated_at = CURRENT_TIMESTAMP
+			WHERE user_id = ?
+		"""
+
+		const val INSERT_SEARCH_FILTERS_SQL = """
+			INSERT INTO search_filters (user_id, filters_json, updated_at)
+			VALUES (?, ?, CURRENT_TIMESTAMP)
 		"""
 	}
 }

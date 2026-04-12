@@ -15,11 +15,14 @@ import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeFormatHandling
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.SearchFilters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -31,6 +34,8 @@ internal class RecipeSearchViewModel(
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val searchRecipes: SearchRecipesUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val getSearchFilters: GetSearchFiltersUseCase,
+	private val saveSearchFilters: SaveSearchFiltersUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -46,16 +51,26 @@ internal class RecipeSearchViewModel(
 	var isSearchBarActive by mutableStateOf(false)
 		private set
 
+	var isFilterSheetVisible by mutableStateOf(false)
+		private set
+
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
 
 	var measurementFilterLabel by mutableStateOf<String?>(null)
 		private set
 
+	var activeFilters by mutableStateOf(SearchFilters())
+		private set
+
 	val recipes = mutableStateListOf<RecipeSummary>()
 
 	init {
-		searchNow()
+		scope.launch {
+			val saved = getSearchFilters()
+			activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
+			doSearch()
+		}
 	}
 
 	fun onSearchQueryChange(query: String) {
@@ -66,20 +81,38 @@ internal class RecipeSearchViewModel(
 		isSearchBarActive = expanded
 	}
 
-	fun searchNow() {
+	fun onFilterButtonClick() {
+		isFilterSheetVisible = true
+	}
+
+	fun onFilterSheetDismiss() {
+		isFilterSheetVisible = false
+	}
+
+	fun onFiltersChange(filters: SearchFilters) {
+		activeFilters = filters
 		scope.launch {
-			isSearching = true
-			errorMessage = null
-			val preferences = getMeasurementPreferences()
-			val outcome = searchRecipes(searchQuery)
-			recipes.clear()
-			recipes.addAll(filterRecipesForMeasurementPreferences(outcome.get() ?: emptyList(), preferences))
-			measurementFilterLabel = preferences.filterSummary()
-			trackEvent(AnalyticsEvent.SearchPerformed(query = searchQuery, resultCount = recipes.size))
-			errorMessage = outcome.getError()?.message
-			isSearching = false
-			isSearchBarActive = false
+			saveSearchFilters(filters)
+			doSearch()
 		}
+	}
+
+	fun searchNow() {
+		scope.launch { doSearch() }
+	}
+
+	private suspend fun doSearch() {
+		isSearching = true
+		errorMessage = null
+		val preferences = getMeasurementPreferences()
+		val outcome = searchRecipes(searchQuery, activeFilters)
+		recipes.clear()
+		recipes.addAll(filterRecipesForMeasurementPreferences(outcome.get() ?: emptyList(), preferences))
+		measurementFilterLabel = preferences.filterSummary()
+		trackEvent(AnalyticsEvent.SearchPerformed(query = searchQuery, resultCount = recipes.size))
+		errorMessage = outcome.getError()?.message
+		isSearching = false
+		isSearchBarActive = false
 	}
 
 	override fun onCleared() {
@@ -107,6 +140,8 @@ internal fun recipeSearchViewModel(
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	trackEvent: TrackEventUseCase,
+	getSearchFilters: GetSearchFiltersUseCase,
+	saveSearchFilters: SaveSearchFiltersUseCase,
 ): RecipeSearchViewModel {
 	val viewModelKey = buildString {
 		append("RecipeSearchViewModel:")
@@ -115,6 +150,10 @@ internal fun recipeSearchViewModel(
 		append(getMeasurementPreferences.hashCode())
 		append(':')
 		append(trackEvent.hashCode())
+		append(':')
+		append(getSearchFilters.hashCode())
+		append(':')
+		append(saveSearchFilters.hashCode())
 	}
 	return viewModel(
 		key = viewModelKey,
@@ -125,6 +164,8 @@ internal fun recipeSearchViewModel(
 					getMeasurementPreferences = getMeasurementPreferences,
 					searchRecipes = searchRecipes,
 					trackEvent = trackEvent,
+					getSearchFilters = getSearchFilters,
+					saveSearchFilters = saveSearchFilters,
 				)
 			}
 		},

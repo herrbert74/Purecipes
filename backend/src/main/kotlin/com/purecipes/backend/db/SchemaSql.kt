@@ -165,3 +165,11 @@ internal const val NUTRITION_TABLE_SQL = """
 		sodium DECIMAL(10,2)
 	)
 """
+
+internal const val SEARCH_FILTERS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS search_filters (
+		user_id BIGINT PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE,
+		filters_json TEXT NOT NULL,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""

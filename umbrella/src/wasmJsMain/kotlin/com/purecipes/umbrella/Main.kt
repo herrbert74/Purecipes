@@ -39,6 +39,8 @@ fun main() {
 			sendTestNotification = graph.sendTestNotificationUseCase,
 			saveCreatedRecipe = graph.saveCreatedRecipeUseCase,
 			trackEvent = graph.trackEventUseCase,
-		)
+		getSearchFilters = graph.getSearchFiltersUseCase,
+		saveSearchFilters = graph.saveSearchFiltersUseCase,
+	)
 	})
 }
