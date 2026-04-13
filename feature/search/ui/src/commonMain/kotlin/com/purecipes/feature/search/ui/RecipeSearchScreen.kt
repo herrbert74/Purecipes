@@ -183,6 +183,13 @@ private fun SearchResultsContent(
 			verticalArrangement = Arrangement.spacedBy(8.dp),
 			contentPadding = PaddingValues(bottom = 16.dp),
 		) {
+			item {
+				Text(
+					text = "${recipes.size} recipes found",
+					style = MaterialTheme.typography.labelMedium,
+					color = MaterialTheme.colorScheme.onSurfaceVariant,
+				)
+			}
 			items(recipes, key = { it.id }) { recipe ->
 				RecipeRow(
 					recipe = recipe,
