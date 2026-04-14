@@ -8,4 +8,12 @@ kotlin {
 		compileSdk = 36
 		minSdk = 24
 	}
+
+	sourceSets {
+		commonTest {
+			dependencies {
+				implementation(libs.kotlinx.coroutinesTest)
+			}
+		}
+	}
 }

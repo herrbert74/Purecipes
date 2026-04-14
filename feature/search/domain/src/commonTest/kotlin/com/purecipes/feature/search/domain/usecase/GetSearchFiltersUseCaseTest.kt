@@ -1,0 +1,41 @@
+package com.purecipes.feature.search.domain.usecase
+
+import com.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
+import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.SearchFilters
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class GetSearchFiltersUseCaseTest {
+
+	@Test
+	fun `returns filters from repository`() = runTest {
+		val expected = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+		val repository = FakeRecipeSearchFilterRepository(expected)
+		val useCase = GetSearchFiltersUseCase(repository)
+
+		val result = useCase()
+
+		assertEquals(expected, result)
+	}
+
+	@Test
+	fun `returns empty filters when repository has none`() = runTest {
+		val repository = FakeRecipeSearchFilterRepository(SearchFilters())
+		val useCase = GetSearchFiltersUseCase(repository)
+
+		val result = useCase()
+
+		assertEquals(SearchFilters(), result)
+	}
+
+	private class FakeRecipeSearchFilterRepository(
+		private val filters: SearchFilters = SearchFilters(),
+	) : RecipeSearchFilterRepository {
+
+		override suspend fun getFilters(): SearchFilters = filters
+
+		override suspend fun saveFilters(filters: SearchFilters) = Unit
+	}
+}
