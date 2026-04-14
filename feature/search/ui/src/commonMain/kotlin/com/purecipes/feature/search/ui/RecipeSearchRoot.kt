@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 
 @Composable
@@ -13,6 +15,8 @@ fun RecipeSearchRoot(
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	trackEvent: TrackEventUseCase,
+	getSearchFilters: GetSearchFiltersUseCase,
+	saveSearchFilters: SaveSearchFiltersUseCase,
 ) {
 	MaterialTheme {
 		RecipeSearchScreen(
@@ -20,6 +24,8 @@ fun RecipeSearchRoot(
 			getMeasurementPreferences = getMeasurementPreferences,
 			searchRecipes = searchRecipes,
 			trackEvent = trackEvent,
+			getSearchFilters = getSearchFilters,
+			saveSearchFilters = saveSearchFilters,
 		)
 	}
 }

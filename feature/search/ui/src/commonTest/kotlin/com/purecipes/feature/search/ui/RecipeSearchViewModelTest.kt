@@ -7,14 +7,19 @@ import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.repository.MeasurementPreferencesRepository
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
+import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,13 +49,7 @@ class RecipeSearchViewModelTest {
 				),
 			),
 		)
-		val viewModel = RecipeSearchViewModel(
-			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
-			searchRecipes = SearchRecipesUseCase(repository),
-			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-			coroutineScope = this,
-		)
+		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
 
 		advanceUntilIdle()
 
@@ -67,13 +66,7 @@ class RecipeSearchViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Err(Failure.ServerError("Search failed")),
 		)
-		val viewModel = RecipeSearchViewModel(
-			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
-			searchRecipes = SearchRecipesUseCase(repository),
-			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-			coroutineScope = this,
-		)
+		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
 
 		advanceUntilIdle()
 
@@ -81,15 +74,115 @@ class RecipeSearchViewModelTest {
 		assertEquals("Search failed", viewModel.errorMessage)
 	}
 
+	@Test
+	fun `init uses default filters when saved filters are empty`() = runTest {
+		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
+		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
+
+		advanceUntilIdle()
+
+		assertFalse(viewModel.activeFilters.isEmpty)
+		assertEquals(SearchFilters.default(), viewModel.activeFilters)
+	}
+
+	@Test
+	fun `init uses saved filters when they are not empty`() = runTest {
+		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
+		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
+
+		advanceUntilIdle()
+
+		assertEquals(saved, viewModel.activeFilters)
+	}
+
+	@Test
+	fun `onFiltersChange updates active filters and saves them`() = runTest {
+		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
+		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
+		advanceUntilIdle()
+
+		val newFilters = SearchFilters(cuisines = setOf(Cuisine.CHINESE))
+		viewModel.onFiltersChange(newFilters)
+		advanceUntilIdle()
+
+		assertEquals(newFilters, viewModel.activeFilters)
+		assertEquals(newFilters, filterRepository.savedFilters)
+	}
+
+	@Test
+	fun `onFiltersChange triggers a new search`() = runTest {
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = searchRepository, coroutineScope = this)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+
+		viewModel.onFiltersChange(SearchFilters(cuisines = setOf(Cuisine.FRENCH)))
+		advanceUntilIdle()
+
+		assertEquals(searchCountAfterInit + 1, searchRepository.queries.size)
+	}
+
+	@Test
+	fun `filter sheet is hidden by default`() = runTest {
+		val viewModel = makeViewModel(coroutineScope = this)
+
+		assertFalse(viewModel.isFilterSheetVisible)
+	}
+
+	@Test
+	fun `onFilterButtonClick shows the filter sheet`() = runTest {
+		val viewModel = makeViewModel(coroutineScope = this)
+
+		viewModel.onFilterButtonClick()
+
+		assertTrue(viewModel.isFilterSheetVisible)
+	}
+
+	@Test
+	fun `onFilterSheetDismiss hides the filter sheet`() = runTest {
+		val viewModel = makeViewModel(coroutineScope = this)
+		viewModel.onFilterButtonClick()
+
+		viewModel.onFilterSheetDismiss()
+
+		assertFalse(viewModel.isFilterSheetVisible)
+	}
+
+	private fun makeViewModel(
+		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
+		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
+		coroutineScope: CoroutineScope? = null,
+	) = RecipeSearchViewModel(
+		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
+		searchRecipes = SearchRecipesUseCase(searchRepository),
+		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+		coroutineScope = coroutineScope,
+	)
+
 	private class FakeRecipeSearchRepository(
 		private val result: SearchOutcome<List<RecipeSummary>>,
 	) : RecipeSearchRepository {
 
 		val queries = mutableListOf<String>()
 
-		override suspend fun search(query: String): SearchOutcome<List<RecipeSummary>> {
+		override suspend fun search(query: String, filters: SearchFilters): SearchOutcome<List<RecipeSummary>> {
 			queries += query
 			return result
+		}
+	}
+
+	private class FakeRecipeSearchFilterRepository(
+		var savedFilters: SearchFilters = SearchFilters(),
+	) : RecipeSearchFilterRepository {
+
+		override suspend fun getFilters(): SearchFilters = savedFilters
+
+		override suspend fun saveFilters(filters: SearchFilters) {
+			savedFilters = filters
 		}
 	}
 
@@ -115,5 +208,4 @@ class RecipeSearchViewModelTest {
 
 		override suspend fun markMismatchNotificationSeen(recipeId: Int) = Unit
 	}
-
 }

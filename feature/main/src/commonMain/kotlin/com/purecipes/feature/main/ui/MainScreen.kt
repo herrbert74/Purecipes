@@ -56,6 +56,8 @@ import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
+import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
@@ -89,6 +91,8 @@ fun MainScreen(
 	getFavoriteRecipes: GetFavoriteRecipesUseCase,
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
+	getSearchFilters: GetSearchFiltersUseCase,
+	saveSearchFilters: SaveSearchFiltersUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
 	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
@@ -158,6 +162,8 @@ fun MainScreen(
 							modifier = Modifier.fillMaxSize(),
 							searchRecipes = searchRecipes,
 							trackEvent = trackEvent,
+							getSearchFilters = getSearchFilters,
+							saveSearchFilters = saveSearchFilters,
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}

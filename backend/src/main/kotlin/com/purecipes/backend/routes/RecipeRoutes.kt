@@ -5,6 +5,7 @@ import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.repository.RecipeRepository
 import com.purecipes.shared.domain.model.RecipeWriteRequest
+import com.purecipes.shared.domain.model.SearchRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.ContentConvertException
 import io.ktor.server.application.ApplicationCall
@@ -66,6 +67,12 @@ fun Route.recipeRoutes(
 				?: DEFAULT_RESULT_COUNT_LIMIT
 			val repo = RecipeRepository(dbProvider().dataSource)
 			call.respond(repo.searchByKeyword(query, limit))
+		}
+
+		post("/search") {
+			val searchRequest = call.receiveSearchRequestOrRespond() ?: return@post
+			val repo = RecipeRepository(dbProvider().dataSource)
+			call.respond(repo.searchWithFilters(searchRequest))
 		}
 
 		get("/{id}") {
@@ -154,6 +161,21 @@ private suspend fun ApplicationCall.receiveRecipeWriteRequestOrRespond(): Recipe
 			ErrorResponse(
 				message = "Invalid request",
 				detail = "Request body must contain a recipe payload",
+			),
+		)
+		null
+	}
+}
+
+private suspend fun ApplicationCall.receiveSearchRequestOrRespond(): SearchRequest? {
+	return try {
+		receive<SearchRequest>()
+	} catch (_: ContentConvertException) {
+		respond(
+			HttpStatusCode.BadRequest,
+			ErrorResponse(
+				message = "Invalid request",
+				detail = "Request body must contain a search request",
 			),
 		)
 		null

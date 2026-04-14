@@ -6,6 +6,8 @@ import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
+import com.purecipes.shared.domain.model.SearchFilters
+import com.purecipes.shared.domain.model.SearchRequest
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
@@ -22,6 +24,10 @@ interface PurecipesApi {
 		@Query("query") query: String,
 		@Query("limit") limit: Int = 25,
 	): List<RecipeSummary>
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("recipes/search")
+	suspend fun searchWithFilters(@Body request: SearchRequest): List<RecipeSummary>
 
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails
@@ -62,4 +68,11 @@ interface PurecipesApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@PUT("settings/measurement")
 	suspend fun saveMeasurementPreferences(@Body preferences: MeasurementPreferences): MeasurementPreferences
+
+	@GET("settings/search-filters")
+	suspend fun getSearchFilters(): SearchFilters
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@PUT("settings/search-filters")
+	suspend fun saveSearchFilters(@Body filters: SearchFilters): SearchFilters
 }

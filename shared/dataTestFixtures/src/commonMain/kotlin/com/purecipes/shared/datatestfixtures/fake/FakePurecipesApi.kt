@@ -9,6 +9,8 @@ import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
+import com.purecipes.shared.domain.model.SearchFilters
+import com.purecipes.shared.domain.model.SearchRequest
 
 class FakePurecipesApi(
 	var searchResult: List<RecipeSummary> = emptyList(),
@@ -17,6 +19,7 @@ class FakePurecipesApi(
 	initialMeasurementPreferences: MeasurementPreferences = MeasurementPreferences(
 		preferredSystem = MeasurementSystem.METRIC,
 	),
+	initialSearchFilters: SearchFilters = SearchFilters(),
 	private val session: AuthenticatedSession = defaultAuthenticatedSession(),
 ) : PurecipesApi {
 
@@ -26,17 +29,29 @@ class FakePurecipesApi(
 	var searchCalls: Int = 0
 		private set
 
+	var searchWithFiltersCalls: Int = 0
+		private set
+
 	val addedFavoriteIds = mutableListOf<Int>()
 	val removedFavoriteIds = mutableListOf<Int>()
 	val createdRecipeRequests = mutableListOf<RecipeWriteRequest>()
 	val updatedRecipeRequests = mutableListOf<Pair<Int, RecipeWriteRequest>>()
 	val savedMeasurementPreferences = mutableListOf<MeasurementPreferences>()
+	val savedSearchFiltersList = mutableListOf<SearchFilters>()
 
 	var measurementPreferences: MeasurementPreferences = initialMeasurementPreferences
 		private set
 
+	var searchFilters: SearchFilters = initialSearchFilters
+		private set
+
 	override suspend fun search(query: String, limit: Int): List<RecipeSummary> {
 		searchCalls += 1
+		return searchResult
+	}
+
+	override suspend fun searchWithFilters(request: SearchRequest): List<RecipeSummary> {
+		searchWithFiltersCalls += 1
 		return searchResult
 	}
 
@@ -82,6 +97,14 @@ class FakePurecipesApi(
 		savedMeasurementPreferences += preferences
 		measurementPreferences = preferences
 		return preferences
+	}
+
+	override suspend fun getSearchFilters(): SearchFilters = searchFilters
+
+	override suspend fun saveSearchFilters(filters: SearchFilters): SearchFilters {
+		savedSearchFiltersList += filters
+		searchFilters = filters
+		return filters
 	}
 
 	fun storeRecipe(recipe: RecipeDetails) {

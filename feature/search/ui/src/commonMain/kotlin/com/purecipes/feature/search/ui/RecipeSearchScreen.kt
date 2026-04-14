@@ -14,13 +14,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -35,6 +40,8 @@ import coil3.compose.AsyncImage
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -47,6 +54,8 @@ fun RecipeSearchScreen(
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	trackEvent: TrackEventUseCase,
+	getSearchFilters: GetSearchFiltersUseCase,
+	saveSearchFilters: SaveSearchFiltersUseCase,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
@@ -56,7 +65,19 @@ fun RecipeSearchScreen(
 		getMeasurementPreferences = getMeasurementPreferences,
 		searchRecipes = searchRecipes,
 		trackEvent = trackEvent,
+		getSearchFilters = getSearchFilters,
+		saveSearchFilters = saveSearchFilters,
 	)
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+	if (viewModel.isFilterSheetVisible) {
+		FilterBottomSheet(
+			filters = viewModel.activeFilters,
+			sheetState = sheetState,
+			onFiltersChange = viewModel::onFiltersChange,
+			onDismiss = viewModel::onFilterSheetDismiss,
+		)
+	}
 
 	Column(
 		modifier = modifier
@@ -95,6 +116,20 @@ fun RecipeSearchScreen(
 					placeholder = { Text("Search recipes") },
 					leadingIcon = {
 						Text("🔎")
+					},
+					trailingIcon = {
+						val hasActiveFilters = !viewModel.activeFilters.isEmpty
+						IconButton(onClick = viewModel::onFilterButtonClick) {
+							Icon(
+								imageVector = Icons.Default.FilterList,
+								contentDescription = "Open filters",
+								tint = if (hasActiveFilters) {
+									MaterialTheme.colorScheme.primary
+								} else {
+									MaterialTheme.colorScheme.onSurfaceVariant
+								},
+							)
+						}
 					},
 				)
 			},
@@ -148,6 +183,13 @@ private fun SearchResultsContent(
 			verticalArrangement = Arrangement.spacedBy(8.dp),
 			contentPadding = PaddingValues(bottom = 16.dp),
 		) {
+			item {
+				Text(
+					text = "${recipes.size} recipes found",
+					style = MaterialTheme.typography.labelMedium,
+					color = MaterialTheme.colorScheme.onSurfaceVariant,
+				)
+			}
 			items(recipes, key = { it.id }) { recipe ->
 				RecipeRow(
 					recipe = recipe,
