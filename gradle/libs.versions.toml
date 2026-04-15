@@ -10,14 +10,14 @@ targetSdkVersion = "36"
 
 #platform
 
-androidGradlePlugin = "9.1.0"
+androidGradlePlugin = "9.1.1"
 #androidGradlePlugin = "7.3.1" # For IntelliJ plugin runIde
 coroutines = "1.10.2"
 jdk = "21"
 kotlin = "2.3.20"
 kotlinx-collections = "0.4.0"
 kotlinx-datetime = "0.7.1-0.6.x-compat"
-kotlinx-serialization = "1.10.0"
+kotlinx-serialization = "1.11.0"
 ksp = "2.3.6"
 
 #other
@@ -25,7 +25,7 @@ ksp = "2.3.6"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
 androidx-composeBom = "2026.03.01"
-androidx-composeMaterial3 = "1.5.0-alpha16" #For alpha releases only
+androidx-composeMaterial3 = "1.5.0-alpha17" #For alpha releases only
 androidx-composeUiAndroidTest = "1.10.6"
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
@@ -40,7 +40,7 @@ androidx-testEspresso = "3.7.0"
 #androidx-work = "2.10.2"
 #autoBind = "2.0.0"
 babestudios-base = "3.2.1"
-buildKonfig = "0.17.1"
+buildKonfig = "0.18.0"
 #compose-screenshotTesting = "0.0.1-alpha09"
 #chucker = "4.2.0"
 coil = "3.4.0"
@@ -55,7 +55,7 @@ diamondedge-logging = "2.1.0"
 essenty = "2.5.0"
 h2 = "2.4.240"
 #facebook = "16.1.2"
-firebaseBom = "34.11.0"
+firebaseBom = "34.12.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
@@ -66,7 +66,7 @@ jetbrains-navigation3 = "1.1.0-SNAPSHOT+release-1-11"
 jUnit = "4.13.2"
 jUnit5 = "6.0.3"
 kmpauth = "2.5.0-alpha01"
-kmpnotifier = "1.5.0"
+kmpnotifier = "1.6.1"
 koin = "4.2.0"
 kotest = "6.1.11"
 kotlinResult = "2.3.1"
@@ -74,7 +74,7 @@ kotlinRetry = "2.0.2"
 ktor = "3.4.2"
 ktorfit = "2.7.2"
 metro = "0.13.2"
-mixpanelAndroid = "8.4.0"
+mixpanelAndroid = "8.5.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.3.0"
 multiplatform-settings = "1.3.0"
@@ -89,7 +89,7 @@ skiko = "0.9.43"
 #skie = "0.10.4"
 testcontainers = "2.0.4"
 uri-kmp = "0.0.21"
-usercentrics = "2.26.1"
+usercentrics = "2.26.2"
 core = "1.7.0"
 
 [libraries]
@@ -99,7 +99,7 @@ agp = { module = "com.android.tools.build:gradle", version.ref = "androidGradleP
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
 #androidx-activityKtx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-androidx-annotation = "androidx.annotation:annotation:1.9.1"
+androidx-annotation = "androidx.annotation:annotation:1.10.0"
 #androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 #androidx-appCompatResources = { group = "androidx.appcompat", name = "appcompat-resources", version.ref = "androidx-appcompat" }
 #androidx-browser = "androidx.browser:browser:1.8.0"
