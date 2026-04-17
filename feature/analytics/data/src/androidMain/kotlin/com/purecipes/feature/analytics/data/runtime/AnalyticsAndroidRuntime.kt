@@ -2,6 +2,7 @@ package com.purecipes.feature.analytics.data.runtime
 
 import android.app.Activity
 import android.content.Context
+import co.touchlab.crashkios.crashlytics.enableCrashlytics
 import java.lang.ref.WeakReference
 
 object AnalyticsAndroidRuntime {
@@ -12,6 +13,7 @@ object AnalyticsAndroidRuntime {
 
 	fun initialize(context: Context) {
 		applicationContext = context.applicationContext
+		enableCrashlytics()
 	}
 
 	fun onActivityStarted(activity: Activity) {

@@ -21,6 +21,7 @@ kotlin {
 		ios.deploymentTarget = "26.0"
 		podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
 		pod("FirebaseAnalytics")
+		pod("FirebaseCrashlytics")
 		pod("Mixpanel-swift") {
 			moduleName = "Mixpanel"
 		}
@@ -47,9 +48,16 @@ kotlin {
 		androidMain {
 			dependencies {
 				implementation(project.dependencies.platform(libs.firebaseBom))
+				implementation(libs.crashkios.crashlytics)
 				implementation(libs.firebaseAnalytics)
+				implementation(libs.firebaseCrashlytics)
 				implementation(libs.mixpanelAndroid)
 				implementation(libs.usercentricsUi)
+			}
+		}
+		iosMain {
+			dependencies {
+				implementation(libs.crashkios.crashlytics)
 			}
 		}
 	}

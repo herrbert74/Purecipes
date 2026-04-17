@@ -1,6 +1,7 @@
 plugins {
 	alias(libs.plugins.androidApplication)
 	alias(libs.plugins.googleServices)
+	alias(libs.plugins.crashlytics)
 	alias(libs.plugins.ksp)
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("dev.zacsweers.metro")
@@ -103,6 +104,8 @@ dependencies {
 	implementation(project(":feature:settings:data"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))
+	implementation(project.dependencies.platform(libs.firebaseBom))
+	implementation(libs.firebaseCrashlytics)
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
