@@ -21,4 +21,9 @@ data class RecipeDetails(
 	val cuisine: Cuisine? = null,
 	val measurementSystem: MeasurementSystem? = null,
 	val isFavorite: Boolean = false,
+	val mealType: MealType? = null,
+	val difficultyLevel: DifficultyLevel? = null,
+	val cookingMethod: CookingMethod? = null,
+	val calorieRange: CalorieRange? = null,
+	val dietaryPreferences: Set<DietaryPreference> = emptySet(),
 )

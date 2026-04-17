@@ -731,7 +731,7 @@ fun ensureSchema(connection: Connection) {
 		image_url VARCHAR(512),
 		language VARCHAR(10) DEFAULT 'en',
 		cuisine VARCHAR(255),
-		category VARCHAR(255),
+		meal_type VARCHAR(50),
 		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -829,7 +829,7 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 			image_url,
 			language,
 			cuisine,
-			category,
+			meal_type,
 			source_url,
 			measurement_system
 		)
