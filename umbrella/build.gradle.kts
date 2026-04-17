@@ -143,6 +143,7 @@ kotlin {
 		}
 		iosMain {
 			dependencies {
+				implementation(libs.crashkios.crashlytics)
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientDarwin)
 				implementation(libs.ktor.clientContentNegotiation)
