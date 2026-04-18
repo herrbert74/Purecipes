@@ -244,6 +244,7 @@ class RecipeRepository(
 					cookingMethod = rs.getNullableString("cooking_method"),
 					calorieRange = rs.getNullableString("calorie_range"),
 					dietaryPreferences = rs.getStringArray("dietary_preferences"),
+					tags = rs.getStringArray("tags"),
 				)
 			}
 		}
@@ -280,6 +281,7 @@ class RecipeRepository(
 			cookingMethod = getNullableString("cooking_method"),
 			calorieRange = getNullableString("calorie_range"),
 			dietaryPreferences = getStringArray("dietary_preferences"),
+			tags = getStringArray("tags"),
 		)
 	}
 
@@ -318,6 +320,7 @@ class RecipeRepository(
 			dietaryPreferences = recipeRecord.dietaryPreferences
 				.mapNotNull { runCatching { DietaryPreference.valueOf(it) }.getOrNull() }
 				.toSet(),
+			tags = recipeRecord.tags.toSet(),
 		)
 	}
 
@@ -657,6 +660,7 @@ class RecipeRepository(
 		val cookingMethod: String?,
 		val calorieRange: String?,
 		val dietaryPreferences: List<String>,
+		val tags: List<String>,
 	)
 
 	private data class IngredientGroupAccumulator(
@@ -693,7 +697,7 @@ class RecipeRepository(
 
 		const val createdRecipesSql = """
 			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
-			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, measurement_system
+			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
 			FROM recipes
 			WHERE created_by_user_id = ?
 			ORDER BY created_at DESC, id DESC
@@ -710,7 +714,7 @@ class RecipeRepository(
 
 		const val recipeSql = """
 			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
-			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, measurement_system
+			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
 			FROM recipes
 			WHERE id = ?
 		"""

@@ -176,7 +176,7 @@ fun printUsageAndExit(message: String? = null): Nothing {
 
 	Modes:
 		web   Scrape recipes from the web, save JSON files with DB IDs, and insert into Postgres.
-		json  Read previously saved JSON files from <output_dir>/recipes/ and insert them into Postgres.
+		json  Read previously saved JSON files from <output_dir>/ and insert them into Postgres.
 
 	Notes:
 		- Uses Python recipe-scrapers per URL, invoked from Kotlin script.
@@ -731,7 +731,12 @@ fun ensureSchema(connection: Connection) {
 		image_url VARCHAR(512),
 		language VARCHAR(10) DEFAULT 'en',
 		cuisine VARCHAR(255),
-		meal_type VARCHAR(50),
+		meal_type TEXT,
+		difficulty VARCHAR(20),
+		cooking_method VARCHAR(50),
+		calorie_range VARCHAR(20),
+		dietary_preferences TEXT[],
+		tags TEXT[],
 		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -770,6 +775,14 @@ fun ensureSchema(connection: Connection) {
 		sugar DECIMAL(10,2),
 		sodium DECIMAL(10,2)
 	);
+
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS meal_type TEXT;
+	ALTER TABLE recipes ALTER COLUMN meal_type TYPE TEXT;
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS difficulty VARCHAR(20);
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS cooking_method VARCHAR(50);
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS calorie_range VARCHAR(20);
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS dietary_preferences TEXT[];
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS tags TEXT[];
 	""".trimIndent()
 
 	connection.createStatement().use { it.execute(sql) }
@@ -789,6 +802,151 @@ fun parseNumber(value: String?): Double? {
 	if (value.isNullOrBlank()) return null
 	val match = Regex("""-?\d+(?:\.\d+)?""").find(value) ?: return null
 	return match.value.toDoubleOrNull()
+}
+
+private data class ScrapedCategoryColumns(
+	val mealType: String?,
+	val difficulty: String?,
+	val cookingMethod: String?,
+	val dietaryPreferences: List<String>,
+	val tags: List<String>,
+	val unmatchedLabels: List<String>,
+)
+
+private fun splitCategoryLabels(category: String?): List<String> = category
+	.orEmpty()
+	.split(',', ';', '|', '/', '>')
+	.asSequence()
+	.map(String::trim)
+	.filter(String::isNotBlank)
+	.distinctBy(String::lowercase)
+	.toList()
+
+private fun normalizeCategoryLabel(label: String): String = label.lowercase()
+	.replace("&", " and ")
+	.replace(Regex("""[^a-z0-9+ -]"""), " ")
+	.replace(Regex("""\s+"""), " ")
+	.trim()
+
+private fun matchesKeywords(token: String, keywords: List<String>): Boolean =
+	keywords.any { keyword -> token.contains(keyword) }
+
+private fun firstMappedValue(
+	tokens: List<String>,
+	mapping: List<Pair<String, List<String>>>,
+): String? {
+	for ((value, keywords) in mapping) {
+		if (tokens.any { token -> matchesKeywords(token, keywords) }) {
+			return value
+		}
+	}
+	return null
+}
+
+private fun allMappedValues(
+	tokens: List<String>,
+	mapping: List<Pair<String, List<String>>>,
+): List<String> {
+	val results = mutableListOf<String>()
+	for ((value, keywords) in mapping) {
+		if (tokens.any { token -> matchesKeywords(token, keywords) }) {
+			results += value
+		}
+	}
+	return results.distinct()
+}
+
+private fun mapCategoryToColumns(category: String?): ScrapedCategoryColumns {
+	val rawLabels = splitCategoryLabels(category)
+	val tokens = rawLabels.map(::normalizeCategoryLabel)
+
+	val mealTypeMapping = listOf(
+		"BREAKFAST" to listOf("breakfast"),
+		"BRUNCH" to listOf("brunch"),
+		"LUNCH" to listOf("lunch"),
+		"DINNER" to listOf("dinner", "main course", "main"),
+		"SNACK" to listOf("snack"),
+		"DESSERT" to listOf("dessert", "sweet", "pudding", "baking", "cake"),
+		"APPETIZER" to listOf("appetizer", "starter", "small plate"),
+		"DRINK" to listOf("drink", "cocktail", "smoothie", "juice", "beverage"),
+		"SIDE_DISH" to listOf("side", "side dish"),
+	)
+	val difficultyMapping = listOf(
+		"EASY" to listOf("easy", "simple", "quick", "beginner", "beginner friendly"),
+		"MEDIUM" to listOf("medium", "intermediate"),
+		"HARD" to listOf("hard", "advanced", "challenging", "expert"),
+	)
+	val cookingMethodMapping = listOf(
+		"AIR_FRY" to listOf("air fry", "air fryer"),
+		"STIR_FRY" to listOf("stir fry", "stir-fry", "wok"),
+		"SLOW_COOK" to listOf("slow cook", "slow cooker", "crockpot"),
+		"PRESSURE_COOK" to listOf("pressure cook", "pressure cooker", "instant pot"),
+		"MICROWAVE" to listOf("microwave"),
+		"SMOKE" to listOf("smoke", "smoked"),
+		"ROAST" to listOf("roast", "roasted"),
+		"BAKE" to listOf("bake", "baked", "traybake", "tray bake"),
+		"GRILL" to listOf("grill", "grilled", "bbq", "barbecue", "barbeque"),
+		"FRY" to listOf("fry", "fried", "deep fried", "pan fried"),
+		"STEAM" to listOf("steam", "steamed"),
+		"BOIL" to listOf("boil", "boiled", "simmered"),
+		"RAW" to listOf("raw", "no cook", "no-cook"),
+	)
+	val dietaryPreferenceMapping = listOf(
+		"VEGAN" to listOf("vegan", "plant based", "plant-based"),
+		"VEGETARIAN" to listOf("vegetarian", "veggie", "meat free", "meat-free", "meatless"),
+		"PESCATARIAN" to listOf("pescatarian"),
+		"GLUTEN_FREE" to listOf("gluten free", "gluten-free", "glutenfree"),
+		"DAIRY_FREE" to listOf("dairy free", "dairy-free", "lactose free", "lactose-free"),
+		"NUT_FREE" to listOf("nut free", "nut-free", "peanut free", "peanut-free", "no nuts"),
+		"EGG_FREE" to listOf("egg free", "egg-free", "eggless"),
+		"SHELLFISH_FREE" to listOf("shellfish free", "shellfish-free"),
+		"ALLIUM_FREE" to listOf("allium free", "allium-free"),
+		"HALAL" to listOf("halal"),
+		"KOSHER" to listOf("kosher"),
+		"LOW_FODMAP" to listOf("low fodmap", "low-fodmap"),
+		"PALEO" to listOf("paleo"),
+		"KETO" to listOf("keto", "ketogenic"),
+	)
+	val tagMapping = listOf(
+		"COMFORT" to listOf("comfort", "comfort food"),
+		"HEALTHY" to listOf("healthy", "lighter"),
+		"SPEEDY" to listOf("speedy"),
+		"DINNER_PARTY" to listOf("dinner party", "entertaining"),
+		"SEASONAL" to listOf("spring", "summer", "autumn", "fall", "winter"),
+		"FAKEAWAY" to listOf("fakeaway", "takeaway fakeout"),
+		"FAMILY" to listOf("family", "kid friendly", "kids", "family favourites"),
+		"BUDGET" to listOf("budget", "cheap", "affordable"),
+		"BATCH_COOK" to listOf("batch cook", "batch cooking", "freezer friendly"),
+		"MEAL_PREP" to listOf("meal prep", "make ahead", "make-ahead"),
+		"ONE_POT" to listOf("one pot", "one-pot", "one pan", "one-pan"),
+		"PICNIC" to listOf("picnic", "packed lunch", "lunchbox"),
+		"PARTY" to listOf("party food", "party", "celebration"),
+	)
+
+	val mealType = firstMappedValue(tokens, mealTypeMapping)
+	val difficulty = firstMappedValue(tokens, difficultyMapping)
+	val cookingMethod = firstMappedValue(tokens, cookingMethodMapping)
+	val dietaryPreferences = allMappedValues(tokens, dietaryPreferenceMapping)
+	val tagKeywordGroups = tagMapping.map { (_, keywords) -> keywords }
+	val tags = rawLabels.filter { label ->
+		val token = normalizeCategoryLabel(label)
+		tagKeywordGroups.any { keywords -> matchesKeywords(token, keywords) }
+	}
+	val allKeywordGroups = (mealTypeMapping + difficultyMapping + cookingMethodMapping + dietaryPreferenceMapping + tagMapping)
+		.map { (_, keywords) -> keywords }
+	val unmatchedLabels = rawLabels.filterNot { label ->
+		val token = normalizeCategoryLabel(label)
+		allKeywordGroups.any { keywords -> matchesKeywords(token, keywords) }
+	}
+
+	return ScrapedCategoryColumns(
+		mealType = mealType,
+		difficulty = difficulty,
+		cookingMethod = cookingMethod,
+		dietaryPreferences = dietaryPreferences,
+		tags = tags,
+		unmatchedLabels = unmatchedLabels,
+	)
 }
 
 fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<String>>>): String? {
@@ -816,7 +974,10 @@ fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<String>>>)
 fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 	if (isDuplicate(connection, recipe.sourceUrl)) return null
 	val measurementSystem = detectMeasurementSystem(recipe.ingredientGroups)
-
+	val categoryColumns = mapCategoryToColumns(recipe.category)
+	if (categoryColumns.unmatchedLabels.isNotEmpty()) {
+		println("Unmapped category labels for ${recipe.sourceUrl}: ${categoryColumns.unmatchedLabels.joinToString()}")
+	}
 	val recipeId = connection.prepareStatement(
 		"""
 		INSERT INTO recipes (
@@ -830,10 +991,14 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 			language,
 			cuisine,
 			meal_type,
+			difficulty,
+			cooking_method,
+			dietary_preferences,
+			tags,
 			source_url,
 			measurement_system
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 		""".trimIndent()
 	).use { ps ->
@@ -846,9 +1011,21 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 		ps.setString(7, recipe.image)
 		ps.setString(8, recipe.language ?: "en")
 		ps.setString(9, recipe.cuisine)
-		ps.setString(10, recipe.category)
-		ps.setString(11, recipe.sourceUrl)
-		ps.setString(12, measurementSystem)
+		ps.setString(10, categoryColumns.mealType)
+		ps.setString(11, categoryColumns.difficulty)
+		ps.setString(12, categoryColumns.cookingMethod)
+		if (categoryColumns.dietaryPreferences.isEmpty()) {
+			ps.setNull(13, java.sql.Types.ARRAY)
+		} else {
+			ps.setArray(13, connection.createArrayOf("text", categoryColumns.dietaryPreferences.toTypedArray()))
+		}
+		if (categoryColumns.tags.isEmpty()) {
+			ps.setNull(14, java.sql.Types.ARRAY)
+		} else {
+			ps.setArray(14, connection.createArrayOf("text", categoryColumns.tags.toTypedArray()))
+		}
+		ps.setString(15, recipe.sourceUrl)
+		ps.setString(16, measurementSystem)
 		ps.executeQuery().use { rs ->
 			rs.next()
 			rs.getInt(1)
@@ -1046,7 +1223,11 @@ private fun safeParseRecipeFile(file: File): RecipeData? {
 val config = parseOptions(args)
 val websiteUrl = normalizeWebsite(config.website)
 val outputRoot = File(expandPath(config.outputDir)).apply { mkdirs() }
-val recipesDir = File(outputRoot, "recipes").apply { mkdirs() }
+val recipesDir = if (config.mode == "json") {
+	outputRoot
+} else {
+	File(outputRoot, "recipes").apply { mkdirs() }
+}
 
 if (config.mode == "json") {
 	println("Import mode: reading JSON files from ${recipesDir.path} into database")

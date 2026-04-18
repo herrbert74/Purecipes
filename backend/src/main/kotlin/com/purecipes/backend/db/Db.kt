@@ -55,6 +55,7 @@ class Db private constructor(
 					statement.execute(RECIPES_ADD_COOKING_METHOD_SQL)
 					statement.execute(RECIPES_ADD_CALORIE_RANGE_SQL)
 					statement.execute(RECIPES_ADD_DIETARY_PREFERENCES_SQL)
+					statement.execute(RECIPES_ADD_TAGS_SQL)
 					statement.execute(INGREDIENT_GROUPS_TABLE_SQL)
 					statement.execute(INGREDIENTS_TABLE_SQL)
 					statement.execute(INSTRUCTION_STEPS_TABLE_SQL)

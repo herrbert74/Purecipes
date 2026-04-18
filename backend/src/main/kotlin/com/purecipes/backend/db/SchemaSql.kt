@@ -79,11 +79,12 @@ internal const val RECIPES_TABLE_SQL = """
 		image_url VARCHAR(512),
 		language VARCHAR(10) DEFAULT 'en',
 		cuisine VARCHAR(255),
-		meal_type VARCHAR(50),
+		meal_type TEXT,
 		difficulty VARCHAR(20),
 		cooking_method VARCHAR(50),
 		calorie_range VARCHAR(20),
 		dietary_preferences TEXT[],
+		tags TEXT[],
 		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
 		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
@@ -125,7 +126,7 @@ internal const val RECIPES_ADD_SCRAPED_AT_SQL = """
 """
 
 internal const val RECIPES_ADD_MEAL_TYPE_SQL = """
-	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS meal_type VARCHAR(50)
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS meal_type TEXT
 """
 
 internal const val RECIPES_ADD_DIFFICULTY_SQL = """
@@ -142,6 +143,10 @@ internal const val RECIPES_ADD_CALORIE_RANGE_SQL = """
 
 internal const val RECIPES_ADD_DIETARY_PREFERENCES_SQL = """
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS dietary_preferences TEXT[]
+"""
+
+internal const val RECIPES_ADD_TAGS_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS tags TEXT[]
 """
 
 internal const val INGREDIENT_GROUPS_TABLE_SQL = """
