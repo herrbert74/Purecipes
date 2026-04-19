@@ -25,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,6 +51,8 @@ import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
+import com.purecipes.shared.ui.component.ErrorText
+import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
 fun RecipeDetailsRoute(
@@ -113,9 +114,9 @@ fun RecipeDetailsRoute(
 								"Add to favorites"
 							},
 							tint = if (viewModel.recipeDetails?.isFavorite == true) {
-								MaterialTheme.colorScheme.primary
+								PurecipesTheme.colorScheme.primary
 							} else {
-								MaterialTheme.colorScheme.onSurfaceVariant
+								PurecipesTheme.colorScheme.onSurfaceVariant
 							},
 						)
 					}
@@ -210,7 +211,7 @@ private fun RecipeDetailsScreen(
 					.fillMaxWidth()
 					.height(240.dp)
 					.clip(RoundedCornerShape(24.dp))
-					.background(MaterialTheme.colorScheme.surfaceContainerLow),
+					.background(PurecipesTheme.colorScheme.surfaceContainerLow),
 				contentScale = ContentScale.Crop,
 			)
 		}
@@ -219,12 +220,12 @@ private fun RecipeDetailsScreen(
 			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 				Text(
 					text = recipe.title,
-					style = MaterialTheme.typography.headlineMedium,
+					style = PurecipesTheme.typography.headlineMedium,
 				)
 				Text(
 					text = recipe.description,
-					style = MaterialTheme.typography.bodyLarge,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					style = PurecipesTheme.typography.bodyLarge,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 		}
@@ -258,11 +259,7 @@ private fun RecipeDetailsScreen(
 					)
 				}
 				favoriteErrorMessage?.let {
-					Text(
-						text = it,
-						style = MaterialTheme.typography.bodyMedium,
-						color = MaterialTheme.colorScheme.error,
-					)
+					ErrorText(text = it)
 				}
 			}
 		}
@@ -270,7 +267,7 @@ private fun RecipeDetailsScreen(
 		item {
 			Text(
 				text = "Ingredients",
-				style = MaterialTheme.typography.titleLarge,
+				style = PurecipesTheme.typography.titleLarge,
 			)
 		}
 
@@ -281,7 +278,7 @@ private fun RecipeDetailsScreen(
 		item {
 			Text(
 				text = "Steps",
-				style = MaterialTheme.typography.titleLarge,
+				style = PurecipesTheme.typography.titleLarge,
 			)
 		}
 
@@ -312,12 +309,12 @@ private fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean)
 		items.forEach { item ->
 			Surface(
 				shape = RoundedCornerShape(999.dp),
-				color = MaterialTheme.colorScheme.secondaryContainer,
+				color = PurecipesTheme.colorScheme.secondaryContainer,
 			) {
 				Text(
 					text = item,
 					modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-					style = MaterialTheme.typography.labelLarge,
+					style = PurecipesTheme.typography.labelLarge,
 				)
 			}
 		}
@@ -336,7 +333,7 @@ private fun MeasurementSystem.displayName(isRecipeConverted: Boolean): String {
 private fun IngredientGroupCard(group: IngredientGroup) {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
 			modifier = Modifier.padding(16.dp),
@@ -345,14 +342,14 @@ private fun IngredientGroupCard(group: IngredientGroup) {
 			group.name?.takeIf { it.isNotBlank() }?.let {
 				Text(
 					text = it,
-					style = MaterialTheme.typography.titleMedium,
+					style = PurecipesTheme.typography.titleMedium,
 				)
 			}
 
 			group.ingredients.forEach { ingredient ->
 				Text(
 					text = "- $ingredient",
-					style = MaterialTheme.typography.bodyLarge,
+					style = PurecipesTheme.typography.bodyLarge,
 				)
 			}
 		}
@@ -363,7 +360,7 @@ private fun IngredientGroupCard(group: IngredientGroup) {
 private fun StepCard(stepNumber: Int, step: String) {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
 			modifier = Modifier.padding(16.dp),
@@ -372,12 +369,12 @@ private fun StepCard(stepNumber: Int, step: String) {
 			Surface(
 				modifier = Modifier.size(36.dp),
 				shape = RoundedCornerShape(18.dp),
-				color = MaterialTheme.colorScheme.primaryContainer,
+				color = PurecipesTheme.colorScheme.primaryContainer,
 			) {
 				Box(contentAlignment = Alignment.Center) {
 					Text(
 						text = stepNumber.toString(),
-						style = MaterialTheme.typography.titleMedium,
+						style = PurecipesTheme.typography.titleMedium,
 					)
 				}
 			}
@@ -385,7 +382,7 @@ private fun StepCard(stepNumber: Int, step: String) {
 			Text(
 				text = step,
 				modifier = Modifier.weight(1f),
-				style = MaterialTheme.typography.bodyLarge,
+				style = PurecipesTheme.typography.bodyLarge,
 			)
 		}
 	}
@@ -409,7 +406,7 @@ private fun RecipeDetailsMessageScreen(
 		) {
 			Text(
 				text = message,
-				style = MaterialTheme.typography.bodyLarge,
+				style = PurecipesTheme.typography.bodyLarge,
 			)
 			Spacer(modifier = Modifier.height(4.dp))
 			TextButton(onClick = onBack) {

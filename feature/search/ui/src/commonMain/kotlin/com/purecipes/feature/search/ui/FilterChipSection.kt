@@ -12,12 +12,12 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 
@@ -72,7 +72,7 @@ internal fun FilterSectionHeader(
 	) {
 		Text(
 			text = title,
-			style = MaterialTheme.typography.titleSmall,
+			style = PurecipesTheme.typography.titleSmall,
 			modifier = Modifier.weight(1f),
 		)
 		IconButton(onClick = onSelectAll) {

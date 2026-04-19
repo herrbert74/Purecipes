@@ -3,11 +3,16 @@
 package com.purecipes.shared.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val lightScheme = lightColorScheme(
@@ -243,22 +248,56 @@ data class ColorFamily(
 	val color: Color,
 	val onColor: Color,
 	val colorContainer: Color,
-	val onColorContainer: Color
+	val onColorContainer: Color,
 )
 
-@Composable
-fun PurecipesTheme(
-	darkTheme: Boolean = isSystemInDarkTheme(),
-	content: @Composable () -> Unit
-) {
-	val colorScheme = when {
-		darkTheme -> darkScheme
-		else -> lightScheme
-	}
+private val LocalPurecipesColorScheme = staticCompositionLocalOf<ColorScheme> {
+	error("No ColorScheme provided. Wrap your content in PurecipesTheme.")
+}
 
-	MaterialTheme(
-		colorScheme = colorScheme,
-		typography = getAppTypography(),
-		content = content
-	)
+private val LocalPurecipesTypography = staticCompositionLocalOf<Typography> {
+	error("No Typography provided. Wrap your content in PurecipesTheme.")
+}
+
+private val LocalPurecipesShapes = staticCompositionLocalOf<Shapes> {
+	error("No Shapes provided. Wrap your content in PurecipesTheme.")
+}
+
+object PurecipesTheme {
+	val colorScheme: ColorScheme
+		@Composable
+		get() = LocalPurecipesColorScheme.current
+
+	val typography: Typography
+		@Composable
+		get() = LocalPurecipesTypography.current
+
+	val shapes: Shapes
+		@Composable
+		get() = LocalPurecipesShapes.current
+
+	@Composable
+	operator fun invoke(
+		darkTheme: Boolean = isSystemInDarkTheme(),
+		content: @Composable () -> Unit,
+	) {
+		val colorScheme = when {
+			darkTheme -> darkScheme
+			else -> lightScheme
+		}
+		val typography = getAppTypography()
+
+		MaterialTheme(
+			colorScheme = colorScheme,
+			typography = typography,
+		) {
+			CompositionLocalProvider(
+				LocalPurecipesColorScheme provides MaterialTheme.colorScheme,
+				LocalPurecipesTypography provides MaterialTheme.typography,
+				LocalPurecipesShapes provides MaterialTheme.shapes,
+			) {
+				content()
+			}
+		}
+	}
 }

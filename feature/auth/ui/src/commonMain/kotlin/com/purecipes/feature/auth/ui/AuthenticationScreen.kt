@@ -22,7 +22,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -43,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.analytics.domain.model.ConsentState
+import com.purecipes.feature.analytics.domain.model.toDisplayText
 import com.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import com.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import com.purecipes.feature.auth.domain.model.AuthProvider
@@ -55,6 +55,8 @@ import com.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import com.purecipes.shared.ui.component.ErrorText
+import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
 fun AuthenticationScreen(
@@ -140,11 +142,7 @@ fun AuthenticationScreen(
 						)
 				}
 				viewModel.message?.let { message ->
-					Text(
-						text = message,
-						style = MaterialTheme.typography.bodyMedium,
-						color = MaterialTheme.colorScheme.error,
-					)
+					ErrorText(text = message)
 				}
 			}
 		}
@@ -179,8 +177,8 @@ private fun SignedOutAuthenticationContent(
 			text = """Choose how you want to sign in.
 				| Email registration uses your first and family name as the display name.
 			""".trimIndent(),
-			style = MaterialTheme.typography.bodyLarge,
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
+			style = PurecipesTheme.typography.bodyLarge,
+			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
 		AuthenticationProviderButtons(
 			isGoogleConfigured = isGoogleConfigured,
@@ -261,7 +259,7 @@ private fun EmailAuthenticationForm(
 ) {
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
-		shape = MaterialTheme.shapes.large,
+		shape = PurecipesTheme.shapes.large,
 		tonalElevation = 2.dp,
 	) {
 		Column(
@@ -387,12 +385,12 @@ private fun PrivacySettingsContent(
 	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 		Text(
 			text = "Privacy",
-			style = MaterialTheme.typography.titleLarge,
+			style = PurecipesTheme.typography.titleLarge,
 		)
 		Text(
 			text = consentState.toDisplayText(),
-			style = MaterialTheme.typography.bodyLarge,
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
+			style = PurecipesTheme.typography.bodyLarge,
+			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
 		OutlinedButton(
 			modifier = Modifier.fillMaxWidth(),
@@ -400,16 +398,6 @@ private fun PrivacySettingsContent(
 		) {
 			Text(text = "Manage privacy settings")
 		}
-	}
-}
-
-private fun ConsentState.toDisplayText(): String {
-	return when (this) {
-		ConsentState.UNKNOWN -> "Consent status is not available yet."
-		ConsentState.REQUIRED -> "Consent is required before analytics can run."
-		ConsentState.OBTAINED -> "Consent has been granted for analytics."
-		ConsentState.DENIED -> "Consent has been denied for analytics."
-		ConsentState.NOT_REQUIRED -> "Consent is not required for analytics on this device."
 	}
 }
 
@@ -424,13 +412,13 @@ private fun ProfileHeader(user: AuthUser) {
 		Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
 			Text(
 				text = user.displayName,
-				style = MaterialTheme.typography.headlineSmall,
+				style = PurecipesTheme.typography.headlineSmall,
 				fontWeight = FontWeight.SemiBold,
 			)
 			Text(
 				text = user.email,
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodyMedium,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 		}
 	}
@@ -460,13 +448,13 @@ private fun ProfileAvatar(user: AuthUser) {
 			modifier = Modifier
 				.size(88.dp)
 				.clip(CircleShape)
-				.background(MaterialTheme.colorScheme.primaryContainer),
+				.background(PurecipesTheme.colorScheme.primaryContainer),
 			contentAlignment = Alignment.Center,
 		) {
 			Text(
 				text = initials,
-				style = MaterialTheme.typography.headlineSmall,
-				color = MaterialTheme.colorScheme.onPrimaryContainer,
+				style = PurecipesTheme.typography.headlineSmall,
+				color = PurecipesTheme.colorScheme.onPrimaryContainer,
 				textAlign = TextAlign.Center,
 			)
 		}

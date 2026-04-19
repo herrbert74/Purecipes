@@ -21,7 +21,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -46,7 +45,9 @@ import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
+import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.component.TitleText
+import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
 fun RecipeSearchScreen(
@@ -88,8 +89,8 @@ fun RecipeSearchScreen(
 		viewModel.measurementFilterLabel?.let { label ->
 			Text(
 				text = label,
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodyMedium,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 		}
 		SearchBar(
@@ -124,9 +125,9 @@ fun RecipeSearchScreen(
 								imageVector = Icons.Default.FilterList,
 								contentDescription = "Open filters",
 								tint = if (hasActiveFilters) {
-									MaterialTheme.colorScheme.primary
+									PurecipesTheme.colorScheme.primary
 								} else {
-									MaterialTheme.colorScheme.onSurfaceVariant
+									PurecipesTheme.colorScheme.onSurfaceVariant
 								},
 							)
 						}
@@ -171,11 +172,7 @@ private fun SearchResultsContent(
 		}
 
 		errorMessage != null -> Box(modifier = modifier.fillMaxWidth()) {
-			Text(
-				text = errorMessage,
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.error,
-			)
+			ErrorText(text = errorMessage)
 		}
 
 		else -> LazyColumn(
@@ -186,8 +183,8 @@ private fun SearchResultsContent(
 			item {
 				Text(
 					text = "${recipes.size} recipes found",
-					style = MaterialTheme.typography.labelMedium,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					style = PurecipesTheme.typography.labelMedium,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 			items(recipes, key = { it.id }) { recipe ->
@@ -206,7 +203,7 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 		modifier = Modifier
 			.fillMaxWidth()
 			.clickable(onClick = onClick),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
 			modifier = Modifier
@@ -221,7 +218,7 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 				modifier = Modifier
 					.size(56.dp)
 					.clip(RoundedCornerShape(8.dp))
-					.background(MaterialTheme.colorScheme.secondaryContainer),
+					.background(PurecipesTheme.colorScheme.secondaryContainer),
 				contentScale = ContentScale.Crop,
 			)
 
@@ -234,13 +231,13 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 						recipe.cuisine?.displayName ?: "Unknown cuisine",
 						recipe.totalTime?.let { "$it min" },
 					).joinToString(separator = " • "),
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 				recipe.measurementSystem?.let { measurementSystem ->
 					Text(
 						text = measurementSystem.displayName(),
-						style = MaterialTheme.typography.labelMedium,
-						color = MaterialTheme.colorScheme.primary,
+						style = PurecipesTheme.typography.labelMedium,
+						color = PurecipesTheme.colorScheme.primary,
 					)
 				}
 			}

@@ -11,11 +11,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 
 private enum class IngredientChipState { NEUTRAL, INCLUDE, EXCLUDE }
@@ -168,9 +168,9 @@ private fun IngredientTriStateChip(
 ) {
 	val colors = when (state) {
 		IngredientChipState.EXCLUDE -> FilterChipDefaults.filterChipColors(
-			selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-			selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
-			selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+			selectedContainerColor = PurecipesTheme.colorScheme.errorContainer,
+			selectedLabelColor = PurecipesTheme.colorScheme.onErrorContainer,
+			selectedLeadingIconColor = PurecipesTheme.colorScheme.onErrorContainer,
 		)
 		else -> FilterChipDefaults.filterChipColors()
 	}

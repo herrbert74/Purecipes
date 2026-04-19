@@ -31,7 +31,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -64,6 +63,9 @@ import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeDetails
+import com.purecipes.shared.ui.component.EmptyStateContent
+import com.purecipes.shared.ui.component.SectionHeader
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlin.math.roundToInt
 
 private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
@@ -220,8 +222,8 @@ fun CreateRecipeScreen(
 					item {
 						Text(
 							text = viewModel.errorMessage ?: "Unknown error",
-							style = MaterialTheme.typography.bodyLarge,
-							color = MaterialTheme.colorScheme.error,
+							style = PurecipesTheme.typography.bodyLarge,
+							color = PurecipesTheme.colorScheme.error,
 						)
 					}
 				}
@@ -279,7 +281,7 @@ private fun CreateRecipeForm(
 	yieldsInput: String,
 ) {
 	Card(
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
 			modifier = Modifier.padding(16.dp),
@@ -287,14 +289,14 @@ private fun CreateRecipeForm(
 		) {
 			Text(
 				text = if (isEditing) "Edit recipe" else "New recipe",
-				style = MaterialTheme.typography.headlineSmall,
+				style = PurecipesTheme.typography.headlineSmall,
 			)
 			Text(
 				text = """Write one ingredient per line and add cooking steps below. Recipes are uploaded to your
 					| account, and local image paths are uploaded as image files.
 				""".trimIndent(),
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodyMedium,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 
 			OutlinedTextField(
@@ -383,8 +385,8 @@ private fun CreateRecipeForm(
 			imagePickerErrorMessage?.let {
 				Text(
 					text = it,
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.error,
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.error,
 				)
 			}
 
@@ -439,16 +441,16 @@ private fun CreateRecipeForm(
 			formErrorMessage?.let {
 				Text(
 					text = it,
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.error,
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.error,
 				)
 			}
 
 			successMessage?.let {
 				Text(
 					text = it,
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.primary,
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.primary,
 				)
 			}
 
@@ -496,7 +498,7 @@ private fun StepInputSection(
 		) {
 			Text(
 				text = "Cooking steps",
-				style = MaterialTheme.typography.titleMedium,
+				style = PurecipesTheme.typography.titleMedium,
 			)
 			FilledTonalButton(
 				onClick = onAddStepClick,
@@ -613,7 +615,7 @@ private fun StepDragHandle(
 		Icon(
 			imageVector = Icons.Filled.DragHandle,
 			contentDescription = "Reorder step ${index + 1}",
-			tint = MaterialTheme.colorScheme.onSurfaceVariant,
+			tint = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
 	}
 }
@@ -621,7 +623,7 @@ private fun StepDragHandle(
 @Composable
 private fun ImageImportPlaceholder() {
 	Card(
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerHighest),
 	) {
 		Box(
 			modifier = Modifier
@@ -636,8 +638,8 @@ private fun ImageImportPlaceholder() {
 				CircularProgressIndicator()
 				Text(
 					text = "Preparing image preview...",
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 		}
@@ -656,8 +658,8 @@ private fun ImageImportStatus(imageUrlInput: String, isImportingImage: Boolean) 
 	statusText?.let {
 		Text(
 			text = it,
-			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
+			style = PurecipesTheme.typography.bodyMedium,
+			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
 	}
 }
@@ -679,27 +681,22 @@ private fun String.isRemoteImageUrl(): Boolean {
 
 @Composable
 private fun SavedRecipeSectionHeader(recipeCount: Int) {
-	Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-		Text(
-			text = "Uploaded recipes",
-			style = MaterialTheme.typography.titleLarge,
-		)
-		Text(
-			text = if (recipeCount == 1) {
-				"1 recipe uploaded to your account"
-			} else {
-				"$recipeCount recipes uploaded to your account"
-			},
-			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-		)
-	}
+	SectionHeader(
+		title = "Uploaded recipes",
+		subtitle = if (recipeCount == 1) {
+			"1 recipe uploaded to your account"
+		} else {
+			"$recipeCount recipes uploaded to your account"
+		},
+		titleStyle = PurecipesTheme.typography.titleLarge,
+		subtitleStyle = PurecipesTheme.typography.bodyMedium,
+	)
 }
 
 @Composable
 private fun EmptyCreatedRecipes(hasError: Boolean, onRetry: () -> Unit) {
 	Card(
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
 			modifier = Modifier
@@ -712,11 +709,11 @@ private fun EmptyCreatedRecipes(hasError: Boolean, onRetry: () -> Unit) {
 				imageVector = Icons.Filled.Add,
 				contentDescription = "Create recipe",
 				modifier = Modifier.size(56.dp),
-				tint = MaterialTheme.colorScheme.primary,
+				tint = PurecipesTheme.colorScheme.primary,
 			)
 			Text(
 				text = if (hasError) "Could not load uploaded recipes" else "No recipes uploaded yet",
-				style = MaterialTheme.typography.headlineSmall,
+				style = PurecipesTheme.typography.headlineSmall,
 				textAlign = TextAlign.Center,
 			)
 			Text(
@@ -725,8 +722,8 @@ private fun EmptyCreatedRecipes(hasError: Boolean, onRetry: () -> Unit) {
 				} else {
 					"Upload your own recipes here, then tap Edit any time to update them."
 				},
-				style = MaterialTheme.typography.bodyLarge,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodyLarge,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				textAlign = TextAlign.Center,
 			)
 			if (hasError) {
@@ -740,34 +737,13 @@ private fun EmptyCreatedRecipes(hasError: Boolean, onRetry: () -> Unit) {
 
 @Composable
 private fun UploadSignedOutContent(modifier: Modifier = Modifier) {
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.padding(24.dp),
-		contentAlignment = Alignment.Center,
-	) {
-		Column(
-			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp),
-		) {
-			Icon(
-				imageVector = Icons.Filled.Add,
-				contentDescription = "Create recipe",
-				modifier = Modifier.size(56.dp),
-				tint = MaterialTheme.colorScheme.primary,
-			)
-			Text(
-				text = "Sign in to upload recipes",
-				style = MaterialTheme.typography.headlineSmall,
-			)
-			Text(
-				text = "Recipe upload is tied to your account so you can edit your uploaded recipes later.",
-				style = MaterialTheme.typography.bodyLarge,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-				textAlign = TextAlign.Center,
-			)
-		}
-	}
+	EmptyStateContent(
+		icon = Icons.Filled.Add,
+		iconContentDescription = "Create recipe",
+		title = "Sign in to upload recipes",
+		description = "Recipe upload is tied to your account so you can edit your uploaded recipes later.",
+		modifier = modifier,
+	)
 }
 
 @Composable
@@ -776,7 +752,7 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 		modifier = Modifier
 			.fillMaxWidth()
 			.clickable(onClick = onEditClick),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
 			modifier = Modifier.padding(16.dp),
@@ -796,12 +772,12 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 
 			Text(
 				text = recipe.title,
-				style = MaterialTheme.typography.titleLarge,
+				style = PurecipesTheme.typography.titleLarge,
 			)
 			Text(
 				text = recipe.description,
-				style = MaterialTheme.typography.bodyLarge,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodyLarge,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 			Text(
 				text = listOfNotNull(
@@ -810,8 +786,8 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 					recipe.yields?.takeIf { it.isNotBlank() },
 					recipe.steps.size.takeIf { it > 0 }?.let { "$it steps" },
 				).joinToString(separator = " • "),
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodyMedium,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 			Row(
 				modifier = Modifier.fillMaxWidth(),
@@ -841,8 +817,8 @@ private fun CuisinePicker(
 		Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
 			Text(
 				text = "Cuisine",
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodySmall,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 			OutlinedButton(
 				onClick = { isExpanded = true },
@@ -856,9 +832,9 @@ private fun CuisinePicker(
 					Text(
 						text = selectedCuisine?.displayName ?: "Select cuisine",
 						color = if (selectedCuisine == null) {
-							MaterialTheme.colorScheme.onSurfaceVariant
+							PurecipesTheme.colorScheme.onSurfaceVariant
 						} else {
-							MaterialTheme.colorScheme.onSurface
+							PurecipesTheme.colorScheme.onSurface
 						},
 					)
 					Icon(

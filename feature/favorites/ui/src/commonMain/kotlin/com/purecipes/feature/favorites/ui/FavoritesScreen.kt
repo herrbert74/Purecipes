@@ -19,8 +19,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,7 +35,10 @@ import coil3.compose.AsyncImage
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
+import com.purecipes.shared.ui.component.EmptyStateContent
+import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.component.TitleText
+import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
 fun FavoritesScreen(
@@ -83,34 +84,13 @@ fun FavoritesScreen(
 
 @Composable
 private fun FavoritesSignedOutContent(modifier: Modifier = Modifier) {
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.padding(24.dp),
-		contentAlignment = Alignment.Center,
-	) {
-		Column(
-			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp),
-		) {
-			Icon(
-				imageVector = Icons.Filled.Favorite,
-				contentDescription = "Favorites",
-				modifier = Modifier.size(56.dp),
-				tint = MaterialTheme.colorScheme.primary,
-			)
-			Text(
-				text = "Sign in to view favorites",
-				style = MaterialTheme.typography.headlineSmall,
-			)
-			Text(
-				text = "Favorites are tied to your session, so each account keeps its own saved recipes.",
-				style = MaterialTheme.typography.bodyLarge,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-				textAlign = TextAlign.Center,
-			)
-		}
-	}
+	EmptyStateContent(
+		icon = Icons.Filled.Favorite,
+		iconContentDescription = "Favorites",
+		title = "Sign in to view favorites",
+		description = "Favorites are tied to your session, so each account keeps its own saved recipes.",
+		modifier = modifier,
+	)
 }
 
 @Composable
@@ -135,42 +115,19 @@ private fun FavoritesContent(
 				.padding(24.dp),
 			contentAlignment = Alignment.Center,
 		) {
-			Text(
+			ErrorText(
 				text = errorMessage,
-				style = MaterialTheme.typography.bodyLarge,
-				color = MaterialTheme.colorScheme.error,
 				textAlign = TextAlign.Center,
 			)
 		}
 
-		recipes.isEmpty() -> Box(
-			modifier = modifier
-				.fillMaxSize()
-				.padding(24.dp),
-			contentAlignment = Alignment.Center,
-		) {
-			Column(
-				horizontalAlignment = Alignment.CenterHorizontally,
-				verticalArrangement = Arrangement.spacedBy(12.dp),
-			) {
-				Icon(
-					imageVector = Icons.Filled.Favorite,
-					contentDescription = "Favorites",
-					modifier = Modifier.size(56.dp),
-					tint = MaterialTheme.colorScheme.primary,
-				)
-				Text(
-					text = "No favorites yet",
-					style = MaterialTheme.typography.headlineSmall,
-				)
-				Text(
-					text = "Add recipes from the details screen and they will appear here.",
-					style = MaterialTheme.typography.bodyLarge,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
-					textAlign = TextAlign.Center,
-				)
-			}
-		}
+		recipes.isEmpty() -> EmptyStateContent(
+			icon = Icons.Filled.Favorite,
+			iconContentDescription = "Favorites",
+			title = "No favorites yet",
+			description = "Add recipes from the details screen and they will appear here.",
+			modifier = modifier,
+		)
 
 		else -> LazyColumn(
 			modifier = modifier.fillMaxSize(),
@@ -193,7 +150,7 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 		modifier = Modifier
 			.fillMaxWidth()
 			.clickable(onClick = onClick),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
 			modifier = Modifier
@@ -208,7 +165,7 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 				modifier = Modifier
 					.size(56.dp)
 					.clip(RoundedCornerShape(8.dp))
-					.background(MaterialTheme.colorScheme.secondaryContainer),
+					.background(PurecipesTheme.colorScheme.secondaryContainer),
 				contentScale = ContentScale.Crop,
 			)
 
@@ -219,7 +176,7 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 						recipe.cuisine?.displayName ?: "Unknown cuisine",
 						recipe.totalTime?.let { "$it min" },
 					).joinToString(separator = " • "),
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 		}

@@ -2,7 +2,6 @@ package com.purecipes.feature.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,8 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -43,6 +40,9 @@ import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.NotificationPreferences
 import com.purecipes.shared.domain.model.RecipeFormatHandling
+import com.purecipes.shared.ui.component.PurecipesOutlinedButton
+import com.purecipes.shared.ui.component.SectionHeader
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -106,22 +106,16 @@ private fun NotificationPreferencesSection(
 
 	Surface(
 		modifier = modifier.fillMaxWidth(),
-		shape = MaterialTheme.shapes.large,
+		shape = PurecipesTheme.shapes.large,
 		tonalElevation = 2.dp,
 	) {
 		Column(
 			modifier = Modifier.padding(16.dp),
 			verticalArrangement = Arrangement.spacedBy(14.dp),
 		) {
-			Text(
-				text = "Notifications",
-				style = MaterialTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
-			)
-			Text(
-				text = "Manage push notification settings across devices.",
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			SectionHeader(
+				title = "Notifications",
+				subtitle = "Manage push notification settings across devices.",
 			)
 
 			NotificationToggleRow(
@@ -172,16 +166,10 @@ private fun NotificationPreferencesSection(
 				)
 				HorizontalDivider()
 
-				OutlinedButton(
-					modifier = Modifier.fillMaxWidth(),
+				PurecipesOutlinedButton(
+					text = "Send Test Notification",
 					onClick = { sendTestNotification("Testing 1 2 3", "Push notifications are working!") },
-					contentPadding = PaddingValues(vertical = 12.dp),
-				) {
-					Text(
-						text = "Send Test Notification",
-						style = MaterialTheme.typography.bodyMedium,
-					)
-				}
+				)
 			}
 		}
 	}
@@ -204,13 +192,13 @@ private fun NotificationToggleRow(
 		Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
 			Text(
 				text = label,
-				style = MaterialTheme.typography.bodyMedium,
+				style = PurecipesTheme.typography.bodyMedium,
 				fontWeight = FontWeight.Medium,
 			)
 			Text(
 				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodySmall,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 		}
 		Switch(
@@ -233,22 +221,16 @@ private fun MeasurementPreferencesSection(
 
 	Surface(
 		modifier = modifier.fillMaxWidth(),
-		shape = MaterialTheme.shapes.large,
+		shape = PurecipesTheme.shapes.large,
 		tonalElevation = 2.dp,
 	) {
 		Column(
 			modifier = Modifier.padding(16.dp),
 			verticalArrangement = Arrangement.spacedBy(14.dp),
 		) {
-			Text(
-				text = "Measurements",
-				style = MaterialTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
-			)
-			Text(
-				text = currentPreferences.measurementSummary(),
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			SectionHeader(
+				title = "Measurements",
+				subtitle = currentPreferences.measurementSummary(),
 			)
 			MeasurementSystemChooser(
 				preferences = currentPreferences,
@@ -263,16 +245,10 @@ private fun MeasurementPreferencesSection(
 					scope.launch { saveMeasurementPreferences(updatedPreferences) }
 				},
 			)
-			OutlinedButton(
-				modifier = Modifier.fillMaxWidth(),
+			PurecipesOutlinedButton(
+				text = "Reset to detected default",
 				onClick = { scope.launch { resetMeasurementPreferences() } },
-				contentPadding = PaddingValues(vertical = 12.dp),
-			) {
-				Text(
-					text = "Reset to detected default",
-					style = MaterialTheme.typography.bodyMedium,
-				)
-			}
+			)
 		}
 	}
 }
@@ -285,7 +261,7 @@ private fun MeasurementSystemChooser(
 	Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
 		Text(
 			text = "Preferred system",
-			style = MaterialTheme.typography.titleSmall,
+			style = PurecipesTheme.typography.titleSmall,
 			fontWeight = FontWeight.Medium,
 		)
 		MeasurementOptionRow(
@@ -315,7 +291,7 @@ private fun RecipeFormatHandlingChooser(
 	Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
 		Text(
 			text = "Recipes in another system",
-			style = MaterialTheme.typography.titleSmall,
+			style = PurecipesTheme.typography.titleSmall,
 			fontWeight = FontWeight.Medium,
 		)
 		MeasurementOptionRow(
@@ -379,13 +355,13 @@ private fun MeasurementOptionRow(
 			) {
 				Text(
 					text = label,
-					style = MaterialTheme.typography.bodyMedium,
+					style = PurecipesTheme.typography.bodyMedium,
 					fontWeight = FontWeight.Medium,
 				)
 				Text(
 					text = description,
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					style = PurecipesTheme.typography.bodySmall,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 		}
