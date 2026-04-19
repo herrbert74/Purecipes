@@ -932,7 +932,13 @@ private fun mapCategoryToColumns(category: String?): ScrapedCategoryColumns {
 		val token = normalizeCategoryLabel(label)
 		tagKeywordGroups.any { keywords -> matchesKeywords(token, keywords) }
 	}
-	val allKeywordGroups = (mealTypeMapping + difficultyMapping + cookingMethodMapping + dietaryPreferenceMapping + tagMapping)
+	val allKeywordGroups = (
+		mealTypeMapping +
+			difficultyMapping +
+			cookingMethodMapping +
+			dietaryPreferenceMapping +
+			tagMapping
+		)
 		.map { (_, keywords) -> keywords }
 	val unmatchedLabels = rawLabels.filterNot { label ->
 		val token = normalizeCategoryLabel(label)

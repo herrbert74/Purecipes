@@ -71,7 +71,16 @@ fun main() {
 					} else {
 						null
 					}
-					updateRecipe(conn, recipe.id, cuisine, mealType, difficulty, cookingMethod, calorieRange, dietaryPreferences)
+					updateRecipe(
+						conn = conn,
+						id = recipe.id,
+						cuisine = cuisine,
+						mealType = mealType,
+						difficulty = difficulty,
+						cookingMethod = cookingMethod,
+						calorieRange = calorieRange,
+						dietaryPreferences = dietaryPreferences,
+					)
 				}
 			}
 		}

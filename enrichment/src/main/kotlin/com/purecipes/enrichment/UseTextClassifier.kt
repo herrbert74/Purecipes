@@ -29,19 +29,32 @@ internal class UseTextClassifier(modelPath: String) : AutoCloseable {
 		return Array(textCount) { i ->
 			FloatArray(EMBEDDING_DIM) { j ->
 				when {
-					dims.size == 1 && dims[0] == EMBEDDING_DIM.toLong() && textCount == 1 -> {
+					dims.size == SINGLE_DIMENSION_COUNT &&
+						dims[FIRST_DIMENSION] == EMBEDDING_DIM.toLong() &&
+						textCount == SINGLE_TEXT_COUNT ->
 						embeddings.getFloat(j.toLong())
-					}
-					dims.size == 2 && dims[0] == textCount.toLong() && dims[1] >= EMBEDDING_DIM.toLong() -> {
+
+					dims.size == TWO_DIMENSION_COUNT &&
+						dims[FIRST_DIMENSION] == textCount.toLong() &&
+						dims[SECOND_DIMENSION] >= EMBEDDING_DIM.toLong() ->
 						embeddings.getFloat(i.toLong(), j.toLong())
-					}
-					dims.size == 3 && dims[0] == textCount.toLong() && dims[1] == 1L && dims[2] >= EMBEDDING_DIM.toLong() -> {
-						embeddings.getFloat(i.toLong(), 0L, j.toLong())
-					}
-					dims.size == 3 && dims[0] == 1L && dims[1] == textCount.toLong() && dims[2] >= EMBEDDING_DIM.toLong() -> {
-						embeddings.getFloat(0L, i.toLong(), j.toLong())
-					}
-					else -> error("Unexpected USE embedding shape: ${dims.joinToString(prefix = "[", postfix = "]")}")
+
+					dims.size == THREE_DIMENSION_COUNT &&
+						dims[FIRST_DIMENSION] == textCount.toLong() &&
+						dims[SECOND_DIMENSION] == SINGLE_ROW_DIMENSION &&
+						dims[THIRD_DIMENSION] >= EMBEDDING_DIM.toLong() ->
+						embeddings.getFloat(i.toLong(), FIRST_AXIS_INDEX, j.toLong())
+
+					dims.size == THREE_DIMENSION_COUNT &&
+						dims[FIRST_DIMENSION] == SINGLE_ROW_DIMENSION &&
+						dims[SECOND_DIMENSION] == textCount.toLong() &&
+						dims[THIRD_DIMENSION] >= EMBEDDING_DIM.toLong() ->
+						embeddings.getFloat(FIRST_AXIS_INDEX, i.toLong(), j.toLong())
+
+					else -> error(
+						"Unexpected USE embedding shape: " +
+							dims.joinToString(prefix = "[", postfix = "]")
+					)
 				}
 			}
 		}
@@ -103,5 +116,14 @@ internal class UseTextClassifier(modelPath: String) : AutoCloseable {
 
 	companion object {
 		const val EMBEDDING_DIM = 512
+		const val FIRST_DIMENSION = 0
+		const val SECOND_DIMENSION = 1
+		const val THIRD_DIMENSION = 2
+		const val SINGLE_DIMENSION_COUNT = 1
+		const val TWO_DIMENSION_COUNT = 2
+		const val THREE_DIMENSION_COUNT = 3
+		const val SINGLE_TEXT_COUNT = 1
+		const val FIRST_AXIS_INDEX = 0L
+		const val SINGLE_ROW_DIMENSION = 1L
 	}
 }
