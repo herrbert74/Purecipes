@@ -89,6 +89,7 @@ shadow = "9.4.1"
 skiko = "0.9.43"
 #skie = "0.10.4"
 testcontainers = "2.0.4"
+tensorflow-java = "1.1.0"
 uri-kmp = "0.0.21"
 usercentrics = "2.26.2"
 core = "1.7.0"
@@ -387,6 +388,7 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
+tensorflowJava = { module = "org.tensorflow:tensorflow-core-platform", version.ref = "tensorflow-java" }
 
 uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uri-kmp" }
 usercentricsUi = { module = "com.usercentrics.sdk:usercentrics-ui", version.ref = "usercentrics" }

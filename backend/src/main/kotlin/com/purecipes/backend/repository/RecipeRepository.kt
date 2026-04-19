@@ -1,8 +1,13 @@
 package com.purecipes.backend.repository
 
+import com.purecipes.shared.domain.model.CalorieRange
+import com.purecipes.shared.domain.model.CookingMethod
 import com.purecipes.shared.domain.model.CookingTimeRange
 import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.DietaryPreference
+import com.purecipes.shared.domain.model.DifficultyLevel
 import com.purecipes.shared.domain.model.IngredientGroup
+import com.purecipes.shared.domain.model.MealType
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
@@ -92,6 +97,8 @@ class RecipeRepository(
 			)
 			params.add(like)
 		}
+
+		addEnrichmentFilterConditions(filters, conditions, params)
 
 		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
 		val limit = request.limit.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
@@ -231,8 +238,13 @@ class RecipeRepository(
 					yields = rs.getNullableString("yields"),
 					imageUrl = rs.getNullableString("image_url"),
 					cuisine = rs.getNullableString("cuisine"),
-					category = rs.getNullableString("category"),
+					mealType = rs.getNullableString("meal_type"),
 					measurementSystem = rs.getNullableMeasurementSystem("measurement_system"),
+					difficulty = rs.getNullableString("difficulty"),
+					cookingMethod = rs.getNullableString("cooking_method"),
+					calorieRange = rs.getNullableString("calorie_range"),
+					dietaryPreferences = rs.getStringArray("dietary_preferences"),
+					tags = rs.getStringArray("tags"),
 				)
 			}
 		}
@@ -263,8 +275,13 @@ class RecipeRepository(
 			yields = getNullableString("yields"),
 			imageUrl = getNullableString("image_url"),
 			cuisine = getNullableString("cuisine"),
-			category = getNullableString("category"),
+			mealType = getNullableString("meal_type"),
 			measurementSystem = getNullableMeasurementSystem("measurement_system"),
+			difficulty = getNullableString("difficulty"),
+			cookingMethod = getNullableString("cooking_method"),
+			calorieRange = getNullableString("calorie_range"),
+			dietaryPreferences = getStringArray("dietary_preferences"),
+			tags = getStringArray("tags"),
 		)
 	}
 
@@ -277,13 +294,14 @@ class RecipeRepository(
 		val measurementSystem = recipeRecord.measurementSystem ?: detectMeasurementSystem(ingredientGroups)
 		val isFavorite = isFavorite(conn, recipeRecord.id, userId)
 		val steps = loadStepsForRecipe(conn, recipeRecord.id, recipeRecord.instructions)
+		val mealType = recipeRecord.mealType?.let { runCatching { MealType.valueOf(it) }.getOrNull() }
 
 		return RecipeDetails(
 			id = recipeRecord.id,
 			title = recipeRecord.title,
 			description = recipeRecord.description ?: buildDescription(
 				cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
-				category = recipeRecord.category,
+				mealType = mealType,
 				totalTime = recipeRecord.totalTime,
 				yields = recipeRecord.yields,
 			),
@@ -295,6 +313,14 @@ class RecipeRepository(
 			cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
 			measurementSystem = measurementSystem,
 			isFavorite = isFavorite,
+			mealType = mealType,
+			difficultyLevel = recipeRecord.difficulty?.let { runCatching { DifficultyLevel.valueOf(it) }.getOrNull() },
+			cookingMethod = recipeRecord.cookingMethod?.let { runCatching { CookingMethod.valueOf(it) }.getOrNull() },
+			calorieRange = recipeRecord.calorieRange?.let { runCatching { CalorieRange.valueOf(it) }.getOrNull() },
+			dietaryPreferences = recipeRecord.dietaryPreferences
+				.mapNotNull { runCatching { DietaryPreference.valueOf(it) }.getOrNull() }
+				.toSet(),
+			tags = recipeRecord.tags.toSet(),
 		)
 	}
 
@@ -537,13 +563,13 @@ class RecipeRepository(
 
 	private fun buildDescription(
 		cuisine: Cuisine?,
-		category: String?,
+		mealType: MealType?,
 		totalTime: Int?,
 		yields: String?,
 	): String {
 		val introParts = listOfNotNull(
 			cuisine?.displayName,
-			category?.takeIf { it.isNotBlank() },
+			mealType?.displayName,
 		)
 		val intro = when {
 			introParts.isEmpty() -> "Recipe"
@@ -567,6 +593,11 @@ class RecipeRepository(
 
 	private fun ResultSet.getNullableMeasurementSystem(columnLabel: String): MeasurementSystem? =
 		getNullableString(columnLabel)?.let(MeasurementSystem::valueOf)
+
+	private fun ResultSet.getStringArray(columnLabel: String): List<String> =
+		(getArray(columnLabel)?.array as? Array<*>)
+			?.filterIsInstance<String>()
+			?: emptyList()
 
 	private fun readFavoriteRecipes(rs: ResultSet): List<RecipeSummary> {
 		val results = ArrayList<RecipeSummary>()
@@ -623,8 +654,13 @@ class RecipeRepository(
 		val yields: String?,
 		val imageUrl: String?,
 		val cuisine: String?,
-		val category: String?,
+		val mealType: String?,
 		val measurementSystem: MeasurementSystem?,
+		val difficulty: String?,
+		val cookingMethod: String?,
+		val calorieRange: String?,
+		val dietaryPreferences: List<String>,
+		val tags: List<String>,
 	)
 
 	private data class IngredientGroupAccumulator(
@@ -660,7 +696,8 @@ class RecipeRepository(
 		"""
 
 		const val createdRecipesSql = """
-			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine, category, measurement_system
+			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
+			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
 			FROM recipes
 			WHERE created_by_user_id = ?
 			ORDER BY created_at DESC, id DESC
@@ -676,7 +713,8 @@ class RecipeRepository(
 		"""
 
 		const val recipeSql = """
-			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine, category, measurement_system
+			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
+			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
 			FROM recipes
 			WHERE id = ?
 		"""
