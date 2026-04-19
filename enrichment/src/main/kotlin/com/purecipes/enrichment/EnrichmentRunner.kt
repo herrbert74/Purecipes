@@ -2,32 +2,29 @@ package com.purecipes.enrichment
 
 import com.purecipes.shared.domain.model.CalorieRange
 import com.purecipes.shared.domain.model.CookingMethod
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.DietaryPreference
 import com.purecipes.shared.domain.model.DifficultyLevel
 import com.purecipes.shared.domain.model.MealType
+import java.nio.file.Files
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.DriverManager
 
 private const val BATCH_SIZE = 32
+private const val CUISINE_THRESHOLD = 0.60f
 private const val DIETARY_THRESHOLD = 0.55f
 private const val LOW_CALORIE_THRESHOLD = 300.0
 private const val HIGH_CALORIE_THRESHOLD = 600.0
 
 fun main() {
-	val modelPath = requireNotNull(System.getenv("USE_MODEL_PATH")) {
-		"Environment variable USE_MODEL_PATH must be set to the Universal Sentence Encoder SavedModel path"
-	}
-	val dbUrl = requireNotNull(System.getenv("PURECIPES_DB_URL")) {
-		"Environment variable PURECIPES_DB_URL must be set"
-	}
-	val dbUser = requireNotNull(System.getenv("PURECIPES_DB_USER")) {
-		"Environment variable PURECIPES_DB_USER must be set"
-	}
-	val dbPassword = requireNotNull(System.getenv("PURECIPES_DB_PASSWORD")) {
-		"Environment variable PURECIPES_DB_PASSWORD must be set"
-	}
+	val modelPath = resolveModelPath(requiredSetting("USE_MODEL_PATH"))
+	val dbUrl = requiredSetting("PURECIPES_DB_URL")
+	val dbUser = requiredSetting("PURECIPES_DB_USER")
+	val dbPassword = requiredSetting("PURECIPES_DB_PASSWORD")
 
 	UseTextClassifier(modelPath).use { classifier ->
+		val cuisineCentroids = classifier.buildClassCentroids(SeedExamples.cuisine)
 		val mealTypeCentroids = classifier.buildClassCentroids(SeedExamples.mealType)
 		val difficultyCentroids = classifier.buildClassCentroids(SeedExamples.difficultyLevel)
 		val cookingMethodCentroids = classifier.buildClassCentroids(SeedExamples.cookingMethod)
@@ -44,6 +41,11 @@ fun main() {
 
 				batch.forEachIndexed { i, recipe ->
 					val emb = embeddings[i]
+					val cuisine = if (recipe.cuisine == null) {
+						classifier.classifySingle(emb, cuisineCentroids, CUISINE_THRESHOLD)
+					} else {
+						null
+					}
 					val mealType = if (recipe.mealType == null) {
 						classifier.classifySingle(emb, mealTypeCentroids)
 					} else {
@@ -69,7 +71,7 @@ fun main() {
 					} else {
 						null
 					}
-					updateRecipe(conn, recipe.id, mealType, difficulty, cookingMethod, calorieRange, dietaryPreferences)
+					updateRecipe(conn, recipe.id, cuisine, mealType, difficulty, cookingMethod, calorieRange, dietaryPreferences)
 				}
 			}
 		}
@@ -81,6 +83,7 @@ private data class RecipeRow(
 	val id: Int,
 	val text: String,
 	val totalCalories: Double?,
+	val cuisine: String?,
 	val mealType: String?,
 	val difficulty: String?,
 	val cookingMethod: String?,
@@ -88,14 +91,44 @@ private data class RecipeRow(
 	val dietaryPreferences: String?,
 )
 
+private fun requiredSetting(name: String): String =
+	System.getenv(name)
+		?: System.getProperty(name)
+		?: error("Required setting $name is missing")
+
+private fun resolveModelPath(configuredPath: String): String {
+	val directCandidate = Path.of(configuredPath).toAbsolutePath().normalize()
+	val parentCandidate = Path.of("..").resolve(configuredPath).toAbsolutePath().normalize()
+	val candidate = sequenceOf(directCandidate, parentCandidate)
+		.firstOrNull(Files::exists)
+		?: error("USE_MODEL_PATH does not exist: $configuredPath")
+
+	if (Files.isRegularFile(candidate.resolve("saved_model.pb"))) {
+		return candidate.toString()
+	}
+
+	val nestedModelDir = Files.list(candidate).use { children ->
+		children
+			.filter { Files.isDirectory(it) && Files.isRegularFile(it.resolve("saved_model.pb")) }
+			.findFirst()
+			.orElse(null)
+	}
+	if (nestedModelDir != null) {
+		return nestedModelDir.toString()
+	}
+
+	error("USE_MODEL_PATH must point to an extracted Universal Sentence Encoder SavedModel directory")
+}
+
 private fun loadRecipesToEnrich(conn: Connection): List<RecipeRow> {
 	val sql = """
 		SELECT
 			r.id,
 			COALESCE(r.title, '') || ' ' ||
 			COALESCE(r.description, '') || ' ' ||
-			COALESCE(string_agg(i.name, ' '), '') AS recipe_text,
-			SUM(CASE WHEN n.nutrient = 'calories' THEN n.amount ELSE NULL END) AS total_calories,
+			COALESCE(string_agg(i.ingredient, ' '), '') AS recipe_text,
+			MAX(n.calories) AS total_calories,
+			r.cuisine,
 			r.meal_type,
 			r.difficulty,
 			r.cooking_method,
@@ -105,7 +138,8 @@ private fun loadRecipesToEnrich(conn: Connection): List<RecipeRow> {
 		LEFT JOIN ingredient_groups ig ON ig.recipe_id = r.id
 		LEFT JOIN ingredients i ON i.ingredient_group_id = ig.id
 		LEFT JOIN nutrition n ON n.recipe_id = r.id
-		WHERE r.meal_type IS NULL
+		WHERE r.cuisine IS NULL
+		   OR r.meal_type IS NULL
 		   OR r.difficulty IS NULL
 		   OR r.cooking_method IS NULL
 		   OR r.calorie_range IS NULL
@@ -123,6 +157,7 @@ private fun loadRecipesToEnrich(conn: Connection): List<RecipeRow> {
 						id = rs.getInt("id"),
 						text = rs.getString("recipe_text") ?: "",
 						totalCalories = rs.getDouble("total_calories").takeIf { !rs.wasNull() },
+						cuisine = rs.getString("cuisine"),
 						mealType = rs.getString("meal_type"),
 						difficulty = rs.getString("difficulty"),
 						cookingMethod = rs.getString("cooking_method"),
@@ -148,6 +183,7 @@ private fun calorieRangeFromNutrition(totalCalories: Double?): CalorieRange? {
 private fun updateRecipe(
 	conn: Connection,
 	id: Int,
+	cuisine: Cuisine?,
 	mealType: MealType?,
 	difficulty: DifficultyLevel?,
 	cookingMethod: CookingMethod?,
@@ -155,6 +191,7 @@ private fun updateRecipe(
 	dietaryPreferences: Set<DietaryPreference>?,
 ) {
 	val setClauses = mutableListOf<String>()
+	if (cuisine != null) setClauses.add("cuisine = ?")
 	if (mealType != null) setClauses.add("meal_type = ?")
 	if (difficulty != null) setClauses.add("difficulty = ?")
 	if (cookingMethod != null) setClauses.add("cooking_method = ?")
@@ -166,6 +203,7 @@ private fun updateRecipe(
 	val sql = "UPDATE recipes SET ${setClauses.joinToString(", ")} WHERE id = ?"
 	conn.prepareStatement(sql).use { ps ->
 		var idx = 1
+		if (cuisine != null) ps.setString(idx++, cuisine.name)
 		if (mealType != null) ps.setString(idx++, mealType.name)
 		if (difficulty != null) ps.setString(idx++, difficulty.name)
 		if (cookingMethod != null) ps.setString(idx++, cookingMethod.name)

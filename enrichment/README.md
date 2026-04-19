@@ -10,15 +10,16 @@ PostgreSQL database via semantic similarity classification.
 Each recipe that has one or more NULL enrichable columns is processed. The tool writes back
 only the fields that were NULL; existing values are never overwritten.
 
-| DB column              | Domain type           | Method       | Description                                          |
-|------------------------|-----------------------|--------------|------------------------------------------------------|
-| `meal_type`            | `MealType`            | Single-label | Breakfast, Lunch, Dinner, Snack, Dessert, …          |
-| `difficulty`           | `DifficultyLevel`     | Single-label | Easy, Medium, Hard                                   |
-| `cooking_method`       | `CookingMethod`       | Single-label | Bake, Grill, Fry, Stir-Fry, Slow Cook, Steam, …     |
-| `calorie_range`        | `CalorieRange`        | Rule-based   | LOW < 300 kcal, MEDIUM 300–600, HIGH > 600           |
-| `dietary_preferences`  | `Set<DietaryPreference>` | Multi-label | Vegan, Gluten-Free, Keto, Paleo, Halal, …         |
+| DB column              | Domain type                | Method                  | Description                                      | Info |
+|------------------------|----------------------------|-------------------------|--------------------------------------------------|------|
+| `cuisine`              | `Cuisine`                  | Single-label + threshold | Italian, Indian, Mexican, Thai, British, …      | Nullable; only written when top similarity is at least `CUISINE_THRESHOLD = 0.60f` |
+| `meal_type`            | `MealType`                 | Single-label            | Breakfast, Lunch, Dinner, Snack, Dessert, …      | Nullable in schema; enrichment fills only when currently empty |
+| `difficulty`           | `DifficultyLevel`          | Single-label            | Easy, Medium, Hard                               | Nullable in schema; enrichment fills only when currently empty |
+| `cooking_method`       | `CookingMethod`            | Single-label            | Bake, Grill, Fry, Stir-Fry, Slow Cook, Steam, … | Nullable in schema; enrichment fills only when currently empty |
+| `calorie_range`        | `CalorieRange`             | Rule-based              | LOW < 300 kcal, MEDIUM 300–600, HIGH > 600       | Nullable when nutrition calories are missing |
+| `dietary_preferences`  | `Set<DietaryPreference>`   | Multi-label + threshold | Vegan, Gluten-Free, Keto, Paleo, Halal, …       | Can be empty; labels are added only above `DIETARY_THRESHOLD = 0.55f` |
 
-`calorie_range` is derived purely from the `nutrition` table (no ML); the other four use
+`calorie_range` is derived purely from the `nutrition` table (no ML); the other five use
 USE embeddings + cosine similarity against pre-built class centroids.
 
 ## How classification works
@@ -29,8 +30,10 @@ USE embeddings + cosine similarity against pre-built class centroids.
    per class and averaging the resulting vectors (see `SeedExamples.kt`).
 4. The recipe embedding is compared against every centroid via cosine similarity.
    - **Single-label**: the class with the highest similarity wins.
+   - **Confidence-gated single-label**: cuisine is only written when the best score exceeds
+     `CUISINE_THRESHOLD` (`0.60f`); otherwise it stays null.
    - **Multi-label** (dietary preferences): every class whose similarity exceeds
-     `DIETARY_THRESHOLD` (0.55) is included.
+     `DIETARY_THRESHOLD` (`0.55f`) is included.
 
 ## Prerequisites
 
@@ -78,7 +81,12 @@ of their USE embeddings. To improve a mislabelled class:
 - Remove phrases that are ambiguous or overlap with another class.
 - Run the tool again — changes take effect immediately (no retraining needed).
 
-### Tuning the multi-label threshold
+### Tuning thresholds
+
+`CUISINE_THRESHOLD` in `EnrichmentRunner.kt` controls whether cuisine is filled at all. The current default is `0.60f`.
+
+- Raise it to leave more uncertain cuisines null.
+- Lower it to classify cuisine more aggressively.
 
 `DIETARY_THRESHOLD` in `EnrichmentRunner.kt` controls how confidently a recipe must resemble a
 dietary preference before it is assigned. The current default is `0.55f`.

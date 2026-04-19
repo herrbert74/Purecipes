@@ -2,7 +2,6 @@ package com.purecipes.enrichment
 
 import org.tensorflow.SavedModelBundle
 import org.tensorflow.ndarray.NdArrays
-import org.tensorflow.ndarray.Shape
 import org.tensorflow.types.TFloat32
 import org.tensorflow.types.TString
 
@@ -11,18 +10,38 @@ internal class UseTextClassifier(modelPath: String) : AutoCloseable {
 	private val bundle = SavedModelBundle.load(modelPath, "serve")
 
 	fun encodeTexts(texts: List<String>): Array<FloatArray> {
-		val shape = Shape.of(texts.size.toLong())
 		val inputData = NdArrays.vectorOfObjects(*texts.toTypedArray())
-		val input = TString.tensorOf(shape, inputData)
+		val input = TString.tensorOf(inputData)
 		input.use {
-			val result = bundle.session().runner()
-				.feed("serving_default_inputs", input)
-				.fetch("StatefulPartitionedCall")
-				.run()
-			result[0].use { tensor ->
-				val embeddings = tensor as TFloat32
-				return Array(texts.size) { i ->
-					FloatArray(EMBEDDING_DIM) { j -> embeddings.getFloat(i.toLong(), j.toLong()) }
+			bundle.function("serving_default").call(mapOf("inputs" to input)).use { result ->
+				val embeddings = (result.get("outputs").orElseGet { result.get(0) }) as? TFloat32
+					?: error("serving_default did not return a float embedding tensor")
+				embeddings.use {
+					return tensorToEmbeddings(it, texts.size)
+				}
+			}
+		}
+	}
+
+	private fun tensorToEmbeddings(embeddings: TFloat32, textCount: Int): Array<FloatArray> {
+		val shape = embeddings.shape()
+		val dims = LongArray(shape.numDimensions()) { index -> shape.size(index) }
+		return Array(textCount) { i ->
+			FloatArray(EMBEDDING_DIM) { j ->
+				when {
+					dims.size == 1 && dims[0] == EMBEDDING_DIM.toLong() && textCount == 1 -> {
+						embeddings.getFloat(j.toLong())
+					}
+					dims.size == 2 && dims[0] == textCount.toLong() && dims[1] >= EMBEDDING_DIM.toLong() -> {
+						embeddings.getFloat(i.toLong(), j.toLong())
+					}
+					dims.size == 3 && dims[0] == textCount.toLong() && dims[1] == 1L && dims[2] >= EMBEDDING_DIM.toLong() -> {
+						embeddings.getFloat(i.toLong(), 0L, j.toLong())
+					}
+					dims.size == 3 && dims[0] == 1L && dims[1] == textCount.toLong() && dims[2] >= EMBEDDING_DIM.toLong() -> {
+						embeddings.getFloat(0L, i.toLong(), j.toLong())
+					}
+					else -> error("Unexpected USE embedding shape: ${dims.joinToString(prefix = "[", postfix = "]")}")
 				}
 			}
 		}
@@ -46,6 +65,15 @@ internal class UseTextClassifier(modelPath: String) : AutoCloseable {
 
 	fun <T> classifySingle(textEmb: FloatArray, centroids: Map<T, FloatArray>): T =
 		centroids.maxBy { (_, centroid) -> cosineSimilarity(textEmb, centroid) }.key
+
+	fun <T> classifySingle(
+		textEmb: FloatArray,
+		centroids: Map<T, FloatArray>,
+		threshold: Float,
+	): T? {
+		val best = centroids.maxBy { (_, centroid) -> cosineSimilarity(textEmb, centroid) }
+		return if (cosineSimilarity(textEmb, best.value) >= threshold) best.key else null
+	}
 
 	fun <T> classifyMultiLabel(
 		textEmb: FloatArray,
