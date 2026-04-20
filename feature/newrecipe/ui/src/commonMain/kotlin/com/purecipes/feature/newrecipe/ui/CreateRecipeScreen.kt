@@ -161,8 +161,8 @@ fun CreateRecipeScreen(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
-				contentPadding = PaddingValues(16.dp),
-				verticalArrangement = Arrangement.spacedBy(16.dp),
+				contentPadding = PaddingValues(PurecipesTheme.space.m),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				item {
 					CreateRecipeForm(
@@ -284,8 +284,8 @@ private fun CreateRecipeForm(
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Text(
 				text = if (isEditing) "Edit recipe" else "New recipe",
@@ -329,7 +329,7 @@ private fun CreateRecipeForm(
 
 			Row(
 				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(12.dp),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
 				if (onPickImageClick != null) {
 					FilledTonalButton(
@@ -341,8 +341,8 @@ private fun CreateRecipeForm(
 					) {
 						if (isImportingImage) {
 							CircularProgressIndicator(
-								modifier = Modifier.size(18.dp),
-								strokeWidth = 2.dp,
+								modifier = Modifier.size(PurecipesTheme.space.m),
+								strokeWidth = PurecipesTheme.space.quark,
 							)
 							Text(text = "Importing image")
 						} else {
@@ -372,7 +372,7 @@ private fun CreateRecipeForm(
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(180.dp)
-						.clip(RoundedCornerShape(16.dp)),
+						.clip(RoundedCornerShape(PurecipesTheme.space.m)),
 					contentScale = ContentScale.Crop,
 				)
 			}
@@ -392,7 +392,7 @@ private fun CreateRecipeForm(
 
 			Row(
 				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(12.dp),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
 				CuisinePicker(
 					selectedCuisine = selectedCuisine,
@@ -456,7 +456,7 @@ private fun CreateRecipeForm(
 
 			Row(
 				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(12.dp),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
 				Button(
 					onClick = onSaveClick,
@@ -490,7 +490,7 @@ private fun StepInputSection(
 	var draggedIndex by remember { mutableIntStateOf(-1) }
 	var dragOffsetY by remember { mutableFloatStateOf(0f) }
 
-	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		Row(
 			modifier = Modifier.fillMaxWidth(),
 			horizontalArrangement = Arrangement.SpaceBetween,
@@ -520,7 +520,7 @@ private fun StepInputSection(
 						)
 					}
 					.zIndex(if (draggedIndex == index) 1f else 0f),
-				horizontalArrangement = Arrangement.spacedBy(12.dp),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 				verticalAlignment = Alignment.CenterVertically,
 			) {
 				StepDragHandle(
@@ -591,7 +591,7 @@ private fun StepDragHandle(
 ) {
 	Box(
 		modifier = Modifier
-			.size(48.dp)
+			.size(PurecipesTheme.space.xxl)
 			.testTag("$STEP_REORDER_BUTTON_TAG_PREFIX$index"),
 		contentAlignment = Alignment.Center,
 	) {
@@ -633,7 +633,7 @@ private fun ImageImportPlaceholder() {
 		) {
 			Column(
 				horizontalAlignment = Alignment.CenterHorizontally,
-				verticalArrangement = Arrangement.spacedBy(12.dp),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
 				CircularProgressIndicator()
 				Text(
@@ -701,9 +701,9 @@ private fun EmptyCreatedRecipes(hasError: Boolean, onRetry: () -> Unit) {
 		Column(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(24.dp),
+				.padding(PurecipesTheme.space.l),
 			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Icon(
 				imageVector = Icons.Filled.Add,
@@ -755,8 +755,8 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			if (!recipe.imageUrl.isNullOrBlank()) {
 				AsyncImage(
@@ -765,7 +765,7 @@ private fun CreatedRecipeCard(recipe: RecipeDetails, onEditClick: () -> Unit) {
 					modifier = Modifier
 						.fillMaxWidth()
 						.height(160.dp)
-						.clip(RoundedCornerShape(16.dp)),
+						.clip(RoundedCornerShape(PurecipesTheme.space.m)),
 					contentScale = ContentScale.Crop,
 				)
 			}
@@ -814,7 +814,7 @@ private fun CuisinePicker(
 	var isExpanded by remember { mutableStateOf(false) }
 
 	Box(modifier = modifier) {
-		Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+		Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs)) {
 			Text(
 				text = "Cuisine",
 				style = PurecipesTheme.typography.bodySmall,

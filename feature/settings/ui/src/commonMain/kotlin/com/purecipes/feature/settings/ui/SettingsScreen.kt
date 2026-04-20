@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
@@ -77,8 +76,8 @@ fun SettingsScreen(
 				.fillMaxSize()
 				.verticalScroll(rememberScrollState())
 				.padding(innerPadding)
-				.padding(horizontal = 20.dp, vertical = 16.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp),
+				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
 			MeasurementPreferencesSection(
 				observeMeasurementPreferences = observeMeasurementPreferences,
@@ -107,11 +106,11 @@ private fun NotificationPreferencesSection(
 	Surface(
 		modifier = modifier.fillMaxWidth(),
 		shape = PurecipesTheme.shapes.large,
-		tonalElevation = 2.dp,
+		tonalElevation = PurecipesTheme.space.quark,
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(14.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
 			SectionHeader(
 				title = "Notifications",
@@ -185,11 +184,11 @@ private fun NotificationToggleRow(
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.padding(vertical = 4.dp),
+			.padding(vertical = PurecipesTheme.space.xs),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.SpaceBetween,
 	) {
-		Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+		Column(modifier = Modifier.weight(1f).padding(end = PurecipesTheme.space.m)) {
 			Text(
 				text = label,
 				style = PurecipesTheme.typography.bodyMedium,
@@ -222,11 +221,11 @@ private fun MeasurementPreferencesSection(
 	Surface(
 		modifier = modifier.fillMaxWidth(),
 		shape = PurecipesTheme.shapes.large,
-		tonalElevation = 2.dp,
+		tonalElevation = PurecipesTheme.space.quark,
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(14.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
 			SectionHeader(
 				title = "Measurements",
@@ -258,7 +257,7 @@ private fun MeasurementSystemChooser(
 	preferences: MeasurementPreferences,
 	onPreferencesChange: (MeasurementPreferences) -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		Text(
 			text = "Preferred system",
 			style = PurecipesTheme.typography.titleSmall,
@@ -288,7 +287,7 @@ private fun RecipeFormatHandlingChooser(
 	preferences: MeasurementPreferences,
 	onPreferencesChange: (MeasurementPreferences) -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		Text(
 			text = "Recipes in another system",
 			style = PurecipesTheme.typography.titleSmall,
@@ -330,8 +329,12 @@ private fun MeasurementOptionRow(
 ) {
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
-		shape = RoundedCornerShape(16.dp),
-		tonalElevation = if (selected) 2.dp else 0.dp,
+		shape = RoundedCornerShape(PurecipesTheme.space.m),
+		tonalElevation = if (selected) {
+			PurecipesTheme.space.quark
+		} else {
+			PurecipesTheme.space.none
+		},
 	) {
 		Row(
 			modifier = Modifier
@@ -341,9 +344,9 @@ private fun MeasurementOptionRow(
 					onClick = onClick,
 					role = Role.RadioButton,
 				)
-				.padding(horizontal = 12.dp, vertical = 10.dp),
+				.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
 			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			RadioButton(
 				selected = selected,
@@ -351,7 +354,7 @@ private fun MeasurementOptionRow(
 			)
 			Column(
 				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(2.dp),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.quark),
 			) {
 				Text(
 					text = label,

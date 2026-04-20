@@ -24,7 +24,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -115,8 +114,8 @@ private fun StepByStepCookingScreen(
 	Column(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(horizontal = 16.dp, vertical = 20.dp),
-		verticalArrangement = Arrangement.spacedBy(20.dp),
+			.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		Text(
 			text = "${currentStepIndex + 1} of ${recipe.steps.size}",
@@ -140,7 +139,7 @@ private fun StepByStepCookingScreen(
 			) {
 				Text(
 					text = recipe.steps[page],
-					modifier = Modifier.padding(24.dp),
+					modifier = Modifier.padding(PurecipesTheme.space.l),
 					style = PurecipesTheme.typography.bodyLarge,
 				)
 			}
@@ -160,7 +159,7 @@ private fun PagerIndicator(
 		modifier = modifier
 			.clip(PurecipesTheme.shapes.extraLarge)
 			.background(PurecipesTheme.colorScheme.surfaceContainerHighest)
-			.height(8.dp),
+			.height(PurecipesTheme.space.s),
 	) {
 		Box(
 			modifier = Modifier

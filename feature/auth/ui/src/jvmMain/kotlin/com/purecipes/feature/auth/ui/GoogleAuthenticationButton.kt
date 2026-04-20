@@ -6,7 +6,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.purecipes.shared.ui.component.PurecipesButtonDefaults
 
 @Composable
 internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: String?) = Unit
@@ -21,7 +21,7 @@ internal actual fun GoogleAuthenticationButton(
 		onClick = onUnavailable,
 		modifier = Modifier
 			.fillMaxWidth()
-			.height(52.dp),
+			.height(PurecipesButtonDefaults.providerButtonHeight),
 	) {
 		Text(text = if (isConfigured) "Continue with Google" else "Google sign-in unavailable")
 	}

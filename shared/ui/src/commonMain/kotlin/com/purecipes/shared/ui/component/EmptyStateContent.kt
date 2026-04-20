@@ -32,12 +32,12 @@ fun EmptyStateContent(
 	Box(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(24.dp),
+			.padding(PurecipesTheme.space.l),
 		contentAlignment = Alignment.Center,
 	) {
 		Column(
 			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Icon(
 				imageVector = icon,

@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -39,9 +38,9 @@ internal fun <T : Any> FilterChipSection(
 		FlowRow(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(horizontal = 16.dp),
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
-			verticalArrangement = Arrangement.spacedBy(4.dp),
+				.padding(horizontal = PurecipesTheme.space.m),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 		) {
 			items.forEach { item ->
 				FilterChip(
@@ -67,7 +66,11 @@ internal fun FilterSectionHeader(
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
-			.padding(start = 16.dp, end = 4.dp, top = 8.dp),
+			.padding(
+				start = PurecipesTheme.space.m,
+				end = PurecipesTheme.space.xs,
+				top = PurecipesTheme.space.s,
+			),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
 		Text(

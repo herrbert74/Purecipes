@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -23,7 +22,7 @@ fun SectionHeader(
 ) {
 	Column(
 		modifier = modifier,
-		verticalArrangement = Arrangement.spacedBy(4.dp),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 	) {
 		Text(
 			text = title,

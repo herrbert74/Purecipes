@@ -56,6 +56,7 @@ import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.shared.ui.component.ErrorText
+import com.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -104,8 +105,8 @@ fun AuthenticationScreen(
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
 					.padding(innerPadding)
-					.padding(24.dp),
-				verticalArrangement = Arrangement.spacedBy(20.dp),
+					.padding(PurecipesTheme.space.l),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				when (val state = viewModel.authenticationState) {
 					AuthenticationState.SignedOut ->
@@ -172,7 +173,7 @@ private fun SignedOutAuthenticationContent(
 	onManagePrivacySettings: () -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m)) {
 		Text(
 			text = """Choose how you want to sign in.
 				| Email registration uses your first and family name as the display name.
@@ -219,11 +220,11 @@ private fun AuthenticationProviderButtons(
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(52.dp),
+				.height(PurecipesButtonDefaults.providerButtonHeight),
 			onClick = onEmailProviderClick,
 		) {
 			Text(text = "Continue with email")
@@ -260,13 +261,13 @@ private fun EmailAuthenticationForm(
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
 		shape = PurecipesTheme.shapes.large,
-		tonalElevation = 2.dp,
+		tonalElevation = PurecipesTheme.space.quark,
 	) {
 		Column(
-			modifier = Modifier.padding(20.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
-			Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+			Row(horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 				OutlinedButton(
 					modifier = Modifier.weight(1f),
 					onClick = { onEmailAuthenticationModeChange(EmailAuthenticationMode.SIGN_IN) },
@@ -315,14 +316,14 @@ private fun EmailAuthenticationForm(
 			Button(
 				modifier = Modifier
 					.fillMaxWidth()
-					.height(48.dp),
+					.height(PurecipesTheme.space.xxl),
 				onClick = onEmailAuthenticationSubmit,
 				enabled = !isBusy,
 			) {
 				if (isBusy) {
 					CircularProgressIndicator(
-						modifier = Modifier.size(18.dp),
-						strokeWidth = 2.dp,
+						modifier = Modifier.size(PurecipesTheme.space.m),
+						strokeWidth = PurecipesTheme.space.quark,
 					)
 				} else {
 					Text(
@@ -346,10 +347,10 @@ private fun SignedInAuthenticationContent(
 	onManagePrivacySettings: () -> Unit,
 	onSignOut: () -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m)) {
 		ProfileHeader(user = user)
 		HorizontalDivider()
-		Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+		Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 			AssistChip(
 				onClick = {},
 				label = { Text(text = user.provider.name.lowercase().replaceFirstChar { it.titlecase() }) },
@@ -367,8 +368,8 @@ private fun SignedInAuthenticationContent(
 		) {
 			if (isBusy) {
 				CircularProgressIndicator(
-					modifier = Modifier.size(18.dp),
-					strokeWidth = 2.dp,
+					modifier = Modifier.size(PurecipesTheme.space.m),
+					strokeWidth = PurecipesTheme.space.quark,
 				)
 			} else {
 				Text(text = "Sign out")
@@ -382,7 +383,7 @@ private fun PrivacySettingsContent(
 	consentState: ConsentState,
 	onManagePrivacySettings: () -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		Text(
 			text = "Privacy",
 			style = PurecipesTheme.typography.titleLarge,
@@ -406,10 +407,10 @@ private fun ProfileHeader(user: AuthUser) {
 	Row(
 		modifier = Modifier.fillMaxWidth(),
 		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.spacedBy(16.dp),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		ProfileAvatar(user = user)
-		Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+		Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs)) {
 			Text(
 				text = user.displayName,
 				style = PurecipesTheme.typography.headlineSmall,
@@ -459,4 +460,3 @@ private fun ProfileAvatar(user: AuthUser) {
 			)
 		}
 	}
-}

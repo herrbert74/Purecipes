@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.purecipes.feature.analytics.domain.model.toDisplayText
 import com.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import com.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
@@ -43,8 +42,8 @@ fun ConsentPreferencesScreen(
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(innerPadding)
-				.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp),
+				.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
 			Text(
 				text = consentState.toDisplayText(),

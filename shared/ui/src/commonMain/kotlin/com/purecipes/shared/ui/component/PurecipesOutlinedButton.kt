@@ -8,7 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -20,7 +19,7 @@ fun PurecipesOutlinedButton(
 	OutlinedButton(
 		modifier = modifier.fillMaxWidth(),
 		onClick = onClick,
-		contentPadding = PaddingValues(vertical = 12.dp),
+		contentPadding = PaddingValues(vertical = PurecipesTheme.space.s),
 	) {
 		Text(
 			text = text,

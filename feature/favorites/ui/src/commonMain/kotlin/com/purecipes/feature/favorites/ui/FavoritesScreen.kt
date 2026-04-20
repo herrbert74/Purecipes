@@ -112,7 +112,7 @@ private fun FavoritesContent(
 		errorMessage != null -> Box(
 			modifier = modifier
 				.fillMaxSize()
-				.padding(24.dp),
+				.padding(PurecipesTheme.space.l),
 			contentAlignment = Alignment.Center,
 		) {
 			ErrorText(
@@ -131,8 +131,8 @@ private fun FavoritesContent(
 
 		else -> LazyColumn(
 			modifier = modifier.fillMaxSize(),
-			verticalArrangement = Arrangement.spacedBy(8.dp),
-			contentPadding = PaddingValues(16.dp),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			contentPadding = PaddingValues(PurecipesTheme.space.m),
 		) {
 			items(recipes, key = { it.id }) { recipe ->
 				FavoriteRecipeRow(
@@ -155,8 +155,8 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(12.dp),
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
+				.padding(PurecipesTheme.space.s),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			AsyncImage(
@@ -164,7 +164,7 @@ private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 				contentDescription = recipe.title,
 				modifier = Modifier
 					.size(56.dp)
-					.clip(RoundedCornerShape(8.dp))
+					.clip(RoundedCornerShape(PurecipesTheme.space.s))
 					.background(PurecipesTheme.colorScheme.secondaryContainer),
 				contentScale = ContentScale.Crop,
 			)

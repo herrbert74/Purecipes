@@ -14,6 +14,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 private val lightScheme = lightColorScheme(
 	primary = primaryLight,
@@ -251,6 +253,18 @@ data class ColorFamily(
 	val onColorContainer: Color,
 )
 
+@Immutable
+data class Space(
+	val none: Dp = 0.dp,
+	val quark: Dp = 2.dp,
+	val xs: Dp = 4.dp,
+	val s: Dp = 8.dp,
+	val m: Dp = 16.dp,
+	val l: Dp = 24.dp,
+	val xl: Dp = 32.dp,
+	val xxl: Dp = 48.dp,
+)
+
 private val LocalPurecipesColorScheme = staticCompositionLocalOf<ColorScheme> {
 	error("No ColorScheme provided. Wrap your content in PurecipesTheme.")
 }
@@ -262,6 +276,8 @@ private val LocalPurecipesTypography = staticCompositionLocalOf<Typography> {
 private val LocalPurecipesShapes = staticCompositionLocalOf<Shapes> {
 	error("No Shapes provided. Wrap your content in PurecipesTheme.")
 }
+
+private val LocalPurecipesSpace = staticCompositionLocalOf { Space() }
 
 object PurecipesTheme {
 	val colorScheme: ColorScheme
@@ -275,6 +291,10 @@ object PurecipesTheme {
 	val shapes: Shapes
 		@Composable
 		get() = LocalPurecipesShapes.current
+
+	val space: Space
+		@Composable
+		get() = LocalPurecipesSpace.current
 
 	@Composable
 	operator fun invoke(
@@ -295,6 +315,7 @@ object PurecipesTheme {
 				LocalPurecipesColorScheme provides MaterialTheme.colorScheme,
 				LocalPurecipesTypography provides MaterialTheme.typography,
 				LocalPurecipesShapes provides MaterialTheme.shapes,
+				LocalPurecipesSpace provides Space(),
 			) {
 				content()
 			}

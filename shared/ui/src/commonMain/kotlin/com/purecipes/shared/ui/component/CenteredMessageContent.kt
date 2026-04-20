@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -22,7 +21,12 @@ fun CenteredMessageContent(
 	Box(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(PaddingValues(horizontal = 24.dp, vertical = 16.dp)),
+			.padding(
+				PaddingValues(
+					horizontal = PurecipesTheme.space.l,
+					vertical = PurecipesTheme.space.m,
+				),
+			),
 		contentAlignment = Alignment.Center,
 	) {
 		Text(

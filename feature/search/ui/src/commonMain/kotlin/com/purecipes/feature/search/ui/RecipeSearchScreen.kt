@@ -83,8 +83,8 @@ fun RecipeSearchScreen(
 	Column(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(16.dp),
-		verticalArrangement = Arrangement.spacedBy(12.dp),
+			.padding(PurecipesTheme.space.m),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
 		viewModel.measurementFilterLabel?.let { label ->
 			Text(
@@ -177,8 +177,8 @@ private fun SearchResultsContent(
 
 		else -> LazyColumn(
 			modifier = modifier.fillMaxWidth(),
-			verticalArrangement = Arrangement.spacedBy(8.dp),
-			contentPadding = PaddingValues(bottom = 16.dp),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
 		) {
 			item {
 				Text(
@@ -208,8 +208,8 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(12.dp),
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
+				.padding(PurecipesTheme.space.s),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			AsyncImage(
@@ -217,7 +217,7 @@ private fun RecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
 				contentDescription = recipe.title,
 				modifier = Modifier
 					.size(56.dp)
-					.clip(RoundedCornerShape(8.dp))
+					.clip(RoundedCornerShape(PurecipesTheme.space.s))
 					.background(PurecipesTheme.colorScheme.secondaryContainer),
 				contentScale = ContentScale.Crop,
 			)

@@ -14,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 
@@ -125,14 +124,14 @@ private fun IngredientGroupChips(
 					excludeIngredients - group.items.toSet(),
 				)
 			},
-			modifier = Modifier.padding(start = 16.dp),
+			modifier = Modifier.padding(start = PurecipesTheme.space.m),
 		)
 		FlowRow(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(horizontal = 32.dp),
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
-			verticalArrangement = Arrangement.spacedBy(4.dp),
+				.padding(horizontal = PurecipesTheme.space.xl),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 		) {
 			group.items.forEach { item ->
 				val state = when (item) {

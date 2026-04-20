@@ -142,7 +142,7 @@ fun RecipeDetailsRoute(
 				},
 				title = { Text(text = "Measurement system mismatch") },
 				text = {
-					Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+					Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 						Text(text = "This recipe uses measurements outside your preferred system.")
 						TextButton(onClick = onOpenMeasurementPreferences) {
 							Text(text = "Update my preferences")
@@ -200,8 +200,13 @@ private fun RecipeDetailsScreen(
 ) {
 	LazyColumn(
 		modifier = modifier.fillMaxSize(),
-		contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
-		verticalArrangement = Arrangement.spacedBy(16.dp),
+		contentPadding = PaddingValues(
+			start = PurecipesTheme.space.m,
+			top = PurecipesTheme.space.m,
+			end = PurecipesTheme.space.m,
+			bottom = PurecipesTheme.space.l,
+		),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		item {
 			AsyncImage(
@@ -210,14 +215,14 @@ private fun RecipeDetailsScreen(
 				modifier = Modifier
 					.fillMaxWidth()
 					.height(240.dp)
-					.clip(RoundedCornerShape(24.dp))
+					.clip(RoundedCornerShape(PurecipesTheme.space.l))
 					.background(PurecipesTheme.colorScheme.surfaceContainerLow),
 				contentScale = ContentScale.Crop,
 			)
 		}
 
 		item {
-			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 				Text(
 					text = recipe.title,
 					style = PurecipesTheme.typography.headlineMedium,
@@ -235,7 +240,7 @@ private fun RecipeDetailsScreen(
 		}
 
 		item {
-			Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 				Button(
 					onClick = onStartCooking,
 					enabled = recipe.steps.isNotEmpty(),
@@ -304,7 +309,7 @@ private fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean)
 
 	Row(
 		modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
 		items.forEach { item ->
 			Surface(
@@ -313,7 +318,7 @@ private fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean)
 			) {
 				Text(
 					text = item,
-					modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+					modifier = Modifier.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
 					style = PurecipesTheme.typography.labelLarge,
 				)
 			}
@@ -336,8 +341,8 @@ private fun IngredientGroupCard(group: IngredientGroup) {
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(10.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			group.name?.takeIf { it.isNotBlank() }?.let {
 				Text(
@@ -363,12 +368,12 @@ private fun StepCard(stepNumber: Int, step: String) {
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
-			modifier = Modifier.padding(16.dp),
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Surface(
-				modifier = Modifier.size(36.dp),
-				shape = RoundedCornerShape(18.dp),
+				modifier = Modifier.size(PurecipesTheme.space.xl),
+				shape = RoundedCornerShape(PurecipesTheme.space.m),
 				color = PurecipesTheme.colorScheme.primaryContainer,
 			) {
 				Box(contentAlignment = Alignment.Center) {
@@ -397,18 +402,18 @@ private fun RecipeDetailsMessageScreen(
 	Box(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(24.dp),
+			.padding(PurecipesTheme.space.l),
 		contentAlignment = Alignment.Center,
 	) {
 		Column(
 			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Text(
 				text = message,
 				style = PurecipesTheme.typography.bodyLarge,
 			)
-			Spacer(modifier = Modifier.height(4.dp))
+			Spacer(modifier = Modifier.height(PurecipesTheme.space.xs))
 			TextButton(onClick = onBack) {
 				Text(text = "Back to search")
 			}
