@@ -83,6 +83,7 @@ fun AuthenticationScreen(
 		signInWithGoogle = signInWithGoogle,
 		signOut = signOut,
 	)
+
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
@@ -109,39 +110,38 @@ fun AuthenticationScreen(
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				when (val state = viewModel.authenticationState) {
-					AuthenticationState.SignedOut ->
-						SignedOutAuthenticationContent(
-							consentState = consentState,
-							emailAuthenticationMode = viewModel.emailAuthenticationMode,
-							isEmailFormVisible = viewModel.isEmailFormVisible,
-							firstName = viewModel.firstName,
-							familyName = viewModel.familyName,
-							email = viewModel.email,
-							password = viewModel.password,
-							isBusy = viewModel.isBusy,
-							isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
-							onEmailProviderClick = viewModel::onEmailProviderSelected,
-							onEmailAuthenticationModeChange = viewModel::onEmailAuthenticationModeSelected,
-							onFirstNameChange = viewModel::onFirstNameChange,
-							onFamilyNameChange = viewModel::onFamilyNameChange,
-							onEmailChange = viewModel::onEmailChange,
-							onPasswordChange = viewModel::onPasswordChange,
-							onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
-							onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
-							onGoogleSignInResult = viewModel::onGoogleSignInResult,
-							onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
-							onManagePrivacySettings = { showConsentForm() },
-						)
+					AuthenticationState.SignedOut -> SignedOutAuthenticationContent(
+						consentState = consentState,
+						emailAuthenticationMode = viewModel.emailAuthenticationMode,
+						isEmailFormVisible = viewModel.isEmailFormVisible,
+						firstName = viewModel.firstName,
+						familyName = viewModel.familyName,
+						email = viewModel.email,
+						password = viewModel.password,
+						isBusy = viewModel.isBusy,
+						isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
+						onEmailProviderClick = viewModel::onEmailProviderSelected,
+						onEmailAuthenticationModeChange = viewModel::onEmailAuthenticationModeSelected,
+						onFirstNameChange = viewModel::onFirstNameChange,
+						onFamilyNameChange = viewModel::onFamilyNameChange,
+						onEmailChange = viewModel::onEmailChange,
+						onPasswordChange = viewModel::onPasswordChange,
+						onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
+						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
+						onGoogleSignInResult = viewModel::onGoogleSignInResult,
+						onManagePrivacySettings = { showConsentForm() },
+						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
+					)
 
-					is AuthenticationState.SignedIn ->
-						SignedInAuthenticationContent(
-							consentState = consentState,
-							user = state.user,
-							isBusy = viewModel.isBusy,
-							onManagePrivacySettings = { showConsentForm() },
-							onSignOut = viewModel::signOut,
-						)
+					is AuthenticationState.SignedIn -> SignedInAuthenticationContent(
+						consentState = consentState,
+						user = state.user,
+						isBusy = viewModel.isBusy,
+						onManagePrivacySettings = { showConsentForm() },
+						onSignOut = viewModel::signOut,
+					)
 				}
+
 				viewModel.message?.let { message ->
 					ErrorText(text = message)
 				}
@@ -460,3 +460,4 @@ private fun ProfileAvatar(user: AuthUser) {
 			)
 		}
 	}
+}
