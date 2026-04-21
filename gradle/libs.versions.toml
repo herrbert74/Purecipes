@@ -278,6 +278,7 @@ jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "j
 jetbrains-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }
 jetbrains-composeResources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetBrains-compose" }
 jetbrains-composeMaterial3WindowSizeClass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "jetBrains-compose" }
+jetbrains-composeUiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "jetBrains-compose" }
 jetbrains-composeUiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetBrains-compose" }
 jetbrains-composeBackhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "jetBrains-compose" }
 

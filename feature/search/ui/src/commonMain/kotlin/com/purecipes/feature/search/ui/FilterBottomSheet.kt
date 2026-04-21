@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.dp
 import com.purecipes.shared.domain.model.CalorieRange
 import com.purecipes.shared.domain.model.CookingMethod
 import com.purecipes.shared.domain.model.CookingTimeRange
@@ -15,6 +14,7 @@ import com.purecipes.shared.domain.model.DifficultyLevel
 import com.purecipes.shared.domain.model.MealType
 import com.purecipes.shared.domain.model.NutritionFilter
 import com.purecipes.shared.domain.model.SearchFilters
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 
@@ -30,7 +30,7 @@ internal fun FilterBottomSheet(
 		sheetState = sheetState,
 	) {
 		LazyColumn(
-			contentPadding = PaddingValues(bottom = 48.dp),
+			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
 		) {
 			item {
 				IngredientFilterSection(

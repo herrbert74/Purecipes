@@ -11,11 +11,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 
 private enum class IngredientChipState { NEUTRAL, INCLUDE, EXCLUDE }
@@ -125,14 +124,14 @@ private fun IngredientGroupChips(
 					excludeIngredients - group.items.toSet(),
 				)
 			},
-			modifier = Modifier.padding(start = 16.dp),
+			modifier = Modifier.padding(start = PurecipesTheme.space.m),
 		)
 		FlowRow(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(horizontal = 32.dp),
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
-			verticalArrangement = Arrangement.spacedBy(4.dp),
+				.padding(horizontal = PurecipesTheme.space.xl),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 		) {
 			group.items.forEach { item ->
 				val state = when (item) {
@@ -168,9 +167,9 @@ private fun IngredientTriStateChip(
 ) {
 	val colors = when (state) {
 		IngredientChipState.EXCLUDE -> FilterChipDefaults.filterChipColors(
-			selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-			selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
-			selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+			selectedContainerColor = PurecipesTheme.colorScheme.errorContainer,
+			selectedLabelColor = PurecipesTheme.colorScheme.onErrorContainer,
+			selectedLeadingIconColor = PurecipesTheme.colorScheme.onErrorContainer,
 		)
 		else -> FilterChipDefaults.filterChipColors()
 	}

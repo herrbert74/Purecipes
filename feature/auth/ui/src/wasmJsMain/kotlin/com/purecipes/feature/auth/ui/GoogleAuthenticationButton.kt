@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import com.mmk.kmpauth.google.GoogleButtonUiContainer
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
+import com.purecipes.shared.ui.component.PurecipesButtonDefaults
 
 @Composable
 internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: String?) {
@@ -40,14 +40,14 @@ internal actual fun GoogleAuthenticationButton(
 			GoogleSignInButton(
 				modifier = Modifier
 					.fillMaxWidth()
-					.height(52.dp),
+					.height(PurecipesButtonDefaults.providerButtonHeight),
 			) { this.onClick() }
 		}
 	} else {
 		GoogleSignInButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(52.dp),
+				.height(PurecipesButtonDefaults.providerButtonHeight),
 			onClick = onUnavailable,
 		)
 	}

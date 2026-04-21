@@ -2,7 +2,6 @@ package com.purecipes.feature.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,8 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -32,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
@@ -43,6 +39,9 @@ import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.NotificationPreferences
 import com.purecipes.shared.domain.model.RecipeFormatHandling
+import com.purecipes.shared.ui.component.PurecipesOutlinedButton
+import com.purecipes.shared.ui.component.SectionHeader
+import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -77,8 +76,8 @@ fun SettingsScreen(
 				.fillMaxSize()
 				.verticalScroll(rememberScrollState())
 				.padding(innerPadding)
-				.padding(horizontal = 20.dp, vertical = 16.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp),
+				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
 			MeasurementPreferencesSection(
 				observeMeasurementPreferences = observeMeasurementPreferences,
@@ -106,22 +105,16 @@ private fun NotificationPreferencesSection(
 
 	Surface(
 		modifier = modifier.fillMaxWidth(),
-		shape = MaterialTheme.shapes.large,
-		tonalElevation = 2.dp,
+		shape = PurecipesTheme.shapes.large,
+		tonalElevation = PurecipesTheme.space.quark,
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(14.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
-			Text(
-				text = "Notifications",
-				style = MaterialTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
-			)
-			Text(
-				text = "Manage push notification settings across devices.",
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			SectionHeader(
+				title = "Notifications",
+				subtitle = "Manage push notification settings across devices.",
 			)
 
 			NotificationToggleRow(
@@ -172,16 +165,10 @@ private fun NotificationPreferencesSection(
 				)
 				HorizontalDivider()
 
-				OutlinedButton(
-					modifier = Modifier.fillMaxWidth(),
+				PurecipesOutlinedButton(
+					text = "Send Test Notification",
 					onClick = { sendTestNotification("Testing 1 2 3", "Push notifications are working!") },
-					contentPadding = PaddingValues(vertical = 12.dp),
-				) {
-					Text(
-						text = "Send Test Notification",
-						style = MaterialTheme.typography.bodyMedium,
-					)
-				}
+				)
 			}
 		}
 	}
@@ -197,20 +184,20 @@ private fun NotificationToggleRow(
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.padding(vertical = 4.dp),
+			.padding(vertical = PurecipesTheme.space.xs),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.SpaceBetween,
 	) {
-		Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+		Column(modifier = Modifier.weight(1f).padding(end = PurecipesTheme.space.m)) {
 			Text(
 				text = label,
-				style = MaterialTheme.typography.bodyMedium,
+				style = PurecipesTheme.typography.bodyMedium,
 				fontWeight = FontWeight.Medium,
 			)
 			Text(
 				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				style = PurecipesTheme.typography.bodySmall,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
 		}
 		Switch(
@@ -233,22 +220,16 @@ private fun MeasurementPreferencesSection(
 
 	Surface(
 		modifier = modifier.fillMaxWidth(),
-		shape = MaterialTheme.shapes.large,
-		tonalElevation = 2.dp,
+		shape = PurecipesTheme.shapes.large,
+		tonalElevation = PurecipesTheme.space.quark,
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(14.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
-			Text(
-				text = "Measurements",
-				style = MaterialTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
-			)
-			Text(
-				text = currentPreferences.measurementSummary(),
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			SectionHeader(
+				title = "Measurements",
+				subtitle = currentPreferences.measurementSummary(),
 			)
 			MeasurementSystemChooser(
 				preferences = currentPreferences,
@@ -263,16 +244,10 @@ private fun MeasurementPreferencesSection(
 					scope.launch { saveMeasurementPreferences(updatedPreferences) }
 				},
 			)
-			OutlinedButton(
-				modifier = Modifier.fillMaxWidth(),
+			PurecipesOutlinedButton(
+				text = "Reset to detected default",
 				onClick = { scope.launch { resetMeasurementPreferences() } },
-				contentPadding = PaddingValues(vertical = 12.dp),
-			) {
-				Text(
-					text = "Reset to detected default",
-					style = MaterialTheme.typography.bodyMedium,
-				)
-			}
+			)
 		}
 	}
 }
@@ -282,10 +257,10 @@ private fun MeasurementSystemChooser(
 	preferences: MeasurementPreferences,
 	onPreferencesChange: (MeasurementPreferences) -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		Text(
 			text = "Preferred system",
-			style = MaterialTheme.typography.titleSmall,
+			style = PurecipesTheme.typography.titleSmall,
 			fontWeight = FontWeight.Medium,
 		)
 		MeasurementOptionRow(
@@ -312,10 +287,10 @@ private fun RecipeFormatHandlingChooser(
 	preferences: MeasurementPreferences,
 	onPreferencesChange: (MeasurementPreferences) -> Unit,
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		Text(
 			text = "Recipes in another system",
-			style = MaterialTheme.typography.titleSmall,
+			style = PurecipesTheme.typography.titleSmall,
 			fontWeight = FontWeight.Medium,
 		)
 		MeasurementOptionRow(
@@ -354,8 +329,12 @@ private fun MeasurementOptionRow(
 ) {
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
-		shape = RoundedCornerShape(16.dp),
-		tonalElevation = if (selected) 2.dp else 0.dp,
+		shape = RoundedCornerShape(PurecipesTheme.space.m),
+		tonalElevation = if (selected) {
+			PurecipesTheme.space.quark
+		} else {
+			PurecipesTheme.space.none
+		},
 	) {
 		Row(
 			modifier = Modifier
@@ -365,9 +344,9 @@ private fun MeasurementOptionRow(
 					onClick = onClick,
 					role = Role.RadioButton,
 				)
-				.padding(horizontal = 12.dp, vertical = 10.dp),
+				.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
 			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			RadioButton(
 				selected = selected,
@@ -375,17 +354,17 @@ private fun MeasurementOptionRow(
 			)
 			Column(
 				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(2.dp),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.quark),
 			) {
 				Text(
 					text = label,
-					style = MaterialTheme.typography.bodyMedium,
+					style = PurecipesTheme.typography.bodyMedium,
 					fontWeight = FontWeight.Medium,
 				)
 				Text(
 					text = description,
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					style = PurecipesTheme.typography.bodySmall,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 		}

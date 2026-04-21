@@ -52,6 +52,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				implementation(libs.jetbrains.composeUiToolingPreview)
 				implementation(libs.kotlin.stdlib)
 			}
 		}
@@ -80,4 +81,8 @@ kotlin {
 		}
 	}
 
+}
+
+dependencies {
+	androidRuntimeClasspath(libs.jetbrains.composeUiTooling)
 }

@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class KmpNotificationManager @Inject constructor() : NotificationManager {
+@Inject
+class KmpNotificationManager : NotificationManager {
 
 	private val _token = MutableStateFlow<String?>(null)
 	override val token: Flow<String?> = _token.asStateFlow()
@@ -28,9 +29,6 @@ class KmpNotificationManager @Inject constructor() : NotificationManager {
 				println("Push Notification payload Data: $data")
 			}
 
-			override fun onPushNotification(title: String?, body: String?) {
-				super.onPushNotification(title, body)
-			}
 		})
 		val existingToken = NotifierManager.getPushNotifier().getToken()
 		if (existingToken != null) {

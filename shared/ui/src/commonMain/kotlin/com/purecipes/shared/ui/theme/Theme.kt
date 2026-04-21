@@ -3,12 +3,19 @@
 package com.purecipes.shared.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 private val lightScheme = lightColorScheme(
 	primary = primaryLight,
@@ -243,22 +250,75 @@ data class ColorFamily(
 	val color: Color,
 	val onColor: Color,
 	val colorContainer: Color,
-	val onColorContainer: Color
+	val onColorContainer: Color,
 )
 
-@Composable
-fun PurecipesTheme(
-	darkTheme: Boolean = isSystemInDarkTheme(),
-	content: @Composable () -> Unit
-) {
-	val colorScheme = when {
-		darkTheme -> darkScheme
-		else -> lightScheme
-	}
+@Immutable
+data class Space(
+	val none: Dp = 0.dp,
+	val quark: Dp = 2.dp,
+	val xs: Dp = 4.dp,
+	val s: Dp = 8.dp,
+	val m: Dp = 16.dp,
+	val l: Dp = 24.dp,
+	val xl: Dp = 32.dp,
+	val xxl: Dp = 48.dp,
+)
 
-	MaterialTheme(
-		colorScheme = colorScheme,
-		typography = getAppTypography(),
-		content = content
-	)
+private val LocalPurecipesColorScheme = staticCompositionLocalOf<ColorScheme> {
+	error("No ColorScheme provided. Wrap your content in PurecipesTheme.")
+}
+
+private val LocalPurecipesTypography = staticCompositionLocalOf<Typography> {
+	error("No Typography provided. Wrap your content in PurecipesTheme.")
+}
+
+private val LocalPurecipesShapes = staticCompositionLocalOf<Shapes> {
+	error("No Shapes provided. Wrap your content in PurecipesTheme.")
+}
+
+private val LocalPurecipesSpace = staticCompositionLocalOf { Space() }
+
+object PurecipesTheme {
+	val colorScheme: ColorScheme
+		@Composable
+		get() = LocalPurecipesColorScheme.current
+
+	val typography: Typography
+		@Composable
+		get() = LocalPurecipesTypography.current
+
+	val shapes: Shapes
+		@Composable
+		get() = LocalPurecipesShapes.current
+
+	val space: Space
+		@Composable
+		get() = LocalPurecipesSpace.current
+
+	@Composable
+	operator fun invoke(
+		darkTheme: Boolean = isSystemInDarkTheme(),
+		content: @Composable () -> Unit,
+	) {
+		val colorScheme = when {
+			darkTheme -> darkScheme
+			else -> lightScheme
+		}
+		val typography = getAppTypography()
+
+		MaterialTheme(
+			colorScheme = colorScheme,
+			typography = typography,
+		) {
+			CompositionLocalProvider(
+				LocalPurecipesColorScheme provides MaterialTheme.colorScheme,
+				LocalPurecipesTypography provides MaterialTheme.typography,
+				LocalPurecipesShapes provides MaterialTheme.shapes,
+				LocalPurecipesSpace provides Space(),
+			) {
+				content()
+			}
+		}
+	}
 }

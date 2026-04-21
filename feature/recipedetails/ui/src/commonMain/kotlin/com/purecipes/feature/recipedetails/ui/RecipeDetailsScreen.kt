@@ -25,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,6 +51,8 @@ import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
+import com.purecipes.shared.ui.component.ErrorText
+import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
 fun RecipeDetailsRoute(
@@ -113,9 +114,9 @@ fun RecipeDetailsRoute(
 								"Add to favorites"
 							},
 							tint = if (viewModel.recipeDetails?.isFavorite == true) {
-								MaterialTheme.colorScheme.primary
+								PurecipesTheme.colorScheme.primary
 							} else {
-								MaterialTheme.colorScheme.onSurfaceVariant
+								PurecipesTheme.colorScheme.onSurfaceVariant
 							},
 						)
 					}
@@ -141,7 +142,7 @@ fun RecipeDetailsRoute(
 				},
 				title = { Text(text = "Measurement system mismatch") },
 				text = {
-					Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+					Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 						Text(text = "This recipe uses measurements outside your preferred system.")
 						TextButton(onClick = onOpenMeasurementPreferences) {
 							Text(text = "Update my preferences")
@@ -199,8 +200,13 @@ private fun RecipeDetailsScreen(
 ) {
 	LazyColumn(
 		modifier = modifier.fillMaxSize(),
-		contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
-		verticalArrangement = Arrangement.spacedBy(16.dp),
+		contentPadding = PaddingValues(
+			start = PurecipesTheme.space.m,
+			top = PurecipesTheme.space.m,
+			end = PurecipesTheme.space.m,
+			bottom = PurecipesTheme.space.l,
+		),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		item {
 			AsyncImage(
@@ -209,22 +215,22 @@ private fun RecipeDetailsScreen(
 				modifier = Modifier
 					.fillMaxWidth()
 					.height(240.dp)
-					.clip(RoundedCornerShape(24.dp))
-					.background(MaterialTheme.colorScheme.surfaceContainerLow),
+					.clip(RoundedCornerShape(PurecipesTheme.space.l))
+					.background(PurecipesTheme.colorScheme.surfaceContainerLow),
 				contentScale = ContentScale.Crop,
 			)
 		}
 
 		item {
-			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 				Text(
 					text = recipe.title,
-					style = MaterialTheme.typography.headlineMedium,
+					style = PurecipesTheme.typography.headlineMedium,
 				)
 				Text(
 					text = recipe.description,
-					style = MaterialTheme.typography.bodyLarge,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					style = PurecipesTheme.typography.bodyLarge,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 		}
@@ -234,7 +240,7 @@ private fun RecipeDetailsScreen(
 		}
 
 		item {
-			Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 				Button(
 					onClick = onStartCooking,
 					enabled = recipe.steps.isNotEmpty(),
@@ -258,11 +264,7 @@ private fun RecipeDetailsScreen(
 					)
 				}
 				favoriteErrorMessage?.let {
-					Text(
-						text = it,
-						style = MaterialTheme.typography.bodyMedium,
-						color = MaterialTheme.colorScheme.error,
-					)
+					ErrorText(text = it)
 				}
 			}
 		}
@@ -270,7 +272,7 @@ private fun RecipeDetailsScreen(
 		item {
 			Text(
 				text = "Ingredients",
-				style = MaterialTheme.typography.titleLarge,
+				style = PurecipesTheme.typography.titleLarge,
 			)
 		}
 
@@ -281,7 +283,7 @@ private fun RecipeDetailsScreen(
 		item {
 			Text(
 				text = "Steps",
-				style = MaterialTheme.typography.titleLarge,
+				style = PurecipesTheme.typography.titleLarge,
 			)
 		}
 
@@ -307,17 +309,17 @@ private fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean)
 
 	Row(
 		modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
 		items.forEach { item ->
 			Surface(
 				shape = RoundedCornerShape(999.dp),
-				color = MaterialTheme.colorScheme.secondaryContainer,
+				color = PurecipesTheme.colorScheme.secondaryContainer,
 			) {
 				Text(
 					text = item,
-					modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-					style = MaterialTheme.typography.labelLarge,
+					modifier = Modifier.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
+					style = PurecipesTheme.typography.labelLarge,
 				)
 			}
 		}
@@ -336,23 +338,23 @@ private fun MeasurementSystem.displayName(isRecipeConverted: Boolean): String {
 private fun IngredientGroupCard(group: IngredientGroup) {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(
-			modifier = Modifier.padding(16.dp),
-			verticalArrangement = Arrangement.spacedBy(10.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			group.name?.takeIf { it.isNotBlank() }?.let {
 				Text(
 					text = it,
-					style = MaterialTheme.typography.titleMedium,
+					style = PurecipesTheme.typography.titleMedium,
 				)
 			}
 
 			group.ingredients.forEach { ingredient ->
 				Text(
 					text = "- $ingredient",
-					style = MaterialTheme.typography.bodyLarge,
+					style = PurecipesTheme.typography.bodyLarge,
 				)
 			}
 		}
@@ -363,21 +365,21 @@ private fun IngredientGroupCard(group: IngredientGroup) {
 private fun StepCard(stepNumber: Int, step: String) {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
-			modifier = Modifier.padding(16.dp),
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Surface(
-				modifier = Modifier.size(36.dp),
-				shape = RoundedCornerShape(18.dp),
-				color = MaterialTheme.colorScheme.primaryContainer,
+				modifier = Modifier.size(PurecipesTheme.space.xl),
+				shape = RoundedCornerShape(PurecipesTheme.space.m),
+				color = PurecipesTheme.colorScheme.primaryContainer,
 			) {
 				Box(contentAlignment = Alignment.Center) {
 					Text(
 						text = stepNumber.toString(),
-						style = MaterialTheme.typography.titleMedium,
+						style = PurecipesTheme.typography.titleMedium,
 					)
 				}
 			}
@@ -385,7 +387,7 @@ private fun StepCard(stepNumber: Int, step: String) {
 			Text(
 				text = step,
 				modifier = Modifier.weight(1f),
-				style = MaterialTheme.typography.bodyLarge,
+				style = PurecipesTheme.typography.bodyLarge,
 			)
 		}
 	}
@@ -400,18 +402,18 @@ private fun RecipeDetailsMessageScreen(
 	Box(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(24.dp),
+			.padding(PurecipesTheme.space.l),
 		contentAlignment = Alignment.Center,
 	) {
 		Column(
 			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.spacedBy(12.dp),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Text(
 				text = message,
-				style = MaterialTheme.typography.bodyLarge,
+				style = PurecipesTheme.typography.bodyLarge,
 			)
-			Spacer(modifier = Modifier.height(4.dp))
+			Spacer(modifier = Modifier.height(PurecipesTheme.space.xs))
 			TextButton(onClick = onBack) {
 				Text(text = "Back to search")
 			}

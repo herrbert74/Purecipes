@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +14,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,14 +24,14 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
+import com.purecipes.shared.ui.component.CenteredMessageContent
+import com.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
 fun StepByStepCookingRoute(
@@ -74,12 +72,12 @@ fun StepByStepCookingRoute(
 				CircularProgressIndicator()
 			}
 
-			viewModel.errorMessage != null -> RecipeCookingMessage(
+			viewModel.errorMessage != null -> CenteredMessageContent(
 				message = viewModel.errorMessage ?: "Unknown error",
 				modifier = Modifier.padding(innerPadding),
 			)
 
-			viewModel.recipeDetails == null || viewModel.recipeDetails?.steps.isNullOrEmpty() -> RecipeCookingMessage(
+			viewModel.recipeDetails == null || viewModel.recipeDetails?.steps.isNullOrEmpty() -> CenteredMessageContent(
 				message = "No cooking steps available yet.",
 				modifier = Modifier.padding(innerPadding),
 			)
@@ -116,13 +114,13 @@ private fun StepByStepCookingScreen(
 	Column(
 		modifier = modifier
 			.fillMaxSize()
-			.padding(horizontal = 16.dp, vertical = 20.dp),
-		verticalArrangement = Arrangement.spacedBy(20.dp),
+			.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		Text(
 			text = "${currentStepIndex + 1} of ${recipe.steps.size}",
-			style = MaterialTheme.typography.titleMedium,
-			color = MaterialTheme.colorScheme.primary,
+			style = PurecipesTheme.typography.titleMedium,
+			color = PurecipesTheme.colorScheme.primary,
 		)
 		PagerIndicator(
 			currentStepIndex = currentStepIndex,
@@ -137,12 +135,12 @@ private fun StepByStepCookingScreen(
 		) { page ->
 			Card(
 				modifier = Modifier.fillMaxSize(),
-				colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+				colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 			) {
 				Text(
 					text = recipe.steps[page],
-					modifier = Modifier.padding(24.dp),
-					style = MaterialTheme.typography.bodyLarge,
+					modifier = Modifier.padding(PurecipesTheme.space.l),
+					style = PurecipesTheme.typography.bodyLarge,
 				)
 			}
 		}
@@ -159,34 +157,15 @@ private fun PagerIndicator(
 
 	Box(
 		modifier = modifier
-			.clip(MaterialTheme.shapes.extraLarge)
-			.background(MaterialTheme.colorScheme.surfaceContainerHighest)
-			.height(8.dp),
+			.clip(PurecipesTheme.shapes.extraLarge)
+			.background(PurecipesTheme.colorScheme.surfaceContainerHighest)
+			.height(PurecipesTheme.space.s),
 	) {
 		Box(
 			modifier = Modifier
 				.fillMaxWidth(progress)
 				.fillMaxHeight()
-				.background(MaterialTheme.colorScheme.primary),
-		)
-	}
-}
-
-@Composable
-private fun RecipeCookingMessage(
-	message: String,
-	modifier: Modifier = Modifier,
-) {
-	Box(
-		modifier = modifier
-			.fillMaxSize()
-			.padding(PaddingValues(horizontal = 24.dp, vertical = 16.dp)),
-		contentAlignment = Alignment.Center,
-	) {
-		Text(
-			text = message,
-			style = MaterialTheme.typography.bodyLarge,
-			textAlign = TextAlign.Center,
+				.background(PurecipesTheme.colorScheme.primary),
 		)
 	}
 }

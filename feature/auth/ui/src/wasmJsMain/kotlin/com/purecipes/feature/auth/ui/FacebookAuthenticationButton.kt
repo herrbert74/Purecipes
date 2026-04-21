@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.mmk.kmpauth.uihelper.facebook.FacebookSignInButton
 import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import com.purecipes.shared.ui.component.PurecipesButtonDefaults
 
 @Composable
 internal actual fun FacebookAuthenticationButton(
@@ -15,7 +15,7 @@ internal actual fun FacebookAuthenticationButton(
 	FacebookSignInButton(
 		modifier = Modifier
 			.fillMaxWidth()
-			.height(52.dp),
+			.height(PurecipesButtonDefaults.providerButtonHeight),
 		onClick = {
 			onResult(Result.failure(IllegalStateException("Facebook sign-in is not supported on this platform.")))
 		},
