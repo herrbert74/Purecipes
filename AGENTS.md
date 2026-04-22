@@ -5,6 +5,8 @@ primary goal of the app to make it easier for users to follow recipe instruction
 
 ## Core Principles
 
+- **NEVER use `@SuppressLint` or `@Suppress` to bypass errors/warnings unless explicitly instructed.**
+- **NEVER rename tests, modify test logic to bypass failures, or introduce hacky workarounds without asking first.**
 - Use **tabs** instead of spaces for tabs.
 - Formatting adherence is a correctness requirement, not a cleanup task. Before every edit, match the file's existing formatting exactly and preserve the alignment style already in use.
 
@@ -57,6 +59,11 @@ Add suffixes to designate types and prefixes for designate the features.
 
 Top level composables that represent a screen have the Screen suffix.
 
+## Rule: Use IDE Index plugin (android-studio-index MCP server) whenever possible
+
+If this MCP server is not available, stop all work and notify the user.
+If possible find a way to restart in the same request, for example by using ask question tool.
+
 ## Rule: Use kotlin-result library
 
 Do not use try/catch structure for network calls or similar. Use the Outcome class instead, which is a type alias 
@@ -104,7 +111,7 @@ If you think it's absolutely necessary, ask for permission.
 
 ## Rule: Formatting and Detekt
 
-Reformat code after changes as per the project rules in .idea/codeStyles/Project.xml.
+Reformat code after changes as per the project rules in .idea/codeStyles/Project.xml with the IDE Index plugin (android-studio-index MCP server).
 Also format the code according to Detekt rules in config/detekt.
 Run detekt with ./gradlew detektAll.
 Do not use suppress violations. Try to fix them, or if it cannot be done, 
