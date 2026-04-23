@@ -21,6 +21,11 @@ kotlin {
 
 	android {
 		namespace = "com.purecipes.feature.auth.ui"
+		withDeviceTestBuilder {
+			sourceSetTreeName = "androidDeviceTest"
+		}.configure {
+			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+		}
 	}
 
 	sourceSets {
@@ -35,6 +40,12 @@ kotlin {
 		}
 		commonTest {
 			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
+		named("androidDeviceTest") {
+			dependencies {
+				implementation(libs.dejavu)
 				implementation(project(":shared:testfixtures"))
 			}
 		}

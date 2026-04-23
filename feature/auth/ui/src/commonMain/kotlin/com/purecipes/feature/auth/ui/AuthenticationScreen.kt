@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +60,9 @@ import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
+internal const val AUTH_SCREEN_TITLE_TAG = "authScreenTitle"
+internal const val AUTH_EMAIL_FIELD_TAG = "authEmailField"
+
 @Composable
 fun AuthenticationScreen(
 	observeConsentState: ObserveConsentStateUseCase,
@@ -72,8 +76,31 @@ fun AuthenticationScreen(
 	onOpenSettings: () -> Unit,
 	googleWebClientId: String?,
 	modifier: Modifier = Modifier,
+	initializeGoogleAuthenticationProvider: @Composable (String?) -> Unit =
+		{ InitializeGoogleAuthenticationProvider(it) },
+	authenticationProviderButtons: @Composable (
+		isGoogleConfigured: Boolean,
+		onEmailProviderClick: () -> Unit,
+		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+		onGoogleUnavailableClick: () -> Unit,
+	) -> Unit = {
+		isGoogleConfigured,
+		onEmailProviderClick,
+		onExternalProviderSignInResult,
+		onGoogleSignInResult,
+		onGoogleUnavailableClick,
+		->
+		AuthenticationProviderButtons(
+			isGoogleConfigured = isGoogleConfigured,
+			onEmailProviderClick = onEmailProviderClick,
+			onExternalProviderSignInResult = onExternalProviderSignInResult,
+			onGoogleSignInResult = onGoogleSignInResult,
+			onGoogleUnavailableClick = onGoogleUnavailableClick,
+		)
+	},
 ) {
-	InitializeGoogleAuthenticationProvider(googleWebClientId)
+	initializeGoogleAuthenticationProvider(googleWebClientId)
 	val consentState by observeConsentState().collectAsState()
 	val viewModel = authenticationViewModel(
 		observeAuthenticationState = observeAuthenticationState,
@@ -88,7 +115,7 @@ fun AuthenticationScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Account") },
+				title = { Text(text = "Account", modifier = Modifier.testTag(AUTH_SCREEN_TITLE_TAG)) },
 				actions = {
 					IconButton(onClick = onOpenSettings) {
 						Icon(
@@ -131,6 +158,7 @@ fun AuthenticationScreen(
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onManagePrivacySettings = { showConsentForm() },
 						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
+						authenticationProviderButtons = authenticationProviderButtons,
 					)
 
 					is AuthenticationState.SignedIn -> SignedInAuthenticationContent(
@@ -172,6 +200,13 @@ private fun SignedOutAuthenticationContent(
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onManagePrivacySettings: () -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
+	authenticationProviderButtons: @Composable (
+		isGoogleConfigured: Boolean,
+		onEmailProviderClick: () -> Unit,
+		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+		onGoogleUnavailableClick: () -> Unit,
+	) -> Unit,
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m)) {
 		Text(
@@ -181,12 +216,12 @@ private fun SignedOutAuthenticationContent(
 			style = PurecipesTheme.typography.bodyLarge,
 			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
-		AuthenticationProviderButtons(
-			isGoogleConfigured = isGoogleConfigured,
-			onEmailProviderClick = onEmailProviderClick,
-			onExternalProviderSignInResult = onExternalProviderSignInResult,
-			onGoogleSignInResult = onGoogleSignInResult,
-			onGoogleUnavailableClick = onGoogleUnavailableClick,
+		authenticationProviderButtons(
+			isGoogleConfigured,
+			onEmailProviderClick,
+			onExternalProviderSignInResult,
+			onGoogleSignInResult,
+			onGoogleUnavailableClick,
 		)
 		if (isEmailFormVisible) {
 			EmailAuthenticationForm(
@@ -301,7 +336,9 @@ private fun EmailAuthenticationForm(
 			OutlinedTextField(
 				value = email,
 				onValueChange = onEmailChange,
-				modifier = Modifier.fillMaxWidth(),
+				modifier = Modifier
+					.fillMaxWidth()
+					.testTag(AUTH_EMAIL_FIELD_TAG),
 				label = { Text("Email") },
 				singleLine = true,
 			)

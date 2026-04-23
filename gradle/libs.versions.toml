@@ -49,6 +49,7 @@ coil = "3.4.0"
 googleServices = "4.4.4"
 #dagger = "2.51"
 decompose = "3.5.0"
+dejavu = "0.3.1"
 dependencyAnalysis = "3.5.1"
 detekt = "1.23.8"
 detekt-compose = "0.4.28"
@@ -145,7 +146,7 @@ androidx-core = "androidx.core:core:1.18.0" #Bundle
 #androidx-coreKtx = "androidx.core:core-ktx:1.16.0" #Bundle
 
 #androidx-datastore = "androidx.datastore:datastore-preferences:1.1.7"
-#androidx-fragmentKtx = "androidx.fragment:fragment-ktx:1.8.8"
+androidx-fragmentKtx = "androidx.fragment:fragment-ktx:1.8.6"
 
 #androidx-hiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidx-hilt" }
 #androidx-hiltWork = { module = "androidx.hilt:hilt-work", version.ref = "androidx-hilt" }
@@ -215,6 +216,7 @@ crashkios-crashlytics = { module = "co.touchlab.crashkios:crashlytics", version.
 
 decompose-core = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 decompose-extensions = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
+dejavu = { module = "me.mmckenna.dejavu:dejavu", version.ref = "dejavu" }
 
 detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }
 detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detekt" }

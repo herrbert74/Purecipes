@@ -70,26 +70,14 @@ class AuthenticationRouteTest {
 		}
 
 		assertEquals(HttpStatusCode.OK, response.status)
-		val expectedResponseBody =
-			"""
-			{
-				"accessToken":"session-token-1",
-				"expiresAtEpochSeconds":4102444800,
-				"user":{
-					"id":"1",
-					"email":"taylor@example.com",
-					"displayName":"Taylor Baker",
-					"firstName":"Taylor",
-					"familyName":"Baker",
-					"profileImageUrl":"https://example.com/avatar.png",
-					"provider":"GOOGLE"
-				}
-			}
-			""".trimIndent().lines().joinToString(separator = "") {
-				it.trim()
-			}
+		val expectedGoogleAuthResponse = listOf(
+			"""{"accessToken":"session-token-1","expiresAtEpochSeconds":4102444800,"user":{""",
+			""""id":"1","email":"taylor@example.com","displayName":"Taylor Baker",""",
+			""""firstName":"Taylor","familyName":"Baker",""",
+			""""profileImageUrl":"https://example.com/avatar.png","provider":"GOOGLE"}}""",
+		).joinToString(separator = "")
 		assertEquals(
-			expectedResponseBody,
+			expectedGoogleAuthResponse,
 			response.bodyAsText(),
 		)
 	}
@@ -162,26 +150,16 @@ class AuthenticationRouteTest {
 		}
 
 		assertEquals(HttpStatusCode.OK, response.status)
-		val expectedResponseBody =
-			"""
-			{
-				"accessToken":"${session.accessToken}",
-				"expiresAtEpochSeconds":${session.expiresAtEpochSeconds},
-				"user":{
-					"id":"1",
-					"email":"taylor@example.com",
-					"displayName":"Taylor Baker",
-					"firstName":"Taylor",
-					"familyName":"Baker",
-					"profileImageUrl":"https://example.com/avatar.png",
-					"provider":"GOOGLE"
-				}
-			}
-			""".trimIndent().lines().joinToString(separator = "") {
-				it.trim()
-			}
+		val expectedSessionResponse =
+			listOf(
+				"""{"accessToken":"${session.accessToken}",""",
+				""""expiresAtEpochSeconds":${session.expiresAtEpochSeconds},"user":{""",
+				""""id":"1","email":"taylor@example.com","displayName":"Taylor Baker",""",
+				""""firstName":"Taylor","familyName":"Baker",""",
+				""""profileImageUrl":"https://example.com/avatar.png","provider":"GOOGLE"}}""",
+			).joinToString(separator = "")
 		assertEquals(
-			expectedResponseBody,
+			expectedSessionResponse,
 			response.bodyAsText(),
 		)
 	}

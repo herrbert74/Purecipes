@@ -55,7 +55,7 @@ import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import com.purecipes.feature.recipedetails.ui.RecipeDetailsRoute
+import com.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
@@ -168,7 +168,7 @@ fun MainScreen(
 						)
 					}
 					entry<RecipeDetailsDestination> { destination ->
-						RecipeDetailsRoute(
+						RecipeDetailsScreen(
 							recipeId = destination.recipeId,
 							addFavoriteRecipe = addFavoriteRecipe,
 							canManageFavorites = canManageFavorites,

@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -32,6 +33,8 @@ import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
 import com.purecipes.shared.ui.component.CenteredMessageContent
 import com.purecipes.shared.ui.theme.PurecipesTheme
+
+internal const val STEP_BY_STEP_CURRENT_STEP_TEXT_TAG = "stepByStepCurrentStepText"
 
 @Composable
 fun StepByStepCookingRoute(
@@ -139,7 +142,9 @@ private fun StepByStepCookingScreen(
 			) {
 				Text(
 					text = recipe.steps[page],
-					modifier = Modifier.padding(PurecipesTheme.space.l),
+					modifier = Modifier
+						.padding(PurecipesTheme.space.l)
+						.testTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG),
 					style = PurecipesTheme.typography.bodyLarge,
 				)
 			}

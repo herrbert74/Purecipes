@@ -4,25 +4,22 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import com.purecipes.feature.measurement.domain.repository.MeasurementPreferencesRepository
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
-import com.purecipes.feature.search.domain.repository.SearchOutcome
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import com.purecipes.shared.domain.model.Cuisine
-import com.purecipes.shared.domain.model.MeasurementPreferences
-import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
+import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -162,50 +159,4 @@ class RecipeSearchViewModelTest {
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 		coroutineScope = coroutineScope,
 	)
-
-	private class FakeRecipeSearchRepository(
-		private val result: SearchOutcome<List<RecipeSummary>>,
-	) : RecipeSearchRepository {
-
-		val queries = mutableListOf<String>()
-
-		override suspend fun search(query: String, filters: SearchFilters): SearchOutcome<List<RecipeSummary>> {
-			queries += query
-			return result
-		}
-	}
-
-	private class FakeRecipeSearchFilterRepository(
-		var savedFilters: SearchFilters = SearchFilters(),
-	) : RecipeSearchFilterRepository {
-
-		override suspend fun getFilters(): SearchFilters = savedFilters
-
-		override suspend fun saveFilters(filters: SearchFilters) {
-			savedFilters = filters
-		}
-	}
-
-	private class FakeMeasurementPreferencesRepository(
-		private val preferences: MeasurementPreferences = MeasurementPreferences(
-			preferredSystem = MeasurementSystem.METRIC,
-		),
-	) : MeasurementPreferencesRepository {
-
-		private val flow = MutableStateFlow(preferences)
-
-		override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> = flow
-
-		override suspend fun getMeasurementPreferences(): MeasurementPreferences = flow.value
-
-		override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {
-			flow.value = preferences
-		}
-
-		override suspend fun resetMeasurementPreferences() {
-			flow.value = this.preferences
-		}
-
-		override suspend fun markMismatchNotificationSeen(recipeId: Int) = Unit
-	}
 }
