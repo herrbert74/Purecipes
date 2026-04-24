@@ -80,6 +80,12 @@ Validate every change, but match the scope to the task.
 
 For focused maintenance tasks such as fixing Detekt issues, small bug fixes, or adding/changing unit tests, a focused validation is acceptable: run Detekt only, or run the affected old/new tests, or run the smallest relevant build target.
 
+When changes touch test code, test fixtures, fake implementations, or test-only Gradle dependencies, always run the affected module test tasks automatically before finishing the task. Do not skip test execution in those cases.
+
+When changes touch UI code, Compose screens/routes/view models, `androidDeviceTest` sources, or shared test fixtures/fakes used by Android UI tests, also run the Android UI test suite with `./gradlew connectedAndroidTest` before finishing the task. If the environment cannot run instrumented Android tests, explicitly report that as a blocker instead of silently skipping them.
+
+For Kotlin Multiplatform modules, run concrete target test tasks (for example `jvmTest`) instead of non-existent aggregate task names like `commonTest`.
+
 For new features and larger refactors, run complete validation:
 - `./gradlew detektAll`
 - build the Android app

@@ -8,23 +8,19 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import com.purecipes.feature.measurement.domain.repository.MeasurementPreferencesRepository
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.MeasurementPreferences
-import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -80,26 +76,4 @@ class StepByStepCookingRouteTest {
 		onNodeWithText("Roast until tender").assertIsDisplayed()
 		onNodeWithTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG).assertStable()
 	}
-
-	private class FakeMeasurementPreferencesRepository : MeasurementPreferencesRepository {
-
-		private val flow = MutableStateFlow(
-			MeasurementPreferences(
-				preferredSystem = MeasurementSystem.METRIC,
-			),
-		)
-
-		override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> = flow
-
-		override suspend fun getMeasurementPreferences(): MeasurementPreferences = flow.value
-
-		override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {
-			flow.value = preferences
-		}
-
-		override suspend fun resetMeasurementPreferences() = Unit
-
-		override suspend fun markMismatchNotificationSeen(recipeId: Int) = Unit
-	}
-
 }

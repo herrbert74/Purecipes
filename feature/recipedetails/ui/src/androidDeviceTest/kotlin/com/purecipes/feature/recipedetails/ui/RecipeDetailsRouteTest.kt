@@ -25,13 +25,13 @@ import com.purecipes.shared.ui.theme.PurecipesTheme
 import org.junit.Rule
 import org.junit.Test
 
-class RecipeDetailsScreenTest {
+class RecipeDetailsRouteTest {
 
 	@get:Rule
 	val composeRule = createComposeRule()
 
 	@Test
-	fun recipeDetailsScreenShowsTitleIngredientsAndSteps() {
+	fun recipeDetailsRouteShowsTitleIngredientsAndSteps() {
 		val favoritesRepository = FakeFavoritesRepository()
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		composeRule.setContent {
@@ -66,8 +66,7 @@ class RecipeDetailsScreenTest {
 					onBack = {},
 					onFavoriteChange = {},
 					onStartCooking = {},
-					processRecipeDetailsForMeasurementPreferences =
-						ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+					processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 					removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 					sessionKey = "user-7",
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
@@ -79,8 +78,7 @@ class RecipeDetailsScreenTest {
 		composeRule.onNodeWithText("Sweet and savory side dish.").assertIsDisplayed()
 		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
 		composeRule.onNodeWithText("- 6 carrots").performScrollTo().assertIsDisplayed()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
-			.performScrollToNode(hasText("Roast until tender"))
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG).performScrollToNode(hasText("Roast until tender"))
 		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()
 	}
 }

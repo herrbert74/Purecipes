@@ -12,7 +12,7 @@ import com.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDat
 import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.AuthenticationState
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
-import com.purecipes.shared.data.session.SessionTokenStore
+import com.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import com.purecipes.shared.domain.model.AuthenticatedBackendUser
 import com.purecipes.shared.domain.model.AuthenticatedSession
 import kotlinx.coroutines.test.runTest
@@ -135,22 +135,5 @@ class AuthenticationAccessorTest {
 		override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> = result
 
 		override suspend fun signOut() = Unit
-	}
-
-	private class FakeSessionTokenStore : SessionTokenStore {
-
-		private var session: AuthenticatedSession? = null
-
-		override fun currentSession(): AuthenticatedSession? = session
-
-		override fun currentAccessToken(): String? = session?.accessToken
-
-		override fun saveSession(session: AuthenticatedSession) {
-			this.session = session
-		}
-
-		override fun clearSession() {
-			session = null
-		}
 	}
 }

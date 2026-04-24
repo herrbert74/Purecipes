@@ -1,9 +1,7 @@
 package com.purecipes.backend
 
-import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
-import com.purecipes.shared.domain.model.AuthenticatedBackendUser
-import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.backend.fake.FakeSessionService
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -29,9 +27,26 @@ class FavoritesSessionIntegrationTest {
 		seedRecipeTables(dataSource)
 		val db = Db.fromDataSource(dataSource)
 		seedAppUsers(db)
-		val sessionService = FakeSessionService()
-		val firstSession = sessionService.firstSession
-		val secondSession = sessionService.secondSession
+		val firstSession = FakeSessionService.createSession(
+			accessToken = "session-token-1",
+			id = "1",
+			email = "user-one@example.com",
+			displayName = "User One",
+			firstName = "User",
+			familyName = "One",
+		)
+		val secondSession = FakeSessionService.createSession(
+			accessToken = "session-token-2",
+			id = "2",
+			email = "user-two@example.com",
+			displayName = "User Two",
+			firstName = "User",
+			familyName = "Two",
+		)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(firstSession, secondSession),
+			createMode = FakeSessionService.CreateMode.FAIL,
+		)
 		seedFavorites(db)
 
 		application {
@@ -210,73 +225,6 @@ class FavoritesSessionIntegrationTest {
 	private fun assertBodyDoesNotContain(body: String, unexpectedFragment: String) {
 		if (body.contains(unexpectedFragment)) {
 			throw AssertionError("Expected body to not contain $unexpectedFragment but was: $body")
-		}
-	}
-
-	private class FakeSessionService : SessionService {
-
-		val firstSession = createSession(
-			accessToken = "session-token-1",
-			id = "1",
-			email = "user-one@example.com",
-			displayName = "User One",
-			firstName = "User",
-			familyName = "One",
-		)
-
-		val secondSession = createSession(
-			accessToken = "session-token-2",
-			id = "2",
-			email = "user-two@example.com",
-			displayName = "User Two",
-			firstName = "User",
-			familyName = "Two",
-		)
-
-		private val sessionsByToken = mapOf(
-			firstSession.accessToken to firstSession,
-			secondSession.accessToken to secondSession,
-		)
-
-		override fun ensureSchema() = Unit
-
-		override fun createSession(
-			provider: String,
-			externalUserId: String,
-			email: String,
-			displayName: String,
-			firstName: String?,
-			familyName: String?,
-			profileImageUrl: String?,
-		): AuthenticatedSession {
-			error("Not needed in this test")
-		}
-
-		override fun getSession(accessToken: String): AuthenticatedSession? = sessionsByToken[accessToken]
-
-		override fun revokeSession(accessToken: String): Boolean = accessToken in sessionsByToken
-
-		private fun createSession(
-			accessToken: String,
-			id: String,
-			email: String,
-			displayName: String,
-			firstName: String,
-			familyName: String,
-		): AuthenticatedSession {
-			return AuthenticatedSession(
-				accessToken = accessToken,
-				expiresAtEpochSeconds = 4_102_444_800,
-				user = AuthenticatedBackendUser(
-					id = id,
-					email = email,
-					displayName = displayName,
-					firstName = firstName,
-					familyName = familyName,
-					profileImageUrl = null,
-					provider = "GOOGLE",
-				),
-			)
 		}
 	}
 }

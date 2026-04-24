@@ -2,9 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.auth.GoogleIdTokenVerificationResult
 import com.purecipes.backend.auth.GoogleIdTokenVerifier
-import com.purecipes.backend.auth.SessionService
-import com.purecipes.shared.domain.model.AuthenticatedBackendUser
-import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.backend.fake.FakeSessionService
 import com.purecipes.shared.domain.model.VerifiedGoogleUser
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -203,49 +201,5 @@ class AuthenticationRouteTest {
 	) : GoogleIdTokenVerifier {
 
 		override suspend fun verify(idToken: String): GoogleIdTokenVerificationResult = result
-	}
-
-	private class FakeSessionService : SessionService {
-
-		private val sessions = linkedMapOf<String, AuthenticatedSession>()
-		private var nextUserId = 1L
-		private var nextTokenId = 1L
-
-		override fun ensureSchema() = Unit
-
-		override fun createSession(
-			provider: String,
-			externalUserId: String,
-			email: String,
-			displayName: String,
-			firstName: String?,
-			familyName: String?,
-			profileImageUrl: String?,
-		): AuthenticatedSession {
-			val session = AuthenticatedSession(
-				accessToken = "session-token-${nextTokenId++}",
-				expiresAtEpochSeconds = FAR_FUTURE_EPOCH_SECONDS,
-				user = AuthenticatedBackendUser(
-					id = (nextUserId++).toString(),
-					email = email,
-					displayName = displayName,
-					firstName = firstName,
-					familyName = familyName,
-					profileImageUrl = profileImageUrl,
-					provider = provider,
-				),
-			)
-			sessions[session.accessToken] = session
-			return session
-		}
-
-		override fun getSession(accessToken: String): AuthenticatedSession? = sessions[accessToken]
-
-		override fun revokeSession(accessToken: String): Boolean = sessions.remove(accessToken) != null
-
-		private companion object {
-
-			private const val FAR_FUTURE_EPOCH_SECONDS = 4_102_444_800
-		}
 	}
 }

@@ -1,9 +1,7 @@
 package com.purecipes.backend
 
-import com.purecipes.backend.auth.SessionService
+import com.purecipes.backend.fake.FakeSessionService
 import com.purecipes.backend.routes.favoriteRoutes
-import com.purecipes.shared.domain.model.AuthenticatedBackendUser
-import com.purecipes.shared.domain.model.AuthenticatedSession
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -93,38 +91,5 @@ class FavoriteRouteTest {
 			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
 			response.bodyAsText(),
 		)
-	}
-
-	private class FakeSessionService : SessionService {
-
-		override fun ensureSchema() = Unit
-
-		override fun createSession(
-			provider: String,
-			externalUserId: String,
-			email: String,
-			displayName: String,
-			firstName: String?,
-			familyName: String?,
-			profileImageUrl: String?,
-		): AuthenticatedSession {
-			return AuthenticatedSession(
-				accessToken = "session-token",
-				expiresAtEpochSeconds = 4_102_444_800,
-				user = AuthenticatedBackendUser(
-					id = "1",
-					email = email,
-					displayName = displayName,
-					firstName = firstName,
-					familyName = familyName,
-					profileImageUrl = profileImageUrl,
-					provider = provider,
-				),
-			)
-		}
-
-		override fun getSession(accessToken: String): AuthenticatedSession? = null
-
-		override fun revokeSession(accessToken: String): Boolean = false
 	}
 }
