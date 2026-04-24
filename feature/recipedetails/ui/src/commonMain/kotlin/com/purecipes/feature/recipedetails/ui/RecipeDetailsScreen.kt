@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
@@ -54,8 +55,10 @@ import com.purecipes.shared.ui.component.BackNavigationButton
 import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
+internal const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
+
 @Composable
-fun RecipeDetailsRoute(
+fun RecipeDetailsScreen(
 	recipeId: Int,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	canManageFavorites: Boolean,
@@ -167,7 +170,7 @@ fun RecipeDetailsRoute(
 				modifier = Modifier.padding(innerPadding),
 			)
 
-			viewModel.recipeDetails != null -> RecipeDetailsScreen(
+			viewModel.recipeDetails != null -> RecipeDetailsContent(
 				canManageFavorites = canManageFavorites,
 				favoriteErrorMessage = viewModel.favoriteErrorMessage,
 				isFavoriteUpdating = viewModel.isFavoriteUpdating,
@@ -188,7 +191,7 @@ fun RecipeDetailsRoute(
 }
 
 @Composable
-private fun RecipeDetailsScreen(
+private fun RecipeDetailsContent(
 	canManageFavorites: Boolean,
 	favoriteErrorMessage: String?,
 	isFavoriteUpdating: Boolean,
@@ -199,7 +202,9 @@ private fun RecipeDetailsScreen(
 	modifier: Modifier = Modifier,
 ) {
 	LazyColumn(
-		modifier = modifier.fillMaxSize(),
+		modifier = modifier
+			.fillMaxSize()
+			.testTag(RECIPE_DETAILS_CONTENT_TAG),
 		contentPadding = PaddingValues(
 			start = PurecipesTheme.space.m,
 			top = PurecipesTheme.space.m,

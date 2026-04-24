@@ -1,9 +1,7 @@
 package com.purecipes.backend
 
-import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
-import com.purecipes.shared.domain.model.AuthenticatedBackendUser
-import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.backend.fake.FakeSessionService
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -88,7 +86,19 @@ class RecipeUploadRouteTest {
 	fun `authenticated user can upload and update recipe`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
-		val sessionService = FakeSessionService()
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
 		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
 
 		application {
@@ -180,7 +190,19 @@ class RecipeUploadRouteTest {
 	fun `authenticated user can upload recipe image`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
-		val sessionService = FakeSessionService()
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
 		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
 
 		application {
@@ -262,41 +284,4 @@ class RecipeUploadRouteTest {
 	}
 
 	private fun jsonField(name: String, value: String): String = """"$name":"$value"""
-
-	private class FakeSessionService : SessionService {
-
-		val session = AuthenticatedSession(
-			accessToken = "session-token",
-			expiresAtEpochSeconds = 4_102_444_800,
-			user = AuthenticatedBackendUser(
-				id = "1",
-				email = "user-one@example.com",
-				displayName = "User One",
-				firstName = "User",
-				familyName = "One",
-				profileImageUrl = null,
-				provider = "GOOGLE",
-			),
-		)
-
-		override fun ensureSchema() = Unit
-
-		override fun createSession(
-			provider: String,
-			externalUserId: String,
-			email: String,
-			displayName: String,
-			firstName: String?,
-			familyName: String?,
-			profileImageUrl: String?,
-		): AuthenticatedSession {
-			return session
-		}
-
-		override fun getSession(accessToken: String): AuthenticatedSession? {
-			return session.takeIf { it.accessToken == accessToken }
-		}
-
-		override fun revokeSession(accessToken: String): Boolean = accessToken == session.accessToken
-	}
 }

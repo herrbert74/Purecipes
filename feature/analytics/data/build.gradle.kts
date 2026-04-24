@@ -3,6 +3,20 @@ plugins {
 	id("org.jetbrains.kotlin.native.cocoapods")
 }
 
+val requestedTaskNames = gradle.startParameter.taskNames
+val shouldRunPodBuildTasks = requestedTaskNames.any { taskName ->
+	taskName.contains("ios", ignoreCase = true) ||
+		taskName.contains("pod", ignoreCase = true)
+}
+
+tasks.matching {
+	it.name.startsWith("podSetupBuild") || it.name.startsWith("podBuild")
+}.configureEach {
+	onlyIf {
+		shouldRunPodBuildTasks
+	}
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
 	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 	if (name.contains("Ios")) {

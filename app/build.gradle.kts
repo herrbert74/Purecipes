@@ -120,3 +120,5 @@ dependencies {
 	implementation(libs.androidx.composeMaterialIconsExtended)
 	implementation(libs.metro.runtime)
 }
+
+dependencies { implementation(libs.androidx.fragmentKtx) }

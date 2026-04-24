@@ -1,9 +1,7 @@
 package com.purecipes.backend
 
-import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
-import com.purecipes.shared.domain.model.AuthenticatedBackendUser
-import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.backend.fake.FakeSessionService
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -29,9 +27,26 @@ class FavoritesSessionIntegrationTest {
 		seedRecipeTables(dataSource)
 		val db = Db.fromDataSource(dataSource)
 		seedAppUsers(db)
-		val sessionService = FakeSessionService()
-		val firstSession = sessionService.firstSession
-		val secondSession = sessionService.secondSession
+		val firstSession = FakeSessionService.createSession(
+			accessToken = "session-token-1",
+			id = "1",
+			email = "user-one@example.com",
+			displayName = "User One",
+			firstName = "User",
+			familyName = "One",
+		)
+		val secondSession = FakeSessionService.createSession(
+			accessToken = "session-token-2",
+			id = "2",
+			email = "user-two@example.com",
+			displayName = "User Two",
+			firstName = "User",
+			familyName = "Two",
+		)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(firstSession, secondSession),
+			createMode = FakeSessionService.CreateMode.FAIL,
+		)
 		seedFavorites(db)
 
 		application {
@@ -45,23 +60,14 @@ class FavoritesSessionIntegrationTest {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
 		assertEquals(HttpStatusCode.OK, firstFavoritesResponse.status)
-		val expectedFavoritesBody =
-			"""
-			[
-				{
-					"id":1,
-					"title":"Tomato Pasta",
-					"cuisine":"Italian",
-					"imageUrl":"https://example.com/pasta.jpg",
-					"totalTime":25,
-					"isFavorite":true
-				}
-			]
-			""".trimIndent().lines().joinToString(separator = "") {
-				it.trim()
-			}
+		val expectedFavoritesResponse =
+			listOf(
+				"""[{"id":1,"title":"Tomato Pasta","cuisine":"Italian",""",
+				""""imageUrl":"https://example.com/pasta.jpg",""",
+				""""totalTime":25,"isFavorite":true}]""",
+			).joinToString(separator = "")
 		assertEquals(
-			expectedFavoritesBody,
+			expectedFavoritesResponse,
 			firstFavoritesResponse.bodyAsText(),
 		)
 
@@ -107,14 +113,12 @@ class FavoritesSessionIntegrationTest {
 						CREATE TABLE recipes (
 							id INTEGER PRIMARY KEY,
 							title VARCHAR(255) NOT NULL,
-							description TEXT,
 							instructions TEXT,
 							total_time INTEGER,
 							yields VARCHAR(255),
 							image_url VARCHAR(512),
 							cuisine VARCHAR(255),
 							category VARCHAR(255),
-							created_by_user_id BIGINT,
 							created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 						)
 					""".trimIndent(),
@@ -154,7 +158,6 @@ class FavoritesSessionIntegrationTest {
 						INSERT INTO recipes (
 							id,
 							title,
-							description,
 							instructions,
 							total_time,
 							yields,
@@ -164,7 +167,6 @@ class FavoritesSessionIntegrationTest {
 						) VALUES (
 							1,
 							'Tomato Pasta',
-							'Quick weeknight dinner.',
 							'Boil pasta\nMake sauce',
 							25,
 							'2 servings',
@@ -223,73 +225,6 @@ class FavoritesSessionIntegrationTest {
 	private fun assertBodyDoesNotContain(body: String, unexpectedFragment: String) {
 		if (body.contains(unexpectedFragment)) {
 			throw AssertionError("Expected body to not contain $unexpectedFragment but was: $body")
-		}
-	}
-
-	private class FakeSessionService : SessionService {
-
-		val firstSession = createSession(
-			accessToken = "session-token-1",
-			id = "1",
-			email = "user-one@example.com",
-			displayName = "User One",
-			firstName = "User",
-			familyName = "One",
-		)
-
-		val secondSession = createSession(
-			accessToken = "session-token-2",
-			id = "2",
-			email = "user-two@example.com",
-			displayName = "User Two",
-			firstName = "User",
-			familyName = "Two",
-		)
-
-		private val sessionsByToken = mapOf(
-			firstSession.accessToken to firstSession,
-			secondSession.accessToken to secondSession,
-		)
-
-		override fun ensureSchema() = Unit
-
-		override fun createSession(
-			provider: String,
-			externalUserId: String,
-			email: String,
-			displayName: String,
-			firstName: String?,
-			familyName: String?,
-			profileImageUrl: String?,
-		): AuthenticatedSession {
-			error("Not needed in this test")
-		}
-
-		override fun getSession(accessToken: String): AuthenticatedSession? = sessionsByToken[accessToken]
-
-		override fun revokeSession(accessToken: String): Boolean = accessToken in sessionsByToken
-
-		private fun createSession(
-			accessToken: String,
-			id: String,
-			email: String,
-			displayName: String,
-			firstName: String,
-			familyName: String,
-		): AuthenticatedSession {
-			return AuthenticatedSession(
-				accessToken = accessToken,
-				expiresAtEpochSeconds = 4_102_444_800,
-				user = AuthenticatedBackendUser(
-					id = id,
-					email = email,
-					displayName = displayName,
-					firstName = firstName,
-					familyName = familyName,
-					profileImageUrl = null,
-					provider = "GOOGLE",
-				),
-			)
 		}
 	}
 }

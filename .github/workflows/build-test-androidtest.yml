@@ -126,8 +126,16 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            ./gradlew app:connectedAndroidTest
+          script: >-
+            ./gradlew
+            --max-workers=2
+            --no-parallel
+            --no-configuration-cache
+            -Pkotlin.native.enableKlibsCrossCompilation=false
+            -Pkotlin.native.ignoreDisabledTargets=true
+            "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC"
+            "-Dkotlin.daemon.jvmargs=-Xmx4g -XX:+UseParallelGC"
+            connectedAndroidTest;
             killall -INT crashpad_handler || true
 
       - name: Upload Test Reports

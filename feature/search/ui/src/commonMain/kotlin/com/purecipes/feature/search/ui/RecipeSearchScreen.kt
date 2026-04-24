@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
@@ -48,6 +49,9 @@ import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.component.TitleText
 import com.purecipes.shared.ui.theme.PurecipesTheme
+
+internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"
+internal const val RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG = "recipeSearchOpenFiltersButton"
 
 @Composable
 fun RecipeSearchScreen(
@@ -110,6 +114,7 @@ fun RecipeSearchScreen(
 						}
 					},
 					modifier = Modifier
+						.testTag(RECIPE_SEARCH_INPUT_TAG)
 						.semantics(mergeDescendants = true) {
 							contentDescription = "Searchbar"
 							requestFocus { false }
@@ -120,7 +125,10 @@ fun RecipeSearchScreen(
 					},
 					trailingIcon = {
 						val hasActiveFilters = !viewModel.activeFilters.isEmpty
-						IconButton(onClick = viewModel::onFilterButtonClick) {
+						IconButton(
+							onClick = viewModel::onFilterButtonClick,
+							modifier = Modifier.testTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG),
+						) {
 							Icon(
 								imageVector = Icons.Default.FilterList,
 								contentDescription = "Open filters",

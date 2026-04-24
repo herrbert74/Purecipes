@@ -1,171 +1,192 @@
 package com.purecipes.feature.newrecipe.ui
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import com.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
-import org.junit.Rule
+import com.purecipes.shared.ui.theme.PurecipesTheme
+import dejavu.assertStable
+import dejavu.runRecompositionTrackingUiTest
+import dejavu.setTrackedContent
+import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
 
 private const val STEP_REORDER_DRAG_DISTANCE = -140f
 private const val STEP_REORDER_LONG_PRESS_MILLIS = 700L
 
+@RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
 class CreateRecipeScreenTest {
 
-	@get:Rule
-	val composeRule = createComposeRule()
-
 	@Test
-	fun createRecipeScreenSavesAndDisplaysRecipe() {
+	fun createRecipeScreenSavesAndDisplaysRecipe() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
-		composeRule.setContent {
-			CreateRecipeScreen(
-				canUploadRecipes = true,
-				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-			)
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+				)
+			}
 		}
 
-		composeRule.onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
-		composeRule.onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
-		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsDisplayed()
-		composeRule.onNodeWithTag("createRecipeStepField0").performTextInput("Trim the carrots")
-		composeRule.onNodeWithTag("createRecipeAddStepButton").performClick()
-		composeRule.onNodeWithTag("createRecipeStepField1").performTextInput("Roast until tender")
-		composeRule.onNodeWithTag("createRecipeSaveButton").performClick()
+		onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
+		onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
+		onNodeWithTag("createRecipeImagePickButton").assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField0").performTextInput("Trim the carrots")
+		onNodeWithTag("createRecipeAddStepButton").performClick()
+		onNodeWithTag("createRecipeStepField1").performTextInput("Roast until tender")
+		onNodeWithTag("createRecipeSaveButton").performScrollTo().performClick()
+		waitForIdle()
+		waitUntil(timeoutMillis = 5_000) { repository.savedRequests.size == 1 }
 
-		composeRule.onNodeWithText("Roasted Carrots").assertIsDisplayed()
-		composeRule.onNodeWithText("Recipe uploaded.").assertIsDisplayed()
-		composeRule.onNodeWithText("Edit").assertIsDisplayed()
+		onNodeWithText("Recipe uploaded.").performScrollTo().assertIsDisplayed()
+		assertEquals(1, repository.savedRequests.size)
+		onNodeWithTag("createRecipeSaveButton").assertStable()
 	}
 
 	@Test
-	fun createRecipeScreenDisablesFormWhileImageImportIsInProgress() {
+	fun createRecipeScreenDisablesFormWhileImageImportIsInProgress() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
-		composeRule.setContent {
-			CreateRecipeScreen(
-				canUploadRecipes = true,
-				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-				rememberImagePicker = { _, onImportStateChange, _ ->
-					object : RecipeImagePickerLauncher {
-						override fun launch() {
-							onImportStateChange(true)
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					rememberImagePicker = { _, onImportStateChange, _ ->
+						object : RecipeImagePickerLauncher {
+							override fun launch() {
+								onImportStateChange(true)
+							}
 						}
-					}
-				},
-			)
+					},
+				)
+			}
 		}
 
-		composeRule.onNodeWithTag("createRecipeImagePickButton").performClick()
+		onNodeWithTag("createRecipeImagePickButton").performClick()
 
-		composeRule.onNodeWithText("Importing image").assertIsDisplayed()
-		composeRule.onNodeWithText("Preparing image preview...").assertIsDisplayed()
-		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsNotEnabled()
-		composeRule.onNodeWithTag("createRecipeSaveButton").assertIsNotEnabled()
+		onNodeWithText("Importing image").assertIsDisplayed()
+		onNodeWithText("Preparing image preview...").assertIsDisplayed()
+		onNodeWithTag("createRecipeImagePickButton").assertIsNotEnabled()
+		onNodeWithTag("createRecipeSaveButton").assertIsNotEnabled()
 	}
 
 	@Test
-	fun createRecipeScreenShowsImageImportErrorAndReEnablesForm() {
+	fun createRecipeScreenShowsImageImportErrorAndReEnablesForm() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
-		composeRule.setContent {
-			CreateRecipeScreen(
-				canUploadRecipes = true,
-				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-				rememberImagePicker = { _, onImportStateChange, onPickerError ->
-					object : RecipeImagePickerLauncher {
-						override fun launch() {
-							onImportStateChange(true)
-							onPickerError("Could not import the selected image.")
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					rememberImagePicker = { _, onImportStateChange, onPickerError ->
+						object : RecipeImagePickerLauncher {
+							override fun launch() {
+								onImportStateChange(true)
+								onPickerError("Could not import the selected image.")
+							}
 						}
-					}
-				},
-			)
+					},
+				)
+			}
 		}
 
-		composeRule.onNodeWithTag("createRecipeImagePickButton").performClick()
+		onNodeWithTag("createRecipeImagePickButton").performClick()
 
-		composeRule.onNodeWithText("Could not import the selected image.").assertIsDisplayed()
-		composeRule.onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
-		composeRule.onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
+		onNodeWithText("Could not import the selected image.").assertIsDisplayed()
+		onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
+		onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
 	}
 
 	@Test
-	fun createRecipeScreenOpensCuisinePicker() {
+	fun createRecipeScreenOpensCuisinePicker() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
-		composeRule.setContent {
-			CreateRecipeScreen(
-				canUploadRecipes = true,
-				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-			)
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+				)
+			}
 		}
 
-		composeRule.onNodeWithTag("createRecipeCuisineField").performClick()
+		onNodeWithTag("createRecipeCuisineField").performClick()
 
-		composeRule.onNodeWithText("No cuisine").assertIsDisplayed()
-		composeRule.onNodeWithText("Italian").assertIsDisplayed()
+		onNodeWithText("No cuisine").assertIsDisplayed()
+		onNodeWithText("Italian").assertIsDisplayed()
 	}
 
 	@Test
-	fun createRecipeScreenAddsAnotherStepField() {
+	fun createRecipeScreenAddsAnotherStepField() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
-		composeRule.setContent {
-			CreateRecipeScreen(
-				canUploadRecipes = true,
-				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-			)
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+				)
+			}
 		}
 
-		composeRule.onNodeWithTag("createRecipeAddStepButton").performClick()
+		onNodeWithTag("createRecipeAddStepButton").performClick()
+		waitForIdle()
 
-		composeRule.onNodeWithTag("createRecipeStepField1").assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField1").performScrollTo().assertIsDisplayed()
 	}
 
 	@Test
-	fun createRecipeScreenReordersSteps() {
+	fun createRecipeScreenReordersSteps() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
-		composeRule.setContent {
-			CreateRecipeScreen(
-				canUploadRecipes = true,
-				getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-				saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-			)
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+				)
+			}
 		}
 
-		composeRule.onNodeWithTag("createRecipeStepField0").performTextInput("First")
-		composeRule.onNodeWithTag("createRecipeAddStepButton").performClick()
-		composeRule.onNodeWithTag("createRecipeStepField1").performTextInput("Second")
-		composeRule.onNodeWithTag("createRecipeReorderStepButton1").performTouchInput {
+		onNodeWithTag("createRecipeStepField0").performTextInput("First")
+		onNodeWithTag("createRecipeAddStepButton").performClick()
+		onNodeWithTag("createRecipeStepField1").performTextInput("Second")
+		onNodeWithTag("createRecipeReorderStepButton1").performTouchInput {
 			down(center)
 			advanceEventTime(STEP_REORDER_LONG_PRESS_MILLIS)
 			moveBy(Offset(x = 0f, y = STEP_REORDER_DRAG_DISTANCE))
 			up()
 		}
-		composeRule.waitForIdle()
+		waitForIdle()
 
-		composeRule.onNodeWithTag("createRecipeStepField0").assertTextContains("Second")
-		composeRule.onNodeWithTag("createRecipeStepField1").assertTextContains("First")
+		onNodeWithTag("createRecipeStepField0").assertTextContains("Second")
+		onNodeWithTag("createRecipeStepField1").assertTextContains("First")
 	}
 
 }

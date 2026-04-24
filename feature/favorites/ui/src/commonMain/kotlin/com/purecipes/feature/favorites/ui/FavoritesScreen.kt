@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -39,6 +40,8 @@ import com.purecipes.shared.ui.component.EmptyStateContent
 import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.component.TitleText
 import com.purecipes.shared.ui.theme.PurecipesTheme
+
+internal const val FAVORITES_TITLE_TAG = "favoritesTitle"
 
 @Composable
 fun FavoritesScreen(
@@ -63,7 +66,7 @@ fun FavoritesScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Favorites") },
+				title = { Text(text = "Favorites", modifier = Modifier.testTag(FAVORITES_TITLE_TAG)) },
 			)
 		},
 	) { innerPadding ->

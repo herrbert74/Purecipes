@@ -11,7 +11,12 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:auth:domain"))
-					implementation(project(":shared:data"))
+				implementation(project(":shared:data"))
+			}
+		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:dataTestFixtures"))
 			}
 		}
 	}

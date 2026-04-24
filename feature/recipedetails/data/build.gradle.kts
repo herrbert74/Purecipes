@@ -16,6 +16,7 @@ kotlin {
 		commonTest {
 			dependencies {
 				implementation(project(":shared:dataTestFixtures"))
+				implementation(project(":shared:testfixtures"))
 			}
 		}
 	}

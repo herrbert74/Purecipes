@@ -5,6 +5,8 @@ primary goal of the app to make it easier for users to follow recipe instruction
 
 ## Core Principles
 
+- **NEVER use `@SuppressLint` or `@Suppress` to bypass errors/warnings unless explicitly instructed.**
+- **NEVER rename tests, modify test logic to bypass failures, or introduce hacky workarounds without asking first.**
 - Use **tabs** instead of spaces for tabs.
 - Formatting adherence is a correctness requirement, not a cleanup task. Before every edit, match the file's existing formatting exactly and preserve the alignment style already in use.
 
@@ -57,6 +59,11 @@ Add suffixes to designate types and prefixes for designate the features.
 
 Top level composables that represent a screen have the Screen suffix.
 
+## Rule: Use IDE Index plugin (android-studio-index MCP server) whenever possible
+
+If this MCP server is not available, stop all work and notify the user.
+If possible find a way to restart in the same request, for example by using ask question tool.
+
 ## Rule: Use kotlin-result library
 
 Do not use try/catch structure for network calls or similar. Use the Outcome class instead, which is a type alias 
@@ -72,6 +79,12 @@ When using pagination, refer to classes in package 'com.purecipes.shared.ui.comp
 Validate every change, but match the scope to the task.
 
 For focused maintenance tasks such as fixing Detekt issues, small bug fixes, or adding/changing unit tests, a focused validation is acceptable: run Detekt only, or run the affected old/new tests, or run the smallest relevant build target.
+
+When changes touch test code, test fixtures, fake implementations, or test-only Gradle dependencies, always run the affected module test tasks automatically before finishing the task. Do not skip test execution in those cases.
+
+When changes touch UI code, Compose screens/routes/view models, `androidDeviceTest` sources, or shared test fixtures/fakes used by Android UI tests, also run the Android UI test suite with `./gradlew connectedAndroidTest` before finishing the task. If the environment cannot run instrumented Android tests, explicitly report that as a blocker instead of silently skipping them.
+
+For Kotlin Multiplatform modules, run concrete target test tasks (for example `jvmTest`) instead of non-existent aggregate task names like `commonTest`.
 
 For new features and larger refactors, run complete validation:
 - `./gradlew detektAll`
@@ -104,7 +117,7 @@ If you think it's absolutely necessary, ask for permission.
 
 ## Rule: Formatting and Detekt
 
-Reformat code after changes as per the project rules in .idea/codeStyles/Project.xml.
+Reformat code after changes as per the project rules in .idea/codeStyles/Project.xml with the IDE Index plugin (android-studio-index MCP server).
 Also format the code according to Detekt rules in config/detekt.
 Run detekt with ./gradlew detektAll.
 Do not use suppress violations. Try to fix them, or if it cannot be done, 

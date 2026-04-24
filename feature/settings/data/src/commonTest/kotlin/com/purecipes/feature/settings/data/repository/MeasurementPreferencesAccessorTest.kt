@@ -4,7 +4,7 @@ import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.settings.data.datasource.MeasurementPreferencesDataSource
 import com.purecipes.feature.settings.data.datasource.MeasurementPreferencesRemoteDataSource
-import com.purecipes.shared.data.session.SessionTokenStore
+import com.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import com.purecipes.shared.domain.model.AuthenticatedBackendUser
 import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.MeasurementPreferences
@@ -34,11 +34,24 @@ class MeasurementPreferencesAccessorTest {
 			formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED,
 			detectedCountryCode = "US",
 		)
+		val session = AuthenticatedSession(
+			accessToken = "session-token",
+			expiresAtEpochSeconds = 4_000_000_000,
+			user = AuthenticatedBackendUser(
+				id = "1",
+				email = "user@example.com",
+				displayName = "User",
+				firstName = "User",
+				familyName = "Example",
+				profileImageUrl = null,
+				provider = "GOOGLE",
+			),
+		)
 		val remoteDataSource = FakeMeasurementPreferencesRemoteDataSource(initialPreferences)
 		val accessor = MeasurementPreferencesAccessor(
 			localDataSource = FakeMeasurementPreferencesDataSource(initialPreferences),
 			remoteDataSource = remoteDataSource,
-			sessionTokenStore = FakeSessionTokenStore(),
+			sessionTokenStore = FakeSessionTokenStore(session),
 		)
 
 		val saveJob = launch(start = CoroutineStart.UNDISPATCHED) {
@@ -92,30 +105,5 @@ class MeasurementPreferencesAccessorTest {
 			savedPreferences += preferences
 			return Ok(preferences)
 		}
-	}
-
-	private class FakeSessionTokenStore : SessionTokenStore {
-
-		private val session = AuthenticatedSession(
-			accessToken = "session-token",
-			expiresAtEpochSeconds = 4_000_000_000,
-			user = AuthenticatedBackendUser(
-				id = "1",
-				email = "user@example.com",
-				displayName = "User",
-				firstName = "User",
-				familyName = "Example",
-				profileImageUrl = null,
-				provider = "GOOGLE",
-			),
-		)
-
-		override fun currentSession(): AuthenticatedSession = session
-
-		override fun currentAccessToken(): String = session.accessToken
-
-		override fun saveSession(session: AuthenticatedSession) = Unit
-
-		override fun clearSession() = Unit
 	}
 }

@@ -6,7 +6,7 @@ kotlin {
 	android {
 		namespace = "com.purecipes.feature.cooking.ui"
 		withDeviceTestBuilder {
-			sourceSetTreeName = "test"
+			sourceSetTreeName = "androidDeviceTest"
 		}.configure {
 			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		}
@@ -28,6 +28,7 @@ kotlin {
 		}
 		named("androidDeviceTest") {
 			dependencies {
+				implementation(libs.dejavu)
 				implementation(project(":shared:testfixtures"))
 			}
 		}
