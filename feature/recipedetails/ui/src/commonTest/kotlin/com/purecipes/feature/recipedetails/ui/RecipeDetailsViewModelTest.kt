@@ -11,14 +11,12 @@ import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import com.purecipes.shared.domain.model.Cuisine
-import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
+import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -34,7 +32,7 @@ class RecipeDetailsViewModelTest {
 
 	@Test
 	fun detailsViewModelLoadsRecipeDetails() = runTest {
-		val recipe = sampleRecipeDetails()
+		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
@@ -81,7 +79,7 @@ class RecipeDetailsViewModelTest {
 
 	@Test
 	fun toggleFavoriteUpdatesRecipeState() = runTest {
-		val repository = FakeRecipeDetailsRepository(Ok(sampleRecipeDetails()))
+		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoritesRepository = FakeFavoritesRepository()
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
@@ -107,7 +105,7 @@ class RecipeDetailsViewModelTest {
 
 	@Test
 	fun toggleFavoriteMarksUpdatingSynchronously() = runTest {
-		val repository = FakeRecipeDetailsRepository(Ok(sampleRecipeDetails()))
+		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoriteStarted = CompletableDeferred<Unit>()
 		val finishFavorite = CompletableDeferred<Unit>()
 		val favoritesRepository = BlockingFavoritesRepository(favoriteStarted, finishFavorite)
@@ -157,21 +155,5 @@ class RecipeDetailsViewModelTest {
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
 	}
-}
 
-internal fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(
-	id = 42,
-	title = "Tomato Pasta",
-	description = "Simple dinner.",
-	imageUrl = "https://example.com/pasta.jpg",
-	ingredientGroups = listOf(
-		IngredientGroup(
-			name = "Sauce",
-			ingredients = listOf("2 tomatoes", "1 garlic clove"),
-		),
-	),
-	steps = listOf("Boil pasta", "Make sauce", "Serve"),
-	totalTime = 25,
-	yields = "2 servings",
-	cuisine = Cuisine.ITALIAN,
-)
+}

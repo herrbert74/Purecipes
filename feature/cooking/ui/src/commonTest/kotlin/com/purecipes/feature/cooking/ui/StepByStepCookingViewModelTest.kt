@@ -5,12 +5,10 @@ import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import com.purecipes.shared.domain.model.Cuisine
-import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
+import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -22,7 +20,7 @@ class StepByStepCookingViewModelTest {
 
 	@Test
 	fun stepByStepViewModelAdvancesAndClampsNavigation() = runTest {
-		val recipe = sampleRecipeDetails()
+		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = StepByStepCookingViewModel(
@@ -51,7 +49,7 @@ class StepByStepCookingViewModelTest {
 
 	@Test
 	fun stepByStepViewModelSetsAndClampsCurrentPage() = runTest {
-		val recipe = sampleRecipeDetails()
+		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = StepByStepCookingViewModel(
@@ -75,20 +73,4 @@ class StepByStepCookingViewModelTest {
 		assertEquals(0, viewModel.currentStepIndex)
 	}
 
-	private fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(
-		id = 42,
-		title = "Tomato Pasta",
-		description = "Simple dinner.",
-		imageUrl = "https://example.com/pasta.jpg",
-		ingredientGroups = listOf(
-			IngredientGroup(
-				name = "Sauce",
-				ingredients = listOf("2 tomatoes", "1 garlic clove"),
-			),
-		),
-		steps = listOf("Boil pasta", "Make sauce", "Serve"),
-		totalTime = 25,
-		yields = "2 servings",
-		cuisine = Cuisine.ITALIAN,
-	)
 }

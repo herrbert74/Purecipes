@@ -16,11 +16,11 @@ import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForM
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
+import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import org.junit.Rule
 import org.junit.Test
@@ -42,7 +42,7 @@ class RecipeDetailsScreenTest {
 					canManageFavorites = true,
 					getRecipeDetails = GetRecipeDetailsUseCase(
 						FakeRecipeDetailsRepository(
-							RecipeDetails(
+							fakeRecipeDetails(
 								id = 7,
 								title = "Roasted Carrots",
 								description = "Sweet and savory side dish.",

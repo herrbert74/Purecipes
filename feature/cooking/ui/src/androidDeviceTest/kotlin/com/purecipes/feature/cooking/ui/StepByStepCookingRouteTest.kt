@@ -13,10 +13,10 @@ import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForM
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
-import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
+import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
@@ -37,7 +37,7 @@ class StepByStepCookingRouteTest {
 					recipeId = 9,
 					getRecipeDetails = GetRecipeDetailsUseCase(
 						FakeRecipeDetailsRepository(
-							RecipeDetails(
+							fakeRecipeDetails(
 								id = 9,
 								title = "Roasted Carrots",
 								description = "Sweet and savory side dish.",
