@@ -59,15 +59,18 @@ class FavoritesPostgresIntegrationTest {
 
 				val favoritesResponse = client.get("/favorites")
 				favoritesResponse.status shouldBe HttpStatusCode.Unauthorized
-				favoritesResponse.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
+				favoritesResponse.bodyAsText() shouldBe
+					"""{"message":"Unauthorized","detail":"Missing bearer token"}"""
 
 				val addFavoriteResponse = client.post("/favorites/1")
 				addFavoriteResponse.status shouldBe HttpStatusCode.Unauthorized
-				addFavoriteResponse.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
+				addFavoriteResponse.bodyAsText() shouldBe
+					"""{"message":"Unauthorized","detail":"Missing bearer token"}"""
 
 				val removeFavoriteResponse = client.delete("/favorites/1")
 				removeFavoriteResponse.status shouldBe HttpStatusCode.Unauthorized
-				removeFavoriteResponse.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
+				removeFavoriteResponse.bodyAsText() shouldBe
+					"""{"message":"Unauthorized","detail":"Missing bearer token"}"""
 			}
 		} finally {
 			dataSource.close()
