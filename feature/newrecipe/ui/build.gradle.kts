@@ -29,6 +29,7 @@ kotlin {
 		named("androidDeviceTest") {
 			dependencies {
 				implementation(libs.dejavu)
+				implementation(libs.kotest.assertionsCore)
 				implementation(project(":shared:testfixtures"))
 			}
 		}

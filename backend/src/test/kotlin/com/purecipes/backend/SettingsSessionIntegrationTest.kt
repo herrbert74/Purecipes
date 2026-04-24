@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.fake.FakeSessionService
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.put
@@ -16,7 +17,6 @@ import kotlinx.serialization.json.Json
 import org.h2.jdbcx.JdbcDataSource
 import javax.sql.DataSource
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class SettingsSessionIntegrationTest {
 
@@ -73,7 +73,7 @@ class SettingsSessionIntegrationTest {
 		val missingResponse = client.get("/settings/measurement") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.NotFound, missingResponse.status)
+		missingResponse.status shouldBe HttpStatusCode.NotFound
 
 		val saveResponse = client.put("/settings/measurement") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
@@ -89,19 +89,19 @@ class SettingsSessionIntegrationTest {
 				""".trimIndent(),
 			)
 		}
-		assertEquals(HttpStatusCode.OK, saveResponse.status)
-		assertEquals(expectedSavedPreferencesJson, Json.parseToJsonElement(saveResponse.bodyAsText()))
+		saveResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(saveResponse.bodyAsText()) shouldBe expectedSavedPreferencesJson
 
 		val firstSettingsResponse = client.get("/settings/measurement") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, firstSettingsResponse.status)
-		assertEquals(expectedSavedPreferencesJson, Json.parseToJsonElement(firstSettingsResponse.bodyAsText()))
+		firstSettingsResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(firstSettingsResponse.bodyAsText()) shouldBe expectedSavedPreferencesJson
 
 		val secondSettingsResponse = client.get("/settings/measurement") {
 			header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.NotFound, secondSettingsResponse.status)
+		secondSettingsResponse.status shouldBe HttpStatusCode.NotFound
 
 		val updateResponse = client.put("/settings/measurement") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
@@ -117,15 +117,14 @@ class SettingsSessionIntegrationTest {
 				""".trimIndent(),
 			)
 		}
-		assertEquals(HttpStatusCode.OK, updateResponse.status)
+		updateResponse.status shouldBe HttpStatusCode.OK
 
 		val updatedSettingsResponse = client.get("/settings/measurement") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, updatedSettingsResponse.status)
-		assertEquals(
-			Json.parseToJsonElement(
-				"""
+		updatedSettingsResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(updatedSettingsResponse.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
 				{
 					"preferredSystem":"METRIC",
 					"formatHandling":"FILTER_OUT",
@@ -133,8 +132,6 @@ class SettingsSessionIntegrationTest {
 					"notificationSeenRecipeIds":[2]
 				}
 				""".trimIndent(),
-			),
-			Json.parseToJsonElement(updatedSettingsResponse.bodyAsText()),
 		)
 	}
 

@@ -18,15 +18,12 @@ import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RecipeSearchViewModelTest {
@@ -50,12 +47,12 @@ class RecipeSearchViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals(listOf(""), repository.queries)
-		assertEquals(1, viewModel.recipes.size)
-		assertEquals("Tomato Pasta", viewModel.recipes.single().title)
-		assertFalse(viewModel.isSearching)
-		assertFalse(viewModel.isSearchBarActive)
-		assertNull(viewModel.errorMessage)
+		repository.queries shouldBe listOf("")
+		viewModel.recipes.size shouldBe 1
+		viewModel.recipes.single().title shouldBe "Tomato Pasta"
+		viewModel.isSearching shouldBe false
+		viewModel.isSearchBarActive shouldBe false
+		viewModel.errorMessage shouldBe null
 	}
 
 	@Test
@@ -67,8 +64,8 @@ class RecipeSearchViewModelTest {
 
 		advanceUntilIdle()
 
-		assertTrue(viewModel.recipes.isEmpty())
-		assertEquals("Search failed", viewModel.errorMessage)
+		viewModel.recipes.isEmpty() shouldBe true
+		viewModel.errorMessage shouldBe "Search failed"
 	}
 
 	@Test
@@ -78,8 +75,8 @@ class RecipeSearchViewModelTest {
 
 		advanceUntilIdle()
 
-		assertFalse(viewModel.activeFilters.isEmpty)
-		assertEquals(SearchFilters.default(), viewModel.activeFilters)
+		viewModel.activeFilters.isEmpty shouldBe false
+		viewModel.activeFilters shouldBe SearchFilters.default()
 	}
 
 	@Test
@@ -90,7 +87,7 @@ class RecipeSearchViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals(saved, viewModel.activeFilters)
+		viewModel.activeFilters shouldBe saved
 	}
 
 	@Test
@@ -103,8 +100,8 @@ class RecipeSearchViewModelTest {
 		viewModel.onFiltersChange(newFilters)
 		advanceUntilIdle()
 
-		assertEquals(newFilters, viewModel.activeFilters)
-		assertEquals(newFilters, filterRepository.savedFilters)
+		viewModel.activeFilters shouldBe newFilters
+		filterRepository.savedFilters shouldBe newFilters
 	}
 
 	@Test
@@ -117,14 +114,14 @@ class RecipeSearchViewModelTest {
 		viewModel.onFiltersChange(SearchFilters(cuisines = setOf(Cuisine.FRENCH)))
 		advanceUntilIdle()
 
-		assertEquals(searchCountAfterInit + 1, searchRepository.queries.size)
+		searchRepository.queries.size shouldBe searchCountAfterInit + 1
 	}
 
 	@Test
 	fun `filter sheet is hidden by default`() = runTest {
 		val viewModel = makeViewModel(coroutineScope = this)
 
-		assertFalse(viewModel.isFilterSheetVisible)
+		viewModel.isFilterSheetVisible shouldBe false
 	}
 
 	@Test
@@ -133,7 +130,7 @@ class RecipeSearchViewModelTest {
 
 		viewModel.onFilterButtonClick()
 
-		assertTrue(viewModel.isFilterSheetVisible)
+		viewModel.isFilterSheetVisible shouldBe true
 	}
 
 	@Test
@@ -143,7 +140,7 @@ class RecipeSearchViewModelTest {
 
 		viewModel.onFilterSheetDismiss()
 
-		assertFalse(viewModel.isFilterSheetVisible)
+		viewModel.isFilterSheetVisible shouldBe false
 	}
 
 	private fun makeViewModel(

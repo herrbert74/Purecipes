@@ -1,7 +1,7 @@
 package com.purecipes.feature.analytics.domain.model
 
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class AnalyticsEventTest {
 
@@ -9,14 +9,11 @@ class AnalyticsEventTest {
 	fun `SearchPerformed has correct event name and properties`() {
 		val event = AnalyticsEvent.SearchPerformed(query = "pasta", resultCount = 12)
 
-		assertEquals("search_performed", event.eventName)
-		assertEquals(
-			mapOf(
-				"query" to AnalyticsValue.TextValue("pasta"),
-				"query_length" to AnalyticsValue.NumberValue(5L),
-				"result_count" to AnalyticsValue.NumberValue(12L),
-			),
-			event.properties,
+		event.eventName shouldBe "search_performed"
+		event.properties shouldBe mapOf(
+			"query" to AnalyticsValue.TextValue("pasta"),
+			"query_length" to AnalyticsValue.NumberValue(5L),
+			"result_count" to AnalyticsValue.NumberValue(12L),
 		)
 	}
 
@@ -24,35 +21,26 @@ class AnalyticsEventTest {
 	fun `RecipeViewed has correct event name and properties`() {
 		val event = AnalyticsEvent.RecipeViewed(recipeId = 42)
 
-		assertEquals("recipe_viewed", event.eventName)
-		assertEquals(
-			mapOf("recipe_id" to AnalyticsValue.NumberValue(42L)),
-			event.properties,
-		)
+		event.eventName shouldBe "recipe_viewed"
+		event.properties shouldBe mapOf("recipe_id" to AnalyticsValue.NumberValue(42L))
 	}
 
 	@Test
 	fun `CookingStarted has correct event name and properties`() {
 		val event = AnalyticsEvent.CookingStarted(recipeId = 7)
 
-		assertEquals("cooking_started", event.eventName)
-		assertEquals(
-			mapOf("recipe_id" to AnalyticsValue.NumberValue(7L)),
-			event.properties,
-		)
+		event.eventName shouldBe "cooking_started"
+		event.properties shouldBe mapOf("recipe_id" to AnalyticsValue.NumberValue(7L))
 	}
 
 	@Test
 	fun `FavoriteChanged has correct event name and properties`() {
 		val event = AnalyticsEvent.FavoriteChanged(recipeId = 3, isFavorite = false)
 
-		assertEquals("favorite_changed", event.eventName)
-		assertEquals(
-			mapOf(
-				"recipe_id" to AnalyticsValue.NumberValue(3L),
-				"is_favorite" to AnalyticsValue.BooleanValue(false),
-			),
-			event.properties,
+		event.eventName shouldBe "favorite_changed"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(3L),
+			"is_favorite" to AnalyticsValue.BooleanValue(false),
 		)
 	}
 
@@ -60,13 +48,10 @@ class AnalyticsEventTest {
 	fun `RecipeSaved has correct event name and properties`() {
 		val event = AnalyticsEvent.RecipeSaved(recipeId = 99, isEditing = true)
 
-		assertEquals("recipe_saved", event.eventName)
-		assertEquals(
-			mapOf(
-				"recipe_id" to AnalyticsValue.NumberValue(99L),
-				"is_editing" to AnalyticsValue.BooleanValue(true),
-			),
-			event.properties,
+		event.eventName shouldBe "recipe_saved"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(99L),
+			"is_editing" to AnalyticsValue.BooleanValue(true),
 		)
 	}
 }

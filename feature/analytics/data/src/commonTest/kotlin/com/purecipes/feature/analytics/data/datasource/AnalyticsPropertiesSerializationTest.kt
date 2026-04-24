@@ -1,8 +1,8 @@
 package com.purecipes.feature.analytics.data.datasource
 
 import com.purecipes.feature.analytics.domain.model.AnalyticsValue
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class AnalyticsPropertiesSerializationTest {
 
@@ -14,10 +14,7 @@ class AnalyticsPropertiesSerializationTest {
 			"is_favorite" to AnalyticsValue.BooleanValue(true),
 		)
 
-		assertEquals(
-			expected = """{"query":"pasta","result_count":4,"is_favorite":true}""",
-			actual = properties.toAnalyticsJson(),
-		)
+		properties.toAnalyticsJson() shouldBe """{"query":"pasta","result_count":4,"is_favorite":true}"""
 	}
 
 	@Test
@@ -26,10 +23,7 @@ class AnalyticsPropertiesSerializationTest {
 			"text" to AnalyticsValue.TextValue("""He said \"hi\"\\next\nline\tindent"""),
 		)
 
-		assertEquals(
-			expected = """{"text":"He said \\\"hi\\\"\\\\next\\nline\\tindent"}""",
-			actual = properties.toAnalyticsJson(),
-		)
+		properties.toAnalyticsJson() shouldBe """{"text":"He said \\\"hi\\\"\\\\next\\nline\\tindent"}"""
 	}
 
 	@Test
@@ -38,20 +32,14 @@ class AnalyticsPropertiesSerializationTest {
 			"recipe\"id" to AnalyticsValue.NumberValue(42),
 		)
 
-		assertEquals(
-			expected = """{"recipe\"id":42}""",
-			actual = properties.toAnalyticsJson(),
-		)
+		properties.toAnalyticsJson() shouldBe """{"recipe\"id":42}"""
 	}
 
 	@Test
 	fun `serializes empty map to empty json object`() {
 		val properties = emptyMap<String, AnalyticsValue>()
 
-		assertEquals(
-			expected = "{}",
-			actual = properties.toAnalyticsJson(),
-		)
+		properties.toAnalyticsJson() shouldBe "{}"
 	}
 
 	@Test
@@ -60,9 +48,6 @@ class AnalyticsPropertiesSerializationTest {
 			"text" to AnalyticsValue.TextValue("line1\rline2"),
 		)
 
-		assertEquals(
-			expected = """{"text":"line1\rline2"}""",
-			actual = properties.toAnalyticsJson(),
-		)
+		properties.toAnalyticsJson() shouldBe """{"text":"line1\rline2"}"""
 	}
 }

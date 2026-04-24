@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.fake.FakeSessionService
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -12,7 +13,6 @@ import io.ktor.server.testing.testApplication
 import org.h2.jdbcx.JdbcDataSource
 import javax.sql.DataSource
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class FavoritesSessionIntegrationTest {
 
@@ -59,50 +59,47 @@ class FavoritesSessionIntegrationTest {
 		val firstFavoritesResponse = client.get("/favorites") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, firstFavoritesResponse.status)
+		firstFavoritesResponse.status shouldBe HttpStatusCode.OK
 		val expectedFavoritesResponse =
 			listOf(
 				"""[{"id":1,"title":"Tomato Pasta","cuisine":"Italian",""",
 				""""imageUrl":"https://example.com/pasta.jpg",""",
 				""""totalTime":25,"isFavorite":true}]""",
 			).joinToString(separator = "")
-		assertEquals(
-			expectedFavoritesResponse,
-			firstFavoritesResponse.bodyAsText(),
-		)
+		firstFavoritesResponse.bodyAsText() shouldBe expectedFavoritesResponse
 
 		val secondFavoritesResponse = client.get("/favorites") {
 			header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, secondFavoritesResponse.status)
-		assertEquals("[]", secondFavoritesResponse.bodyAsText())
+		secondFavoritesResponse.status shouldBe HttpStatusCode.OK
+		secondFavoritesResponse.bodyAsText() shouldBe "[]"
 
 		val firstRecipeDetailsResponse = client.get("/recipes/1") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, firstRecipeDetailsResponse.status)
+		firstRecipeDetailsResponse.status shouldBe HttpStatusCode.OK
 		assertBodyContains(firstRecipeDetailsResponse.bodyAsText(), "\"isFavorite\":true")
 
 		val secondRecipeDetailsResponse = client.get("/recipes/1") {
 			header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, secondRecipeDetailsResponse.status)
+		secondRecipeDetailsResponse.status shouldBe HttpStatusCode.OK
 		assertBodyDoesNotContain(secondRecipeDetailsResponse.bodyAsText(), "\"isFavorite\":true")
 
 		val signedOutRecipeDetailsResponse = client.get("/recipes/1")
-		assertEquals(HttpStatusCode.OK, signedOutRecipeDetailsResponse.status)
+		signedOutRecipeDetailsResponse.status shouldBe HttpStatusCode.OK
 		assertBodyDoesNotContain(signedOutRecipeDetailsResponse.bodyAsText(), "\"isFavorite\":true")
 
 		val removeFavoriteResponse = client.delete("/favorites/1") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.NoContent, removeFavoriteResponse.status)
+		removeFavoriteResponse.status shouldBe HttpStatusCode.NoContent
 
 		val firstFavoritesAfterRemove = client.get("/favorites") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, firstFavoritesAfterRemove.status)
-		assertEquals("[]", firstFavoritesAfterRemove.bodyAsText())
+		firstFavoritesAfterRemove.status shouldBe HttpStatusCode.OK
+		firstFavoritesAfterRemove.bodyAsText() shouldBe "[]"
 	}
 
 	private fun seedRecipeTables(dataSource: DataSource) {

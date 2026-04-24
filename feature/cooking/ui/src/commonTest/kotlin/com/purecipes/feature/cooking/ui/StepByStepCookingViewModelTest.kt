@@ -9,11 +9,11 @@ import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StepByStepCookingViewModelTest {
@@ -35,16 +35,16 @@ class StepByStepCookingViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.previousStep()
-		assertEquals(0, viewModel.currentStepIndex)
+		viewModel.currentStepIndex shouldBe 0
 
 		viewModel.nextStep()
 		viewModel.nextStep()
 		viewModel.nextStep()
 
-		assertEquals(recipe.steps.lastIndex, viewModel.currentStepIndex)
+		viewModel.currentStepIndex shouldBe recipe.steps.lastIndex
 
 		viewModel.previousStep()
-		assertEquals(recipe.steps.lastIndex - 1, viewModel.currentStepIndex)
+		viewModel.currentStepIndex shouldBe recipe.steps.lastIndex - 1
 	}
 
 	@Test
@@ -64,13 +64,13 @@ class StepByStepCookingViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.setCurrentStep(1)
-		assertEquals(1, viewModel.currentStepIndex)
+		viewModel.currentStepIndex shouldBe 1
 
 		viewModel.setCurrentStep(99)
-		assertEquals(recipe.steps.lastIndex, viewModel.currentStepIndex)
+		viewModel.currentStepIndex shouldBe recipe.steps.lastIndex
 
 		viewModel.setCurrentStep(-1)
-		assertEquals(0, viewModel.currentStepIndex)
+		viewModel.currentStepIndex shouldBe 0
 	}
 
 }

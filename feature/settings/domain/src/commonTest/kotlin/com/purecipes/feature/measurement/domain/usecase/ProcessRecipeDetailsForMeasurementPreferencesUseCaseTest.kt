@@ -5,9 +5,8 @@ import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeFormatHandling
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 
@@ -33,10 +32,10 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 
 		val result = useCase(recipe, preferences)
 
-		assertFalse(result.isConverted)
-		assertFalse(result.shouldShowMismatchNotification)
-		assertEquals(MeasurementSystem.MIXED, result.recipe.measurementSystem)
-		assertEquals("8 cups (1.9L) stock", result.recipe.ingredientGroups.single().ingredients.single())
-		assertEquals("Bake at 350F", result.recipe.steps.single())
+		result.isConverted shouldBe false
+		result.shouldShowMismatchNotification shouldBe false
+		result.recipe.measurementSystem shouldBe MeasurementSystem.MIXED
+		result.recipe.ingredientGroups.single().ingredients.single() shouldBe "8 cups (1.9L) stock"
+		result.recipe.steps.single() shouldBe "Bake at 350F"
 	}
 }

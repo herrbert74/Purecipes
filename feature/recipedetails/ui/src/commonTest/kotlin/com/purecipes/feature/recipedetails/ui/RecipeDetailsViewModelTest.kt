@@ -17,15 +17,12 @@ import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RecipeDetailsViewModelTest {
@@ -49,9 +46,9 @@ class RecipeDetailsViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals(recipe, viewModel.recipeDetails)
-		assertNull(viewModel.errorMessage)
-		assertFalse(viewModel.isLoading)
+		viewModel.recipeDetails shouldBe recipe
+		viewModel.errorMessage shouldBe null
+		viewModel.isLoading shouldBe false
 	}
 
 	@Test
@@ -72,9 +69,9 @@ class RecipeDetailsViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals("Recipe failed", viewModel.errorMessage)
-		assertNull(viewModel.recipeDetails)
-		assertFalse(viewModel.isLoading)
+		viewModel.errorMessage shouldBe "Recipe failed"
+		viewModel.recipeDetails shouldBe null
+		viewModel.isLoading shouldBe false
 	}
 
 	@Test
@@ -98,9 +95,9 @@ class RecipeDetailsViewModelTest {
 		viewModel.toggleFavorite()
 		advanceUntilIdle()
 
-		assertEquals(viewModel.recipeDetails?.isFavorite, true)
-		assertEquals(1, viewModel.favoriteChangeCount)
-		assertNull(viewModel.favoriteErrorMessage)
+		true shouldBe viewModel.recipeDetails?.isFavorite
+		viewModel.favoriteChangeCount shouldBe 1
+		viewModel.favoriteErrorMessage shouldBe null
 	}
 
 	@Test
@@ -125,19 +122,19 @@ class RecipeDetailsViewModelTest {
 		advanceUntilIdle()
 		viewModel.toggleFavorite()
 
-		assertTrue(viewModel.isFavoriteUpdating)
-		assertNull(viewModel.favoriteErrorMessage)
-		assertFalse(favoriteStarted.isCompleted)
+		viewModel.isFavoriteUpdating shouldBe true
+		viewModel.favoriteErrorMessage shouldBe null
+		favoriteStarted.isCompleted shouldBe false
 
 		advanceUntilIdle()
-		assertTrue(favoriteStarted.isCompleted)
-		assertTrue(viewModel.isFavoriteUpdating)
+		favoriteStarted.isCompleted shouldBe true
+		viewModel.isFavoriteUpdating shouldBe true
 
 		finishFavorite.complete(Unit)
 		advanceUntilIdle()
 
-		assertFalse(viewModel.isFavoriteUpdating)
-		assertEquals(viewModel.recipeDetails?.isFavorite, true)
+		viewModel.isFavoriteUpdating shouldBe false
+		true shouldBe viewModel.recipeDetails?.isFavorite
 	}
 
 	private class BlockingFavoritesRepository(

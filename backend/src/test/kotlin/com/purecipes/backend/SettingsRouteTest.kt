@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.fake.FakeSessionService
 import com.purecipes.backend.routes.settingsRoutes
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -16,7 +17,6 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class SettingsRouteTest {
 
@@ -38,11 +38,8 @@ class SettingsRouteTest {
 
 		val response = client.get("/settings/measurement")
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 	}
 
 	@Test
@@ -73,10 +70,7 @@ class SettingsRouteTest {
 			)
 		}
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 	}
 }

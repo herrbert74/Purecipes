@@ -10,6 +10,7 @@ import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeFormatHandling
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -19,7 +20,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MeasurementPreferencesAccessorTest {
@@ -60,7 +60,7 @@ class MeasurementPreferencesAccessorTest {
 		saveJob.cancel()
 		advanceUntilIdle()
 
-		assertEquals(updatedPreferences, remoteDataSource.savedPreferences.single())
+		remoteDataSource.savedPreferences.single() shouldBe updatedPreferences
 	}
 
 	private class FakeMeasurementPreferencesDataSource(

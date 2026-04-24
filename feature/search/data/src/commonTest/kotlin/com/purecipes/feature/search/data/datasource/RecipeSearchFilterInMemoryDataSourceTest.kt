@@ -2,8 +2,8 @@ package com.purecipes.feature.search.data.datasource
 
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.SearchFilters
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class RecipeSearchFilterInMemoryDataSourceTest {
 
@@ -11,7 +11,7 @@ class RecipeSearchFilterInMemoryDataSourceTest {
 	fun `returns empty filters by default`() {
 		val dataSource = RecipeSearchFilterInMemoryDataSource()
 
-		assertEquals(SearchFilters(), dataSource.getFilters())
+		dataSource.getFilters() shouldBe SearchFilters()
 	}
 
 	@Test
@@ -21,7 +21,7 @@ class RecipeSearchFilterInMemoryDataSourceTest {
 
 		dataSource.saveFilters(filters)
 
-		assertEquals(filters, dataSource.getFilters())
+		dataSource.getFilters() shouldBe filters
 	}
 
 	@Test
@@ -33,6 +33,6 @@ class RecipeSearchFilterInMemoryDataSourceTest {
 		dataSource.saveFilters(first)
 		dataSource.saveFilters(second)
 
-		assertEquals(second, dataSource.getFilters())
+		dataSource.getFilters() shouldBe second
 	}
 }

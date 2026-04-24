@@ -7,10 +7,9 @@ import com.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchFilters
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class RecipeSearchAccessorTest {
 
@@ -24,9 +23,9 @@ class RecipeSearchAccessorTest {
 
 		val outcome = accessor.search("tomato")
 
-		assertEquals(expected, outcome.get())
-		assertNull(outcome.getError())
-		assertEquals(1, api.searchWithFiltersCalls)
+		outcome.get() shouldBe expected
+		outcome.getError() shouldBe null
+		api.searchWithFiltersCalls shouldBe 1
 	}
 
 	@Test
@@ -36,9 +35,9 @@ class RecipeSearchAccessorTest {
 
 		val outcome = accessor.search("   ")
 
-		assertEquals(emptyList(), outcome.get())
-		assertNull(outcome.getError())
-		assertEquals(1, api.searchWithFiltersCalls)
+		outcome.get() shouldBe emptyList()
+		outcome.getError() shouldBe null
+		api.searchWithFiltersCalls shouldBe 1
 	}
 
 	@Test
@@ -49,6 +48,6 @@ class RecipeSearchAccessorTest {
 
 		accessor.search("pasta", filters)
 
-		assertEquals(1, api.searchWithFiltersCalls)
+		api.searchWithFiltersCalls shouldBe 1
 	}
 }

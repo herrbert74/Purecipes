@@ -22,7 +22,7 @@ import com.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
-import org.junit.Assert.assertEquals
+import io.kotest.matchers.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -58,7 +58,7 @@ class CreateRecipeScreenTest {
 		waitUntil(timeoutMillis = 5_000) { repository.savedRequests.size == 1 }
 
 		onNodeWithText("Recipe uploaded.").performScrollTo().assertIsDisplayed()
-		assertEquals(1, repository.savedRequests.size)
+		repository.savedRequests.size shouldBe 1
 		onNodeWithTag("createRecipeSaveButton").assertStable()
 	}
 

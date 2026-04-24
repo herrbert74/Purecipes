@@ -7,13 +7,11 @@ import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavoritesViewModelTest {
@@ -38,9 +36,9 @@ class FavoritesViewModelTest {
 		viewModel.loadFavorites()
 		advanceUntilIdle()
 
-		assertEquals(expected, viewModel.recipes.toList())
-		assertNull(viewModel.errorMessage)
-		assertFalse(viewModel.isLoading)
+		viewModel.recipes.toList() shouldBe expected
+		viewModel.errorMessage shouldBe null
+		viewModel.isLoading shouldBe false
 	}
 
 	@Test
@@ -55,9 +53,9 @@ class FavoritesViewModelTest {
 		viewModel.loadFavorites()
 		advanceUntilIdle()
 
-		assertEquals("Favorites failed", viewModel.errorMessage)
-		assertEquals(emptyList(), viewModel.recipes.toList())
-		assertFalse(viewModel.isLoading)
+		viewModel.errorMessage shouldBe "Favorites failed"
+		viewModel.recipes.toList() shouldBe emptyList()
+		viewModel.isLoading shouldBe false
 	}
 
 }

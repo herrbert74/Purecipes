@@ -49,6 +49,7 @@ extensions.configure<KotlinMultiplatformExtension> {
 			implementation(libs.diamondedge.logging)
 		}
 		commonTest.dependencies {
+			implementation(libs.kotest.assertionsCore)
 			implementation(kotlin("test"))
 		}
 	}

@@ -1,59 +1,57 @@
 package com.purecipes.shared.domain.model
 
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class SearchFiltersTest {
 
 	@Test
 	fun `empty filters have isEmpty true`() {
-		assertTrue(SearchFilters().isEmpty)
+		SearchFilters().isEmpty shouldBe true
 	}
 
 	@Test
 	fun `filters with include ingredients have isEmpty false`() {
-		assertFalse(SearchFilters(includeIngredients = setOf("Chicken")).isEmpty)
+		SearchFilters(includeIngredients = setOf("Chicken")).isEmpty shouldBe false
 	}
 
 	@Test
 	fun `filters with exclude ingredients have isEmpty false`() {
-		assertFalse(SearchFilters(excludeIngredients = setOf("Pork")).isEmpty)
+		SearchFilters(excludeIngredients = setOf("Pork")).isEmpty shouldBe false
 	}
 
 	@Test
 	fun `filters with cuisines have isEmpty false`() {
-		assertFalse(SearchFilters(cuisines = setOf(Cuisine.ITALIAN)).isEmpty)
+		SearchFilters(cuisines = setOf(Cuisine.ITALIAN)).isEmpty shouldBe false
 	}
 
 	@Test
 	fun `default filters are not empty`() {
-		assertFalse(SearchFilters.default().isEmpty)
+		SearchFilters.default().isEmpty shouldBe false
 	}
 
 	@Test
 	fun `default filters include common ingredients`() {
-		assertTrue(SearchFilters.default().includeIngredients.isNotEmpty())
+		SearchFilters.default().includeIngredients.isNotEmpty() shouldBe true
 	}
 
 	@Test
 	fun `default filters have all cuisines selected`() {
-		assertEquals(Cuisine.entries.toSet(), SearchFilters.default().cuisines)
+		SearchFilters.default().cuisines shouldBe Cuisine.entries.toSet()
 	}
 
 	@Test
 	fun `default filters have all cooking time ranges selected`() {
-		assertEquals(CookingTimeRange.entries.toSet(), SearchFilters.default().cookingTimeRanges)
+		SearchFilters.default().cookingTimeRanges shouldBe CookingTimeRange.entries.toSet()
 	}
 
 	@Test
 	fun `default filters have all dietary preferences selected`() {
-		assertEquals(DietaryPreference.entries.toSet(), SearchFilters.default().dietaryPreferences)
+		SearchFilters.default().dietaryPreferences shouldBe DietaryPreference.entries.toSet()
 	}
 
 	@Test
 	fun `default filters have all difficulty levels selected`() {
-		assertEquals(DifficultyLevel.entries.toSet(), SearchFilters.default().difficultyLevels)
+		SearchFilters.default().difficultyLevels shouldBe DifficultyLevel.entries.toSet()
 	}
 }

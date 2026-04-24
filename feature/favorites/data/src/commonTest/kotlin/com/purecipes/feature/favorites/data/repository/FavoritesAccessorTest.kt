@@ -6,10 +6,9 @@ import com.purecipes.feature.favorites.data.datasource.FavoritesRemoteDataSource
 import com.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class FavoritesAccessorTest {
 
@@ -31,7 +30,7 @@ class FavoritesAccessorTest {
 
 		val outcome = accessor.getFavoriteRecipes()
 
-		assertEquals(expected, outcome.get())
-		assertNull(outcome.getError())
+		outcome.get() shouldBe expected
+		outcome.getError() shouldBe null
 	}
 }

@@ -3,10 +3,10 @@ package com.purecipes.feature.settings.data.datasource
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeFormatHandling
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class SettingsMeasurementPreferencesDataSourceTest {
 
@@ -24,6 +24,6 @@ class SettingsMeasurementPreferencesDataSourceTest {
 
 		firstDataSource.saveMeasurementPreferences(updatedPreferences)
 
-		assertEquals(updatedPreferences, secondDataSource.getMeasurementPreferences())
+		secondDataSource.getMeasurementPreferences() shouldBe updatedPreferences
 	}
 }

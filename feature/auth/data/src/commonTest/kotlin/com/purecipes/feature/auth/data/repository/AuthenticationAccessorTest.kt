@@ -15,11 +15,10 @@ import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import com.purecipes.shared.domain.model.AuthenticatedBackendUser
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNull
 
 class AuthenticationAccessorTest {
 
@@ -37,9 +36,9 @@ class AuthenticationAccessorTest {
 			password = "secret",
 		).get()
 
-		assertEquals("Taylor Baker", user?.displayName)
-		assertEquals(AuthProvider.EMAIL, user?.provider)
-		assertIs<AuthenticationState.SignedIn>(accessor.authenticationState.value)
+		user?.displayName shouldBe "Taylor Baker"
+		user?.provider shouldBe AuthProvider.EMAIL
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
 	}
 
 	@Test
@@ -62,7 +61,7 @@ class AuthenticationAccessorTest {
 			password = "secret",
 		)
 
-		assertEquals("An account already exists for this email", result.getError()?.message)
+		result.getError()?.message shouldBe "An account already exists for this email"
 	}
 
 	@Test
@@ -82,12 +81,12 @@ class AuthenticationAccessorTest {
 			),
 		).get()
 
-		assertEquals(AuthProvider.GOOGLE, user?.provider)
-		assertEquals("42", user?.id)
-		assertEquals("Taylor Baker", user?.displayName)
-		assertEquals("https://example.com/avatar.png", user?.profileImageUrl)
-		assertEquals("session-token", sessionTokenStore.currentAccessToken())
-		assertNull(user?.familyName?.takeIf { it.isBlank() })
+		user?.provider shouldBe AuthProvider.GOOGLE
+		user?.id shouldBe "42"
+		user?.displayName shouldBe "Taylor Baker"
+		user?.profileImageUrl shouldBe "https://example.com/avatar.png"
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+		user?.familyName?.takeIf { it.isBlank() } shouldBe null
 	}
 
 	@Test
@@ -108,8 +107,8 @@ class AuthenticationAccessorTest {
 			),
 		)
 
-		assertEquals("Token verification failed", result.getError()?.message)
-		assertIs<AuthenticationState.SignedOut>(accessor.authenticationState.value)
+		result.getError()?.message shouldBe "Token verification failed"
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
 	}
 
 	private class FakeAuthenticationRemoteDataSource(

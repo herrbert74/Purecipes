@@ -4,6 +4,7 @@ import com.purecipes.backend.auth.JdbcSessionService
 import com.purecipes.backend.db.Db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -23,9 +24,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import javax.sql.DataSource
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class FavoritesPostgresIntegrationTest {
 
@@ -60,25 +58,16 @@ class FavoritesPostgresIntegrationTest {
 				}
 
 				val favoritesResponse = client.get("/favorites")
-				assertEquals(HttpStatusCode.Unauthorized, favoritesResponse.status)
-				assertEquals(
-					"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-					favoritesResponse.bodyAsText(),
-				)
+				favoritesResponse.status shouldBe HttpStatusCode.Unauthorized
+				favoritesResponse.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 
 				val addFavoriteResponse = client.post("/favorites/1")
-				assertEquals(HttpStatusCode.Unauthorized, addFavoriteResponse.status)
-				assertEquals(
-					"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-					addFavoriteResponse.bodyAsText(),
-				)
+				addFavoriteResponse.status shouldBe HttpStatusCode.Unauthorized
+				addFavoriteResponse.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 
 				val removeFavoriteResponse = client.delete("/favorites/1")
-				assertEquals(HttpStatusCode.Unauthorized, removeFavoriteResponse.status)
-				assertEquals(
-					"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-					removeFavoriteResponse.bodyAsText(),
-				)
+				removeFavoriteResponse.status shouldBe HttpStatusCode.Unauthorized
+				removeFavoriteResponse.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 			}
 		} finally {
 			dataSource.close()
@@ -138,66 +127,66 @@ class FavoritesPostgresIntegrationTest {
 				val addFavoriteResponse = client.post("/favorites/1") {
 					header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 				}
-				assertEquals(HttpStatusCode.NoContent, addFavoriteResponse.status)
+				addFavoriteResponse.status shouldBe HttpStatusCode.NoContent
 
 				val firstFavorites = parseJsonArray(
 					client.get("/favorites") {
 						header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 					}.also {
-						assertEquals(HttpStatusCode.OK, it.status)
+						it.status shouldBe HttpStatusCode.OK
 					}.bodyAsText(),
 				)
-				assertEquals(1, firstFavorites.size)
-				assertEquals(1, firstFavorites[0].jsonObject.getValue("id").jsonPrimitive.content.toInt())
-				assertEquals(true, firstFavorites[0].jsonObject.getValue("isFavorite").jsonPrimitive.booleanOrNull)
+				firstFavorites.size shouldBe 1
+				firstFavorites[0].jsonObject.getValue("id").jsonPrimitive.content.toInt() shouldBe 1
+				firstFavorites[0].jsonObject.getValue("isFavorite").jsonPrimitive.booleanOrNull shouldBe true
 
 				val secondFavorites = parseJsonArray(
 					client.get("/favorites") {
 						header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
 					}.also {
-						assertEquals(HttpStatusCode.OK, it.status)
+						it.status shouldBe HttpStatusCode.OK
 					}.bodyAsText(),
 				)
-				assertTrue(secondFavorites.isEmpty())
+				secondFavorites.isEmpty() shouldBe true
 
 				val firstDetails = parseJsonObject(
 					client.get("/recipes/1") {
 						header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 					}.also {
-						assertEquals(HttpStatusCode.OK, it.status)
+						it.status shouldBe HttpStatusCode.OK
 					}.bodyAsText(),
 				)
-				assertEquals(true, firstDetails["isFavorite"]?.jsonPrimitive?.booleanOrNull)
+				firstDetails["isFavorite"]?.jsonPrimitive?.booleanOrNull shouldBe true
 
 				val secondDetails = parseJsonObject(
 					client.get("/recipes/1") {
 						header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
 					}.also {
-						assertEquals(HttpStatusCode.OK, it.status)
+						it.status shouldBe HttpStatusCode.OK
 					}.bodyAsText(),
 				)
-				assertFalse(secondDetails.containsKey("isFavorite"))
+				secondDetails.containsKey("isFavorite") shouldBe false
 
 				val signedOutDetails = parseJsonObject(
 					client.get("/recipes/1").also {
-						assertEquals(HttpStatusCode.OK, it.status)
+						it.status shouldBe HttpStatusCode.OK
 					}.bodyAsText(),
 				)
-				assertFalse(signedOutDetails.containsKey("isFavorite"))
+				signedOutDetails.containsKey("isFavorite") shouldBe false
 
 				val removeFavoriteResponse = client.delete("/favorites/1") {
 					header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 				}
-				assertEquals(HttpStatusCode.NoContent, removeFavoriteResponse.status)
+				removeFavoriteResponse.status shouldBe HttpStatusCode.NoContent
 
 				val firstFavoritesAfterDelete = parseJsonArray(
 					client.get("/favorites") {
 						header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 					}.also {
-						assertEquals(HttpStatusCode.OK, it.status)
+						it.status shouldBe HttpStatusCode.OK
 					}.bodyAsText(),
 				)
-				assertTrue(firstFavoritesAfterDelete.isEmpty())
+				firstFavoritesAfterDelete.isEmpty() shouldBe true
 			}
 		} finally {
 			dataSource.close()

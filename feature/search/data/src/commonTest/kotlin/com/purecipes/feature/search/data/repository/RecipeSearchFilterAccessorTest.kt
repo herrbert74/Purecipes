@@ -8,9 +8,9 @@ import com.purecipes.feature.search.data.datasource.RecipeSearchFilterInMemoryDa
 import com.purecipes.feature.search.domain.repository.SearchOutcome
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.SearchFilters
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class RecipeSearchFilterAccessorTest {
 
@@ -22,7 +22,7 @@ class RecipeSearchFilterAccessorTest {
 
 		val result = accessor.getFilters()
 
-		assertEquals(remoteFilters, result)
+		result shouldBe remoteFilters
 	}
 
 	@Test
@@ -34,7 +34,7 @@ class RecipeSearchFilterAccessorTest {
 
 		accessor.getFilters()
 
-		assertEquals(remoteFilters, local.getFilters())
+		local.getFilters() shouldBe remoteFilters
 	}
 
 	@Test
@@ -47,7 +47,7 @@ class RecipeSearchFilterAccessorTest {
 
 		val result = accessor.getFilters()
 
-		assertEquals(localFilters, result)
+		result shouldBe localFilters
 	}
 
 	@Test
@@ -57,7 +57,7 @@ class RecipeSearchFilterAccessorTest {
 
 		val result = accessor.getFilters()
 
-		assertEquals(SearchFilters(), result)
+		result shouldBe SearchFilters()
 	}
 
 	@Test
@@ -69,7 +69,7 @@ class RecipeSearchFilterAccessorTest {
 
 		accessor.saveFilters(filters)
 
-		assertEquals(filters, local.getFilters())
+		local.getFilters() shouldBe filters
 	}
 
 	@Test
@@ -80,7 +80,7 @@ class RecipeSearchFilterAccessorTest {
 
 		accessor.saveFilters(filters)
 
-		assertEquals(filters, remote.savedFilters)
+		remote.savedFilters shouldBe filters
 	}
 
 	private class FakeRemoteFilterDataSource(

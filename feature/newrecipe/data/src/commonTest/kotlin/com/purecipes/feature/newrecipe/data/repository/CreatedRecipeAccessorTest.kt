@@ -12,10 +12,10 @@ import com.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import com.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import com.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import com.purecipes.shared.domain.model.Cuisine
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class CreatedRecipeAccessorTest {
 
@@ -40,13 +40,12 @@ class CreatedRecipeAccessorTest {
 				yields = "2 servings",
 				cuisine = Cuisine.ITALIAN,
 			),
-		).get()
+		).get().shouldNotBeNull()
 
 		val storedRecipes = accessor.getCreatedRecipes().get()
 
-		assertNotNull(savedRecipe)
-		assertEquals(1, savedRecipe.id)
-		assertEquals(listOf(savedRecipe), storedRecipes)
+		savedRecipe.id shouldBe 1
+		storedRecipes shouldBe listOf(savedRecipe)
 	}
 
 	@Test
@@ -78,9 +77,9 @@ class CreatedRecipeAccessorTest {
 
 		val storedRecipes = accessor.getCreatedRecipes().get().orEmpty()
 
-		assertEquals(firstSave?.id, updatedRecipe?.id)
-		assertEquals(1, storedRecipes.size)
-		assertEquals("Creamy Tomato Pasta", storedRecipes.single().title)
+		updatedRecipe?.id shouldBe firstSave?.id
+		storedRecipes.size shouldBe 1
+		storedRecipes.single().title shouldBe "Creamy Tomato Pasta"
 	}
 
 	@Test
@@ -105,8 +104,8 @@ class CreatedRecipeAccessorTest {
 			),
 		).get()
 
-		assertEquals("/tmp/tomato.jpg", imagePathLoader.loadedPath)
-		assertEquals("https://cdn.purecipes.test/recipe-image.jpg", savedRecipe?.imageUrl)
+		imagePathLoader.loadedPath shouldBe "/tmp/tomato.jpg"
+		savedRecipe?.imageUrl shouldBe "https://cdn.purecipes.test/recipe-image.jpg"
 	}
 
 	@Test
@@ -131,7 +130,7 @@ class CreatedRecipeAccessorTest {
 			),
 		)
 
-		assertEquals("Could not read the image file from the provided local path.", outcome.getError()?.message)
+		outcome.getError()?.message shouldBe "Could not read the image file from the provided local path."
 	}
 
 	private class FakeRecipeImagePathLoader(

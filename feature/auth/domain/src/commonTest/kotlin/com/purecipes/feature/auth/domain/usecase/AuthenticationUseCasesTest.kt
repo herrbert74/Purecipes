@@ -5,9 +5,9 @@ import com.purecipes.feature.auth.domain.model.AuthProvider
 import com.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import com.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class AuthenticationUseCasesTest {
 
@@ -22,7 +22,7 @@ class AuthenticationUseCasesTest {
 			password = "secret",
 		)
 
-		assertEquals("First name is required", result.getError()?.message)
+		result.getError()?.message shouldBe "First name is required"
 	}
 
 	@Test
@@ -36,7 +36,7 @@ class AuthenticationUseCasesTest {
 			password = "secret",
 		)
 
-		assertEquals("Family name is required", result.getError()?.message)
+		result.getError()?.message shouldBe "Family name is required"
 	}
 
 	@Test
@@ -52,7 +52,7 @@ class AuthenticationUseCasesTest {
 			),
 		)
 
-		assertEquals("Google sign-in did not return an ID token", result.getError()?.message)
+		result.getError()?.message shouldBe "Google sign-in did not return an ID token"
 	}
 
 	@Test
@@ -69,7 +69,7 @@ class AuthenticationUseCasesTest {
 			),
 		)
 
-		assertEquals("Apple sign-in did not return an email address", result.getError()?.message)
+		result.getError()?.message shouldBe "Apple sign-in did not return an email address"
 	}
 
 }
