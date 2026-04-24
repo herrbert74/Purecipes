@@ -66,7 +66,8 @@ class RecipeDetailsRouteTest {
 					onBack = {},
 					onFavoriteChange = {},
 					onStartCooking = {},
-					processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+					processRecipeDetailsForMeasurementPreferences =
+						ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 					removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 					sessionKey = "user-7",
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),

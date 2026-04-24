@@ -64,6 +64,7 @@ gradleDoctor = "0.12.1"
 hikariCp = "7.0.2"
 jetbrains-androidXLifecycle = "2.10.0"
 jetBrains-compose = "1.10.3"
+jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.0"
 jUnit = "4.13.2"
 jUnit5 = "6.0.3"
@@ -274,7 +275,7 @@ jetbrains-androidXNavigation3Runtime = { module = "org.jetbrains.androidx.naviga
 jetbrains-androidXNavigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-navigation3" }
 
 jetbrains-composeFoundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetBrains-compose" }
-jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version ="1.10.0-SNAPSHOT+update-templates-demos" }
+jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version.ref ="jetbrains-composeMaterial3" }
 jetbrains-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetBrains-compose" }
 jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetBrains-compose" }
 jetbrains-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }
