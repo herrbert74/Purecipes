@@ -5,9 +5,8 @@ import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.model.AnalyticsValue
 import com.purecipes.feature.analytics.domain.model.ConsentState
 import com.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class AnalyticsAccessorTest {
 
@@ -21,8 +20,8 @@ class AnalyticsAccessorTest {
 
 		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 42))
 
-		assertEquals(false, dataSource.lastTrackingEnabled)
-		assertNull(dataSource.lastTrackedEventName)
+		dataSource.lastTrackingEnabled shouldBe false
+		dataSource.lastTrackedEventName shouldBe null
 	}
 
 	@Test
@@ -35,8 +34,8 @@ class AnalyticsAccessorTest {
 
 		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
 
-		assertEquals(false, dataSource.lastTrackingEnabled)
-		assertNull(dataSource.lastTrackedEventName)
+		dataSource.lastTrackingEnabled shouldBe false
+		dataSource.lastTrackedEventName shouldBe null
 	}
 
 	@Test
@@ -49,8 +48,8 @@ class AnalyticsAccessorTest {
 
 		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
 
-		assertEquals(false, dataSource.lastTrackingEnabled)
-		assertNull(dataSource.lastTrackedEventName)
+		dataSource.lastTrackingEnabled shouldBe false
+		dataSource.lastTrackedEventName shouldBe null
 	}
 
 	@Test
@@ -63,14 +62,11 @@ class AnalyticsAccessorTest {
 
 		accessor.trackEvent(AnalyticsEvent.FavoriteChanged(recipeId = 7, isFavorite = true))
 
-		assertEquals(true, dataSource.lastTrackingEnabled)
-		assertEquals("favorite_changed", dataSource.lastTrackedEventName)
-		assertEquals(
-			mapOf(
-				"recipe_id" to AnalyticsValue.NumberValue(7),
-				"is_favorite" to AnalyticsValue.BooleanValue(true),
-			),
-			dataSource.lastTrackedProperties,
+		dataSource.lastTrackingEnabled shouldBe true
+		dataSource.lastTrackedEventName shouldBe "favorite_changed"
+		dataSource.lastTrackedProperties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(7),
+			"is_favorite" to AnalyticsValue.BooleanValue(true),
 		)
 	}
 
@@ -85,8 +81,8 @@ class AnalyticsAccessorTest {
 
 		accessor.trackEvent(AnalyticsEvent.CookingStarted(recipeId = 5))
 
-		assertEquals("cooking_started", first.lastTrackedEventName)
-		assertEquals("cooking_started", second.lastTrackedEventName)
+		first.lastTrackedEventName shouldBe "cooking_started"
+		second.lastTrackedEventName shouldBe "cooking_started"
 	}
 
 	@Test
@@ -99,8 +95,8 @@ class AnalyticsAccessorTest {
 
 		accessor.setUserId("user-123")
 
-		assertEquals(true, dataSource.lastTrackingEnabled)
-		assertEquals("user-123", dataSource.lastUserId)
+		dataSource.lastTrackingEnabled shouldBe true
+		dataSource.lastUserId shouldBe "user-123"
 	}
 
 	@Test
@@ -113,8 +109,8 @@ class AnalyticsAccessorTest {
 
 		accessor.setUserId("user-123")
 
-		assertEquals(false, dataSource.lastTrackingEnabled)
-		assertNull(dataSource.lastUserId)
+		dataSource.lastTrackingEnabled shouldBe false
+		dataSource.lastUserId shouldBe null
 	}
 
 	private class RecordingAnalyticsDataSource : AnalyticsDataSource {

@@ -1,7 +1,7 @@
 package com.purecipes.backend.auth
 
+import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class GoogleIdTokenVerifierTest {
 
@@ -18,7 +18,7 @@ class GoogleIdTokenVerifierTest {
 			environmentVariable = { "env-value" },
 		)
 
-		assertEquals("lowercase-property", resolved)
+		resolved shouldBe "lowercase-property"
 	}
 
 	@Test
@@ -33,7 +33,7 @@ class GoogleIdTokenVerifierTest {
 			environmentVariable = { "env-value" },
 		)
 
-		assertEquals("uppercase-property", resolved)
+		resolved shouldBe "uppercase-property"
 	}
 
 	@Test
@@ -46,7 +46,7 @@ class GoogleIdTokenVerifierTest {
 			resourceProperty = { null },
 		)
 
-		assertEquals("env-value", resolved)
+		resolved shouldBe "env-value"
 	}
 
 	@Test
@@ -59,6 +59,6 @@ class GoogleIdTokenVerifierTest {
 			},
 		)
 
-		assertEquals("bundled-value", resolved)
+		resolved shouldBe "bundled-value"
 	}
 }

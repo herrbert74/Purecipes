@@ -1,5 +1,3 @@
-import org.gradle.api.tasks.WriteProperties
-
 plugins {
 	kotlin("jvm")
 	alias(libs.plugins.kotlin.serialization)
@@ -8,9 +6,9 @@ plugins {
 }
 
 private fun Project.googleWebClientId() = providers.gradleProperty("purecipes.googleWebClientId")
-		.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
-		.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
-		.orElse("")
+	.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+	.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+	.orElse("")
 
 val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resources/backend")
 
@@ -56,6 +54,7 @@ dependencies {
 
 	testImplementation(kotlin("test"))
 	testImplementation(libs.h2)
+	testImplementation(libs.kotest.assertionsCore)
 	testImplementation(libs.ktor.serverTestHost)
 	testImplementation(libs.testcontainers)
 	testImplementation(libs.testcontainers.postgresql)

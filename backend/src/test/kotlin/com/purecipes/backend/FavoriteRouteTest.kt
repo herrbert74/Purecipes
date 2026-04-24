@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.fake.FakeSessionService
 import com.purecipes.backend.routes.favoriteRoutes
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -14,7 +15,6 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class FavoriteRouteTest {
 
@@ -36,11 +36,8 @@ class FavoriteRouteTest {
 
 		val response = client.get("/favorites")
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 	}
 
 	@Test
@@ -61,11 +58,8 @@ class FavoriteRouteTest {
 
 		val response = client.post("/favorites/42")
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 	}
 
 	@Test
@@ -86,10 +80,7 @@ class FavoriteRouteTest {
 
 		val response = client.delete("/favorites/42")
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 	}
 }

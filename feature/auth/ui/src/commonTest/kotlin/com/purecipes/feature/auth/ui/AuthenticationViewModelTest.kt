@@ -9,6 +9,8 @@ import com.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -18,11 +20,6 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthenticationViewModelTest {
@@ -51,9 +48,9 @@ class AuthenticationViewModelTest {
 
 		advanceUntilIdle()
 
-		assertIs<AuthenticationState.SignedIn>(viewModel.authenticationState)
-		assertFalse(viewModel.isEmailFormVisible)
-		assertNull(viewModel.message)
+		viewModel.authenticationState.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		viewModel.isEmailFormVisible shouldBe false
+		viewModel.message shouldBe null
 		viewModelScope.cancel()
 	}
 
@@ -73,7 +70,7 @@ class AuthenticationViewModelTest {
 
 		viewModel.onExternalProviderSignInResult(AuthProvider.APPLE, Result.success(null))
 
-		assertEquals("Apple sign-in was cancelled.", viewModel.message)
+		viewModel.message shouldBe "Apple sign-in was cancelled."
 		viewModelScope.cancel()
 	}
 
@@ -92,8 +89,8 @@ class AuthenticationViewModelTest {
 		)
 
 		viewModel.onGoogleSignInResult(idToken = null, email = null, displayName = "", profileImageUrl = null)
-		assertEquals("Google sign-in was cancelled.", viewModel.message)
-		assertTrue(viewModel.authenticationState is AuthenticationState.SignedOut)
+		viewModel.message shouldBe "Google sign-in was cancelled."
+		(viewModel.authenticationState is AuthenticationState.SignedOut) shouldBe true
 		viewModelScope.cancel()
 	}
 

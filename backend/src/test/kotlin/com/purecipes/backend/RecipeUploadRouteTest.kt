@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.fake.FakeSessionService
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -19,7 +20,6 @@ import io.ktor.server.testing.testApplication
 import org.h2.jdbcx.JdbcDataSource
 import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class RecipeUploadRouteTest {
 
@@ -45,21 +45,21 @@ class RecipeUploadRouteTest {
 		""".trimIndent()
 
 		client.get("/recipes/mine").also {
-			assertEquals(HttpStatusCode.Unauthorized, it.status)
+			it.status shouldBe HttpStatusCode.Unauthorized
 		}
 
 		client.post("/recipes") {
 			contentType(ContentType.Application.Json)
 			setBody(request)
 		}.also {
-			assertEquals(HttpStatusCode.Unauthorized, it.status)
+			it.status shouldBe HttpStatusCode.Unauthorized
 		}
 
 		client.put("/recipes/1") {
 			contentType(ContentType.Application.Json)
 			setBody(request)
 		}.also {
-			assertEquals(HttpStatusCode.Unauthorized, it.status)
+			it.status shouldBe HttpStatusCode.Unauthorized
 		}
 
 		client.post("/recipe-images") {
@@ -78,7 +78,7 @@ class RecipeUploadRouteTest {
 				),
 			)
 		}.also {
-			assertEquals(HttpStatusCode.Unauthorized, it.status)
+			it.status shouldBe HttpStatusCode.Unauthorized
 		}
 	}
 
@@ -130,7 +130,7 @@ class RecipeUploadRouteTest {
 				""".trimIndent(),
 			)
 		}
-		assertEquals(HttpStatusCode.Created, createResponse.status)
+		createResponse.status shouldBe HttpStatusCode.Created
 		val createResponseBody = createResponse.bodyAsText()
 		assertBodyContains(createResponseBody, jsonField("title", "Roasted Carrots"))
 		assertBodyContains(
@@ -142,15 +142,15 @@ class RecipeUploadRouteTest {
 			connection.prepareStatement("SELECT measurement_system FROM recipes WHERE id = ?").use { statement ->
 				statement.setInt(1, 1)
 				val resultSet = statement.executeQuery()
-				assertEquals(true, resultSet.next())
-				assertEquals("MIXED", resultSet.getString(1))
+				resultSet.next() shouldBe true
+				resultSet.getString(1) shouldBe "MIXED"
 			}
 		}
 
 		val mineResponse = client.get("/recipes/mine") {
 			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
 		}
-		assertEquals(HttpStatusCode.OK, mineResponse.status)
+		mineResponse.status shouldBe HttpStatusCode.OK
 		assertBodyContains(mineResponse.bodyAsText(), jsonField("title", "Roasted Carrots"))
 
 		val updateResponse = client.put("/recipes/1") {
@@ -171,7 +171,7 @@ class RecipeUploadRouteTest {
 				""".trimIndent(),
 			)
 		}
-		assertEquals(HttpStatusCode.OK, updateResponse.status)
+		updateResponse.status shouldBe HttpStatusCode.OK
 		val updateResponseBody = updateResponse.bodyAsText()
 		assertBodyContains(updateResponseBody, jsonField("title", "Honey Roasted Carrots"))
 		assertBodyContains(updateResponseBody, jsonField("description", "Updated side dish."))
@@ -180,8 +180,8 @@ class RecipeUploadRouteTest {
 			connection.prepareStatement("SELECT measurement_system FROM recipes WHERE id = ?").use { statement ->
 				statement.setInt(1, 1)
 				val resultSet = statement.executeQuery()
-				assertEquals(true, resultSet.next())
-				assertEquals("METRIC", resultSet.getString(1))
+				resultSet.next() shouldBe true
+				resultSet.getString(1) shouldBe "METRIC"
 			}
 		}
 	}
@@ -231,7 +231,7 @@ class RecipeUploadRouteTest {
 			)
 		}
 
-		assertEquals(HttpStatusCode.Created, uploadResponse.status)
+		uploadResponse.status shouldBe HttpStatusCode.Created
 		val responseBody = uploadResponse.bodyAsText()
 		assertBodyContains(responseBody, """"imageUrl":""")
 		assertBodyContains(responseBody, "/uploads/recipes/")

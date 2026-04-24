@@ -3,9 +3,9 @@ package com.purecipes.feature.search.domain.usecase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class GetSearchFiltersUseCaseTest {
 
@@ -17,7 +17,7 @@ class GetSearchFiltersUseCaseTest {
 
 		val result = useCase()
 
-		assertEquals(expected, result)
+		result shouldBe expected
 	}
 
 	@Test
@@ -27,6 +27,6 @@ class GetSearchFiltersUseCaseTest {
 
 		val result = useCase()
 
-		assertEquals(SearchFilters(), result)
+		result shouldBe SearchFilters()
 	}
 }

@@ -2,11 +2,10 @@ package com.purecipes.feature.analytics.data.repository
 
 import com.purecipes.feature.analytics.data.datasource.ConsentDataSource
 import com.purecipes.feature.analytics.domain.model.ConsentState
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ConsentAccessorTest {
 
@@ -15,7 +14,7 @@ class ConsentAccessorTest {
 		val state = MutableStateFlow(ConsentState.OBTAINED)
 		val accessor = ConsentAccessor(FakeConsentDataSource(state))
 
-		assertEquals(state, accessor.observeConsentState())
+		accessor.observeConsentState() shouldBe state
 	}
 
 	@Test
@@ -23,7 +22,7 @@ class ConsentAccessorTest {
 		val state = MutableStateFlow(ConsentState.DENIED)
 		val accessor = ConsentAccessor(FakeConsentDataSource(state))
 
-		assertEquals(ConsentState.DENIED, accessor.currentConsentState())
+		accessor.currentConsentState() shouldBe ConsentState.DENIED
 	}
 
 	@Test
@@ -33,7 +32,7 @@ class ConsentAccessorTest {
 
 		state.value = ConsentState.REQUIRED
 
-		assertEquals(ConsentState.REQUIRED, accessor.currentConsentState())
+		accessor.currentConsentState() shouldBe ConsentState.REQUIRED
 	}
 
 	@Test
@@ -43,7 +42,7 @@ class ConsentAccessorTest {
 
 		accessor.refreshConsent()
 
-		assertTrue(dataSource.refreshConsentCalled)
+		dataSource.refreshConsentCalled shouldBe true
 	}
 
 	@Test
@@ -53,7 +52,7 @@ class ConsentAccessorTest {
 
 		accessor.showConsentForm()
 
-		assertTrue(dataSource.showConsentFormCalled)
+		dataSource.showConsentFormCalled shouldBe true
 	}
 
 	private class FakeConsentDataSource(

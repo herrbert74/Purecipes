@@ -8,14 +8,11 @@ import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateRecipeViewModelTest {
@@ -33,8 +30,8 @@ class CreateRecipeViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals(listOf(recipe), viewModel.recipes.toList())
-		assertFalse(viewModel.isLoading)
+		viewModel.recipes.toList() shouldBe listOf(recipe)
+		viewModel.isLoading shouldBe false
 	}
 
 	@Test
@@ -50,8 +47,8 @@ class CreateRecipeViewModelTest {
 		advanceUntilIdle()
 		viewModel.saveRecipe()
 
-		assertEquals("Add a recipe title.", viewModel.formErrorMessage)
-		assertTrue(repository.savedRequests.isEmpty())
+		viewModel.formErrorMessage shouldBe "Add a recipe title."
+		repository.savedRequests.isEmpty() shouldBe true
 	}
 
 	@Test
@@ -75,10 +72,10 @@ class CreateRecipeViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals(1, viewModel.recipes.size)
-		assertEquals("Tomato Pasta", viewModel.recipes.single().title)
-		assertEquals("Recipe uploaded.", viewModel.successMessage)
-		assertNull(viewModel.formErrorMessage)
+		viewModel.recipes.size shouldBe 1
+		viewModel.recipes.single().title shouldBe "Tomato Pasta"
+		viewModel.successMessage shouldBe "Recipe uploaded."
+		viewModel.formErrorMessage shouldBe null
 	}
 
 	@Test
@@ -98,9 +95,9 @@ class CreateRecipeViewModelTest {
 
 		advanceUntilIdle()
 
-		assertEquals(1, viewModel.recipes.size)
-		assertEquals("Creamy Tomato Pasta", viewModel.recipes.single().title)
-		assertTrue(viewModel.isEditing)
+		viewModel.recipes.size shouldBe 1
+		viewModel.recipes.single().title shouldBe "Creamy Tomato Pasta"
+		viewModel.isEditing shouldBe true
 	}
 
 	@Test
@@ -118,7 +115,7 @@ class CreateRecipeViewModelTest {
 		viewModel.addStep()
 		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
 
-		assertEquals(listOf("Boil the pasta", "Finish with the tomatoes"), viewModel.stepInputs.toList())
+		viewModel.stepInputs.toList() shouldBe listOf("Boil the pasta", "Finish with the tomatoes")
 	}
 
 	@Test
@@ -137,7 +134,7 @@ class CreateRecipeViewModelTest {
 		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
 		viewModel.moveStepUp(index = 1)
 
-		assertEquals(listOf("Finish with the tomatoes", "Boil the pasta"), viewModel.stepInputs.toList())
+		viewModel.stepInputs.toList() shouldBe listOf("Finish with the tomatoes", "Boil the pasta")
 	}
 
 }

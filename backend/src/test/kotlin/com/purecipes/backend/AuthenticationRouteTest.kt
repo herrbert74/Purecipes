@@ -4,6 +4,7 @@ import com.purecipes.backend.auth.GoogleIdTokenVerificationResult
 import com.purecipes.backend.auth.GoogleIdTokenVerifier
 import com.purecipes.backend.fake.FakeSessionService
 import com.purecipes.shared.domain.model.VerifiedGoogleUser
+import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -15,7 +16,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class AuthenticationRouteTest {
 
@@ -34,11 +34,8 @@ class AuthenticationRouteTest {
 			setBody("""{"idToken":"   "}""")
 		}
 
-		assertEquals(HttpStatusCode.BadRequest, response.status)
-		assertEquals(
-			"""{"message":"Invalid request","detail":"Google id token is required"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.BadRequest
+		response.bodyAsText() shouldBe """{"message":"Invalid request","detail":"Google id token is required"}"""
 	}
 
 	@Test
@@ -67,17 +64,14 @@ class AuthenticationRouteTest {
 			setBody("""{"idToken":"verified-id-token"}""")
 		}
 
-		assertEquals(HttpStatusCode.OK, response.status)
+		response.status shouldBe HttpStatusCode.OK
 		val expectedGoogleAuthResponse = listOf(
 			"""{"accessToken":"session-token-1","expiresAtEpochSeconds":4102444800,"user":{""",
 			""""id":"1","email":"taylor@example.com","displayName":"Taylor Baker",""",
 			""""firstName":"Taylor","familyName":"Baker",""",
 			""""profileImageUrl":"https://example.com/avatar.png","provider":"GOOGLE"}}""",
 		).joinToString(separator = "")
-		assertEquals(
-			expectedGoogleAuthResponse,
-			response.bodyAsText(),
-		)
+		response.bodyAsText() shouldBe expectedGoogleAuthResponse
 	}
 
 	@Test
@@ -95,11 +89,8 @@ class AuthenticationRouteTest {
 			setBody("""{"idToken":"bad-id-token"}""")
 		}
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Google token verification failed"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Google token verification failed"}"""
 	}
 
 	@Test
@@ -115,11 +106,8 @@ class AuthenticationRouteTest {
 
 		val response = client.get("/auth/session")
 
-		assertEquals(HttpStatusCode.Unauthorized, response.status)
-		assertEquals(
-			"""{"message":"Unauthorized","detail":"Missing bearer token"}""",
-			response.bodyAsText(),
-		)
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
 	}
 
 	@Test
@@ -147,7 +135,7 @@ class AuthenticationRouteTest {
 			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
 		}
 
-		assertEquals(HttpStatusCode.OK, response.status)
+		response.status shouldBe HttpStatusCode.OK
 		val expectedSessionResponse =
 			listOf(
 				"""{"accessToken":"${session.accessToken}",""",
@@ -156,10 +144,7 @@ class AuthenticationRouteTest {
 				""""firstName":"Taylor","familyName":"Baker",""",
 				""""profileImageUrl":"https://example.com/avatar.png","provider":"GOOGLE"}}""",
 			).joinToString(separator = "")
-		assertEquals(
-			expectedSessionResponse,
-			response.bodyAsText(),
-		)
+		response.bodyAsText() shouldBe expectedSessionResponse
 	}
 
 	@Test
@@ -187,13 +172,13 @@ class AuthenticationRouteTest {
 			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
 		}
 
-		assertEquals(HttpStatusCode.NoContent, signOutResponse.status)
+		signOutResponse.status shouldBe HttpStatusCode.NoContent
 
 		val sessionResponse = client.get("/auth/session") {
 			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
 		}
 
-		assertEquals(HttpStatusCode.Unauthorized, sessionResponse.status)
+		sessionResponse.status shouldBe HttpStatusCode.Unauthorized
 	}
 
 	private class FakeGoogleIdTokenVerifier(

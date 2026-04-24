@@ -1,25 +1,24 @@
 package com.purecipes.shared.domain.model
 
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class CuisineTest {
 
 	@Test
 	fun cuisineSerializerUsesDisplayName() {
-		assertEquals("\"Italian\"", Json.encodeToString(Cuisine.ITALIAN))
+		Json.encodeToString(Cuisine.ITALIAN) shouldBe "\"Italian\""
 	}
 
 	@Test
 	fun cuisineParserAcceptsDisplayNameAndEnumName() {
-		assertEquals(Cuisine.MIDDLE_EASTERN, Cuisine.fromRawValue("Middle Eastern"))
-		assertEquals(Cuisine.MIDDLE_EASTERN, Cuisine.fromRawValue("middle_eastern"))
+		Cuisine.fromRawValue("Middle Eastern") shouldBe Cuisine.MIDDLE_EASTERN
+		Cuisine.fromRawValue("middle_eastern") shouldBe Cuisine.MIDDLE_EASTERN
 	}
 
 	@Test
 	fun cuisineParserReturnsNullForUnknownValue() {
-		assertNull(Cuisine.fromRawValue("Martian"))
+		Cuisine.fromRawValue("Martian") shouldBe null
 	}
 }

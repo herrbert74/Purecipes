@@ -5,10 +5,9 @@ import com.github.michaelbull.result.getError
 import com.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.SearchFilters
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class RecipeSearchFilterRemoteDataSourceTest {
 
@@ -20,8 +19,8 @@ class RecipeSearchFilterRemoteDataSourceTest {
 
 		val result = dataSource.getFilters()
 
-		assertEquals(expected, result.get())
-		assertNull(result.getError())
+		result.get() shouldBe expected
+		result.getError() shouldBe null
 	}
 
 	@Test
@@ -32,8 +31,8 @@ class RecipeSearchFilterRemoteDataSourceTest {
 
 		dataSource.saveFilters(filters)
 
-		assertEquals(1, api.savedSearchFiltersList.size)
-		assertEquals(filters, api.savedSearchFiltersList.first())
+		api.savedSearchFiltersList.size shouldBe 1
+		api.savedSearchFiltersList.first() shouldBe filters
 	}
 
 	@Test
@@ -44,7 +43,7 @@ class RecipeSearchFilterRemoteDataSourceTest {
 
 		val result = dataSource.saveFilters(filters)
 
-		assertEquals(filters, result.get())
-		assertNull(result.getError())
+		result.get() shouldBe filters
+		result.getError() shouldBe null
 	}
 }

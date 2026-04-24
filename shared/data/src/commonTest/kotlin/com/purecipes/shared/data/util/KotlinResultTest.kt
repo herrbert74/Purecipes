@@ -3,6 +3,7 @@ package com.purecipes.shared.data.util
 import com.github.michaelbull.result.Err
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.shared.data.getresult.handle
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -18,7 +19,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 
 class KotlinResultTest {
 
@@ -114,7 +114,7 @@ class KotlinResultTest {
 	fun `runCatchingApi rethrows cancellation exception`() = runTest {
 		val exception = CancellationException("cancelled")
 
-		assertFailsWith<CancellationException> {
+		shouldThrow<CancellationException> {
 			runCatchingApi<Int> {
 				throw exception
 			}
@@ -125,7 +125,7 @@ class KotlinResultTest {
 	fun `runCatchingApi rethrows unexpected exception`() = runTest {
 		val exception = IllegalStateException("unexpected")
 
-		assertFailsWith<IllegalStateException> {
+		shouldThrow<IllegalStateException> {
 			runCatchingApi<Int> {
 				throw exception
 			}
@@ -145,7 +145,7 @@ class KotlinResultTest {
 	fun `runCatchingUnit rethrows cancellation exception`() {
 		val exception = CancellationException("cancelled")
 
-		assertFailsWith<CancellationException> {
+		shouldThrow<CancellationException> {
 			runCatchingUnit<Unit> {
 				throw exception
 			}

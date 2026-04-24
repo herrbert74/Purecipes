@@ -7,6 +7,7 @@ import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.shared.data.getresult.handle
 import com.purecipes.shared.data.session.SessionTokenStore
 import com.purecipes.shared.domain.model.RecipeDetails
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -22,7 +23,6 @@ import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 
 class DataNetworkModuleTest {
 
@@ -49,7 +49,7 @@ class DataNetworkModuleTest {
 		}
 
 		try {
-			val exception = assertFailsWith<ClientRequestException> {
+			val exception = shouldThrow<ClientRequestException> {
 				client.get("https://example.com/recipes/999999").body<RecipeDetails>()
 			}
 

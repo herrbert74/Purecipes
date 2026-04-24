@@ -5,10 +5,9 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.recipedetails.data.datasource.RecipeDetailsRemoteDataSource
 import com.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import com.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class RecipeDetailsAccessorTest {
 
@@ -21,7 +20,7 @@ class RecipeDetailsAccessorTest {
 
 		val outcome = accessor.getRecipeDetails(42)
 
-		assertEquals(expected, outcome.get())
-		assertNull(outcome.getError())
+		outcome.get() shouldBe expected
+		outcome.getError() shouldBe null
 	}
 }

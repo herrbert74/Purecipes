@@ -3,9 +3,9 @@ package com.purecipes.feature.search.domain.usecase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class SaveSearchFiltersUseCaseTest {
 
@@ -17,7 +17,7 @@ class SaveSearchFiltersUseCaseTest {
 
 		useCase(filters)
 
-		assertEquals(filters, repository.savedFilters)
+		repository.savedFilters shouldBe filters
 	}
 
 	@Test
@@ -30,6 +30,6 @@ class SaveSearchFiltersUseCaseTest {
 		useCase(first)
 		useCase(second)
 
-		assertEquals(second, repository.savedFilters)
+		repository.savedFilters shouldBe second
 	}
 }
