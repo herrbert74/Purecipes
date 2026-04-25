@@ -11,8 +11,8 @@ class SearchFiltersTest {
 	}
 
 	@Test
-	fun `filters with include ingredients have isEmpty false`() {
-		SearchFilters(includeIngredients = setOf("Chicken")).isEmpty shouldBe false
+	fun `filters with available ingredients have isEmpty false`() {
+		SearchFilters(availableIngredients = setOf("Chicken")).isEmpty shouldBe false
 	}
 
 	@Test
@@ -32,7 +32,7 @@ class SearchFiltersTest {
 
 	@Test
 	fun `default filters include common ingredients`() {
-		SearchFilters.default().includeIngredients.isNotEmpty() shouldBe true
+		SearchFilters.default().availableIngredients.isNotEmpty() shouldBe true
 	}
 
 	@Test

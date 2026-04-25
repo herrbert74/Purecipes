@@ -34,11 +34,11 @@ internal fun FilterBottomSheet(
 		) {
 			item {
 				IngredientFilterSection(
-					includeIngredients = filters.includeIngredients.toImmutableSet(),
+					availableIngredients = filters.availableIngredients.toImmutableSet(),
 					excludeIngredients = filters.excludeIngredients.toImmutableSet(),
-					onSelectionChange = { include, exclude ->
+					onSelectionChange = { available, exclude ->
 						onFiltersChange(
-							filters.copy(includeIngredients = include, excludeIngredients = exclude),
+							filters.copy(availableIngredients = available, excludeIngredients = exclude),
 						)
 					},
 				)

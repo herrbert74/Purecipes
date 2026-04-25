@@ -1,13 +1,21 @@
 package com.purecipes.backend
 
+import com.purecipes.backend.db.Db
+import com.purecipes.backend.fake.FakeSessionService
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.server.routing.get
 import io.ktor.server.testing.testApplication
+import org.h2.jdbcx.JdbcDataSource
 import kotlin.test.Test
 
 class RecipeSearchRouteTest {
@@ -70,6 +78,375 @@ class RecipeSearchRouteTest {
 		val response = client.delete("/favorites/not-a-number")
 		response.status shouldBe HttpStatusCode.BadRequest
 		response.bodyAsText() shouldBe """{"message":"Invalid request","detail":"Recipe id must be a number"}"""
+	}
+
+	@Test
+	fun `search with available ingredients requires recipes to be fully covered by available list`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["Chicken", "Tomato", "Salt"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Stew") shouldBe true
+		responseBody.contains("Chicken Rice Bowl") shouldBe false
+		responseBody.contains("Tomato Basil Soup") shouldBe false
+	}
+
+	@Test
+	fun `search with available ingredients supports case insensitive partial matching`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["chIck", "ToMa", "saL"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Stew") shouldBe true
+		responseBody.contains("Chicken Rice Bowl") shouldBe false
+	}
+
+	@Test
+	fun `search with available ingredients ignores blank values while preserving pantry semantics`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["  ", "Chicken", "Tomato", "Salt"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Stew") shouldBe true
+		responseBody.contains("Chicken Rice Bowl") shouldBe false
+		responseBody.contains("Tomato Basil Soup") shouldBe false
+	}
+
+	@Test
+	fun `search ignores excluded ingredients when available ingredients are provided`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["Chicken"],
+						"excludeIngredients": ["Rice"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Stew") shouldBe false
+		responseBody.contains("Chicken Rice Bowl") shouldBe false
+	}
+
+	@Test
+	fun `search supports excluded ingredients only when available list is empty`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"excludeIngredients": ["Rice"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Stew") shouldBe true
+		responseBody.contains("Chicken Rice Bowl") shouldBe false
+		responseBody.contains("Garlic Rice") shouldBe false
+	}
+
+	@Test
+	fun `search accepts legacy include ingredients payload name`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(
+					accessToken = "session-token",
+					id = "1",
+					email = "user-one@example.com",
+					displayName = "User One",
+					firstName = "User",
+					familyName = "One",
+				),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipe(
+			accessToken = sessionService.session.accessToken,
+			title = "Tomato Soup",
+			ingredients = listOf("Tomato", "Basil"),
+		)
+
+		val response = client.post("/recipes/search") {
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"query": "",
+						"filters": {
+							"includeIngredients": ["Tomato", "Basil"]
+						}
+					}
+				""".trimIndent(),
+			)
+		}
+
+		response.status shouldBe HttpStatusCode.OK
+		response.bodyAsText().contains("Tomato Soup") shouldBe true
+	}
+
+	private suspend fun io.ktor.server.testing.ApplicationTestBuilder.createRecipe(
+		accessToken: String,
+		title: String,
+		ingredients: List<String>,
+	) {
+		val ingredientsJson = ingredients.joinToString(separator = ",") { "\"$it\"" }
+		val response = client.post("/recipes") {
+			header(HttpHeaders.Authorization, "Bearer $accessToken")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"title": "$title",
+						"description": "Recipe for $title",
+						"ingredientGroups": [
+							{
+								"ingredients": [$ingredientsJson]
+							}
+						],
+						"steps": ["Step 1"]
+					}
+				""".trimIndent(),
+			)
+		}
+		response.status shouldBe HttpStatusCode.Created
+	}
+
+	private suspend fun io.ktor.server.testing.ApplicationTestBuilder.seedRecipeCatalog(accessToken: String) {
+		createRecipe(
+			accessToken = accessToken,
+			title = "Chicken Tomato Stew",
+			ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+		)
+		createRecipe(
+			accessToken = accessToken,
+			title = "Chicken Rice Bowl",
+			ingredients = listOf("Chicken breast", "Rice", "Salt"),
+		)
+		createRecipe(
+			accessToken = accessToken,
+			title = "Tomato Basil Soup",
+			ingredients = listOf("Tomato", "Basil", "Garlic"),
+		)
+		createRecipe(
+			accessToken = accessToken,
+			title = "Garlic Rice",
+			ingredients = listOf("Garlic", "Rice", "Butter"),
+		)
+		createRecipe(
+			accessToken = accessToken,
+			title = "Veggie Omelette",
+			ingredients = listOf("Eggs", "Tomato", "Onion"),
+		)
+	}
+
+	private suspend fun io.ktor.server.testing.ApplicationTestBuilder.searchWithFilters(
+		requestBody: String,
+	): String {
+		val response = client.post("/recipes/search") {
+			contentType(ContentType.Application.Json)
+			setBody(requestBody)
+		}
+		response.status shouldBe HttpStatusCode.OK
+		return response.bodyAsText()
+	}
+
+	private fun createDb(): Db {
+		val dbName = "recipe_search_${System.nanoTime()}"
+		val dataSource = JdbcDataSource().apply {
+			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+			user = "sa"
+			password = ""
+		}
+		return Db.fromDataSource(dataSource)
+	}
+
+	private fun seedAppUsers(db: Db) {
+		db.dataSource.connection.use { connection ->
+			connection.createStatement().use { statement ->
+				statement.execute(
+					"""
+						INSERT INTO app_users (
+							id,
+							provider,
+							external_user_id,
+							email,
+							display_name,
+							first_name,
+							family_name,
+							profile_image_url
+						) VALUES (
+							1,
+							'GOOGLE',
+							'user-one',
+							'user-one@example.com',
+							'User One',
+							'User',
+							'One',
+							NULL
+						)
+					""".trimIndent(),
+				)
+			}
+		}
 	}
 
 }

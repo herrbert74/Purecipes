@@ -78,9 +78,9 @@ private val INGREDIENT_GROUPS = listOf(
 
 @Composable
 internal fun IngredientFilterSection(
-	includeIngredients: ImmutableSet<String>,
+	availableIngredients: ImmutableSet<String>,
 	excludeIngredients: ImmutableSet<String>,
-	onSelectionChange: (include: Set<String>, exclude: Set<String>) -> Unit,
+	onSelectionChange: (available: Set<String>, exclude: Set<String>) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	val allItems = INGREDIENT_GROUPS.flatMap { it.items }.toSet()
@@ -94,7 +94,7 @@ internal fun IngredientFilterSection(
 		INGREDIENT_GROUPS.forEach { group ->
 			IngredientGroupChips(
 				group = group,
-				includeIngredients = includeIngredients,
+				availableIngredients = availableIngredients,
 				excludeIngredients = excludeIngredients,
 				onSelectionChange = onSelectionChange,
 			)
@@ -105,22 +105,22 @@ internal fun IngredientFilterSection(
 @Composable
 private fun IngredientGroupChips(
 	group: IngredientChipGroup,
-	includeIngredients: ImmutableSet<String>,
+	availableIngredients: ImmutableSet<String>,
 	excludeIngredients: ImmutableSet<String>,
-	onSelectionChange: (include: Set<String>, exclude: Set<String>) -> Unit,
+	onSelectionChange: (available: Set<String>, exclude: Set<String>) -> Unit,
 ) {
 	Column {
 		FilterSectionHeader(
 			title = group.name,
 			onSelectAll = {
 				onSelectionChange(
-					includeIngredients + group.items,
+					availableIngredients + group.items,
 					excludeIngredients - group.items.toSet(),
 				)
 			},
 			onClearAll = {
 				onSelectionChange(
-					includeIngredients - group.items.toSet(),
+					availableIngredients - group.items.toSet(),
 					excludeIngredients - group.items.toSet(),
 				)
 			},
@@ -135,7 +135,7 @@ private fun IngredientGroupChips(
 		) {
 			group.items.forEach { item ->
 				val state = when (item) {
-					in includeIngredients -> IngredientChipState.INCLUDE
+					in availableIngredients -> IngredientChipState.INCLUDE
 					in excludeIngredients -> IngredientChipState.EXCLUDE
 					else -> IngredientChipState.NEUTRAL
 				}
@@ -145,11 +145,11 @@ private fun IngredientGroupChips(
 					onToggle = {
 						val (newInclude, newExclude) = when (state) {
 							IngredientChipState.NEUTRAL ->
-								(includeIngredients + item) to (excludeIngredients - item)
+								(availableIngredients + item) to (excludeIngredients - item)
 							IngredientChipState.INCLUDE ->
-								(includeIngredients - item) to (excludeIngredients + item)
+								(availableIngredients - item) to (excludeIngredients + item)
 							IngredientChipState.EXCLUDE ->
-								(includeIngredients - item) to (excludeIngredients - item)
+								(availableIngredients - item) to (excludeIngredients - item)
 						}
 						onSelectionChange(newInclude, newExclude)
 					},
