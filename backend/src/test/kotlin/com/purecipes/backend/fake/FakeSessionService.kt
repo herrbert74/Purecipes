@@ -80,12 +80,12 @@ class FakeSessionService(
 	companion object {
 
 		fun createSession(
-			accessToken: String,
-			id: String,
-			email: String,
-			displayName: String,
-			firstName: String?,
-			familyName: String?,
+			accessToken: String = "session-token",
+			id: String = "1",
+			email: String = "user-one@example.com",
+			displayName: String = "User One",
+			firstName: String? = "User",
+			familyName: String? = "One",
 			profileImageUrl: String? = null,
 			provider: String = "GOOGLE",
 		): AuthenticatedSession {

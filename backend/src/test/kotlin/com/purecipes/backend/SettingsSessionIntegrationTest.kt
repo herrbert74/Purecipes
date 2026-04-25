@@ -42,20 +42,12 @@ class SettingsSessionIntegrationTest {
 		seedRecipeTables(dataSource)
 		val db = Db.fromDataSource(dataSource)
 		seedAppUsers(db)
-		val firstSession = FakeSessionService.createSession(
-			accessToken = "session-token-1",
-			id = "1",
-			email = "user-one@example.com",
-			displayName = "User One",
-			firstName = "User",
-			familyName = "One",
-		)
+		val firstSession = FakeSessionService.createSession(accessToken = "session-token-1")
 		val secondSession = FakeSessionService.createSession(
 			accessToken = "session-token-2",
 			id = "2",
 			email = "user-two@example.com",
 			displayName = "User Two",
-			firstName = "User",
 			familyName = "Two",
 		)
 		val sessionService = FakeSessionService(

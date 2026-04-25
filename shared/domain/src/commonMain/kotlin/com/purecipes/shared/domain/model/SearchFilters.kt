@@ -1,10 +1,12 @@
 package com.purecipes.shared.domain.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class SearchFilters(
-	val includeIngredients: Set<String> = emptySet(),
+	@JsonNames("includeIngredients")
+	val availableIngredients: Set<String> = emptySet(),
 	val excludeIngredients: Set<String> = emptySet(),
 	val dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	val cuisines: Set<Cuisine> = emptySet(),
@@ -17,7 +19,7 @@ data class SearchFilters(
 ) {
 
 	val isEmpty: Boolean
-		get() = includeIngredients.isEmpty() &&
+		get() = availableIngredients.isEmpty() &&
 			excludeIngredients.isEmpty() &&
 			dietaryPreferences.isEmpty() &&
 			cuisines.isEmpty() &&
@@ -31,7 +33,7 @@ data class SearchFilters(
 	companion object {
 
 		fun default() = SearchFilters(
-			includeIngredients = setOf("Chicken", "Beef", "Pork", "Fish", "Eggs", "Tomato", "Onion", "Garlic"),
+			availableIngredients = setOf("Chicken", "Beef", "Pork", "Fish", "Eggs", "Tomato", "Onion", "Garlic"),
 			dietaryPreferences = DietaryPreference.entries.toSet(),
 			cuisines = Cuisine.entries.toSet(),
 			mealTypes = MealType.entries.toSet(),

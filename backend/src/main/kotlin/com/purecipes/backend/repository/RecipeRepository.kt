@@ -42,6 +42,14 @@ class RecipeRepository(
 		val conditions = mutableListOf<String>()
 		val params = mutableListOf<Any>()
 		val filters = request.filters
+		val availableIngredients = filters.availableIngredients
+			.map(String::trim)
+			.filter(String::isNotEmpty)
+			.distinct()
+		val excludeIngredients = filters.excludeIngredients
+			.map(String::trim)
+			.filter(String::isNotEmpty)
+			.distinct()
 
 		if (request.query.isNotBlank()) {
 			val like = "%${request.query.trim().lowercase()}%"
@@ -68,34 +76,39 @@ class RecipeRepository(
 			conditions.add("(${timeParts.joinToString(" OR ")})")
 		}
 
-		if (filters.includeIngredients.isNotEmpty()) {
-			val parts = filters.includeIngredients.map {
-				"""
-				EXISTS (
-					SELECT 1 FROM ingredient_groups ig
-					JOIN ingredients i ON i.ingredient_group_id = ig.id
-					WHERE ig.recipe_id = r.id AND LOWER(i.ingredient) LIKE ?
-				)
-				""".trimIndent()
+		if (availableIngredients.isNotEmpty()) {
+			val pantryMatches = availableIngredients.joinToString(" OR ") {
+				"LOWER(i_recipe.ingredient) LIKE ?"
 			}
-			conditions.add("(${parts.joinToString(" OR ")})")
-			filters.includeIngredients.forEach { ingredient ->
-				params.add("%${ingredient.trim().lowercase()}%")
-			}
-		}
-
-		filters.excludeIngredients.forEach { ingredient ->
-			val like = "%${ingredient.trim().lowercase()}%"
 			conditions.add(
 				"""
 				NOT EXISTS (
-					SELECT 1 FROM ingredient_groups ig
-					JOIN ingredients i ON i.ingredient_group_id = ig.id
-					WHERE ig.recipe_id = r.id AND LOWER(i.ingredient) LIKE ?
+					SELECT 1 FROM ingredient_groups ig_recipe
+					JOIN ingredients i_recipe ON i_recipe.ingredient_group_id = ig_recipe.id
+					WHERE ig_recipe.recipe_id = r.id
+						AND NOT ($pantryMatches)
 				)
 				""".trimIndent(),
 			)
-			params.add(like)
+			availableIngredients.forEach { ingredient ->
+				params.add("%${ingredient.lowercase()}%")
+			}
+		}
+
+		if (availableIngredients.isEmpty()) {
+			excludeIngredients.forEach { ingredient ->
+				val like = "%${ingredient.lowercase()}%"
+				conditions.add(
+					"""
+					NOT EXISTS (
+						SELECT 1 FROM ingredient_groups ig
+						JOIN ingredients i ON i.ingredient_group_id = ig.id
+						WHERE ig.recipe_id = r.id AND LOWER(i.ingredient) LIKE ?
+					)
+					""".trimIndent(),
+				)
+				params.add(like)
+			}
 		}
 
 		addEnrichmentFilterConditions(filters, conditions, params)
@@ -191,7 +204,7 @@ class RecipeRepository(
 	}
 
 	fun getFavoriteRecipes(userId: Long): List<RecipeSummary> = dataSource.connection.use { conn ->
-		conn.prepareStatement(favoritesSql).use { ps ->
+		conn.prepareStatement(FAVORITES_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.executeQuery().use(::readFavoriteRecipes)
 		}
@@ -202,7 +215,7 @@ class RecipeRepository(
 			return@use false
 		}
 
-		conn.prepareStatement(addFavoriteSql).use { ps ->
+		conn.prepareStatement(ADD_FAVORITE_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
 			ps.executeUpdate()
@@ -215,7 +228,7 @@ class RecipeRepository(
 			return@use false
 		}
 
-		conn.prepareStatement(removeFavoriteSql).use { ps ->
+		conn.prepareStatement(REMOVE_FAVORITE_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
 			ps.executeUpdate()
@@ -224,7 +237,7 @@ class RecipeRepository(
 	}
 
 	private fun loadRecipeRecord(conn: java.sql.Connection, recipeId: Int): RecipeRecord? {
-		return conn.prepareStatement(recipeSql).use { ps ->
+		return conn.prepareStatement(RECIPE_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
 				if (!rs.next()) return@use null
@@ -251,7 +264,7 @@ class RecipeRepository(
 	}
 
 	private fun loadCreatedRecipeRecords(conn: java.sql.Connection, userId: Long): List<RecipeRecord> {
-		return conn.prepareStatement(createdRecipesSql).use { ps ->
+		return conn.prepareStatement(CREATED_RECIPES_SQL).use { ps ->
 			ps.setLong(FIRST_PARAMETER_INDEX, userId)
 			ps.executeQuery().use(::readRecipeRecords)
 		}
@@ -362,7 +375,7 @@ class RecipeRepository(
 		conn: java.sql.Connection,
 		recipeId: Int,
 	): List<IngredientGroup> = loadIngredientGroups(
-		ps = conn.prepareStatement(ingredientGroupsSql).also {
+		ps = conn.prepareStatement(INGREDIENT_GROUPS_SQL).also {
 			it.setInt(1, recipeId)
 		},
 	)
@@ -393,7 +406,7 @@ class RecipeRepository(
 		recipeId: Int,
 		instructions: String?,
 	): List<String> = loadSteps(
-		ps = conn.prepareStatement(stepsSql).also {
+		ps = conn.prepareStatement(STEPS_SQL).also {
 			it.setInt(1, recipeId)
 		},
 		instructions = instructions,
@@ -408,9 +421,7 @@ class RecipeRepository(
 					?.let(steps::add)
 			}
 
-			if (steps.isNotEmpty()) {
-				steps
-			} else {
+			steps.ifEmpty {
 				instructions
 					.orEmpty()
 					.lineSequence()
@@ -425,7 +436,7 @@ class RecipeRepository(
 		if (userId == null) {
 			return false
 		}
-		return conn.prepareStatement(isFavoriteSql).use { ps ->
+		return conn.prepareStatement(IS_FAVORITE_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
 			ps.executeQuery().use { rs ->
@@ -435,7 +446,7 @@ class RecipeRepository(
 	}
 
 	private fun isRecipeOwnedByUser(conn: java.sql.Connection, recipeId: Int, userId: Long): Boolean {
-		return conn.prepareStatement(recipeOwnedByUserSql).use { ps ->
+		return conn.prepareStatement(RECIPE_OWNED_BY_USER_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.setLong(2, userId)
 			ps.executeQuery().use { rs ->
@@ -445,7 +456,7 @@ class RecipeRepository(
 	}
 
 	private fun recipeExists(conn: java.sql.Connection, recipeId: Int): Boolean {
-		return conn.prepareStatement(recipeExistsSql).use { ps ->
+		return conn.prepareStatement(RECIPE_EXISTS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
 				rs.next()
@@ -454,15 +465,15 @@ class RecipeRepository(
 	}
 
 	private fun deleteRecipeChildren(conn: java.sql.Connection, recipeId: Int) {
-		conn.prepareStatement(deleteIngredientsForRecipeSql).use { ps ->
+		conn.prepareStatement(DELETE_INGREDIENTS_FOR_RECIPE_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeUpdate()
 		}
-		conn.prepareStatement(deleteIngredientGroupsSql).use { ps ->
+		conn.prepareStatement(DELETE_INGREDIENT_GROUPS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeUpdate()
 		}
-		conn.prepareStatement(deleteInstructionStepsSql).use { ps ->
+		conn.prepareStatement(DELETE_INSTRUCTION_STEPS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeUpdate()
 		}
@@ -477,7 +488,7 @@ class RecipeRepository(
 
 			val groupId = insertIngredientGroup(conn, recipeId, group.name, groupIndex)
 
-			conn.prepareStatement(createIngredientSql).use { ps ->
+			conn.prepareStatement(CREATE_INGREDIENT_SQL).use { ps ->
 				ingredients.forEachIndexed { ingredientIndex, ingredient ->
 					ps.setInt(FIRST_PARAMETER_INDEX, groupId)
 					ps.setString(SECOND_PARAMETER_INDEX, ingredient)
@@ -495,7 +506,7 @@ class RecipeRepository(
 			return
 		}
 
-		conn.prepareStatement(createInstructionStepSql).use { ps ->
+		conn.prepareStatement(CREATE_INSTRUCTION_STEP_SQL).use { ps ->
 			normalizedSteps.forEachIndexed { stepIndex, step ->
 				ps.setInt(FIRST_PARAMETER_INDEX, recipeId)
 				ps.setString(SECOND_PARAMETER_INDEX, step)
@@ -507,7 +518,7 @@ class RecipeRepository(
 	}
 
 	private fun insertRecipe(conn: java.sql.Connection, userId: Long, request: RecipeWriteRequest): Int {
-		return conn.prepareStatement(createRecipeSql, Statement.RETURN_GENERATED_KEYS).use { ps ->
+		return conn.prepareStatement(CREATE_RECIPE_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
 			val measurementSystem = detectMeasurementSystem(request.ingredientGroups)
 			ps.setString(FIRST_PARAMETER_INDEX, request.title.trim())
 			ps.setString(SECOND_PARAMETER_INDEX, request.description.trim())
@@ -524,7 +535,7 @@ class RecipeRepository(
 	}
 
 	private fun updateRecipeRow(conn: java.sql.Connection, recipeId: Int, request: RecipeWriteRequest) {
-		conn.prepareStatement(updateRecipeSql).use { ps ->
+		conn.prepareStatement(UPDATE_RECIPE_SQL).use { ps ->
 			val measurementSystem = detectMeasurementSystem(request.ingredientGroups)
 			ps.setString(FIRST_PARAMETER_INDEX, request.title.trim())
 			ps.setString(SECOND_PARAMETER_INDEX, request.description.trim())
@@ -545,7 +556,7 @@ class RecipeRepository(
 		groupName: String?,
 		groupIndex: Int,
 	): Int {
-		return conn.prepareStatement(createIngredientGroupSql, Statement.RETURN_GENERATED_KEYS).use { ps ->
+		return conn.prepareStatement(CREATE_INGREDIENT_GROUP_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
 			ps.setInt(FIRST_PARAMETER_INDEX, recipeId)
 			ps.setString(SECOND_PARAMETER_INDEX, groupName?.trim())
 			ps.setInt(THIRD_PARAMETER_INDEX, groupIndex)
@@ -681,13 +692,13 @@ class RecipeRepository(
 		const val EIGHTH_PARAMETER_INDEX = 8
 		const val NINTH_PARAMETER_INDEX = 9
 
-		const val addFavoriteSql = """
+		const val ADD_FAVORITE_SQL = """
 			INSERT INTO favorites (user_id, recipe_id)
 			VALUES (?, ?)
 			ON CONFLICT (user_id, recipe_id) DO NOTHING
 		"""
 
-		const val favoritesSql = """
+		const val FAVORITES_SQL = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
 			FROM favorites f
 			INNER JOIN recipes r ON r.id = f.recipe_id
@@ -695,7 +706,7 @@ class RecipeRepository(
 			ORDER BY f.created_at DESC
 		"""
 
-		const val createdRecipesSql = """
+		const val CREATED_RECIPES_SQL = """
 			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
 			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
 			FROM recipes
@@ -703,7 +714,7 @@ class RecipeRepository(
 			ORDER BY created_at DESC, id DESC
 		"""
 
-		const val isFavoriteSql = """
+		const val IS_FAVORITE_SQL = """
 			SELECT EXISTS(
 				SELECT 1
 				FROM favorites
@@ -712,21 +723,21 @@ class RecipeRepository(
 			) AS is_favorite
 		"""
 
-		const val recipeSql = """
+		const val RECIPE_SQL = """
 			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
 			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
 			FROM recipes
 			WHERE id = ?
 		"""
 
-		const val createRecipeSql = """
+		const val CREATE_RECIPE_SQL = """
 			INSERT INTO recipes (
 				title, description, instructions, total_time, yields, image_url, cuisine, measurement_system, created_by_user_id
 			)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		"""
 
-		const val updateRecipeSql = """
+		const val UPDATE_RECIPE_SQL = """
 			UPDATE recipes
 			SET title = ?,
 				description = ?,
@@ -739,26 +750,26 @@ class RecipeRepository(
 			WHERE id = ?
 		"""
 
-		const val recipeExistsSql = """
+		const val RECIPE_EXISTS_SQL = """
 			SELECT 1
 			FROM recipes
 			WHERE id = ?
 		"""
 
-		const val recipeOwnedByUserSql = """
+		const val RECIPE_OWNED_BY_USER_SQL = """
 			SELECT 1
 			FROM recipes
 			WHERE id = ?
 				AND created_by_user_id = ?
 		"""
 
-		const val removeFavoriteSql = """
+		const val REMOVE_FAVORITE_SQL = """
 			DELETE FROM favorites
 			WHERE user_id = ?
 				AND recipe_id = ?
 		"""
 
-		const val ingredientGroupsSql = """
+		const val INGREDIENT_GROUPS_SQL = """
 			SELECT g.id AS group_id, g.name AS group_name, i.ingredient AS ingredient
 			FROM ingredient_groups g
 			LEFT JOIN ingredients i ON i.ingredient_group_id = g.id
@@ -766,14 +777,14 @@ class RecipeRepository(
 			ORDER BY g.order_index ASC, i.order_index ASC
 		"""
 
-		const val stepsSql = """
+		const val STEPS_SQL = """
 			SELECT step
 			FROM instruction_steps
 			WHERE recipe_id = ?
 			ORDER BY order_index ASC
 		"""
 
-		const val deleteIngredientsForRecipeSql = """
+		const val DELETE_INGREDIENTS_FOR_RECIPE_SQL = """
 			DELETE FROM ingredients
 			WHERE ingredient_group_id IN (
 				SELECT id
@@ -782,27 +793,27 @@ class RecipeRepository(
 			)
 		"""
 
-		const val deleteIngredientGroupsSql = """
+		const val DELETE_INGREDIENT_GROUPS_SQL = """
 			DELETE FROM ingredient_groups
 			WHERE recipe_id = ?
 		"""
 
-		const val deleteInstructionStepsSql = """
+		const val DELETE_INSTRUCTION_STEPS_SQL = """
 			DELETE FROM instruction_steps
 			WHERE recipe_id = ?
 		"""
 
-		const val createIngredientGroupSql = """
+		const val CREATE_INGREDIENT_GROUP_SQL = """
 			INSERT INTO ingredient_groups (recipe_id, name, order_index)
 			VALUES (?, ?, ?)
 		"""
 
-		const val createIngredientSql = """
+		const val CREATE_INGREDIENT_SQL = """
 			INSERT INTO ingredients (ingredient_group_id, ingredient, order_index)
 			VALUES (?, ?, ?)
 		"""
 
-		const val createInstructionStepSql = """
+		const val CREATE_INSTRUCTION_STEP_SQL = """
 			INSERT INTO instruction_steps (recipe_id, step, order_index)
 			VALUES (?, ?, ?)
 		"""

@@ -4,6 +4,10 @@ plugins {
 }
 
 kotlin {
+	compilerOptions {
+		freeCompilerArgs.add("-opt-in=kotlinx.serialization.ExperimentalSerializationApi")
+	}
+
 	android {
 		namespace = "com.purecipes.shared.domain"
 	}

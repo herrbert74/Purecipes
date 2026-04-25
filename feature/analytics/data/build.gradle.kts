@@ -4,16 +4,62 @@ plugins {
 }
 
 val requestedTaskNames = gradle.startParameter.taskNames
-val shouldRunPodBuildTasks = requestedTaskNames.any { taskName ->
+val isIdeSync =
+	System.getProperty("idea.sync.active") == "true" ||
+		System.getProperty("idea.active") == "true" ||
+		System.getProperty("android.injected.invoked.from.ide") == "true"
+val podInteropEnabled = providers.gradleProperty("enableIosPods").orNull == "true"
+val hasIosOrPodTaskRequest = requestedTaskNames.any { taskName ->
 	taskName.contains("ios", ignoreCase = true) ||
 		taskName.contains("pod", ignoreCase = true)
 }
+val shouldRunPodBuildTasks = podInteropEnabled && hasIosOrPodTaskRequest && !isIdeSync
 
-tasks.matching {
-	it.name.startsWith("podSetupBuild") || it.name.startsWith("podBuild")
-}.configureEach {
-	onlyIf {
-		shouldRunPodBuildTasks
+val cocoapodsBuildSettingsDir = layout.buildDirectory.dir("cocoapods/buildSettings").get().asFile
+cocoapodsBuildSettingsDir.mkdirs()
+val cocoapodsFallbackBuildDir = layout.buildDirectory.get().asFile.absolutePath
+val cocoapodsFallbackSettings =
+	"""
+		BUILD_DIR=$cocoapodsFallbackBuildDir
+		CONFIGURATION_BUILD_DIR=$cocoapodsFallbackBuildDir
+		TARGET_BUILD_DIR=$cocoapodsFallbackBuildDir
+		CONFIGURATION=Debug
+		PLATFORM_NAME=iphonesimulator
+		EFFECTIVE_PLATFORM_NAME=-iphonesimulator
+		PODS_TARGET_SRCROOT=${project.projectDir.absolutePath}
+		SDKROOT=iphonesimulator
+	""".trimIndent() + "\n"
+val cocoapodsBuildSettingsPlatforms = listOf("ios", "iosSimulator", "iossimulator", "iphoneos", "iphonesimulator")
+val cocoapodsBuildSettingsModules =
+	listOf(
+		"FirebaseAnalytics",
+		"FirebaseCrashlytics",
+		"Mixpanel-swift",
+		"Usercentrics",
+		"UsercentricsUI",
+	)
+cocoapodsBuildSettingsPlatforms.forEach { platform ->
+	cocoapodsBuildSettingsModules.forEach { moduleName ->
+		val buildSettingsFile = cocoapodsBuildSettingsDir.resolve("build-settings-$platform-$moduleName.properties")
+		if (!buildSettingsFile.exists()) {
+			buildSettingsFile.writeText(cocoapodsFallbackSettings)
+		} else {
+			val settings = buildSettingsFile.readText()
+			if (!settings.contains("BUILD_DIR=") || !settings.contains("CONFIGURATION=")) {
+				buildSettingsFile.writeText(cocoapodsFallbackSettings)
+			}
+		}
+	}
+}
+
+tasks.configureEach {
+	val isPodOrInteropTask =
+		name.contains("pod", ignoreCase = true) ||
+			name.contains("cinterop", ignoreCase = true) ||
+			name.contains("xcode", ignoreCase = true) ||
+			name.startsWith("generateDef")
+	if (isPodOrInteropTask) {
+		enabled = shouldRunPodBuildTasks
 	}
 }
 
