@@ -88,14 +88,7 @@ class RecipeUploadRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -192,14 +185,7 @@ class RecipeUploadRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)

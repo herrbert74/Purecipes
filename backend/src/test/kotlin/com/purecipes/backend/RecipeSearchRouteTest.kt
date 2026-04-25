@@ -14,6 +14,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.routing.get
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import org.h2.jdbcx.JdbcDataSource
 import kotlin.test.Test
@@ -86,14 +87,7 @@ class RecipeSearchRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -129,14 +123,7 @@ class RecipeSearchRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -171,14 +158,7 @@ class RecipeSearchRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -214,14 +194,7 @@ class RecipeSearchRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -257,14 +230,7 @@ class RecipeSearchRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -300,14 +266,7 @@ class RecipeSearchRouteTest {
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
 			initialSessions = listOf(
-				FakeSessionService.createSession(
-					accessToken = "session-token",
-					id = "1",
-					email = "user-one@example.com",
-					displayName = "User One",
-					firstName = "User",
-					familyName = "One",
-				),
+				FakeSessionService.createSession(),
 			),
 			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 		)
@@ -343,7 +302,7 @@ class RecipeSearchRouteTest {
 		response.bodyAsText().contains("Tomato Soup") shouldBe true
 	}
 
-	private suspend fun io.ktor.server.testing.ApplicationTestBuilder.createRecipe(
+	private suspend fun ApplicationTestBuilder.createRecipe(
 		accessToken: String,
 		title: String,
 		ingredients: List<String>,
@@ -370,7 +329,7 @@ class RecipeSearchRouteTest {
 		response.status shouldBe HttpStatusCode.Created
 	}
 
-	private suspend fun io.ktor.server.testing.ApplicationTestBuilder.seedRecipeCatalog(accessToken: String) {
+	private suspend fun ApplicationTestBuilder.seedRecipeCatalog(accessToken: String) {
 		createRecipe(
 			accessToken = accessToken,
 			title = "Chicken Tomato Stew",
@@ -398,7 +357,7 @@ class RecipeSearchRouteTest {
 		)
 	}
 
-	private suspend fun io.ktor.server.testing.ApplicationTestBuilder.searchWithFilters(
+	private suspend fun ApplicationTestBuilder.searchWithFilters(
 		requestBody: String,
 	): String {
 		val response = client.post("/recipes/search") {
