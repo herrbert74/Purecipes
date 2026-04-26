@@ -21,6 +21,7 @@ kotlin {
 				api(project(":shared:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
+				implementation(libs.jetbrains.composeUiToolingPreview)
 				implementation(libs.kotlinx.collectionsImmutable)
 			}
 		}
@@ -36,4 +37,8 @@ kotlin {
 			}
 		}
 	}
+}
+
+dependencies {
+	androidRuntimeClasspath(libs.jetbrains.composeUiTooling)
 }
