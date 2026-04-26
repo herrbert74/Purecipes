@@ -16,11 +16,6 @@ class SearchFiltersTest {
 	}
 
 	@Test
-	fun `filters with exclude ingredients have isEmpty false`() {
-		SearchFilters(excludeIngredients = setOf("Pork")).isEmpty shouldBe false
-	}
-
-	@Test
 	fun `filters with cuisines have isEmpty false`() {
 		SearchFilters(cuisines = setOf(Cuisine.ITALIAN)).isEmpty shouldBe false
 	}

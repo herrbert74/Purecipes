@@ -5,19 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 
-private enum class IngredientChipState { NEUTRAL, INCLUDE, EXCLUDE }
+private enum class IngredientChipState { NEUTRAL, SELECTED }
 
 private data class IngredientChipGroup(
 	val name: String,
@@ -79,8 +74,7 @@ private val INGREDIENT_GROUPS = listOf(
 @Composable
 internal fun IngredientFilterSection(
 	availableIngredients: ImmutableSet<String>,
-	excludeIngredients: ImmutableSet<String>,
-	onSelectionChange: (available: Set<String>, exclude: Set<String>) -> Unit,
+	onSelectionChange: (available: Set<String>) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	val allItems = INGREDIENT_GROUPS.flatMap { it.items }.toSet()
@@ -88,14 +82,13 @@ internal fun IngredientFilterSection(
 	Column(modifier = modifier) {
 		FilterSectionHeader(
 			title = "Ingredients",
-			onSelectAll = { onSelectionChange(allItems, emptySet()) },
-			onClearAll = { onSelectionChange(emptySet(), emptySet()) },
+			onSelectAll = { onSelectionChange(allItems) },
+			onClearAll = { onSelectionChange(emptySet()) },
 		)
 		INGREDIENT_GROUPS.forEach { group ->
 			IngredientGroupChips(
 				group = group,
 				availableIngredients = availableIngredients,
-				excludeIngredients = excludeIngredients,
 				onSelectionChange = onSelectionChange,
 			)
 		}
@@ -106,23 +99,16 @@ internal fun IngredientFilterSection(
 private fun IngredientGroupChips(
 	group: IngredientChipGroup,
 	availableIngredients: ImmutableSet<String>,
-	excludeIngredients: ImmutableSet<String>,
-	onSelectionChange: (available: Set<String>, exclude: Set<String>) -> Unit,
+	onSelectionChange: (available: Set<String>) -> Unit,
 ) {
 	Column {
 		FilterSectionHeader(
 			title = group.name,
 			onSelectAll = {
-				onSelectionChange(
-					availableIngredients + group.items,
-					excludeIngredients - group.items.toSet(),
-				)
+				onSelectionChange(availableIngredients + group.items)
 			},
 			onClearAll = {
-				onSelectionChange(
-					availableIngredients - group.items.toSet(),
-					excludeIngredients - group.items.toSet(),
-				)
+				onSelectionChange(availableIngredients - group.items.toSet())
 			},
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
 		)
@@ -135,23 +121,18 @@ private fun IngredientGroupChips(
 		) {
 			group.items.forEach { item ->
 				val state = when (item) {
-					in availableIngredients -> IngredientChipState.INCLUDE
-					in excludeIngredients -> IngredientChipState.EXCLUDE
+					in availableIngredients -> IngredientChipState.SELECTED
 					else -> IngredientChipState.NEUTRAL
 				}
 				IngredientTriStateChip(
 					item = item,
 					state = state,
 					onToggle = {
-						val (newInclude, newExclude) = when (state) {
-							IngredientChipState.NEUTRAL ->
-								(availableIngredients + item) to (excludeIngredients - item)
-							IngredientChipState.INCLUDE ->
-								(availableIngredients - item) to (excludeIngredients + item)
-							IngredientChipState.EXCLUDE ->
-								(availableIngredients - item) to (excludeIngredients - item)
+						val newAvailable = when (state) {
+							IngredientChipState.NEUTRAL -> availableIngredients + item
+							IngredientChipState.SELECTED -> availableIngredients - item
 						}
-						onSelectionChange(newInclude, newExclude)
+						onSelectionChange(newAvailable)
 					},
 				)
 			}
@@ -165,29 +146,9 @@ private fun IngredientTriStateChip(
 	state: IngredientChipState,
 	onToggle: () -> Unit,
 ) {
-	val colors = when (state) {
-		IngredientChipState.EXCLUDE -> FilterChipDefaults.filterChipColors(
-			selectedContainerColor = PurecipesTheme.colorScheme.errorContainer,
-			selectedLabelColor = PurecipesTheme.colorScheme.onErrorContainer,
-			selectedLeadingIconColor = PurecipesTheme.colorScheme.onErrorContainer,
-		)
-		else -> FilterChipDefaults.filterChipColors()
-	}
 	FilterChip(
 		selected = state != IngredientChipState.NEUTRAL,
 		onClick = onToggle,
 		label = { Text(item) },
-		colors = colors,
-		leadingIcon = if (state == IngredientChipState.EXCLUDE) {
-			{
-				Icon(
-					imageVector = Icons.Default.Close,
-					contentDescription = null,
-					modifier = Modifier.size(FilterChipDefaults.IconSize),
-				)
-			}
-		} else {
-			null
-		},
 	)
 }

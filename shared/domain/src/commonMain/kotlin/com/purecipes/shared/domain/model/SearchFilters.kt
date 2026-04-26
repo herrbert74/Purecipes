@@ -7,7 +7,6 @@ import kotlinx.serialization.json.JsonNames
 data class SearchFilters(
 	@JsonNames("includeIngredients")
 	val availableIngredients: Set<String> = emptySet(),
-	val excludeIngredients: Set<String> = emptySet(),
 	val dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	val cuisines: Set<Cuisine> = emptySet(),
 	val mealTypes: Set<MealType> = emptySet(),
@@ -20,7 +19,6 @@ data class SearchFilters(
 
 	val isEmpty: Boolean
 		get() = availableIngredients.isEmpty() &&
-			excludeIngredients.isEmpty() &&
 			dietaryPreferences.isEmpty() &&
 			cuisines.isEmpty() &&
 			mealTypes.isEmpty() &&

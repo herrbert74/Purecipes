@@ -46,10 +46,6 @@ class RecipeRepository(
 			.map(String::trim)
 			.filter(String::isNotEmpty)
 			.distinct()
-		val excludeIngredients = filters.excludeIngredients
-			.map(String::trim)
-			.filter(String::isNotEmpty)
-			.distinct()
 
 		if (request.query.isNotBlank()) {
 			val like = "%${request.query.trim().lowercase()}%"
@@ -92,22 +88,6 @@ class RecipeRepository(
 			)
 			availableIngredients.forEach { ingredient ->
 				params.add("%${ingredient.lowercase()}%")
-			}
-		}
-
-		if (availableIngredients.isEmpty()) {
-			excludeIngredients.forEach { ingredient ->
-				val like = "%${ingredient.lowercase()}%"
-				conditions.add(
-					"""
-					NOT EXISTS (
-						SELECT 1 FROM ingredient_groups ig
-						JOIN ingredients i ON i.ingredient_group_id = ig.id
-						WHERE ig.recipe_id = r.id AND LOWER(i.ingredient) LIKE ?
-					)
-					""".trimIndent(),
-				)
-				params.add(like)
 			}
 		}
 
