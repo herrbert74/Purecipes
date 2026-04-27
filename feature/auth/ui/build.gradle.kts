@@ -54,6 +54,25 @@ cocoapodsBuildSettingsPlatforms.forEach { platform ->
 	}
 }
 
+val cocoapodsDefsDir = layout.buildDirectory.dir("cocoapods/defs").get().asFile
+cocoapodsDefsDir.mkdirs()
+val cocoapodsDefsModules =
+	listOf(
+		"AppAuth",
+		"FBSDKCoreKit",
+		"FBSDKLoginKit",
+		"FirebaseAuth",
+		"FirebaseCore",
+		"GTMAppAuth",
+		"GoogleSignIn",
+	)
+cocoapodsDefsModules.forEach { moduleName ->
+	val defFile = cocoapodsDefsDir.resolve("$moduleName.def")
+	if (!defFile.exists()) {
+		defFile.createNewFile()
+	}
+}
+
 tasks.configureEach {
 	val isPodOrInteropTask =
 		name.contains("pod", ignoreCase = true) ||
@@ -66,19 +85,21 @@ tasks.configureEach {
 }
 
 kotlin {
-	cocoapods {
-		version = "1.0"
-		summary = "Purecipes authentication UI"
-		homepage = "https://github.com/zsoltbertalan/Purecipes"
-		ios.deploymentTarget = "26.0"
-		podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
-		pod("AppAuth")
-		pod("FBSDKCoreKit", "18.0.0")
-		pod("FBSDKLoginKit", "18.0.0")
-		pod("FirebaseAuth")
-		pod("FirebaseCore")
-		pod("GTMAppAuth")
-		pod("GoogleSignIn")
+	if (shouldRunPodBuildTasks) {
+		cocoapods {
+			version = "1.0"
+			summary = "Purecipes authentication UI"
+			homepage = "https://github.com/zsoltbertalan/Purecipes"
+			ios.deploymentTarget = "26.0"
+			podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
+			pod("AppAuth")
+			pod("FBSDKCoreKit", "18.0.0")
+			pod("FBSDKLoginKit", "18.0.0")
+			pod("FirebaseAuth")
+			pod("FirebaseCore")
+			pod("GTMAppAuth")
+			pod("GoogleSignIn")
+		}
 	}
 
 	android {

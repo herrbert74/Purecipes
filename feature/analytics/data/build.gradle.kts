@@ -52,6 +52,23 @@ cocoapodsBuildSettingsPlatforms.forEach { platform ->
 	}
 }
 
+val cocoapodsDefsDir = layout.buildDirectory.dir("cocoapods/defs").get().asFile
+cocoapodsDefsDir.mkdirs()
+val cocoapodsDefsModules =
+	listOf(
+		"FirebaseAnalytics",
+		"FirebaseCrashlytics",
+		"Mixpanel",
+		"Usercentrics",
+		"UsercentricsUI",
+	)
+cocoapodsDefsModules.forEach { moduleName ->
+	val defFile = cocoapodsDefsDir.resolve("$moduleName.def")
+	if (!defFile.exists()) {
+		defFile.createNewFile()
+	}
+}
+
 tasks.configureEach {
 	val isPodOrInteropTask =
 		name.contains("pod", ignoreCase = true) ||
@@ -74,19 +91,21 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 }
 
 kotlin {
-	cocoapods {
-		version = "1.0"
-		summary = "Purecipes analytics data"
-		homepage = "https://github.com/zsoltbertalan/Purecipes"
-		ios.deploymentTarget = "26.0"
-		podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
-		pod("FirebaseAnalytics")
-		pod("FirebaseCrashlytics")
-		pod("Mixpanel-swift") {
-			moduleName = "Mixpanel"
+	if (shouldRunPodBuildTasks) {
+		cocoapods {
+			version = "1.0"
+			summary = "Purecipes analytics data"
+			homepage = "https://github.com/zsoltbertalan/Purecipes"
+			ios.deploymentTarget = "26.0"
+			podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
+			pod("FirebaseAnalytics")
+			pod("FirebaseCrashlytics")
+			pod("Mixpanel-swift") {
+				moduleName = "Mixpanel"
+			}
+			pod("Usercentrics")
+			pod("UsercentricsUI")
 		}
-		pod("Usercentrics")
-		pod("UsercentricsUI")
 	}
 
 	android {
