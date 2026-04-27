@@ -650,6 +650,142 @@ private fun resolvePageUri(pageUrl: String, timeoutSeconds: Long): Pair<URI, Htt
 
 fun parseInt(value: String?): Int? = value?.trim()?.toIntOrNull()
 
+val ingredientHeadingPrefixFilters = listOf(
+	"for ",
+	"special equipment",
+	"equipment list",
+	"in the box",
+	"from your cupboard",
+	"shopping list",
+	"optional",
+	"serve with",
+	"to garnish",
+)
+
+val ingredientHeadingExactFilters = setOf(
+	"for",
+	"dough",
+	"filling",
+	"garnish",
+	"garnishes",
+	"marinade",
+	"sauce",
+	"salad",
+	"toppings",
+)
+
+val ingredientToolKeywords = listOf(
+	"baking sheet",
+	"blender",
+	"board",
+	"bowl",
+	"cutter",
+	"colander",
+	"food processor",
+	"grill pan",
+	"instant pot",
+	"kitchen paper",
+	"knife",
+	"mandoline",
+	"microplane",
+	"pan",
+	"pastry bag",
+	"pot",
+	"pressure cooker",
+	"saucepan",
+	"sheet",
+	"skewer",
+	"slotted spoon",
+	"spoon",
+	"toothpick",
+	"whisk",
+)
+
+fun sanitizeIngredientLine(raw: String): String? {
+	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
+	if (normalizedWhitespace.isBlank()) {
+		return null
+	}
+
+	val lower = normalizedWhitespace.lowercase(Locale.ROOT)
+	val hasDigit = lower.any(Char::isDigit)
+	val isHeadingLike =
+		lower.endsWith(':') ||
+		ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
+		ingredientHeadingExactFilters.contains(lower) ||
+		lower.contains("recipe follows")
+	val isEquipmentLike = !hasDigit && ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
+
+	return if (isHeadingLike || isEquipmentLike) {
+		null
+	} else {
+		normalizedWhitespace
+	}
+}
+
+fun isIngredientGroupHeading(raw: String): Boolean {
+	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
+	if (normalizedWhitespace.isBlank()) {
+		return false
+	}
+
+	val lower = normalizedWhitespace.lowercase(Locale.ROOT)
+	return lower.endsWith(':') ||
+		ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
+		ingredientHeadingExactFilters.contains(lower) ||
+		lower.contains("recipe follows")
+}
+
+fun normalizeIngredientGroupName(raw: String): String? {
+	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
+	if (normalizedWhitespace.isBlank()) {
+		return null
+	}
+
+	val withoutColon = normalizedWhitespace.removeSuffix(":").trim()
+	val withoutPrefix = withoutColon
+		.removePrefix("For the ")
+		.removePrefix("for the ")
+		.removePrefix("For ")
+		.removePrefix("for ")
+		.trim()
+
+	return withoutPrefix.ifBlank { null }
+}
+
+fun normalizeIngredientGroups(
+	groupName: String?,
+	rawItems: List<String>,
+): List<Pair<String?, List<String>>> {
+	if (rawItems.isEmpty()) {
+		return emptyList()
+	}
+
+	val normalizedGroups = mutableListOf<Pair<String?, List<String>>>()
+	var currentGroupName = groupName
+	var currentItems = mutableListOf<String>()
+
+	rawItems.forEach { rawItem ->
+		if (isIngredientGroupHeading(rawItem)) {
+			if (currentItems.isNotEmpty()) {
+				normalizedGroups += (currentGroupName to currentItems.toList())
+			}
+			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
+			currentItems = mutableListOf()
+		} else {
+			sanitizeIngredientLine(rawItem)?.let { sanitizedItem ->
+				currentItems += sanitizedItem
+			}
+		}
+	}
+
+	if (currentItems.isNotEmpty()) {
+		normalizedGroups += (currentGroupName to currentItems.toList())
+	}
+
+	return normalizedGroups
+}
+
 fun parseRecipe(rawJson: String): RecipeData? {
 	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }
 		.getOrNull() ?: return null
@@ -663,7 +799,6 @@ fun parseRecipe(rawJson: String): RecipeData? {
 					val name = groupEl["name"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
 					val items = groupEl["ingredients"]?.jsonArray
 						?.mapNotNull { it.jsonPrimitive.contentOrNull?.trim() }
-						?.filter { it.isNotBlank() }
 						?: emptyList()
 					if (items.isEmpty()) null else (name to items)
 				}
@@ -672,7 +807,6 @@ fun parseRecipe(rawJson: String): RecipeData? {
 					val name = groupEl.getOrNull(0)?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
 					val items = groupEl.getOrNull(1)?.jsonArray
 						?.mapNotNull { it.jsonPrimitive.contentOrNull?.trim() }
-						?.filter { it.isNotBlank() }
 						?: emptyList()
 					if (items.isEmpty()) null else (name to items)
 				}
@@ -680,6 +814,8 @@ fun parseRecipe(rawJson: String): RecipeData? {
 				else -> null
 			}
 		}
+		?.flatMap { (name, items) -> normalizeIngredientGroups(name, items) }
+		?.filter { (_, items) -> items.isNotEmpty() }
 		?: emptyList()
 
 	val instructionList = root["instruction_list"]?.jsonArray

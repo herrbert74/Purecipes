@@ -1,0 +1,839 @@
+Unknown ingredient report
+Allowed app ingredients: 281
+Recipes with unknown ingredients: 243
+
+Recipe 1: Jackfruit Chipotle Tostadas
+- 2tbsp Chipotle Paste
+- 2x 400g Can Jackfruit
+
+Recipe 3: Sichuan Pickled Plums
+- 550g Plum
+
+Recipe 6: Crispy Pork Pancakes
+- 15 Chinese Pancake
+
+Recipe 7: Guinness and Mushroom Stew
+- 250ml Guinness
+- 2tsp Browning
+- 2tsp Ground All Spice
+
+Recipe 9: Slow Roast Lamb Flatbreads
+- 2tsp Dried Instant Yeast
+
+Recipe 17: Smoky Roasted Pepper Lasagne
+- 300g Dried Lasagne Sheet
+- 600g Plant Based Mince
+
+Recipe 18: Leftover Naan Croque Madame
+- 1 Naan
+
+Recipe 19: Leftover Dal Fritters
+- 100g Leftover Dal
+- 100g Leftover Saag
+- 4tbsp Leftover Raita
+
+Recipe 23: Welsh Rarebit Burgers
+- 2 Gherkin
+- 220ml Guinness
+
+Recipe 24: Peaches and Cream Crêpes
+- 8 Amaretti Biscuit
+
+Recipe 25: Chocolate Hazelnut Doughnuts
+- 7g Dried Instant Yeast
+
+Recipe 28: Sticky Aubergine Sesame Rice Bowl
+- 1tbsp Agave Nectar
+- 1tbsp Shichimi Togarashi
+
+Recipe 29: Guinness Can Chicken
+- 350ml Guinness
+- 450ml Guinness
+- Chip (to serve)
+
+Recipe 31: Curry Leaf Hummus
+- 15g Curry Leaf
+
+Recipe 32: Roasted Squash, Fennel and Chickpea Salad
+- Flatbread (to serve)
+
+Recipe 34: Sauerkraut and Mushroom Pierogi
+- 1tsp Dried Marjoram
+- 300g Sauerkraut
+
+Recipe 36: Plant-Based Fakeaway Kebab
+- 320g Flatbread
+- 350g Quorn Kebab
+
+Recipe 38: Pulled Mushroom Ragù
+- 1tbsp Marmite
+
+Recipe 39: Dr. Oetker Chocolate Hazelnut Cheesecake
+- 1tsp Vegetarian Gelatin
+- 200g Digestive Biscuit
+
+Recipe 41: Raspberry, Almond Butter and Chia Seed Porridge
+- 15g Chia Seed
+
+Recipe 44: Chipotle Tofu Rice Bowl
+- 1tsp Agave Nectar
+- 3tbsp Chipotle Paste
+
+Recipe 46: PERi-PERi Falafel Pitta
+- 4 Pitta
+
+Recipe 47: Creamy Miso Mushroom Pasta
+- 150g Cavolo Nero
+- 1tsp Vegetable Bouillon Power
+
+Recipe 50: Leek and Celeriac Gratin
+- 60g Gruyère
+
+Recipe 53: Raspberry, Chocolate and Macadamia Flapjacks
+- 75g Macadamia
+
+Recipe 55: Seema's Dal
+- 3Sprig Curry Leaf
+
+Recipe 56: Broccoli Salsa Macha Rice
+- 3tbsp Mixed Seeds
+
+Recipe 57: Mushroom Katsu Burger
+- 240g Vegan Burger Bun
+
+Recipe 61: Leftover Christmas Toastie
+- 200g Gammon
+- 50ml Gravy
+- 8Slice Sourdough
+
+Recipe 63: 'Nduja Baked Camembert
+- 250g Camembert
+- 2tbsp Nduja
+
+Recipe 65: Leftover Boxing Day Green Eggs and Ham
+- 200g Comté
+- 400g Gammon
+- 400g Sourdough
+
+Recipe 66: Nut Roast Wellington
+- 350g Mixed Nuts
+
+Recipe 70: Salted Caramel Blondies
+- 100g Soft Toffee
+- 1tsp Caramel Extract
+
+Recipe 74: Glazed Pigs in Blankets
+- 60ml Plum Sauce
+
+Recipe 79: Lemony Mushroom Carbonara
+- 450g Conchiglie
+
+Recipe 82: Crispy Cereal Squares
+- 150g Cereal
+- 200g Cereal
+- 400g Marshmallow
+
+Recipe 86: Roast Chicken Salad with Gravy Dressing
+- 120g Kalamata Olives
+
+Recipe 88: Salt and Pepper Parmentier Potatoes
+- 2tsp MSG
+
+Recipe 98: Moorish Lamb Kebabs by Ainsley Harriott
+- 2tbsp Dukkah
+
+Recipe 99: Leftover Pumpkin Stuffed Shells
+- 250g Conchiglie
+
+Recipe 104: Halloumi Breakfast Sandwich
+- 1tsp Chipotle Paste
+
+Recipe 109: Creamy Sausage and Squash Gnocchi
+- 500g Fresh Gnocchi
+
+Recipe 111: Keshia's Jerk Chicken
+- 2tsp Ground All Spice
+- Coleslaw (to serve)
+
+Recipe 112: Chicken Thai Green Curry
+- 200ml Stock
+
+Recipe 114: Pimped Up Ramen
+- 1Cube Stock
+
+Recipe 121: Pesto Sausage Rolls
+- 1tbsp Red Pesto
+
+Recipe 124: Pan Con Tomate
+- 400g Sourdough
+
+Recipe 127: Pigs in Blankets Burger with Bread Sauce Mayo
+- 4Slice Gouda
+
+Recipe 128: Fried Chicken Burger with Sprout Slaw & Gravy Mayo
+- 4 Burger Bun
+
+Recipe 129: Ultimate Cheese Burger
+- 120g Pickle
+- 3tbsp Pickle
+
+Recipe 133: Homemade Baked Beans On Toast
+- 2tbsp Henderson's Relish
+
+Recipe 143: BBQ Spatchcock Chicken Flatbreads
+- 1Bag Mixed Salad Leaf
+- 50g Kalamata Olives
+
+Recipe 147: Alaska Salmon Caesar Salad
+- 25g Sunflower Seeds
+- 2tbsp Horseradish
+- 350g Cavolo Nero
+
+Recipe 148: Grilled Peach and Burrata Salad
+- 2Ball Burrata
+
+Recipe 149: Garlicky Cavolo Nero & Caper Spaghetti
+- 500g Cavolo Nero
+
+Recipe 153: Lamb Shawarma
+- 0.75 teaspoon ground mace
+
+Recipe 155: Beef Fajita Marinade
+- 0.25 cup tequila
+
+Recipe 158: Caramel Apple Loaf Cake
+- 0.5 cup chopped nuts
+
+Recipe 159: Mini Meatloaf Ghosts
+- 0.25 cup barbeque sauce
+
+Recipe 166: Ghirardelli® Dark Chocolate Cupcakes
+- 0.25 cup Ghirardelli Unsweetened Cocoa
+- 0.33333334326744 cup strong brewed coffee or espresso
+
+Recipe 168: Blueberry Lemon Walnut Bread
+- 1 cup fresh or frozen blueberries
+
+Recipe 169: Zesty Walnut Hummus
+- 0.25 cup Italian salad dressing
+
+Recipe 171: Iced Latte
+- 0.33333331346512 cup SPLENDA® No Calorie Sweetener, Granulated
+- 2 cups fat free half-and-half
+- 4 teaspoons instant espresso granules
+
+Recipe 174: Peanut Butter Protein Balls
+- 2 scoops protein powder
+
+Recipe 175: Amazing Peach Sangria
+- 0.5 cup triple sec
+- 1 (750 milliliter) bottle Prosecco, chilled
+- 1 cup frozen strawberries
+
+Recipe 180: Tasty Salad Seasoning
+- 1 teaspoon poppy seed
+
+Recipe 185: Zucchini Bread Breakfast Pizza
+- 2 fresh strawberries, hulled and sliced
+
+Recipe 187: Red Snapper with Athenian Sauce
+- 2 ounces Greek seasoning
+- 4 (10 ounce) fillets red snapper
+- 4 ounces pitted kalamata olives, sliced
+
+Recipe 188: Thai Mango-Prawn Salad
+- 1 romaine hearts, chopped into bite-sized pieces, or more to taste
+
+Recipe 190: Baked Brown Sugar Salmon
+- 2 tablespoons sherry
+
+Recipe 191: Mini Blueberry-Marscarpone Pies
+- 1 (.25 ounce) package unflavored gelatin
+- 1 (14.1 ounce) package pie dough for a double-crust pie
+- 2 cups fresh blueberries, or more to taste
+
+Recipe 192: Blueberry-Orange Rolls
+- 1 (.25 ounce) package active dry yeast
+- 1 cup fresh blueberries
+
+Recipe 194: Healthier Absolutely the Best Chocolate Chip Cookies
+- 1 kiwi, pureed
+
+Recipe 195: Lynchburg Lemonade
+- 1 (1.5 fluid ounce) jigger Tennessee whiskey
+- 1 (1.5 fluid ounce) jigger sweet and sour mix
+
+Recipe 197: Spicy Fruit Salsa
+- 1 pint fresh blackberries, chopped
+- 1 quart strawberries, finely chopped
+- 2 tablespoons any flavor fruit jelly
+- 5 kiwis, peeled and diced
+
+Recipe 198: Shelia's Chicken Yassa
+- 0.5 cup pitted green olives
+
+Recipe 199: Pasta Salad with Crab
+- 1 teaspoon dried Italian herb seasoning
+- 2 ounces sliced black olives, drained
+- 6 tablespoons balsamic vinaigrette salad dressing
+
+Recipe 205: Giant Cinnamon Roll
+- 1 ¼-oz. envelope instant yeast (about 2¼ tsp.)
+
+Recipe 213: Classic Potatoes au Gratin (Creamy, Cheesy Potato Gratin)
+- 3 oz. Gruyère, finely grated
+
+Recipe 215: Caramelized Onion and Spinach Quiche
+- 1 tsp. herbes de Provence
+- 2 oz. Gruyère, finely grated
+
+Recipe 216: Boozy Cherry and Chocolate Pavlova
+- 2 lb. frozen cherries, preferably a mix of sweet and tart
+
+Recipe 218: Peppermint Black-and-White Cookies
+- 2 full-size candy canes
+
+Recipe 219: Key Lime Pie Thumbprint Cookies
+- 9 graham cracker sheets (about 5 oz.; 1 sleeve)
+
+Recipe 220: Masala Tea Creme Pies
+- 1 Tbsp. black tea leaves (from about 3 bags)
+
+Recipe 223: Shrimp Scampi Bisque
+- 8 cups low-sodium vegetable broth
+- ½ cup cognac
+
+Recipe 225: Cheddar Caramel Slices
+- 1 cup caramel popcorn
+
+Recipe 227: Hot Chocolate Cookies
+- 3 Tbsp. (or more) marshmallow creme
+
+Recipe 228: Butternut Squash Orzo With Fried Sage
+- 4 cups low-sodium vegetable broth
+
+Recipe 229: Ham-and-Cheese-Croissant Bake
+- 6 oz. thinly sliced Gruyère
+- 9–10 oz. croissants (about 10 small), split
+
+Recipe 230: Crispy Baked Wings With Berbere Honey Glaze and Fried Garlic
+- 1 Tbsp. plus 1½ tsp. All-Day Seasoning Blend
+- 2 Tbsp. berbere spice blend
+- 2 tsp. Worcestershire powder (optional)
+
+Recipe 231: Fufu
+- 1 1-lb. small cassava, peeled, woody center removed, cubed
+
+Recipe 232: Vodka Gochujang Pasta
+- 1 Tbsp. gochujang
+
+Recipe 233: Baked Butter Paneer
+- 1 Tbsp. plus 1½ tsp. kasoori methi
+
+Recipe 234: Eggplant Roasted in Satay Sauce
+- 1 Tbsp. tamarind paste
+
+Recipe 235: Crispy Oyster Mushroom Skewers With Bok Choy Salad
+- 8½ oz. bok choy or choy sum
+
+Recipe 236: Brown Butter Miso Mochi Blondies
+- 1 Tbsp. white or yellow miso
+
+Recipe 238: Tofu Breakfast Burritos
+- ½ jalapeño
+
+Recipe 239: Sofrito Bolognese
+- 1½ tsp. sazón with achiote
+
+Recipe 242: Parker House Rolls
+- 1 (¼-oz.) envelope active dry yeast (about 2¼ tsp.)
+- ¼ cup vegetable shortening
+
+Recipe 248: Cheddar Biscuits With Old Bay
+- A 2½"-diameter biscuit cutter
+
+Recipe 249: Bourbon Hot Toddy
+- 3 oz. bourbon
+
+Recipe 250: Creamy Fondue Beans
+- 12 oz. Gruyère, coarsely grated
+
+Recipe 254: Chocolate Guinness Cake
+- 2 Tbsp. Guinness stout
+- ⅔ cup Guinness stout
+
+Recipe 255: Black Rice Pudding
+- 1 cup unsweetened coconut flakes
+
+Recipe 259: Easy Amaranth Breakfast Porridge
+- 2 cups amaranth
+
+Recipe 262: Cioppino With Shrimp & Clams (San Francisco Seafood Stew)
+- 1 baguette, sliced
+- 8 oz. cleaned squid, bodies sliced into ½"-thick rings, tentacles halved lengthwise if large
+
+Recipe 263: Homemade Bagels
+- 1 tsp. instant yeast
+
+Recipe 264: Triple Chocolate Cheesecake
+- A 10”-diameter springform pan
+
+Recipe 266: Lemon, Lime, and Bitters
+- 1 oz. simple syrup
+- 4 oz. chilled club soda
+- ½ tsp. Angostura bitters
+
+Recipe 270: Glazed and Beautiful Pear Tart
+- A 9"- or 10"-diameter tart pan (preferably with a removable bottom)
+
+Recipe 271: Easy Cherry Turnovers
+- 1½ cups pitted dark sweet cherries
+- 1½ cups pitted sour cherries
+
+Recipe 274: Upside-Down Martinis for a Crowd
+- 1½ cups gin
+- 4½ cups dry vermouth
+
+Recipe 279: Pecan Cake
+- A 9"-diameter springform pan
+
+Recipe 282: Jammy Brie Galette
+- 8 oz. Brie, thinly sliced
+
+Recipe 283: Brussels Sprout Pasta
+- 1 oz. Pecorino, finely grated (about ½ cup), plus more for serving
+
+Recipe 284: Rosemary and Dried Cherry Pork Chops
+- ⅓ cup dried tart cherries
+
+Recipe 285: Paper Fleet (Paper Planes for a Crowd)
+- 1¼ cups Amaro Nonino
+- 1¼ cups Aperol
+- 1¼ cups bourbon
+
+Recipe 287: Sweet Potato Rolls
+- 1 ¼-oz. envelope instant yeast (about 2¼ tsp.)
+
+Recipe 290: Feta and Sun-Dried Tomato Dip
+- Crudités and crackers (for serving)
+
+Recipe 291: Sweet-and-Spicy Squash With Scallion Oil
+- 2 Tbsp. sambal oelek
+- 2 Tbsp. white miso
+
+Recipe 295: Pumpkin Tiramisu
+- 1 Tbsp. plus 1 tsp. instant espresso powder
+- 20 crisp ladyfingers
+- 3 Tbsp. bourbon
+
+Recipe 296: Chocolate-Pumpkin Marble Cake
+- A 10–12-cup Bundt pan
+
+Recipe 298: Giant Baba Au Rhum
+- 1 ¼-oz. envelope instant yeast (about 2¼ tsp.)
+- 8 maraschino cherries
+- A 12-cup Bundt pan, a pastry bag, and a large star tip
+
+Recipe 299: Tiramisu Panna Cotta
+- 2 Tbsp. instant espresso powder
+- 2 envelopes unflavored powdered gelatin (about 1 Tbsp. plus 2 tsp.)
+
+Recipe 302: Chicken, Chilli, and Cheese Quesadillas
+- Quesadillas
+
+Recipe 305: Chicken Chow Mein
+- *Can be found at specialty Asian markets.
+- 1 teaspoon five-spice powder
+
+Recipe 306: Chicken Club Ranch Roll
+- 2 square or rectangular flatbreads, such as lavash
+
+Recipe 307: Chicken cobb burger
+- 4 baps, split
+
+Recipe 309: Chicken cordon bleu
+- 4 thin slices prosciutto di Parma
+
+Recipe 310: Chicken cordon bleu roll-ups with ginger 'n' spice blueberry chutney
+- 280g fresh or frozen blueberries
+- 80g finely chopped prosciutto
+
+Recipe 314: Chicken Curry
+- 1 x 450g jar Patak's Tikka Masala sauce
+
+Recipe 316: Chicken cutlets with herbs
+- 1 1/2 tsp. poultry seasoning
+
+Recipe 318: Chicken divan tonight, chicken tetrazzini next week
+- 1 (280g) bag baby salad greens
+- 20g (a couple of handfuls) grated Parmigiano
+- 3 tbsp. fresh herbs, mix from what you have on hand
+
+Recipe 323: Chicken Fajitas
+- 2 tbsp Tabasco® Chipotle Sauce
+
+Recipe 324: Chicken Filo Pot Pies
+- 2 sheets ready rolled filo pastry by Sainsbury’s, each cut in half (1/3 of a 270g pack)
+
+Recipe 327: Chicken Florentine Pasta
+- 3/4 cup low-sodium broth, more if needed
+
+Recipe 328: Chicken with forty cloves of garlic
+- 3 tbsp Cognac
+
+Recipe 329: Crispy Fried Pork Chops with Chunky Pear Chutney
+- Vegetable fat, for frying
+
+Recipe 333: Chicken gravy and meatballs with multigrain spaghetti
+- Side salad, for serving
+
+Recipe 337: Chicken hash
+- 175ml beer
+- 40g queso fresco, for garnish
+
+Recipe 339: Chicken Tikka Masala
+- 1 tbsp dried fenugreek leaves (optional)
+
+Recipe 345: Chicken kebab salad
+- 1 crusty baguette
+- 2 anchovies
+- 20g grated Parmigiano Reggiano, plus shavings for garnish
+
+Recipe 346: Chicken Kebabs
+- 8 bought mini pitas
+
+Recipe 347: Chicken Kebabs with No-Cook Peach Chutney
+- 1/8 teaspoon chaat masala, optional, plus more for seasoning
+
+Recipe 349: Michel Roux's Pear and Plum Crumble
+- 100ml port
+- 600g plums halved and de-stoned- approx. 6 plums
+
+Recipe 350: Chicken a la Gaynor
+- 60ml cooking sherry
+
+Recipe 351: Chicken a la king
+- 65ml dry sherry
+
+Recipe 352: Chicken a la Polly Kohen
+- 120ml sherry
+
+Recipe 357: Chicken lettuce cups
+- 5 mangetout, diced
+- 6 fried wonton skins
+
+Recipe 358: Chicken Liver and Mushroom Open Sandwich
+- 1 morcilla de burgos (Spanish black pudding)
+
+Recipe 360: Chicken Liver Stroganoff with Greek Yogurt
+- 1/4 cup cognac or dry sherry
+
+Recipe 362: Chicken With Mango Barbeque Sauce
+- 3 tablespoons molasses
+
+Recipe 365: Chicken Tikka Masala
+- 1 tsp fenugreek seeds
+
+Recipe 366: Chicken Masala Curry
+- 2 tbsp Masala Paste (see recipe below)
+
+Recipe 370: Chicken Miso Broccoli Broth
+- 1 sachet miso soup
+
+Recipe 371: Chicken Mole Torta
+- 4 fresh bolillo rolls, warmed
+
+Recipe 372: Chicken with morels
+- 230ml Madeira wine
+
+Recipe 374: Chicken with Mussels in Cider Sauce
+- 300ml dry cider
+
+Recipe 376: Chicken Nachos
+- 1/4 cup chopped pitted black olives
+- 2 tablespoons taco seasoning
+
+Recipe 377: Chicken Noodle Casserole
+- 1 cup shredded Gouda (about 4 ounces)
+
+Recipe 382: Chicken Paillard
+- 140g mixed baby salad greens, available in produce section
+
+Recipe 384: Chicken parm meatball subs
+- 1 tbsp. grill seasoning blend
+- 150g shredded provolone
+- 4 (16 to 20cm) crusty sub rolls
+- 85g grated Parmigiano Reggiano
+
+Recipe 385: Chicken parm salad subs
+- 60g freshly grated Parmigiano Reggiano
+
+Recipe 390: Chicken burgers
+- 1/2 red capsicum, diced
+- 4 tbsp diced black olives
+
+Recipe 397: Chicken Poppy Seed Salad Sandwiches
+- 2 tablespoons poppy seeds
+
+Recipe 398: Mocha Tres Leches Cake
+- 2 tablespoons (10 g) instant espresso powder
+- 2 teaspoons instant espresso powder
+
+Recipe 399: Easy Slow-Cooker Pork Ragù
+- 1 rack St. Louis–cut ribs (3 to 4 pounds; 1125 to 1350 g), cut between bones into 3 equal pieces
+
+Recipe 400: Chicken-posole soup
+- 1 (800g) can hominy
+
+Recipe 401: Chicken in a pot, no pie
+- 1 tsp. poultry seasoning
+
+Recipe 403: Chicken Pot Pie Soup
+- 1 packet of shop-bought shortcrust pastry
+- 1 tbsp bouillon flavoring
+- 2 tsp Italian seasoning
+- 680g frozen mixed vegetables
+
+Recipe 412: Chicken rolls with red pepper mayo and orange drizzle
+- 6 centre-cut baps or deli rolls
+
+Recipe 415: Chicken Salad Rolls
+- 2 wholemeal sub rolls
+
+Recipe 416: Chicken salad sandwiches
+- 1 bag mesclun (green leaf) salad mix
+
+Recipe 421: Chicken Saltimbocca
+- 6 paper-thin slices prosciutto
+
+Recipe 423: Chicken Satay with Spicy Peanut Dipping Sauce
+- 1 tsp. curry paste
+
+Recipe 424: Chicken Satay with Spicy Peanut Sauce
+- 1 tablespoon agave nectar
+- 2 tablespoons agave nectar
+
+Recipe 425: Chicken satay sticks with wasabi mayonnaise
+- 2 tsp wasabi paste
+- 50g flaked coconut
+
+Recipe 426: Chicken Satay Stir Fry
+- 2 x Blue Dragon Satay Season & Stir Fry pouches
+
+Recipe 431: Chicken sausage patties
+- 1 1/2 teaspoons poultry seasoning, half a palm full
+
+Recipe 432: Chicken Sausage Rigatoni in a Spicy Vodka Sauce
+- 1 tsp Italian seasoning
+
+Recipe 437: Chicken Shawarma
+- 5 drops yellow food colouring, optional
+
+Recipe 438: Chicken simmered in BBQ sauce
+- 1 (12-ounce) bottle dark ale
+- Preheat oven to 400 degrees F.
+
+Recipe 439: Chicken skewers with peanut sauce
+- 1/2 teaspoon cayenne
+
+Recipe 440: Chicken slow braised in green pepper corns and coconut juice
+- 2 litres young coconut juice
+- 4 crisp baguettes
+
+Recipe 441: Chicken Soup with Matzo Balls
+- 1 cup matzo meal
+
+Recipe 443: Chicken South Indian Style
+- 1 tbsp sambar powder
+- 1 tsp asafoetida
+- 10g dried curry leaves
+
+Recipe 444: Chicken souvlaki sticks with yoghurt dipping sauce
+- 16 bamboo skewers
+
+Recipe 445: Prawn, White Bean and Feta Skillet for Two
+- 1 teaspoon Italian seasoning
+
+Recipe 454: Chicken stew with tomatoes and escarole
+- 1 head escarole (about 450g), coarsely chopped
+- 1 tsp Italian herb mix
+- 35g grated pecorino (about 25g)
+
+Recipe 456: Chicken Stir Fry
+- 1 x 120g Blue Dragon stir fry Chow Mein sauce
+- 1 x 320g pack The Co-operative Chinese stir fry vegetables
+
+Recipe 457: Chicken Stir-Fry
+- 1 head bok choy, chopped
+
+Recipe 460: Grilled Chicken and Strawberry Salad Wrap
+- 220g mixed salad greens
+- 6 medium strawberries, hulled and quartered
+
+Recipe 462: Chicken stuffed with prosciutto and fontina
+- 2 slices imported prosciutto
+
+Recipe 464: Chicken Supremes the African Way
+- 1 hibiscus flower
+
+Recipe 465: Chicken with Tabbouleh
+- 140g bulgur wheat
+
+Recipe 466: Chicken Taco Meat Pizza
+- 1 teaspoon active dry yeast
+
+Recipe 467: Chicken Taco Salad
+- 2 tablespoons taco seasoning (store-bought or your own mix)
+- 3/4 cup ranch dressing (bottled is fine)
+
+Recipe 468: Chicken Tagine
+- 1 x 400g tin ckickpeas, drained
+- Tagine paste
+- Tagine seasoning
+
+Recipe 470: Chicken tamarillo
+- 100ml chipotle sauce
+- 2 tbsp adobo seasoning
+
+Recipe 471: Chicken, tasso and andouille gumbo
+- 2 tsp kitchen bouquet
+- File powder, for serving
+
+Recipe 474: Chicken Teriyaki
+- 4 tablespoons sake
+
+Recipe 478: Chicken Thighs and Root Veg
+- 1 tbsp herb and spice blend of your choice
+
+Recipe 481: Chicken Tikka or Balti Masala
+- 3 heaped tsp East End Masala Mix of your choice
+
+Recipe 486: Chicken Tostadas
+- 8 tostadas
+
+Recipe 488: Chicken, Vegetable and Spinach Curry
+- 2 flamebaked plain naans by Sainsbury's, warmed and halved, to serve
+
+Recipe 489: Chicken veggie burger
+- 4 wholemeal baps
+
+Recipe 499: Easy Chickpea Curry with Rice
+- Naan, for serving
+
+Recipe 500: Chickpea Pan Bagnat
+- 1 baguette, cut in half and then split lengthwise without cutting all the way through
+- 180g mixed olives, pitted and chopped
+
+Recipe 502: Chicory salad with walnuts and Parmesan
+- 225g chicory, or other leafy green
+
+Recipe 504: Chiffon Pumpkin Pie with Pecan Brittle
+- 1 packet unflavored gelatin
+- One 9-inch prepared graham cracker pie crust
+
+Recipe 505: Chilaquiles with roasted tomatillo salsa
+- 4 individual casserole dishes
+
+Recipe 506: Chilli-Coffee BBQ Sauce
+- 1 cup strong black coffee
+
+Recipe 507: Chile Con Queso
+- Chips, for serving
+
+Recipe 510: Chilean suckling pig BBQ
+- 1 (6 to 9kg) suckling pig
+
+Recipe 511: Chiles Relenos In Tomato Broth Recipe
+- 2 medium bowls
+- Cling film
+
+Recipe 512: Chilli in Pastry Bowls
+- 2 cups pastry baking mix (recommended: Bisquick)
+
+Recipe 514: Chilli Dogs
+- 4 hot dogs
+
+Recipe 520: Chilled Avocado Soup
+- Crostini or croutons, for serving, optional
+
+Recipe 521: Chilled Berries with White Chocolate Sauce
+- 600g (1lb 6oz) mixed berries taken straight from the fridge, hulled
+
+Recipe 524: Chilled Grilled Seafood Salad
+- 1 pound whole calamari, cleaned
+
+Recipe 525: Chilled Tomato and Pepper Soup
+- 10 drops Tabasco
+
+Recipe 526: Chilled white gazpacho
+- 2 to 3 tbsp. verjus
+
+Recipe 527: Chilled yoghurt soup
+- 1 tbsp tamarind pulp
+
+Recipe 533: Chilli Chocolate Brownies with Tabasco
+- 2 tsp Tabasco Original sauce
+
+Recipe 534: Chilli Chocolate Brownies with Tabasco®
+- 2tsp Tabasco® Original sauce
+
+Recipe 535: Chilli chocolate cupcakes
+- Edible gold dust
+- Edible gold glitter
+
+Recipe 536: Chilli chocolate cupcakes
+- 4 tbsp maynnoaise
+- Edible gold dust
+- Edible gold glitter
+
+Recipe 537: Chilli Chocolate Truffles
+- A healthy dash of tequila
+
+Recipe 542: Chilli Crab Cakes
+- 8 curry leaves, shredded
+
+Recipe 544: Chilli dogs
+- 4 hot dogs
+
+Recipe 548: Chilli Pork Loin Steaks
+- 1 Vegetable Quixo Stock Cube
+
+Recipe 552: Chilli-Rubbed Chicken Breast with Kale, Quinoa and Brussels Sprouts Salad
+- 1 teaspoon ground chipotle powder
+
+Recipe 556: Chilli rubbed salmon with citrus salsa - slimmed
+- 1/4 medium jicama, peeled and julienned
+
+Recipe 560: Chilli-tini
+- 150ml gin
+- 30ml dry vermouth
+
+Recipe 561: Chilli-Lime Salmon Tacos with Salsa
+- 6 taco shells
+
+Recipe 562: Chiles Rellenos
+- 1 (350ml) bottle or can lager-style beer
+
+Recipe 564: Chimayo cocktails by the pitcher
+- 240ml tequila, preferably gold
+- 60ml creme de cassis
+
+Recipe 566: Chimichurri Cauliflower Steaks with Mashed Sweet Potatoes
+- 1 red jalapeño, seeded and finely chopped
+- Chimichurri
+
+Recipe 570: Chimney tuna loin
+- 1/4 cup dry wasabi powder
+
+Recipe 572: Chinese cheesecake
+- 150g raspberries, fresh preferred
+
+Recipe 575: Chinese Pulled Pork Sliders with Sweet and Hot Mustard
+- 12 slider rolls, preferably King's Hawaiian
+
+Recipe 578: Chinese-Spiced Duck Salad
+- Hoi sin sauce
+
+Recipe 581: Spam Fried Rice
+- One 340g Spam, diced
+

@@ -26,9 +26,6 @@ class FakePurecipesApi(
 	private val recipeDetailsById = initialRecipeDetails.associateBy { it.id }.toMutableMap()
 	private val createdRecipes = initialRecipeDetails.toMutableList()
 
-	var searchCalls: Int = 0
-		private set
-
 	var searchWithFiltersCalls: Int = 0
 		private set
 
@@ -44,11 +41,6 @@ class FakePurecipesApi(
 
 	var searchFilters: SearchFilters = initialSearchFilters
 		private set
-
-	override suspend fun search(query: String, limit: Int): List<RecipeSummary> {
-		searchCalls += 1
-		return searchResult
-	}
 
 	override suspend fun searchWithFilters(request: SearchRequest): List<RecipeSummary> {
 		searchWithFiltersCalls += 1

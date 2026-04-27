@@ -83,3 +83,19 @@ tasks.jar {
 		attributes["Main-Class"] = "com.purecipes.backend.MainKt"
 	}
 }
+
+tasks.register<JavaExec>("reportUnknownIngredients") {
+	group = "verification"
+	description = "Reports recipe ingredients that do not match app ingredient options"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("com.purecipes.backend.tools.UnknownIngredientsReportKt")
+	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
+}
+
+tasks.register<JavaExec>("reportRecipeVisibility") {
+	group = "verification"
+	description = "Reports recipe visibility buckets and source-domain breakdown"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("com.purecipes.backend.tools.RecipeVisibilityAnalysisReportKt")
+	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
+}
