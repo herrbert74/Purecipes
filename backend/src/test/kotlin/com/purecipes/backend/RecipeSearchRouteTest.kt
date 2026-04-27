@@ -189,6 +189,120 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
+	fun `search with available ingredients ignores default pantry ingredients`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipe(
+			accessToken = sessionService.session.accessToken,
+			title = "Chicken Tomato Broth",
+			ingredients = listOf("Chicken breast", "Tomato", "Salt", "Water", "Vegetable Oil"),
+		)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["Chicken", "Tomato"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Broth") shouldBe true
+	}
+
+	@Test
+	fun `search with available ingredients matches alternative ingredient names`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipe(
+			accessToken = sessionService.session.accessToken,
+			title = "Cilantro Rice",
+			ingredients = listOf("Rice", "Cilantro"),
+		)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["Rice", "Coriander"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Cilantro Rice") shouldBe true
+	}
+
+	@Test
+	fun `search with available ingredients matches singular and plural forms`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipe(
+			accessToken = sessionService.session.accessToken,
+			title = "Egg Fried Rice",
+			ingredients = listOf("Egg", "Pea", "Rice"),
+		)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"availableIngredients": ["Eggs", "Peas", "Rice"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Egg Fried Rice") shouldBe true
+	}
+
+	@Test
 	fun `search accepts legacy include ingredients payload name`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)

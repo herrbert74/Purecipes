@@ -72,25 +72,6 @@ class RecipeRepository(
 			conditions.add("(${timeParts.joinToString(" OR ")})")
 		}
 
-		if (availableIngredients.isNotEmpty()) {
-			val pantryMatches = availableIngredients.joinToString(" OR ") {
-				"LOWER(i_recipe.ingredient) LIKE ?"
-			}
-			conditions.add(
-				"""
-				NOT EXISTS (
-					SELECT 1 FROM ingredient_groups ig_recipe
-					JOIN ingredients i_recipe ON i_recipe.ingredient_group_id = ig_recipe.id
-					WHERE ig_recipe.recipe_id = r.id
-						AND NOT ($pantryMatches)
-				)
-				""".trimIndent(),
-			)
-			availableIngredients.forEach { ingredient ->
-				params.add("%${ingredient.lowercase()}%")
-			}
-		}
-
 		addEnrichmentFilterConditions(filters, conditions, params)
 
 		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
@@ -102,7 +83,6 @@ class RecipeRepository(
 			$whereClause
 			GROUP BY r.id
 			ORDER BY r.created_at DESC
-			LIMIT ?
 		""".trimIndent()
 
 		return dataSource.connection.use { conn ->
@@ -114,8 +94,24 @@ class RecipeRepository(
 						else -> error("Unsupported parameter type: ${param::class}")
 					}
 				}
-				ps.setInt(params.size + 1, limit)
-				return@use executeQuery(ps)
+				val candidates = executeQuery(ps)
+				return@use if (availableIngredients.isEmpty()) {
+					candidates.take(limit).toCollection(ArrayList())
+				} else {
+					candidates
+						.filter { summary ->
+							loadIngredientGroupsForRecipe(conn, summary.id).all { group ->
+								group.ingredients.all { ingredient ->
+									IngredientVocabulary.isCoveredByAvailableIngredients(
+										ingredientLine = ingredient,
+										availableIngredients = availableIngredients,
+									)
+								}
+							}
+						}
+						.take(limit)
+						.toCollection(ArrayList())
+				}
 			}
 		}
 	}

@@ -1,0 +1,18 @@
+Recipe visibility analysis
+Allowed app ingredients: 281
+Total recipes: 581
+Visible (0 missing): 338
+Almost visible (1 missing): 166
+Nearly visible (2 missing): 51
+Invisible (3+ missing): 26
+Visible if allowing <=1 missing: 504
+Visible if allowing <=2 missing: 555
+
+Visible/invisible by source domain
+source_domain	total	visible	missing_1	missing_2	invisible_3_plus
+foodnetwork.co.uk	280	163	86	23	8
+mob.co.uk	150	95	34	14	7
+allrecipes.com	50	28	13	3	6
+bonappetit.com	50	25	20	4	1
+epicurious.com	49	27	12	6	4
+seriouseats.com	2	0	1	1	0

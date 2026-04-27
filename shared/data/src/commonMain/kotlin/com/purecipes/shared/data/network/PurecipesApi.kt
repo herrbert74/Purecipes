@@ -15,15 +15,8 @@ import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
-import de.jensklingenberg.ktorfit.http.Query
 
 interface PurecipesApi {
-
-	@GET("recipes/search")
-	suspend fun search(
-		@Query("query") query: String,
-		@Query("limit") limit: Int = 25,
-	): List<RecipeSummary>
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("recipes/search")
