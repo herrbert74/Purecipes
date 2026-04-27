@@ -1,5 +1,10 @@
 package com.purecipes.feature.search.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -9,13 +14,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -29,28 +40,37 @@ internal fun <T : Any> FilterChipSection(
 	onSelectionChange: (Set<T>) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
+	var collapsed by rememberSaveable { mutableStateOf(true) }
 	Column(modifier = modifier) {
 		FilterSectionHeader(
 			title = title,
 			onSelectAll = { onSelectionChange(items.toSet()) },
 			onClearAll = { onSelectionChange(emptySet()) },
+			isCollapsed = collapsed,
+			onToggleCollapse = { collapsed = !collapsed },
 		)
-		FlowRow(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(horizontal = PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+		AnimatedVisibility(
+			visible = !collapsed,
+			enter = expandVertically(),
+			exit = shrinkVertically(),
 		) {
-			items.forEach { item ->
-				FilterChip(
-					selected = item in selected,
-					onClick = {
-						val updated = if (item in selected) selected - item else selected + item
-						onSelectionChange(updated)
-					},
-					label = { Text(itemLabel(item)) },
-				)
+			FlowRow(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(horizontal = PurecipesTheme.space.m),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+			) {
+				items.forEach { item ->
+					FilterChip(
+						selected = item in selected,
+						onClick = {
+							val updated = if (item in selected) selected - item else selected + item
+							onSelectionChange(updated)
+						},
+						label = { Text(itemLabel(item)) },
+					)
+				}
 			}
 		}
 	}
@@ -62,10 +82,19 @@ internal fun FilterSectionHeader(
 	onSelectAll: () -> Unit,
 	onClearAll: () -> Unit,
 	modifier: Modifier = Modifier,
+	isCollapsed: Boolean = false,
+	onToggleCollapse: (() -> Unit)? = null,
 ) {
+	val chevronRotation by animateFloatAsState(
+		targetValue = if (isCollapsed) -90f else 0f,
+		label = "chevron",
+	)
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
+			.then(
+				if (onToggleCollapse != null) Modifier.clickable(onClick = onToggleCollapse) else Modifier,
+			)
 			.padding(
 				start = PurecipesTheme.space.m,
 				end = PurecipesTheme.space.xs,
@@ -89,6 +118,15 @@ internal fun FilterSectionHeader(
 				imageVector = Icons.Default.Clear,
 				contentDescription = "Clear $title",
 			)
+		}
+		if (onToggleCollapse != null) {
+			IconButton(onClick = onToggleCollapse) {
+				Icon(
+					imageVector = Icons.Default.ExpandMore,
+					contentDescription = if (isCollapsed) "Expand $title" else "Collapse $title",
+					modifier = Modifier.rotate(chevronRotation),
+				)
+			}
 		}
 	}
 }

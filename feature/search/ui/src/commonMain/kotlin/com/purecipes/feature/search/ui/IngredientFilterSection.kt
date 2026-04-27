@@ -1,5 +1,8 @@
 package com.purecipes.feature.search.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -8,6 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
@@ -347,19 +354,30 @@ internal fun IngredientFilterSection(
 	modifier: Modifier = Modifier,
 ) {
 	val allItems = INGREDIENT_GROUPS.flatMap { it.items }.toSet()
+	var collapsed by rememberSaveable { mutableStateOf(true) }
 
 	Column(modifier = modifier) {
 		FilterSectionHeader(
 			title = "Ingredients",
 			onSelectAll = { onSelectionChange(allItems) },
 			onClearAll = { onSelectionChange(emptySet()) },
+			isCollapsed = collapsed,
+			onToggleCollapse = { collapsed = !collapsed },
 		)
-		INGREDIENT_GROUPS.forEach { group ->
-			IngredientGroupChips(
-				group = group,
-				availableIngredients = availableIngredients,
-				onSelectionChange = onSelectionChange,
-			)
+		AnimatedVisibility(
+			visible = !collapsed,
+			enter = expandVertically(),
+			exit = shrinkVertically(),
+		) {
+			Column {
+				INGREDIENT_GROUPS.forEach { group ->
+					IngredientGroupChips(
+						group = group,
+						availableIngredients = availableIngredients,
+						onSelectionChange = onSelectionChange,
+					)
+				}
+			}
 		}
 	}
 }
@@ -370,6 +388,7 @@ private fun IngredientGroupChips(
 	availableIngredients: ImmutableSet<String>,
 	onSelectionChange: (available: Set<String>) -> Unit,
 ) {
+	var collapsed by rememberSaveable { mutableStateOf(true) }
 	Column {
 		FilterSectionHeader(
 			title = group.name,
@@ -380,30 +399,38 @@ private fun IngredientGroupChips(
 				onSelectionChange(availableIngredients - group.items.toSet())
 			},
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
+			isCollapsed = collapsed,
+			onToggleCollapse = { collapsed = !collapsed },
 		)
-		FlowRow(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(horizontal = PurecipesTheme.space.xl),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+		AnimatedVisibility(
+			visible = !collapsed,
+			enter = expandVertically(),
+			exit = shrinkVertically(),
 		) {
-			group.items.forEach { item ->
-				val state = when (item) {
-					in availableIngredients -> IngredientChipState.SELECTED
-					else -> IngredientChipState.NEUTRAL
+			FlowRow(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(horizontal = PurecipesTheme.space.xl),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+			) {
+				group.items.forEach { item ->
+					val state = when (item) {
+						in availableIngredients -> IngredientChipState.SELECTED
+						else -> IngredientChipState.NEUTRAL
+					}
+					IngredientTriStateChip(
+						item = item,
+						state = state,
+						onToggle = {
+							val newAvailable = when (state) {
+								IngredientChipState.NEUTRAL -> availableIngredients + item
+								IngredientChipState.SELECTED -> availableIngredients - item
+							}
+							onSelectionChange(newAvailable)
+						},
+					)
 				}
-				IngredientTriStateChip(
-					item = item,
-					state = state,
-					onToggle = {
-						val newAvailable = when (state) {
-							IngredientChipState.NEUTRAL -> availableIngredients + item
-							IngredientChipState.SELECTED -> availableIngredients - item
-						}
-						onSelectionChange(newAvailable)
-					},
-				)
 			}
 		}
 	}
