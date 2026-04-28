@@ -13,6 +13,7 @@ import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchRequest
+import com.purecipes.shared.domain.model.SearchResultsPage
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
@@ -22,9 +23,12 @@ class RecipeRepository(
 	private val dataSource: DataSource,
 ) {
 
-	fun searchByKeyword(keyword: String, limit: Int = 50): List<RecipeSummary> {
+	fun searchByKeyword(keyword: String, pageNumber: Int = 1, pageSize: Int = 20): List<RecipeSummary> {
 		val trimmed = keyword.trim()
 		if (trimmed.isEmpty()) return emptyList()
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
 
 		val like = "%${trimmed.lowercase()}%"
 		val sql = """
@@ -32,20 +36,52 @@ class RecipeRepository(
 			FROM recipes
 			WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
 			ORDER BY created_at DESC
-			LIMIT ?
+			LIMIT ? OFFSET ?
 		""".trimIndent()
 
-		return searchRecipes(sql, like, limit)
+		return searchRecipes(sql, like, normalizedPageSize, offset)
 	}
 
 	fun searchWithFilters(request: SearchRequest): List<RecipeSummary> {
-		val conditions = mutableListOf<String>()
-		val params = mutableListOf<Any>()
+		return searchWithFiltersPaginated(request).items
+	}
+
+	fun searchByKeywordPaginated(keyword: String, pageNumber: Int = 1, pageSize: Int = 20): SearchResultsPage {
+		val trimmed = keyword.trim()
+		if (trimmed.isEmpty()) {
+			val normalizedPageSize = pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
+			return SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = normalizedPageSize,
+				totalMatches = 0,
+			)
+		}
+
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val like = "%${trimmed.lowercase()}%"
+		val items = searchByKeyword(trimmed, normalizedPageNumber, normalizedPageSize)
+		val totalMatches = countRecipesByKeyword(dataSource, like)
+		return SearchResultsPage(
+			items = items,
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = totalMatches,
+		)
+	}
+
+	fun searchWithFiltersPaginated(request: SearchRequest): SearchResultsPage {
+		val normalizedPageNumber = request.pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = request.pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
 		val filters = request.filters
 		val availableIngredients = filters.availableIngredients
 			.map(String::trim)
 			.filter(String::isNotEmpty)
 			.distinct()
+		val conditions = mutableListOf<String>()
+		val params = mutableListOf<Any>()
 
 		if (request.query.isNotBlank()) {
 			val like = "%${request.query.trim().lowercase()}%"
@@ -73,47 +109,43 @@ class RecipeRepository(
 		}
 
 		addEnrichmentFilterConditions(filters, conditions, params)
-
 		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
-		val limit = request.limit.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
 
-		val sql = """
-			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
-			FROM recipes r
-			$whereClause
-			GROUP BY r.id
-			ORDER BY r.created_at DESC
-		""".trimIndent()
-
-		return dataSource.connection.use { conn ->
-			conn.prepareStatement(sql).use { ps ->
-				params.forEachIndexed { index, param ->
-					when (param) {
-						is String -> ps.setString(index + 1, param)
-						is Int -> ps.setInt(index + 1, param)
-						else -> error("Unsupported parameter type: ${param::class}")
-					}
+		val (items, totalMatches) = dataSource.connection.use { conn ->
+			if (availableIngredients.isEmpty()) {
+				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
+				val page = querySearchWithFiltersRecipes(
+					conn = conn,
+					whereClause = whereClause,
+					params = params,
+					limit = normalizedPageSize,
+					offset = offset,
+					executeQuery = ::executeQuery,
+				)
+				page to total
+			} else {
+				val filtered = querySearchWithFiltersRecipes(
+					conn = conn,
+					whereClause = whereClause,
+					params = params,
+					executeQuery = ::executeQuery,
+				).filter { summary ->
+					isRecipeCoveredByAvailableIngredients(
+						recipeId = summary.id,
+						availableIngredients = availableIngredients,
+						loadIngredientGroups = { recipeId -> loadIngredientGroupsForRecipe(conn, recipeId) },
+					)
 				}
-				val candidates = executeQuery(ps)
-				return@use if (availableIngredients.isEmpty()) {
-					candidates.take(limit).toCollection(ArrayList())
-				} else {
-					candidates
-						.filter { summary ->
-							loadIngredientGroupsForRecipe(conn, summary.id).all { group ->
-								group.ingredients.all { ingredient ->
-									IngredientVocabulary.isCoveredByAvailableIngredients(
-										ingredientLine = ingredient,
-										availableIngredients = availableIngredients,
-									)
-								}
-							}
-						}
-						.take(limit)
-						.toCollection(ArrayList())
-				}
+				filtered.drop(offset).take(normalizedPageSize) to filtered.size
 			}
 		}
+
+		return SearchResultsPage(
+			items = items,
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = totalMatches,
+		)
 	}
 
 	fun getRecipeDetails(recipeId: Int, userId: Long? = null): RecipeDetails? = dataSource.connection.use { conn ->
@@ -317,12 +349,14 @@ class RecipeRepository(
 	private fun searchRecipes(
 		sql: String,
 		like: String,
-		limit: Int
+		pageSize: Int,
+		offset: Int = 0
 	): ArrayList<RecipeSummary> = dataSource.connection.use { conn ->
 		conn.prepareStatement(sql).use { ps ->
 			ps.setString(1, like)
 			ps.setString(2, like)
-			ps.setInt(3, limit)
+			ps.setInt(3, pageSize)
+			ps.setInt(4, offset)
 
 			return executeQuery(ps)
 		}
@@ -807,5 +841,104 @@ class RecipeRepository(
 					"ml|liters?|liter|l|celsius|°c)\\b",
 			options = setOf(RegexOption.IGNORE_CASE),
 		)
+	}
+}
+
+private fun countRecipesByKeyword(dataSource: DataSource, like: String): Int {
+	val sql = """
+		SELECT COUNT(*)
+		FROM recipes
+		WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
+	""".trimIndent()
+
+	return dataSource.connection.use { conn ->
+		conn.prepareStatement(sql).use { ps ->
+			ps.setString(1, like)
+			ps.setString(2, like)
+			ps.executeQuery().use { rs ->
+				rs.next()
+				rs.getInt(1)
+			}
+		}
+	}
+}
+
+private fun querySearchWithFiltersRecipes(
+	conn: java.sql.Connection,
+	whereClause: String,
+	params: List<Any>,
+	executeQuery: (PreparedStatement) -> ArrayList<RecipeSummary>,
+	limit: Int? = null,
+	offset: Int? = null,
+): List<RecipeSummary> {
+	val limitAndOffsetClause = if (limit != null && offset != null) {
+		"LIMIT ? OFFSET ?"
+	} else {
+		""
+	}
+
+	val sql = """
+		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
+		FROM recipes r
+		$whereClause
+		GROUP BY r.id
+		ORDER BY r.created_at DESC
+		$limitAndOffsetClause
+	""".trimIndent()
+
+	return conn.prepareStatement(sql).use { ps ->
+		params.forEachIndexed { index, param ->
+			when (param) {
+				is String -> ps.setString(index + 1, param)
+				is Int -> ps.setInt(index + 1, param)
+				else -> error("Unsupported parameter type: ${param::class}")
+			}
+		}
+		if (limit != null && offset != null) {
+			ps.setInt(params.size + 1, limit)
+			ps.setInt(params.size + 2, offset)
+		}
+		executeQuery(ps)
+	}
+}
+
+private fun countSearchWithFiltersRecipes(
+	conn: java.sql.Connection,
+	whereClause: String,
+	params: List<Any>,
+): Int {
+	val sql = """
+		SELECT COUNT(*)
+		FROM recipes r
+		$whereClause
+	""".trimIndent()
+
+	return conn.prepareStatement(sql).use { ps ->
+		params.forEachIndexed { index, param ->
+			when (param) {
+				is String -> ps.setString(index + 1, param)
+				is Int -> ps.setInt(index + 1, param)
+				else -> error("Unsupported parameter type: ${param::class}")
+			}
+		}
+		ps.executeQuery().use { rs ->
+			rs.next()
+			rs.getInt(1)
+		}
+	}
+}
+
+private fun isRecipeCoveredByAvailableIngredients(
+	recipeId: Int,
+	availableIngredients: List<String>,
+	loadIngredientGroups: (Int) -> List<IngredientGroup>,
+): Boolean {
+	return loadIngredientGroups(recipeId).all { group ->
+		group.ingredients.all { ingredient ->
+			IngredientVocabulary.isCoveredByAvailableIngredients(
+				ingredientLine = ingredient,
+				availableIngredients = availableIngredients,
+			)
+		}
 	}
 }

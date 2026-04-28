@@ -69,6 +69,45 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `search stores total matches from paged response`() = runTest {
+		val repository = FakeRecipeSearchRepository(
+			result = Ok(
+				listOf(
+					RecipeSummary(
+						id = 11,
+						title = "Page Result",
+						cuisine = Cuisine.FRENCH,
+						imageUrl = null,
+						totalTime = 25,
+					),
+				),
+			),
+			totalMatches = 37,
+		)
+		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+
+		advanceUntilIdle()
+
+		viewModel.totalMatches shouldBe 37
+		viewModel.recipes.size shouldBe 1
+	}
+
+	@Test
+	fun `search now sends updated query and first page request`() = runTest {
+		val repository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		advanceUntilIdle()
+
+		viewModel.onSearchQueryChange("chicken")
+		viewModel.searchNow()
+		advanceUntilIdle()
+
+		repository.lastQuery shouldBe "chicken"
+		repository.lastPageNumber shouldBe 1
+		repository.lastPageSize shouldBe 20
+	}
+
+	@Test
 	fun `init uses default filters when saved filters are empty`() = runTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
 		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)

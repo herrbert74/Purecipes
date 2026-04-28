@@ -11,6 +11,7 @@ import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.domain.model.SearchRequest
+import com.purecipes.shared.domain.model.SearchResultsPage
 
 class FakePurecipesApi(
 	var searchResult: List<RecipeSummary> = emptyList(),
@@ -42,9 +43,18 @@ class FakePurecipesApi(
 	var searchFilters: SearchFilters = initialSearchFilters
 		private set
 
-	override suspend fun searchWithFilters(request: SearchRequest): List<RecipeSummary> {
+	override suspend fun searchWithFilters(request: SearchRequest): SearchResultsPage {
 		searchWithFiltersCalls += 1
-		return searchResult
+		val pageNumber = request.pageNumber.coerceAtLeast(1)
+		val pageSize = request.pageSize.coerceAtLeast(1)
+		val offset = (pageNumber - 1) * pageSize
+		val paginatedResult = searchResult.drop(offset).take(pageSize)
+		return SearchResultsPage(
+			items = paginatedResult,
+			pageNumber = pageNumber,
+			pageSize = pageSize,
+			totalMatches = searchResult.size,
+		)
 	}
 
 	override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {
