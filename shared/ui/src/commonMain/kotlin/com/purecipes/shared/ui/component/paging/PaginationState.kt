@@ -72,8 +72,10 @@ class PaginationState<KEY, T>(
 	fun retryLastFailedRequest() {
 		val internalStateSnapshot = internalState.value
 
-		require(internalStateSnapshot is PaginationInternalState.Error || internalStateSnapshot is PaginationInternalState.Loading) {
-			"retryLastFailedRequest cannot be invoked while on a state other than error or loading. Current state: $internalStateSnapshot"
+		val isError = internalStateSnapshot is PaginationInternalState.Error
+		val isLoading = internalStateSnapshot is PaginationInternalState.Loading
+		require(isError || isLoading) {
+			"Cannot retry: current state is $internalStateSnapshot"
 		}
 
 		requestPage(

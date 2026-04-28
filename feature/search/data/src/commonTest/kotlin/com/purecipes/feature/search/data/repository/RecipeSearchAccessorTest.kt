@@ -21,9 +21,9 @@ class RecipeSearchAccessorTest {
 		val api = FakePurecipesApi(searchResult = expected)
 		val accessor = RecipeSearchAccessor(RecipeSearchRemoteDataSource(api))
 
-		val outcome = accessor.search("tomato")
+		val outcome = accessor.search("tomato", SearchFilters(), pageNumber = 1, pageSize = 20)
 
-		outcome.get() shouldBe expected
+		outcome.get()?.items shouldBe expected
 		outcome.getError() shouldBe null
 		api.searchWithFiltersCalls shouldBe 1
 	}
@@ -33,9 +33,9 @@ class RecipeSearchAccessorTest {
 		val api = FakePurecipesApi(searchResult = emptyList())
 		val accessor = RecipeSearchAccessor(RecipeSearchRemoteDataSource(api))
 
-		val outcome = accessor.search("   ")
+		val outcome = accessor.search("   ", SearchFilters(), pageNumber = 1, pageSize = 20)
 
-		outcome.get() shouldBe emptyList()
+		outcome.get()?.items shouldBe emptyList()
 		outcome.getError() shouldBe null
 		api.searchWithFiltersCalls shouldBe 1
 	}
@@ -46,7 +46,7 @@ class RecipeSearchAccessorTest {
 		val accessor = RecipeSearchAccessor(RecipeSearchRemoteDataSource(api))
 		val filters = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 
-		accessor.search("pasta", filters)
+		accessor.search("pasta", filters, pageNumber = 2, pageSize = 10)
 
 		api.searchWithFiltersCalls shouldBe 1
 	}

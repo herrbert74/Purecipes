@@ -2,6 +2,7 @@ package com.purecipes.feature.search.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,11 +24,15 @@ import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeFormatHandling
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchFilters
+import com.purecipes.shared.ui.component.paging.PaginationState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+
+private const val FIRST_PAGE_NUMBER = 1
+private const val PAGE_SIZE = 20
 
 internal class RecipeSearchViewModel(
 	private val filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
@@ -63,7 +68,19 @@ internal class RecipeSearchViewModel(
 	var activeFilters by mutableStateOf(SearchFilters())
 		private set
 
+	var totalMatches by mutableIntStateOf(0)
+		private set
+
 	val recipes = mutableStateListOf<RecipeSummary>()
+
+	val paginationState: PaginationState<Int, RecipeSummary> = PaginationState(
+		initialPageKey = FIRST_PAGE_NUMBER,
+		onRequestPage = { pageKey ->
+			scope.launch {
+				loadPageOfResults(pageKey)
+			}
+		},
+	)
 
 	init {
 		scope.launch {
@@ -104,15 +121,51 @@ internal class RecipeSearchViewModel(
 	private suspend fun doSearch() {
 		isSearching = true
 		errorMessage = null
-		val preferences = getMeasurementPreferences()
-		val outcome = searchRecipes(searchQuery, activeFilters)
 		recipes.clear()
-		recipes.addAll(filterRecipesForMeasurementPreferences(outcome.get() ?: emptyList(), preferences))
-		measurementFilterLabel = preferences.filterSummary()
-		trackEvent(AnalyticsEvent.SearchPerformed(query = searchQuery, resultCount = recipes.size))
-		errorMessage = outcome.getError()?.message
-		isSearching = false
+		totalMatches = 0
+		paginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
+		loadPageOfResults(FIRST_PAGE_NUMBER)
 		isSearchBarActive = false
+	}
+
+	private suspend fun loadPageOfResults(pageNumber: Int) {
+		val preferences = getMeasurementPreferences()
+		val outcome = searchRecipes(searchQuery, activeFilters, pageNumber, PAGE_SIZE)
+		val paginatedResult = outcome.get()
+		if (paginatedResult != null) {
+			if (pageNumber == FIRST_PAGE_NUMBER) {
+				recipes.clear()
+				totalMatches = paginatedResult.totalMatches
+			}
+			val filtered = filterRecipesForMeasurementPreferences(paginatedResult.items, preferences)
+			recipes.addAll(filtered)
+			measurementFilterLabel = preferences.filterSummary()
+			val nextPageKey = pageNumber + 1
+			val isLastPage = (paginatedResult.pageNumber * paginatedResult.pageSize) >= paginatedResult.totalMatches
+			paginationState.appendPage(
+				pageKey = pageNumber,
+				items = filtered,
+				nextPageKey = nextPageKey,
+				isLastPage = isLastPage,
+			)
+			if (pageNumber == FIRST_PAGE_NUMBER) {
+				trackEvent(
+					AnalyticsEvent.SearchPerformed(
+						query = searchQuery,
+						resultCount = paginatedResult.totalMatches,
+					),
+				)
+			}
+		} else {
+			val error = outcome.getError()
+			if (error != null) {
+				paginationState.setError(IllegalStateException(error.message))
+				errorMessage = error.message
+			}
+		}
+		if (pageNumber == FIRST_PAGE_NUMBER) {
+			isSearching = false
+		}
 	}
 
 	override fun onCleared() {

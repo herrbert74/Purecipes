@@ -8,6 +8,7 @@ import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.domain.model.SearchRequest
+import com.purecipes.shared.domain.model.SearchResultsPage
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
@@ -20,7 +21,7 @@ interface PurecipesApi {
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("recipes/search")
-	suspend fun searchWithFilters(@Body request: SearchRequest): List<RecipeSummary>
+	suspend fun searchWithFilters(@Body request: SearchRequest): SearchResultsPage
 
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails

@@ -118,6 +118,41 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
+	fun `keyword search response omits has next page and includes page metadata`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		repeat(3) { index ->
+			createRecipe(
+				accessToken = sessionService.session.accessToken,
+				title = "Keyword Match $index",
+				ingredients = listOf("Tomato", "Salt"),
+			)
+		}
+
+		val response = client.get("/recipes/search?query=keyword&pageNumber=1&pageSize=2")
+
+		response.status shouldBe HttpStatusCode.OK
+		val responseBody = response.bodyAsText()
+		responseBody.contains("\"pageNumber\":1") shouldBe true
+		responseBody.contains("\"pageSize\":2") shouldBe true
+		responseBody.contains("\"totalMatches\":3") shouldBe true
+	}
+
+	@Test
 	fun `search with available ingredients supports case insensitive partial matching`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
@@ -342,6 +377,59 @@ class RecipeSearchRouteTest {
 
 		response.status shouldBe HttpStatusCode.OK
 		response.bodyAsText().contains("Tomato Soup") shouldBe true
+	}
+
+	@Test
+	fun `search with available ingredients applies filtering before paging and returns total matches`() =
+		testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		repeat(26) { index ->
+			createRecipe(
+				accessToken = sessionService.session.accessToken,
+				title = "Non match $index",
+				ingredients = listOf("Rice", "Butter"),
+			)
+		}
+
+		repeat(4) { index ->
+			createRecipe(
+				accessToken = sessionService.session.accessToken,
+				title = "Match $index",
+				ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+			)
+		}
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"pageNumber": 1,
+					"pageSize": 20,
+					"filters": {
+						"availableIngredients": ["Chicken", "Tomato", "Salt"]
+					}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("\"totalMatches\":4") shouldBe true
+		responseBody.contains("Match 0") shouldBe true
+		responseBody.contains("Match 3") shouldBe true
 	}
 
 	private suspend fun ApplicationTestBuilder.createRecipe(

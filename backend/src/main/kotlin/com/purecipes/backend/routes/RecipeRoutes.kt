@@ -19,7 +19,7 @@ import io.ktor.server.routing.route
 
 private const val HIGHEST_RESULT_COUNT_LIMIT = 200
 
-private const val DEFAULT_RESULT_COUNT_LIMIT = 50
+private const val DEFAULT_RESULT_COUNT_LIMIT = 20
 
 fun Route.recipeRoutes(
 	sessionService: SessionService,
@@ -63,16 +63,17 @@ fun Route.recipeRoutes(
 				)
 				return@get
 			}
-			val limit = call.request.queryParameters["limit"]?.toIntOrNull()?.coerceIn(1, HIGHEST_RESULT_COUNT_LIMIT)
-				?: DEFAULT_RESULT_COUNT_LIMIT
+			val pageNumber = call.request.queryParameters["pageNumber"]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+			val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull()
+				?.coerceIn(1, HIGHEST_RESULT_COUNT_LIMIT) ?: DEFAULT_RESULT_COUNT_LIMIT
 			val repo = RecipeRepository(dbProvider().dataSource)
-			call.respond(repo.searchByKeyword(query, limit))
+			call.respond(repo.searchByKeywordPaginated(query, pageNumber, pageSize))
 		}
 
 		post("/search") {
 			val searchRequest = call.receiveSearchRequestOrRespond() ?: return@post
 			val repo = RecipeRepository(dbProvider().dataSource)
-			call.respond(repo.searchWithFilters(searchRequest))
+			call.respond(repo.searchWithFiltersPaginated(searchRequest))
 		}
 
 		get("/{id}") {

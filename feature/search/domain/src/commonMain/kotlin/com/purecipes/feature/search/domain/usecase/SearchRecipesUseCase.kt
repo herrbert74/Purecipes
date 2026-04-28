@@ -2,8 +2,8 @@ package com.purecipes.feature.search.domain.usecase
 
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.repository.SearchOutcome
-import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchFilters
+import com.purecipes.shared.domain.model.SearchResultsPage
 
 class SearchRecipesUseCase(
 	private val repository: RecipeSearchRepository,
@@ -12,7 +12,9 @@ class SearchRecipesUseCase(
 	suspend operator fun invoke(
 		query: String,
 		filters: SearchFilters = SearchFilters(),
-	): SearchOutcome<List<RecipeSummary>> {
-		return repository.search(query, filters)
+		pageNumber: Int = 1,
+		pageSize: Int = 20,
+	): SearchOutcome<SearchResultsPage> {
+		return repository.search(query, filters, pageNumber, pageSize)
 	}
 }

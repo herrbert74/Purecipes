@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class SearchRequest(
 	val query: String,
 	val filters: SearchFilters = SearchFilters(),
-	val limit: Int = 25,
+	val pageNumber: Int = 1,
+	val pageSize: Int = 20,
 )

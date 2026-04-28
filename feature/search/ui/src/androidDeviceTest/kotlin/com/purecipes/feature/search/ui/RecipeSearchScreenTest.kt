@@ -6,12 +6,16 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.github.michaelbull.result.Err
+import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
@@ -47,5 +51,63 @@ class RecipeSearchScreenTest {
 		onNodeWithText("Search recipes").assertIsDisplayed()
 		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).performTextInput("Pas")
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertStable()
+	}
+
+	@Test
+	fun searchScreenShowsTotalMatchesCount() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository(
+			result = com.github.michaelbull.result.Ok(
+				listOf(
+					RecipeSummary(
+						id = 1,
+						title = "Tomato Pasta",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 20,
+					),
+				),
+			),
+		)
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val settingsRepository = FakeMeasurementPreferencesRepository()
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+					searchRecipes = SearchRecipesUseCase(searchRepository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+				)
+			}
+		}
+
+		onNodeWithText("1 recipes found").assertIsDisplayed()
+	}
+
+	@Test
+	fun searchScreenShowsErrorFromSearchFailure() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository(
+			result = Err(Failure.ServerError("Search failed")),
+		)
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val settingsRepository = FakeMeasurementPreferencesRepository()
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+					searchRecipes = SearchRecipesUseCase(searchRepository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+				)
+			}
+		}
+
+		onNodeWithText("Search failed").assertIsDisplayed()
 	}
 }

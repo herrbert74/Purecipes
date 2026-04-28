@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,6 +47,8 @@ import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
 import com.purecipes.shared.ui.component.ErrorText
 import com.purecipes.shared.ui.component.TitleText
+import com.purecipes.shared.ui.component.paging.PaginatedLazyColumn
+import com.purecipes.shared.ui.component.paging.PaginationState
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"
@@ -149,6 +150,8 @@ fun RecipeSearchScreen(
 			SearchResultsContent(
 				isSearching = viewModel.isSearching,
 				errorMessage = viewModel.errorMessage,
+				totalMatches = viewModel.totalMatches,
+				paginationState = viewModel.paginationState,
 				recipes = viewModel.recipes,
 				onRecipeSelect = onRecipeSelect,
 			)
@@ -158,6 +161,8 @@ fun RecipeSearchScreen(
 			SearchResultsContent(
 				isSearching = viewModel.isSearching,
 				errorMessage = viewModel.errorMessage,
+				totalMatches = viewModel.totalMatches,
+				paginationState = viewModel.paginationState,
 				recipes = viewModel.recipes,
 				onRecipeSelect = onRecipeSelect,
 				modifier = Modifier.weight(1f),
@@ -170,6 +175,8 @@ fun RecipeSearchScreen(
 private fun SearchResultsContent(
 	isSearching: Boolean,
 	errorMessage: String?,
+	totalMatches: Int,
+	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
 	onRecipeSelect: (Int) -> Unit,
 	modifier: Modifier = Modifier,
@@ -183,14 +190,15 @@ private fun SearchResultsContent(
 			ErrorText(text = errorMessage)
 		}
 
-		else -> LazyColumn(
+		else -> PaginatedLazyColumn(
+			paginationState = paginationState,
 			modifier = modifier.fillMaxWidth(),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
 		) {
 			item {
 				Text(
-					text = "${recipes.size} recipes found",
+					text = "$totalMatches recipes found",
 					style = PurecipesTheme.typography.labelMedium,
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
