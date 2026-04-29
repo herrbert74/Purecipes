@@ -70,6 +70,8 @@ class MainActivity : ComponentActivity() {
 				trackEvent = graph.trackEventUseCase,
 				getSearchFilters = graph.getSearchFiltersUseCase,
 				saveSearchFilters = graph.saveSearchFiltersUseCase,
+				getUserPantry = graph.getUserPantryUseCase,
+				updateUserPantry = graph.updateUserPantryUseCase,
 				onExitRequest = ::finish,
 			)
 		}

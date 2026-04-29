@@ -73,7 +73,12 @@ fun Route.recipeRoutes(
 		post("/search") {
 			val searchRequest = call.receiveSearchRequestOrRespond() ?: return@post
 			val repo = RecipeRepository(dbProvider().dataSource)
-			call.respond(repo.searchWithFiltersPaginated(searchRequest))
+			call.respond(
+				repo.searchWithFilters(
+					request = searchRequest,
+					userId = call.optionalAuthenticatedUserId(sessionService),
+				),
+			)
 		}
 
 		get("/{id}") {

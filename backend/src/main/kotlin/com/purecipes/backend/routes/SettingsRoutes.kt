@@ -5,6 +5,7 @@ import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.repository.SettingsRepository
 import com.purecipes.shared.domain.model.MeasurementPreferences
+import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.SearchFilters
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.ContentConvertException
@@ -13,6 +14,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 
@@ -58,6 +60,19 @@ fun Route.settingsRoutes(
 			val repo = SettingsRepository(dbProvider().dataSource)
 			call.respond(repo.saveSearchFilters(userId, filters))
 		}
+
+		get("/pantry") {
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@get
+			val repo = SettingsRepository(dbProvider().dataSource)
+			call.respond(repo.getPantry(userId))
+		}
+
+		patch("/pantry") {
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@patch
+			val delta = call.receivePantryDeltaOrRespond() ?: return@patch
+			val repo = SettingsRepository(dbProvider().dataSource)
+			call.respond(repo.updatePantry(userId, delta))
+		}
 	}
 }
 
@@ -85,6 +100,21 @@ private suspend fun ApplicationCall.receiveSearchFiltersOrRespond(): SearchFilte
 			ErrorResponse(
 				message = "Invalid request",
 				detail = "Request body must contain search filters",
+			),
+		)
+		null
+	}
+}
+
+private suspend fun ApplicationCall.receivePantryDeltaOrRespond(): PantryDelta? {
+	return try {
+		receive<PantryDelta>()
+	} catch (_: ContentConvertException) {
+		respond(
+			HttpStatusCode.BadRequest,
+			ErrorResponse(
+				message = "Invalid request",
+				detail = "Request body must contain a pantry delta",
 			),
 		)
 		null

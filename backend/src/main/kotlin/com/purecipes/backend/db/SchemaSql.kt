@@ -202,3 +202,11 @@ internal const val SEARCH_FILTERS_TABLE_SQL = """
 		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)
 """
+
+internal const val USER_PANTRY_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS user_pantry (
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		ingredient TEXT NOT NULL,
+		PRIMARY KEY (user_id, ingredient)
+	)
+"""

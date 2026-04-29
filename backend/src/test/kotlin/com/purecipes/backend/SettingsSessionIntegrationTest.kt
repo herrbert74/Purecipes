@@ -5,6 +5,7 @@ import com.purecipes.backend.fake.FakeSessionService
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -124,6 +125,98 @@ class SettingsSessionIntegrationTest {
 					"notificationSeenRecipeIds":[2]
 				}
 				""".trimIndent(),
+		)
+	}
+
+	@Test
+	fun `pantry settings are isolated by authenticated session`() = testApplication {
+		val dbName = "pantry_settings_isolation_${System.nanoTime()}"
+		val dataSource = JdbcDataSource().apply {
+			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+			user = "sa"
+			password = ""
+		}
+		seedRecipeTables(dataSource)
+		val db = Db.fromDataSource(dataSource)
+		seedAppUsers(db)
+		val firstSession = FakeSessionService.createSession(accessToken = "session-token-1")
+		val secondSession = FakeSessionService.createSession(
+			accessToken = "session-token-2",
+			id = "2",
+			email = "user-two@example.com",
+			displayName = "User Two",
+			familyName = "Two",
+		)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(firstSession, secondSession),
+			createMode = FakeSessionService.CreateMode.GENERATE_AND_STORE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		val initialFirstPantry = client.get("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+		}
+		initialFirstPantry.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(initialFirstPantry.bodyAsText()) shouldBe Json.parseToJsonElement("[]")
+
+		val saveFirstPantry = client.patch("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["Chicken", "Tomato"],
+						"remove": []
+					}
+				""".trimIndent(),
+			)
+		}
+		saveFirstPantry.status shouldBe HttpStatusCode.OK
+
+		val firstPantryResponse = client.get("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+		}
+		firstPantryResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(firstPantryResponse.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
+				["Chicken","Tomato"]
+			""".trimIndent(),
+		)
+
+		val secondPantryResponse = client.get("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
+		}
+		secondPantryResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(secondPantryResponse.bodyAsText()) shouldBe Json.parseToJsonElement("[]")
+
+		val updateFirstPantry = client.patch("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["Rice"],
+						"remove": ["Chicken"]
+					}
+				""".trimIndent(),
+			)
+		}
+		updateFirstPantry.status shouldBe HttpStatusCode.OK
+
+		val updatedFirstPantryResponse = client.get("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+		}
+		updatedFirstPantryResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(updatedFirstPantryResponse.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
+				["Rice","Tomato"]
+			""".trimIndent(),
 		)
 	}
 

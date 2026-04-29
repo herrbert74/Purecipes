@@ -68,6 +68,7 @@ class Db private constructor(
 					statement.execute(FAVORITES_USER_CREATED_AT_INDEX_SQL)
 					statement.execute(NUTRITION_TABLE_SQL)
 					statement.execute(SEARCH_FILTERS_TABLE_SQL)
+					statement.execute(USER_PANTRY_TABLE_SQL)
 				}
 			}
 		}

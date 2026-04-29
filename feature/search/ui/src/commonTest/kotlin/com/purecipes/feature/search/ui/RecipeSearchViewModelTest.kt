@@ -9,8 +9,10 @@ import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import com.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import com.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchFilters
@@ -18,6 +20,7 @@ import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import com.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -205,6 +208,26 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `onFilterSheetDismiss updates pantry and triggers search when pantry changed`() = runTest {
+		val pantryRepository = FakeUserPantryRepository(setOf("Chicken"))
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			pantryRepository = pantryRepository,
+			coroutineScope = this,
+		)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+
+		viewModel.onPantryIngredientsChange(setOf("Chicken", "Tomato"))
+		viewModel.onFilterSheetDismiss()
+		advanceUntilIdle()
+
+		pantryRepository.getPantry() shouldBe setOf("Chicken", "Tomato")
+		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+	}
+
+	@Test
 	fun `onFilterSheetDismiss does not save or search when filters are unchanged`() = runTest {
 		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
@@ -229,6 +252,7 @@ class RecipeSearchViewModelTest {
 	private fun makeViewModel(
 		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
 		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
+		pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
 		coroutineScope: CoroutineScope? = null,
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
@@ -237,6 +261,8 @@ class RecipeSearchViewModelTest {
 		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+		getUserPantry = GetUserPantryUseCase(pantryRepository),
+		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 		coroutineScope = coroutineScope,
 	)
 }

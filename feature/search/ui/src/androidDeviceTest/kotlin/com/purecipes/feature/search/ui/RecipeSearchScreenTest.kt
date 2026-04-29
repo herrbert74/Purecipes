@@ -12,14 +12,17 @@ import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import com.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import com.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
@@ -35,6 +38,7 @@ class RecipeSearchScreenTest {
 	fun searchScreenTypingDoesNotRecomposeResults() = runRecompositionTrackingUiTest {
 		val searchRepository = FakeRecipeSearchRepository()
 		val filterRepository = FakeRecipeSearchFilterRepository()
+		val pantryRepository = FakeUserPantryRepository()
 		val settingsRepository = FakeMeasurementPreferencesRepository()
 		setTrackedContent {
 			PurecipesTheme {
@@ -45,6 +49,8 @@ class RecipeSearchScreenTest {
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+					getUserPantry = GetUserPantryUseCase(pantryRepository),
+					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 				)
 			}
 		}
@@ -69,6 +75,7 @@ class RecipeSearchScreenTest {
 			),
 		)
 		val filterRepository = FakeRecipeSearchFilterRepository()
+		val pantryRepository = FakeUserPantryRepository()
 		val settingsRepository = FakeMeasurementPreferencesRepository()
 
 		setTrackedContent {
@@ -80,6 +87,8 @@ class RecipeSearchScreenTest {
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+					getUserPantry = GetUserPantryUseCase(pantryRepository),
+					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 				)
 			}
 		}
@@ -93,6 +102,7 @@ class RecipeSearchScreenTest {
 			result = Err(Failure.ServerError("Search failed")),
 		)
 		val filterRepository = FakeRecipeSearchFilterRepository()
+		val pantryRepository = FakeUserPantryRepository()
 		val settingsRepository = FakeMeasurementPreferencesRepository()
 
 		setTrackedContent {
@@ -104,6 +114,8 @@ class RecipeSearchScreenTest {
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+					getUserPantry = GetUserPantryUseCase(pantryRepository),
+					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 				)
 			}
 		}

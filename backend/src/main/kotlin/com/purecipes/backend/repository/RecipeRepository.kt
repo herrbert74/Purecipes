@@ -42,10 +42,6 @@ class RecipeRepository(
 		return searchRecipes(sql, like, normalizedPageSize, offset)
 	}
 
-	fun searchWithFilters(request: SearchRequest): List<RecipeSummary> {
-		return searchWithFiltersPaginated(request).items
-	}
-
 	fun searchByKeywordPaginated(keyword: String, pageNumber: Int = 1, pageSize: Int = 20): SearchResultsPage {
 		val trimmed = keyword.trim()
 		if (trimmed.isEmpty()) {
@@ -71,15 +67,11 @@ class RecipeRepository(
 		)
 	}
 
-	fun searchWithFiltersPaginated(request: SearchRequest): SearchResultsPage {
+	fun searchWithFilters(request: SearchRequest, userId: Long? = null): SearchResultsPage {
 		val normalizedPageNumber = request.pageNumber.coerceAtLeast(1)
 		val normalizedPageSize = request.pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
 		val offset = (normalizedPageNumber - 1) * normalizedPageSize
 		val filters = request.filters
-		val availableIngredients = filters.availableIngredients
-			.map(String::trim)
-			.filter(String::isNotEmpty)
-			.distinct()
 		val conditions = mutableListOf<String>()
 		val params = mutableListOf<Any>()
 
@@ -112,6 +104,11 @@ class RecipeRepository(
 		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
 
 		val (items, totalMatches) = dataSource.connection.use { conn ->
+			val availableIngredients = if (userId != null) {
+				loadAvailableIngredientsForUser(conn, userId)
+			} else {
+				emptyList()
+			}
 			if (availableIngredients.isEmpty()) {
 				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
 				val page = querySearchWithFiltersRecipes(
@@ -146,6 +143,22 @@ class RecipeRepository(
 			pageSize = normalizedPageSize,
 			totalMatches = totalMatches,
 		)
+	}
+
+	private fun loadAvailableIngredientsForUser(conn: java.sql.Connection, userId: Long): List<String> {
+		return conn.prepareStatement(GET_USER_PANTRY_SQL).use { ps ->
+			ps.setLong(FIRST_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs ->
+				buildList {
+					while (rs.next()) {
+						val ingredient = rs.getString("ingredient")?.trim().orEmpty()
+						if (ingredient.isNotEmpty()) {
+							add(ingredient)
+						}
+					}
+				}.distinct()
+			}
+		}
 	}
 
 	fun getRecipeDetails(recipeId: Int, userId: Long? = null): RecipeDetails? = dataSource.connection.use { conn ->
@@ -826,6 +839,13 @@ class RecipeRepository(
 		const val CREATE_INSTRUCTION_STEP_SQL = """
 			INSERT INTO instruction_steps (recipe_id, step, order_index)
 			VALUES (?, ?, ?)
+		"""
+
+		const val GET_USER_PANTRY_SQL = """
+			SELECT ingredient
+			FROM user_pantry
+			WHERE user_id = ?
+			ORDER BY ingredient
 		"""
 
 		val IMPERIAL_UNIT_REGEX = Regex(
