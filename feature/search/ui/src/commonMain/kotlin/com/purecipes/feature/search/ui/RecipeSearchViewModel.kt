@@ -68,6 +68,8 @@ internal class RecipeSearchViewModel(
 	var activeFilters by mutableStateOf(SearchFilters())
 		private set
 
+	private var lastSearchedFilters: SearchFilters = SearchFilters()
+
 	var totalMatches by mutableIntStateOf(0)
 		private set
 
@@ -86,6 +88,7 @@ internal class RecipeSearchViewModel(
 		scope.launch {
 			val saved = getSearchFilters()
 			activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
+			lastSearchedFilters = activeFilters
 			doSearch()
 		}
 	}
@@ -104,14 +107,17 @@ internal class RecipeSearchViewModel(
 
 	fun onFilterSheetDismiss() {
 		isFilterSheetVisible = false
+		if (activeFilters != lastSearchedFilters) {
+			lastSearchedFilters = activeFilters
+			scope.launch {
+				saveSearchFilters(activeFilters)
+				doSearch()
+			}
+		}
 	}
 
 	fun onFiltersChange(filters: SearchFilters) {
 		activeFilters = filters
-		scope.launch {
-			saveSearchFilters(filters)
-			doSearch()
-		}
 	}
 
 	fun searchNow() {
