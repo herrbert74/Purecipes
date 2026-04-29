@@ -130,21 +130,22 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFiltersChange updates active filters and saves them`() = runTest {
+	fun `onFiltersChange updates active filters without saving`() = runTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
 		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
 		advanceUntilIdle()
+		val savedAfterInit = filterRepository.savedFilters
 
 		val newFilters = SearchFilters(cuisines = setOf(Cuisine.CHINESE))
 		viewModel.onFiltersChange(newFilters)
 		advanceUntilIdle()
 
 		viewModel.activeFilters shouldBe newFilters
-		filterRepository.savedFilters shouldBe newFilters
+		filterRepository.savedFilters shouldBe savedAfterInit
 	}
 
 	@Test
-	fun `onFiltersChange triggers a new search`() = runTest {
+	fun `onFiltersChange does not trigger a new search`() = runTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val viewModel = makeViewModel(searchRepository = searchRepository, coroutineScope = this)
 		advanceUntilIdle()
@@ -153,7 +154,7 @@ class RecipeSearchViewModelTest {
 		viewModel.onFiltersChange(SearchFilters(cuisines = setOf(Cuisine.FRENCH)))
 		advanceUntilIdle()
 
-		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+		searchRepository.queries.size shouldBe searchCountAfterInit
 	}
 
 	@Test
@@ -180,6 +181,49 @@ class RecipeSearchViewModelTest {
 		viewModel.onFilterSheetDismiss()
 
 		viewModel.isFilterSheetVisible shouldBe false
+	}
+
+	@Test
+	fun `onFilterSheetDismiss saves filters and triggers search when filters changed`() = runTest {
+		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			filterRepository = filterRepository,
+			coroutineScope = this,
+		)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+
+		val newFilters = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+		viewModel.onFiltersChange(newFilters)
+		viewModel.onFilterSheetDismiss()
+		advanceUntilIdle()
+
+		filterRepository.savedFilters shouldBe newFilters
+		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+	}
+
+	@Test
+	fun `onFilterSheetDismiss does not save or search when filters are unchanged`() = runTest {
+		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			filterRepository = filterRepository,
+			coroutineScope = this,
+		)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+		val savedAfterInit = filterRepository.savedFilters
+
+		viewModel.onFilterButtonClick()
+		viewModel.onFilterSheetDismiss()
+		advanceUntilIdle()
+
+		filterRepository.savedFilters shouldBe savedAfterInit
+		searchRepository.queries.size shouldBe searchCountAfterInit
 	}
 
 	private fun makeViewModel(
