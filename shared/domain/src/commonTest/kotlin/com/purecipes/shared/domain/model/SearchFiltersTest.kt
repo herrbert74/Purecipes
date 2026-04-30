@@ -11,11 +11,6 @@ class SearchFiltersTest {
 	}
 
 	@Test
-	fun `filters with available ingredients have isEmpty false`() {
-		SearchFilters(availableIngredients = setOf("Chicken")).isEmpty shouldBe false
-	}
-
-	@Test
 	fun `filters with cuisines have isEmpty false`() {
 		SearchFilters(cuisines = setOf(Cuisine.ITALIAN)).isEmpty shouldBe false
 	}
@@ -23,11 +18,6 @@ class SearchFiltersTest {
 	@Test
 	fun `default filters are not empty`() {
 		SearchFilters.default().isEmpty shouldBe false
-	}
-
-	@Test
-	fun `default filters include common ingredients`() {
-		SearchFilters.default().availableIngredients.isNotEmpty() shouldBe true
 	}
 
 	@Test

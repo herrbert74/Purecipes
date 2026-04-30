@@ -2,11 +2,13 @@ package com.purecipes.backend.repository
 
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
+import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.RecipeFormatHandling
 import com.purecipes.shared.domain.model.SearchFilters
 import kotlinx.serialization.json.Json
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.SQLException
 import javax.sql.DataSource
 
 class SettingsRepository(
@@ -64,6 +66,34 @@ class SettingsRepository(
 		return filters
 	}
 
+	fun getPantry(userId: Long): Set<String> {
+		return dataSource.connection.use { conn ->
+			loadPantry(conn, userId)
+		}
+	}
+
+	fun updatePantry(userId: Long, delta: PantryDelta): Set<String> {
+		val normalizedAdd = normalizeIngredients(delta.add)
+		val normalizedRemove = normalizeIngredients(delta.remove)
+		dataSource.connection.use { conn ->
+			val originalAutoCommit = conn.autoCommit
+			conn.autoCommit = false
+			var committed = false
+			try {
+				insertPantryIngredients(conn, userId, normalizedAdd)
+				deletePantryIngredients(conn, userId, normalizedRemove)
+				conn.commit()
+				committed = true
+			} finally {
+				if (!committed) {
+					conn.rollback()
+				}
+				conn.autoCommit = originalAutoCommit
+			}
+		}
+		return getPantry(userId)
+	}
+
 	private fun loadSearchFilters(conn: Connection, userId: Long): SearchFilters {
 		return conn.prepareStatement(GET_SEARCH_FILTERS_SQL).use { ps ->
 			ps.setLong(FIRST_PARAMETER_INDEX, userId)
@@ -74,6 +104,67 @@ class SettingsRepository(
 					SearchFilters()
 				}
 			}
+		}
+	}
+
+	private fun loadPantry(conn: Connection, userId: Long): Set<String> {
+		return conn.prepareStatement(GET_PANTRY_SQL).use { ps ->
+			ps.setLong(FIRST_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs ->
+				buildSet {
+					while (rs.next()) {
+						val ingredient = rs.getString("ingredient")?.trim().orEmpty()
+						if (ingredient.isNotEmpty()) {
+							add(ingredient)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private fun normalizeIngredients(ingredients: Set<String>): Set<String> {
+		return ingredients
+			.asSequence()
+			.map(String::trim)
+			.filter(String::isNotEmpty)
+			.toSet()
+	}
+
+	private fun isDuplicateKeyViolation(exception: SQLException): Boolean {
+		return exception.sqlState == DUPLICATE_KEY_SQL_STATE
+	}
+
+	private fun insertPantryIngredients(conn: Connection, userId: Long, ingredients: Set<String>) {
+		if (ingredients.isEmpty()) return
+		conn.prepareStatement(INSERT_PANTRY_INGREDIENT_SQL).use { ps ->
+			ingredients.forEach { ingredient ->
+				insertPantryIngredient(ps, userId, ingredient)
+			}
+		}
+	}
+
+	private fun insertPantryIngredient(ps: java.sql.PreparedStatement, userId: Long, ingredient: String) {
+		ps.setLong(FIRST_PARAMETER_INDEX, userId)
+		ps.setString(SECOND_PARAMETER_INDEX, ingredient)
+		try {
+			ps.executeUpdate()
+		} catch (exception: SQLException) {
+			if (!isDuplicateKeyViolation(exception)) {
+				throw exception
+			}
+		}
+	}
+
+	private fun deletePantryIngredients(conn: Connection, userId: Long, ingredients: Set<String>) {
+		if (ingredients.isEmpty()) return
+		conn.prepareStatement(DELETE_PANTRY_INGREDIENT_SQL).use { ps ->
+			ingredients.forEach { ingredient ->
+				ps.setLong(FIRST_PARAMETER_INDEX, userId)
+				ps.setString(SECOND_PARAMETER_INDEX, ingredient)
+				ps.addBatch()
+			}
+			ps.executeBatch()
 		}
 	}
 
@@ -155,6 +246,7 @@ class SettingsRepository(
 		const val SECOND_PARAMETER_INDEX = 2
 		const val THIRD_PARAMETER_INDEX = 3
 		const val FOURTH_PARAMETER_INDEX = 4
+		const val DUPLICATE_KEY_SQL_STATE = "23505"
 
 		const val GET_MEASUREMENT_PREFERENCES_SQL = """
 			SELECT preferred_system, format_handling, detected_country_code
@@ -215,6 +307,24 @@ class SettingsRepository(
 		const val INSERT_SEARCH_FILTERS_SQL = """
 			INSERT INTO search_filters (user_id, filters_json, updated_at)
 			VALUES (?, ?, CURRENT_TIMESTAMP)
+		"""
+
+		const val GET_PANTRY_SQL = """
+			SELECT ingredient
+			FROM user_pantry
+			WHERE user_id = ?
+			ORDER BY ingredient
+		"""
+
+		const val INSERT_PANTRY_INGREDIENT_SQL = """
+			INSERT INTO user_pantry (user_id, ingredient)
+			VALUES (?, ?)
+		"""
+
+		const val DELETE_PANTRY_INGREDIENT_SQL = """
+			DELETE FROM user_pantry
+			WHERE user_id = ?
+				AND ingredient = ?
 		"""
 	}
 }

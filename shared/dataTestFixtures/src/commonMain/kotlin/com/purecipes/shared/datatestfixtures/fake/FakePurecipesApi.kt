@@ -6,6 +6,7 @@ import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
+import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
@@ -41,6 +42,9 @@ class FakePurecipesApi(
 		private set
 
 	var searchFilters: SearchFilters = initialSearchFilters
+		private set
+
+	var userPantry: Set<String> = emptySet()
 		private set
 
 	override suspend fun searchWithFilters(request: SearchRequest): SearchResultsPage {
@@ -107,6 +111,13 @@ class FakePurecipesApi(
 		savedSearchFiltersList += filters
 		searchFilters = filters
 		return filters
+	}
+
+	override suspend fun getUserPantry(): Set<String> = userPantry
+
+	override suspend fun updateUserPantry(delta: PantryDelta): Set<String> {
+		userPantry = (userPantry + delta.add) - delta.remove
+		return userPantry
 	}
 
 	fun storeRecipe(recipe: RecipeDetails) {

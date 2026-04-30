@@ -17,10 +17,13 @@ import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
+import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.RecipeFormatHandling
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchFilters
@@ -41,6 +44,8 @@ internal class RecipeSearchViewModel(
 	private val trackEvent: TrackEventUseCase,
 	private val getSearchFilters: GetSearchFiltersUseCase,
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
+	private val getUserPantry: GetUserPantryUseCase,
+	private val updateUserPantry: UpdateUserPantryUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -68,7 +73,11 @@ internal class RecipeSearchViewModel(
 	var activeFilters by mutableStateOf(SearchFilters())
 		private set
 
+	var pantryIngredients by mutableStateOf(emptySet<String>())
+		private set
+
 	private var lastSearchedFilters: SearchFilters = SearchFilters()
+	private var lastSavedPantry: Set<String> = emptySet()
 
 	var totalMatches by mutableIntStateOf(0)
 		private set
@@ -88,7 +97,9 @@ internal class RecipeSearchViewModel(
 		scope.launch {
 			val saved = getSearchFilters()
 			activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
+			pantryIngredients = getUserPantry()
 			lastSearchedFilters = activeFilters
+			lastSavedPantry = pantryIngredients
 			doSearch()
 		}
 	}
@@ -107,17 +118,34 @@ internal class RecipeSearchViewModel(
 
 	fun onFilterSheetDismiss() {
 		isFilterSheetVisible = false
-		if (activeFilters != lastSearchedFilters) {
-			lastSearchedFilters = activeFilters
-			scope.launch {
+		val filtersChanged = activeFilters != lastSearchedFilters
+		val pantryChanged = pantryIngredients != lastSavedPantry
+		if (!filtersChanged && !pantryChanged) return
+		scope.launch {
+			if (filtersChanged) {
 				saveSearchFilters(activeFilters)
-				doSearch()
+				lastSearchedFilters = activeFilters
 			}
+			if (pantryChanged) {
+				val updatedPantry = updateUserPantry(
+					PantryDelta(
+						add = pantryIngredients - lastSavedPantry,
+						remove = lastSavedPantry - pantryIngredients,
+					),
+				)
+				pantryIngredients = updatedPantry
+				lastSavedPantry = updatedPantry
+			}
+			doSearch()
 		}
 	}
 
 	fun onFiltersChange(filters: SearchFilters) {
 		activeFilters = filters
+	}
+
+	fun onPantryIngredientsChange(ingredients: Set<String>) {
+		pantryIngredients = ingredients
 	}
 
 	fun searchNow() {
@@ -201,6 +229,8 @@ internal fun recipeSearchViewModel(
 	trackEvent: TrackEventUseCase,
 	getSearchFilters: GetSearchFiltersUseCase,
 	saveSearchFilters: SaveSearchFiltersUseCase,
+	getUserPantry: GetUserPantryUseCase,
+	updateUserPantry: UpdateUserPantryUseCase,
 ): RecipeSearchViewModel {
 	val viewModelKey = buildString {
 		append("RecipeSearchViewModel:")
@@ -213,6 +243,10 @@ internal fun recipeSearchViewModel(
 		append(getSearchFilters.hashCode())
 		append(':')
 		append(saveSearchFilters.hashCode())
+		append(':')
+		append(getUserPantry.hashCode())
+		append(':')
+		append(updateUserPantry.hashCode())
 	}
 	return viewModel(
 		key = viewModelKey,
@@ -225,6 +259,8 @@ internal fun recipeSearchViewModel(
 					trackEvent = trackEvent,
 					getSearchFilters = getSearchFilters,
 					saveSearchFilters = saveSearchFilters,
+					getUserPantry = getUserPantry,
+					updateUserPantry = updateUserPantry,
 				)
 			}
 		},

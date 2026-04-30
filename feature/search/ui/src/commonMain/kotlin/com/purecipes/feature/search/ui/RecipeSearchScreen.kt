@@ -40,8 +40,10 @@ import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.BodyText
@@ -50,6 +52,7 @@ import com.purecipes.shared.ui.component.TitleText
 import com.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import com.purecipes.shared.ui.component.paging.PaginationState
 import com.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.collections.immutable.toImmutableSet
 
 internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"
 internal const val RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG = "recipeSearchOpenFiltersButton"
@@ -62,6 +65,8 @@ fun RecipeSearchScreen(
 	trackEvent: TrackEventUseCase,
 	getSearchFilters: GetSearchFiltersUseCase,
 	saveSearchFilters: SaveSearchFiltersUseCase,
+	getUserPantry: GetUserPantryUseCase,
+	updateUserPantry: UpdateUserPantryUseCase,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
 	closeScreen: () -> Unit = {},
@@ -73,14 +78,18 @@ fun RecipeSearchScreen(
 		trackEvent = trackEvent,
 		getSearchFilters = getSearchFilters,
 		saveSearchFilters = saveSearchFilters,
+		getUserPantry = getUserPantry,
+		updateUserPantry = updateUserPantry,
 	)
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
 	if (viewModel.isFilterSheetVisible) {
 		FilterBottomSheet(
 			filters = viewModel.activeFilters,
+			pantryIngredients = viewModel.pantryIngredients.toImmutableSet(),
 			sheetState = sheetState,
 			onFiltersChange = viewModel::onFiltersChange,
+			onPantryIngredientsChange = viewModel::onPantryIngredientsChange,
 			onDismiss = viewModel::onFilterSheetDismiss,
 		)
 	}

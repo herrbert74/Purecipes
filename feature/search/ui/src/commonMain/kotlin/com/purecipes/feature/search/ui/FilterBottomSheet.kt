@@ -36,6 +36,8 @@ import com.purecipes.shared.domain.model.MealType
 import com.purecipes.shared.domain.model.NutritionFilter
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 
@@ -44,8 +46,10 @@ private const val SCROLLBAR_MIN_THUMB_FRACTION = 0.1f
 @Composable
 internal fun FilterBottomSheet(
 	filters: SearchFilters,
+	pantryIngredients: ImmutableSet<String>,
 	sheetState: SheetState,
 	onFiltersChange: (SearchFilters) -> Unit,
+	onPantryIngredientsChange: (Set<String>) -> Unit,
 	onDismiss: () -> Unit,
 ) {
 	ModalBottomSheet(
@@ -54,7 +58,9 @@ internal fun FilterBottomSheet(
 	) {
 		FilterBottomSheetContent(
 			filters = filters,
+			pantryIngredients = pantryIngredients,
 			onFiltersChange = onFiltersChange,
+			onPantryIngredientsChange = onPantryIngredientsChange,
 		)
 	}
 }
@@ -62,7 +68,9 @@ internal fun FilterBottomSheet(
 @Composable
 private fun FilterBottomSheetContent(
 	filters: SearchFilters,
+	pantryIngredients: ImmutableSet<String>,
 	onFiltersChange: (SearchFilters) -> Unit,
+	onPantryIngredientsChange: (Set<String>) -> Unit,
 ) {
 	val scrollState = rememberLazyListState()
 	Box(modifier = Modifier.fillMaxWidth()) {
@@ -72,12 +80,8 @@ private fun FilterBottomSheetContent(
 		) {
 			item {
 				IngredientFilterSection(
-					availableIngredients = filters.availableIngredients.toImmutableSet(),
-					onSelectionChange = { available ->
-						onFiltersChange(
-							filters.copy(availableIngredients = available),
-						)
-					},
+					availableIngredients = pantryIngredients,
+					onSelectionChange = onPantryIngredientsChange,
 				)
 			}
 			item {
@@ -267,7 +271,9 @@ private fun FilterBottomSheetPreviewContent(darkTheme: Boolean) {
 		) {
 			FilterBottomSheetContent(
 				filters = SearchFilters.default(),
+				pantryIngredients = persistentSetOf(),
 				onFiltersChange = {},
+				onPantryIngredientsChange = {},
 			)
 		}
 	}

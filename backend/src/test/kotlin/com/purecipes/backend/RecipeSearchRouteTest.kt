@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -82,7 +83,7 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
-	fun `search with available ingredients requires recipes to be fully covered by available list`() = testApplication {
+	fun `authenticated search uses persisted pantry filters`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -100,21 +101,62 @@ class RecipeSearchRouteTest {
 		}
 
 		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Chicken", "Tomato", "Salt"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
 				{
 					"query": "",
-					"filters": {
-						"availableIngredients": ["Chicken", "Tomato", "Salt"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Chicken Tomato Stew") shouldBe true
 		responseBody.contains("Chicken Rice Bowl") shouldBe false
 		responseBody.contains("Tomato Basil Soup") shouldBe false
+	}
+
+	@Test
+	fun `unauthenticated search ignores persisted pantry filtering`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Chicken", "Tomato", "Salt"),
+		)
+
+		val responseBody = searchWithFilters(
+			"""
+				{
+					"query": "",
+					"filters": {}
+				}
+			""".trimIndent(),
+		)
+
+		responseBody.contains("Chicken Tomato Stew") shouldBe true
+		responseBody.contains("Chicken Rice Bowl") shouldBe true
+		responseBody.contains("Tomato Basil Soup") shouldBe true
 	}
 
 	@Test
@@ -153,7 +195,7 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
-	fun `search with available ingredients supports case insensitive partial matching`() = testApplication {
+	fun `persisted pantry supports case insensitive partial matching`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -171,16 +213,19 @@ class RecipeSearchRouteTest {
 		}
 
 		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("chIck", "ToMa", "saL"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
 				{
 					"query": "",
-					"filters": {
-						"availableIngredients": ["chIck", "ToMa", "saL"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Chicken Tomato Stew") shouldBe true
@@ -188,7 +233,7 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
-	fun `search with available ingredients ignores blank values while preserving pantry semantics`() = testApplication {
+	fun `persisted pantry ignores blank values while preserving pantry semantics`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -206,16 +251,19 @@ class RecipeSearchRouteTest {
 		}
 
 		seedRecipeCatalog(accessToken = sessionService.session.accessToken)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("  ", "Chicken", "Tomato", "Salt"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
 				{
 					"query": "",
-					"filters": {
-						"availableIngredients": ["  ", "Chicken", "Tomato", "Salt"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Chicken Tomato Stew") shouldBe true
@@ -224,7 +272,7 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
-	fun `search with available ingredients ignores default pantry ingredients`() = testApplication {
+	fun `persisted pantry ignores default pantry ingredients`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -246,23 +294,26 @@ class RecipeSearchRouteTest {
 			title = "Chicken Tomato Broth",
 			ingredients = listOf("Chicken breast", "Tomato", "Salt", "Water", "Vegetable Oil"),
 		)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Chicken", "Tomato"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
 				{
 					"query": "",
-					"filters": {
-						"availableIngredients": ["Chicken", "Tomato"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Chicken Tomato Broth") shouldBe true
 	}
 
 	@Test
-	fun `search with available ingredients matches alternative ingredient names`() = testApplication {
+	fun `persisted pantry matches alternative ingredient names`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -284,23 +335,26 @@ class RecipeSearchRouteTest {
 			title = "Cilantro Rice",
 			ingredients = listOf("Rice", "Cilantro"),
 		)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Rice", "Coriander"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
 				{
 					"query": "",
-					"filters": {
-						"availableIngredients": ["Rice", "Coriander"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Cilantro Rice") shouldBe true
 	}
 
 	@Test
-	fun `search with available ingredients matches singular and plural forms`() = testApplication {
+	fun `persisted pantry matches singular and plural forms`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -322,23 +376,26 @@ class RecipeSearchRouteTest {
 			title = "Egg Fried Rice",
 			ingredients = listOf("Egg", "Pea", "Rice"),
 		)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Eggs", "Peas", "Rice"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
 				{
 					"query": "",
-					"filters": {
-						"availableIngredients": ["Eggs", "Peas", "Rice"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Egg Fried Rice") shouldBe true
 	}
 
 	@Test
-	fun `search accepts legacy include ingredients payload name`() = testApplication {
+	fun `search ignores request available ingredients and uses persisted pantry only`() = testApplication {
 		val db = createDb()
 		seedAppUsers(db)
 		val sessionService = FakeSessionService(
@@ -360,15 +417,20 @@ class RecipeSearchRouteTest {
 			title = "Tomato Soup",
 			ingredients = listOf("Tomato", "Basil"),
 		)
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Tomato", "Basil"),
+		)
 
 		val response = client.post("/recipes/search") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
 			contentType(ContentType.Application.Json)
 			setBody(
 				"""
 					{
 						"query": "",
 						"filters": {
-							"includeIngredients": ["Tomato", "Basil"]
+							"availableIngredients": ["Rice"]
 						}
 					}
 				""".trimIndent(),
@@ -380,7 +442,7 @@ class RecipeSearchRouteTest {
 	}
 
 	@Test
-	fun `search with available ingredients applies filtering before paging and returns total matches`() =
+	fun `persisted pantry filtering applies before paging and returns total matches`() =
 		testApplication {
 		val db = createDb()
 		seedAppUsers(db)
@@ -413,6 +475,10 @@ class RecipeSearchRouteTest {
 				ingredients = listOf("Chicken breast", "Tomato", "Salt"),
 			)
 		}
+		updatePantry(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Chicken", "Tomato", "Salt"),
+		)
 
 		val responseBody = searchWithFilters(
 			"""
@@ -420,11 +486,10 @@ class RecipeSearchRouteTest {
 					"query": "",
 					"pageNumber": 1,
 					"pageSize": 20,
-					"filters": {
-						"availableIngredients": ["Chicken", "Tomato", "Salt"]
-					}
+					"filters": {}
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("\"totalMatches\":4") shouldBe true
@@ -489,13 +554,37 @@ class RecipeSearchRouteTest {
 
 	private suspend fun ApplicationTestBuilder.searchWithFilters(
 		requestBody: String,
+		accessToken: String? = null,
 	): String {
 		val response = client.post("/recipes/search") {
+			if (accessToken != null) {
+				header(HttpHeaders.Authorization, "Bearer $accessToken")
+			}
 			contentType(ContentType.Application.Json)
 			setBody(requestBody)
 		}
 		response.status shouldBe HttpStatusCode.OK
 		return response.bodyAsText()
+	}
+
+	private suspend fun ApplicationTestBuilder.updatePantry(
+		accessToken: String,
+		add: List<String>,
+	) {
+		val addJson = add.joinToString(separator = ",") { "\"$it\"" }
+		val response = client.patch("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer $accessToken")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": [$addJson],
+						"remove": []
+					}
+				""".trimIndent(),
+			)
+		}
+		response.status shouldBe HttpStatusCode.OK
 	}
 
 	private fun createDb(): Db {

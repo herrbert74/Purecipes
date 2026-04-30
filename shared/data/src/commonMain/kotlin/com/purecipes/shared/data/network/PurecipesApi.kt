@@ -3,6 +3,7 @@ package com.purecipes.shared.data.network
 import com.purecipes.shared.domain.model.AuthenticatedSession
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.MeasurementPreferences
+import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
@@ -13,6 +14,7 @@ import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Headers
+import de.jensklingenberg.ktorfit.http.PATCH
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
@@ -69,4 +71,11 @@ interface PurecipesApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@PUT("settings/search-filters")
 	suspend fun saveSearchFilters(@Body filters: SearchFilters): SearchFilters
+
+	@GET("settings/pantry")
+	suspend fun getUserPantry(): Set<String>
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@PATCH("settings/pantry")
+	suspend fun updateUserPantry(@Body delta: PantryDelta): Set<String>
 }

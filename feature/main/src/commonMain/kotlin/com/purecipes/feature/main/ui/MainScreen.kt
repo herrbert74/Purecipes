@@ -57,8 +57,10 @@ import com.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import com.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import com.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import com.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import com.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import com.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import com.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import com.purecipes.feature.search.ui.RecipeSearchScreen
 import com.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import com.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
@@ -93,6 +95,8 @@ fun MainScreen(
 	searchRecipes: SearchRecipesUseCase,
 	getSearchFilters: GetSearchFiltersUseCase,
 	saveSearchFilters: SaveSearchFiltersUseCase,
+	getUserPantry: GetUserPantryUseCase,
+	updateUserPantry: UpdateUserPantryUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
 	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
@@ -164,6 +168,8 @@ fun MainScreen(
 							trackEvent = trackEvent,
 							getSearchFilters = getSearchFilters,
 							saveSearchFilters = saveSearchFilters,
+							getUserPantry = getUserPantry,
+							updateUserPantry = updateUserPantry,
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}
