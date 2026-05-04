@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.auth.JdbcSessionService
 import com.purecipes.backend.db.Db
+import com.purecipes.shared.domain.model.SearchResultsPage
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.matchers.shouldBe
@@ -15,7 +16,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assume.assumeTrue
@@ -132,25 +132,23 @@ class FavoritesPostgresIntegrationTest {
 				}
 				addFavoriteResponse.status shouldBe HttpStatusCode.NoContent
 
-				val firstFavorites = parseJsonArray(
-					client.get("/favorites") {
-						header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
-					}.also {
-						it.status shouldBe HttpStatusCode.OK
-					}.bodyAsText(),
-				)
-				firstFavorites.size shouldBe 1
-				firstFavorites[0].jsonObject.getValue("id").jsonPrimitive.content.toInt() shouldBe 1
-				firstFavorites[0].jsonObject.getValue("isFavorite").jsonPrimitive.booleanOrNull shouldBe true
+				val firstFavoritesBody = client.get("/favorites") {
+					header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+				}.also {
+					it.status shouldBe HttpStatusCode.OK
+				}.bodyAsText()
+				val firstFavorites = Json.decodeFromString<SearchResultsPage>(firstFavoritesBody)
+				firstFavorites.items.size shouldBe 1
+				firstFavorites.items[0].id shouldBe 1
+				firstFavorites.items[0].isFavorite shouldBe true
 
-				val secondFavorites = parseJsonArray(
-					client.get("/favorites") {
-						header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
-					}.also {
-						it.status shouldBe HttpStatusCode.OK
-					}.bodyAsText(),
-				)
-				secondFavorites.isEmpty() shouldBe true
+				val secondFavoritesBody = client.get("/favorites") {
+					header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
+				}.also {
+					it.status shouldBe HttpStatusCode.OK
+				}.bodyAsText()
+				val secondFavorites = Json.decodeFromString<SearchResultsPage>(secondFavoritesBody)
+				secondFavorites.items.isEmpty() shouldBe true
 
 				val firstDetails = parseJsonObject(
 					client.get("/recipes/1") {
@@ -182,14 +180,13 @@ class FavoritesPostgresIntegrationTest {
 				}
 				removeFavoriteResponse.status shouldBe HttpStatusCode.NoContent
 
-				val firstFavoritesAfterDelete = parseJsonArray(
-					client.get("/favorites") {
-						header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
-					}.also {
-						it.status shouldBe HttpStatusCode.OK
-					}.bodyAsText(),
-				)
-				firstFavoritesAfterDelete.isEmpty() shouldBe true
+				val firstFavoritesAfterDeleteBody = client.get("/favorites") {
+					header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+				}.also {
+					it.status shouldBe HttpStatusCode.OK
+				}.bodyAsText()
+				val firstFavoritesAfterDelete = Json.decodeFromString<SearchResultsPage>(firstFavoritesAfterDeleteBody)
+				firstFavoritesAfterDelete.items.isEmpty() shouldBe true
 			}
 		} finally {
 			dataSource.close()
@@ -289,8 +286,6 @@ class FavoritesPostgresIntegrationTest {
 			DockerClientFactory.instance().isDockerAvailable
 		}.getOrDefault(false)
 	}
-
-	private fun parseJsonArray(body: String) = Json.parseToJsonElement(body).jsonArray
 
 	private fun parseJsonObject(body: String) = Json.parseToJsonElement(body).jsonObject
 }

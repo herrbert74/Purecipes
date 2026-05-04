@@ -2,6 +2,7 @@ package com.purecipes.backend
 
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.fake.FakeSessionService
+import com.purecipes.shared.domain.model.SearchResultsPage
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -10,6 +11,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import org.h2.jdbcx.JdbcDataSource
 import javax.sql.DataSource
 import kotlin.test.Test
@@ -52,19 +54,21 @@ class FavoritesSessionIntegrationTest {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
 		firstFavoritesResponse.status shouldBe HttpStatusCode.OK
-		val expectedFavoritesResponse =
-			listOf(
-				"""[{"id":1,"title":"Tomato Pasta","cuisine":"Italian",""",
-				""""imageUrl":"https://example.com/pasta.jpg",""",
-				""""totalTime":25,"isFavorite":true}]""",
-			).joinToString(separator = "")
-		firstFavoritesResponse.bodyAsText() shouldBe expectedFavoritesResponse
+		val firstPage = Json.decodeFromString<SearchResultsPage>(firstFavoritesResponse.bodyAsText())
+		firstPage.items.size shouldBe 1
+		firstPage.items[0].id shouldBe 1
+		firstPage.items[0].isFavorite shouldBe true
+		firstPage.totalMatches shouldBe 1
+		firstPage.pageNumber shouldBe 1
+		firstPage.pageSize shouldBe 20
 
 		val secondFavoritesResponse = client.get("/favorites") {
 			header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
 		}
 		secondFavoritesResponse.status shouldBe HttpStatusCode.OK
-		secondFavoritesResponse.bodyAsText() shouldBe "[]"
+		val secondPage = Json.decodeFromString<SearchResultsPage>(secondFavoritesResponse.bodyAsText())
+		secondPage.items.isEmpty() shouldBe true
+		secondPage.totalMatches shouldBe 0
 
 		val firstRecipeDetailsResponse = client.get("/recipes/1") {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
@@ -91,7 +95,9 @@ class FavoritesSessionIntegrationTest {
 			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
 		}
 		firstFavoritesAfterRemove.status shouldBe HttpStatusCode.OK
-		firstFavoritesAfterRemove.bodyAsText() shouldBe "[]"
+		val afterRemovePage = Json.decodeFromString<SearchResultsPage>(firstFavoritesAfterRemove.bodyAsText())
+		afterRemovePage.items.isEmpty() shouldBe true
+		afterRemovePage.totalMatches shouldBe 0
 	}
 
 	private fun seedRecipeTables(dataSource: DataSource) {

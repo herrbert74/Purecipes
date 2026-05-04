@@ -2,7 +2,6 @@ package com.purecipes.backend.repository
 
 import com.purecipes.shared.domain.model.CalorieRange
 import com.purecipes.shared.domain.model.CookingMethod
-import com.purecipes.shared.domain.model.CookingTimeRange
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.DietaryPreference
 import com.purecipes.shared.domain.model.DifficultyLevel
@@ -12,7 +11,6 @@ import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
-import com.purecipes.shared.domain.model.SearchRequest
 import com.purecipes.shared.domain.model.SearchResultsPage
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -20,146 +18,8 @@ import java.sql.Statement
 import javax.sql.DataSource
 
 class RecipeRepository(
-	private val dataSource: DataSource,
+	internal val dataSource: DataSource,
 ) {
-
-	fun searchByKeyword(keyword: String, pageNumber: Int = 1, pageSize: Int = 20): List<RecipeSummary> {
-		val trimmed = keyword.trim()
-		if (trimmed.isEmpty()) return emptyList()
-		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
-		val normalizedPageSize = pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
-		val offset = (normalizedPageNumber - 1) * normalizedPageSize
-
-		val like = "%${trimmed.lowercase()}%"
-		val sql = """
-			SELECT id, title, cuisine, image_url, total_time, measurement_system
-			FROM recipes
-			WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
-			ORDER BY created_at DESC
-			LIMIT ? OFFSET ?
-		""".trimIndent()
-
-		return searchRecipes(sql, like, normalizedPageSize, offset)
-	}
-
-	fun searchByKeywordPaginated(keyword: String, pageNumber: Int = 1, pageSize: Int = 20): SearchResultsPage {
-		val trimmed = keyword.trim()
-		if (trimmed.isEmpty()) {
-			val normalizedPageSize = pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
-			return SearchResultsPage(
-				items = emptyList(),
-				pageNumber = 1,
-				pageSize = normalizedPageSize,
-				totalMatches = 0,
-			)
-		}
-
-		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
-		val normalizedPageSize = pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
-		val like = "%${trimmed.lowercase()}%"
-		val items = searchByKeyword(trimmed, normalizedPageNumber, normalizedPageSize)
-		val totalMatches = countRecipesByKeyword(dataSource, like)
-		return SearchResultsPage(
-			items = items,
-			pageNumber = normalizedPageNumber,
-			pageSize = normalizedPageSize,
-			totalMatches = totalMatches,
-		)
-	}
-
-	fun searchWithFilters(request: SearchRequest, userId: Long? = null): SearchResultsPage {
-		val normalizedPageNumber = request.pageNumber.coerceAtLeast(1)
-		val normalizedPageSize = request.pageSize.coerceIn(1, SEARCH_WITH_FILTERS_MAX_LIMIT)
-		val offset = (normalizedPageNumber - 1) * normalizedPageSize
-		val filters = request.filters
-		val conditions = mutableListOf<String>()
-		val params = mutableListOf<Any>()
-
-		if (request.query.isNotBlank()) {
-			val like = "%${request.query.trim().lowercase()}%"
-			conditions.add("(LOWER(r.title) LIKE ? OR LOWER(r.cuisine) LIKE ?)")
-			params.add(like)
-			params.add(like)
-		}
-
-		if (filters.cuisines.isNotEmpty() && filters.cuisines.size < Cuisine.entries.size) {
-			val placeholders = filters.cuisines.joinToString(",") { "?" }
-			conditions.add("r.cuisine IN ($placeholders)")
-			filters.cuisines.forEach { params.add(it.displayName) }
-		}
-
-		if (filters.cookingTimeRanges.isNotEmpty() && filters.cookingTimeRanges.size < CookingTimeRange.entries.size) {
-			val timeParts = filters.cookingTimeRanges.map { range ->
-				when (range) {
-					CookingTimeRange.UNDER_15 -> "r.total_time <= 15"
-					CookingTimeRange.UNDER_30 -> "r.total_time <= 30"
-					CookingTimeRange.UNDER_60 -> "r.total_time <= 60"
-					CookingTimeRange.OVER_60 -> "r.total_time > 60"
-				}
-			}
-			conditions.add("(${timeParts.joinToString(" OR ")})")
-		}
-
-		addEnrichmentFilterConditions(filters, conditions, params)
-		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
-
-		val (items, totalMatches) = dataSource.connection.use { conn ->
-			val availableIngredients = if (userId != null) {
-				loadAvailableIngredientsForUser(conn, userId)
-			} else {
-				emptyList()
-			}
-			if (availableIngredients.isEmpty()) {
-				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
-				val page = querySearchWithFiltersRecipes(
-					conn = conn,
-					whereClause = whereClause,
-					params = params,
-					limit = normalizedPageSize,
-					offset = offset,
-					executeQuery = ::executeQuery,
-				)
-				page to total
-			} else {
-				val filtered = querySearchWithFiltersRecipes(
-					conn = conn,
-					whereClause = whereClause,
-					params = params,
-					executeQuery = ::executeQuery,
-				).filter { summary ->
-					isRecipeCoveredByAvailableIngredients(
-						recipeId = summary.id,
-						availableIngredients = availableIngredients,
-						loadIngredientGroups = { recipeId -> loadIngredientGroupsForRecipe(conn, recipeId) },
-					)
-				}
-				filtered.drop(offset).take(normalizedPageSize) to filtered.size
-			}
-		}
-
-		return SearchResultsPage(
-			items = items,
-			pageNumber = normalizedPageNumber,
-			pageSize = normalizedPageSize,
-			totalMatches = totalMatches,
-		)
-	}
-
-	private fun loadAvailableIngredientsForUser(conn: java.sql.Connection, userId: Long): List<String> {
-		return conn.prepareStatement(GET_USER_PANTRY_SQL).use { ps ->
-			ps.setLong(FIRST_PARAMETER_INDEX, userId)
-			ps.executeQuery().use { rs ->
-				buildList {
-					while (rs.next()) {
-						val ingredient = rs.getString("ingredient")?.trim().orEmpty()
-						if (ingredient.isNotEmpty()) {
-							add(ingredient)
-						}
-					}
-				}.distinct()
-			}
-		}
-	}
 
 	fun getRecipeDetails(recipeId: Int, userId: Long? = null): RecipeDetails? = dataSource.connection.use { conn ->
 		val recipeRecord = loadRecipeRecord(conn, recipeId) ?: return@use null
@@ -224,11 +84,40 @@ class RecipeRepository(
 		}
 	}
 
-	fun getFavoriteRecipes(userId: Long): List<RecipeSummary> = dataSource.connection.use { conn ->
-		conn.prepareStatement(FAVORITES_SQL).use { ps ->
-			ps.setLong(1, userId)
+	fun getFavoriteRecipesPage(userId: Long, pageNumber: Int, pageSize: Int): SearchResultsPage {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
+		return dataSource.connection.use { conn ->
+			favoriteRecipesSearchPage(conn, userId, normalizedPageNumber, normalizedPageSize, offset)
+		}
+	}
+
+	private fun favoriteRecipesSearchPage(
+		conn: java.sql.Connection,
+		userId: Long,
+		normalizedPageNumber: Int,
+		normalizedPageSize: Int,
+		offset: Int,
+	): SearchResultsPage {
+		val totalMatches = conn.prepareStatement(RecipeRepositorySql.FAVORITES_COUNT_SQL).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs ->
+				if (rs.next()) rs.getInt(1) else 0
+			}
+		}
+		val items = conn.prepareStatement(RecipeRepositorySql.FAVORITES_PAGE_SQL).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX, normalizedPageSize)
+			ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, offset)
 			ps.executeQuery().use(::readFavoriteRecipes)
 		}
+		return SearchResultsPage(
+			items = items,
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = totalMatches,
+		)
 	}
 
 	fun addFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
@@ -236,7 +125,7 @@ class RecipeRepository(
 			return@use false
 		}
 
-		conn.prepareStatement(ADD_FAVORITE_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.ADD_FAVORITE_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
 			ps.executeUpdate()
@@ -249,7 +138,12 @@ class RecipeRepository(
 			return@use false
 		}
 
-		conn.prepareStatement(REMOVE_FAVORITE_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.REMOVE_COOKBOOK_RECIPES_FOR_USER_RECIPE_SQL).use { ps ->
+			ps.setLong(1, userId)
+			ps.setInt(2, recipeId)
+			ps.executeUpdate()
+		}
+		conn.prepareStatement(RecipeRepositorySql.REMOVE_FAVORITE_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
 			ps.executeUpdate()
@@ -258,7 +152,7 @@ class RecipeRepository(
 	}
 
 	private fun loadRecipeRecord(conn: java.sql.Connection, recipeId: Int): RecipeRecord? {
-		return conn.prepareStatement(RECIPE_SQL).use { ps ->
+		return conn.prepareStatement(RecipeRepositorySql.RECIPE_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
 				if (!rs.next()) return@use null
@@ -285,8 +179,8 @@ class RecipeRepository(
 	}
 
 	private fun loadCreatedRecipeRecords(conn: java.sql.Connection, userId: Long): List<RecipeRecord> {
-		return conn.prepareStatement(CREATED_RECIPES_SQL).use { ps ->
-			ps.setLong(FIRST_PARAMETER_INDEX, userId)
+		return conn.prepareStatement(RecipeRepositorySql.CREATED_RECIPES_SQL).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
 			ps.executeQuery().use(::readRecipeRecords)
 		}
 	}
@@ -359,7 +253,7 @@ class RecipeRepository(
 	}
 
 	@Suppress("MagicNumber")
-	private fun searchRecipes(
+	internal fun searchRecipes(
 		sql: String,
 		like: String,
 		pageSize: Int,
@@ -375,7 +269,7 @@ class RecipeRepository(
 		}
 	}
 
-	private fun executeQuery(ps: PreparedStatement): ArrayList<RecipeSummary> = ps.executeQuery().use { rs ->
+	internal fun executeQuery(ps: PreparedStatement): ArrayList<RecipeSummary> = ps.executeQuery().use { rs ->
 		val results = ArrayList<RecipeSummary>()
 		while (rs.next()) {
 			val recipeId = rs.getInt("id")
@@ -394,16 +288,16 @@ class RecipeRepository(
 		return results
 	}
 
-	private fun loadIngredientGroupsForRecipe(
+	internal fun loadIngredientGroupsForRecipe(
 		conn: java.sql.Connection,
 		recipeId: Int,
 	): List<IngredientGroup> = loadIngredientGroups(
-		ps = conn.prepareStatement(INGREDIENT_GROUPS_SQL).also {
+		ps = conn.prepareStatement(RecipeRepositorySql.INGREDIENT_GROUPS_SQL).also {
 			it.setInt(1, recipeId)
 		},
 	)
 
-	private fun loadIngredientGroups(ps: PreparedStatement): List<IngredientGroup> = ps.use { statement ->
+	internal fun loadIngredientGroups(ps: PreparedStatement): List<IngredientGroup> = ps.use { statement ->
 		statement.executeQuery().use { rs ->
 			val groupsById = linkedMapOf<Int, IngredientGroupAccumulator>()
 
@@ -429,7 +323,7 @@ class RecipeRepository(
 		recipeId: Int,
 		instructions: String?,
 	): List<String> = loadSteps(
-		ps = conn.prepareStatement(STEPS_SQL).also {
+		ps = conn.prepareStatement(RecipeRepositorySql.STEPS_SQL).also {
 			it.setInt(1, recipeId)
 		},
 		instructions = instructions,
@@ -459,7 +353,7 @@ class RecipeRepository(
 		if (userId == null) {
 			return false
 		}
-		return conn.prepareStatement(IS_FAVORITE_SQL).use { ps ->
+		return conn.prepareStatement(RecipeRepositorySql.IS_FAVORITE_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
 			ps.executeQuery().use { rs ->
@@ -469,7 +363,7 @@ class RecipeRepository(
 	}
 
 	private fun isRecipeOwnedByUser(conn: java.sql.Connection, recipeId: Int, userId: Long): Boolean {
-		return conn.prepareStatement(RECIPE_OWNED_BY_USER_SQL).use { ps ->
+		return conn.prepareStatement(RecipeRepositorySql.RECIPE_OWNED_BY_USER_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.setLong(2, userId)
 			ps.executeQuery().use { rs ->
@@ -479,7 +373,7 @@ class RecipeRepository(
 	}
 
 	private fun recipeExists(conn: java.sql.Connection, recipeId: Int): Boolean {
-		return conn.prepareStatement(RECIPE_EXISTS_SQL).use { ps ->
+		return conn.prepareStatement(RecipeRepositorySql.RECIPE_EXISTS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
 				rs.next()
@@ -488,15 +382,15 @@ class RecipeRepository(
 	}
 
 	private fun deleteRecipeChildren(conn: java.sql.Connection, recipeId: Int) {
-		conn.prepareStatement(DELETE_INGREDIENTS_FOR_RECIPE_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.DELETE_INGREDIENTS_FOR_RECIPE_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeUpdate()
 		}
-		conn.prepareStatement(DELETE_INGREDIENT_GROUPS_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.DELETE_INGREDIENT_GROUPS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeUpdate()
 		}
-		conn.prepareStatement(DELETE_INSTRUCTION_STEPS_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.DELETE_INSTRUCTION_STEPS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeUpdate()
 		}
@@ -511,11 +405,11 @@ class RecipeRepository(
 
 			val groupId = insertIngredientGroup(conn, recipeId, group.name, groupIndex)
 
-			conn.prepareStatement(CREATE_INGREDIENT_SQL).use { ps ->
+			conn.prepareStatement(RecipeRepositorySql.CREATE_INGREDIENT_SQL).use { ps ->
 				ingredients.forEachIndexed { ingredientIndex, ingredient ->
-					ps.setInt(FIRST_PARAMETER_INDEX, groupId)
-					ps.setString(SECOND_PARAMETER_INDEX, ingredient)
-					ps.setInt(THIRD_PARAMETER_INDEX, ingredientIndex)
+					ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, groupId)
+					ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, ingredient)
+					ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, ingredientIndex)
 					ps.addBatch()
 				}
 				ps.executeBatch()
@@ -529,11 +423,11 @@ class RecipeRepository(
 			return
 		}
 
-		conn.prepareStatement(CREATE_INSTRUCTION_STEP_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.CREATE_INSTRUCTION_STEP_SQL).use { ps ->
 			normalizedSteps.forEachIndexed { stepIndex, step ->
-				ps.setInt(FIRST_PARAMETER_INDEX, recipeId)
-				ps.setString(SECOND_PARAMETER_INDEX, step)
-				ps.setInt(THIRD_PARAMETER_INDEX, stepIndex)
+				ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+				ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, step)
+				ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, stepIndex)
 				ps.addBatch()
 			}
 			ps.executeBatch()
@@ -541,34 +435,34 @@ class RecipeRepository(
 	}
 
 	private fun insertRecipe(conn: java.sql.Connection, userId: Long, request: RecipeWriteRequest): Int {
-		return conn.prepareStatement(CREATE_RECIPE_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
+		return conn.prepareStatement(RecipeRepositorySql.CREATE_RECIPE_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
 			val measurementSystem = detectMeasurementSystem(request.ingredientGroups)
-			ps.setString(FIRST_PARAMETER_INDEX, request.title.trim())
-			ps.setString(SECOND_PARAMETER_INDEX, request.description.trim())
-			ps.setString(THIRD_PARAMETER_INDEX, request.steps.joinToString(separator = "\n"))
-			ps.setObject(FOURTH_PARAMETER_INDEX, request.totalTime)
-			ps.setString(FIFTH_PARAMETER_INDEX, request.yields?.trim())
-			ps.setString(SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
-			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
-			ps.setString(EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
-			ps.setLong(NINTH_PARAMETER_INDEX, userId)
+			ps.setString(RecipeRepositorySql.FIRST_PARAMETER_INDEX, request.title.trim())
+			ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, request.description.trim())
+			ps.setString(RecipeRepositorySql.THIRD_PARAMETER_INDEX, request.steps.joinToString(separator = "\n"))
+			ps.setObject(RecipeRepositorySql.FOURTH_PARAMETER_INDEX, request.totalTime)
+			ps.setString(RecipeRepositorySql.FIFTH_PARAMETER_INDEX, request.yields?.trim())
+			ps.setString(RecipeRepositorySql.SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
+			ps.setString(RecipeRepositorySql.SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
+			ps.setString(RecipeRepositorySql.EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
+			ps.setLong(RecipeRepositorySql.NINTH_PARAMETER_INDEX, userId)
 			ps.executeUpdate()
 			ps.generatedId()
 		}
 	}
 
 	private fun updateRecipeRow(conn: java.sql.Connection, recipeId: Int, request: RecipeWriteRequest) {
-		conn.prepareStatement(UPDATE_RECIPE_SQL).use { ps ->
+		conn.prepareStatement(RecipeRepositorySql.UPDATE_RECIPE_SQL).use { ps ->
 			val measurementSystem = detectMeasurementSystem(request.ingredientGroups)
-			ps.setString(FIRST_PARAMETER_INDEX, request.title.trim())
-			ps.setString(SECOND_PARAMETER_INDEX, request.description.trim())
-			ps.setString(THIRD_PARAMETER_INDEX, request.steps.joinToString(separator = "\n"))
-			ps.setObject(FOURTH_PARAMETER_INDEX, request.totalTime)
-			ps.setString(FIFTH_PARAMETER_INDEX, request.yields?.trim())
-			ps.setString(SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
-			ps.setString(SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
-			ps.setString(EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
-			ps.setInt(NINTH_PARAMETER_INDEX, recipeId)
+			ps.setString(RecipeRepositorySql.FIRST_PARAMETER_INDEX, request.title.trim())
+			ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, request.description.trim())
+			ps.setString(RecipeRepositorySql.THIRD_PARAMETER_INDEX, request.steps.joinToString(separator = "\n"))
+			ps.setObject(RecipeRepositorySql.FOURTH_PARAMETER_INDEX, request.totalTime)
+			ps.setString(RecipeRepositorySql.FIFTH_PARAMETER_INDEX, request.yields?.trim())
+			ps.setString(RecipeRepositorySql.SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
+			ps.setString(RecipeRepositorySql.SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
+			ps.setString(RecipeRepositorySql.EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
+			ps.setInt(RecipeRepositorySql.NINTH_PARAMETER_INDEX, recipeId)
 			ps.executeUpdate()
 		}
 	}
@@ -579,10 +473,13 @@ class RecipeRepository(
 		groupName: String?,
 		groupIndex: Int,
 	): Int {
-		return conn.prepareStatement(CREATE_INGREDIENT_GROUP_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
-			ps.setInt(FIRST_PARAMETER_INDEX, recipeId)
-			ps.setString(SECOND_PARAMETER_INDEX, groupName?.trim())
-			ps.setInt(THIRD_PARAMETER_INDEX, groupIndex)
+		return conn.prepareStatement(
+			RecipeRepositorySql.CREATE_INGREDIENT_GROUP_SQL,
+			Statement.RETURN_GENERATED_KEYS,
+		).use { ps ->
+			ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+			ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, groupName?.trim())
+			ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, groupIndex)
 			ps.executeUpdate()
 			ps.generatedId()
 		}
@@ -591,7 +488,7 @@ class RecipeRepository(
 	private fun PreparedStatement.generatedId(): Int {
 		return generatedKeys.use { keys ->
 			keys.next()
-			keys.getInt(FIRST_PARAMETER_INDEX)
+			keys.getInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX)
 		}
 	}
 
@@ -664,10 +561,10 @@ class RecipeRepository(
 			.flatMap { it.ingredients.asSequence() }
 			.forEach { ingredient ->
 				val normalized = ingredient.lowercase()
-				if (IMPERIAL_UNIT_REGEX.containsMatchIn(normalized)) {
+				if (RecipeRepositorySql.IMPERIAL_UNIT_REGEX.containsMatchIn(normalized)) {
 					imperialHits += 1
 				}
-				if (METRIC_UNIT_REGEX.containsMatchIn(normalized)) {
+				if (RecipeRepositorySql.METRIC_UNIT_REGEX.containsMatchIn(normalized)) {
 					metricHits += 1
 				}
 			}
@@ -679,192 +576,9 @@ class RecipeRepository(
 		}
 	}
 
-	private data class RecipeRecord(
-		val id: Int,
-		val title: String,
-		val description: String?,
-		val instructions: String?,
-		val totalTime: Int?,
-		val yields: String?,
-		val imageUrl: String?,
-		val cuisine: String?,
-		val mealType: String?,
-		val measurementSystem: MeasurementSystem?,
-		val difficulty: String?,
-		val cookingMethod: String?,
-		val calorieRange: String?,
-		val dietaryPreferences: List<String>,
-		val tags: List<String>,
-	)
-
-	private data class IngredientGroupAccumulator(
-		val name: String?,
-		val ingredients: MutableList<String> = mutableListOf(),
-	)
-
-	private companion object {
-
-		const val SEARCH_WITH_FILTERS_MAX_LIMIT = 200
-		const val FIRST_PARAMETER_INDEX = 1
-		const val SECOND_PARAMETER_INDEX = 2
-		const val THIRD_PARAMETER_INDEX = 3
-		const val FOURTH_PARAMETER_INDEX = 4
-		const val FIFTH_PARAMETER_INDEX = 5
-		const val SIXTH_PARAMETER_INDEX = 6
-		const val SEVENTH_PARAMETER_INDEX = 7
-		const val EIGHTH_PARAMETER_INDEX = 8
-		const val NINTH_PARAMETER_INDEX = 9
-
-		const val ADD_FAVORITE_SQL = """
-			INSERT INTO favorites (user_id, recipe_id)
-			VALUES (?, ?)
-			ON CONFLICT (user_id, recipe_id) DO NOTHING
-		"""
-
-		const val FAVORITES_SQL = """
-			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
-			FROM favorites f
-			INNER JOIN recipes r ON r.id = f.recipe_id
-			WHERE f.user_id = ?
-			ORDER BY f.created_at DESC
-		"""
-
-		const val CREATED_RECIPES_SQL = """
-			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
-			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
-			FROM recipes
-			WHERE created_by_user_id = ?
-			ORDER BY created_at DESC, id DESC
-		"""
-
-		const val IS_FAVORITE_SQL = """
-			SELECT EXISTS(
-				SELECT 1
-				FROM favorites
-				WHERE user_id = ?
-					AND recipe_id = ?
-			) AS is_favorite
-		"""
-
-		const val RECIPE_SQL = """
-			SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
-			       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
-			FROM recipes
-			WHERE id = ?
-		"""
-
-		const val CREATE_RECIPE_SQL = """
-			INSERT INTO recipes (
-				title, description, instructions, total_time, yields, image_url, cuisine, measurement_system, created_by_user_id
-			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-		"""
-
-		const val UPDATE_RECIPE_SQL = """
-			UPDATE recipes
-			SET title = ?,
-				description = ?,
-				instructions = ?,
-				total_time = ?,
-				yields = ?,
-				image_url = ?,
-				cuisine = ?,
-				measurement_system = ?
-			WHERE id = ?
-		"""
-
-		const val RECIPE_EXISTS_SQL = """
-			SELECT 1
-			FROM recipes
-			WHERE id = ?
-		"""
-
-		const val RECIPE_OWNED_BY_USER_SQL = """
-			SELECT 1
-			FROM recipes
-			WHERE id = ?
-				AND created_by_user_id = ?
-		"""
-
-		const val REMOVE_FAVORITE_SQL = """
-			DELETE FROM favorites
-			WHERE user_id = ?
-				AND recipe_id = ?
-		"""
-
-		const val INGREDIENT_GROUPS_SQL = """
-			SELECT g.id AS group_id, g.name AS group_name, i.ingredient AS ingredient
-			FROM ingredient_groups g
-			LEFT JOIN ingredients i ON i.ingredient_group_id = g.id
-			WHERE g.recipe_id = ?
-			ORDER BY g.order_index ASC, i.order_index ASC
-		"""
-
-		const val STEPS_SQL = """
-			SELECT step
-			FROM instruction_steps
-			WHERE recipe_id = ?
-			ORDER BY order_index ASC
-		"""
-
-		const val DELETE_INGREDIENTS_FOR_RECIPE_SQL = """
-			DELETE FROM ingredients
-			WHERE ingredient_group_id IN (
-				SELECT id
-				FROM ingredient_groups
-				WHERE recipe_id = ?
-			)
-		"""
-
-		const val DELETE_INGREDIENT_GROUPS_SQL = """
-			DELETE FROM ingredient_groups
-			WHERE recipe_id = ?
-		"""
-
-		const val DELETE_INSTRUCTION_STEPS_SQL = """
-			DELETE FROM instruction_steps
-			WHERE recipe_id = ?
-		"""
-
-		const val CREATE_INGREDIENT_GROUP_SQL = """
-			INSERT INTO ingredient_groups (recipe_id, name, order_index)
-			VALUES (?, ?, ?)
-		"""
-
-		const val CREATE_INGREDIENT_SQL = """
-			INSERT INTO ingredients (ingredient_group_id, ingredient, order_index)
-			VALUES (?, ?, ?)
-		"""
-
-		const val CREATE_INSTRUCTION_STEP_SQL = """
-			INSERT INTO instruction_steps (recipe_id, step, order_index)
-			VALUES (?, ?, ?)
-		"""
-
-		const val GET_USER_PANTRY_SQL = """
-			SELECT ingredient
-			FROM user_pantry
-			WHERE user_id = ?
-			ORDER BY ingredient
-		"""
-
-		val IMPERIAL_UNIT_REGEX = Regex(
-			pattern =
-				"(?<!\\p{L})(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|" +
-					"pounds?|pound|lbs?|lb|fahrenheit|°f)\\b",
-			options = setOf(RegexOption.IGNORE_CASE),
-		)
-
-		val METRIC_UNIT_REGEX = Regex(
-			pattern =
-				"(?<!\\p{L})(kilograms?|kilogram|kg|grams?|gram|g|milliliters?|milliliter|" +
-					"ml|liters?|liter|l|celsius|°c)\\b",
-			options = setOf(RegexOption.IGNORE_CASE),
-		)
-	}
 }
 
-private fun countRecipesByKeyword(dataSource: DataSource, like: String): Int {
+internal fun countRecipesByKeyword(dataSource: DataSource, like: String): Int {
 	val sql = """
 		SELECT COUNT(*)
 		FROM recipes
@@ -883,7 +597,7 @@ private fun countRecipesByKeyword(dataSource: DataSource, like: String): Int {
 	}
 }
 
-private fun querySearchWithFiltersRecipes(
+internal fun querySearchWithFiltersRecipes(
 	conn: java.sql.Connection,
 	whereClause: String,
 	params: List<Any>,
@@ -922,7 +636,7 @@ private fun querySearchWithFiltersRecipes(
 	}
 }
 
-private fun countSearchWithFiltersRecipes(
+internal fun countSearchWithFiltersRecipes(
 	conn: java.sql.Connection,
 	whereClause: String,
 	params: List<Any>,
@@ -948,7 +662,7 @@ private fun countSearchWithFiltersRecipes(
 	}
 }
 
-private fun isRecipeCoveredByAvailableIngredients(
+internal fun isRecipeCoveredByAvailableIngredients(
 	recipeId: Int,
 	availableIngredients: List<String>,
 	loadIngredientGroups: (Int) -> List<IngredientGroup>,

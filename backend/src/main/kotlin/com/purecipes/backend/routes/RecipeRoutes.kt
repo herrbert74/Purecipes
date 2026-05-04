@@ -3,7 +3,10 @@ package com.purecipes.backend.routes
 import com.purecipes.backend.ErrorResponse
 import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
+import com.purecipes.backend.repository.CookbookRepository
 import com.purecipes.backend.repository.RecipeRepository
+import com.purecipes.backend.repository.searchByKeywordPaginated
+import com.purecipes.backend.repository.searchWithFilters
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchRequest
 import io.ktor.http.HttpStatusCode
@@ -79,6 +82,24 @@ fun Route.recipeRoutes(
 					userId = call.optionalAuthenticatedUserId(sessionService),
 				),
 			)
+		}
+
+		get("/{id}/cookbooks") {
+			val recipeId = call.parameters["id"]?.toIntOrNull()
+			if (recipeId == null) {
+				call.respond(
+					HttpStatusCode.BadRequest,
+					ErrorResponse(
+						message = "Invalid request",
+						detail = "Recipe id must be a number",
+					),
+				)
+				return@get
+			}
+
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@get
+			val repo = CookbookRepository(dbProvider().dataSource)
+			call.respond(repo.listRecipeCookbooks(userId, recipeId))
 		}
 
 		get("/{id}") {
