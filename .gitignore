@@ -11,6 +11,8 @@
 /build
 /*/build/
 **/build/
+/*/bin/
+**/bin/
 /captures
 app/companieshouse.jks
 app/app-release.apk
