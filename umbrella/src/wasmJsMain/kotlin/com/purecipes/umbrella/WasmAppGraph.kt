@@ -15,8 +15,15 @@ import com.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.feature.favorites.data.repository.FavoritesDataModule
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
+import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.RemoveRecipeFromCookbookUseCase
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -81,7 +88,21 @@ interface WasmAppGraph :
 
 	val addFavoriteRecipeUseCase: AddFavoriteRecipeUseCase
 
-	val getFavoriteRecipesUseCase: GetFavoriteRecipesUseCase
+	val getFavoriteRecipesPageUseCase: GetFavoriteRecipesPageUseCase
+
+	val getCookbooksPageUseCase: GetCookbooksPageUseCase
+
+	val createCookbookUseCase: CreateCookbookUseCase
+
+	val deleteCookbookUseCase: DeleteCookbookUseCase
+
+	val getCookbookRecipesPageUseCase: GetCookbookRecipesPageUseCase
+
+	val addRecipeToCookbookUseCase: AddRecipeToCookbookUseCase
+
+	val removeRecipeFromCookbookUseCase: RemoveRecipeFromCookbookUseCase
+
+	val getRecipeCookbooksUseCase: GetRecipeCookbooksUseCase
 
 	val filterRecipesForMeasurementPreferencesUseCase: FilterRecipesForMeasurementPreferencesUseCase
 

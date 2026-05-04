@@ -6,13 +6,18 @@ import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.SearchResultsPage
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
@@ -26,6 +31,8 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RecipeDetailsViewModelTest {
+
+	private val fakeCookbooksRepository = FakeCookbooksRepository()
 
 	@Test
 	fun detailsViewModelLoadsRecipeDetails() = runTest {
@@ -41,6 +48,11 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			sessionKey = null,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			coroutineScope = this,
 		)
 
@@ -64,6 +76,11 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			sessionKey = null,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			coroutineScope = this,
 		)
 
@@ -88,6 +105,11 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			sessionKey = null,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			coroutineScope = this,
 		)
 
@@ -116,6 +138,11 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			sessionKey = null,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			coroutineScope = this,
 		)
 
@@ -148,7 +175,14 @@ class RecipeDetailsViewModelTest {
 			return Ok(Unit)
 		}
 
-		override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = Ok(emptyList())
+		override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int) = Ok(
+			SearchResultsPage(
+				items = emptyList(),
+				pageNumber = pageNumber,
+				pageSize = pageSize,
+				totalMatches = 0,
+			),
+		)
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
 	}

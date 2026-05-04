@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,17 +24,25 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,26 +51,41 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import com.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.CookbookRef
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.ui.component.BackNavigationButton
 import com.purecipes.shared.ui.component.ErrorText
+import com.purecipes.shared.ui.component.PurecipesTextButton
 import com.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
 
+@Immutable
+private data class RecipeCookbooksList(val items: List<CookbookRef>)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailsScreen(
 	recipeId: Int,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
+	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	canManageFavorites: Boolean,
+	createCookbook: CreateCookbookUseCase,
+	getCookbooksPage: GetCookbooksPageUseCase,
+	getRecipeCookbooks: GetRecipeCookbooksUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
@@ -85,8 +109,14 @@ fun RecipeDetailsScreen(
 		removeFavoriteRecipe = removeFavoriteRecipe,
 		trackEvent = trackEvent,
 		sessionKey = sessionKey,
+		getRecipeCookbooks = getRecipeCookbooks,
+		getCookbooksPage = getCookbooksPage,
+		createCookbook = createCookbook,
+		addRecipeToCookbook = addRecipeToCookbook,
 	)
 	val currentOnFavoriteChange by rememberUpdatedState(onFavoriteChange)
+	var showCookbookSheet by remember { mutableStateOf(false) }
+	var newCookbookName by remember { mutableStateOf("") }
 
 	LaunchedEffect(viewModel.favoriteChangeCount) {
 		if (viewModel.favoriteChangeCount > 0) {
@@ -94,33 +124,46 @@ fun RecipeDetailsScreen(
 		}
 	}
 
-	Scaffold(
-		modifier = modifier.fillMaxSize(),
+	Box(modifier = modifier.fillMaxSize()) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
 				title = { Text(text = "Recipe details") },
 				actions = {
-					IconButton(
-						onClick = viewModel::toggleFavorite,
-						enabled = canManageFavorites && viewModel.recipeDetails != null &&
-							!viewModel.isFavoriteUpdating,
-					) {
-						Icon(
-							imageVector = if (viewModel.recipeDetails?.isFavorite == true) {
-								Icons.Filled.Favorite
-							} else {
-								Icons.Outlined.FavoriteBorder
+					Row(verticalAlignment = Alignment.CenterVertically) {
+						IconButton(
+							onClick = viewModel::toggleFavorite,
+							enabled = canManageFavorites && viewModel.recipeDetails != null &&
+								!viewModel.isFavoriteUpdating,
+						) {
+							Icon(
+								imageVector = if (viewModel.recipeDetails?.isFavorite == true) {
+									Icons.Filled.Favorite
+								} else {
+									Icons.Outlined.FavoriteBorder
+								},
+								contentDescription = if (viewModel.recipeDetails?.isFavorite == true) {
+									"Remove from favorites"
+								} else {
+									"Add to favorites"
+								},
+								tint = if (viewModel.recipeDetails?.isFavorite == true) {
+									PurecipesTheme.colorScheme.primary
+								} else {
+									PurecipesTheme.colorScheme.onSurfaceVariant
+								},
+							)
+						}
+						PurecipesTextButton(
+							text = "Add to cookbook",
+							onClick = {
+								viewModel.prepareCookbookPicker()
+								showCookbookSheet = true
 							},
-							contentDescription = if (viewModel.recipeDetails?.isFavorite == true) {
-								"Remove from favorites"
-							} else {
-								"Add to favorites"
-							},
-							tint = if (viewModel.recipeDetails?.isFavorite == true) {
-								PurecipesTheme.colorScheme.primary
-							} else {
-								PurecipesTheme.colorScheme.onSurfaceVariant
-							},
+							modifier = Modifier,
+							enabled = canManageFavorites && viewModel.recipeDetails?.isFavorite == true &&
+								!viewModel.isFavoriteUpdating,
 						)
 					}
 				},
@@ -176,6 +219,7 @@ fun RecipeDetailsScreen(
 				isFavoriteUpdating = viewModel.isFavoriteUpdating,
 				isRecipeConverted = viewModel.isRecipeConverted,
 				recipe = viewModel.recipeDetails ?: return@Scaffold,
+				recipeCookbooks = RecipeCookbooksList(viewModel.recipeCookbooks.toList()),
 				onStartCooking = { onStartCooking(recipeId) },
 				onToggleFavorite = viewModel::toggleFavorite,
 				modifier = Modifier.padding(innerPadding),
@@ -187,6 +231,72 @@ fun RecipeDetailsScreen(
 				modifier = Modifier.padding(innerPadding),
 			)
 		}
+		}
+
+		if (showCookbookSheet) {
+			ModalBottomSheet(
+				onDismissRequest = {
+					showCookbookSheet = false
+					newCookbookName = ""
+				},
+			) {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(PurecipesTheme.space.m),
+					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				) {
+					Text(
+						text = "Add to cookbook",
+						style = PurecipesTheme.typography.titleMedium,
+					)
+					LazyRow(horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
+						items(CookbookNameSuggestions.values, key = { it }) { suggestion ->
+							FilterChip(
+								selected = false,
+								onClick = { newCookbookName = suggestion },
+								label = { Text(text = suggestion) },
+							)
+						}
+					}
+					OutlinedTextField(
+						value = newCookbookName,
+						onValueChange = { newCookbookName = it },
+						modifier = Modifier.fillMaxWidth(),
+						label = { Text(text = "New cookbook name") },
+						singleLine = true,
+					)
+					viewModel.sheetCookbooks.forEach { cookbook ->
+						TextButton(
+							onClick = {
+								viewModel.addRecipeToCookbookId(cookbook.id) { err ->
+									if (err == null) {
+										showCookbookSheet = false
+									}
+								}
+							},
+							enabled = !viewModel.isCookbookActionInFlight,
+						) {
+							Text(text = cookbook.name)
+						}
+					}
+					viewModel.cookbookActionError?.let { ErrorText(text = it) }
+					Button(
+						onClick = {
+							viewModel.createCookbookAndAdd(newCookbookName) { err ->
+								if (err == null) {
+									showCookbookSheet = false
+									newCookbookName = ""
+								}
+							}
+						},
+						enabled = !viewModel.isCookbookActionInFlight && newCookbookName.trim().isNotEmpty(),
+					) {
+						Text(text = "Create and add")
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -197,10 +307,12 @@ private fun RecipeDetailsContent(
 	isFavoriteUpdating: Boolean,
 	isRecipeConverted: Boolean,
 	recipe: RecipeDetails,
+	recipeCookbooks: RecipeCookbooksList,
 	onStartCooking: () -> Unit,
 	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
+	val cookbookRefs = recipeCookbooks.items
 	LazyColumn(
 		modifier = modifier
 			.fillMaxSize()
@@ -242,6 +354,32 @@ private fun RecipeDetailsContent(
 
 		item {
 			RecipeMetadataRow(recipe = recipe, isRecipeConverted = isRecipeConverted)
+		}
+
+		item {
+			if (cookbookRefs.isNotEmpty()) {
+				LazyRow(
+					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+					modifier = Modifier.fillMaxWidth(),
+				) {
+					items(cookbookRefs.size, key = { cookbookRefs[it].id }) { index ->
+						val cookbook = cookbookRefs[index]
+						Surface(
+							shape = RoundedCornerShape(999.dp),
+							color = PurecipesTheme.colorScheme.secondaryContainer,
+						) {
+							Text(
+								text = cookbook.name,
+								modifier = Modifier.padding(
+									horizontal = PurecipesTheme.space.s,
+									vertical = PurecipesTheme.space.s,
+								),
+								style = PurecipesTheme.typography.labelLarge,
+							)
+						}
+					}
+				}
+			}
 		}
 
 		item {

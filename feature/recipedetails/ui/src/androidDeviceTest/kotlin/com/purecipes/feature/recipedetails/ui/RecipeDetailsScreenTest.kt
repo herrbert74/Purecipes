@@ -9,6 +9,10 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -17,6 +21,7 @@ import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.IngredientGroup
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import com.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import com.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
@@ -33,13 +38,18 @@ class RecipeDetailsScreenTest {
 	@Test
 	fun recipeDetailsScreenShowsTitleIngredientsAndSteps() {
 		val favoritesRepository = FakeFavoritesRepository()
+		val cookbooksRepository = FakeCookbooksRepository()
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		composeRule.setContent {
 			PurecipesTheme {
 				RecipeDetailsScreen(
 					recipeId = 7,
 					addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
+					addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 					canManageFavorites = true,
+					createCookbook = CreateCookbookUseCase(cookbooksRepository),
+					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+					getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
 					getRecipeDetails = GetRecipeDetailsUseCase(
 						FakeRecipeDetailsRepository(
 							fakeRecipeDetails(
@@ -63,14 +73,14 @@ class RecipeDetailsScreenTest {
 					getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
 					markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 					onOpenMeasurementPreferences = {},
+					processRecipeDetailsForMeasurementPreferences =
+						ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					onBack = {},
 					onFavoriteChange = {},
 					onStartCooking = {},
-					processRecipeDetailsForMeasurementPreferences =
-						ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 					removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 					sessionKey = "user-7",
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				)
 			}
 		}
