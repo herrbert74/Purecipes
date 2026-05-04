@@ -13,7 +13,7 @@ import kotlin.test.Test
 class FavoritesAccessorTest {
 
 	@Test
-	fun `favorites repository returns favorite recipes`() = runTest {
+	fun `favorites repository returns favorite recipes page`() = runTest {
 		val expected = listOf(
 			RecipeSummary(
 				id = 42,
@@ -28,9 +28,10 @@ class FavoritesAccessorTest {
 			FavoritesRemoteDataSource(FakePurecipesApi(favoriteRecipes = expected)),
 		)
 
-		val outcome = accessor.getFavoriteRecipes()
+		val outcome = accessor.getFavoriteRecipesPage(pageNumber = 1, pageSize = 20)
 
-		outcome.get() shouldBe expected
+		outcome.get()?.items shouldBe expected
+		outcome.get()?.totalMatches shouldBe 1
 		outcome.getError() shouldBe null
 	}
 }

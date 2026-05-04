@@ -1,11 +1,14 @@
 package com.purecipes.shared.data.network
 
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.CookbookCreateRequest
+import com.purecipes.shared.domain.model.CookbookListPage
+import com.purecipes.shared.domain.model.CookbookRef
+import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.RecipeDetails
-import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.domain.model.SearchRequest
@@ -18,6 +21,7 @@ import de.jensklingenberg.ktorfit.http.PATCH
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
+import de.jensklingenberg.ktorfit.http.Query
 
 interface PurecipesApi {
 
@@ -50,13 +54,51 @@ interface PurecipesApi {
 	suspend fun signOut()
 
 	@GET("favorites")
-	suspend fun getFavorites(): List<RecipeSummary>
+	suspend fun getFavoriteRecipesPage(
+		@Query("pageNumber") pageNumber: Int = 1,
+		@Query("pageSize") pageSize: Int = 20,
+	): SearchResultsPage
 
 	@POST("favorites/{id}")
 	suspend fun addFavorite(@Path("id") recipeId: Int)
 
 	@DELETE("favorites/{id}")
 	suspend fun removeFavorite(@Path("id") recipeId: Int)
+
+	@GET("cookbooks")
+	suspend fun getCookbooks(
+		@Query("pageNumber") pageNumber: Int = 1,
+		@Query("pageSize") pageSize: Int = 20,
+	): CookbookListPage
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("cookbooks")
+	suspend fun createCookbook(@Body request: CookbookCreateRequest): CookbookSummary
+
+	@DELETE("cookbooks/{id}")
+	suspend fun deleteCookbook(@Path("id") cookbookId: Int)
+
+	@GET("cookbooks/{id}/recipes")
+	suspend fun getCookbookRecipes(
+		@Path("id") cookbookId: Int,
+		@Query("pageNumber") pageNumber: Int = 1,
+		@Query("pageSize") pageSize: Int = 20,
+	): SearchResultsPage
+
+	@PUT("cookbooks/{id}/recipes/{recipeId}")
+	suspend fun addRecipeToCookbook(
+		@Path("id") cookbookId: Int,
+		@Path("recipeId") recipeId: Int,
+	)
+
+	@DELETE("cookbooks/{id}/recipes/{recipeId}")
+	suspend fun removeRecipeFromCookbook(
+		@Path("id") cookbookId: Int,
+		@Path("recipeId") recipeId: Int,
+	)
+
+	@GET("recipes/{id}/cookbooks")
+	suspend fun getRecipeCookbooks(@Path("id") recipeId: Int): List<CookbookRef>
 
 	@GET("settings/measurement")
 	suspend fun getMeasurementPreferences(): MeasurementPreferences
