@@ -94,6 +94,10 @@ For new features and larger refactors, run complete validation:
 
 New features should also add new automated tests. Prefer both unit tests and UI tests when UI behavior changes. The repo currently has too little test coverage, and new work should improve that.
 
+## Rule: Multi-step plans (serial review)
+
+When a task is broken into an **ordered multi-step plan** (including a suggested commit split), implement **one step at a time** in order. After each step, **stop**: briefly summarize what changed and where, run validation scoped to that step, and **do not start the next step** until the user has reviewed locally and explicitly asked to continue (so they can commit or adjust before the next slice). Do not implement the entire plan in one uninterrupted pass unless the user explicitly opts out of this workflow for that task.
+
 ## Rule: Domain classes
 
 Because we control both the backend and the apps, shared business entities should live in a common domain layer instead of separate DTO layers.
