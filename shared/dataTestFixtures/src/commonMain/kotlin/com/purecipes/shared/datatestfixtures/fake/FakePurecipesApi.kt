@@ -156,6 +156,10 @@ class FakePurecipesApi(
 	}
 
 	override suspend fun deleteCookbook(cookbookId: Int) {
+		val recipeCount = cookbookRecipeIds[cookbookId].orEmpty().count { recipeId ->
+			favoriteRecipes.any { it.id == recipeId }
+		}
+		check(recipeCount == 0) { "Only empty cookbooks can be deleted" }
 		cookbooks.removeAll { it.id == cookbookId }
 		cookbookRecipeIds.remove(cookbookId)
 	}
@@ -235,6 +239,7 @@ class FakePurecipesApi(
 	}
 
 	private companion object {
+
 		fun defaultAuthenticatedSession(): AuthenticatedSession {
 			return AuthenticatedSession(
 				accessToken = "session-token",

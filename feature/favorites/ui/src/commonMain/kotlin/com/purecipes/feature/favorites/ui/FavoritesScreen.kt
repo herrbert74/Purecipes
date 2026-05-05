@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
@@ -68,12 +69,16 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 internal const val FAVORITES_TITLE_TAG = "favoritesTitle"
+internal const val DELETE_COOKBOOK_BUTTON_PREFIX = "deleteCookbookButton:"
+internal const val DELETE_COOKBOOK_DIALOG_CONFIRM_TAG = "deleteCookbookDialogConfirm"
+internal const val CREATE_COOKBOOK_DIALOG_INPUT_TAG = "createCookbookDialogInput"
 
 @Composable
 fun FavoritesScreen(
 	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	getCookbooksPage: GetCookbooksPageUseCase,
 	createCookbook: CreateCookbookUseCase,
+	deleteCookbook: DeleteCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	refreshSignal: Int,
@@ -85,12 +90,14 @@ fun FavoritesScreen(
 		getFavoriteRecipesPage = getFavoriteRecipesPage,
 		getCookbooksPage = getCookbooksPage,
 		createCookbook = createCookbook,
+		deleteCookbook = deleteCookbook,
 		getCookbookRecipesPage = getCookbookRecipesPage,
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		sessionKey = sessionKey,
 	)
 
 	var showCreateCookbookDialog by remember { mutableStateOf(false) }
+	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
 
 	LaunchedEffect(refreshSignal, sessionKey) {
 		if (sessionKey != null) {
@@ -163,6 +170,11 @@ fun FavoritesScreen(
 					getCookbookCoverUrl = { id -> viewModel.cookbookCoverUrls[id] },
 					onRequestCookbookCover = viewModel::loadCookbookCover,
 					onCreateClick = { showCreateCookbookDialog = true },
+					deleteCookbookError = viewModel.deleteCookbookError,
+					isDeletingCookbook = viewModel.isDeletingCookbook,
+					onDeleteCookbook = { cookbook, _ ->
+						pendingDeleteCookbook = cookbook
+					},
 					onCookbookClick = { id, name -> viewModel.openCookbookDetail(id, name) },
 					modifier = Modifier.weight(1f),
 				)
@@ -184,6 +196,30 @@ fun FavoritesScreen(
 						}
 					}
 				},
+			)
+		}
+		pendingDeleteCookbook?.let { cookbook ->
+			AlertDialog(
+				onDismissRequest = { pendingDeleteCookbook = null },
+				confirmButton = {
+					Button(
+						onClick = {
+							viewModel.deleteCookbook(cookbook) {
+								pendingDeleteCookbook = null
+							}
+						},
+						modifier = Modifier.testTag(DELETE_COOKBOOK_DIALOG_CONFIRM_TAG),
+					) {
+						Text(text = "Delete")
+					}
+				},
+				dismissButton = {
+					TextButton(onClick = { pendingDeleteCookbook = null }) {
+						Text(text = "Cancel")
+					}
+				},
+				title = { Text(text = "Delete cookbook?") },
+				text = { Text(text = "Are you sure you want to delete ${cookbook.name}?") },
 			)
 		}
 	}
@@ -241,7 +277,9 @@ private fun CreateCookbookDialog(
 				OutlinedTextField(
 					value = nameField,
 					onValueChange = { nameField = it },
-					modifier = Modifier.fillMaxWidth(),
+					modifier = Modifier
+						.fillMaxWidth()
+						.testTag(CREATE_COOKBOOK_DIALOG_INPUT_TAG),
 					label = { Text(text = "Name") },
 					singleLine = true,
 				)
@@ -388,6 +426,9 @@ private fun CookbooksTabContent(
 	getCookbookCoverUrl: (Int) -> String?,
 	onRequestCookbookCover: (Int) -> Unit,
 	onCreateClick: () -> Unit,
+	deleteCookbookError: String?,
+	isDeletingCookbook: Boolean,
+	onDeleteCookbook: (CookbookSummary, (Boolean) -> Unit) -> Unit,
 	onCookbookClick: (Int, String) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
@@ -422,6 +463,15 @@ private fun CookbooksTabContent(
 		}
 
 		else -> Column(modifier = modifier.fillMaxSize()) {
+			deleteCookbookError?.let { message ->
+				ErrorText(
+					text = message,
+					textAlign = TextAlign.Center,
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.s),
+				)
+			}
 			TextButton(
 				onClick = onCreateClick,
 				modifier = Modifier
@@ -446,6 +496,8 @@ private fun CookbooksTabContent(
 						cookbook = cookbook,
 						coverUrl = getCookbookCoverUrl(cookbook.id),
 						onRequestCookbookCover = { onRequestCookbookCover(cookbook.id) },
+						isDeletingCookbook = isDeletingCookbook,
+						onDeleteCookbook = { onDeleteCookbook(cookbook) {} },
 						onClick = { onCookbookClick(cookbook.id, cookbook.name) },
 					)
 				}
@@ -459,6 +511,8 @@ private fun CookbookRow(
 	cookbook: CookbookSummary,
 	coverUrl: String?,
 	onRequestCookbookCover: () -> Unit,
+	isDeletingCookbook: Boolean,
+	onDeleteCookbook: () -> Unit,
 	onClick: () -> Unit,
 ) {
 	val requestCover by rememberUpdatedState(onRequestCookbookCover)
@@ -495,6 +549,13 @@ private fun CookbookRow(
 					text = "${cookbook.recipeCount} recipes",
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
+			}
+			TextButton(
+				onClick = onDeleteCookbook,
+				enabled = !isDeletingCookbook && cookbook.recipeCount == 0,
+				modifier = Modifier.testTag("$DELETE_COOKBOOK_BUTTON_PREFIX${cookbook.id}"),
+			) {
+				Text(text = "Delete")
 			}
 		}
 	}

@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
@@ -43,6 +44,7 @@ internal class FavoritesViewModel(
 	private val getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
+	private val deleteCookbookUseCase: DeleteCookbookUseCase,
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	coroutineScope: CoroutineScope? = null,
@@ -85,6 +87,12 @@ internal class FavoritesViewModel(
 		private set
 
 	var isCreatingCookbook by mutableStateOf(false)
+		private set
+
+	var deleteCookbookError by mutableStateOf<String?>(null)
+		private set
+
+	var isDeletingCookbook by mutableStateOf(false)
 		private set
 
 	val savedRecipes = mutableStateListOf<RecipeSummary>()
@@ -203,6 +211,28 @@ internal class FavoritesViewModel(
 		}
 	}
 
+	fun deleteCookbook(cookbook: CookbookSummary, onDone: (Boolean) -> Unit) {
+		if (cookbook.recipeCount > 0) {
+			deleteCookbookError = "Only empty cookbooks can be deleted"
+			onDone(false)
+			return
+		}
+		scope.launch {
+			isDeletingCookbook = true
+			deleteCookbookError = null
+			val outcome = deleteCookbookUseCase(cookbook.id)
+			val ok = outcome.getError() == null
+			if (ok) {
+				cookbooksPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
+				loadCookbooksPage(FIRST_PAGE_NUMBER)
+			} else {
+				deleteCookbookError = outcome.getError()?.message
+			}
+			isDeletingCookbook = false
+			onDone(ok)
+		}
+	}
+
 	private suspend fun loadSavedPage(pageNumber: Int) {
 		val outcome = getFavoriteRecipesPage(pageNumber, PAGE_SIZE)
 		val page = outcome.get()
@@ -294,6 +324,7 @@ internal fun favoritesViewModel(
 	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	getCookbooksPage: GetCookbooksPageUseCase,
 	createCookbook: CreateCookbookUseCase,
+	deleteCookbook: DeleteCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	sessionKey: String?,
@@ -306,6 +337,7 @@ internal fun favoritesViewModel(
 					getFavoriteRecipesPage = getFavoriteRecipesPage,
 					getCookbooksPage = getCookbooksPage,
 					createCookbook = createCookbook,
+					deleteCookbookUseCase = deleteCookbook,
 					getCookbookRecipesPage = getCookbookRecipesPage,
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 				)

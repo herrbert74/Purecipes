@@ -5,6 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
 import com.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
@@ -25,15 +26,15 @@ class FavoritesViewModelTest {
 
 	private val getCookbookCoverImageUrl =
 		com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase(
-		repository = object : CookbookCoverRepository {
-			override fun getCookbookCoverImageUrl(
-				cookbookId: Int,
-				candidateImageUrls: List<String>,
-				nowMillis: Long,
-				random: kotlin.random.Random,
-			): String? = candidateImageUrls.firstOrNull()
-		},
-	)
+			repository = object : CookbookCoverRepository {
+				override fun getCookbookCoverImageUrl(
+					cookbookId: Int,
+					candidateImageUrls: List<String>,
+					nowMillis: Long,
+					random: kotlin.random.Random,
+				): String? = candidateImageUrls.firstOrNull()
+			},
+		)
 
 	@Test
 	fun `load favorites populates recipes`() = runTest {
@@ -61,6 +62,7 @@ class FavoritesViewModelTest {
 			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
+			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			coroutineScope = this,
@@ -83,6 +85,7 @@ class FavoritesViewModelTest {
 			),
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
+			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			coroutineScope = this,
@@ -117,6 +120,7 @@ class FavoritesViewModelTest {
 			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			coroutineScope = this,
@@ -133,5 +137,66 @@ class FavoritesViewModelTest {
 		kotlin.test.assertEquals(false, created)
 		kotlin.test.assertEquals("Cookbook already exists", viewModel.createCookbookError)
 		kotlin.test.assertEquals(0, cookbooksRepository.createCookbookCallCount)
+	}
+
+	@Test
+	fun `delete cookbook rejects non-empty cookbook`() = runTest {
+		val cookbooksRepository = FakeCookbooksRepository()
+		val viewModel = FavoritesViewModel(
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			coroutineScope = this,
+		)
+		var deleted = true
+
+		viewModel.deleteCookbook(
+			CookbookSummary(
+				id = 10,
+				name = "Weeknight Dinners",
+				recipeCount = 1,
+				updatedAtEpochMillis = 0L,
+			),
+		) { ok ->
+			deleted = ok
+		}
+
+		kotlin.test.assertEquals(false, deleted)
+		kotlin.test.assertEquals("Only empty cookbooks can be deleted", viewModel.deleteCookbookError)
+		kotlin.test.assertEquals(0, cookbooksRepository.deleteCookbookCallCount)
+	}
+
+	@Test
+	fun `delete cookbook succeeds for empty cookbook`() = runTest {
+		val cookbooksRepository = FakeCookbooksRepository()
+		val viewModel = FavoritesViewModel(
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			coroutineScope = this,
+		)
+		var deleted = false
+
+		viewModel.deleteCookbook(
+			CookbookSummary(
+				id = 11,
+				name = "Empty Cookbook",
+				recipeCount = 0,
+				updatedAtEpochMillis = 0L,
+			),
+		) { ok ->
+			deleted = ok
+		}
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(true, deleted)
+		kotlin.test.assertEquals(null, viewModel.deleteCookbookError)
+		kotlin.test.assertEquals(1, cookbooksRepository.deleteCookbookCallCount)
 	}
 }

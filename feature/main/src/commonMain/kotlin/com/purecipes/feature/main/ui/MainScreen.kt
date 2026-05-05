@@ -43,6 +43,7 @@ import com.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
@@ -99,6 +100,7 @@ fun MainScreen(
 	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	getCookbooksPage: GetCookbooksPageUseCase,
 	createCookbook: CreateCookbookUseCase,
+	deleteCookbook: DeleteCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	getRecipeCookbooks: GetRecipeCookbooksUseCase,
@@ -226,6 +228,7 @@ fun MainScreen(
 							getFavoriteRecipesPage = getFavoriteRecipesPage,
 							getCookbooksPage = getCookbooksPage,
 							createCookbook = createCookbook,
+							deleteCookbook = deleteCookbook,
 							getCookbookRecipesPage = getCookbookRecipesPage,
 							getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 							refreshSignal = favoritesRefreshSignal,

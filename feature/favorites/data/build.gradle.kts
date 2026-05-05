@@ -1,5 +1,6 @@
 plugins {
 	id("convention.data")
+	alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {

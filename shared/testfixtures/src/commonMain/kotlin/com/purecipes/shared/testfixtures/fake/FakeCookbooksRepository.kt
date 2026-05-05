@@ -28,12 +28,16 @@ class FakeCookbooksRepository(
 			totalMatches = 0,
 		),
 	),
+	private val deleteCookbookResult: Outcome<Unit> = Ok(Unit),
 ) : CookbooksRepository {
 
 	var createCookbookCallCount: Int = 0
 		private set
 
 	var addRecipeToCookbookCallCount: Int = 0
+		private set
+
+	var deleteCookbookCallCount: Int = 0
 		private set
 
 	override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> =
@@ -44,7 +48,10 @@ class FakeCookbooksRepository(
 		return createCookbookResult
 	}
 
-	override suspend fun deleteCookbook(cookbookId: Int): Outcome<Unit> = Ok(Unit)
+	override suspend fun deleteCookbook(cookbookId: Int): Outcome<Unit> {
+		deleteCookbookCallCount += 1
+		return deleteCookbookResult
+	}
 
 	override suspend fun getCookbookRecipesPage(
 		cookbookId: Int,

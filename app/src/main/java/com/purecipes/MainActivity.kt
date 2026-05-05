@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
 				getFavoriteRecipesPage = graph.getFavoriteRecipesPageUseCase,
 				getCookbooksPage = graph.getCookbooksPageUseCase,
 				createCookbook = graph.createCookbookUseCase,
+				deleteCookbook = graph.deleteCookbookUseCase,
 				getCookbookRecipesPage = graph.getCookbookRecipesPageUseCase,
 				getCookbookCoverImageUrl = graph.getCookbookCoverImageUrlUseCase,
 				getRecipeCookbooks = graph.getRecipeCookbooksUseCase,
