@@ -1,6 +1,8 @@
 package com.purecipes.feature.favorites.ui
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onAllNodesWithText
@@ -9,13 +11,19 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.github.michaelbull.result.Ok
+import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import com.purecipes.shared.domain.model.CookbookListPage
+import com.purecipes.shared.domain.model.CookbookRef
 import com.purecipes.shared.domain.model.CookbookSummary
+import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.SearchResultsPage
 import com.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import com.purecipes.shared.ui.theme.PurecipesTheme
@@ -178,9 +186,110 @@ class FavoritesScreenTest {
 		assertEquals(1, cookbooksRepo.deleteCookbookCallCount)
 	}
 
+	@Test
+	fun cookbookDetailRefreshRemovesRecipeAfterFavoritesRefreshSignal() = runRecompositionTrackingUiTest {
+		val favoritesRepo = FakeFavoritesRepository()
+		val cookbooksRepo = MutableCookbooksRepository()
+		val refreshSignalState = mutableIntStateOf(REFRESH_SIGNAL)
+		setTrackedContent {
+			PurecipesTheme {
+				FavoritesScreen(
+					getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
+					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepo),
+					createCookbook = CreateCookbookUseCase(cookbooksRepo),
+					deleteCookbook = DeleteCookbookUseCase(cookbooksRepo),
+					getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepo),
+					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+					refreshSignal = refreshSignalState.intValue,
+					sessionKey = "session",
+					onRecipeSelect = {},
+				)
+			}
+		}
+
+		onNodeWithText("Cookbooks").performClick()
+		onNodeWithText(TEST_COOKBOOK_NAME).performClick()
+		onNodeWithText(TEST_RECIPE_TITLE).assertIsDisplayed()
+		onNodeWithText("1 recipes").assertIsDisplayed()
+
+		runOnIdle {
+			cookbooksRepo.setCookbookRecipes(emptyList())
+			refreshSignalState.intValue += 1
+		}
+
+		waitForIdle()
+		onNodeWithText("Cookbooks").performClick()
+		onNodeWithText(TEST_COOKBOOK_NAME).performClick()
+		onAllNodesWithText(TEST_RECIPE_TITLE).assertCountEquals(0)
+	}
+
 	private companion object {
 		const val REFRESH_SIGNAL = 1
 		const val NON_EMPTY_COOKBOOK_ID = 21
 		const val EMPTY_COOKBOOK_ID = 22
+		const val TEST_COOKBOOK_ID = 23
+		const val TEST_COOKBOOK_NAME = "Weeknight dinners"
+		const val TEST_RECIPE_ID = 77
+		const val TEST_RECIPE_TITLE = "Creamy tomato pasta"
+	}
+
+	private class MutableCookbooksRepository : com.purecipes.feature.favorites.domain.repository.CookbooksRepository {
+		private val cookbook = CookbookSummary(
+			id = TEST_COOKBOOK_ID,
+			name = TEST_COOKBOOK_NAME,
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		private var cookbookRecipes = listOf(
+			com.purecipes.shared.domain.model.RecipeSummary(
+				id = TEST_RECIPE_ID,
+				title = TEST_RECIPE_TITLE,
+				cuisine = Cuisine.ITALIAN,
+				imageUrl = null,
+				totalTime = 30,
+				isFavorite = true,
+			),
+		)
+
+		override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> {
+			val summary = cookbook.copy(recipeCount = cookbookRecipes.size)
+			return Ok(
+				CookbookListPage(
+					items = listOf(summary),
+					pageNumber = pageNumber,
+					pageSize = pageSize,
+					totalMatches = 1,
+				),
+			)
+		}
+
+		override suspend fun createCookbook(name: String): Outcome<CookbookSummary> = Ok(cookbook)
+
+		override suspend fun deleteCookbook(cookbookId: Int): Outcome<Unit> = Ok(Unit)
+
+		override suspend fun getCookbookRecipesPage(
+			cookbookId: Int,
+			pageNumber: Int,
+			pageSize: Int,
+		): Outcome<SearchResultsPage> {
+			return Ok(
+				SearchResultsPage(
+					items = cookbookRecipes,
+					pageNumber = pageNumber,
+					pageSize = pageSize,
+					totalMatches = cookbookRecipes.size,
+				),
+			)
+		}
+
+		override suspend fun addRecipeToCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> = Ok(Unit)
+
+		override suspend fun removeRecipeFromCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> = Ok(Unit)
+
+		override suspend fun getRecipeCookbooks(recipeId: Int): Outcome<List<CookbookRef>> = Ok(emptyList())
+
+		fun setCookbookRecipes(recipes: List<com.purecipes.shared.domain.model.RecipeSummary>) {
+			cookbookRecipes = recipes
+		}
 	}
 }

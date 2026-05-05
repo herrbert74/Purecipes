@@ -164,8 +164,20 @@ internal class FavoritesViewModel(
 			cookbooksPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 			loadSavedPage(FIRST_PAGE_NUMBER)
 			loadCookbooksPage(FIRST_PAGE_NUMBER)
+			refreshCookbookDetailIfOpen()
 			isInitialLoading = false
 		}
+	}
+
+	private suspend fun refreshCookbookDetailIfOpen() {
+		if (viewingCookbookId == null) {
+			return
+		}
+		cookbookDetailRecipes.clear()
+		totalCookbookDetailMatches = 0
+		cookbookDetailErrorMessage = null
+		cookbookDetailPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
+		loadCookbookDetailPage(FIRST_PAGE_NUMBER)
 	}
 
 	fun loadCookbookCover(cookbookId: Int) {
