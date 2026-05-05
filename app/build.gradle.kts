@@ -61,7 +61,7 @@ android {
 	defaultConfig {
 		applicationId = "com.purecipes"
 		minSdk = 24
-		targetSdk = 36
+		targetSdk = libs.versions.targetSdkVersion.get().toInt()
 		versionCode = 1
 		versionName = "1.0"
 		buildConfigField("String", "PURECIPES_GOOGLE_WEB_CLIENT_ID", googleWebClientId().asBuildConfigString())
@@ -112,13 +112,5 @@ dependencies {
 	implementation(libs.kmpauth.facebook)
 	implementation(libs.kmpnotifier)
 	implementation(platform(libs.androidx.composeBom))
-	implementation(libs.androidx.composeUi)
-	implementation(libs.androidx.composeUiGraphics)
-	implementation(libs.androidx.composeUiToolingPreview)
-	implementation(libs.androidx.composeMaterial3)
-	implementation(libs.androidx.composeMaterialIconsCore)
-	implementation(libs.androidx.composeMaterialIconsExtended)
 	implementation(libs.metro.runtime)
 }
-
-dependencies { implementation(libs.androidx.fragmentKtx) }

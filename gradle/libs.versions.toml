@@ -10,28 +10,27 @@ targetSdkVersion = "36"
 
 #platform
 
-androidGradlePlugin = "9.1.1"
+androidGradlePlugin = "9.2.1"
 #androidGradlePlugin = "7.3.1" # For IntelliJ plugin runIde
 coroutines = "1.10.2"
 crashkios = "0.9.0"
 crashlyticsPlugin = "3.0.7"
 jdk = "21"
-kotlin = "2.3.20"
+kotlin = "2.3.21"
 kotlinx-collections = "0.4.0"
 kotlinx-datetime = "0.7.1-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
-ksp = "2.3.6"
+ksp = "2.3.7"
 
 #other
 
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
-androidx-composeBom = "2026.03.01"
-androidx-composeMaterial3 = "1.5.0-alpha17" #For alpha releases only
-androidx-composeUiAndroidTest = "1.10.6"
+androidx-composeBom = "2026.04.01"
+androidx-composeMaterial3 = "1.5.0-alpha18" #For alpha releases only
+androidx-composeUiAndroidTest = "1.11.0"
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
-#androidx-hilt = "1.2.0"
 #androidx-paletteKtx = "1.0.0"
 #androidx-room = "2.7.2"
 androidx-testCore = "1.7.0"
@@ -42,15 +41,14 @@ androidx-testEspresso = "3.7.0"
 #androidx-work = "2.10.2"
 #autoBind = "2.0.0"
 babestudios-base = "3.2.1"
-buildKonfig = "0.18.0"
+buildKonfig = "0.20.0"
 #compose-screenshotTesting = "0.0.1-alpha09"
 #chucker = "4.2.0"
 coil = "3.4.0"
 googleServices = "4.4.4"
-#dagger = "2.51"
 decompose = "3.5.0"
 dejavu = "0.3.1"
-dependencyAnalysis = "3.5.1"
+dependencyAnalysis = "3.10.0"
 detekt = "1.23.8"
 detekt-compose = "0.4.28"
 diamondedge-logging = "2.1.1"
@@ -65,7 +63,7 @@ hikariCp = "7.0.2"
 jetbrains-androidXLifecycle = "2.10.0"
 jetBrains-compose = "1.10.3"
 jetbrains-composeMaterial3 = "1.11.0-alpha07"
-jetbrains-navigation3 = "1.1.0"
+jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
 jUnit5 = "6.0.3"
 kmpauth = "2.5.0-alpha01"
@@ -74,17 +72,18 @@ koin = "4.2.0"
 kotest = "6.1.11"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
-ktor = "3.4.2"
-ktorfit = "2.7.2"
+ktor = "3.4.3"
+ktorfit = "2.7.3"
+ktorfit-converters = "2.7.2"
 metro = "1.0.0"
-mixpanelAndroid = "8.5.1"
+mixpanelAndroid = "8.6.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.3.0"
 multiplatform-settings = "1.3.0"
 mviKotlin = "4.3.0"
 okhttp = "5.3.2"
 #parcelize-darwin = "0.2.4"
-postgresql = "42.7.10"
+postgresql = "42.7.11"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
 shadow = "9.4.1"
@@ -94,7 +93,6 @@ testcontainers = "2.0.5"
 tensorflow-java = "1.1.0"
 uri-kmp = "0.0.21"
 usercentrics = "2.26.2"
-core = "1.7.0"
 
 [libraries]
 
@@ -147,13 +145,6 @@ androidx-core = "androidx.core:core:1.18.0" #Bundle
 #androidx-coreKtx = "androidx.core:core-ktx:1.16.0" #Bundle
 
 #androidx-datastore = "androidx.datastore:datastore-preferences:1.1.7"
-androidx-fragmentKtx = "androidx.fragment:fragment-ktx:1.8.6"
-
-#androidx-hiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidx-hilt" }
-#androidx-hiltWork = { module = "androidx.hilt:hilt-work", version.ref = "androidx-hilt" }
-#androidx-hiltNavigation = { module = "androidx.hilt:hilt-navigation", version.ref = "androidx-hilt" }
-#androidx-hiltNavigationFragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "androidx-hilt" }
-#androidx-hiltNavigationCompose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidx-hilt" }
 
 androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version.ref = "androidx-lifecycle" }
 androidx-lifecycleRuntime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
@@ -166,7 +157,6 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 
 #androidx-media = "androidx.media:media:1.7.0"
 #androidx-mediaRouter = "androidx.mediarouter:mediarouter:1.8.1"
-
 
 #androidx-paletteKtx = { group = "androidx.palette", name = "palette-ktx", version.ref = "androidx-paletteKtx" }
 #androidx-preferenceKtx = "androidx.preference:preference-ktx:1.2.1"
@@ -233,8 +223,6 @@ essenty-backHandler = { module = "com.arkivanov.essenty:back-handler", version.r
 essenty-instanceKeeper = { module = "com.arkivanov.essenty:instance-keeper", version.ref = "essenty" }
 essenty-stateKeeper = { module = "com.arkivanov.essenty:state-keeper", version.ref = "essenty" }
 
-gson = "com.google.code.gson:gson:2.13.2"
-
 #googlePlay-appUpdateKtx = "com.google.android.play:app-update-ktx:2.1.0"
 #googlePlay-servicesAnalytics = "com.google.android.gms:play-services-analytics:18.1.1"
 #googlePlay-servicesLocation = "com.google.android.gms:play-services-location:21.3.0"
@@ -256,18 +244,9 @@ firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 #firebaseDatabase = { module = "com.google.firebase:firebase-database" }
 #firebaseConfig = { module = "com.google.firebase:firebase-config" }
 
-#graphql-runtime = { module = "com.apollographql.apollo:apollo-runtime", version.ref = "graphql" }
-
-#https://github.com/android/android-test/issues/1352
-hamcrest = "org.hamcrest:hamcrest-core:1.3"
-
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 hikariCp = { module = "com.zaxxer:HikariCP", version.ref = "hikariCp" }
-
-#inject = "javax.inject:javax.inject:1"
-
-#javaPoet = { module = "com.squareup:javapoet", version.ref = "javaPoet" } ":1.13.0"
 
 jetbrains-androidXLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "jetbrains-androidXLifecycle" }
 jetbrains-androidXLifecycleViewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrains-androidXLifecycle" }
@@ -350,7 +329,7 @@ ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-an
 ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit" }
 ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
-ktorfit-convertersResponse = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-converters-response", version.ref = "ktorfit" }
+ktorfit-convertersResponse = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-converters-response", version.ref = "ktorfit-converters" }
 
 #leakCanary = "com.squareup.leakcanary:leakcanary-android:2.14"
 
@@ -411,9 +390,8 @@ androidKotlinMultiPlatformLibrary = { id = "com.android.kotlin.multiplatform.lib
 buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 #compose-screenshotTesting = { id = "com.android.compose.screenshot", version.ref = "compose-screenshotTesting" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsPlugin" }
-#dagger-hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 #dependencyAnalysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" } #fine-grained plugin
-#dependencyAnalysisBuildHealth = { id = "com.autonomousapps.build-health", version.ref = "dependency-analysis" } #settings plugin
+#dependencyAnalysisBuildHealth = { id = "com.autonomousapps.build-health", version.ref = "dependencyAnalysis" } #settings plugin
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 #gradleDoctor = { id = "com.osacky.doctor", version.ref = "gradleDoctor" }
@@ -428,7 +406,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
-android-lint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
+#android-lint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
 #mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 #parcelize-darwin = { id = "com.arkivanov.parcelize.darwin", version.ref = "parcelize-darwin" }
 #touchlab-skie = { id = "co.touchlab.skie", version.ref = "skie" }
