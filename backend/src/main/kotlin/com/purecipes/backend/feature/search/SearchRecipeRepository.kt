@@ -1,0 +1,157 @@
+package com.purecipes.backend.feature.search
+
+import com.purecipes.backend.feature.recipe.RecipeRepository
+import com.purecipes.backend.feature.recipe.RecipeRepositorySql
+import com.purecipes.backend.feature.recipe.countRecipesByKeyword
+import com.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
+import com.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
+import com.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
+import com.purecipes.shared.domain.model.CookingTimeRange
+import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.SearchRequest
+import com.purecipes.shared.domain.model.SearchResultsPage
+import java.sql.Connection
+import javax.sql.DataSource
+
+class SearchRecipeRepository(
+	private val dataSource: DataSource,
+) {
+	private val recipeRepository = RecipeRepository(dataSource)
+
+	fun searchByKeywordPaginated(
+		keyword: String,
+		pageNumber: Int = 1,
+		pageSize: Int = 20,
+	): SearchResultsPage {
+		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val searchInput = prepareKeywordSearchInput(keyword, pageNumber, normalizedPageSize) ?: return SearchResultsPage(
+			items = emptyList(),
+			pageNumber = 1,
+			pageSize = normalizedPageSize,
+			totalMatches = 0,
+		)
+		val items = searchByKeyword(searchInput)
+		val totalMatches = countRecipesByKeyword(dataSource, searchInput.like)
+		return SearchResultsPage(
+			items = items,
+			pageNumber = searchInput.pageNumber,
+			pageSize = searchInput.pageSize,
+			totalMatches = totalMatches,
+		)
+	}
+
+	fun searchWithFilters(request: SearchRequest, userId: Long? = null): SearchResultsPage {
+		val normalizedPageNumber = request.pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = request.pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
+		val filters = request.filters
+		val conditions = mutableListOf<String>()
+		val params = mutableListOf<Any>()
+		if (request.query.isNotBlank()) {
+			val like = "%${request.query.trim().lowercase()}%"
+			conditions.add("(LOWER(r.title) LIKE ? OR LOWER(r.cuisine) LIKE ?)")
+			params.add(like)
+			params.add(like)
+		}
+		if (filters.cuisines.isNotEmpty() && filters.cuisines.size < Cuisine.entries.size) {
+			val placeholders = filters.cuisines.joinToString(",") { "?" }
+			conditions.add("r.cuisine IN ($placeholders)")
+			filters.cuisines.forEach { params.add(it.displayName) }
+		}
+		if (filters.cookingTimeRanges.isNotEmpty() && filters.cookingTimeRanges.size < CookingTimeRange.entries.size) {
+			val timeParts = filters.cookingTimeRanges.map { range ->
+				when (range) {
+					CookingTimeRange.UNDER_15 -> "r.total_time <= 15"
+					CookingTimeRange.UNDER_30 -> "r.total_time <= 30"
+					CookingTimeRange.UNDER_60 -> "r.total_time <= 60"
+					CookingTimeRange.OVER_60 -> "r.total_time > 60"
+				}
+			}
+			conditions.add("(${timeParts.joinToString(" OR ")})")
+		}
+		addEnrichmentFilterConditions(filters, conditions, params)
+		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
+
+		val (items, totalMatches) = dataSource.connection.use { conn ->
+			val availableIngredients = if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
+			if (availableIngredients.isEmpty()) {
+				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
+				val page = querySearchWithFiltersRecipes(
+					conn = conn,
+					whereClause = whereClause,
+					params = params,
+					limit = normalizedPageSize,
+					offset = offset,
+					executeQuery = recipeRepository::executeQuery,
+				)
+				page to total
+			} else {
+				val filtered = querySearchWithFiltersRecipes(
+					conn = conn,
+					whereClause = whereClause,
+					params = params,
+					executeQuery = recipeRepository::executeQuery,
+				).filter { summary ->
+					isRecipeCoveredByAvailableIngredients(
+						recipeId = summary.id,
+						availableIngredients = availableIngredients,
+						loadIngredientGroups = { recipeId -> recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId) },
+					)
+				}
+				filtered.drop(offset).take(normalizedPageSize) to filtered.size
+			}
+		}
+
+		return SearchResultsPage(items, normalizedPageNumber, normalizedPageSize, totalMatches)
+	}
+
+	private fun searchByKeyword(searchInput: KeywordSearchInput): List<RecipeSummary> {
+		val sql = """
+			SELECT id, title, cuisine, image_url, total_time, measurement_system
+			FROM recipes
+			WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
+			ORDER BY created_at DESC
+			LIMIT ? OFFSET ?
+		""".trimIndent()
+		return recipeRepository.searchRecipes(sql, searchInput.like, searchInput.pageSize, searchInput.offset)
+	}
+
+	private fun prepareKeywordSearchInput(keyword: String, pageNumber: Int, pageSize: Int): KeywordSearchInput? {
+		val trimmed = keyword.trim()
+		if (trimmed.isEmpty()) {
+			return null
+		}
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val offset = (normalizedPageNumber - 1) * pageSize
+		return KeywordSearchInput(
+			like = "%${trimmed.lowercase()}%",
+			pageNumber = normalizedPageNumber,
+			pageSize = pageSize,
+			offset = offset,
+		)
+	}
+}
+
+private fun loadAvailableIngredientsForUser(conn: Connection, userId: Long): List<String> {
+	return conn.prepareStatement(RecipeRepositorySql.GET_USER_PANTRY_SQL).use { ps ->
+		ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+		ps.executeQuery().use { rs ->
+			buildList {
+				while (rs.next()) {
+					val ingredient = rs.getString("ingredient")?.trim().orEmpty()
+					if (ingredient.isNotEmpty()) {
+						add(ingredient)
+					}
+				}
+			}.distinct()
+		}
+	}
+}
+
+private data class KeywordSearchInput(
+	val like: String,
+	val pageNumber: Int,
+	val pageSize: Int,
+	val offset: Int,
+)

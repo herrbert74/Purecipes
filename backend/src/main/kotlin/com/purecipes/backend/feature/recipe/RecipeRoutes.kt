@@ -1,12 +1,12 @@
-package com.purecipes.backend.routes
+package com.purecipes.backend.feature.recipe
 
 import com.purecipes.backend.ErrorResponse
 import com.purecipes.backend.auth.SessionService
+import com.purecipes.backend.feature.auth.optionalAuthenticatedUserId
+import com.purecipes.backend.feature.auth.requireAuthenticatedUserId
+import com.purecipes.backend.feature.search.SearchRecipeRepository
 import com.purecipes.backend.db.Db
-import com.purecipes.backend.repository.CookbookRepository
-import com.purecipes.backend.repository.RecipeRepository
-import com.purecipes.backend.repository.searchByKeywordPaginated
-import com.purecipes.backend.repository.searchWithFilters
+import com.purecipes.backend.feature.favorites.CookbookRepository
 import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchRequest
 import io.ktor.http.HttpStatusCode
@@ -69,13 +69,13 @@ fun Route.recipeRoutes(
 			val pageNumber = call.request.queryParameters["pageNumber"]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
 			val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull()
 				?.coerceIn(1, HIGHEST_RESULT_COUNT_LIMIT) ?: DEFAULT_RESULT_COUNT_LIMIT
-			val repo = RecipeRepository(dbProvider().dataSource)
+			val repo = SearchRecipeRepository(dbProvider().dataSource)
 			call.respond(repo.searchByKeywordPaginated(query, pageNumber, pageSize))
 		}
 
 		post("/search") {
 			val searchRequest = call.receiveSearchRequestOrRespond() ?: return@post
-			val repo = RecipeRepository(dbProvider().dataSource)
+			val repo = SearchRecipeRepository(dbProvider().dataSource)
 			call.respond(
 				repo.searchWithFilters(
 					request = searchRequest,

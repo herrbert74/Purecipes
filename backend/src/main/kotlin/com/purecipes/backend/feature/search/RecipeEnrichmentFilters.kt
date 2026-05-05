@@ -1,4 +1,4 @@
-package com.purecipes.backend.repository
+package com.purecipes.backend.feature.search
 
 import com.purecipes.shared.domain.model.CalorieRange
 import com.purecipes.shared.domain.model.CookingMethod

@@ -1,7 +1,7 @@
 package com.purecipes.backend
 
 import com.purecipes.backend.fake.FakeSessionService
-import com.purecipes.backend.routes.settingsRoutes
+import com.purecipes.backend.feature.settings.settingsRoutes
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.request.put
