@@ -6,7 +6,7 @@ kotlin {
 	android {
 		namespace = "com.purecipes.feature.recipedetails.ui"
 		withDeviceTestBuilder {
-			sourceSetTreeName = "test"
+			sourceSetTreeName = "androidDeviceTest"
 		}.configure {
 			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		}

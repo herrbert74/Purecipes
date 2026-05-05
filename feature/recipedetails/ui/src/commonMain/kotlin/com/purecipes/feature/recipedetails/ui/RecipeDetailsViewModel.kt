@@ -3,6 +3,7 @@ package com.purecipes.feature.recipedetails.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -14,11 +15,17 @@ import com.github.michaelbull.result.getError
 import com.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import com.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
+import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.CookbookRef
+import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeFormatHandling
@@ -27,6 +34,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+
+private const val COOKBOOK_PICKER_PAGE_SIZE = 100
 
 internal class RecipeDetailsViewModel(
 	private val recipeId: Int,
@@ -37,6 +46,11 @@ internal class RecipeDetailsViewModel(
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val sessionKey: String?,
+	private val getRecipeCookbooks: GetRecipeCookbooksUseCase,
+	private val getCookbooksPage: GetCookbooksPageUseCase,
+	private val createCookbook: CreateCookbookUseCase,
+	private val addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -65,6 +79,16 @@ internal class RecipeDetailsViewModel(
 		private set
 
 	var favoriteChangeCount by mutableIntStateOf(0)
+		private set
+
+	val recipeCookbooks = mutableStateListOf<CookbookRef>()
+
+	val sheetCookbooks = mutableStateListOf<CookbookSummary>()
+
+	var cookbookActionError by mutableStateOf<String?>(null)
+		private set
+
+	var isCookbookActionInFlight by mutableStateOf(false)
 		private set
 
 	private var baseRecipeDetails: RecipeDetails? = null
@@ -124,10 +148,85 @@ internal class RecipeDetailsViewModel(
 						isFavorite = !currentRecipe.isFavorite,
 					),
 				)
+				refreshCookbookMembership()
 			} else {
 				favoriteErrorMessage = outcome.getError()?.message
 			}
 			isFavoriteUpdating = false
+		}
+	}
+
+	fun prepareCookbookPicker() {
+		scope.launch {
+			sheetCookbooks.clear()
+			val page = getCookbooksPage(1, COOKBOOK_PICKER_PAGE_SIZE).get() ?: return@launch
+			sheetCookbooks.addAll(page.items)
+		}
+	}
+
+	fun addRecipeToCookbookId(cookbookId: Int, onDone: (String?) -> Unit) {
+		val recipe = recipeDetails ?: return onDone(null)
+		scope.launch {
+			isCookbookActionInFlight = true
+			cookbookActionError = null
+			val outcome = addRecipeToCookbook(cookbookId, recipe.id)
+			val err = outcome.getError()?.message
+			if (err == null) {
+				refreshCookbookMembership()
+			}
+			isCookbookActionInFlight = false
+			onDone(err)
+		}
+	}
+
+	fun createCookbookAndAdd(name: String, onDone: (String?) -> Unit) {
+		val recipe = recipeDetails ?: return onDone(null)
+		val trimmed = name.trim()
+		if (trimmed.isEmpty()) {
+			onDone(null)
+			return
+		}
+		if (sheetCookbooks.any { it.name.trim().equals(trimmed, ignoreCase = true) }) {
+			val duplicateMessage = "Cookbook already exists"
+			cookbookActionError = duplicateMessage
+			onDone(duplicateMessage)
+			return
+		}
+		scope.launch {
+			isCookbookActionInFlight = true
+			cookbookActionError = null
+			val createOutcome = createCookbook(trimmed)
+			val created = createOutcome.get()
+			if (created == null) {
+				isCookbookActionInFlight = false
+				onDone(createOutcome.getError()?.message)
+				return@launch
+			}
+			val addOutcome = addRecipeToCookbook(created.id, recipe.id)
+			val err = addOutcome.getError()?.message
+			if (err == null) {
+				refreshCookbookMembership()
+			}
+			isCookbookActionInFlight = false
+			onDone(err)
+		}
+	}
+
+	private fun refreshCookbookMembership() {
+		scope.launch {
+			cookbookActionError = null
+			if (sessionKey == null) {
+				recipeCookbooks.clear()
+				return@launch
+			}
+			val r = recipeDetails
+			if (r == null || !r.isFavorite) {
+				recipeCookbooks.clear()
+				return@launch
+			}
+			val outcome = getRecipeCookbooks(r.id)
+			recipeCookbooks.clear()
+			recipeCookbooks.addAll(outcome.get().orEmpty())
 		}
 	}
 
@@ -156,6 +255,7 @@ internal class RecipeDetailsViewModel(
 			}
 			errorMessage = outcome.getError()?.message
 			isLoading = false
+			refreshCookbookMembership()
 		}
 	}
 
@@ -177,6 +277,10 @@ internal fun recipeDetailsViewModel(
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	trackEvent: TrackEventUseCase,
 	sessionKey: String?,
+	getRecipeCookbooks: GetRecipeCookbooksUseCase,
+	getCookbooksPage: GetCookbooksPageUseCase,
+	createCookbook: CreateCookbookUseCase,
+	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 ): RecipeDetailsViewModel {
 	val viewModelKey =
 		buildString {
@@ -194,6 +298,14 @@ internal fun recipeDetailsViewModel(
 			append(trackEvent.hashCode())
 			append(':')
 			append(sessionKey ?: "signed-out")
+			append(':')
+			append(getRecipeCookbooks.hashCode())
+			append(':')
+			append(getCookbooksPage.hashCode())
+			append(':')
+			append(createCookbook.hashCode())
+			append(':')
+			append(addRecipeToCookbook.hashCode())
 		}
 	return viewModel(
 		key = viewModelKey,
@@ -208,6 +320,11 @@ internal fun recipeDetailsViewModel(
 					processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
 					removeFavoriteRecipe = removeFavoriteRecipe,
 					trackEvent = trackEvent,
+					sessionKey = sessionKey,
+					getRecipeCookbooks = getRecipeCookbooks,
+					getCookbooksPage = getCookbooksPage,
+					createCookbook = createCookbook,
+					addRecipeToCookbook = addRecipeToCookbook,
 				)
 			}
 		},

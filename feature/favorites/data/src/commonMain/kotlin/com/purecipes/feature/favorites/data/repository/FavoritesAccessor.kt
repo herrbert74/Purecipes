@@ -9,7 +9,8 @@ class FavoritesAccessor(
 
 	override suspend fun addFavorite(recipeId: Int) = remoteDataSource.addFavorite(recipeId)
 
-	override suspend fun getFavoriteRecipes() = remoteDataSource.getFavoriteRecipes()
+	override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int) =
+		remoteDataSource.getFavoriteRecipesPage(pageNumber, pageSize)
 
 	override suspend fun removeFavorite(recipeId: Int) = remoteDataSource.removeFavorite(recipeId)
 }

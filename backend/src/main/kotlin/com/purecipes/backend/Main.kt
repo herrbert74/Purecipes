@@ -6,6 +6,7 @@ import com.purecipes.backend.auth.JdbcSessionService
 import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.routes.authenticationRoutes
+import com.purecipes.backend.routes.cookbookRoutes
 import com.purecipes.backend.routes.favoriteRoutes
 import com.purecipes.backend.routes.recipeImageRoutes
 import com.purecipes.backend.routes.recipeRoutes
@@ -88,6 +89,7 @@ fun Application.module(
 		}
 		authenticationRoutes(googleIdTokenVerifier, sessionService)
 		favoriteRoutes(sessionService) { db }
+		cookbookRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)
 		recipeRoutes(sessionService) { db }
 		settingsRoutes(sessionService) { db }

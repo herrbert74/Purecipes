@@ -181,6 +181,35 @@ internal const val FAVORITES_USER_CREATED_AT_INDEX_SQL = """
 	ON favorites (user_id, created_at DESC)
 """
 
+internal const val COOKBOOKS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS cookbooks (
+		id SERIAL PRIMARY KEY,
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		name TEXT NOT NULL,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val COOKBOOKS_USER_CREATED_AT_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_cookbooks_user_created_at
+	ON cookbooks (user_id, created_at DESC)
+"""
+
+internal const val COOKBOOK_RECIPES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS cookbook_recipes (
+		cookbook_id INTEGER NOT NULL REFERENCES cookbooks(id) ON DELETE CASCADE,
+		recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+		added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (cookbook_id, recipe_id)
+	)
+"""
+
+internal const val COOKBOOK_RECIPES_RECIPE_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_cookbook_recipes_recipe
+	ON cookbook_recipes (recipe_id)
+"""
+
 internal const val NUTRITION_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS nutrition (
 		id SERIAL PRIMARY KEY,

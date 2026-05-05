@@ -3,10 +3,17 @@ package com.purecipes.shared.testfixtures.fake
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Outcome
 import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
-import com.purecipes.shared.domain.model.RecipeSummary
+import com.purecipes.shared.domain.model.SearchResultsPage
 
 class FakeFavoritesRepository(
-	private val getFavoriteRecipesResult: Outcome<List<RecipeSummary>> = Ok(emptyList()),
+	private val getFavoriteRecipesPageResult: Outcome<SearchResultsPage> = Ok(
+		SearchResultsPage(
+			items = emptyList(),
+			pageNumber = 1,
+			pageSize = 20,
+			totalMatches = 0,
+		),
+	),
 	private val addFavoriteResult: Outcome<Unit> = Ok(Unit),
 	private val removeFavoriteResult: Outcome<Unit> = Ok(Unit),
 ) : FavoritesRepository {
@@ -19,7 +26,8 @@ class FakeFavoritesRepository(
 		return addFavoriteResult
 	}
 
-	override suspend fun getFavoriteRecipes(): Outcome<List<RecipeSummary>> = getFavoriteRecipesResult
+	override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int): Outcome<SearchResultsPage> =
+		getFavoriteRecipesPageResult
 
 	override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> {
 		removedRecipeIds += recipeId

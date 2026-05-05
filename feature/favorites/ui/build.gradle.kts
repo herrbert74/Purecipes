@@ -1,5 +1,6 @@
 plugins {
 	id("convention.ui")
+	alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -18,6 +19,7 @@ kotlin {
 				api(project(":feature:favorites:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
+				implementation(libs.kotlinx.collectionsImmutable)
 			}
 		}
 		commonTest {

@@ -3,6 +3,10 @@ package com.purecipes.shared.datatestfixtures.fake
 import com.purecipes.shared.data.network.PurecipesApi
 import com.purecipes.shared.domain.model.AuthenticatedBackendUser
 import com.purecipes.shared.domain.model.AuthenticatedSession
+import com.purecipes.shared.domain.model.CookbookCreateRequest
+import com.purecipes.shared.domain.model.CookbookListPage
+import com.purecipes.shared.domain.model.CookbookRef
+import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.GoogleSignInRequest
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.MeasurementSystem
@@ -17,6 +21,7 @@ import com.purecipes.shared.domain.model.SearchResultsPage
 class FakePurecipesApi(
 	var searchResult: List<RecipeSummary> = emptyList(),
 	var favoriteRecipes: List<RecipeSummary> = emptyList(),
+	initialCookbooks: List<CookbookSummary> = emptyList(),
 	initialRecipeDetails: List<RecipeDetails> = emptyList(),
 	initialMeasurementPreferences: MeasurementPreferences = MeasurementPreferences(
 		preferredSystem = MeasurementSystem.METRIC,
@@ -27,6 +32,15 @@ class FakePurecipesApi(
 
 	private val recipeDetailsById = initialRecipeDetails.associateBy { it.id }.toMutableMap()
 	private val createdRecipes = initialRecipeDetails.toMutableList()
+	private val cookbooks = initialCookbooks.toMutableList()
+	private val cookbookRecipeIds = mutableMapOf<Int, MutableSet<Int>>()
+	private var nextCookbookId: Int = (initialCookbooks.maxOfOrNull { it.id } ?: 0) + 1
+
+	init {
+		for (c in initialCookbooks) {
+			cookbookRecipeIds.getOrPut(c.id) { mutableSetOf() }
+		}
+	}
 
 	var searchWithFiltersCalls: Int = 0
 		private set
@@ -87,7 +101,18 @@ class FakePurecipesApi(
 
 	override suspend fun signOut() = Unit
 
-	override suspend fun getFavorites(): List<RecipeSummary> = favoriteRecipes
+	override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int): SearchResultsPage {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceAtLeast(1)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
+		val slice = favoriteRecipes.drop(offset).take(normalizedPageSize)
+		return SearchResultsPage(
+			items = slice,
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = favoriteRecipes.size,
+		)
+	}
 
 	override suspend fun addFavorite(recipeId: Int) {
 		addedFavoriteIds += recipeId
@@ -95,6 +120,77 @@ class FakePurecipesApi(
 
 	override suspend fun removeFavorite(recipeId: Int) {
 		removedFavoriteIds += recipeId
+		cookbookRecipeIds.values.forEach { it.remove(recipeId) }
+	}
+
+	override suspend fun getCookbooks(pageNumber: Int, pageSize: Int): CookbookListPage {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceAtLeast(1)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
+		val summaries = cookbooks.map { summary ->
+			val count = cookbookRecipeIds[summary.id]?.count { recipeId ->
+				favoriteRecipes.any { it.id == recipeId }
+			} ?: 0
+			summary.copy(recipeCount = count)
+		}
+		val slice = summaries.drop(offset).take(normalizedPageSize)
+		return CookbookListPage(
+			items = slice,
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = summaries.size,
+		)
+	}
+
+	override suspend fun createCookbook(request: CookbookCreateRequest): CookbookSummary {
+		val now = System.currentTimeMillis()
+		val summary = CookbookSummary(
+			id = nextCookbookId++,
+			name = request.name.trim(),
+			recipeCount = 0,
+			updatedAtEpochMillis = now,
+		)
+		cookbooks += summary
+		cookbookRecipeIds[summary.id] = mutableSetOf()
+		return summary
+	}
+
+	override suspend fun deleteCookbook(cookbookId: Int) {
+		val recipeCount = cookbookRecipeIds[cookbookId].orEmpty().count { recipeId ->
+			favoriteRecipes.any { it.id == recipeId }
+		}
+		check(recipeCount == 0) { "Only empty cookbooks can be deleted" }
+		cookbooks.removeAll { it.id == cookbookId }
+		cookbookRecipeIds.remove(cookbookId)
+	}
+
+	override suspend fun getCookbookRecipes(cookbookId: Int, pageNumber: Int, pageSize: Int): SearchResultsPage {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceAtLeast(1)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
+		val ids = cookbookRecipeIds[cookbookId].orEmpty()
+		val recipes = ids.mapNotNull { id -> favoriteRecipes.find { it.id == id } }
+			.sortedBy { it.id }
+		val slice = recipes.drop(offset).take(normalizedPageSize)
+		return SearchResultsPage(
+			items = slice,
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = recipes.size,
+		)
+	}
+
+	override suspend fun addRecipeToCookbook(cookbookId: Int, recipeId: Int) {
+		cookbookRecipeIds.getOrPut(cookbookId) { mutableSetOf() } += recipeId
+	}
+
+	override suspend fun removeRecipeFromCookbook(cookbookId: Int, recipeId: Int) {
+		cookbookRecipeIds[cookbookId]?.remove(recipeId)
+	}
+
+	override suspend fun getRecipeCookbooks(recipeId: Int): List<CookbookRef> {
+		return cookbooks.filter { cookbookRecipeIds[it.id]?.contains(recipeId) == true }
+			.map { CookbookRef(id = it.id, name = it.name) }
 	}
 
 	override suspend fun getMeasurementPreferences(): MeasurementPreferences = measurementPreferences
@@ -143,6 +239,7 @@ class FakePurecipesApi(
 	}
 
 	private companion object {
+
 		fun defaultAuthenticatedSession(): AuthenticatedSession {
 			return AuthenticatedSession(
 				accessToken = "session-token",

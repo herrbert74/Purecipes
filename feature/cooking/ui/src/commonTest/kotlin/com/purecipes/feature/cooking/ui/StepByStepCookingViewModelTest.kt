@@ -19,7 +19,7 @@ import kotlin.test.Test
 class StepByStepCookingViewModelTest {
 
 	@Test
-	fun stepByStepViewModelAdvancesAndClampsNavigation() = runTest {
+	fun `step by step view model advances and clamps navigation`() = runTest {
 		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -48,7 +48,7 @@ class StepByStepCookingViewModelTest {
 	}
 
 	@Test
-	fun stepByStepViewModelSetsAndClampsCurrentPage() = runTest {
+	fun `step by step view model sets and clamps current page`() = runTest {
 		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()

@@ -41,7 +41,14 @@ import com.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.purecipes.feature.auth.ui.AuthenticationScreen
 import com.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesUseCase
+import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import com.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.ui.FavoritesScreen
 import com.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
@@ -90,7 +97,14 @@ fun MainScreen(
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
-	getFavoriteRecipes: GetFavoriteRecipesUseCase,
+	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
+	getCookbooksPage: GetCookbooksPageUseCase,
+	createCookbook: CreateCookbookUseCase,
+	deleteCookbook: DeleteCookbookUseCase,
+	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
+	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
+	getRecipeCookbooks: GetRecipeCookbooksUseCase,
+	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	searchRecipes: SearchRecipesUseCase,
 	getSearchFilters: GetSearchFiltersUseCase,
@@ -177,7 +191,11 @@ fun MainScreen(
 						RecipeDetailsScreen(
 							recipeId = destination.recipeId,
 							addFavoriteRecipe = addFavoriteRecipe,
+							addRecipeToCookbook = addRecipeToCookbook,
 							canManageFavorites = canManageFavorites,
+							createCookbook = createCookbook,
+							getCookbooksPage = getCookbooksPage,
+							getRecipeCookbooks = getRecipeCookbooks,
 							getRecipeDetails = getRecipeDetails,
 							getMeasurementPreferences = getMeasurementPreferences,
 							markMeasurementMismatchSeen = markMeasurementMismatchSeen,
@@ -207,7 +225,12 @@ fun MainScreen(
 					}
 					entry<FavoritesDestination> {
 						FavoritesScreen(
-							getFavoriteRecipes = getFavoriteRecipes,
+							getFavoriteRecipesPage = getFavoriteRecipesPage,
+							getCookbooksPage = getCookbooksPage,
+							createCookbook = createCookbook,
+							deleteCookbook = deleteCookbook,
+							getCookbookRecipesPage = getCookbookRecipesPage,
+							getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 							refreshSignal = favoritesRefreshSignal,
 							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),

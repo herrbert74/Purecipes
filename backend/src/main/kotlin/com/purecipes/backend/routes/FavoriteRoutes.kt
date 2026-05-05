@@ -12,6 +12,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 
+private const val HIGHEST_FAVORITES_PAGE_SIZE = 200
+
+private const val DEFAULT_FAVORITES_PAGE_SIZE = 20
+
 fun Route.favoriteRoutes(
 	sessionService: SessionService,
 	dbProvider: () -> Db,
@@ -19,8 +23,11 @@ fun Route.favoriteRoutes(
 	route("/favorites") {
 		get {
 			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@get
+			val pageNumber = call.request.queryParameters["pageNumber"]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+			val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull()
+				?.coerceIn(1, HIGHEST_FAVORITES_PAGE_SIZE) ?: DEFAULT_FAVORITES_PAGE_SIZE
 			val repo = RecipeRepository(dbProvider().dataSource)
-			call.respond(repo.getFavoriteRecipes(userId))
+			call.respond(repo.getFavoriteRecipesPage(userId, pageNumber, pageSize))
 		}
 
 		post("/{id}") {
