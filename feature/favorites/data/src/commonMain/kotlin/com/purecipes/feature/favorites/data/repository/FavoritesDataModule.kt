@@ -1,15 +1,19 @@
 package com.purecipes.feature.favorites.data.repository
 
+import com.purecipes.feature.favorites.data.datasource.CookbookCoverDataSource
 import com.purecipes.feature.favorites.data.datasource.CookbooksDataSource
 import com.purecipes.feature.favorites.data.datasource.CookbooksRemoteDataSource
 import com.purecipes.feature.favorites.data.datasource.FavoritesDataSource
 import com.purecipes.feature.favorites.data.datasource.FavoritesRemoteDataSource
+import com.purecipes.feature.favorites.data.datasource.SettingsCookbookCoverLocalDataSource
+import com.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import com.purecipes.feature.favorites.domain.repository.CookbooksRepository
 import com.purecipes.feature.favorites.domain.repository.FavoritesRepository
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
@@ -92,5 +96,24 @@ interface FavoritesDataModule {
 	@Provides
 	fun provideGetRecipeCookbooksUseCase(repository: CookbooksRepository): GetRecipeCookbooksUseCase {
 		return GetRecipeCookbooksUseCase(repository)
+	}
+
+	@Provides
+	fun provideCookbookCoverLocalDataSource(): CookbookCoverDataSource.Local {
+		return SettingsCookbookCoverLocalDataSource()
+	}
+
+	@Provides
+	fun provideCookbookCoverRepository(
+		localDataSource: CookbookCoverDataSource.Local,
+	): CookbookCoverRepository {
+		return CookbookCoverAccessor(localDataSource)
+	}
+
+	@Provides
+	fun provideGetCookbookCoverImageUrlUseCase(
+		repository: CookbookCoverRepository,
+	): GetCookbookCoverImageUrlUseCase {
+		return GetCookbookCoverImageUrlUseCase(repository)
 	}
 }

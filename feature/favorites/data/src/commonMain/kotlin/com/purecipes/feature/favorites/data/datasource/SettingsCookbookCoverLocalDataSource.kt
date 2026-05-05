@@ -1,4 +1,4 @@
-package com.purecipes.feature.favorites.ui.cover
+package com.purecipes.feature.favorites.data.datasource
 
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.Serializable
@@ -19,11 +19,11 @@ private data class CookbookCoverEntry(
 	val nextRotationEpochMillis: Long,
 )
 
-class CookbookCoverStore(
+class SettingsCookbookCoverLocalDataSource(
 	private val settings: Settings = Settings(),
-) {
+) : CookbookCoverDataSource.Local {
 
-	fun coverImageUrlFor(
+	override fun getCookbookCoverImageUrl(
 		cookbookId: Int,
 		candidateImageUrls: List<String>,
 		nowMillis: Long,

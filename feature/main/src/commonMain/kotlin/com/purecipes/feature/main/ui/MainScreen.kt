@@ -43,6 +43,7 @@ import com.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
@@ -99,6 +100,7 @@ fun MainScreen(
 	getCookbooksPage: GetCookbooksPageUseCase,
 	createCookbook: CreateCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
+	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	getRecipeCookbooks: GetRecipeCookbooksUseCase,
 	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
@@ -225,6 +227,7 @@ fun MainScreen(
 							getCookbooksPage = getCookbooksPage,
 							createCookbook = createCookbook,
 							getCookbookRecipesPage = getCookbookRecipesPage,
+							getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 							refreshSignal = favoritesRefreshSignal,
 							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),

@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
@@ -63,6 +64,8 @@ import com.purecipes.shared.ui.component.TitleText
 import com.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import com.purecipes.shared.ui.component.paging.PaginationState
 import com.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 internal const val FAVORITES_TITLE_TAG = "favoritesTitle"
 
@@ -72,6 +75,7 @@ fun FavoritesScreen(
 	getCookbooksPage: GetCookbooksPageUseCase,
 	createCookbook: CreateCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
+	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	refreshSignal: Int,
 	sessionKey: String?,
 	modifier: Modifier = Modifier,
@@ -82,6 +86,7 @@ fun FavoritesScreen(
 		getCookbooksPage = getCookbooksPage,
 		createCookbook = createCookbook,
 		getCookbookRecipesPage = getCookbookRecipesPage,
+		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		sessionKey = sessionKey,
 	)
 
@@ -166,7 +171,7 @@ fun FavoritesScreen(
 
 		if (showCreateCookbookDialog) {
 			CreateCookbookDialog(
-				existingCookbookNames = viewModel.cookbooks.map { it.name },
+				existingCookbookNames = viewModel.cookbooks.map { it.name }.toImmutableList(),
 				isLoading = viewModel.isCreatingCookbook,
 				errorMessage = viewModel.createCookbookError,
 				onDismiss = {
@@ -186,7 +191,7 @@ fun FavoritesScreen(
 
 @Composable
 private fun CreateCookbookDialog(
-	existingCookbookNames: List<String>,
+	existingCookbookNames: ImmutableList<String>,
 	isLoading: Boolean,
 	errorMessage: String?,
 	onDismiss: () -> Unit,

@@ -29,6 +29,7 @@ fun main() {
 			getCookbooksPage = graph.getCookbooksPageUseCase,
 			createCookbook = graph.createCookbookUseCase,
 			getCookbookRecipesPage = graph.getCookbookRecipesPageUseCase,
+			getCookbookCoverImageUrl = graph.getCookbookCoverImageUrlUseCase,
 			getRecipeCookbooks = graph.getRecipeCookbooksUseCase,
 			addRecipeToCookbook = graph.addRecipeToCookbookUseCase,
 			getMeasurementPreferences = graph.getMeasurementPreferencesUseCase,

@@ -18,6 +18,7 @@ import com.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import com.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
@@ -97,6 +98,8 @@ interface WasmAppGraph :
 	val deleteCookbookUseCase: DeleteCookbookUseCase
 
 	val getCookbookRecipesPageUseCase: GetCookbookRecipesPageUseCase
+
+	val getCookbookCoverImageUrlUseCase: GetCookbookCoverImageUrlUseCase
 
 	val addRecipeToCookbookUseCase: AddRecipeToCookbookUseCase
 

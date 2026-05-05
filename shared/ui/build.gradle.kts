@@ -15,7 +15,7 @@ kotlin {
 		}
 
 		withDeviceTestBuilder {
-			sourceSetTreeName = "test"
+			sourceSetTreeName = "androidDeviceTest"
 		}.configure {
 			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		}

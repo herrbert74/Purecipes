@@ -14,10 +14,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
-import com.purecipes.feature.favorites.ui.cover.CookbookCoverStore
 import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.ui.component.paging.PaginationState
@@ -44,10 +44,9 @@ internal class FavoritesViewModel(
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
+	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val cookbookCoverStore = CookbookCoverStore()
 
 	private val ownsCoroutineScope = coroutineScope == null
 	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -166,7 +165,7 @@ internal class FavoritesViewModel(
 			val page = getCookbookRecipesPage(cookbookId, FIRST_PAGE_NUMBER, COVER_FETCH_PAGE_SIZE).get()
 				?: return@launch
 			val urls = page.items.mapNotNull { it.imageUrl?.trim()?.takeIf { u -> u.isNotEmpty() } }
-			val url = cookbookCoverStore.coverImageUrlFor(
+			val url = getCookbookCoverImageUrl(
 				cookbookId = cookbookId,
 				candidateImageUrls = urls,
 				nowMillis = System.currentTimeMillis(),
@@ -296,6 +295,7 @@ internal fun favoritesViewModel(
 	getCookbooksPage: GetCookbooksPageUseCase,
 	createCookbook: CreateCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
+	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	sessionKey: String?,
 ): FavoritesViewModel {
 	return viewModel(
@@ -307,6 +307,7 @@ internal fun favoritesViewModel(
 					getCookbooksPage = getCookbooksPage,
 					createCookbook = createCookbook,
 					getCookbookRecipesPage = getCookbookRecipesPage,
+					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 				)
 			}
 		},

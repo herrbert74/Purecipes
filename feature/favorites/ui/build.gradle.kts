@@ -19,8 +19,7 @@ kotlin {
 				api(project(":feature:favorites:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
-				implementation(libs.kotlinx.serializationJson)
-				implementation(libs.multiplatformSettings.noargs)
+				implementation(libs.kotlinx.collectionsImmutable)
 			}
 		}
 		commonTest {

@@ -3,18 +3,18 @@ package com.purecipes.feature.favorites.ui
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.purecipes.base.kotlin.result.Failure
+import com.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import com.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
-import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.CookbookListPage
 import com.purecipes.shared.domain.model.CookbookSummary
+import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchResultsPage
 import com.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import com.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -22,6 +22,18 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavoritesViewModelTest {
+
+	private val getCookbookCoverImageUrl =
+		com.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase(
+		repository = object : CookbookCoverRepository {
+			override fun getCookbookCoverImageUrl(
+				cookbookId: Int,
+				candidateImageUrls: List<String>,
+				nowMillis: Long,
+				random: kotlin.random.Random,
+			): String? = candidateImageUrls.firstOrNull()
+		},
+	)
 
 	@Test
 	fun `load favorites populates recipes`() = runTest {
@@ -50,14 +62,15 @@ class FavoritesViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
+			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			coroutineScope = this,
 		)
 
 		viewModel.loadFavorites()
 		advanceUntilIdle()
 
-		viewModel.savedRecipes.toList() shouldBe expected
-		viewModel.savedErrorMessage shouldBe null
+		kotlin.test.assertEquals(expected, viewModel.savedRecipes.toList())
+		kotlin.test.assertEquals(null, viewModel.savedErrorMessage)
 	}
 
 	@Test
@@ -71,14 +84,15 @@ class FavoritesViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
+			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			coroutineScope = this,
 		)
 
 		viewModel.loadFavorites()
 		advanceUntilIdle()
 
-		viewModel.savedErrorMessage shouldBe "Favorites failed"
-		viewModel.savedRecipes.toList() shouldBe emptyList()
+		kotlin.test.assertEquals("Favorites failed", viewModel.savedErrorMessage)
+		kotlin.test.assertEquals(emptyList(), viewModel.savedRecipes.toList())
 	}
 
 	@Test
@@ -104,6 +118,7 @@ class FavoritesViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			coroutineScope = this,
 		)
 		viewModel.loadFavorites()
@@ -115,8 +130,8 @@ class FavoritesViewModelTest {
 		}
 		advanceUntilIdle()
 
-		created shouldBe false
-		viewModel.createCookbookError shouldBe "Cookbook already exists"
-		cookbooksRepository.createCookbookCallCount shouldBe 0
+		kotlin.test.assertEquals(false, created)
+		kotlin.test.assertEquals("Cookbook already exists", viewModel.createCookbookError)
+		kotlin.test.assertEquals(0, cookbooksRepository.createCookbookCallCount)
 	}
 }
