@@ -1,11 +1,13 @@
-package com.purecipes.backend.repository
+package com.purecipes.backend.feature.favorites
 
 import com.purecipes.shared.domain.model.CookbookListPage
 import com.purecipes.shared.domain.model.CookbookRef
 import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchResultsPage
+import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
 import javax.sql.DataSource
@@ -81,7 +83,7 @@ class CookbookRepository(
 	}
 
 	private fun cookbooksListPage(
-		conn: java.sql.Connection,
+		conn: Connection,
 		userId: Long,
 		normalizedPageNumber: Int,
 		normalizedPageSize: Int,
@@ -97,7 +99,7 @@ class CookbookRepository(
 		)
 	}
 
-	private fun countUserCookbooks(conn: java.sql.Connection, userId: Long): Int =
+	private fun countUserCookbooks(conn: Connection, userId: Long): Int =
 		conn.prepareStatement(COOKBOOKS_COUNT_SQL).use { ps ->
 			ps.setLong(JDBC_USER_ID, userId)
 			ps.executeQuery().use { rs ->
@@ -106,7 +108,7 @@ class CookbookRepository(
 		}
 
 	private fun fetchCookbookSummariesPage(
-		conn: java.sql.Connection,
+		conn: Connection,
 		userId: Long,
 		pageSize: Int,
 		offset: Int,
@@ -119,7 +121,7 @@ class CookbookRepository(
 		}
 
 	private fun cookbookRecipesListPage(
-		conn: java.sql.Connection,
+		conn: Connection,
 		userId: Long,
 		cookbookId: Int,
 		normalizedPageNumber: Int,
@@ -136,7 +138,7 @@ class CookbookRepository(
 		)
 	}
 
-	private fun countCookbookRecipes(conn: java.sql.Connection, userId: Long, cookbookId: Int): Int =
+	private fun countCookbookRecipes(conn: Connection, userId: Long, cookbookId: Int): Int =
 		conn.prepareStatement(COOKBOOK_RECIPES_COUNT_SQL).use { ps ->
 			ps.setLong(JDBC_USER_ID, userId)
 			ps.setInt(JDBC_COOKBOOK_ID, cookbookId)
@@ -146,7 +148,7 @@ class CookbookRepository(
 		}
 
 	private fun fetchCookbookRecipeSummariesPage(
-		conn: java.sql.Connection,
+		conn: Connection,
 		userId: Long,
 		cookbookId: Int,
 		pageSize: Int,
@@ -204,7 +206,7 @@ class CookbookRepository(
 		}
 	}
 
-	private fun isCookbookOwnedByUser(conn: java.sql.Connection, userId: Long, cookbookId: Int): Boolean {
+	private fun isCookbookOwnedByUser(conn: Connection, userId: Long, cookbookId: Int): Boolean {
 		return conn.prepareStatement(COOKBOOK_OWNED_SQL).use { ps ->
 			ps.setInt(1, cookbookId)
 			ps.setLong(2, userId)
@@ -212,7 +214,7 @@ class CookbookRepository(
 		}
 	}
 
-	private fun existsCookbookByNormalizedName(conn: java.sql.Connection, userId: Long, name: String): Boolean {
+	private fun existsCookbookByNormalizedName(conn: Connection, userId: Long, name: String): Boolean {
 		return conn.prepareStatement(COOKBOOK_EXISTS_BY_NAME_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setString(2, name)
@@ -220,14 +222,14 @@ class CookbookRepository(
 		}
 	}
 
-	private fun recipeExists(conn: java.sql.Connection, recipeId: Int): Boolean {
+	private fun recipeExists(conn: Connection, recipeId: Int): Boolean {
 		return conn.prepareStatement(RECIPE_EXISTS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs -> rs.next() }
 		}
 	}
 
-	private fun isFavorite(conn: java.sql.Connection, userId: Long, recipeId: Int): Boolean {
+	private fun isFavorite(conn: Connection, userId: Long, recipeId: Int): Boolean {
 		return conn.prepareStatement(IS_FAVORITE_FOR_USER_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, recipeId)
@@ -235,14 +237,14 @@ class CookbookRepository(
 		}
 	}
 
-	private fun touchCookbookUpdatedAt(conn: java.sql.Connection, cookbookId: Int) {
+	private fun touchCookbookUpdatedAt(conn: Connection, cookbookId: Int) {
 		conn.prepareStatement(TOUCH_COOKBOOK_SQL).use { ps ->
 			ps.setInt(1, cookbookId)
 			ps.executeUpdate()
 		}
 	}
 
-	private fun loadCookbookSummary(conn: java.sql.Connection, userId: Long, cookbookId: Int): CookbookSummary? {
+	private fun loadCookbookSummary(conn: Connection, userId: Long, cookbookId: Int): CookbookSummary? {
 		return conn.prepareStatement(LOAD_COOKBOOK_SUMMARY_SQL).use { ps ->
 			ps.setLong(1, userId)
 			ps.setInt(2, cookbookId)
@@ -291,7 +293,7 @@ class CookbookRepository(
 
 	private fun ResultSet.getNullableMeasurementSystem(columnLabel: String) =
 		getString(columnLabel)?.trim()?.takeIf { it.isNotEmpty() }
-			?.let { com.purecipes.shared.domain.model.MeasurementSystem.valueOf(it) }
+			?.let { MeasurementSystem.valueOf(it) }
 
 	private fun ResultSet.toCookbookSummary(): CookbookSummary = CookbookSummary(
 		id = getInt("id"),

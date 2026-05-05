@@ -1,9 +1,9 @@
-package com.purecipes.backend.routes
+package com.purecipes.backend.feature.settings
 
 import com.purecipes.backend.ErrorResponse
 import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
-import com.purecipes.backend.repository.SettingsRepository
+import com.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import com.purecipes.shared.domain.model.MeasurementPreferences
 import com.purecipes.shared.domain.model.PantryDelta
 import com.purecipes.shared.domain.model.SearchFilters

@@ -1,4 +1,4 @@
-package com.purecipes.backend.repository
+package com.purecipes.backend.feature.recipe
 
 import kotlin.text.RegexOption
 

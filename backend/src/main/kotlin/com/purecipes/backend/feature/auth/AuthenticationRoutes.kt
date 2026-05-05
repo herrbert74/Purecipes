@@ -1,4 +1,4 @@
-package com.purecipes.backend.routes
+package com.purecipes.backend.feature.auth
 
 import com.purecipes.backend.ErrorResponse
 import com.purecipes.backend.auth.GoogleIdTokenVerificationResult

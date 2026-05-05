@@ -1,8 +1,9 @@
-package com.purecipes.backend.routes
+package com.purecipes.backend.feature.recipe
 
 import com.purecipes.backend.ErrorResponse
 import com.purecipes.backend.RecipeImageStorage
 import com.purecipes.backend.auth.SessionService
+import com.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import com.purecipes.shared.domain.model.RecipeImageUploadResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode

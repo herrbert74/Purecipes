@@ -1,5 +1,6 @@
-package com.purecipes.backend.repository
+package com.purecipes.backend.feature.recipe
 
+import com.purecipes.backend.feature.search.IngredientVocabulary
 import com.purecipes.shared.domain.model.CalorieRange
 import com.purecipes.shared.domain.model.CookingMethod
 import com.purecipes.shared.domain.model.Cuisine
@@ -11,7 +12,6 @@ import com.purecipes.shared.domain.model.MeasurementSystem
 import com.purecipes.shared.domain.model.RecipeDetails
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.RecipeWriteRequest
-import com.purecipes.shared.domain.model.SearchResultsPage
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
@@ -84,73 +84,6 @@ class RecipeRepository(
 		}
 	}
 
-	fun getFavoriteRecipesPage(userId: Long, pageNumber: Int, pageSize: Int): SearchResultsPage {
-		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
-		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
-		val offset = (normalizedPageNumber - 1) * normalizedPageSize
-		return dataSource.connection.use { conn ->
-			favoriteRecipesSearchPage(conn, userId, normalizedPageNumber, normalizedPageSize, offset)
-		}
-	}
-
-	private fun favoriteRecipesSearchPage(
-		conn: java.sql.Connection,
-		userId: Long,
-		normalizedPageNumber: Int,
-		normalizedPageSize: Int,
-		offset: Int,
-	): SearchResultsPage {
-		val totalMatches = conn.prepareStatement(RecipeRepositorySql.FAVORITES_COUNT_SQL).use { ps ->
-			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
-			ps.executeQuery().use { rs ->
-				if (rs.next()) rs.getInt(1) else 0
-			}
-		}
-		val items = conn.prepareStatement(RecipeRepositorySql.FAVORITES_PAGE_SQL).use { ps ->
-			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
-			ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX, normalizedPageSize)
-			ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, offset)
-			ps.executeQuery().use(::readFavoriteRecipes)
-		}
-		return SearchResultsPage(
-			items = items,
-			pageNumber = normalizedPageNumber,
-			pageSize = normalizedPageSize,
-			totalMatches = totalMatches,
-		)
-	}
-
-	fun addFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
-		if (!recipeExists(conn, recipeId)) {
-			return@use false
-		}
-
-		conn.prepareStatement(RecipeRepositorySql.ADD_FAVORITE_SQL).use { ps ->
-			ps.setLong(1, userId)
-			ps.setInt(2, recipeId)
-			ps.executeUpdate()
-		}
-		true
-	}
-
-	fun removeFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
-		if (!recipeExists(conn, recipeId)) {
-			return@use false
-		}
-
-		conn.prepareStatement(RecipeRepositorySql.REMOVE_COOKBOOK_RECIPES_FOR_USER_RECIPE_SQL).use { ps ->
-			ps.setLong(1, userId)
-			ps.setInt(2, recipeId)
-			ps.executeUpdate()
-		}
-		conn.prepareStatement(RecipeRepositorySql.REMOVE_FAVORITE_SQL).use { ps ->
-			ps.setLong(1, userId)
-			ps.setInt(2, recipeId)
-			ps.executeUpdate()
-		}
-		true
-	}
-
 	private fun loadRecipeRecord(conn: java.sql.Connection, recipeId: Int): RecipeRecord? {
 		return conn.prepareStatement(RecipeRepositorySql.RECIPE_SQL).use { ps ->
 			ps.setInt(1, recipeId)
@@ -191,26 +124,6 @@ class RecipeRepository(
 			records += rs.toRecipeRecord()
 		}
 		return records
-	}
-
-	private fun ResultSet.toRecipeRecord(): RecipeRecord {
-		return RecipeRecord(
-			id = getInt("id"),
-			title = getString("title"),
-			description = getNullableString("description"),
-			instructions = getNullableString("instructions"),
-			totalTime = getObject("total_time") as? Int,
-			yields = getNullableString("yields"),
-			imageUrl = getNullableString("image_url"),
-			cuisine = getNullableString("cuisine"),
-			mealType = getNullableString("meal_type"),
-			measurementSystem = getNullableMeasurementSystem("measurement_system"),
-			difficulty = getNullableString("difficulty"),
-			cookingMethod = getNullableString("cooking_method"),
-			calorieRange = getNullableString("calorie_range"),
-			dietaryPreferences = getStringArray("dietary_preferences"),
-			tags = getStringArray("tags"),
-		)
 	}
 
 	private fun buildRecipeDetails(
@@ -372,7 +285,7 @@ class RecipeRepository(
 		}
 	}
 
-	private fun recipeExists(conn: java.sql.Connection, recipeId: Int): Boolean {
+	internal fun recipeExists(conn: java.sql.Connection, recipeId: Int): Boolean {
 		return conn.prepareStatement(RecipeRepositorySql.RECIPE_EXISTS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
@@ -519,42 +432,11 @@ class RecipeRepository(
 		}
 	}
 
-	private fun ResultSet.getNullableString(columnLabel: String): String? =
-		getString(columnLabel)?.trim()?.takeIf { it.isNotEmpty() }
-
-	private fun ResultSet.getNullableMeasurementSystem(columnLabel: String): MeasurementSystem? =
-		getNullableString(columnLabel)?.let(MeasurementSystem::valueOf)
-
-	private fun ResultSet.getStringArray(columnLabel: String): List<String> =
-		(getArray(columnLabel)?.array as? Array<*>)
-			?.filterIsInstance<String>()
-			?: emptyList()
-
-	private fun readFavoriteRecipes(rs: ResultSet): List<RecipeSummary> {
-		val results = ArrayList<RecipeSummary>()
-		while (rs.next()) {
-			val recipeId = rs.getInt("id")
-			results.add(
-				RecipeSummary(
-					id = recipeId,
-					title = rs.getString("title"),
-					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
-					imageUrl = rs.getString("image_url"),
-					totalTime = rs.getObject("total_time") as? Int,
-					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
-						?: loadMeasurementSystemForRecipe(recipeId),
-					isFavorite = true,
-				)
-			)
-		}
-		return results
-	}
-
-	private fun loadMeasurementSystemForRecipe(recipeId: Int): MeasurementSystem? = dataSource.connection.use { conn ->
+	internal fun loadMeasurementSystemForRecipe(recipeId: Int): MeasurementSystem? = dataSource.connection.use { conn ->
 		detectMeasurementSystem(loadIngredientGroupsForRecipe(conn, recipeId))
 	}
 
-	private fun detectMeasurementSystem(ingredientGroups: List<IngredientGroup>): MeasurementSystem? {
+	internal fun detectMeasurementSystem(ingredientGroups: List<IngredientGroup>): MeasurementSystem? {
 		var imperialHits = 0
 		var metricHits = 0
 		ingredientGroups.asSequence()

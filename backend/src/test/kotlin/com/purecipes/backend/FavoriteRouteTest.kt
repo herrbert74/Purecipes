@@ -1,7 +1,7 @@
 package com.purecipes.backend
 
 import com.purecipes.backend.fake.FakeSessionService
-import com.purecipes.backend.routes.favoriteRoutes
+import com.purecipes.backend.feature.favorites.favoriteRoutes
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get

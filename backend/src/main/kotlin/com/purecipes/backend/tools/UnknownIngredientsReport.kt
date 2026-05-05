@@ -1,7 +1,7 @@
 package com.purecipes.backend.tools
 
 import com.purecipes.backend.db.Db
-import com.purecipes.backend.repository.IngredientVocabulary
+import com.purecipes.backend.feature.search.IngredientVocabulary
 
 private const val ARG_OUTPUT = "--output"
 private const val DEFAULT_INGREDIENTS_SOURCE =
