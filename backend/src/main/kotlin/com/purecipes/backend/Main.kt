@@ -6,8 +6,8 @@ import com.purecipes.backend.auth.JdbcSessionService
 import com.purecipes.backend.auth.SessionService
 import com.purecipes.backend.db.Db
 import com.purecipes.backend.feature.auth.authenticationRoutes
-import com.purecipes.backend.feature.favorites.favoriteRoutes
 import com.purecipes.backend.feature.favorites.cookbookRoutes
+import com.purecipes.backend.feature.favorites.favoriteRoutes
 import com.purecipes.backend.feature.recipe.recipeImageRoutes
 import com.purecipes.backend.feature.recipe.recipeRoutes
 import com.purecipes.backend.feature.settings.settingsRoutes

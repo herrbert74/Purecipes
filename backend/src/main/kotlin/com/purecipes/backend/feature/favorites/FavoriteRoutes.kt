@@ -2,8 +2,8 @@ package com.purecipes.backend.feature.favorites
 
 import com.purecipes.backend.ErrorResponse
 import com.purecipes.backend.auth.SessionService
-import com.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import com.purecipes.backend.db.Db
+import com.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route

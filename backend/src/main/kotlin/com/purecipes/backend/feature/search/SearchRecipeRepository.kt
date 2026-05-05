@@ -17,6 +17,7 @@ import javax.sql.DataSource
 class SearchRecipeRepository(
 	private val dataSource: DataSource,
 ) {
+
 	private val recipeRepository = RecipeRepository(dataSource)
 
 	fun searchByKeywordPaginated(
@@ -25,12 +26,13 @@ class SearchRecipeRepository(
 		pageSize: Int = 20,
 	): SearchResultsPage {
 		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
-		val searchInput = prepareKeywordSearchInput(keyword, pageNumber, normalizedPageSize) ?: return SearchResultsPage(
-			items = emptyList(),
-			pageNumber = 1,
-			pageSize = normalizedPageSize,
-			totalMatches = 0,
-		)
+		val searchInput =
+			prepareKeywordSearchInput(keyword, pageNumber, normalizedPageSize) ?: return SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = normalizedPageSize,
+				totalMatches = 0,
+			)
 		val items = searchByKeyword(searchInput)
 		val totalMatches = countRecipesByKeyword(dataSource, searchInput.like)
 		return SearchResultsPage(
@@ -74,7 +76,8 @@ class SearchRecipeRepository(
 		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
 
 		val (items, totalMatches) = dataSource.connection.use { conn ->
-			val availableIngredients = if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
+			val availableIngredients =
+				if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
 			if (availableIngredients.isEmpty()) {
 				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
 				val page = querySearchWithFiltersRecipes(
@@ -96,7 +99,12 @@ class SearchRecipeRepository(
 					isRecipeCoveredByAvailableIngredients(
 						recipeId = summary.id,
 						availableIngredients = availableIngredients,
-						loadIngredientGroups = { recipeId -> recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId) },
+						loadIngredientGroups = { recipeId ->
+							recipeRepository.loadIngredientGroupsForRecipe(
+								conn,
+								recipeId
+							)
+						},
 					)
 				}
 				filtered.drop(offset).take(normalizedPageSize) to filtered.size

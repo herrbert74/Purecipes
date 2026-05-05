@@ -6,6 +6,7 @@ import com.purecipes.backend.feature.recipe.getNullableMeasurementSystem
 import com.purecipes.shared.domain.model.Cuisine
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchResultsPage
+import java.sql.Connection
 import javax.sql.DataSource
 
 class FavoritesRepository(
@@ -18,20 +19,30 @@ class FavoritesRepository(
 		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
 		val offset = (normalizedPageNumber - 1) * normalizedPageSize
 		return dataSource.connection.use { conn ->
-			val totalMatches = conn.prepareStatement(RecipeRepositorySql.FAVORITES_COUNT_SQL).use { ps ->
-				ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
-				ps.executeQuery().use { rs ->
-					if (rs.next()) rs.getInt(1) else 0
-				}
-			}
-			val items = conn.prepareStatement(RecipeRepositorySql.FAVORITES_PAGE_SQL).use { ps ->
-				ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
-				ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX, normalizedPageSize)
-				ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, offset)
-				ps.executeQuery().use(::readFavoriteRecipes)
-			}
-			SearchResultsPage(items, normalizedPageNumber, normalizedPageSize, totalMatches)
+			getSearchResultsPage(conn, userId, normalizedPageSize, offset, normalizedPageNumber)
 		}
+	}
+
+	private fun getSearchResultsPage(
+		conn: Connection,
+		userId: Long,
+		normalizedPageSize: Int,
+		offset: Int,
+		normalizedPageNumber: Int
+	): SearchResultsPage {
+		val totalMatches = conn.prepareStatement(RecipeRepositorySql.FAVORITES_COUNT_SQL).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs ->
+				if (rs.next()) rs.getInt(1) else 0
+			}
+		}
+		val items = conn.prepareStatement(RecipeRepositorySql.FAVORITES_PAGE_SQL).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX, normalizedPageSize)
+			ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, offset)
+			ps.executeQuery().use(::readFavoriteRecipes)
+		}
+		return SearchResultsPage(items, normalizedPageNumber, normalizedPageSize, totalMatches)
 	}
 
 	fun addFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
