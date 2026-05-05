@@ -182,6 +182,11 @@ internal class FavoritesViewModel(
 			onDone(false)
 			return
 		}
+		if (cookbooks.any { it.name.trim().equals(trimmed, ignoreCase = true) }) {
+			createCookbookError = "Cookbook already exists"
+			onDone(false)
+			return
+		}
 		scope.launch {
 			isCreatingCookbook = true
 			createCookbookError = null

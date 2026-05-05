@@ -37,7 +37,10 @@ class CookbookRepository(
 		}
 	}
 
-	fun createCookbook(userId: Long, name: String): CookbookSummary = dataSource.connection.use { conn ->
+	fun createCookbook(userId: Long, name: String): CreateCookbookResult = dataSource.connection.use { conn ->
+		if (existsCookbookByNormalizedName(conn, userId, name)) {
+			return@use CreateCookbookResult.DuplicateName
+		}
 		conn.prepareStatement(INSERT_COOKBOOK_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
 			ps.setLong(1, userId)
 			ps.setString(2, name)
@@ -46,8 +49,9 @@ class CookbookRepository(
 				require(rs.next()) { "Missing cookbook id after insert" }
 				rs.getInt(1)
 			}
-			loadCookbookSummary(conn, userId, cookbookId)
+			val createdCookbook = loadCookbookSummary(conn, userId, cookbookId)
 				?: error("Cookbook missing after create")
+			CreateCookbookResult.Created(createdCookbook)
 		}
 	}
 
@@ -208,6 +212,14 @@ class CookbookRepository(
 		}
 	}
 
+	private fun existsCookbookByNormalizedName(conn: java.sql.Connection, userId: Long, name: String): Boolean {
+		return conn.prepareStatement(COOKBOOK_EXISTS_BY_NAME_SQL).use { ps ->
+			ps.setLong(1, userId)
+			ps.setString(2, name)
+			ps.executeQuery().use { rs -> rs.next() }
+		}
+	}
+
 	private fun recipeExists(conn: java.sql.Connection, recipeId: Int): Boolean {
 		return conn.prepareStatement(RECIPE_EXISTS_SQL).use { ps ->
 			ps.setInt(1, recipeId)
@@ -295,6 +307,12 @@ class CookbookRepository(
 		NotFavorite,
 	}
 
+	sealed interface CreateCookbookResult {
+		data class Created(val cookbook: CookbookSummary) : CreateCookbookResult
+
+		data object DuplicateName : CreateCookbookResult
+	}
+
 	private companion object {
 
 		const val COOKBOOKS_COUNT_SQL = """
@@ -322,6 +340,13 @@ class CookbookRepository(
 		const val INSERT_COOKBOOK_SQL = """
 			INSERT INTO cookbooks (user_id, name)
 			VALUES (?, ?)
+		"""
+
+		const val COOKBOOK_EXISTS_BY_NAME_SQL = """
+			SELECT 1
+			FROM cookbooks
+			WHERE user_id = ?
+				AND LOWER(TRIM(name)) = LOWER(TRIM(?))
 		"""
 
 		const val DELETE_COOKBOOK_SQL = """

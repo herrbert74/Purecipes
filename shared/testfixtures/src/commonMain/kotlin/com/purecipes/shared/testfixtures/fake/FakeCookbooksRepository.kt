@@ -30,10 +30,19 @@ class FakeCookbooksRepository(
 	),
 ) : CookbooksRepository {
 
+	var createCookbookCallCount: Int = 0
+		private set
+
+	var addRecipeToCookbookCallCount: Int = 0
+		private set
+
 	override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> =
 		cookbooksPageResult
 
-	override suspend fun createCookbook(name: String): Outcome<CookbookSummary> = createCookbookResult
+	override suspend fun createCookbook(name: String): Outcome<CookbookSummary> {
+		createCookbookCallCount += 1
+		return createCookbookResult
+	}
 
 	override suspend fun deleteCookbook(cookbookId: Int): Outcome<Unit> = Ok(Unit)
 
@@ -43,7 +52,10 @@ class FakeCookbooksRepository(
 		pageSize: Int,
 	): Outcome<SearchResultsPage> = cookbookRecipesPageResult
 
-	override suspend fun addRecipeToCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> = Ok(Unit)
+	override suspend fun addRecipeToCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> {
+		addRecipeToCookbookCallCount += 1
+		return Ok(Unit)
+	}
 
 	override suspend fun removeRecipeFromCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> = Ok(Unit)
 

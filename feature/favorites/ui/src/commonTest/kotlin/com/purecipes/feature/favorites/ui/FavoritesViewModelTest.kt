@@ -8,6 +8,8 @@ import com.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseC
 import com.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import com.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import com.purecipes.shared.domain.model.Cuisine
+import com.purecipes.shared.domain.model.CookbookListPage
+import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.RecipeSummary
 import com.purecipes.shared.domain.model.SearchResultsPage
 import com.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
@@ -22,7 +24,7 @@ import kotlin.test.Test
 class FavoritesViewModelTest {
 
 	@Test
-	fun loadFavoritesPopulatesRecipes() = runTest {
+	fun `load favorites populates recipes`() = runTest {
 		val expected = listOf(
 			RecipeSummary(
 				id = 42,
@@ -59,7 +61,7 @@ class FavoritesViewModelTest {
 	}
 
 	@Test
-	fun loadFavoritesExposesError() = runTest {
+	fun `load favorites exposes error`() = runTest {
 		val viewModel = FavoritesViewModel(
 			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(
 				FakeFavoritesRepository(
@@ -77,5 +79,44 @@ class FavoritesViewModelTest {
 
 		viewModel.savedErrorMessage shouldBe "Favorites failed"
 		viewModel.savedRecipes.toList() shouldBe emptyList()
+	}
+
+	@Test
+	fun `create cookbook from name rejects duplicate name`() = runTest {
+		val existingCookbook = CookbookSummary(
+			id = 10,
+			name = "Weeknight Dinners",
+			recipeCount = 0,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(existingCookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = FavoritesViewModel(
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+			coroutineScope = this,
+		)
+		viewModel.loadFavorites()
+		advanceUntilIdle()
+
+		var created = true
+		viewModel.createCookbookFromName("  weeknight dinners ") { ok ->
+			created = ok
+		}
+		advanceUntilIdle()
+
+		created shouldBe false
+		viewModel.createCookbookError shouldBe "Cookbook already exists"
+		cookbooksRepository.createCookbookCallCount shouldBe 0
 	}
 }

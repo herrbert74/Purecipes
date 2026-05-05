@@ -234,6 +234,16 @@ fun RecipeDetailsScreen(
 		}
 
 		if (showCookbookSheet) {
+			val existingCookbookNamesNormalized = remember(viewModel.sheetCookbooks) {
+				viewModel.sheetCookbooks
+					.map { it.name.trim().lowercase() }
+					.toSet()
+			}
+			val suggestionNames = remember(existingCookbookNamesNormalized) {
+				CookbookNameSuggestions.values.filter { suggestion ->
+					suggestion.trim().lowercase() !in existingCookbookNamesNormalized
+				}
+			}
 			ModalBottomSheet(
 				onDismissRequest = {
 					showCookbookSheet = false
@@ -251,7 +261,7 @@ fun RecipeDetailsScreen(
 						style = PurecipesTheme.typography.titleMedium,
 					)
 					LazyRow(horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-						items(CookbookNameSuggestions.values, key = { it }) { suggestion ->
+						items(suggestionNames, key = { it }) { suggestion ->
 							FilterChip(
 								selected = false,
 								onClick = { newCookbookName = suggestion },

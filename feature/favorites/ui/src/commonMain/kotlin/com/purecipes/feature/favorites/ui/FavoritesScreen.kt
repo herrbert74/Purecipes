@@ -166,6 +166,7 @@ fun FavoritesScreen(
 
 		if (showCreateCookbookDialog) {
 			CreateCookbookDialog(
+				existingCookbookNames = viewModel.cookbooks.map { it.name },
 				isLoading = viewModel.isCreatingCookbook,
 				errorMessage = viewModel.createCookbookError,
 				onDismiss = {
@@ -185,12 +186,23 @@ fun FavoritesScreen(
 
 @Composable
 private fun CreateCookbookDialog(
+	existingCookbookNames: List<String>,
 	isLoading: Boolean,
 	errorMessage: String?,
 	onDismiss: () -> Unit,
 	onConfirm: (String) -> Unit,
 ) {
 	var nameField by remember { mutableStateOf("") }
+	val existingCookbookNamesNormalized = remember(existingCookbookNames) {
+		existingCookbookNames
+			.map { it.trim().lowercase() }
+			.toSet()
+	}
+	val suggestionNames = remember(existingCookbookNamesNormalized) {
+		CookbookNameSuggestions.values.filter { suggestion ->
+			suggestion.trim().lowercase() !in existingCookbookNamesNormalized
+		}
+	}
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
@@ -213,7 +225,7 @@ private fun CreateCookbookDialog(
 					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 					modifier = Modifier.fillMaxWidth(),
 				) {
-					items(CookbookNameSuggestions.values, key = { it }) { suggestion ->
+					items(suggestionNames, key = { it }) { suggestion ->
 						FilterChip(
 							selected = false,
 							onClick = { nameField = suggestion },

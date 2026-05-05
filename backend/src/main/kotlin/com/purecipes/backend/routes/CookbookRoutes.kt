@@ -81,7 +81,19 @@ private suspend fun ApplicationCall.respondCookbookCreate(
 		return
 	}
 	val repo = CookbookRepository(dbProvider().dataSource)
-	respond(HttpStatusCode.Created, repo.createCookbook(userId, request.name.trim()))
+	when (val result = repo.createCookbook(userId, request.name.trim())) {
+		is CookbookRepository.CreateCookbookResult.Created ->
+			respond(HttpStatusCode.Created, result.cookbook)
+
+		CookbookRepository.CreateCookbookResult.DuplicateName ->
+			respond(
+				HttpStatusCode.Conflict,
+				ErrorResponse(
+					message = "Cookbook already exists",
+					detail = "Use a different cookbook name",
+				),
+			)
+	}
 }
 
 private suspend fun ApplicationCall.respondCookbookDelete(

@@ -7,6 +7,8 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -98,6 +100,45 @@ class FavoritesSessionIntegrationTest {
 		val afterRemovePage = Json.decodeFromString<SearchResultsPage>(firstFavoritesAfterRemove.bodyAsText())
 		afterRemovePage.items.isEmpty() shouldBe true
 		afterRemovePage.totalMatches shouldBe 0
+	}
+
+	@Test
+	fun `creating duplicate cookbook names returns conflict`() = testApplication {
+		val dbName = "cookbook_duplicate_${System.nanoTime()}"
+		val dataSource = JdbcDataSource().apply {
+			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+			user = "sa"
+			password = ""
+		}
+		seedRecipeTables(dataSource)
+		val db = Db.fromDataSource(dataSource)
+		seedAppUsers(db)
+		val session = FakeSessionService.createSession(accessToken = "session-token-1")
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(session),
+			createMode = FakeSessionService.CreateMode.FAIL,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		val firstCreateResponse = client.post("/cookbooks") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+			header(HttpHeaders.ContentType, "application/json")
+			setBody("""{"name":"Weeknight Dinners"}""")
+		}
+		firstCreateResponse.status shouldBe HttpStatusCode.Created
+
+		val duplicateCreateResponse = client.post("/cookbooks") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+			header(HttpHeaders.ContentType, "application/json")
+			setBody("""{"name":"  weeknight dinners  "}""")
+		}
+		duplicateCreateResponse.status shouldBe HttpStatusCode.Conflict
 	}
 
 	private fun seedRecipeTables(dataSource: DataSource) {

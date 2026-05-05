@@ -15,6 +15,8 @@ import com.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import com.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import com.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import com.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import com.purecipes.shared.domain.model.CookbookListPage
+import com.purecipes.shared.domain.model.CookbookSummary
 import com.purecipes.shared.domain.model.SearchResultsPage
 import com.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import com.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
@@ -64,7 +66,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun detailsViewModelExposesRepositoryError() = runTest {
+	fun `details view model exposes repository error`() = runTest {
 		val repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed")))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
@@ -92,7 +94,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun toggleFavoriteUpdatesRecipeState() = runTest {
+	fun `toggle favorite updates recipe state`() = runTest {
 		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoritesRepository = FakeFavoritesRepository()
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -123,7 +125,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun toggleFavoriteMarksUpdatingSynchronously() = runTest {
+	fun `toggle favorite marks updating synchronously`() = runTest {
 		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoriteStarted = CompletableDeferred<Unit>()
 		val finishFavorite = CompletableDeferred<Unit>()
@@ -162,6 +164,59 @@ class RecipeDetailsViewModelTest {
 
 		viewModel.isFavoriteUpdating shouldBe false
 		true shouldBe viewModel.recipeDetails?.isFavorite
+	}
+
+	@Test
+	fun `create cookbook and add rejects duplicate name`() = runTest {
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(
+						CookbookSummary(
+							id = 5,
+							name = "Weeknight Dinners",
+							recipeCount = 0,
+							updatedAtEpochMillis = 0L,
+						),
+					),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = 42,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			sessionKey = "session",
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+			coroutineScope = this,
+		)
+		advanceUntilIdle()
+		viewModel.prepareCookbookPicker()
+		advanceUntilIdle()
+
+		var returnedError: String? = null
+		viewModel.createCookbookAndAdd("  weeknight dinners ") { err ->
+			returnedError = err
+		}
+		advanceUntilIdle()
+
+		returnedError shouldBe "Cookbook already exists"
+		viewModel.cookbookActionError shouldBe "Cookbook already exists"
+		cookbooksRepository.createCookbookCallCount shouldBe 0
+		cookbooksRepository.addRecipeToCookbookCallCount shouldBe 0
 	}
 
 	private class BlockingFavoritesRepository(

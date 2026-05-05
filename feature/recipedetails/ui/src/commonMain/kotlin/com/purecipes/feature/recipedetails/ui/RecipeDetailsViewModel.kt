@@ -186,6 +186,12 @@ internal class RecipeDetailsViewModel(
 			onDone(null)
 			return
 		}
+		if (sheetCookbooks.any { it.name.trim().equals(trimmed, ignoreCase = true) }) {
+			val duplicateMessage = "Cookbook already exists"
+			cookbookActionError = duplicateMessage
+			onDone(duplicateMessage)
+			return
+		}
 		scope.launch {
 			isCookbookActionInFlight = true
 			cookbookActionError = null
