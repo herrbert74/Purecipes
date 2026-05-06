@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
 	id("convention.kmp")
 	id("convention.compose")
-	alias(libs.plugins.android.lint)
 }
 
 kotlin {
