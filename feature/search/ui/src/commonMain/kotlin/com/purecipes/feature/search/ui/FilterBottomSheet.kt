@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -79,9 +81,32 @@ private fun FilterBottomSheetContent(
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
 		) {
 			item {
+				Text(
+					text = "We will show only the recipes that have no missing ingredients " +
+						"from your pantry, unless there are no complete matches.",
+					style = PurecipesTheme.typography.bodyMedium,
+					modifier = Modifier.padding(
+						start = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.s,
+					),
+				)
+			}
+			item {
 				IngredientFilterSection(
 					availableIngredients = pantryIngredients,
 					onSelectionChange = onPantryIngredientsChange,
+				)
+			}
+			item {
+				Text(
+					text = "With the filters below you can get a more tailored result.",
+					style = PurecipesTheme.typography.bodyMedium,
+					modifier = Modifier.padding(
+						start = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.m,
+					),
 				)
 			}
 			item {

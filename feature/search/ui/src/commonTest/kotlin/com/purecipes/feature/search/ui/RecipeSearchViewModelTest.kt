@@ -117,7 +117,7 @@ class RecipeSearchViewModelTest {
 
 		advanceUntilIdle()
 
-		viewModel.activeFilters.isEmpty shouldBe false
+		viewModel.activeFilters.isEmpty shouldBe true
 		viewModel.activeFilters shouldBe SearchFilters.default()
 	}
 

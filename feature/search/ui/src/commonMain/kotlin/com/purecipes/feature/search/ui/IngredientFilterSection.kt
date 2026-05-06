@@ -358,7 +358,7 @@ internal fun IngredientFilterSection(
 
 	Column(modifier = modifier) {
 		FilterSectionHeader(
-			title = "Ingredients",
+			title = "Pantry",
 			onSelectAll = { onSelectionChange(allItems) },
 			onClearAll = { onSelectionChange(emptySet()) },
 			isCollapsed = collapsed,

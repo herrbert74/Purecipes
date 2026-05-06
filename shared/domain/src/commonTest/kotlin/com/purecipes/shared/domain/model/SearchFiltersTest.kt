@@ -16,27 +16,27 @@ class SearchFiltersTest {
 	}
 
 	@Test
-	fun `default filters are not empty`() {
-		SearchFilters.default().isEmpty shouldBe false
+	fun `default filters are empty`() {
+		SearchFilters.default().isEmpty shouldBe true
 	}
 
 	@Test
-	fun `default filters have all cuisines selected`() {
-		SearchFilters.default().cuisines shouldBe Cuisine.entries.toSet()
+	fun `default filters have no cuisines selected`() {
+		SearchFilters.default().cuisines shouldBe emptySet()
 	}
 
 	@Test
-	fun `default filters have all cooking time ranges selected`() {
-		SearchFilters.default().cookingTimeRanges shouldBe CookingTimeRange.entries.toSet()
+	fun `default filters have no cooking time ranges selected`() {
+		SearchFilters.default().cookingTimeRanges shouldBe emptySet()
 	}
 
 	@Test
-	fun `default filters have all dietary preferences selected`() {
-		SearchFilters.default().dietaryPreferences shouldBe DietaryPreference.entries.toSet()
+	fun `default filters have no dietary preferences selected`() {
+		SearchFilters.default().dietaryPreferences shouldBe emptySet()
 	}
 
 	@Test
-	fun `default filters have all difficulty levels selected`() {
-		SearchFilters.default().difficultyLevels shouldBe DifficultyLevel.entries.toSet()
+	fun `default filters have no difficulty levels selected`() {
+		SearchFilters.default().difficultyLevels shouldBe emptySet()
 	}
 }
