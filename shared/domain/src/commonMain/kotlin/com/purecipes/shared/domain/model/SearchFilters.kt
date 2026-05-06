@@ -27,14 +27,14 @@ data class SearchFilters(
 	companion object {
 
 		fun default() = SearchFilters(
-			dietaryPreferences = DietaryPreference.entries.toSet(),
-			cuisines = Cuisine.entries.toSet(),
-			mealTypes = MealType.entries.toSet(),
-			cookingTimeRanges = CookingTimeRange.entries.toSet(),
-			difficultyLevels = DifficultyLevel.entries.toSet(),
-			cookingMethods = CookingMethod.entries.toSet(),
-			calorieRanges = CalorieRange.entries.toSet(),
-			nutritionFilters = NutritionFilter.entries.toSet(),
+			dietaryPreferences = emptySet(),
+			cuisines = emptySet(),
+			mealTypes = emptySet(),
+			cookingTimeRanges = emptySet(),
+			difficultyLevels = emptySet(),
+			cookingMethods = emptySet(),
+			calorieRanges = emptySet(),
+			nutritionFilters = emptySet(),
 		)
 	}
 }
