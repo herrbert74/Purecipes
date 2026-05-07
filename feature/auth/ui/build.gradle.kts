@@ -3,17 +3,9 @@ plugins {
 	id("org.jetbrains.kotlin.native.cocoapods")
 }
 
-val requestedTaskNames = gradle.startParameter.taskNames
-val isIdeSync =
-	System.getProperty("idea.sync.active") == "true" ||
-		System.getProperty("idea.active") == "true" ||
-		System.getProperty("android.injected.invoked.from.ide") == "true"
-val podInteropEnabled = providers.gradleProperty("enableIosPods").orNull == "true"
-val hasIosOrPodTaskRequest = requestedTaskNames.any { taskName ->
-	taskName.contains("ios", ignoreCase = true) ||
-		taskName.contains("pod", ignoreCase = true)
-}
-val shouldRunPodBuildTasks = podInteropEnabled && hasIosOrPodTaskRequest && !isIdeSync
+apply(from = rootProject.file("gradle/purecipes-ios-cocoapods.gradle.kts"))
+val shouldApplyCocoapodsKotlin = extra["purecipesShouldApplyCocoapodsKotlin"] as Boolean
+val shouldRunPodBuildTasks = extra["purecipesShouldRunPodBuildTasks"] as Boolean
 
 val cocoapodsBuildSettingsDir = layout.buildDirectory.dir("cocoapods/buildSettings").get().asFile
 cocoapodsBuildSettingsDir.mkdirs()
@@ -85,7 +77,7 @@ tasks.configureEach {
 }
 
 kotlin {
-	if (shouldRunPodBuildTasks) {
+	if (shouldApplyCocoapodsKotlin) {
 		cocoapods {
 			version = "1.0"
 			summary = "Purecipes authentication UI"

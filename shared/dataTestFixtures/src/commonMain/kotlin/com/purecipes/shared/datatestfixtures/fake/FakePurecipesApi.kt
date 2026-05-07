@@ -17,6 +17,7 @@ import com.purecipes.shared.domain.model.RecipeWriteRequest
 import com.purecipes.shared.domain.model.SearchFilters
 import com.purecipes.shared.domain.model.SearchRequest
 import com.purecipes.shared.domain.model.SearchResultsPage
+import kotlin.time.Clock
 
 class FakePurecipesApi(
 	var searchResult: List<RecipeSummary> = emptyList(),
@@ -143,7 +144,7 @@ class FakePurecipesApi(
 	}
 
 	override suspend fun createCookbook(request: CookbookCreateRequest): CookbookSummary {
-		val now = System.currentTimeMillis()
+		val now = Clock.System.now().toEpochMilliseconds()
 		val summary = CookbookSummary(
 			id = nextCookbookId++,
 			name = request.name.trim(),

@@ -28,6 +28,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.time.Clock
 
 private const val FIRST_PAGE_NUMBER = 1
 
@@ -188,7 +189,7 @@ internal class FavoritesViewModel(
 			val url = getCookbookCoverImageUrl(
 				cookbookId = cookbookId,
 				candidateImageUrls = urls,
-				nowMillis = System.currentTimeMillis(),
+				nowMillis = Clock.System.now().toEpochMilliseconds(),
 				random = Random.Default,
 			)
 			cookbookCoverUrls[cookbookId] = url

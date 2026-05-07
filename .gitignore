@@ -23,6 +23,7 @@ xcuserdata
 *.xcodeproj/project.pbxproj
 *.xcworkspace/contents.xcworkspacedata
 /iosApp/PurecipesIOSApp/Pods/
+**/GoogleService-Info.plist
 /feature/auth/ui/ui.podspec
 
 # Build outputs
