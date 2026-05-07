@@ -1,0 +1,460 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11CD3C95D2152A605667BF7B /* Pods_PurecipesIOSApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		6224F0887EB97F09B6E64F82 /* Pods-PurecipesIOSApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurecipesIOSApp.release.xcconfig"; path = "Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp.release.xcconfig"; sourceTree = "<group>"; };
+		6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurecipesIOSApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9491EE9C8274F57B5BAF47BC /* Pods-PurecipesIOSApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurecipesIOSApp.debug.xcconfig"; path = "Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp.debug.xcconfig"; sourceTree = "<group>"; };
+		B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurecipesIOSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B3BF5EBC2F4E482900ADA5FD /* PurecipesIOSApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = PurecipesIOSApp;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B3BF5EB72F4E482900ADA5FD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				11CD3C95D2152A605667BF7B /* Pods_PurecipesIOSApp.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		17E85204FA1AC5A0DBD03743 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		19CE3EB573419368CA66B0AE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9491EE9C8274F57B5BAF47BC /* Pods-PurecipesIOSApp.debug.xcconfig */,
+				6224F0887EB97F09B6E64F82 /* Pods-PurecipesIOSApp.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		B3BF5EB12F4E482900ADA5FD = {
+			isa = PBXGroup;
+			children = (
+				B3BF5EBC2F4E482900ADA5FD /* PurecipesIOSApp */,
+				B3BF5EBB2F4E482900ADA5FD /* Products */,
+				19CE3EB573419368CA66B0AE /* Pods */,
+				17E85204FA1AC5A0DBD03743 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		B3BF5EBB2F4E482900ADA5FD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B3BF5EB92F4E482900ADA5FD /* PurecipesIOSApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3BF5EC52F4E482B00ADA5FD /* Build configuration list for PBXNativeTarget "PurecipesIOSApp" */;
+			buildPhases = (
+				222285ED8498638C0CC27298 /* [CP] Check Pods Manifest.lock */,
+				B3BF5ED62F4E54C300ADA5FD /* ShellScript */,
+				B3BF5EB62F4E482900ADA5FD /* Sources */,
+				B3BF5EB72F4E482900ADA5FD /* Frameworks */,
+				B3BF5EB82F4E482900ADA5FD /* Resources */,
+				04561D3DD6CD103C485DB92B /* [CP] Embed Pods Frameworks */,
+				2DC99769D6F8F37ABDDE9C61 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B3BF5EBC2F4E482900ADA5FD /* PurecipesIOSApp */,
+			);
+			name = PurecipesIOSApp;
+			productName = PurecipesIOSApp;
+			productReference = B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B3BF5EB22F4E482900ADA5FD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					B3BF5EB92F4E482900ADA5FD = {
+						CreatedOnToolsVersion = 26.0.1;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+							com.apple.SignInWithApple = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = B3BF5EB52F4E482900ADA5FD /* Build configuration list for PBXProject "PurecipesIOSApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B3BF5EB12F4E482900ADA5FD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B3BF5EBB2F4E482900ADA5FD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B3BF5EB92F4E482900ADA5FD /* PurecipesIOSApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B3BF5EB82F4E482900ADA5FD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		04561D3DD6CD103C485DB92B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		222285ED8498638C0CC27298 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PurecipesIOSApp-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		2DC99769D6F8F37ABDDE9C61 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B3BF5ED62F4E54C300ADA5FD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/umbrella.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\nset -e\nJAVA_HOME_CANDIDATE=\"\"\nif [ -n \"$JAVA_HOME\" ] && [ -x \"$JAVA_HOME/bin/java\" ]; then\n  JAVA_VERSION_LINE=\"$($JAVA_HOME/bin/java -version 2>&1 | head -n 1)\"\n  case \"$JAVA_VERSION_LINE\" in\n    *21.*) JAVA_HOME_CANDIDATE=\"$JAVA_HOME\" ;;\n  esac\nfi\nif [ -z \"$JAVA_HOME_CANDIDATE\" ]; then\n  for CANDIDATE in \"$HOME/Applications/Android Studio.app/Contents/jbr/Contents/Home\" \"/Applications/Android Studio.app/Contents/jbr/Contents/Home\"; do\n    if [ -x \"$CANDIDATE/bin/java\" ]; then\n      JAVA_VERSION_LINE=\"$($CANDIDATE/bin/java -version 2>&1 | head -n 1)\"\n      case \"$JAVA_VERSION_LINE\" in\n        *21.*) JAVA_HOME_CANDIDATE=\"$CANDIDATE\"; break ;;\n      esac\n    fi\n  done\nfi\nif [ -z \"$JAVA_HOME_CANDIDATE\" ]; then\n  JAVA_HOME_CANDIDATE=\"$(/usr/libexec/java_home -v 21 2>/dev/null || true)\"\nfi\nif [ -z \"$JAVA_HOME_CANDIDATE\" ]; then\n  echo \"Java 21 is required for the iOS Gradle build. Install a JDK 21 or use Android Studio's bundled JBR 21.\" >&2\n  exit 1\nfi\nPURECIPES_BUILD_TYPE_VALUE=$(printf '%s' \"${PURECIPES_BUILD_TYPE:-$CONFIGURATION}\" | tr '[:upper:]' '[:lower:]')\nexport JAVA_HOME=\"$JAVA_HOME_CANDIDATE\"\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\njava -version\ncd \"$SRCROOT/../..\"\n./gradlew --stop\n./gradlew -Dorg.gradle.java.home=\"$JAVA_HOME\" -Ppurecipes.buildType=\"$PURECIPES_BUILD_TYPE_VALUE\" :umbrella:embedAndSignAppleFrameworkForXcode --stacktrace\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B3BF5EB62F4E482900ADA5FD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B3BF5EC32F4E482B00ADA5FD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B3BF5EC42F4E482B00ADA5FD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B3BF5EC62F4E482B00ADA5FD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9491EE9C8274F57B5BAF47BC /* Pods-PurecipesIOSApp.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PurecipesIOSApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.purecipes.PurecipesIOSApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PURECIPES_FACEBOOK_APP_ID = 1629558041650401;
+				PURECIPES_FACEBOOK_CLIENT_TOKEN = 9133a74d0556085945a4695c91c7d62a;
+				PURECIPES_FACEBOOK_DISPLAY_NAME = Purecipes;
+				PURECIPES_GOOGLE_IOS_CLIENT_ID = "922845075790-c274na6hroesrddmf7p3nusihvblg55f.apps.googleusercontent.com";
+				PURECIPES_GOOGLE_IOS_REVERSED_CLIENT_ID = "com.googleusercontent.apps.922845075790-c274na6hroesrddmf7p3nusihvblg55f";
+				PURECIPES_GOOGLE_WEB_CLIENT_ID = "922845075790-aiom7ev08u8uamcrlt9714kfmfumked7.apps.googleusercontent.com";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B3BF5EC72F4E482B00ADA5FD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6224F0887EB97F09B6E64F82 /* Pods-PurecipesIOSApp.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/PurecipesIOSApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.purecipes.PurecipesIOSApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PURECIPES_FACEBOOK_APP_ID = 1629558041650401;
+				PURECIPES_FACEBOOK_CLIENT_TOKEN = 9133a74d0556085945a4695c91c7d62a;
+				PURECIPES_FACEBOOK_DISPLAY_NAME = Purecipes;
+				PURECIPES_GOOGLE_IOS_CLIENT_ID = "922845075790-c274na6hroesrddmf7p3nusihvblg55f.apps.googleusercontent.com";
+				PURECIPES_GOOGLE_IOS_REVERSED_CLIENT_ID = "com.googleusercontent.apps.922845075790-c274na6hroesrddmf7p3nusihvblg55f";
+				PURECIPES_GOOGLE_WEB_CLIENT_ID = "922845075790-aiom7ev08u8uamcrlt9714kfmfumked7.apps.googleusercontent.com";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B3BF5EB52F4E482900ADA5FD /* Build configuration list for PBXProject "PurecipesIOSApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3BF5EC32F4E482B00ADA5FD /* Debug */,
+				B3BF5EC42F4E482B00ADA5FD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B3BF5EC52F4E482B00ADA5FD /* Build configuration list for PBXNativeTarget "PurecipesIOSApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3BF5EC62F4E482B00ADA5FD /* Debug */,
+				B3BF5EC72F4E482B00ADA5FD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B3BF5EB22F4E482900ADA5FD /* Project object */;
+}

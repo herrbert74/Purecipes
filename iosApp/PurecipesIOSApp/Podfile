@@ -1,0 +1,27 @@
+platform :ios, '26.0'
+
+use_frameworks!
+
+target 'PurecipesIOSApp' do
+	pod 'AppAuth'
+	pod 'FBSDKCoreKit', '18.0.0'
+	pod 'FBSDKLoginKit', '18.0.0'
+	pod 'FirebaseAnalytics'
+	pod 'FirebaseCrashlytics'
+	pod 'FirebaseAuth'
+	pod 'FirebaseCore'
+	pod 'FirebaseMessaging'
+	pod 'GTMAppAuth'
+	pod 'GoogleSignIn'
+	pod 'Mixpanel-swift'
+	pod 'Usercentrics'
+	pod 'UsercentricsUI'
+end
+
+post_install do |installer|
+	installer.pods_project.targets.each do |target|
+		target.build_configurations.each do |config|
+			config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '26.0'
+		end
+	end
+end
