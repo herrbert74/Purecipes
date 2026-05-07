@@ -45,6 +45,5 @@ sealed class PaginationInternalState<KEY, T>(
 			is Loading -> "Loading"
 			is Loaded -> "Loaded"
 			is Error -> "Error"
-			else -> super.toString()
 		}
 }

@@ -42,6 +42,14 @@ Agents should treat those files as extensions of this document when the task mat
   * **shared/domain** - Contains domain classes shared between backend and apps.
 * **base** - Kotlin and Android base classes, reusable in any apps, but not extracted to separate library yet. 
 
+## iOS CocoaPods (Gradle)
+
+Modules that use the Kotlin CocoaPods integration (`feature:analytics:data`, `feature:auth:ui`) apply `gradle/purecipes-ios-cocoapods.gradle.kts`.
+
+* **Linux CI and Android-only Gradle runs** do not declare the `cocoapods { }` Kotlin block (macOS hosts only), so CocoaPods is never part of the configuration there.
+* **macOS** always declares that block so local iOS compilation and Xcode flows resolve `cocoapods.*` imports. Pod install, cinterop, and related tasks run when the requested Gradle tasks look like iOS, CocoaPods, Xcode integration, or a full tree build (for example task names containing `ios`, `pod`, `xcode`, or `embedAndSign`, or a top-level `build` / `:…:build`). The iOS app Xcode project invokes `:umbrella:embedAndSignAppleFrameworkForXcode`, which matches that rule. Tasks are skipped during IDE sync. Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.
+* **Opt out** if the pod toolchain breaks your machine: `-Ppurecipes.disableIosPods=true` or `-PenableIosPods=false` (legacy). That skips pod/cinterop execution even when iOS tasks are requested.
+
 ## Rule: Naming
 
 Add suffixes to designate types and prefixes for designate the features.
