@@ -9,14 +9,14 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
-  - FBAEMKit (18.0.0):
-    - FBSDKCoreKit_Basics (= 18.0.0)
-  - FBSDKCoreKit (18.0.0):
-    - FBAEMKit (= 18.0.0)
-    - FBSDKCoreKit_Basics (= 18.0.0)
-  - FBSDKCoreKit_Basics (18.0.0)
-  - FBSDKLoginKit (18.0.0):
-    - FBSDKCoreKit (= 18.0.0)
+  - FBAEMKit (18.0.3):
+    - FBSDKCoreKit_Basics (= 18.0.3)
+  - FBSDKCoreKit (18.0.3):
+    - FBAEMKit (= 18.0.3)
+    - FBSDKCoreKit_Basics (= 18.0.3)
+  - FBSDKCoreKit_Basics (18.0.3)
+  - FBSDKLoginKit (18.0.3):
+    - FBSDKCoreKit (= 18.0.3)
   - FirebaseAnalytics (12.11.0):
     - FirebaseAnalytics/Default (= 12.11.0)
     - FirebaseCore (~> 12.11.0)
@@ -176,8 +176,8 @@ PODS:
 
 DEPENDENCIES:
   - AppAuth
-  - FBSDKCoreKit (= 18.0.0)
-  - FBSDKLoginKit (= 18.0.0)
+  - FBSDKCoreKit (= 18.0.3)
+  - FBSDKLoginKit (= 18.0.3)
   - FirebaseAnalytics
   - FirebaseAuth
   - FirebaseCore
@@ -229,10 +229,10 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
-  FBAEMKit: e34530df538b8eb8aeb53c35867715ba6c63ef0c
-  FBSDKCoreKit: d3f479a69127acebb1c6aad91c1a33907bcf6c2f
-  FBSDKCoreKit_Basics: 017b6dc2a1862024815a8229e75661e627ac1e29
-  FBSDKLoginKit: 5875762d1fe09ddcb05d03365d4f5dc34413843d
+  FBAEMKit: 2a6b529993713c185b02bc36f8c91129bf78dfb0
+  FBSDKCoreKit: 65d7f7a7d6fcc3aa6eb6e093ec737a4184fc6049
+  FBSDKCoreKit_Basics: 7bc9d8fde8f70985fba2ed7c1d07e319f969a991
+  FBSDKLoginKit: 66d20fcb7afcafc0c420477662f96845cd1a5179
   FirebaseAnalytics: 2513f181a22ba7d5ba547ce0a65f82352cc8a0c9
   FirebaseAppCheckInterop: d9b5acb52c1141697215d08f719c332ed4740d8e
   FirebaseAuth: d510c93904adc3d172d01c163bff76d6ecdacf3f
@@ -262,6 +262,6 @@ SPEC CHECKSUMS:
   Usercentrics: 093b435b1e1c8deae1564d3d30a4d565e260f488
   UsercentricsUI: 70423bc65f51ed6f4cac3a6d20ebbee6e4e832aa
 
-PODFILE CHECKSUM: 8e27aaeeb90433293f6982c267e21c9964818e0a
+PODFILE CHECKSUM: 17be26879c3b0b81ee3e6b7880f5918f24db63c4
 
 COCOAPODS: 1.16.2
