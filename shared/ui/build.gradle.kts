@@ -10,15 +10,6 @@ kotlin {
 	android {
 		namespace = "app.purecipes.shared.ui"
 
-		withHostTestBuilder {
-		}
-
-		withDeviceTestBuilder {
-			sourceSetTreeName = "androidDeviceTest"
-		}.configure {
-			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-		}
-
 		androidResources.enable = true
 	}
 
@@ -58,14 +49,6 @@ kotlin {
 
 		androidMain {
 			dependencies {
-			}
-		}
-
-		getByName("androidDeviceTest") {
-			dependencies {
-				implementation(libs.androidx.testRunner)
-				implementation(libs.androidx.testCore)
-				implementation(libs.androidx.testExtJUnit)
 			}
 		}
 

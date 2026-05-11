@@ -1,5 +1,6 @@
 plugins {
 	id("convention.domain")
+	id("convention.common-test")
 }
 
 kotlin {

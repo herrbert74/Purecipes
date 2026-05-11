@@ -1,5 +1,6 @@
 plugins {
 	id("convention.kmp")
+	id("convention.common-test")
 	id("dev.zacsweers.metro")
 	alias(libs.plugins.kotlin.serialization)
 	// Applied before KSP to avoid Ktorfit issue #1030 auto-registering the deprecated root `ksp` configuration.

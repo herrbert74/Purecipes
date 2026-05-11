@@ -1,5 +1,6 @@
 plugins {
 	id("convention.kmp")
+	id("convention.common-test")
 	alias(libs.plugins.kotlin.serialization)
 }
 

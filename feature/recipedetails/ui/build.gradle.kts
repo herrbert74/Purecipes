@@ -1,5 +1,6 @@
 plugins {
 	id("convention.ui")
+	id("convention.common-test")
 }
 
 kotlin {
@@ -25,16 +26,16 @@ kotlin {
 			}
 		}
 		commonTest {
-				dependencies {
-					implementation(project(":shared:testfixtures"))
-				}
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
 		}
 		androidMain {
 		}
 		named("androidDeviceTest") {
-				dependencies {
-					implementation(project(":shared:testfixtures"))
-				}
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
 		}
 	}
 }
