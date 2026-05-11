@@ -58,7 +58,7 @@ export PURECIPES_GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.
 3. Enable the Google sign-in provider in Firebase Authentication.
 
 ### 2. Register apps in Firebase
-1. Add the Android app with package name `com.purecipes`.
+1. Add the Android app with package name `app.purecipes`.
 2. Add the iOS app with the final iOS bundle identifier you plan to ship.
 3. Add a Web app for Wasm/browser usage.
 

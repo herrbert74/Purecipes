@@ -9,7 +9,7 @@ kotlin {
 	}
 
 	android {
-		namespace = "com.purecipes.shared.domain"
+		namespace = "app.purecipes.shared.domain"
 	}
 
 	sourceSets {

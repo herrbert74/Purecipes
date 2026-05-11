@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.search.domain"
+		namespace = "app.purecipes.feature.search.domain"
 	}
 
 	sourceSets {

@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.recipedetails.ui"
+		namespace = "app.purecipes.feature.recipedetails.ui"
 		withDeviceTestBuilder {
 			sourceSetTreeName = "androidDeviceTest"
 		}.configure {

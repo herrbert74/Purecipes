@@ -29,7 +29,7 @@ dependencies {
 }
 
 application {
-	mainClass.set("com.purecipes.enrichment.EnrichmentRunnerKt")
+	mainClass.set("app.purecipes.enrichment.EnrichmentRunnerKt")
 	applicationDefaultJvmArgs = buildList {
 		runtimePathConfig("USE_MODEL_PATH").orNull
 			?.takeIf { it.isNotBlank() }

@@ -101,7 +101,7 @@ kotlin {
 	}
 
 	android {
-		namespace = "com.purecipes.feature.analytics.data"
+		namespace = "app.purecipes.feature.analytics.data"
 	}
 
 	sourceSets {
