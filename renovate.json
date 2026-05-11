@@ -15,6 +15,7 @@
       "groupSlug": "all-minor-patch",
       "matchUpdateTypes": ["minor", "patch"],
       "matchPackagePatterns": ["*"],
+      "allowedVersions": "!/SNAPSHOT/",
       "labels": ["renovate"]
     }
   ]

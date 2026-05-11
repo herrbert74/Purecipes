@@ -18,7 +18,7 @@ crashlyticsPlugin = "3.0.7"
 jdk = "21"
 kotlin = "2.3.21"
 kotlinx-collections = "0.4.0"
-kotlinx-datetime = "0.8.0-0.6.x-compat"
+kotlinx-datetime = "0.8.0"
 kotlinx-serialization = "1.11.0"
 ksp = "2.3.7"
 
@@ -46,7 +46,7 @@ buildKonfig = "0.20.0"
 #chucker = "4.2.0"
 coil = "3.4.0"
 googleServices = "4.4.4"
-decompose = "3.5.0"
+#decompose = "3.5.0"
 dejavu = "0.3.1"
 dependencyAnalysis = "3.10.0"
 detekt = "1.23.8"
@@ -61,14 +61,13 @@ gradleDoctor = "0.12.1"
 #javaPoet = "1.13.0"
 hikariCp = "7.0.2"
 jetbrains-androidXLifecycle = "2.10.0"
-jetBrains-compose = "1.11.0-SNAPSHOT+release-1-11"
-jetbrains-composeMaterial3 = "1.11.0-SNAPSHOT+release-1-11"
+jetBrains-compose = "1.11.0-rc01"
+jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
 jUnit5 = "6.0.3"
 kmpauth = "2.5.0-alpha01"
 kmpnotifier = "1.6.1"
-koin = "4.2.0"
 kotest = "6.1.11"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
@@ -80,7 +79,6 @@ mixpanelAndroid = "8.7.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.3.0"
 multiplatform-settings = "1.3.0"
-mviKotlin = "4.3.0"
 okhttp = "5.3.2"
 #parcelize-darwin = "0.2.4"
 postgresql = "42.7.11"
@@ -98,7 +96,6 @@ usercentrics = "2.26.2"
 agp = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
 
 androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
-#androidx-activityKtx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-annotation = "androidx.annotation:annotation:1.10.0"
 #androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
@@ -204,12 +201,12 @@ coil-networkKtor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 
 crashkios-crashlytics = { module = "co.touchlab.crashkios:crashlytics", version.ref = "crashkios" }
 
-decompose-core = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
-decompose-extensions = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
+#decompose-core = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+#decompose-extensions = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 dejavu = { module = "me.mmckenna.dejavu:dejavu", version.ref = "dejavu" }
 
 detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }
-detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detekt" }
+#detekt-cli = { module = "io.gitlab.arturbosch.detekt:detekt-cli", version.ref = "detekt" }
 detekt-test = { module = "io.gitlab.arturbosch.detekt:detekt-test", version.ref = "detekt" }
 detekt-testUtils = { module = "io.gitlab.arturbosch.detekt:detekt-test-utils", version.ref = "detekt" }
 detekt-compose = { module = "io.nlopez.compose.rules:detekt", version.ref = "detekt-compose" }
@@ -217,10 +214,10 @@ detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", 
 
 diamondedge-logging = { module = "com.diamondedge:logging", version.ref = "diamondedge-logging" }
 
-essenty-lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "essenty" }
-essenty-backHandler = { module = "com.arkivanov.essenty:back-handler", version.ref = "essenty" }
-essenty-instanceKeeper = { module = "com.arkivanov.essenty:instance-keeper", version.ref = "essenty" }
-essenty-stateKeeper = { module = "com.arkivanov.essenty:state-keeper", version.ref = "essenty" }
+#essenty-lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "essenty" }
+#essenty-backHandler = { module = "com.arkivanov.essenty:back-handler", version.ref = "essenty" }
+#essenty-instanceKeeper = { module = "com.arkivanov.essenty:instance-keeper", version.ref = "essenty" }
+#essenty-stateKeeper = { module = "com.arkivanov.essenty:state-keeper", version.ref = "essenty" }
 
 #googlePlay-appUpdateKtx = "com.google.android.play:app-update-ktx:2.1.0"
 #googlePlay-servicesAnalytics = "com.google.android.gms:play-services-analytics:18.1.1"
