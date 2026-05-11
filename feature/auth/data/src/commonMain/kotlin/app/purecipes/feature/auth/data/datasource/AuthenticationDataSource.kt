@@ -1,7 +1,5 @@
 package app.purecipes.feature.auth.data.datasource
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.domain.model.AuthProvider
@@ -13,6 +11,8 @@ import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.GoogleSignInRequest
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

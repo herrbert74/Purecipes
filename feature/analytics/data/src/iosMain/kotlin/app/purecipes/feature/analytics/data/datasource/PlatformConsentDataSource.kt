@@ -1,5 +1,8 @@
 package app.purecipes.feature.analytics.data.datasource
 
+import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
+import app.purecipes.shared.data.config.PurecipesConfig
 import cocoapods.Usercentrics.UsercentricsUpdatedConsentPayload
 import cocoapods.Usercentrics.UsercentricsUsercentricsEvent
 import cocoapods.Usercentrics.UsercentricsUsercentricsKt
@@ -7,9 +10,6 @@ import cocoapods.Usercentrics.UsercentricsUsercentricsLoggerLevel
 import cocoapods.Usercentrics.UsercentricsUsercentricsOptions
 import cocoapods.Usercentrics.UsercentricsUsercentricsReadyStatus
 import cocoapods.Usercentrics.UsercentricsUsercentricsServiceConsent
-import app.purecipes.feature.analytics.domain.model.ConsentState
-import app.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
-import app.purecipes.shared.data.config.PurecipesConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

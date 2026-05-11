@@ -49,7 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
@@ -70,6 +69,7 @@ import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import coil3.compose.AsyncImage
 
 internal const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
 

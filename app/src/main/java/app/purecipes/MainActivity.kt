@@ -9,12 +9,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
+import app.purecipes.feature.main.ui.MainScreen
 import com.mmk.kmpauth.core.KMPAuth
 import com.mmk.kmpauth.facebook.handleFacebookActivityResult
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import com.mmk.kmpnotifier.notification.NotifierManager
-import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
-import app.purecipes.feature.main.ui.MainScreen
 import dev.zacsweers.metro.createGraph
 import kotlinx.coroutines.launch
 

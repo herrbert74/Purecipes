@@ -1,9 +1,9 @@
 package app.purecipes.feature.search.data.repository
 
-import com.github.michaelbull.result.getOr
 import app.purecipes.feature.search.data.datasource.UserPantryDataSource
 import app.purecipes.feature.search.domain.repository.UserPantryRepository
 import app.purecipes.shared.domain.model.PantryDelta
+import com.github.michaelbull.result.getOr
 
 class UserPantryAccessor(
 	private val remoteDataSource: UserPantryDataSource.Remote,

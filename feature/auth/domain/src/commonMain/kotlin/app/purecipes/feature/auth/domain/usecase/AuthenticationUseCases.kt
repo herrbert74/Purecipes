@@ -1,6 +1,5 @@
 package app.purecipes.feature.auth.domain.usecase
 
-import com.github.michaelbull.result.Err
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.domain.model.AuthProvider
@@ -9,6 +8,7 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
+import com.github.michaelbull.result.Err
 import kotlinx.coroutines.flow.StateFlow
 
 class ObserveAuthenticationStateUseCase(

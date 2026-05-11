@@ -1,9 +1,9 @@
 package app.purecipes.feature.analytics.data.datasource
 
-import com.mixpanel.android.mpmetrics.MixpanelAPI
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.shared.data.config.PurecipesConfig
+import com.mixpanel.android.mpmetrics.MixpanelAPI
 import org.json.JSONObject
 
 internal actual class MixpanelAnalyticsDataSource actual constructor(

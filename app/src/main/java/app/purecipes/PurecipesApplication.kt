@@ -1,9 +1,9 @@
 package app.purecipes
 
 import android.app.Application
+import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
-import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 
 class PurecipesApplication : Application() {
 

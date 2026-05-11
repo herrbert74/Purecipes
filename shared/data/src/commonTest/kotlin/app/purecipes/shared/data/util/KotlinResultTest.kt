@@ -1,8 +1,8 @@
 package app.purecipes.shared.data.util
 
-import com.github.michaelbull.result.Err
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.shared.data.getresult.handle
+import com.github.michaelbull.result.Err
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient

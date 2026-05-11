@@ -1,13 +1,13 @@
 package app.purecipes.feature.search.domain.usecase
 
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.get
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.repository.SearchOutcome
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.get
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

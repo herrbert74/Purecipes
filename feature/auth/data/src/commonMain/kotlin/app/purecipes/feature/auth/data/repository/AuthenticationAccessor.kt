@@ -1,8 +1,5 @@
 package app.purecipes.feature.auth.data.repository
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.data.datasource.AuthenticationDataSource
@@ -11,6 +8,9 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import kotlinx.coroutines.flow.StateFlow
 
 class AuthenticationAccessor(

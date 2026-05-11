@@ -1,13 +1,13 @@
 package app.purecipes.shared.data.network
 
-import com.diamondedge.logging.FixedLogLevel
-import com.diamondedge.logging.KmLogging
-import com.diamondedge.logging.PrintLogger
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.shared.data.getresult.handle
 import app.purecipes.shared.data.session.SessionTokenStore
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.RecipeDetails
+import com.diamondedge.logging.FixedLogLevel
+import com.diamondedge.logging.KmLogging
+import com.diamondedge.logging.PrintLogger
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient

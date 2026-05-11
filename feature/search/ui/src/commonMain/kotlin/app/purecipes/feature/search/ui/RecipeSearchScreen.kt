@@ -35,7 +35,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -52,6 +51,7 @@ import app.purecipes.shared.ui.component.TitleText
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.toImmutableSet
 
 internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"

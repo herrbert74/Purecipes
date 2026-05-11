@@ -41,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.model.toDisplayText
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
@@ -59,6 +58,7 @@ import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import coil3.compose.AsyncImage
 
 internal const val AUTH_SCREEN_TITLE_TAG = "authScreenTitle"
 internal const val AUTH_EMAIL_FIELD_TAG = "authEmailField"

@@ -1,14 +1,14 @@
 package app.purecipes.shared.testfixtures.fake
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.repository.SearchOutcome
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 
 class FakeRecipeSearchRepository(
 	private val result: SearchOutcome<List<RecipeSummary>> = Ok(emptyList()),

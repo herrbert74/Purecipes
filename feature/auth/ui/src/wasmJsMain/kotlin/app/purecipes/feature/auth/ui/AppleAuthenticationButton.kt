@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
 
 @Composable
 internal actual fun AppleAuthenticationButton(

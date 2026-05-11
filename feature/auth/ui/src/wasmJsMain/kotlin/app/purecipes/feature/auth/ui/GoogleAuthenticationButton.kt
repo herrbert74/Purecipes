@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import com.mmk.kmpauth.google.GoogleButtonUiContainer
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 
 @Composable
 internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: String?) {

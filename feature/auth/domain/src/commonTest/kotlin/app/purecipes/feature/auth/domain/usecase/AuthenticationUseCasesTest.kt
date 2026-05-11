@@ -1,10 +1,10 @@
 package app.purecipes.feature.auth.domain.usecase
 
-import com.github.michaelbull.result.getError
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

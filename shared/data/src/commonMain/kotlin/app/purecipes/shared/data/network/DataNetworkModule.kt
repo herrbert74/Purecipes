@@ -1,10 +1,10 @@
 package app.purecipes.shared.data.network
 
-import com.diamondedge.logging.Logger
-import com.diamondedge.logging.logging
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.session.SessionTokenStore
 import app.purecipes.shared.data.session.SettingsSessionTokenStore
+import com.diamondedge.logging.Logger
+import com.diamondedge.logging.logging
 import de.jensklingenberg.ktorfit.Ktorfit
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo

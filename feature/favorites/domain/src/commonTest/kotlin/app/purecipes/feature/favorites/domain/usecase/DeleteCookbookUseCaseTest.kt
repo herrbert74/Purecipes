@@ -1,7 +1,7 @@
 package app.purecipes.feature.favorites.domain.usecase
 
-import com.github.michaelbull.result.getError
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
+import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

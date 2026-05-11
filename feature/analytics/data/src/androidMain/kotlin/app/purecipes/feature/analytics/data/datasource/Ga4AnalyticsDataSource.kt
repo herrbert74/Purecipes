@@ -1,10 +1,10 @@
 package app.purecipes.feature.analytics.data.datasource
 
 import android.os.Bundle
-import com.google.firebase.analytics.FirebaseAnalytics
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.shared.data.config.PurecipesConfig
+import com.google.firebase.analytics.FirebaseAnalytics
 
 internal actual class Ga4AnalyticsDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,

@@ -2,14 +2,14 @@
 
 package app.purecipes.shared.data.getresult
 
+import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.shared.data.util.runCatchingUnit
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.andThen
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.recoverIf
 import com.github.michaelbull.retry.policy.RetryPolicy
-import app.purecipes.base.kotlin.result.Failure
-import app.purecipes.base.kotlin.result.Outcome
-import app.purecipes.shared.data.util.runCatchingUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first

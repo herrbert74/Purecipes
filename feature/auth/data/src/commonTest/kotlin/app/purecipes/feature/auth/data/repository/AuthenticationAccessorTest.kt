@@ -1,9 +1,5 @@
 package app.purecipes.feature.auth.data.repository
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.data.datasource.AuthenticationDataSource
@@ -15,6 +11,10 @@ import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.test.runTest

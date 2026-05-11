@@ -1,8 +1,8 @@
 package app.purecipes.feature.analytics.data.datasource
 
-import cocoapods.FirebaseAnalytics.FIRAnalytics
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.shared.data.config.PurecipesConfig
+import cocoapods.FirebaseAnalytics.FIRAnalytics
 
 internal actual class Ga4AnalyticsDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,

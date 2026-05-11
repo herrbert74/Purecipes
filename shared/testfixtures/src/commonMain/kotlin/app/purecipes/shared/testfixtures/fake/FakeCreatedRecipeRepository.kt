@@ -1,11 +1,11 @@
 package app.purecipes.shared.testfixtures.fake
 
-import com.github.michaelbull.result.Ok
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
+import com.github.michaelbull.result.Ok
 
 class FakeCreatedRecipeRepository(
 	initialRecipes: List<RecipeDetails> = emptyList(),

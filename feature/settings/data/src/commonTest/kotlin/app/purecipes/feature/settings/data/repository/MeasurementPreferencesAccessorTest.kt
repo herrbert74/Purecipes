@@ -1,6 +1,5 @@
 package app.purecipes.feature.settings.data.repository
 
-import com.github.michaelbull.result.Ok
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.settings.data.datasource.MeasurementPreferencesDataSource
 import app.purecipes.feature.settings.data.datasource.MeasurementPreferencesRemoteDataSource
@@ -10,6 +9,7 @@ import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeFormatHandling
+import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -48,7 +48,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
@@ -65,6 +64,7 @@ import app.purecipes.shared.ui.component.TitleText
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 

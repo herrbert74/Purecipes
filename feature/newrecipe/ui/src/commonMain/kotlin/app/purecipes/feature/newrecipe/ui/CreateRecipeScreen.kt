@@ -57,7 +57,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import coil3.compose.AsyncImage
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -66,6 +65,7 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.SectionHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
 
 private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"

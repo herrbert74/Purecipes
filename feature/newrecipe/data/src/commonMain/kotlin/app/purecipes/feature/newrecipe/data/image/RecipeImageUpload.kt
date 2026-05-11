@@ -1,13 +1,13 @@
 package app.purecipes.feature.newrecipe.data.image
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.network.backendBaseUrl
 import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.RecipeImageUploadResponse
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent

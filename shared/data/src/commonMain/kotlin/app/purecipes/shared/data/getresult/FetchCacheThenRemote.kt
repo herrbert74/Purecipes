@@ -2,6 +2,11 @@
 
 package app.purecipes.shared.data.getresult
 
+import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.shared.data.getresult.STRATEGY.CACHE_FIRST_NETWORK_LATER
+import app.purecipes.shared.data.getresult.STRATEGY.CACHE_FIRST_NETWORK_ONCE
+import app.purecipes.shared.data.getresult.STRATEGY.CACHE_FIRST_NETWORK_SECOND
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.andThen
 import com.github.michaelbull.result.map
@@ -12,11 +17,6 @@ import com.github.michaelbull.retry.policy.constantDelay
 import com.github.michaelbull.retry.policy.continueIf
 import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.policy.stopAtAttempts
-import app.purecipes.base.kotlin.result.Failure
-import app.purecipes.base.kotlin.result.Outcome
-import app.purecipes.shared.data.getresult.STRATEGY.CACHE_FIRST_NETWORK_LATER
-import app.purecipes.shared.data.getresult.STRATEGY.CACHE_FIRST_NETWORK_ONCE
-import app.purecipes.shared.data.getresult.STRATEGY.CACHE_FIRST_NETWORK_SECOND
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first

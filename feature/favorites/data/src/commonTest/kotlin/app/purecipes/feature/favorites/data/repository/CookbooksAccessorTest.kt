@@ -1,10 +1,10 @@
 package app.purecipes.feature.favorites.data.repository
 
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
 import app.purecipes.feature.favorites.data.datasource.CookbooksRemoteDataSource
 import app.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import app.purecipes.shared.domain.model.CookbookSummary
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

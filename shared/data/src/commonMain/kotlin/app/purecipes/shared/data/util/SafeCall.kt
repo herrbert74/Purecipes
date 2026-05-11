@@ -1,11 +1,11 @@
 package app.purecipes.shared.data.util
 
+import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.shared.data.getresult.handle
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.andThen
 import com.github.michaelbull.result.map
-import app.purecipes.base.kotlin.result.Outcome
-import app.purecipes.shared.data.getresult.handle
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess

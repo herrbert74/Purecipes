@@ -1,9 +1,9 @@
 package app.purecipes.feature.search.data.repository
 
-import com.github.michaelbull.result.getOr
 import app.purecipes.feature.search.data.datasource.RecipeSearchFilterDataSource
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.shared.domain.model.SearchFilters
+import com.github.michaelbull.result.getOr
 
 class RecipeSearchFilterAccessor(
 	private val remoteDataSource: RecipeSearchFilterDataSource.Remote,

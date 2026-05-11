@@ -1,7 +1,5 @@
 package app.purecipes.feature.search.ui
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
@@ -21,6 +19,8 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
