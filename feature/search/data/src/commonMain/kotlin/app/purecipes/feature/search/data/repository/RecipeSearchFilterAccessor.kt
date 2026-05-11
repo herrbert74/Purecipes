@@ -1,0 +1,27 @@
+package app.purecipes.feature.search.data.repository
+
+import com.github.michaelbull.result.getOr
+import app.purecipes.feature.search.data.datasource.RecipeSearchFilterDataSource
+import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
+import app.purecipes.shared.domain.model.SearchFilters
+
+class RecipeSearchFilterAccessor(
+	private val remoteDataSource: RecipeSearchFilterDataSource.Remote,
+	private val localDataSource: RecipeSearchFilterDataSource.Local,
+) : RecipeSearchFilterRepository {
+
+	override suspend fun getFilters(): SearchFilters {
+		val remoteFilters = remoteDataSource.getFilters().getOr(null)
+		return if (remoteFilters != null) {
+			localDataSource.saveFilters(remoteFilters)
+			remoteFilters
+		} else {
+			localDataSource.getFilters()
+		}
+	}
+
+	override suspend fun saveFilters(filters: SearchFilters) {
+		localDataSource.saveFilters(filters)
+		remoteDataSource.saveFilters(filters)
+	}
+}

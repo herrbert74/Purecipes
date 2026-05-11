@@ -5,7 +5,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.base.kotlin"
+		namespace = "app.purecipes.base.kotlin"
 	}
 
 	sourceSets {

@@ -66,7 +66,7 @@ private fun Project.androidBuildTypeFromTasks(): String? {
 }
 
 buildkonfig {
-	packageName = "com.purecipes.umbrella"
+	packageName = "app.purecipes.umbrella"
 
 	defaultConfigs {
 		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
@@ -79,7 +79,7 @@ buildkonfig {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.umbrella"
+		namespace = "app.purecipes.umbrella"
 		compilerOptions {
 			jvmTarget.set(JvmTarget.fromTarget(libs.versions.jdk.get()))
 		}

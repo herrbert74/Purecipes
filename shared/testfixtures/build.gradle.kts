@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.shared.testfixtures"
+		namespace = "app.purecipes.shared.testfixtures"
 	}
 
 	sourceSets {

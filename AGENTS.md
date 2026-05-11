@@ -80,7 +80,7 @@ for the Result class from the kotlin-result library. We use this library because
 ## Rule: Use custom pagination
 
 The Google Pagination library is overcomplicated and inflexible. We use a few custom classes instead.
-When using pagination, refer to classes in package 'com.purecipes.shared.ui.component.paging'.
+When using pagination, refer to classes in package 'app.purecipes.shared.ui.component.paging'.
 
 ## Rule: Change validation
 

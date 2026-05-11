@@ -8,7 +8,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.shared.ui"
+		namespace = "app.purecipes.shared.ui"
 
 		withHostTestBuilder {
 		}

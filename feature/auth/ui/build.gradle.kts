@@ -95,7 +95,7 @@ kotlin {
 	}
 
 	android {
-		namespace = "com.purecipes.feature.auth.ui"
+		namespace = "app.purecipes.feature.auth.ui"
 		withDeviceTestBuilder {
 			sourceSetTreeName = "androidDeviceTest"
 		}.configure {

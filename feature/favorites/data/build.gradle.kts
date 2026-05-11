@@ -5,7 +5,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.favorites.data"
+		namespace = "app.purecipes.feature.favorites.data"
 	}
 
 	sourceSets {

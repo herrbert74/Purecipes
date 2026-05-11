@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-	namespace = "com.purecipes"
+	namespace = "app.purecipes"
 	compileSdk {
 		version = release(36)
 	}

@@ -27,7 +27,7 @@ ksp {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.shared.data"
+		namespace = "app.purecipes.shared.data"
 	}
 
 	sourceSets {

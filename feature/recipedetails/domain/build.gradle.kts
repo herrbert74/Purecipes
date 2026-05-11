@@ -4,6 +4,6 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.recipedetails.domain"
+		namespace = "app.purecipes.feature.recipedetails.domain"
 	}
 }

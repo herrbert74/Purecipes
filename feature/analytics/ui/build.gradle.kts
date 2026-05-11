@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.analytics.ui"
+		namespace = "app.purecipes.feature.analytics.ui"
 	}
 
 	sourceSets {

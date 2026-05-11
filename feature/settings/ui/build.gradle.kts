@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
 	android {
-		namespace = "com.purecipes.feature.settings.ui"
+		namespace = "app.purecipes.feature.settings.ui"
 	}
 
 	sourceSets {
