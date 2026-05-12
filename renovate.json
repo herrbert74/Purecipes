@@ -11,11 +11,14 @@
   ],
   "packageRules": [
     {
+      "matchPackagePatterns": ["*"],
+      "allowedVersions": "!/SNAPSHOT/"
+    },
+    {
       "groupName": "All Minor & Patch Updates",
       "groupSlug": "all-minor-patch",
       "matchUpdateTypes": ["minor", "patch"],
       "matchPackagePatterns": ["*"],
-      "allowedVersions": "!/SNAPSHOT/",
       "labels": ["renovate"]
     }
   ]
