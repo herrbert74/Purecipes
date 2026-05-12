@@ -10,7 +10,7 @@ plugins {
 android {
 	namespace = "app.purecipes"
 	compileSdk {
-		version = release(36)
+		version = release(libs.versions.compileSdkVersion.get().toInt())
 	}
 
 	defaultConfig {
@@ -42,7 +42,8 @@ android {
 			applicationIdSuffix = ".debug"
 		}
 		release {
-			isMinifyEnabled = false
+			isMinifyEnabled = true
+			isShrinkResources = true
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -50,7 +51,6 @@ android {
 		create("staging") {
 			initWith(getByName("release"))
 			applicationIdSuffix = ".staging"
-			isDebuggable = true
 			signingConfig = signingConfigs.getByName("debug")
 			matchingFallbacks += listOf("release")
 		}
