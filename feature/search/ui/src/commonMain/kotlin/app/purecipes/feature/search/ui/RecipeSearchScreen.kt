@@ -68,17 +68,23 @@ fun RecipeSearchScreen(
 	getUserPantry: GetUserPantryUseCase,
 	updateUserPantry: UpdateUserPantryUseCase,
 	modifier: Modifier = Modifier,
+	initialShowFilterSheet: Boolean = false,
+	isSignedIn: Boolean = true,
 	onRecipeSelect: (Int) -> Unit = {},
+	onRequestLogInForFilters: () -> Unit = {},
 	closeScreen: () -> Unit = {},
+	sessionKey: String? = null,
 ) {
 	val viewModel = recipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
 		getMeasurementPreferences = getMeasurementPreferences,
-		searchRecipes = searchRecipes,
-		trackEvent = trackEvent,
 		getSearchFilters = getSearchFilters,
-		saveSearchFilters = saveSearchFilters,
 		getUserPantry = getUserPantry,
+		initialShowFilterSheet = initialShowFilterSheet,
+		saveSearchFilters = saveSearchFilters,
+		searchRecipes = searchRecipes,
+		sessionKey = sessionKey,
+		trackEvent = trackEvent,
 		updateUserPantry = updateUserPantry,
 	)
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -86,11 +92,16 @@ fun RecipeSearchScreen(
 	if (viewModel.isFilterSheetVisible) {
 		FilterBottomSheet(
 			filters = viewModel.activeFilters,
+			isSignedIn = isSignedIn,
 			pantryIngredients = viewModel.pantryIngredients.toImmutableSet(),
 			sheetState = sheetState,
+			onDismiss = viewModel::onFilterSheetDismiss,
 			onFiltersChange = viewModel::onFiltersChange,
 			onPantryIngredientsChange = viewModel::onPantryIngredientsChange,
-			onDismiss = viewModel::onFilterSheetDismiss,
+			onRequestLogIn = {
+				viewModel.onFilterSheetDismiss()
+				onRequestLogInForFilters()
+			},
 		)
 	}
 

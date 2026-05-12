@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -141,6 +142,28 @@ fun MainScreen(
 		LaunchedEffect(sessionKey) {
 			setAnalyticsUserId(sessionKey)
 		}
+		var previousAuthenticationState by remember { mutableStateOf<AuthenticationState?>(null) }
+		LaunchedEffect(authenticationState) {
+			val previous = previousAuthenticationState
+			previousAuthenticationState = authenticationState
+			when {
+				previous is AuthenticationState.SignedIn && authenticationState is AuthenticationState.SignedOut ->
+					viewModel.clearPostLoginNavigationState()
+
+				previous is AuthenticationState.SignedOut && authenticationState is AuthenticationState.SignedIn ->
+					when (viewModel.takePostLoginOriginAfterSignIn()) {
+						PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
+							viewModel.markPendingOpenSearchFiltersAfterLogin()
+							viewModel.onTabSelected(
+								backStack,
+								mainTabs.first { it.destination == SearchDestination },
+							)
+						}
+
+						null -> Unit
+					}
+			}
+		}
 		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 		HandleSystemBack(
 			enabled = viewModel.shouldExit(backStack),
@@ -174,17 +197,29 @@ fun MainScreen(
 					.padding(innerPadding),
 				entryProvider = entryProvider {
 					entry<SearchDestination> {
+						val initialShowFilterSheet = remember(sessionKey) {
+							viewModel.takePendingOpenSearchFilters()
+						}
 						RecipeSearchScreen(
 							filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
 							getMeasurementPreferences = getMeasurementPreferences,
-							modifier = Modifier.fillMaxSize(),
-							searchRecipes = searchRecipes,
-							trackEvent = trackEvent,
 							getSearchFilters = getSearchFilters,
-							saveSearchFilters = saveSearchFilters,
 							getUserPantry = getUserPantry,
-							updateUserPantry = updateUserPantry,
+							initialShowFilterSheet = initialShowFilterSheet,
+							isSignedIn = authenticationState is AuthenticationState.SignedIn,
+							modifier = Modifier.fillMaxSize(),
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
+							onRequestLogInForFilters = {
+								viewModel.requestLoginForPostLoginAction(
+									PostLoginNavOrigin.RECIPE_SEARCH_FILTERS,
+									backStack,
+								)
+							},
+							saveSearchFilters = saveSearchFilters,
+							searchRecipes = searchRecipes,
+							sessionKey = sessionKey,
+							trackEvent = trackEvent,
+							updateUserPantry = updateUserPantry,
 						)
 					}
 					entry<RecipeDetailsDestination> { destination ->

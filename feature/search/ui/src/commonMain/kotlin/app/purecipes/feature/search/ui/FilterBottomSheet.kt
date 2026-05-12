@@ -1,7 +1,9 @@
 package app.purecipes.feature.search.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -25,6 +28,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,14 +49,19 @@ import kotlinx.collections.immutable.toImmutableSet
 
 private const val SCROLLBAR_MIN_THUMB_FRACTION = 0.1f
 
+internal const val FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG = "filterBottomSheetSignInPromptTitle"
+internal const val FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG = "filterBottomSheetGoToAccountButton"
+
 @Composable
 internal fun FilterBottomSheet(
 	filters: SearchFilters,
+	isSignedIn: Boolean,
 	pantryIngredients: ImmutableSet<String>,
 	sheetState: SheetState,
+	onDismiss: () -> Unit,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onPantryIngredientsChange: (Set<String>) -> Unit,
-	onDismiss: () -> Unit,
+	onRequestLogIn: () -> Unit,
 ) {
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
@@ -60,9 +69,11 @@ internal fun FilterBottomSheet(
 	) {
 		FilterBottomSheetContent(
 			filters = filters,
+			isSignedIn = isSignedIn,
 			pantryIngredients = pantryIngredients,
 			onFiltersChange = onFiltersChange,
 			onPantryIngredientsChange = onPantryIngredientsChange,
+			onRequestLogIn = onRequestLogIn,
 		)
 	}
 }
@@ -70,122 +81,164 @@ internal fun FilterBottomSheet(
 @Composable
 private fun FilterBottomSheetContent(
 	filters: SearchFilters,
+	isSignedIn: Boolean,
 	pantryIngredients: ImmutableSet<String>,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onPantryIngredientsChange: (Set<String>) -> Unit,
+	onRequestLogIn: () -> Unit,
 ) {
-	val scrollState = rememberLazyListState()
-	Box(modifier = Modifier.fillMaxWidth()) {
-		LazyColumn(
-			state = scrollState,
-			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
-		) {
-			item {
-				Text(
-					text = "We will show only the recipes that have no missing ingredients " +
-						"from your pantry, unless there are no complete matches.",
-					style = PurecipesTheme.typography.bodyMedium,
-					modifier = Modifier.padding(
-						start = PurecipesTheme.space.m,
-						end = PurecipesTheme.space.m,
-						top = PurecipesTheme.space.s,
-					),
-				)
+	if (!isSignedIn) {
+		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
+	} else {
+		val scrollState = rememberLazyListState()
+		Box(modifier = Modifier.fillMaxWidth()) {
+			LazyColumn(
+				state = scrollState,
+				contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
+			) {
+				item {
+					Text(
+						text = "We will show only the recipes that have no missing ingredients " +
+							"from your pantry, unless there are no complete matches.",
+						style = PurecipesTheme.typography.bodyMedium,
+						modifier = Modifier.padding(
+							start = PurecipesTheme.space.m,
+							end = PurecipesTheme.space.m,
+							top = PurecipesTheme.space.s,
+						),
+					)
+				}
+				item {
+					IngredientFilterSection(
+						availableIngredients = pantryIngredients,
+						onSelectionChange = onPantryIngredientsChange,
+					)
+				}
+				item {
+					Text(
+						text = "With the filters below you can get a more tailored result.",
+						style = PurecipesTheme.typography.bodyMedium,
+						modifier = Modifier.padding(
+							start = PurecipesTheme.space.m,
+							end = PurecipesTheme.space.m,
+							top = PurecipesTheme.space.m,
+						),
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Dietary Preferences",
+						items = DietaryPreference.entries.toImmutableList(),
+						selected = filters.dietaryPreferences.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(dietaryPreferences = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Cuisine",
+						items = Cuisine.entries.toImmutableList(),
+						selected = filters.cuisines.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(cuisines = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Meal Type",
+						items = MealType.entries.toImmutableList(),
+						selected = filters.mealTypes.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(mealTypes = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Cooking Time",
+						items = CookingTimeRange.entries.toImmutableList(),
+						selected = filters.cookingTimeRanges.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(cookingTimeRanges = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Difficulty Level",
+						items = DifficultyLevel.entries.toImmutableList(),
+						selected = filters.difficultyLevels.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(difficultyLevels = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Cooking Method",
+						items = CookingMethod.entries.toImmutableList(),
+						selected = filters.cookingMethods.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(cookingMethods = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Calorie Range",
+						items = CalorieRange.entries.toImmutableList(),
+						selected = filters.calorieRanges.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
+					)
+				}
+				item {
+					FilterChipSection(
+						title = "Nutrition",
+						items = NutritionFilter.entries.toImmutableList(),
+						selected = filters.nutritionFilters.toImmutableSet(),
+						itemLabel = { it.displayName },
+						onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
+					)
+				}
 			}
-			item {
-				IngredientFilterSection(
-					availableIngredients = pantryIngredients,
-					onSelectionChange = onPantryIngredientsChange,
-				)
-			}
-			item {
-				Text(
-					text = "With the filters below you can get a more tailored result.",
-					style = PurecipesTheme.typography.bodyMedium,
-					modifier = Modifier.padding(
-						start = PurecipesTheme.space.m,
-						end = PurecipesTheme.space.m,
-						top = PurecipesTheme.space.m,
-					),
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Dietary Preferences",
-					items = DietaryPreference.entries.toImmutableList(),
-					selected = filters.dietaryPreferences.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(dietaryPreferences = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Cuisine",
-					items = Cuisine.entries.toImmutableList(),
-					selected = filters.cuisines.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(cuisines = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Meal Type",
-					items = MealType.entries.toImmutableList(),
-					selected = filters.mealTypes.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(mealTypes = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Cooking Time",
-					items = CookingTimeRange.entries.toImmutableList(),
-					selected = filters.cookingTimeRanges.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(cookingTimeRanges = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Difficulty Level",
-					items = DifficultyLevel.entries.toImmutableList(),
-					selected = filters.difficultyLevels.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(difficultyLevels = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Cooking Method",
-					items = CookingMethod.entries.toImmutableList(),
-					selected = filters.cookingMethods.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(cookingMethods = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Calorie Range",
-					items = CalorieRange.entries.toImmutableList(),
-					selected = filters.calorieRanges.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
-				)
-			}
-			item {
-				FilterChipSection(
-					title = "Nutrition",
-					items = NutritionFilter.entries.toImmutableList(),
-					selected = filters.nutritionFilters.toImmutableSet(),
-					itemLabel = { it.displayName },
-					onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
-				)
-			}
+			VerticalScrollbar(
+				state = scrollState,
+				modifier = Modifier.align(Alignment.CenterEnd),
+			)
 		}
-		VerticalScrollbar(
-			state = scrollState,
-			modifier = Modifier.align(Alignment.CenterEnd),
+	}
+}
+
+@Composable
+private fun FilterLoginRequiredContent(
+	onRequestLogIn: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
+	Column(
+		modifier = modifier
+			.fillMaxWidth()
+			.padding(
+				start = PurecipesTheme.space.m,
+				end = PurecipesTheme.space.m,
+				top = PurecipesTheme.space.s,
+				bottom = PurecipesTheme.space.xxl,
+			),
+		horizontalAlignment = Alignment.CenterHorizontally,
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+	) {
+		Text(
+			text = "Sign in to use filters",
+			style = PurecipesTheme.typography.titleMedium,
+			modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG),
 		)
+		Text(
+			text = "Pantry matching and your filter choices apply to search once you are signed in.",
+			style = PurecipesTheme.typography.bodyMedium,
+			color = PurecipesTheme.colorScheme.onSurfaceVariant,
+		)
+		Button(
+			onClick = onRequestLogIn,
+			modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG),
+		) {
+			Text("Go to Account")
+		}
 	}
 }
 
@@ -287,8 +340,33 @@ private fun FilterBottomSheetFontScalePreview() {
 	FilterBottomSheetPreviewContent(darkTheme = false)
 }
 
+@Preview(
+	name = "Filter Bottom Sheet Sign In Required Light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
 @Composable
-private fun FilterBottomSheetPreviewContent(darkTheme: Boolean) {
+private fun FilterBottomSheetSignInRequiredLightPreview() {
+	FilterBottomSheetPreviewContent(darkTheme = false, isSignedIn = false)
+}
+
+@Preview(
+	name = "Filter Bottom Sheet Sign In Required Dark",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFF121212,
+)
+@Composable
+private fun FilterBottomSheetSignInRequiredDarkPreview() {
+	FilterBottomSheetPreviewContent(darkTheme = true, isSignedIn = false)
+}
+
+@Composable
+private fun FilterBottomSheetPreviewContent(
+	darkTheme: Boolean,
+	isSignedIn: Boolean = true,
+) {
 	PurecipesTheme(darkTheme = darkTheme) {
 		Surface(
 			modifier = Modifier.fillMaxSize(),
@@ -296,9 +374,11 @@ private fun FilterBottomSheetPreviewContent(darkTheme: Boolean) {
 		) {
 			FilterBottomSheetContent(
 				filters = SearchFilters.default(),
+				isSignedIn = isSignedIn,
 				pantryIngredients = persistentSetOf(),
 				onFiltersChange = {},
 				onPantryIngredientsChange = {},
+				onRequestLogIn = {},
 			)
 		}
 	}

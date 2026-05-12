@@ -9,10 +9,45 @@ import androidx.navigation3.runtime.NavKey
 
 internal class MainViewModel : ViewModel() {
 
+	private var pendingPostLoginOrigin: PostLoginNavOrigin? = null
+	private var pendingOpenSearchFiltersAfterLogin: Boolean = false
+
+	fun clearPostLoginNavigationState() {
+		pendingPostLoginOrigin = null
+		pendingOpenSearchFiltersAfterLogin = false
+	}
+
+	fun requestLoginForPostLoginAction(origin: PostLoginNavOrigin, backStack: MutableList<NavKey>) {
+		pendingPostLoginOrigin = origin
+		onTabSelected(backStack, mainTabs.first { it.destination == AccountDestination })
+	}
+
+	fun takePostLoginOriginAfterSignIn(): PostLoginNavOrigin? {
+		val origin = pendingPostLoginOrigin
+		pendingPostLoginOrigin = null
+		return origin
+	}
+
+	fun markPendingOpenSearchFiltersAfterLogin() {
+		pendingOpenSearchFiltersAfterLogin = true
+	}
+
+	fun takePendingOpenSearchFilters(): Boolean {
+		if (!pendingOpenSearchFiltersAfterLogin) return false
+		pendingOpenSearchFiltersAfterLogin = false
+		return true
+	}
+
 	fun shouldExit(backStack: List<NavKey>): Boolean =
 		backStack.size == 1 && backStack.firstOrNull() == SearchDestination
 
 	fun onTabSelected(backStack: MutableList<NavKey>, tab: MainTab) {
+		if (tab.destination !is AccountDestination) {
+			pendingPostLoginOrigin = null
+			if (tab.destination != SearchDestination) {
+				pendingOpenSearchFiltersAfterLogin = false
+			}
+		}
 		if (backStack.size != 1 || backStack.firstOrNull() != tab.destination) {
 			backStack.clear()
 			backStack += tab.destination
