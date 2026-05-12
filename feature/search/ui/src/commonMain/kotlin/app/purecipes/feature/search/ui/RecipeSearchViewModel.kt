@@ -46,6 +46,7 @@ internal class RecipeSearchViewModel(
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
 	private val getUserPantry: GetUserPantryUseCase,
 	private val updateUserPantry: UpdateUserPantryUseCase,
+	private val initialShowFilterSheet: Boolean,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -100,6 +101,9 @@ internal class RecipeSearchViewModel(
 			pantryIngredients = getUserPantry()
 			lastSearchedFilters = activeFilters
 			lastSavedPantry = pantryIngredients
+			if (initialShowFilterSheet) {
+				isFilterSheetVisible = true
+			}
 			doSearch()
 		}
 	}
@@ -231,6 +235,8 @@ internal fun recipeSearchViewModel(
 	saveSearchFilters: SaveSearchFiltersUseCase,
 	getUserPantry: GetUserPantryUseCase,
 	updateUserPantry: UpdateUserPantryUseCase,
+	initialShowFilterSheet: Boolean,
+	sessionKey: String?,
 ): RecipeSearchViewModel {
 	val viewModelKey = buildString {
 		append("RecipeSearchViewModel:")
@@ -247,6 +253,8 @@ internal fun recipeSearchViewModel(
 		append(getUserPantry.hashCode())
 		append(':')
 		append(updateUserPantry.hashCode())
+		append(':')
+		append(sessionKey ?: "guest")
 	}
 	return viewModel(
 		key = viewModelKey,
@@ -261,6 +269,7 @@ internal fun recipeSearchViewModel(
 					saveSearchFilters = saveSearchFilters,
 					getUserPantry = getUserPantry,
 					updateUserPantry = updateUserPantry,
+					initialShowFilterSheet = initialShowFilterSheet,
 				)
 			}
 		},

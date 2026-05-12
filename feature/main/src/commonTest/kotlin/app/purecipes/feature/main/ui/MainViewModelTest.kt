@@ -15,6 +15,30 @@ class MainViewModelTest {
 	}
 
 	@Test
+	fun `requestLoginForPostLoginAction navigates to account and preserves origin until sign in`() {
+		val backStack = mutableListOf<NavKey>(SearchDestination)
+
+		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS, backStack)
+
+		backStack shouldBe listOf<NavKey>(AccountDestination)
+		viewModel.takePostLoginOriginAfterSignIn() shouldBe PostLoginNavOrigin.RECIPE_SEARCH_FILTERS
+	}
+
+	@Test
+	fun `selecting search tab clears pending post login origin without consuming open filters flag`() {
+		val backStack = mutableListOf<NavKey>(AccountDestination)
+		viewModel.markPendingOpenSearchFiltersAfterLogin()
+		viewModel.onTabSelected(
+			backStack,
+			mainTabs.first { it.destination == SearchDestination },
+		)
+
+		backStack shouldBe listOf<NavKey>(SearchDestination)
+		viewModel.takePostLoginOriginAfterSignIn() shouldBe null
+		viewModel.takePendingOpenSearchFilters() shouldBe true
+	}
+
+	@Test
 	fun `tab selection resets stack to selected destination`() {
 		val backStack: MutableList<NavKey> = mutableListOf(SearchDestination, RecipeDetailsDestination(42))
 

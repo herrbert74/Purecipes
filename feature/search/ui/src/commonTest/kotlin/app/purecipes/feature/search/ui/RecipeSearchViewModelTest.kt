@@ -177,6 +177,26 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `init shows filter sheet when initialShowFilterSheet is true`() = runTest {
+		val viewModel = RecipeSearchViewModel(
+			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
+			searchRecipes = SearchRecipesUseCase(FakeRecipeSearchRepository(Ok(emptyList()))),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			getSearchFilters = GetSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
+			saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
+			getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
+			updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
+			initialShowFilterSheet = true,
+			coroutineScope = this,
+		)
+
+		advanceUntilIdle()
+
+		viewModel.isFilterSheetVisible shouldBe true
+	}
+
+	@Test
 	fun `onFilterSheetDismiss hides the filter sheet`() = runTest {
 		val viewModel = makeViewModel(coroutineScope = this)
 		viewModel.onFilterButtonClick()
@@ -263,6 +283,7 @@ class RecipeSearchViewModelTest {
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 		getUserPantry = GetUserPantryUseCase(pantryRepository),
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+		initialShowFilterSheet = false,
 		coroutineScope = coroutineScope,
 	)
 }

@@ -1,9 +1,12 @@
 package app.purecipes.feature.search.ui
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
@@ -27,6 +30,7 @@ import com.github.michaelbull.result.Err
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -121,5 +125,96 @@ class RecipeSearchScreenTest {
 		}
 
 		onNodeWithText("Search failed").assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedOutOpeningFiltersShowsSignInPrompt() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository()
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val pantryRepository = FakeUserPantryRepository()
+		val settingsRepository = FakeMeasurementPreferencesRepository()
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+					searchRecipes = SearchRecipesUseCase(searchRepository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+					getUserPantry = GetUserPantryUseCase(pantryRepository),
+					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+					isSignedIn = false,
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedOutGoToAccountDismissesSheetAndInvokesCallback() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository()
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val pantryRepository = FakeUserPantryRepository()
+		val settingsRepository = FakeMeasurementPreferencesRepository()
+		var loginRequestCount = 0
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+					searchRecipes = SearchRecipesUseCase(searchRepository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+					getUserPantry = GetUserPantryUseCase(pantryRepository),
+					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+					isSignedIn = false,
+					onRequestLogInForFilters = { loginRequestCount++ },
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG).performClick()
+		waitForIdle()
+
+		assertEquals(1, loginRequestCount)
+		onAllNodesWithTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG).assertCountEquals(0)
+	}
+
+	@Test
+	fun whenSignedInOpeningFiltersShowsPantrySection() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository()
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val pantryRepository = FakeUserPantryRepository()
+		val settingsRepository = FakeMeasurementPreferencesRepository()
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+					searchRecipes = SearchRecipesUseCase(searchRepository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+					getUserPantry = GetUserPantryUseCase(pantryRepository),
+					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+					isSignedIn = true,
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithText("Pantry").assertIsDisplayed()
 	}
 }
