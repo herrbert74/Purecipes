@@ -18,6 +18,8 @@ import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -58,7 +60,7 @@ class RecipeSearchScreenTest {
 				)
 			}
 		}
-		onNodeWithText("Search recipes").assertIsDisplayed()
+		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
 		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).performTextInput("Pas")
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertStable()
 	}

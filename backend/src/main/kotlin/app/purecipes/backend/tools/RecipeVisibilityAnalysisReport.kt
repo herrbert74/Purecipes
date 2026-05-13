@@ -6,7 +6,7 @@ import java.net.URI
 
 private const val ARG_OUTPUT = "--output"
 private const val DEFAULT_INGREDIENTS_SOURCE =
-	"feature/search/ui/src/commonMain/kotlin/com/purecipes/feature/search/ui/IngredientFilterSection.kt"
+	"feature/search/ui/src/commonMain/kotlin/app/purecipes/feature/search/ui/filter/IngredientFilterSection.kt"
 private const val MISSING_ONE = 1
 private const val MISSING_TWO = 2
 private const val MISSING_INVISIBLE_THRESHOLD = 3

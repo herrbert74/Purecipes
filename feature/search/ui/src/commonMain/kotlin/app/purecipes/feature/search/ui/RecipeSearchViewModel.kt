@@ -163,7 +163,6 @@ internal class RecipeSearchViewModel(
 		totalMatches = 0
 		paginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 		loadPageOfResults(FIRST_PAGE_NUMBER)
-		isSearchBarActive = false
 	}
 
 	private suspend fun loadPageOfResults(pageNumber: Int) {
