@@ -5,7 +5,7 @@ import app.purecipes.backend.feature.search.IngredientVocabulary
 
 private const val ARG_OUTPUT = "--output"
 private const val DEFAULT_INGREDIENTS_SOURCE =
-	"feature/search/ui/src/commonMain/kotlin/com/purecipes/feature/search/ui/IngredientFilterSection.kt"
+	"feature/search/ui/src/commonMain/kotlin/app/purecipes/feature/search/ui/filter/IngredientFilterSection.kt"
 
 private data class RecipeIngredientRow(
 	val recipeId: Int,

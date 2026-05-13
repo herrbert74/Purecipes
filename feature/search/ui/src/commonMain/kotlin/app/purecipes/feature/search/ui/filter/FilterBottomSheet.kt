@@ -1,4 +1,4 @@
-package app.purecipes.feature.search.ui
+package app.purecipes.feature.search.ui.filter
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement

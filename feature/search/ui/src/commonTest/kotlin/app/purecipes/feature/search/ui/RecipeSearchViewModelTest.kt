@@ -32,7 +32,7 @@ import kotlin.test.Test
 class RecipeSearchViewModelTest {
 
 	@Test
-	fun `search loads recipes and closes the search bar`() = runTest {
+	fun `search loads recipes on init`() = runTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(
 				listOf(
@@ -56,6 +56,19 @@ class RecipeSearchViewModelTest {
 		viewModel.isSearching shouldBe false
 		viewModel.isSearchBarActive shouldBe false
 		viewModel.errorMessage shouldBe null
+	}
+
+	@Test
+	fun `search now keeps search bar expanded when already expanded`() = runTest {
+		val repository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		advanceUntilIdle()
+
+		viewModel.onSearchBarExpandedChange(true)
+		viewModel.searchNow()
+		advanceUntilIdle()
+
+		viewModel.isSearchBarActive shouldBe true
 	}
 
 	@Test
