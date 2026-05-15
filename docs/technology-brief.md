@@ -290,36 +290,52 @@ POST   /api/ai/personalize       # Get personalized instructions
 - Simple Android UI for testing
 - Local backend setup
 
-### Phase 1: Core Features (Features 001-010)
+### Phase 1: Core Features (Features 002-010) -- *pre-alpha*
 - Feature 002: Authentication system
-- Feature 003: Basic step-by-step cooking
-- Feature 004: Recipe search and filtering
-- Feature 005: Favorite recipes
-- Feature 006: Basic recipe upload
-- Feature 007: Analytics
-- Feature 008: Measurement systems and unit conversion
-- Feature 009: Push notifications with Firebase Cloud Messaging
-- Feature 010: Basic monetisation with RevenueCat
+- Feature 004: Basic step-by-step cooking
+- Feature 005: Recipe search and filtering
+- Feature 006: Favorite recipes
+- Feature 007: Basic recipe upload
+- Feature 008: Analytics
+- Feature 009: Measurement systems and unit conversion
+- Feature 010: Push notifications with Firebase Cloud Messaging
+
 - iOS platform support via umbrella module
 - Backend API development
 
-### Phase 2: Advanced Features (Features 011-014) + Iteration
-- Feature 011: Advanced recipe search with chip/tag filtering
-- Feature 012: AI-assisted translations
-- Feature 013: Feature flag & A/B testing
-- Feature 014: Calorie calculator and nutrition tracking
+### Phase 2: More Core Features (Features 011-017) + Iteration  -- *alpha*
+- Feature 011: Basic monetisation with ads and RevenueCat
+- Feature 012: Advanced recipe search with chip/tag filtering
+- Feature 013: AI-assisted translations
+- Feature 014: Feature flag & A/B testing
+- Feature 015: Calorie calculator and nutrition tracking
+- Feature 016: Recipe sharing and deep linking
+- Feature 017: Launching animation
 - Iteration and refinement of Phase 0 and 1 features
 - Performance optimization
 - Testing and bug fixes
 
-### Phase 3: AI Integration & Polish (Features 015-017) + Iteration
-- Feature 015: AI recipe creation from image
-- Feature 016: Image creation from recipe
-- Feature 017: Smart kitchen integration
+### Phase 3: Advanced Features & Polish (Features 018-020) + Iteration -- *beta*
+- Feature 018: Baseline profiles and benchmarking
+- Feature 019: Placeholder for loading lists/images
+- Feature 020: Vote/Suggest features
 - Iteration and refinement of Phase 0-2 features
 - Advanced UI/UX improvements
-- Production deployment preparation
+- Production deployment preparation (CI/CD, release signing, store listings)
 - Documentation and testing
+- Open beta distribution on Android and iOS
+- **Public Launch** at the end of beta
+
+### Phase 4: Production Hardening & Iteration (Features 021-023) -- *post launch*
+- Feature 021: AI recipe creation from image
+- Feature 022: Image creation from recipe
+- Feature 023: Smart kitchen integration
+- Production monitoring, alerting, and on-call rotation
+- Performance and scalability tuning informed by post-launch telemetry
+- Crash and ANR triage, regression hardening
+- Backend capacity planning and database tuning
+- Iteration and refinement of Phase 0-3 features
+- Ongoing documentation and test coverage improvements
 
 ## Risk Mitigation
 

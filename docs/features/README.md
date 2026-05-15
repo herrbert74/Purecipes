@@ -43,7 +43,12 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Image upload functionality
 - Personal recipe collection
 
+### User Interface & Experience
+- **Launching animation (017)**
+- **Placeholder for loading lists/images (019)**
+
 ### User Engagement & Communication
+- **Vote/Suggest features (020)**
 - **Push notifications with Firebase Cloud Messaging (010)**
 - Cooking timer notifications
 - Meal planning reminders
@@ -66,6 +71,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 
 ### Experimentation & Optimization
 - **Feature Flag & A/B Testing (014)**
+- **Baseline profiles and benchmarking (018)**
 - Remote configuration management
 - Safe feature rollouts
 - User experience optimization
@@ -73,8 +79,8 @@ Features are numbered sequentially: `XXX_feature-name.md`
 
 ### AI & Machine Learning
 - **AI-assisted translations (013)**
-- **Recipe creation from images (016)**
-- **Image generation from recipes (017)**
+- **Recipe creation from images (021)**
+- **Image generation from recipes (022)**
 - Advanced personalization
 
 ### Health & Nutrition
@@ -84,13 +90,13 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Nutrition tracking
 
 ### Smart Kitchen Integration
-- **IoT device connectivity (018)**
+- **IoT device connectivity (023)**
 - Automated cooking guidance
 - Multi-device coordination
 - Voice control enhancements
 
 ### Social & Community
-- Recipe sharing
+- **Recipe sharing & deep linking (016)**
 - Community cooking sessions
 - User-generated content
 - Social features

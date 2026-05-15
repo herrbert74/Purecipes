@@ -239,25 +239,31 @@ api_response_time
 
 ## Implementation Roadmap
 
-### Phase 1: Basic Analytics (2026 Q2)
+> **Terminology note:** Analytics work uses **Rollouts**, which describe the incremental introduction of instrumentation and tooling on a calendar timeline. They are intentionally distinct from engineering **Phases** (`pre-alpha`, `alpha`, `beta`, `post launch`) defined in `product-brief.md` and `technology-brief.md`. Approximate mapping:
+> - **Rollout 1 (2026 Q2)** overlaps engineering Phase 1–2 (pre-alpha → alpha)
+> - **Rollout 2 (2026 Q3)** lands around public launch (end of engineering Phase 3, *beta*)
+> - **Rollout 3 (2026 Q4)** lands in early engineering Phase 4 (*post launch*)
+> - **Rollout 4 (2027 Q1+)** is mid-to-late engineering Phase 4
+
+### Rollout 1: Basic Analytics (2026 Q2)
 - Google Analytics 4 setup
 - Basic event tracking
 - User acquisition metrics
 - Core engagement tracking
 
-### Phase 2: Advanced Analytics (2026 Q3)
+### Rollout 2: Advanced Analytics (2026 Q3)
 - Mixpanel implementation
 - Custom event taxonomy
 - User behavior funnels
 - Retention analysis setup
 
-### Phase 3: Predictive Analytics (2026 Q4)
+### Rollout 3: Predictive Analytics (2026 Q4)
 - Amplitude integration
 - Predictive user modeling
 - Advanced segmentation
 - A/B testing platform
 
-### Phase 4: Optimization (2027 Q1+)
+### Rollout 4: Optimization (2027 Q1+)
 - Analytics dashboard optimization
 - Automated reporting
 - Real-time alerts

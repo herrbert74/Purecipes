@@ -30,7 +30,13 @@ Purecipes is positioned to disrupt the digital cooking space with its AI-assiste
 
 ## Go-to-Market Strategy
 
-### Phase 1: Internal Testing & Feature Validation (2026 Q2)
+> **Terminology note:** Go-to-market work uses **Stages**, which run on a calendar timeline and are intentionally distinct from engineering **Phases** (`pre-alpha`, `alpha`, `beta`, `post launch`) defined in `product-brief.md` and `technology-brief.md`. Approximate mapping:
+> - **Stage 1 (2026 Q2)** overlaps engineering Phase 1–2 (pre-alpha → alpha)
+> - **Stage 2 (2026 Q3)** kicks off at public launch (end of engineering Phase 3, *beta*)
+> - **Stage 3 (2026 Q4)** lands in early engineering Phase 4 (*post launch*)
+> - **Stage 4 (2027 Q1+)** is mid-to-late engineering Phase 4
+
+### Stage 1: Internal Testing & Feature Validation (2026 Q2)
 
 #### Internal Testing Strategy
 - **Alpha Testing**: Core team and close associates
@@ -38,14 +44,14 @@ Purecipes is positioned to disrupt the digital cooking space with its AI-assiste
 - **Bug Squashing**: Comprehensive QA and issue resolution
 - **Performance Optimization**: Cross-platform performance tuning
 
-#### Success Criteria for Phase 1
+#### Success Criteria for Stage 1
 - 95%+ crash-free sessions across all platforms
 - <3 second average recipe load time
 - Voice command accuracy >85%
 - Cross-platform sync success rate >98%
 - User satisfaction score >4.0 from internal testers
 
-### Phase 2: Launch & User Acquisition (2026 Q3)
+### Stage 2: Launch & User Acquisition (2026 Q3)
 
 #### Free App Launch Strategy
 - **Platform Launches**: Sequential rollout (Android → iOS → Web)
@@ -64,7 +70,7 @@ Purecipes is positioned to disrupt the digital cooking space with its AI-assiste
 - 4.0+ star rating on app stores
 - 15%+ monthly active user retention
 
-### Phase 3: Freemium Introduction (2026 Q4)
+### Stage 3: Freemium Introduction (2026 Q4)
 
 #### Freemium Model Structure
 **Free Features:**
@@ -87,7 +93,7 @@ Purecipes is positioned to disrupt the digital cooking space with its AI-assiste
 - **Trial Periods**: 14-day premium trials
 - **Upgrade Prompts**: Contextual upgrade suggestions
 
-### Phase 4: Brand Partnerships & Diversification (2027 Q1+)
+### Stage 4: Brand Partnerships & Diversification (2027 Q1+)
 
 #### Brand Partnership Opportunities
 - **Ingredient Brands**: "Cook with Brand X" featured recipes
