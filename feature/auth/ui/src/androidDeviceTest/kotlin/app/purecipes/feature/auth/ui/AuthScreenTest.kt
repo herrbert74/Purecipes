@@ -16,6 +16,7 @@ import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -44,6 +45,7 @@ class AuthScreenTest {
 					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
 					signInWithEmail = SignInWithEmailUseCase(authRepo),
 					registerWithEmail = RegisterWithEmailUseCase(authRepo),
+					resendEmailVerification = ResendEmailVerificationUseCase(authRepo),
 					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
 					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 					showConsentForm = ShowConsentFormUseCase(consentRepo),

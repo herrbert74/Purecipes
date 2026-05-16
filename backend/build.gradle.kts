@@ -10,6 +10,16 @@ private fun Project.googleWebClientId() = providers.gradleProperty("purecipes.go
 	.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
 	.orElse("")
 
+private fun Project.firebaseProjectId() = providers.gradleProperty("purecipes.firebaseProjectId")
+	.orElse(providers.gradleProperty("PURECIPES_FIREBASE_PROJECT_ID"))
+	.orElse(providers.environmentVariable("PURECIPES_FIREBASE_PROJECT_ID"))
+	.orElse("purecipes-50e5c")
+
+private fun Project.firebaseProjectNumber() = providers.gradleProperty("purecipes.firebaseProjectNumber")
+	.orElse(providers.gradleProperty("PURECIPES_FIREBASE_PROJECT_NUMBER"))
+	.orElse(providers.environmentVariable("PURECIPES_FIREBASE_PROJECT_NUMBER"))
+	.orElse("922845075790")
+
 val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resources/backend")
 
 sourceSets {
@@ -23,6 +33,8 @@ val generateBackendRuntimeConfig by tasks.registering(WriteProperties::class) {
 	destinationFile = outputFile.get()
 	encoding = "UTF-8"
 	property("purecipes.googleWebClientId", googleWebClientId())
+	property("purecipes.firebaseProjectId", firebaseProjectId())
+	property("purecipes.firebaseProjectNumber", firebaseProjectNumber())
 }
 
 kotlin {
@@ -62,10 +74,14 @@ dependencies {
 
 application {
 	mainClass.set("app.purecipes.backend.MainKt")
-	applicationDefaultJvmArgs = googleWebClientId().orNull
-		?.takeIf { it.isNotBlank() }
-		?.let { listOf("-Dpurecipes.googleWebClientId=$it") }
-		.orEmpty()
+	applicationDefaultJvmArgs = buildList {
+		googleWebClientId().orNull
+			?.takeIf { it.isNotBlank() }
+			?.let { add("-Dpurecipes.googleWebClientId=$it") }
+		firebaseProjectId().orNull
+			?.takeIf { it.isNotBlank() }
+			?.let { add("-Dpurecipes.firebaseProjectId=$it") }
+	}
 }
 
 tasks.processResources {

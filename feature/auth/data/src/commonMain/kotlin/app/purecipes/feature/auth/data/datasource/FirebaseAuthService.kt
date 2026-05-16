@@ -1,0 +1,9 @@
+package app.purecipes.feature.auth.data.datasource
+
+expect class FirebaseAuthService() {
+	suspend fun signInWithEmailAndPassword(email: String, password: String): EmailPasswordSignInResult
+	suspend fun createUserWithEmailAndPassword(email: String, password: String)
+	suspend fun sendEmailVerification()
+	suspend fun resendEmailVerification(email: String, password: String)
+	suspend fun signOut()
+}

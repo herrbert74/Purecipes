@@ -35,6 +35,7 @@ import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -92,6 +93,7 @@ fun MainScreen(
 	showConsentForm: ShowConsentFormUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
+	resendEmailVerification: ResendEmailVerificationUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
@@ -287,6 +289,7 @@ fun MainScreen(
 							observeAuthenticationState = observeAuthenticationState,
 							signInWithEmail = signInWithEmail,
 							registerWithEmail = registerWithEmail,
+							resendEmailVerification = resendEmailVerification,
 							signInWithExternalProvider = signInWithExternalProvider,
 							signInWithGoogle = signInWithGoogle,
 							showConsentForm = showConsentForm,

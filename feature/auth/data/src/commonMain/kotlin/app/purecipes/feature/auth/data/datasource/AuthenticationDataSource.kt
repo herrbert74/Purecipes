@@ -10,6 +10,8 @@ import app.purecipes.shared.data.session.SessionTokenStore
 import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
+import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -22,14 +24,16 @@ interface AuthenticationDataSource {
 
 		val authenticationState: StateFlow<AuthenticationState>
 
-		suspend fun signInWithEmail(email: String, password: String): Outcome<AuthUser>
+		suspend fun signInWithEmail(email: String, password: String): Outcome<String>
 
 		suspend fun registerWithEmail(
 			firstName: String,
 			familyName: String,
 			email: String,
 			password: String,
-		): Outcome<AuthUser>
+		): Outcome<Unit>
+
+		suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit>
 
 		suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser>
 
@@ -41,6 +45,8 @@ interface AuthenticationDataSource {
 	interface Remote {
 
 		suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession>
+
+		suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession>
 
 		suspend fun getCurrentSession(): Outcome<AuthenticatedSession>
 
@@ -54,6 +60,10 @@ class AuthenticationRemoteDataSource(
 
 	override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {
 		api.signInWithGoogle(GoogleSignInRequest(idToken = idToken.trim()))
+	}
+
+	override suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {
+		api.signInWithEmail(EmailSignInRequest(idToken = idToken.trim()))
 	}
 
 	override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> = runCatchingApi {
@@ -85,24 +95,36 @@ internal data class EmailAccountRecord(
 	val profileImageUrl: String?,
 )
 
-class InMemoryAuthenticationLocalDataSource(
+class FirebaseAuthenticationLocalDataSource(
 	private val store: AuthenticationStore,
 	private val sessionTokenStore: SessionTokenStore,
+	private val firebaseAuthService: FirebaseAuthService = FirebaseAuthService(),
 ) : AuthenticationDataSource.Local {
 
 	override val authenticationState: StateFlow<AuthenticationState> = store.authenticationState.asStateFlow()
 
-	override suspend fun signInWithEmail(email: String, password: String): Outcome<AuthUser> {
+	override suspend fun signInWithEmail(email: String, password: String): Outcome<String> {
 		val normalizedEmail = email.normalizedEmail()
-		val account = store.accountsByEmail[normalizedEmail]
-			?: return Err(Failure.ServerError("No account was found for this email"))
-		if (account.password != password) {
-			return Err(Failure.ServerError("Incorrect password"))
+		return try {
+			val result = firebaseAuthService.signInWithEmailAndPassword(normalizedEmail, password)
+			when {
+				result.idToken != null -> Ok(result.idToken)
+				result.emailNotVerified -> Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
+				else -> Err(Failure.ServerError("Sign in failed"))
+			}
+		} catch (e: RuntimeException) {
+			Err(Failure.ServerError(e.message ?: "Sign in failed"))
 		}
-		sessionTokenStore.clearSession()
-		val user = account.toAuthUser(provider = AuthProvider.EMAIL)
-		store.authenticationState.value = AuthenticationState.SignedIn(user)
-		return Ok(user)
+	}
+
+	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> {
+		val normalizedEmail = email.normalizedEmail()
+		return try {
+			firebaseAuthService.resendEmailVerification(normalizedEmail, password)
+			Ok(Unit)
+		} catch (e: RuntimeException) {
+			Err(Failure.ServerError(e.message ?: "Could not resend verification email"))
+		}
 	}
 
 	override suspend fun registerWithEmail(
@@ -110,7 +132,81 @@ class InMemoryAuthenticationLocalDataSource(
 		familyName: String,
 		email: String,
 		password: String,
-	): Outcome<AuthUser> {
+	): Outcome<Unit> {
+		val normalizedEmail = email.normalizedEmail()
+		return try {
+			firebaseAuthService.createUserWithEmailAndPassword(normalizedEmail, password)
+			firebaseAuthService.sendEmailVerification()
+			Ok(Unit)
+		} catch (e: RuntimeException) {
+			Err(Failure.ServerError(e.message ?: "Registration failed"))
+		}
+	}
+
+	override suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser> {
+		sessionTokenStore.saveSession(session)
+		val user = session.user.toAuthUser()
+		store.authenticationState.value = AuthenticationState.SignedIn(user)
+		return Ok(user)
+	}
+
+	override suspend fun signInWithExternalProvider(user: AuthUser): Outcome<AuthUser> {
+		val normalizedEmail = user.email.normalizedEmail()
+		sessionTokenStore.clearSession()
+		val existingAccount = store.accountsByEmail[normalizedEmail]
+		val resolvedUser = if (existingAccount != null) {
+			user.copy(
+				email = normalizedEmail,
+				displayName = user.displayName.ifBlank { existingAccount.fullName() },
+				firstName = user.firstName ?: existingAccount.firstName,
+				familyName = user.familyName ?: existingAccount.familyName,
+				profileImageUrl = user.profileImageUrl ?: existingAccount.profileImageUrl,
+			)
+		} else {
+			user.copy(
+				email = normalizedEmail,
+				displayName = user.displayName.ifBlank { normalizedEmail.fallbackDisplayName() },
+			)
+		}
+		store.authenticationState.value = AuthenticationState.SignedIn(resolvedUser)
+		return Ok(resolvedUser)
+	}
+
+	override suspend fun signOut() {
+		sessionTokenStore.clearSession()
+		try {
+			firebaseAuthService.signOut()
+		} catch (e: RuntimeException) {
+			println("Firebase sign out ignored: ${e.message}")
+		}
+		store.authenticationState.value = AuthenticationState.SignedOut
+	}
+}
+
+class InMemoryAuthenticationLocalDataSource(
+	private val store: AuthenticationStore,
+	private val sessionTokenStore: SessionTokenStore,
+) : AuthenticationDataSource.Local {
+
+	override val authenticationState: StateFlow<AuthenticationState> = store.authenticationState.asStateFlow()
+
+	override suspend fun signInWithEmail(email: String, password: String): Outcome<String> {
+		val normalizedEmail = email.normalizedEmail()
+		val account = store.accountsByEmail[normalizedEmail]
+			?: return Err(Failure.ServerError("No account was found for this email"))
+		if (account.password != password) {
+			return Err(Failure.ServerError("Incorrect password"))
+		}
+		// Mock Firebase ID token
+		return Ok("mock-firebase-id-token-for-$normalizedEmail")
+	}
+
+	override suspend fun registerWithEmail(
+		firstName: String,
+		familyName: String,
+		email: String,
+		password: String,
+	): Outcome<Unit> {
 		val normalizedEmail = email.normalizedEmail()
 		if (store.accountsByEmail.containsKey(normalizedEmail)) {
 			return Err(Failure.ServerError("An account already exists for this email"))
@@ -124,11 +220,10 @@ class InMemoryAuthenticationLocalDataSource(
 			profileImageUrl = null,
 		)
 		store.accountsByEmail[normalizedEmail] = account
-		sessionTokenStore.clearSession()
-		val user = account.toAuthUser(provider = AuthProvider.EMAIL)
-		store.authenticationState.value = AuthenticationState.SignedIn(user)
-		return Ok(user)
+		return Ok(Unit)
 	}
+
+	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> = Ok(Unit)
 
 	override suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser> {
 		sessionTokenStore.saveSession(session)

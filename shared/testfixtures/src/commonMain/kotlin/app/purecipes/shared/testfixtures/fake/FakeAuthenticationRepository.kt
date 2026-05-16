@@ -24,18 +24,8 @@ class FakeAuthenticationRepository(
 		String,
 		String,
 		String,
-	) -> Outcome<AuthUser> = { firstName, familyName, email, _ ->
-		Ok(
-			AuthUser(
-				id = email,
-				email = email,
-				displayName = "$firstName $familyName",
-				firstName = firstName,
-				familyName = familyName,
-				profileImageUrl = null,
-				provider = AuthProvider.EMAIL,
-			),
-		)
+	) -> Outcome<Unit> = { _, _, _, _ ->
+		Ok(Unit)
 	},
 	private val signInWithGoogleHandler: suspend (GoogleAuthenticationProfile) -> Outcome<AuthUser> = { profile ->
 		Ok(
@@ -80,14 +70,16 @@ class FakeAuthenticationRepository(
 		familyName: String,
 		email: String,
 		password: String,
-	): Outcome<AuthUser> {
+	): Outcome<Unit> {
 		return registerWithEmailHandler(
 			firstName,
 			familyName,
 			email,
 			password,
-		).also(::updateAuthenticationState)
+		)
 	}
+
+	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> = Ok(Unit)
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
 		return signInWithGoogleHandler(profile).also(::updateAuthenticationState)
