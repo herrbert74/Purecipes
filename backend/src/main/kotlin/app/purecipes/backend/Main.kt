@@ -1,5 +1,7 @@
 package app.purecipes.backend
 
+import app.purecipes.backend.auth.FirebaseIdTokenVerifier
+import app.purecipes.backend.auth.FirebaseTokenInfoIdTokenVerifier
 import app.purecipes.backend.auth.GoogleIdTokenVerifier
 import app.purecipes.backend.auth.GoogleTokenInfoGoogleIdTokenVerifier
 import app.purecipes.backend.auth.JdbcSessionService
@@ -45,6 +47,7 @@ fun Application.module(
 	extraRoutes: Route.() -> Unit = {},
 	db: Db = Db.create(),
 	googleIdTokenVerifier: GoogleIdTokenVerifier = GoogleTokenInfoGoogleIdTokenVerifier(),
+	firebaseIdTokenVerifier: FirebaseIdTokenVerifier = FirebaseTokenInfoIdTokenVerifier(),
 	sessionService: SessionService = JdbcSessionService(db.dataSource),
 	recipeImageStorage: RecipeImageStorage = RecipeImageStorage(),
 ) {
@@ -87,7 +90,7 @@ fun Application.module(
 		get("/health") {
 			call.respond(mapOf("status" to "ok"))
 		}
-		authenticationRoutes(googleIdTokenVerifier, sessionService)
+		authenticationRoutes(googleIdTokenVerifier, firebaseIdTokenVerifier, sessionService)
 		favoriteRoutes(sessionService) { db }
 		cookbookRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)

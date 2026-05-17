@@ -7,6 +7,7 @@ import app.purecipes.shared.domain.model.CookbookCreateRequest
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
@@ -97,6 +98,8 @@ class FakePurecipesApi(
 	}
 
 	override suspend fun signInWithGoogle(request: GoogleSignInRequest): AuthenticatedSession = session
+
+	override suspend fun signInWithEmail(request: EmailSignInRequest): AuthenticatedSession = session
 
 	override suspend fun getCurrentSession(): AuthenticatedSession = session
 

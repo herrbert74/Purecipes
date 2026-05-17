@@ -236,6 +236,7 @@ firebaseBom = { group = "com.google.firebase", name = "firebase-bom", version.re
 
 firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebaseAuth = { group = "com.google.firebase", name = "firebase-auth" }
+firebaseAuthKmp = { module = "dev.gitlive:firebase-auth", version = "2.4.0" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 #firebaseDatabase = { module = "com.google.firebase:firebase-database" }
 #firebaseConfig = { module = "com.google.firebase:firebase-config" }

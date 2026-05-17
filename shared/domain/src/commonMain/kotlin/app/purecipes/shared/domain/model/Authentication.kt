@@ -8,6 +8,11 @@ data class GoogleSignInRequest(
 )
 
 @Serializable
+data class EmailSignInRequest(
+	val idToken: String,
+)
+
+@Serializable
 data class VerifiedGoogleUser(
 	val id: String,
 	val email: String,

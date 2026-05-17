@@ -19,6 +19,7 @@ fun main() {
 			showConsentForm = graph.showConsentFormUseCase,
 			signInWithEmail = graph.signInWithEmailUseCase,
 			registerWithEmail = graph.registerWithEmailUseCase,
+			resendEmailVerification = graph.resendEmailVerificationUseCase,
 			signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
 			signInWithGoogle = graph.signInWithGoogleUseCase,
 			signOut = graph.signOutUseCase,

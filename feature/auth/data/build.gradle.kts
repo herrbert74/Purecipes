@@ -9,6 +9,17 @@ kotlin {
 	}
 
 	sourceSets {
+		androidMain {
+			dependencies {
+				implementation(project.dependencies.platform(libs.firebaseBom))
+				implementation(libs.firebaseAuthKmp)
+			}
+		}
+		iosMain {
+			dependencies {
+				implementation(libs.firebaseAuthKmp)
+			}
+		}
 		commonMain {
 			dependencies {
 				api(project(":feature:auth:domain"))
@@ -21,4 +32,6 @@ kotlin {
 			}
 		}
 	}
+
+	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 }

@@ -9,6 +9,7 @@ import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.data.repository.AuthenticationDataModule
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -79,6 +80,8 @@ interface PurecipesAppGraph :
 	val observeAuthenticationStateUseCase: ObserveAuthenticationStateUseCase
 
 	val registerWithEmailUseCase: RegisterWithEmailUseCase
+
+	val resendEmailVerificationUseCase: ResendEmailVerificationUseCase
 
 	val signInWithEmailUseCase: SignInWithEmailUseCase
 

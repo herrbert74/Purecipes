@@ -51,10 +51,12 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -62,6 +64,11 @@ import coil3.compose.AsyncImage
 
 internal const val AUTH_SCREEN_TITLE_TAG = "authScreenTitle"
 internal const val AUTH_EMAIL_FIELD_TAG = "authEmailField"
+internal const val AUTH_PASSWORD_FIELD_TAG = "authPasswordField"
+internal const val AUTH_PASSWORD_ERROR_TAG = "authPasswordError"
+internal const val AUTH_PASSWORD_POLICY_SUPPORTING_TEXT_TAG = "authPasswordPolicySupportingText"
+internal const val AUTH_ERROR_MESSAGE_TAG = "authErrorMessage"
+internal const val AUTH_RESEND_VERIFICATION_TAG = "authResendVerification"
 
 @Composable
 fun AuthenticationScreen(
@@ -69,6 +76,7 @@ fun AuthenticationScreen(
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
+	resendEmailVerification: ResendEmailVerificationUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	showConsentForm: ShowConsentFormUseCase,
@@ -106,6 +114,7 @@ fun AuthenticationScreen(
 		observeAuthenticationState = observeAuthenticationState,
 		signInWithEmail = signInWithEmail,
 		registerWithEmail = registerWithEmail,
+		resendEmailVerification = resendEmailVerification,
 		signInWithExternalProvider = signInWithExternalProvider,
 		signInWithGoogle = signInWithGoogle,
 		signOut = signOut,
@@ -145,7 +154,9 @@ fun AuthenticationScreen(
 						familyName = viewModel.familyName,
 						email = viewModel.email,
 						password = viewModel.password,
+						passwordError = viewModel.passwordError,
 						isBusy = viewModel.isBusy,
+						showResendVerificationEmail = viewModel.showResendVerificationEmail,
 						isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
 						onEmailProviderClick = viewModel::onEmailProviderSelected,
 						onEmailAuthenticationModeChange = viewModel::onEmailAuthenticationModeSelected,
@@ -154,6 +165,7 @@ fun AuthenticationScreen(
 						onEmailChange = viewModel::onEmailChange,
 						onPasswordChange = viewModel::onPasswordChange,
 						onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
+						onResendVerificationEmail = viewModel::resendVerificationEmail,
 						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onManagePrivacySettings = { showConsentForm() },
@@ -171,7 +183,17 @@ fun AuthenticationScreen(
 				}
 
 				viewModel.message?.let { message ->
-					ErrorText(text = message)
+					ErrorText(
+						text = message,
+						modifier = Modifier.testTag(AUTH_ERROR_MESSAGE_TAG),
+					)
+				}
+				viewModel.infoMessage?.let { infoMessage ->
+					Text(
+						text = infoMessage,
+						style = PurecipesTheme.typography.bodyMedium,
+						color = PurecipesTheme.colorScheme.primary,
+					)
 				}
 			}
 		}
@@ -187,7 +209,9 @@ private fun SignedOutAuthenticationContent(
 	familyName: String,
 	email: String,
 	password: String,
+	passwordError: String?,
 	isBusy: Boolean,
+	showResendVerificationEmail: Boolean,
 	isGoogleConfigured: Boolean,
 	onEmailProviderClick: () -> Unit,
 	onEmailAuthenticationModeChange: (EmailAuthenticationMode) -> Unit,
@@ -196,6 +220,7 @@ private fun SignedOutAuthenticationContent(
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
 	onEmailAuthenticationSubmit: () -> Unit,
+	onResendVerificationEmail: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onManagePrivacySettings: () -> Unit,
@@ -230,13 +255,16 @@ private fun SignedOutAuthenticationContent(
 				familyName = familyName,
 				email = email,
 				password = password,
+				passwordError = passwordError,
 				isBusy = isBusy,
+				showResendVerificationEmail = showResendVerificationEmail,
 				onEmailAuthenticationModeChange = onEmailAuthenticationModeChange,
 				onFirstNameChange = onFirstNameChange,
 				onFamilyNameChange = onFamilyNameChange,
 				onEmailChange = onEmailChange,
 				onPasswordChange = onPasswordChange,
 				onEmailAuthenticationSubmit = onEmailAuthenticationSubmit,
+				onResendVerificationEmail = onResendVerificationEmail,
 			)
 		}
 		HorizontalDivider()
@@ -285,13 +313,16 @@ private fun EmailAuthenticationForm(
 	familyName: String,
 	email: String,
 	password: String,
+	passwordError: String?,
 	isBusy: Boolean,
+	showResendVerificationEmail: Boolean,
 	onEmailAuthenticationModeChange: (EmailAuthenticationMode) -> Unit,
 	onFirstNameChange: (String) -> Unit,
 	onFamilyNameChange: (String) -> Unit,
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
 	onEmailAuthenticationSubmit: () -> Unit,
+	onResendVerificationEmail: () -> Unit,
 ) {
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
@@ -345,9 +376,31 @@ private fun EmailAuthenticationForm(
 			OutlinedTextField(
 				value = password,
 				onValueChange = onPasswordChange,
-				modifier = Modifier.fillMaxWidth(),
+				modifier = Modifier
+					.fillMaxWidth()
+					.testTag(AUTH_PASSWORD_FIELD_TAG),
 				label = { Text("Password") },
 				singleLine = true,
+				isError = passwordError != null,
+				supportingText = when {
+					passwordError != null -> {
+						{
+							Text(
+								text = passwordError,
+								modifier = Modifier.testTag(AUTH_PASSWORD_ERROR_TAG),
+							)
+						}
+					}
+					emailAuthenticationMode == EmailAuthenticationMode.REGISTER -> {
+						{
+							Text(
+								text = PASSWORD_POLICY_SUPPORTING_TEXT,
+								modifier = Modifier.testTag(AUTH_PASSWORD_POLICY_SUPPORTING_TEXT_TAG),
+							)
+						}
+					}
+					else -> null
+				},
 				visualTransformation = PasswordVisualTransformation(),
 			)
 			Button(
@@ -370,6 +423,17 @@ private fun EmailAuthenticationForm(
 							"Sign in"
 						},
 					)
+				}
+			}
+			if (showResendVerificationEmail && emailAuthenticationMode == EmailAuthenticationMode.SIGN_IN) {
+				OutlinedButton(
+					modifier = Modifier
+						.fillMaxWidth()
+						.testTag(AUTH_RESEND_VERIFICATION_TAG),
+					onClick = onResendVerificationEmail,
+					enabled = !isBusy,
+				) {
+					Text(text = "Resend verification email")
 				}
 			}
 		}

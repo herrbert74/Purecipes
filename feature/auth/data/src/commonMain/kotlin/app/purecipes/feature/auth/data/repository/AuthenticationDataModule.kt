@@ -4,11 +4,12 @@ import app.purecipes.feature.auth.data.datasource.AuthenticationDataSource
 import app.purecipes.feature.auth.data.datasource.AuthenticationRemoteDataSource
 import app.purecipes.feature.auth.data.datasource.AuthenticationStore
 import app.purecipes.feature.auth.data.datasource.AuthenticationStoreHolder
-import app.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDataSource
+import app.purecipes.feature.auth.data.datasource.FirebaseAuthenticationLocalDataSource
 import app.purecipes.feature.auth.data.datasource.toAuthenticationState
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -35,7 +36,7 @@ interface AuthenticationDataModule {
 		store: AuthenticationStore,
 		sessionTokenStore: SessionTokenStore,
 	): AuthenticationDataSource.Local {
-		return InMemoryAuthenticationLocalDataSource(store, sessionTokenStore)
+		return FirebaseAuthenticationLocalDataSource(store, sessionTokenStore)
 	}
 
 	@Provides
@@ -66,6 +67,13 @@ interface AuthenticationDataModule {
 	@Provides
 	fun provideRegisterWithEmailUseCase(repository: AuthenticationRepository): RegisterWithEmailUseCase {
 		return RegisterWithEmailUseCase(repository)
+	}
+
+	@Provides
+	fun provideResendEmailVerificationUseCase(
+		repository: AuthenticationRepository,
+	): ResendEmailVerificationUseCase {
+		return ResendEmailVerificationUseCase(repository)
 	}
 
 	@Provides

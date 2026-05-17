@@ -8,9 +8,10 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getError
+import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.mapError
 import kotlinx.coroutines.flow.StateFlow
 
 class AuthenticationAccessor(
@@ -20,29 +21,33 @@ class AuthenticationAccessor(
 
 	override val authenticationState: StateFlow<AuthenticationState> = localDataSource.authenticationState
 
-	override suspend fun signInWithEmail(email: String, password: String): Outcome<AuthUser> {
-		return localDataSource.signInWithEmail(email, password)
-	}
+	override suspend fun signInWithEmail(email: String, password: String): Outcome<AuthUser> =
+		localDataSource.signInWithEmail(email, password)
+			.mapFailureUserMessage()
+			.andThen { firebaseToken ->
+				remoteDataSource.signInWithEmailToken(firebaseToken).mapFailureUserMessage()
+			}
+			.andThen { session ->
+				localDataSource.signInWithBackendSession(session)
+			}
 
 	override suspend fun registerWithEmail(
 		firstName: String,
 		familyName: String,
 		email: String,
 		password: String,
-	): Outcome<AuthUser> {
-		return localDataSource.registerWithEmail(firstName, familyName, email, password)
-	}
+	): Outcome<Unit> = localDataSource.registerWithEmail(firstName, familyName, email, password).map { }
 
-	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
-		val verifiedUserResult = remoteDataSource.signInWithGoogle(profile.idToken)
-		val failure = verifiedUserResult.getError()
-		if (failure != null) {
-			return Err(failure)
-		}
-		val verifiedUser = verifiedUserResult.get()
-			?: return Err(Failure.UnexpectedFailure)
-		return localDataSource.signInWithBackendSession(verifiedUser)
-	}
+	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> =
+		localDataSource.resendEmailVerification(email, password)
+			.mapFailureUserMessage()
+			.map { }
+
+	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> =
+		remoteDataSource.signInWithGoogle(profile.idToken)
+			.andThen { session ->
+				localDataSource.signInWithBackendSession(session)
+			}
 
 	override suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {
 		return localDataSource.signInWithExternalProvider(profile.toAuthUser())
@@ -68,4 +73,26 @@ private fun ExternalAuthenticationProfile.toAuthUser(): AuthUser {
 		profileImageUrl = profileImageUrl,
 		provider = provider,
 	)
+}
+
+private fun <T> Outcome<T>.mapFailureUserMessage(): Outcome<T> = mapError { failure ->
+	failure.withUserAuthMessage()
+}
+
+private fun Failure.withUserAuthMessage(): Failure {
+	if (this !is Failure.ServerError) {
+		return this
+	}
+	val normalizedMessage = message.normalizeAuthMessage()
+	if (normalizedMessage == message) {
+		return this
+	}
+	return Failure.ServerError(normalizedMessage)
+}
+
+private fun String.normalizeAuthMessage(): String {
+	if (contains("email", ignoreCase = true) && contains("verif", ignoreCase = true)) {
+		return EMAIL_NOT_VERIFIED_MESSAGE
+	}
+	return this
 }

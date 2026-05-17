@@ -5,6 +5,7 @@ import app.purecipes.shared.domain.model.CookbookCreateRequest
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
@@ -46,6 +47,10 @@ interface PurecipesApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("auth/google")
 	suspend fun signInWithGoogle(@Body request: GoogleSignInRequest): AuthenticatedSession
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("auth/email")
+	suspend fun signInWithEmail(@Body request: EmailSignInRequest): AuthenticatedSession
 
 	@GET("auth/session")
 	suspend fun getCurrentSession(): AuthenticatedSession

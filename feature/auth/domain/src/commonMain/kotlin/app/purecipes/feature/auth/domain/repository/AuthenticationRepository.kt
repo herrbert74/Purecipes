@@ -18,7 +18,9 @@ interface AuthenticationRepository {
 		familyName: String,
 		email: String,
 		password: String,
-	): Outcome<AuthUser>
+	): Outcome<Unit>
+
+	suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit>
 
 	suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser>
 

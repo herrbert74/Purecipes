@@ -73,16 +73,6 @@ tasks.configureEach {
 	}
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
-	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
-	if (name.contains("Ios")) {
-		compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
-	}
-	if (name.contains("WasmJs")) {
-		compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.js.ExperimentalWasmJsInterop")
-	}
-}
-
 kotlin {
 	if (shouldApplyCocoapodsKotlin) {
 		cocoapods {
@@ -132,5 +122,13 @@ kotlin {
 				implementation(libs.crashkios.crashlytics)
 			}
 		}
+	}
+
+	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+	if (name.contains("Ios")) {
+		compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+	}
+	if (name.contains("WasmJs")) {
+		compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.js.ExperimentalWasmJsInterop")
 	}
 }

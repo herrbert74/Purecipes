@@ -23,22 +23,21 @@ import kotlin.test.Test
 class AuthenticationAccessorTest {
 
 	@Test
-	fun `register signs the user in`() = runTest {
+	fun `register creates account but does not sign in`() = runTest {
 		val accessor = AuthenticationAccessor(
 			localDataSource = InMemoryAuthenticationLocalDataSource(AuthenticationStore(), FakeSessionTokenStore()),
 			remoteDataSource = FakeAuthenticationRemoteDataSource(),
 		)
 
-		val user = accessor.registerWithEmail(
+		val result = accessor.registerWithEmail(
 			firstName = "Taylor",
 			familyName = "Baker",
 			email = "taylor@example.com",
 			password = "secret",
-		).get()
+		)
 
-		user?.displayName shouldBe "Taylor Baker"
-		user?.provider shouldBe AuthProvider.EMAIL
-		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		result.getError() shouldBe null
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
 	}
 
 	@Test
@@ -130,6 +129,8 @@ class AuthenticationAccessorTest {
 	) : AuthenticationDataSource.Remote {
 
 		override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = result
+
+		override suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession> = result
 
 		override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> = result
 

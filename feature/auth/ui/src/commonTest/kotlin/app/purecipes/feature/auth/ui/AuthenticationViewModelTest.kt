@@ -1,14 +1,24 @@
 package app.purecipes.feature.auth.ui
 
+import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.auth.domain.model.AuthProvider
+import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_MISSING_UPPERCASE_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_TOO_SHORT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.CoroutineScope
@@ -25,13 +35,14 @@ import kotlin.test.Test
 class AuthenticationViewModelTest {
 
 	@Test
-	fun `register signs the user in and hides the form`() = runTest {
+	fun `register shows verification message and switches to sign in`() = runTest {
 		val repository = FakeAuthenticationRepository()
 		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			signOut = SignOutUseCase(repository),
@@ -43,14 +54,195 @@ class AuthenticationViewModelTest {
 		viewModel.onFirstNameChange("Taylor")
 		viewModel.onFamilyNameChange("Baker")
 		viewModel.onEmailChange("taylor@example.com")
+		viewModel.onPasswordChange("ValidPass12")
+		viewModel.submitEmailAuthentication()
+
+		advanceUntilIdle()
+
+		viewModel.authenticationState.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+		viewModel.emailAuthenticationMode shouldBe EmailAuthenticationMode.SIGN_IN
+		viewModel.infoMessage shouldBe "Registration successful. Please check your email to verify your account."
+		viewModel.message shouldBe null
+		viewModel.showResendVerificationEmail shouldBe true
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `register with short password shows policy error`() = runTest {
+		val repository = FakeAuthenticationRepository()
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailAuthenticationModeSelected(EmailAuthenticationMode.REGISTER)
+		viewModel.onFirstNameChange("Taylor")
+		viewModel.onFamilyNameChange("Baker")
+		viewModel.onEmailChange("taylor@example.com")
+		viewModel.onPasswordChange("short1A")
+		viewModel.submitEmailAuthentication()
+
+		advanceUntilIdle()
+
+		viewModel.passwordError shouldBe PASSWORD_TOO_SHORT_MESSAGE
+		viewModel.message shouldBe null
+		viewModel.infoMessage shouldBe null
+		viewModel.emailAuthenticationMode shouldBe EmailAuthenticationMode.REGISTER
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `register with password missing uppercase shows policy error`() = runTest {
+		val repository = FakeAuthenticationRepository()
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailAuthenticationModeSelected(EmailAuthenticationMode.REGISTER)
+		viewModel.onPasswordChange("validpass12")
+		viewModel.submitEmailAuthentication()
+
+		viewModel.passwordError shouldBe PASSWORD_MISSING_UPPERCASE_MESSAGE
+		viewModel.message shouldBe null
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `register with password missing lowercase shows policy error`() = runTest {
+		val repository = FakeAuthenticationRepository()
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailAuthenticationModeSelected(EmailAuthenticationMode.REGISTER)
+		viewModel.onPasswordChange("VALIDPASS12")
+		viewModel.submitEmailAuthentication()
+
+		viewModel.passwordError shouldBe PASSWORD_MISSING_LOWERCASE_MESSAGE
+		viewModel.message shouldBe null
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `register with password missing number shows policy error`() = runTest {
+		val repository = FakeAuthenticationRepository()
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailAuthenticationModeSelected(EmailAuthenticationMode.REGISTER)
+		viewModel.onPasswordChange("ValidPasswd")
+		viewModel.submitEmailAuthentication()
+
+		viewModel.passwordError shouldBe PASSWORD_MISSING_NUMBER_MESSAGE
+		viewModel.message shouldBe null
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `sign in does not enforce password policy`() = runTest {
+		val repository = FakeAuthenticationRepository(
+			signInWithEmailHandler = { _, _ ->
+				Ok(
+					AuthUser(
+						id = "user-1",
+						email = "taylor@example.com",
+						displayName = "Taylor Baker",
+						firstName = null,
+						familyName = null,
+						profileImageUrl = null,
+						provider = AuthProvider.EMAIL,
+					),
+				)
+			},
+		)
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailChange("taylor@example.com")
 		viewModel.onPasswordChange("secret")
 		viewModel.submitEmailAuthentication()
 
 		advanceUntilIdle()
 
-		viewModel.authenticationState.shouldBeInstanceOf<AuthenticationState.SignedIn>()
-		viewModel.isEmailFormVisible shouldBe false
 		viewModel.message shouldBe null
+		viewModel.authenticationState.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `unverified email sign in shows resend button`() = runTest {
+		val repository = FakeAuthenticationRepository(
+			signInWithEmailHandler = { _, _ ->
+				Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
+			},
+		)
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailChange("taylor@example.com")
+		viewModel.onPasswordChange("secret")
+		viewModel.submitEmailAuthentication()
+
+		advanceUntilIdle()
+
+		viewModel.message shouldBe EMAIL_NOT_VERIFIED_MESSAGE
+		viewModel.showResendVerificationEmail shouldBe true
 		viewModelScope.cancel()
 	}
 
@@ -62,6 +254,7 @@ class AuthenticationViewModelTest {
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			signOut = SignOutUseCase(repository),
@@ -82,6 +275,7 @@ class AuthenticationViewModelTest {
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			signOut = SignOutUseCase(repository),
