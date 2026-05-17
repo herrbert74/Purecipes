@@ -7,16 +7,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -37,6 +47,7 @@ internal fun EmailAuthenticationForm(
 	onEmailAuthenticationSubmit: () -> Unit,
 	onResendVerificationEmail: () -> Unit,
 ) {
+	var isPasswordVisible by remember { mutableStateOf(false) }
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
 		shape = PurecipesTheme.shapes.large,
@@ -116,7 +127,27 @@ internal fun EmailAuthenticationForm(
 					}
 					else -> null
 				},
-				visualTransformation = PasswordVisualTransformation(),
+				visualTransformation = if (isPasswordVisible) {
+					VisualTransformation.None
+				} else {
+					PasswordVisualTransformation()
+				},
+				trailingIcon = {
+					IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+						Icon(
+							imageVector = if (isPasswordVisible) {
+								Icons.Filled.VisibilityOff
+							} else {
+								Icons.Filled.Visibility
+							},
+							contentDescription = if (isPasswordVisible) {
+								"Hide password"
+							} else {
+								"Show password"
+							},
+						)
+					}
+				},
 			)
 			Button(
 				modifier = Modifier
