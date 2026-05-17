@@ -40,7 +40,7 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
-import app.purecipes.feature.auth.ui.AuthenticationScreen
+import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
 import app.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
