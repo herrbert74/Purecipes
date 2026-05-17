@@ -14,8 +14,7 @@ interface AuthenticationRepository {
 	suspend fun signInWithEmail(email: String, password: String): Outcome<AuthUser>
 
 	suspend fun registerWithEmail(
-		firstName: String,
-		familyName: String,
+		displayName: String,
 		email: String,
 		password: String,
 	): Outcome<Unit>

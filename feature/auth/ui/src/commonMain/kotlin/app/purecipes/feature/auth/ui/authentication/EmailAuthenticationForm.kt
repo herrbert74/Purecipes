@@ -23,8 +23,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 @Composable
 internal fun EmailAuthenticationForm(
 	emailAuthenticationMode: EmailAuthenticationMode,
-	firstName: String,
-	familyName: String,
+	displayName: String,
 	email: String,
 	emailError: String?,
 	password: String,
@@ -32,8 +31,7 @@ internal fun EmailAuthenticationForm(
 	isBusy: Boolean,
 	showResendVerificationEmail: Boolean,
 	onEmailAuthenticationModeChange: (EmailAuthenticationMode) -> Unit,
-	onFirstNameChange: (String) -> Unit,
-	onFamilyNameChange: (String) -> Unit,
+	onDisplayNameChange: (String) -> Unit,
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
 	onEmailAuthenticationSubmit: () -> Unit,
@@ -65,17 +63,10 @@ internal fun EmailAuthenticationForm(
 			}
 			if (emailAuthenticationMode == EmailAuthenticationMode.REGISTER) {
 				OutlinedTextField(
-					value = firstName,
-					onValueChange = onFirstNameChange,
+					value = displayName,
+					onValueChange = onDisplayNameChange,
 					modifier = Modifier.fillMaxWidth(),
-					label = { Text("First name") },
-					singleLine = true,
-				)
-				OutlinedTextField(
-					value = familyName,
-					onValueChange = onFamilyNameChange,
-					modifier = Modifier.fillMaxWidth(),
-					label = { Text("Family name") },
+					label = { Text("Display name") },
 					singleLine = true,
 				)
 			}

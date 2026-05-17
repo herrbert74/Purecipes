@@ -143,9 +143,8 @@ class AuthScreenTest {
 		}
 		onNodeWithText("Continue with email").performClick()
 		onNodeWithText("Register").performClick()
-		onNodeWithText("First name").assertIsDisplayed()
-		onNodeWithText("First name").performTextInput("Taylor")
-		onNodeWithText("Family name").performTextInput("Baker")
+		onNodeWithText("Display name").assertIsDisplayed()
+		onNodeWithText("Display name").performTextInput("Taylor Baker")
 		onNodeWithTag(AUTH_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
 	}
 

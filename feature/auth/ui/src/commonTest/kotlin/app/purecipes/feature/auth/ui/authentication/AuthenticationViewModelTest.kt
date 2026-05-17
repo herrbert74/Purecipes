@@ -53,8 +53,7 @@ class AuthenticationViewModelTest {
 
 		viewModel.onEmailProviderSelected()
 		viewModel.onEmailAuthenticationModeSelected(EmailAuthenticationMode.REGISTER)
-		viewModel.onFirstNameChange("Taylor")
-		viewModel.onFamilyNameChange("Baker")
+		viewModel.onDisplayNameChange("Taylor Baker")
 		viewModel.onEmailChange("taylor@example.com")
 		viewModel.onPasswordChange("ValidPass12")
 		viewModel.submitEmailAuthentication()
@@ -86,8 +85,7 @@ class AuthenticationViewModelTest {
 
 		viewModel.onEmailProviderSelected()
 		viewModel.onEmailAuthenticationModeSelected(EmailAuthenticationMode.REGISTER)
-		viewModel.onFirstNameChange("Taylor")
-		viewModel.onFamilyNameChange("Baker")
+		viewModel.onDisplayNameChange("Taylor Baker")
 		viewModel.onEmailChange("taylor@example.com")
 		viewModel.onPasswordChange("short1A")
 		viewModel.submitEmailAuthentication()

@@ -16,8 +16,7 @@ internal fun SignedOutContent(
 	consentState: ConsentState,
 	emailAuthenticationMode: EmailAuthenticationMode,
 	isEmailFormVisible: Boolean,
-	firstName: String,
-	familyName: String,
+	displayName: String,
 	email: String,
 	emailError: String?,
 	password: String,
@@ -27,8 +26,7 @@ internal fun SignedOutContent(
 	isGoogleConfigured: Boolean,
 	onEmailProviderClick: () -> Unit,
 	onEmailAuthenticationModeChange: (EmailAuthenticationMode) -> Unit,
-	onFirstNameChange: (String) -> Unit,
-	onFamilyNameChange: (String) -> Unit,
+	onDisplayNameChange: (String) -> Unit,
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
 	onEmailAuthenticationSubmit: () -> Unit,
@@ -47,9 +45,7 @@ internal fun SignedOutContent(
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m)) {
 		Text(
-			text = """Choose how you want to sign in.
-				| Email registration uses your first and family name as the display name.
-			""".trimIndent(),
+			text = "Choose how you want to sign in. Email registration asks for a display name shown on your profile.",
 			style = PurecipesTheme.typography.bodyLarge,
 			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
@@ -63,8 +59,7 @@ internal fun SignedOutContent(
 		if (isEmailFormVisible) {
 			EmailAuthenticationForm(
 				emailAuthenticationMode = emailAuthenticationMode,
-				firstName = firstName,
-				familyName = familyName,
+				displayName = displayName,
 				email = email,
 				emailError = emailError,
 				password = password,
@@ -72,8 +67,7 @@ internal fun SignedOutContent(
 				isBusy = isBusy,
 				showResendVerificationEmail = showResendVerificationEmail,
 				onEmailAuthenticationModeChange = onEmailAuthenticationModeChange,
-				onFirstNameChange = onFirstNameChange,
-				onFamilyNameChange = onFamilyNameChange,
+				onDisplayNameChange = onDisplayNameChange,
 				onEmailChange = onEmailChange,
 				onPasswordChange = onPasswordChange,
 				onEmailAuthenticationSubmit = onEmailAuthenticationSubmit,

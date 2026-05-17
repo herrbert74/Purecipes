@@ -57,10 +57,7 @@ internal class AuthenticationViewModel(
 	var isEmailFormVisible by mutableStateOf(false)
 		private set
 
-	var firstName by mutableStateOf("")
-		private set
-
-	var familyName by mutableStateOf("")
+	var displayName by mutableStateOf("")
 		private set
 
 	var email by mutableStateOf("")
@@ -109,13 +106,8 @@ internal class AuthenticationViewModel(
 		clearAuthMessages()
 	}
 
-	fun onFirstNameChange(value: String) {
-		firstName = value
-		clearAuthMessages()
-	}
-
-	fun onFamilyNameChange(value: String) {
-		familyName = value
+	fun onDisplayNameChange(value: String) {
+		displayName = value
 		clearAuthMessages()
 	}
 
@@ -200,7 +192,7 @@ internal class AuthenticationViewModel(
 					setEmailAuthenticationError(result.getError()?.message)
 				}
 				EmailAuthenticationMode.REGISTER -> {
-					val result = registerWithEmail(firstName, familyName, email, password)
+					val result = registerWithEmail(displayName, email, password)
 					if (result.getError() == null) {
 						infoMessage = "Registration successful. Please check your email to verify your account."
 						emailAuthenticationMode = EmailAuthenticationMode.SIGN_IN

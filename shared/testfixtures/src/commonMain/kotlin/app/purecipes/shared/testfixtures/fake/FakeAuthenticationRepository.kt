@@ -23,8 +23,7 @@ class FakeAuthenticationRepository(
 		String,
 		String,
 		String,
-		String,
-	) -> Outcome<Unit> = { _, _, _, _ ->
+	) -> Outcome<Unit> = { _, _, _ ->
 		Ok(Unit)
 	},
 	private val signInWithGoogleHandler: suspend (GoogleAuthenticationProfile) -> Outcome<AuthUser> = { profile ->
@@ -66,14 +65,12 @@ class FakeAuthenticationRepository(
 	}
 
 	override suspend fun registerWithEmail(
-		firstName: String,
-		familyName: String,
+		displayName: String,
 		email: String,
 		password: String,
 	): Outcome<Unit> {
 		return registerWithEmailHandler(
-			firstName,
-			familyName,
+			displayName,
 			email,
 			password,
 		)

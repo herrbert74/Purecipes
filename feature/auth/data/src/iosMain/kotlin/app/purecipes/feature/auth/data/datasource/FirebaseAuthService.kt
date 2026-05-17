@@ -8,21 +8,25 @@ actual class FirebaseAuthService : FirebaseEmailPasswordAuth {
 		email: String,
 		password: String,
 	): EmailPasswordSignInResult {
-		return try {
+		return runCatching {
 			val result = Firebase.auth.signInWithEmailAndPassword(email, password)
-			val user = result.user ?: return EmailPasswordSignInResult()
+			val user = result.user ?: return@runCatching EmailPasswordSignInResult()
 			user.reload()
 			if (!user.isEmailVerified) {
-				return EmailPasswordSignInResult(emailNotVerified = true)
+				return@runCatching EmailPasswordSignInResult(emailNotVerified = true)
 			}
 			EmailPasswordSignInResult(idToken = user.getIdToken(forceRefresh = true))
-		} catch (e: Exception) {
-			EmailPasswordSignInResult(errorMessage = mapEmailPasswordAuthException(e))
-		}
+		}.getOrElse { EmailPasswordSignInResult(errorMessage = mapEmailPasswordAuthException(it)) }
 	}
 
-	actual override suspend fun createUserWithEmailAndPassword(email: String, password: String) {
-		Firebase.auth.createUserWithEmailAndPassword(email, password)
+	actual override suspend fun createUserWithEmailAndPassword(
+		email: String,
+		password: String,
+		displayName: String,
+	) {
+		val result = Firebase.auth.createUserWithEmailAndPassword(email, password)
+		val user = result.user ?: error("Firebase user was not created")
+		user.updateProfile(displayName = displayName)
 	}
 
 	actual override suspend fun sendEmailVerification() {
@@ -33,13 +37,11 @@ actual class FirebaseAuthService : FirebaseEmailPasswordAuth {
 		email: String,
 		password: String,
 	): EmailPasswordSignInResult {
-		return try {
+		return runCatching {
 			val result = Firebase.auth.signInWithEmailAndPassword(email, password)
 			result.user?.sendEmailVerification()
 			EmailPasswordSignInResult()
-		} catch (e: Exception) {
-			EmailPasswordSignInResult(errorMessage = mapEmailPasswordAuthException(e))
-		}
+		}.getOrElse { EmailPasswordSignInResult(errorMessage = mapEmailPasswordAuthException(it)) }
 	}
 
 	actual override suspend fun signOut() {

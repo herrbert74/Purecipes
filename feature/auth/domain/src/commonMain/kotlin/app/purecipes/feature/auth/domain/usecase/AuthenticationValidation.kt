@@ -14,14 +14,12 @@ internal fun validateEmailCredentials(email: String, password: String): String? 
 }
 
 internal fun validateRegistration(
-	firstName: String,
-	familyName: String,
+	displayName: String,
 	email: String,
 	password: String,
 ): String? {
 	return when {
-		firstName.isBlank() -> "First name is required"
-		familyName.isBlank() -> "Family name is required"
+		displayName.isBlank() -> "Display name is required"
 		else -> validateEmailCredentials(email = email, password = password)
 	}
 }

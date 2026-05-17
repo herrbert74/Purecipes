@@ -30,6 +30,25 @@ class FirebaseAuthenticationLocalDataSourceTest {
 	}
 
 	@Test
+	fun `register passes display name to firebase`() = runTest {
+		val firebaseAuthService = FakeFirebaseEmailPasswordAuth()
+		val dataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = FakeSessionTokenStore(),
+			firebaseAuthService = firebaseAuthService,
+		)
+
+		val result = dataSource.registerWithEmail(
+			displayName = "Taylor Baker",
+			email = "taylor@example.com",
+			password = "secret",
+		)
+
+		result.getError() shouldBe null
+		firebaseAuthService.lastRegisteredDisplayName shouldBe "Taylor Baker"
+	}
+
+	@Test
 	fun `resend verification with invalid credentials returns user facing error`() = runTest {
 		val dataSource = FirebaseAuthenticationLocalDataSource(
 			store = AuthenticationStore(),

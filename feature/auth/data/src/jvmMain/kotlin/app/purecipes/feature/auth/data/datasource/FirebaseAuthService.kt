@@ -8,7 +8,11 @@ actual class FirebaseAuthService : FirebaseEmailPasswordAuth {
 		throw UnsupportedOperationException("Email authentication is not supported on JVM")
 	}
 
-	actual override suspend fun createUserWithEmailAndPassword(email: String, password: String) {
+	actual override suspend fun createUserWithEmailAndPassword(
+		email: String,
+		password: String,
+		displayName: String,
+	) {
 		throw UnsupportedOperationException("Email authentication is not supported on JVM")
 	}
 

@@ -31,8 +31,7 @@ class AuthenticationAccessorTest {
 		)
 
 		val result = accessor.registerWithEmail(
-			firstName = "Taylor",
-			familyName = "Baker",
+			displayName = "Taylor Baker",
 			email = "taylor@example.com",
 			password = "secret",
 		)
@@ -49,14 +48,12 @@ class AuthenticationAccessorTest {
 		)
 
 		accessor.registerWithEmail(
-			firstName = "Taylor",
-			familyName = "Baker",
+			displayName = "Taylor Baker",
 			email = "taylor@example.com",
 			password = "secret",
 		)
 		val result = accessor.registerWithEmail(
-			firstName = "Taylor",
-			familyName = "Baker",
+			displayName = "Taylor Baker",
 			email = "taylor@example.com",
 			password = "secret",
 		)
@@ -97,8 +94,7 @@ class AuthenticationAccessorTest {
 			remoteDataSource = FakeAuthenticationRemoteDataSource(),
 		)
 		accessor.registerWithEmail(
-			firstName = "Taylor",
-			familyName = "Baker",
+			displayName = "Taylor Baker",
 			email = "taylor@example.com",
 			password = "secret",
 		)
