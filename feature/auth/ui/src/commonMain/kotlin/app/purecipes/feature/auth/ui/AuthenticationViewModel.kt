@@ -67,6 +67,9 @@ internal class AuthenticationViewModel(
 	var password by mutableStateOf("")
 		private set
 
+	var passwordError by mutableStateOf<String?>(null)
+		private set
+
 	var message by mutableStateOf<String?>(null)
 		private set
 
@@ -174,6 +177,14 @@ internal class AuthenticationViewModel(
 	}
 
 	fun submitEmailAuthentication() {
+		if (emailAuthenticationMode == EmailAuthenticationMode.REGISTER) {
+			validatePasswordPolicy(password)?.let { validationError ->
+				passwordError = validationError
+				message = null
+				return
+			}
+		}
+		passwordError = null
 		scope.launch {
 			isBusy = true
 			when (emailAuthenticationMode) {
@@ -187,6 +198,7 @@ internal class AuthenticationViewModel(
 						infoMessage = "Registration successful. Please check your email to verify your account."
 						emailAuthenticationMode = EmailAuthenticationMode.SIGN_IN
 						message = null
+						passwordError = null
 						showResendVerificationEmail = true
 					} else {
 						setAuthMessage(result.getError()?.message)
@@ -228,6 +240,7 @@ internal class AuthenticationViewModel(
 
 	private fun clearAuthMessages() {
 		message = null
+		passwordError = null
 		infoMessage = null
 		showResendVerificationEmail = false
 	}

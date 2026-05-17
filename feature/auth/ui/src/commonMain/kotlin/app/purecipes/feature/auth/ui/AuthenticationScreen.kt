@@ -56,6 +56,7 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -63,6 +64,10 @@ import coil3.compose.AsyncImage
 
 internal const val AUTH_SCREEN_TITLE_TAG = "authScreenTitle"
 internal const val AUTH_EMAIL_FIELD_TAG = "authEmailField"
+internal const val AUTH_PASSWORD_FIELD_TAG = "authPasswordField"
+internal const val AUTH_PASSWORD_ERROR_TAG = "authPasswordError"
+internal const val AUTH_PASSWORD_POLICY_SUPPORTING_TEXT_TAG = "authPasswordPolicySupportingText"
+internal const val AUTH_ERROR_MESSAGE_TAG = "authErrorMessage"
 internal const val AUTH_RESEND_VERIFICATION_TAG = "authResendVerification"
 
 @Composable
@@ -149,6 +154,7 @@ fun AuthenticationScreen(
 						familyName = viewModel.familyName,
 						email = viewModel.email,
 						password = viewModel.password,
+						passwordError = viewModel.passwordError,
 						isBusy = viewModel.isBusy,
 						showResendVerificationEmail = viewModel.showResendVerificationEmail,
 						isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
@@ -177,7 +183,10 @@ fun AuthenticationScreen(
 				}
 
 				viewModel.message?.let { message ->
-					ErrorText(text = message)
+					ErrorText(
+						text = message,
+						modifier = Modifier.testTag(AUTH_ERROR_MESSAGE_TAG),
+					)
 				}
 				viewModel.infoMessage?.let { infoMessage ->
 					Text(
@@ -200,6 +209,7 @@ private fun SignedOutAuthenticationContent(
 	familyName: String,
 	email: String,
 	password: String,
+	passwordError: String?,
 	isBusy: Boolean,
 	showResendVerificationEmail: Boolean,
 	isGoogleConfigured: Boolean,
@@ -245,6 +255,7 @@ private fun SignedOutAuthenticationContent(
 				familyName = familyName,
 				email = email,
 				password = password,
+				passwordError = passwordError,
 				isBusy = isBusy,
 				showResendVerificationEmail = showResendVerificationEmail,
 				onEmailAuthenticationModeChange = onEmailAuthenticationModeChange,
@@ -302,6 +313,7 @@ private fun EmailAuthenticationForm(
 	familyName: String,
 	email: String,
 	password: String,
+	passwordError: String?,
 	isBusy: Boolean,
 	showResendVerificationEmail: Boolean,
 	onEmailAuthenticationModeChange: (EmailAuthenticationMode) -> Unit,
@@ -364,9 +376,31 @@ private fun EmailAuthenticationForm(
 			OutlinedTextField(
 				value = password,
 				onValueChange = onPasswordChange,
-				modifier = Modifier.fillMaxWidth(),
+				modifier = Modifier
+					.fillMaxWidth()
+					.testTag(AUTH_PASSWORD_FIELD_TAG),
 				label = { Text("Password") },
 				singleLine = true,
+				isError = passwordError != null,
+				supportingText = when {
+					passwordError != null -> {
+						{
+							Text(
+								text = passwordError,
+								modifier = Modifier.testTag(AUTH_PASSWORD_ERROR_TAG),
+							)
+						}
+					}
+					emailAuthenticationMode == EmailAuthenticationMode.REGISTER -> {
+						{
+							Text(
+								text = PASSWORD_POLICY_SUPPORTING_TEXT,
+								modifier = Modifier.testTag(AUTH_PASSWORD_POLICY_SUPPORTING_TEXT_TAG),
+							)
+						}
+					}
+					else -> null
+				},
 				visualTransformation = PasswordVisualTransformation(),
 			)
 			Button(
