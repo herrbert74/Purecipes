@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -24,7 +26,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
@@ -48,6 +54,9 @@ internal fun EmailAuthenticationForm(
 	onResendVerificationEmail: () -> Unit,
 ) {
 	var isPasswordVisible by remember { mutableStateOf(false) }
+	val emailFocusRequester = remember { FocusRequester() }
+	val passwordFocusRequester = remember { FocusRequester() }
+	val focusManager = LocalFocusManager.current
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
 		shape = PurecipesTheme.shapes.large,
@@ -79,6 +88,10 @@ internal fun EmailAuthenticationForm(
 					modifier = Modifier.fillMaxWidth(),
 					label = { Text("Display name") },
 					singleLine = true,
+					keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+					keyboardActions = KeyboardActions(
+						onNext = { emailFocusRequester.requestFocus() },
+					),
 				)
 			}
 			OutlinedTextField(
@@ -86,9 +99,14 @@ internal fun EmailAuthenticationForm(
 				onValueChange = onEmailChange,
 				modifier = Modifier
 					.fillMaxWidth()
+					.focusRequester(emailFocusRequester)
 					.testTag(AUTH_EMAIL_FIELD_TAG),
 				label = { Text("Email") },
 				singleLine = true,
+				keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+				keyboardActions = KeyboardActions(
+					onNext = { passwordFocusRequester.requestFocus() },
+				),
 				isError = emailError != null,
 				supportingText = emailError?.let { error ->
 					{
@@ -104,9 +122,14 @@ internal fun EmailAuthenticationForm(
 				onValueChange = onPasswordChange,
 				modifier = Modifier
 					.fillMaxWidth()
+					.focusRequester(passwordFocusRequester)
 					.testTag(AUTH_PASSWORD_FIELD_TAG),
 				label = { Text("Password") },
 				singleLine = true,
+				keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+				keyboardActions = KeyboardActions(
+					onDone = { focusManager.clearFocus() },
+				),
 				isError = passwordError != null,
 				supportingText = when {
 					passwordError != null -> {
@@ -117,6 +140,7 @@ internal fun EmailAuthenticationForm(
 							)
 						}
 					}
+
 					emailAuthenticationMode == EmailAuthenticationMode.REGISTER -> {
 						{
 							Text(
@@ -125,6 +149,7 @@ internal fun EmailAuthenticationForm(
 							)
 						}
 					}
+
 					else -> null
 				},
 				visualTransformation = if (isPasswordVisible) {
