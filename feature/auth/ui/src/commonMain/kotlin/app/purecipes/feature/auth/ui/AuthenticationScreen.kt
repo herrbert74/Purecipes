@@ -64,6 +64,7 @@ import coil3.compose.AsyncImage
 
 internal const val AUTH_SCREEN_TITLE_TAG = "authScreenTitle"
 internal const val AUTH_EMAIL_FIELD_TAG = "authEmailField"
+internal const val AUTH_EMAIL_ERROR_TAG = "authEmailError"
 internal const val AUTH_PASSWORD_FIELD_TAG = "authPasswordField"
 internal const val AUTH_PASSWORD_ERROR_TAG = "authPasswordError"
 internal const val AUTH_PASSWORD_POLICY_SUPPORTING_TEXT_TAG = "authPasswordPolicySupportingText"
@@ -153,6 +154,7 @@ fun AuthenticationScreen(
 						firstName = viewModel.firstName,
 						familyName = viewModel.familyName,
 						email = viewModel.email,
+						emailError = viewModel.emailError,
 						password = viewModel.password,
 						passwordError = viewModel.passwordError,
 						isBusy = viewModel.isBusy,
@@ -208,6 +210,7 @@ private fun SignedOutAuthenticationContent(
 	firstName: String,
 	familyName: String,
 	email: String,
+	emailError: String?,
 	password: String,
 	passwordError: String?,
 	isBusy: Boolean,
@@ -254,6 +257,7 @@ private fun SignedOutAuthenticationContent(
 				firstName = firstName,
 				familyName = familyName,
 				email = email,
+				emailError = emailError,
 				password = password,
 				passwordError = passwordError,
 				isBusy = isBusy,
@@ -312,6 +316,7 @@ private fun EmailAuthenticationForm(
 	firstName: String,
 	familyName: String,
 	email: String,
+	emailError: String?,
 	password: String,
 	passwordError: String?,
 	isBusy: Boolean,
@@ -372,6 +377,15 @@ private fun EmailAuthenticationForm(
 					.testTag(AUTH_EMAIL_FIELD_TAG),
 				label = { Text("Email") },
 				singleLine = true,
+				isError = emailError != null,
+				supportingText = emailError?.let { error ->
+					{
+						Text(
+							text = error,
+							modifier = Modifier.testTag(AUTH_EMAIL_ERROR_TAG),
+						)
+					}
+				},
 			)
 			OutlinedTextField(
 				value = password,

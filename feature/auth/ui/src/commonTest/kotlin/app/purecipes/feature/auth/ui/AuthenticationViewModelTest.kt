@@ -12,6 +12,8 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
+import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_UPPERCASE_MESSAGE
@@ -241,8 +243,68 @@ class AuthenticationViewModelTest {
 
 		advanceUntilIdle()
 
-		viewModel.message shouldBe EMAIL_NOT_VERIFIED_MESSAGE
+		viewModel.emailError shouldBe EMAIL_NOT_VERIFIED_MESSAGE
+		viewModel.passwordError shouldBe null
+		viewModel.message shouldBe null
 		viewModel.showResendVerificationEmail shouldBe true
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `sign in with incorrect password shows password field error`() = runTest {
+		val repository = FakeAuthenticationRepository(
+			signInWithEmailHandler = { _, _ ->
+				Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
+			},
+		)
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailChange("taylor@example.com")
+		viewModel.onPasswordChange("wrong-password")
+		viewModel.submitEmailAuthentication()
+
+		advanceUntilIdle()
+
+		viewModel.passwordError shouldBe INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
+		viewModel.emailError shouldBe null
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `sign in with invalid email shows email field error`() = runTest {
+		val repository = FakeAuthenticationRepository()
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			registerWithEmail = RegisterWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.onEmailProviderSelected()
+		viewModel.onEmailChange("not-an-email")
+		viewModel.onPasswordChange("secret")
+		viewModel.submitEmailAuthentication()
+
+		advanceUntilIdle()
+
+		viewModel.emailError shouldBe INVALID_EMAIL_MESSAGE
+		viewModel.passwordError shouldBe null
 		viewModelScope.cancel()
 	}
 

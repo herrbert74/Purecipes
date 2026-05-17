@@ -11,6 +11,7 @@ import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import com.github.michaelbull.result.Err
@@ -98,7 +99,7 @@ internal data class EmailAccountRecord(
 internal class FirebaseAuthenticationLocalDataSource(
 	private val store: AuthenticationStore,
 	private val sessionTokenStore: SessionTokenStore,
-	private val firebaseAuthService: FirebaseAuthService = FirebaseAuthService(),
+	private val firebaseAuthService: FirebaseEmailPasswordAuth = FirebaseAuthService(),
 ) : AuthenticationDataSource.Local {
 
 	override val authenticationState: StateFlow<AuthenticationState> = store.authenticationState.asStateFlow()
@@ -106,24 +107,18 @@ internal class FirebaseAuthenticationLocalDataSource(
 	override suspend fun signInWithEmail(email: String, password: String): Outcome<String> {
 		val normalizedEmail = email.normalizedEmail()
 		return try {
-			val result = firebaseAuthService.signInWithEmailAndPassword(normalizedEmail, password)
-			when {
-				result.idToken != null -> Ok(result.idToken)
-				result.emailNotVerified -> Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
-				else -> Err(Failure.ServerError("Sign in failed"))
-			}
-		} catch (e: RuntimeException) {
-			Err(Failure.ServerError(e.message ?: "Sign in failed"))
+			firebaseAuthService.signInWithEmailAndPassword(normalizedEmail, password).toSignInOutcome()
+		} catch (e: Exception) {
+			Err(Failure.ServerError(mapEmailPasswordAuthException(e)))
 		}
 	}
 
 	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> {
 		val normalizedEmail = email.normalizedEmail()
 		return try {
-			firebaseAuthService.resendEmailVerification(normalizedEmail, password)
-			Ok(Unit)
-		} catch (e: RuntimeException) {
-			Err(Failure.ServerError(e.message ?: "Could not resend verification email"))
+			firebaseAuthService.resendEmailVerification(normalizedEmail, password).toResendOutcome()
+		} catch (e: Exception) {
+			Err(Failure.ServerError(mapEmailPasswordAuthException(e)))
 		}
 	}
 
@@ -138,8 +133,8 @@ internal class FirebaseAuthenticationLocalDataSource(
 			firebaseAuthService.createUserWithEmailAndPassword(normalizedEmail, password)
 			firebaseAuthService.sendEmailVerification()
 			Ok(Unit)
-		} catch (e: RuntimeException) {
-			Err(Failure.ServerError(e.message ?: "Registration failed"))
+		} catch (e: Exception) {
+			Err(Failure.ServerError(mapEmailPasswordAuthException(e)))
 		}
 	}
 
@@ -176,7 +171,7 @@ internal class FirebaseAuthenticationLocalDataSource(
 		sessionTokenStore.clearSession()
 		try {
 			firebaseAuthService.signOut()
-		} catch (e: RuntimeException) {
+		} catch (e: Exception) {
 			println("Firebase sign out ignored: ${e.message}")
 		}
 		store.authenticationState.value = AuthenticationState.SignedOut
@@ -195,7 +190,7 @@ class InMemoryAuthenticationLocalDataSource(
 		val account = store.accountsByEmail[normalizedEmail]
 			?: return Err(Failure.ServerError("No account was found for this email"))
 		if (account.password != password) {
-			return Err(Failure.ServerError("Incorrect password"))
+			return Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
 		}
 		// Mock Firebase ID token
 		return Ok("mock-firebase-id-token-for-$normalizedEmail")
@@ -270,6 +265,22 @@ private fun String.fallbackDisplayName(): String {
 
 internal fun AuthenticatedSession.toAuthenticationState(): AuthenticationState {
 	return AuthenticationState.SignedIn(user.toAuthUser())
+}
+
+private fun EmailPasswordSignInResult.toSignInOutcome(): Outcome<String> {
+	return when {
+		idToken != null -> Ok(idToken)
+		emailNotVerified -> Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
+		errorMessage != null -> Err(Failure.ServerError(errorMessage))
+		else -> Err(Failure.ServerError("Sign in failed"))
+	}
+}
+
+private fun EmailPasswordSignInResult.toResendOutcome(): Outcome<Unit> {
+	return when {
+		errorMessage != null -> Err(Failure.ServerError(errorMessage))
+		else -> Ok(Unit)
+	}
 }
 
 private fun AuthenticatedBackendUser.toAuthUser(): AuthUser {

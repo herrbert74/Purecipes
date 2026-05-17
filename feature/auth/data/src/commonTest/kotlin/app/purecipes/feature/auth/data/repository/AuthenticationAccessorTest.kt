@@ -11,6 +11,7 @@ import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
+import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.get
@@ -86,6 +87,26 @@ class AuthenticationAccessorTest {
 		user?.profileImageUrl shouldBe "https://example.com/avatar.png"
 		sessionTokenStore.currentAccessToken() shouldBe "session-token"
 		user?.familyName?.takeIf { it.isBlank() } shouldBe null
+	}
+
+	@Test
+	fun `sign in with incorrect password returns user facing error`() = runTest {
+		val store = AuthenticationStore()
+		val accessor = AuthenticationAccessor(
+			localDataSource = InMemoryAuthenticationLocalDataSource(store, FakeSessionTokenStore()),
+			remoteDataSource = FakeAuthenticationRemoteDataSource(),
+		)
+		accessor.registerWithEmail(
+			firstName = "Taylor",
+			familyName = "Baker",
+			email = "taylor@example.com",
+			password = "secret",
+		)
+
+		val result = accessor.signInWithEmail("taylor@example.com", "wrong-password")
+
+		result.getError()?.message shouldBe INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
 	}
 
 	@Test

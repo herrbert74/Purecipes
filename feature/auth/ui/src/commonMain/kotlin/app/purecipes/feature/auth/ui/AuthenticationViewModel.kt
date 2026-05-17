@@ -20,6 +20,8 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
+import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import com.github.michaelbull.result.getError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +67,9 @@ internal class AuthenticationViewModel(
 		private set
 
 	var password by mutableStateOf("")
+		private set
+
+	var emailError by mutableStateOf<String?>(null)
 		private set
 
 	var passwordError by mutableStateOf<String?>(null)
@@ -179,18 +184,20 @@ internal class AuthenticationViewModel(
 	fun submitEmailAuthentication() {
 		if (emailAuthenticationMode == EmailAuthenticationMode.REGISTER) {
 			validatePasswordPolicy(password)?.let { validationError ->
+				emailError = null
 				passwordError = validationError
 				message = null
 				return
 			}
 		}
+		emailError = null
 		passwordError = null
 		scope.launch {
 			isBusy = true
 			when (emailAuthenticationMode) {
 				EmailAuthenticationMode.SIGN_IN -> {
 					val result = signInWithEmail(email, password)
-					setAuthMessage(result.getError()?.message)
+					setEmailAuthenticationError(result.getError()?.message)
 				}
 				EmailAuthenticationMode.REGISTER -> {
 					val result = registerWithEmail(firstName, familyName, email, password)
@@ -198,10 +205,11 @@ internal class AuthenticationViewModel(
 						infoMessage = "Registration successful. Please check your email to verify your account."
 						emailAuthenticationMode = EmailAuthenticationMode.SIGN_IN
 						message = null
+						emailError = null
 						passwordError = null
 						showResendVerificationEmail = true
 					} else {
-						setAuthMessage(result.getError()?.message)
+						setEmailAuthenticationError(result.getError()?.message)
 					}
 				}
 			}
@@ -218,7 +226,7 @@ internal class AuthenticationViewModel(
 				message = null
 				showResendVerificationEmail = true
 			} else {
-				setAuthMessage(result.getError()?.message)
+				setEmailAuthenticationError(result.getError()?.message)
 			}
 			isBusy = false
 		}
@@ -240,6 +248,7 @@ internal class AuthenticationViewModel(
 
 	private fun clearAuthMessages() {
 		message = null
+		emailError = null
 		passwordError = null
 		infoMessage = null
 		showResendVerificationEmail = false
@@ -247,7 +256,20 @@ internal class AuthenticationViewModel(
 
 	private fun setAuthMessage(errorMessage: String?) {
 		message = errorMessage
+		showResendVerificationEmail = false
+	}
+
+	private fun setEmailAuthenticationError(errorMessage: String?) {
+		emailError = errorMessage?.takeIf { it.isEmailFieldMessage() }
+		passwordError = errorMessage?.takeIf { !it.isEmailFieldMessage() }
+		message = null
 		showResendVerificationEmail = errorMessage == EMAIL_NOT_VERIFIED_MESSAGE
+	}
+
+	private fun String.isEmailFieldMessage(): Boolean {
+		return this == EMAIL_REQUIRED_MESSAGE ||
+			this == INVALID_EMAIL_MESSAGE ||
+			this == EMAIL_NOT_VERIFIED_MESSAGE
 	}
 }
 
