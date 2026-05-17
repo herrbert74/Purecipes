@@ -32,11 +32,10 @@ class AuthenticationAccessor(
 			}
 
 	override suspend fun registerWithEmail(
-		firstName: String,
-		familyName: String,
+		displayName: String,
 		email: String,
 		password: String,
-	): Outcome<Unit> = localDataSource.registerWithEmail(firstName, familyName, email, password).map { }
+	): Outcome<Unit> = localDataSource.registerWithEmail(displayName, email, password).map { }
 
 	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> =
 		localDataSource.resendEmailVerification(email, password)

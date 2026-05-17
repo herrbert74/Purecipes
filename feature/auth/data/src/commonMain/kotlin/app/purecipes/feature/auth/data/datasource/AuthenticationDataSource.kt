@@ -13,6 +13,7 @@ import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
+import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,8 +28,7 @@ interface AuthenticationDataSource {
 		suspend fun signInWithEmail(email: String, password: String): Outcome<String>
 
 		suspend fun registerWithEmail(
-			firstName: String,
-			familyName: String,
+			displayName: String,
 			email: String,
 			password: String,
 		): Outcome<Unit>
@@ -88,8 +88,7 @@ internal object AuthenticationStoreHolder {
 
 internal data class EmailAccountRecord(
 	val id: String,
-	val firstName: String,
-	val familyName: String,
+	val displayName: String,
 	val email: String,
 	val password: String,
 	val profileImageUrl: String?,
@@ -98,49 +97,49 @@ internal data class EmailAccountRecord(
 internal class FirebaseAuthenticationLocalDataSource(
 	private val store: AuthenticationStore,
 	private val sessionTokenStore: SessionTokenStore,
-	private val firebaseAuthService: FirebaseAuthService = FirebaseAuthService(),
+	private val firebaseAuthService: FirebaseEmailPasswordAuth = FirebaseAuthService(),
 ) : AuthenticationDataSource.Local {
 
 	override val authenticationState: StateFlow<AuthenticationState> = store.authenticationState.asStateFlow()
 
 	override suspend fun signInWithEmail(email: String, password: String): Outcome<String> {
 		val normalizedEmail = email.normalizedEmail()
-		return try {
-			val result = firebaseAuthService.signInWithEmailAndPassword(normalizedEmail, password)
-			when {
-				result.idToken != null -> Ok(result.idToken)
-				result.emailNotVerified -> Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
-				else -> Err(Failure.ServerError("Sign in failed"))
-			}
-		} catch (e: RuntimeException) {
-			Err(Failure.ServerError(e.message ?: "Sign in failed"))
-		}
+		return runCatching {
+			firebaseAuthService.signInWithEmailAndPassword(normalizedEmail, password).toSignInOutcome()
+		}.fold(
+			onSuccess = { it },
+			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
+		)
 	}
 
 	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> {
 		val normalizedEmail = email.normalizedEmail()
-		return try {
-			firebaseAuthService.resendEmailVerification(normalizedEmail, password)
-			Ok(Unit)
-		} catch (e: RuntimeException) {
-			Err(Failure.ServerError(e.message ?: "Could not resend verification email"))
-		}
+		return runCatching {
+			firebaseAuthService.resendEmailVerification(normalizedEmail, password).toResendOutcome()
+		}.fold(
+			onSuccess = { it },
+			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
+		)
 	}
 
 	override suspend fun registerWithEmail(
-		firstName: String,
-		familyName: String,
+		displayName: String,
 		email: String,
 		password: String,
 	): Outcome<Unit> {
 		val normalizedEmail = email.normalizedEmail()
-		return try {
-			firebaseAuthService.createUserWithEmailAndPassword(normalizedEmail, password)
+		return runCatching {
+			firebaseAuthService.createUserWithEmailAndPassword(
+				email = normalizedEmail,
+				password = password,
+				displayName = displayName,
+			)
 			firebaseAuthService.sendEmailVerification()
 			Ok(Unit)
-		} catch (e: RuntimeException) {
-			Err(Failure.ServerError(e.message ?: "Registration failed"))
-		}
+		}.fold(
+			onSuccess = { it },
+			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
+		)
 	}
 
 	override suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser> {
@@ -157,9 +156,7 @@ internal class FirebaseAuthenticationLocalDataSource(
 		val resolvedUser = if (existingAccount != null) {
 			user.copy(
 				email = normalizedEmail,
-				displayName = user.displayName.ifBlank { existingAccount.fullName() },
-				firstName = user.firstName ?: existingAccount.firstName,
-				familyName = user.familyName ?: existingAccount.familyName,
+				displayName = user.displayName.ifBlank { existingAccount.displayName },
 				profileImageUrl = user.profileImageUrl ?: existingAccount.profileImageUrl,
 			)
 		} else {
@@ -174,10 +171,10 @@ internal class FirebaseAuthenticationLocalDataSource(
 
 	override suspend fun signOut() {
 		sessionTokenStore.clearSession()
-		try {
+		runCatching {
 			firebaseAuthService.signOut()
-		} catch (e: RuntimeException) {
-			println("Firebase sign out ignored: ${e.message}")
+		}.onFailure {
+			println("Firebase sign out ignored: ${it.message}")
 		}
 		store.authenticationState.value = AuthenticationState.SignedOut
 	}
@@ -195,15 +192,14 @@ class InMemoryAuthenticationLocalDataSource(
 		val account = store.accountsByEmail[normalizedEmail]
 			?: return Err(Failure.ServerError("No account was found for this email"))
 		if (account.password != password) {
-			return Err(Failure.ServerError("Incorrect password"))
+			return Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
 		}
 		// Mock Firebase ID token
 		return Ok("mock-firebase-id-token-for-$normalizedEmail")
 	}
 
 	override suspend fun registerWithEmail(
-		firstName: String,
-		familyName: String,
+		displayName: String,
 		email: String,
 		password: String,
 	): Outcome<Unit> {
@@ -213,8 +209,7 @@ class InMemoryAuthenticationLocalDataSource(
 		}
 		val account = EmailAccountRecord(
 			id = normalizedEmail,
-			firstName = firstName,
-			familyName = familyName,
+			displayName = displayName,
 			email = normalizedEmail,
 			password = password,
 			profileImageUrl = null,
@@ -239,9 +234,7 @@ class InMemoryAuthenticationLocalDataSource(
 		val resolvedUser = if (existingAccount != null) {
 			user.copy(
 				email = normalizedEmail,
-				displayName = user.displayName.ifBlank { existingAccount.fullName() },
-				firstName = user.firstName ?: existingAccount.firstName,
-				familyName = user.familyName ?: existingAccount.familyName,
+				displayName = user.displayName.ifBlank { existingAccount.displayName },
 				profileImageUrl = user.profileImageUrl ?: existingAccount.profileImageUrl,
 			)
 		} else {
@@ -260,8 +253,6 @@ class InMemoryAuthenticationLocalDataSource(
 	}
 }
 
-private fun EmailAccountRecord.fullName(): String = "$firstName $familyName"
-
 private fun String.normalizedEmail(): String = trim().lowercase()
 
 private fun String.fallbackDisplayName(): String {
@@ -270,6 +261,22 @@ private fun String.fallbackDisplayName(): String {
 
 internal fun AuthenticatedSession.toAuthenticationState(): AuthenticationState {
 	return AuthenticationState.SignedIn(user.toAuthUser())
+}
+
+private fun EmailPasswordSignInResult.toSignInOutcome(): Outcome<String> {
+	return when {
+		idToken != null -> Ok(idToken)
+		emailNotVerified -> Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
+		errorMessage != null -> Err(Failure.ServerError(errorMessage))
+		else -> Err(Failure.ServerError("Sign in failed"))
+	}
+}
+
+private fun EmailPasswordSignInResult.toResendOutcome(): Outcome<Unit> {
+	return when {
+		errorMessage != null -> Err(Failure.ServerError(errorMessage))
+		else -> Ok(Unit)
+	}
 }
 
 private fun AuthenticatedBackendUser.toAuthUser(): AuthUser {

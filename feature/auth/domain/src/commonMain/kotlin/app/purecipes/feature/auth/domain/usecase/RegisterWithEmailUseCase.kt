@@ -10,21 +10,18 @@ class RegisterWithEmailUseCase(
 ) {
 
 	suspend operator fun invoke(
-		firstName: String,
-		familyName: String,
+		displayName: String,
 		email: String,
 		password: String,
 	): Outcome<Unit> {
 		val validationError = validateRegistration(
-			firstName = firstName,
-			familyName = familyName,
+			displayName = displayName,
 			email = email,
 			password = password,
 		)
 		return validationError?.let { Err(Failure.ServerError(it)) }
 			?: repository.registerWithEmail(
-				firstName = firstName.trim(),
-				familyName = familyName.trim(),
+				displayName = displayName.trim(),
 				email = email.trim(),
 				password = password,
 			)
