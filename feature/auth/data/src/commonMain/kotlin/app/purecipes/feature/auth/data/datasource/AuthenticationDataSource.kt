@@ -72,7 +72,7 @@ class AuthenticationRemoteDataSource(
 
 	override suspend fun signOut(): Unit = runCatchingApi {
 		api.signOut()
-	}.let { Unit }
+	}.let { }
 }
 
 class AuthenticationStore(initialState: AuthenticationState = AuthenticationState.SignedOut) {
@@ -95,7 +95,7 @@ internal data class EmailAccountRecord(
 	val profileImageUrl: String?,
 )
 
-class FirebaseAuthenticationLocalDataSource(
+internal class FirebaseAuthenticationLocalDataSource(
 	private val store: AuthenticationStore,
 	private val sessionTokenStore: SessionTokenStore,
 	private val firebaseAuthService: FirebaseAuthService = FirebaseAuthService(),
@@ -258,22 +258,6 @@ class InMemoryAuthenticationLocalDataSource(
 		sessionTokenStore.clearSession()
 		store.authenticationState.value = AuthenticationState.SignedOut
 	}
-}
-
-private fun EmailAccountRecord.toAuthUser(
-	provider: AuthProvider,
-	displayName: String = fullName(),
-	profileImageUrl: String? = this.profileImageUrl,
-): AuthUser {
-	return AuthUser(
-		id = id,
-		email = email,
-		displayName = displayName,
-		firstName = firstName,
-		familyName = familyName,
-		profileImageUrl = profileImageUrl,
-		provider = provider,
-	)
 }
 
 private fun EmailAccountRecord.fullName(): String = "$firstName $familyName"
