@@ -25,9 +25,6 @@ import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
-import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
-import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
@@ -40,14 +37,13 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 fun AuthenticationScreen(
 	observeConsentState: ObserveConsentStateUseCase,
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
-	signInWithEmail: SignInWithEmailUseCase,
-	registerWithEmail: RegisterWithEmailUseCase,
-	resendEmailVerification: ResendEmailVerificationUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	showConsentForm: ShowConsentFormUseCase,
 	signOut: SignOutUseCase,
 	onOpenSettings: () -> Unit,
+	onNavigateToEmailRegistration: () -> Unit,
+	onNavigateToSignIn: () -> Unit,
 	googleWebClientId: String?,
 	modifier: Modifier = Modifier,
 	initializeGoogleAuthenticationProvider: @Composable (String?) -> Unit =
@@ -78,9 +74,6 @@ fun AuthenticationScreen(
 	val consentState by observeConsentState().collectAsState()
 	val viewModel = authenticationViewModel(
 		observeAuthenticationState = observeAuthenticationState,
-		signInWithEmail = signInWithEmail,
-		registerWithEmail = registerWithEmail,
-		resendEmailVerification = resendEmailVerification,
 		signInWithExternalProvider = signInWithExternalProvider,
 		signInWithGoogle = signInWithGoogle,
 		signOut = signOut,
@@ -114,23 +107,9 @@ fun AuthenticationScreen(
 				when (val state = viewModel.authenticationState) {
 					AuthenticationState.SignedOut -> SignedOutContent(
 						consentState = consentState,
-						emailAuthenticationMode = viewModel.emailAuthenticationMode,
-						isEmailFormVisible = viewModel.isEmailFormVisible,
-						displayName = viewModel.displayName,
-						email = viewModel.email,
-						emailError = viewModel.emailError,
-						password = viewModel.password,
-						passwordError = viewModel.passwordError,
-						isBusy = viewModel.isBusy,
-						showResendVerificationEmail = viewModel.showResendVerificationEmail,
 						isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
-						onEmailProviderClick = viewModel::onEmailProviderSelected,
-						onEmailAuthenticationModeChange = viewModel::onEmailAuthenticationModeSelected,
-						onDisplayNameChange = viewModel::onDisplayNameChange,
-						onEmailChange = viewModel::onEmailChange,
-						onPasswordChange = viewModel::onPasswordChange,
-						onEmailAuthenticationSubmit = viewModel::submitEmailAuthentication,
-						onResendVerificationEmail = viewModel::resendVerificationEmail,
+						onEmailRegistrationClick = onNavigateToEmailRegistration,
+						onSignInClick = onNavigateToSignIn,
 						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onManagePrivacySettings = { showConsentForm() },
@@ -151,13 +130,6 @@ fun AuthenticationScreen(
 					ErrorText(
 						text = message,
 						modifier = Modifier.testTag(AUTH_ERROR_MESSAGE_TAG),
-					)
-				}
-				viewModel.infoMessage?.let { infoMessage ->
-					Text(
-						text = infoMessage,
-						style = PurecipesTheme.typography.bodyMedium,
-						color = PurecipesTheme.colorScheme.primary,
 					)
 				}
 			}

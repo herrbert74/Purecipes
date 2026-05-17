@@ -41,6 +41,8 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
+import app.purecipes.feature.auth.ui.registration.RegistrationScreen
+import app.purecipes.feature.auth.ui.signin.SignInScreen
 import app.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
@@ -287,15 +289,34 @@ fun MainScreen(
 						AuthenticationScreen(
 							observeConsentState = observeConsentState,
 							observeAuthenticationState = observeAuthenticationState,
-							signInWithEmail = signInWithEmail,
-							registerWithEmail = registerWithEmail,
-							resendEmailVerification = resendEmailVerification,
 							signInWithExternalProvider = signInWithExternalProvider,
 							signInWithGoogle = signInWithGoogle,
 							showConsentForm = showConsentForm,
 							signOut = signOut,
 							onOpenSettings = { viewModel.onOpenSettings(backStack) },
+							onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration(backStack) },
+							onNavigateToSignIn = { viewModel.onOpenEmailSignIn(backStack) },
 							googleWebClientId = googleWebClientId,
+							modifier = Modifier.fillMaxSize(),
+						)
+					}
+					entry<EmailRegistrationDestination> {
+						RegistrationScreen(
+							registerWithEmail = registerWithEmail,
+							onBack = { viewModel.onBack(backStack) },
+							onRegistrationSuccess = { email ->
+								viewModel.onRegistrationSuccess(backStack, email)
+							},
+							modifier = Modifier.fillMaxSize(),
+						)
+					}
+					entry<EmailSignInDestination> { destination ->
+						SignInScreen(
+							signInWithEmail = signInWithEmail,
+							resendEmailVerification = resendEmailVerification,
+							initialEmail = destination.prefilledEmail,
+							showRegistrationSuccessMessage = destination.showRegistrationSuccessMessage,
+							onBack = { viewModel.onBack(backStack) },
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -329,6 +350,8 @@ private fun rememberMainBackStack() = rememberNavBackStack(
 					subclass(FavoritesDestination.serializer())
 					subclass(CreateDestination.serializer())
 					subclass(AccountDestination.serializer())
+					subclass(EmailRegistrationDestination.serializer())
+					subclass(EmailSignInDestination.serializer())
 					subclass(AccountSettingsDestination.serializer())
 				}
 			}
@@ -358,6 +381,15 @@ internal object CreateDestination : MainDestination
 
 @Serializable
 internal object AccountDestination : MainDestination
+
+@Serializable
+internal object EmailRegistrationDestination : MainDestination
+
+@Serializable
+internal data class EmailSignInDestination(
+	val prefilledEmail: String = "",
+	val showRegistrationSuccessMessage: Boolean = false,
+) : MainDestination
 
 @Serializable
 internal object AccountSettingsDestination : MainDestination
@@ -394,6 +426,8 @@ private val MainTab.icon: ImageVector
 		FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
 		AccountDestination -> Icons.Filled.Person
+		EmailRegistrationDestination -> error("EmailRegistrationDestination is not a tab destination")
+		is EmailSignInDestination -> error("EmailSignInDestination is not a tab destination")
 		AccountSettingsDestination -> error("AccountSettingsDestination is not a tab destination")
 		is RecipeDetailsDestination -> error("RecipeDetailsDestination is not a tab destination")
 		is RecipeCookingDestination -> error("RecipeCookingDestination is not a tab destination")

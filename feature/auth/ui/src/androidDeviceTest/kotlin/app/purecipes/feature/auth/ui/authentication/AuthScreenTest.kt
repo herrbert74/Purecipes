@@ -19,11 +19,15 @@ import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
-import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_EMAIL_FIELD_TAG
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_ERROR_TAG
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_FIELD_TAG
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_POLICY_SUPPORTING_TEXT_TAG
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_SUBMIT_TAG
+import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
@@ -50,14 +54,13 @@ class AuthScreenTest {
 				AuthenticationScreen(
 					observeConsentState = ObserveConsentStateUseCase(consentRepo),
 					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-					signInWithEmail = SignInWithEmailUseCase(authRepo),
-					registerWithEmail = RegisterWithEmailUseCase(authRepo),
-					resendEmailVerification = ResendEmailVerificationUseCase(authRepo),
 					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
 					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 					showConsentForm = ShowConsentFormUseCase(consentRepo),
 					signOut = SignOutUseCase(authRepo),
 					onOpenSettings = {},
+					onNavigateToEmailRegistration = {},
+					onNavigateToSignIn = {},
 					googleWebClientId = null,
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = {
@@ -72,16 +75,14 @@ class AuthScreenTest {
 				)
 			}
 		}
-		onNodeWithText("Continue with email").performClick()
-		onNodeWithText("Email").assertIsDisplayed()
-		onNodeWithTag(AUTH_EMAIL_FIELD_TAG).performTextInput("test@test.com")
+		onNodeWithText("Or, sign in").assertIsDisplayed()
 		onNodeWithTag(AUTH_SCREEN_TITLE_TAG).assertStable()
 	}
 
 	@Test
 	fun registerModeShowsPasswordPolicySupportingText() = runRecompositionTrackingUiTest {
 		showRegisterEmailForm()
-		onNodeWithTag(AUTH_PASSWORD_POLICY_SUPPORTING_TEXT_TAG, useUnmergedTree = true)
+		onNodeWithTag(REGISTRATION_PASSWORD_POLICY_SUPPORTING_TEXT_TAG, useUnmergedTree = true)
 			.performScrollTo()
 			.assertIsDisplayed()
 			.assertTextEquals(PASSWORD_POLICY_SUPPORTING_TEXT)
@@ -90,7 +91,7 @@ class AuthScreenTest {
 	@Test
 	fun registerWithShortPasswordShowsPolicyError() = runRecompositionTrackingUiTest {
 		showRegisterEmailForm()
-		onNodeWithTag(AUTH_PASSWORD_FIELD_TAG).performTextInput("short1A")
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("short1A")
 		submitRegisterForm()
 		assertPolicyError(PASSWORD_TOO_SHORT_MESSAGE)
 	}
@@ -98,7 +99,7 @@ class AuthScreenTest {
 	@Test
 	fun registerWithPasswordMissingLowercaseShowsPolicyError() = runRecompositionTrackingUiTest {
 		showRegisterEmailForm()
-		onNodeWithTag(AUTH_PASSWORD_FIELD_TAG).performTextInput("VALIDPASS12")
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("VALIDPASS12")
 		submitRegisterForm()
 		assertPolicyError(PASSWORD_MISSING_LOWERCASE_MESSAGE)
 	}
@@ -106,54 +107,32 @@ class AuthScreenTest {
 	@Test
 	fun registerWithPasswordMissingNumberShowsPolicyError() = runRecompositionTrackingUiTest {
 		showRegisterEmailForm()
-		onNodeWithTag(AUTH_PASSWORD_FIELD_TAG).performTextInput("ValidPasswd")
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("ValidPasswd")
 		submitRegisterForm()
 		assertPolicyError(PASSWORD_MISSING_NUMBER_MESSAGE)
 	}
 
 	private fun ComposeUiTest.showRegisterEmailForm() {
 		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
-		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
 		setTrackedContent {
 			PurecipesTheme {
-				AuthenticationScreen(
-					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-					signInWithEmail = SignInWithEmailUseCase(authRepo),
+				RegistrationScreen(
 					registerWithEmail = RegisterWithEmailUseCase(authRepo),
-					resendEmailVerification = ResendEmailVerificationUseCase(authRepo),
-					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
-					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
-					showConsentForm = ShowConsentFormUseCase(consentRepo),
-					signOut = SignOutUseCase(authRepo),
-					onOpenSettings = {},
-					googleWebClientId = null,
-					initializeGoogleAuthenticationProvider = {},
-					authenticationProviderButtons = {
-						_,
-						onEmailProviderClick,
-						_,
-						_,
-						_,
-						->
-						FakeAuthenticationProviderButtons(onEmailProviderClick = onEmailProviderClick)
-					},
+					onBack = {},
+					onRegistrationSuccess = {},
 				)
 			}
 		}
-		onNodeWithText("Continue with email").performClick()
-		onNodeWithText("Register").performClick()
-		onNodeWithText("Display name").assertIsDisplayed()
 		onNodeWithText("Display name").performTextInput("Taylor Baker")
-		onNodeWithTag(AUTH_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
+		onNodeWithTag(REGISTRATION_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
 	}
 
 	private fun ComposeUiTest.submitRegisterForm() {
-		onNodeWithText("Create account").performClick()
+		onNodeWithTag(REGISTRATION_SUBMIT_TAG).performClick()
 	}
 
 	private fun ComposeUiTest.assertPolicyError(expectedMessage: String) {
-		onNodeWithTag(AUTH_PASSWORD_ERROR_TAG, useUnmergedTree = true)
+		onNodeWithTag(REGISTRATION_PASSWORD_ERROR_TAG, useUnmergedTree = true)
 			.performScrollTo()
 			.assertIsDisplayed()
 			.assertTextEquals(expectedMessage)

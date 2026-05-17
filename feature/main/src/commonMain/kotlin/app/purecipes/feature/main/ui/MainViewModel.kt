@@ -72,6 +72,47 @@ internal class MainViewModel : ViewModel() {
 		}
 	}
 
+	fun onOpenEmailRegistration(backStack: MutableList<NavKey>) {
+		ensureAccountRoot(backStack)
+		if (backStack.lastOrNull() != EmailRegistrationDestination) {
+			backStack += EmailRegistrationDestination
+		}
+	}
+
+	fun onOpenEmailSignIn(
+		backStack: MutableList<NavKey>,
+		prefilledEmail: String = "",
+		showRegistrationSuccessMessage: Boolean = false,
+	) {
+		ensureAccountRoot(backStack)
+		val destination = EmailSignInDestination(
+			prefilledEmail = prefilledEmail,
+			showRegistrationSuccessMessage = showRegistrationSuccessMessage,
+		)
+		if (backStack.lastOrNull() == destination) {
+			return
+		}
+		backStack += destination
+	}
+
+	fun onRegistrationSuccess(backStack: MutableList<NavKey>, email: String) {
+		if (backStack.lastOrNull() == EmailRegistrationDestination) {
+			backStack.removeAt(backStack.lastIndex)
+		}
+		onOpenEmailSignIn(
+			backStack = backStack,
+			prefilledEmail = email,
+			showRegistrationSuccessMessage = true,
+		)
+	}
+
+	private fun ensureAccountRoot(backStack: MutableList<NavKey>) {
+		if (backStack.firstOrNull() != AccountDestination) {
+			backStack.clear()
+			backStack += AccountDestination
+		}
+	}
+
 	fun onBack(backStack: MutableList<NavKey>) {
 		if (backStack.size > 1) {
 			backStack.removeAt(backStack.lastIndex)

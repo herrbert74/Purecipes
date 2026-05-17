@@ -1,4 +1,4 @@
-package app.purecipes.feature.auth.ui.authentication
+package app.purecipes.feature.auth.ui.registration
 
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE

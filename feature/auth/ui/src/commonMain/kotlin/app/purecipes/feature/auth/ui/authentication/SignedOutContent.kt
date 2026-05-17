@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
@@ -14,23 +15,9 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 @Composable
 internal fun SignedOutContent(
 	consentState: ConsentState,
-	emailAuthenticationMode: EmailAuthenticationMode,
-	isEmailFormVisible: Boolean,
-	displayName: String,
-	email: String,
-	emailError: String?,
-	password: String,
-	passwordError: String?,
-	isBusy: Boolean,
-	showResendVerificationEmail: Boolean,
 	isGoogleConfigured: Boolean,
-	onEmailProviderClick: () -> Unit,
-	onEmailAuthenticationModeChange: (EmailAuthenticationMode) -> Unit,
-	onDisplayNameChange: (String) -> Unit,
-	onEmailChange: (String) -> Unit,
-	onPasswordChange: (String) -> Unit,
-	onEmailAuthenticationSubmit: () -> Unit,
-	onResendVerificationEmail: () -> Unit,
+	onEmailRegistrationClick: () -> Unit,
+	onSignInClick: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onManagePrivacySettings: () -> Unit,
@@ -51,28 +38,13 @@ internal fun SignedOutContent(
 		)
 		authenticationProviderButtons(
 			isGoogleConfigured,
-			onEmailProviderClick,
+			onEmailRegistrationClick,
 			onExternalProviderSignInResult,
 			onGoogleSignInResult,
 			onGoogleUnavailableClick,
 		)
-		if (isEmailFormVisible) {
-			EmailAuthenticationForm(
-				emailAuthenticationMode = emailAuthenticationMode,
-				displayName = displayName,
-				email = email,
-				emailError = emailError,
-				password = password,
-				passwordError = passwordError,
-				isBusy = isBusy,
-				showResendVerificationEmail = showResendVerificationEmail,
-				onEmailAuthenticationModeChange = onEmailAuthenticationModeChange,
-				onDisplayNameChange = onDisplayNameChange,
-				onEmailChange = onEmailChange,
-				onPasswordChange = onPasswordChange,
-				onEmailAuthenticationSubmit = onEmailAuthenticationSubmit,
-				onResendVerificationEmail = onResendVerificationEmail,
-			)
+		TextButton(onClick = onSignInClick) {
+			Text(text = "Or, sign in")
 		}
 		HorizontalDivider()
 		PrivacySettingsContent(
