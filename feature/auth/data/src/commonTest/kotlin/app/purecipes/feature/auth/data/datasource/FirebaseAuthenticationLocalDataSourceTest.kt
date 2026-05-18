@@ -1,5 +1,7 @@
 package app.purecipes.feature.auth.data.datasource
 
+import app.purecipes.feature.auth.domain.model.AuthProvider
+import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
@@ -78,5 +80,31 @@ class FirebaseAuthenticationLocalDataSourceTest {
 
 		result.getError() shouldBe null
 		firebaseAuthService.lastPasswordResetEmail shouldBe "taylor@example.com"
+	}
+
+	@Test
+	fun `delete account clears signed in state`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val dataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = sessionTokenStore,
+			firebaseAuthService = FakeFirebaseEmailPasswordAuth(),
+		)
+		val user = AuthUser(
+			id = "firebase-user",
+			email = "taylor@example.com",
+			displayName = "Taylor Baker",
+			firstName = null,
+			familyName = null,
+			profileImageUrl = null,
+			provider = AuthProvider.EMAIL,
+		)
+		dataSource.signInWithExternalProvider(user)
+
+		val result = dataSource.deleteAccount()
+
+		result.getError() shouldBe null
+		dataSource.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+		sessionTokenStore.currentSession() shouldBe null
 	}
 }

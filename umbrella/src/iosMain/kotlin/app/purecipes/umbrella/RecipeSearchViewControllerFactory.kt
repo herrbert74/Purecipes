@@ -28,6 +28,7 @@ class RecipeSearchViewControllerFactory {
 				sendPasswordResetEmail = graph.sendPasswordResetEmailUseCase,
 				signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
 				signInWithGoogle = graph.signInWithGoogleUseCase,
+				deleteAccount = graph.deleteAccountUseCase,
 				signOut = graph.signOutUseCase,
 				addFavoriteRecipe = graph.addFavoriteRecipeUseCase,
 				filterRecipesForMeasurementPreferences = graph.filterRecipesForMeasurementPreferencesUseCase,

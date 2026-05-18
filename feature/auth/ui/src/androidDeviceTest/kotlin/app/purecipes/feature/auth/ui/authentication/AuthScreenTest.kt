@@ -16,12 +16,17 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import app.purecipes.feature.auth.domain.model.AuthProvider
+import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import app.purecipes.feature.auth.ui.profile.DELETE_ACCOUNT_BUTTON_TAG
+import app.purecipes.feature.auth.ui.profile.DELETE_ACCOUNT_DIALOG_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_EMAIL_FIELD_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_ERROR_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_FIELD_TAG
@@ -57,6 +62,7 @@ class AuthScreenTest {
 					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
 					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 					showConsentForm = ShowConsentFormUseCase(consentRepo),
+					deleteAccount = DeleteAccountUseCase(authRepo),
 					signOut = SignOutUseCase(authRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
@@ -77,6 +83,16 @@ class AuthScreenTest {
 		}
 		onNodeWithText("Or, sign in").assertIsDisplayed()
 		onNodeWithTag(AUTH_SCREEN_TITLE_TAG).assertStable()
+	}
+
+	@Test
+	fun signedInDeleteAccountShowsConfirmationDialog() = runRecompositionTrackingUiTest {
+		showSignedInAccountScreen()
+		onNodeWithTag(DELETE_ACCOUNT_BUTTON_TAG)
+			.performScrollTo()
+			.performClick()
+		onNodeWithTag(DELETE_ACCOUNT_DIALOG_TAG).assertIsDisplayed()
+		onNodeWithText("Delete account?").assertIsDisplayed()
 	}
 
 	@Test
@@ -110,6 +126,44 @@ class AuthScreenTest {
 		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("ValidPasswd")
 		submitRegisterForm()
 		assertPolicyError(PASSWORD_MISSING_NUMBER_MESSAGE)
+	}
+
+	private fun ComposeUiTest.showSignedInAccountScreen() {
+		val authRepo = FakeAuthenticationRepository(
+			AuthenticationState.SignedIn(
+				AuthUser(
+					id = "user-1",
+					email = "taylor@example.com",
+					displayName = "Taylor Baker",
+					firstName = null,
+					familyName = null,
+					profileImageUrl = null,
+					provider = AuthProvider.EMAIL,
+				),
+			),
+		)
+		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
+		setTrackedContent {
+			PurecipesTheme {
+				AuthenticationScreen(
+					observeConsentState = ObserveConsentStateUseCase(consentRepo),
+					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+					showConsentForm = ShowConsentFormUseCase(consentRepo),
+					deleteAccount = DeleteAccountUseCase(authRepo),
+					signOut = SignOutUseCase(authRepo),
+					onOpenSettings = {},
+					onNavigateToEmailRegistration = {},
+					onNavigateToSignIn = {},
+					googleWebClientId = null,
+					initializeGoogleAuthenticationProvider = {},
+					authenticationProviderButtons = { _, _, _, _, _ ->
+						FakeAuthenticationProviderButtons(onEmailProviderClick = {})
+					},
+				)
+			}
+		}
 	}
 
 	private fun ComposeUiTest.showRegisterEmailForm() {

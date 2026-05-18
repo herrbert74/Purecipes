@@ -3,7 +3,6 @@ package app.purecipes.backend.feature.auth
 import app.purecipes.backend.ErrorResponse
 import app.purecipes.backend.auth.FirebaseIdTokenVerifier
 import app.purecipes.backend.auth.GoogleIdTokenVerificationResult
-import app.purecipes.backend.auth.GoogleIdTokenVerifier
 import app.purecipes.backend.auth.SessionService
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
@@ -17,7 +16,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 
 fun Route.authenticationRoutes(
-	googleIdTokenVerifier: GoogleIdTokenVerifier,
 	firebaseIdTokenVerifier: FirebaseIdTokenVerifier,
 	sessionService: SessionService,
 ) {
@@ -103,7 +101,7 @@ fun Route.authenticationRoutes(
 				return@post
 			}
 
-			when (val result = googleIdTokenVerifier.verify(idToken)) {
+			when (val result = firebaseIdTokenVerifier.verify(idToken)) {
 				is GoogleIdTokenVerificationResult.Success -> call.respond(
 					sessionService.createSession(
 						provider = "GOOGLE",

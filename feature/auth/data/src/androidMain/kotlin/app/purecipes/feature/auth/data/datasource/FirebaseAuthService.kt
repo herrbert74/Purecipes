@@ -48,6 +48,10 @@ actual class FirebaseAuthService : FirebaseEmailPasswordAuth {
 		Firebase.auth.sendPasswordResetEmail(email)
 	}
 
+	actual override suspend fun deleteCurrentUser() {
+		Firebase.auth.currentUser?.delete()
+	}
+
 	actual override suspend fun signOut() {
 		Firebase.auth.signOut()
 	}

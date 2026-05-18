@@ -11,5 +11,7 @@ internal expect class FirebaseAuthService() : FirebaseEmailPasswordAuth {
 
 	override suspend fun sendPasswordResetEmail(email: String)
 
+	override suspend fun deleteCurrentUser()
+
 	override suspend fun signOut()
 }

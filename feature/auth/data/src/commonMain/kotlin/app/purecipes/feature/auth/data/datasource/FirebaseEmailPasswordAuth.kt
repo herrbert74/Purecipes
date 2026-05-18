@@ -11,5 +11,7 @@ internal interface FirebaseEmailPasswordAuth {
 
 	suspend fun sendPasswordResetEmail(email: String)
 
+	suspend fun deleteCurrentUser()
+
 	suspend fun signOut()
 }

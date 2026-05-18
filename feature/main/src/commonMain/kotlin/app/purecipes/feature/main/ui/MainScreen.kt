@@ -33,6 +33,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
@@ -100,6 +101,7 @@ fun MainScreen(
 	sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
+	deleteAccount: DeleteAccountUseCase,
 	signOut: SignOutUseCase,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
@@ -296,6 +298,7 @@ fun MainScreen(
 							signInWithExternalProvider = signInWithExternalProvider,
 							signInWithGoogle = signInWithGoogle,
 							showConsentForm = showConsentForm,
+							deleteAccount = deleteAccount,
 							signOut = signOut,
 							onOpenSettings = { viewModel.onOpenSettings(backStack) },
 							onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration(backStack) },

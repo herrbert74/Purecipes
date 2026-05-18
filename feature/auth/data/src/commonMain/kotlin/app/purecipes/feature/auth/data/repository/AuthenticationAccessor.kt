@@ -7,6 +7,7 @@ import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.toAuthUser
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import com.github.michaelbull.result.andThen
@@ -57,26 +58,11 @@ class AuthenticationAccessor(
 		return localDataSource.signInWithExternalProvider(profile.toAuthUser())
 	}
 
+	override suspend fun deleteAccount(): Outcome<Unit> = localDataSource.deleteAccount()
+
 	override suspend fun signOut() {
 		localDataSource.signOut()
 	}
-}
-
-private fun ExternalAuthenticationProfile.toAuthUser(): AuthUser {
-	val normalizedEmail = email?.trim()?.lowercase().orEmpty()
-	val resolvedDisplayName = displayName?.trim().takeUnless { it.isNullOrBlank() }
-		?: normalizedEmail.substringBefore('@').replaceFirstChar {
-			if (it.isLowerCase()) it.titlecase() else it.toString()
-		}
-	return AuthUser(
-		id = id.trim(),
-		email = normalizedEmail,
-		displayName = resolvedDisplayName,
-		firstName = null,
-		familyName = null,
-		profileImageUrl = profileImageUrl,
-		provider = provider,
-	)
 }
 
 private fun <T> Outcome<T>.mapFailureUserMessage(): Outcome<T> = mapError { failure ->

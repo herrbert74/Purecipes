@@ -5,10 +5,10 @@ import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.model.toAuthUser
 import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.data.session.SessionTokenStore
 import app.purecipes.shared.data.util.runCatchingApi
-import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EmailSignInRequest
@@ -40,6 +40,8 @@ interface AuthenticationDataSource {
 		suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser>
 
 		suspend fun signInWithExternalProvider(user: AuthUser): Outcome<AuthUser>
+
+		suspend fun deleteAccount(): Outcome<Unit>
 
 		suspend fun signOut()
 	}
@@ -182,7 +184,23 @@ internal class FirebaseAuthenticationLocalDataSource(
 		return Ok(resolvedUser)
 	}
 
+	override suspend fun deleteAccount(): Outcome<Unit> {
+		return runCatching {
+			firebaseAuthService.deleteCurrentUser()
+		}.fold(
+			onSuccess = {
+				clearSignedInState()
+				Ok(Unit)
+			},
+			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
+		)
+	}
+
 	override suspend fun signOut() {
+		clearSignedInState()
+	}
+
+	private suspend fun clearSignedInState() {
 		sessionTokenStore.clearSession()
 		runCatching {
 			firebaseAuthService.signOut()
@@ -262,6 +280,16 @@ class InMemoryAuthenticationLocalDataSource(
 		return Ok(resolvedUser)
 	}
 
+	override suspend fun deleteAccount(): Outcome<Unit> {
+		val signedInUser = (store.authenticationState.value as? AuthenticationState.SignedIn)?.user
+		if (signedInUser?.provider == AuthProvider.EMAIL) {
+			store.accountsByEmail.remove(signedInUser.email.normalizedEmail())
+		}
+		sessionTokenStore.clearSession()
+		store.authenticationState.value = AuthenticationState.SignedOut
+		return Ok(Unit)
+	}
+
 	override suspend fun signOut() {
 		sessionTokenStore.clearSession()
 		store.authenticationState.value = AuthenticationState.SignedOut
@@ -272,10 +300,6 @@ private fun String.normalizedEmail(): String = trim().lowercase()
 
 private fun String.fallbackDisplayName(): String {
 	return substringBefore('@').replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-}
-
-internal fun AuthenticatedSession.toAuthenticationState(): AuthenticationState {
-	return AuthenticationState.SignedIn(user.toAuthUser())
 }
 
 private fun EmailPasswordSignInResult.toSignInOutcome(): Outcome<String> {
@@ -291,27 +315,5 @@ private fun EmailPasswordSignInResult.toResendOutcome(): Outcome<Unit> {
 	return when {
 		errorMessage != null -> Err(Failure.ServerError(errorMessage))
 		else -> Ok(Unit)
-	}
-}
-
-private fun AuthenticatedBackendUser.toAuthUser(): AuthUser {
-	return AuthUser(
-		id = id,
-		email = email.trim().lowercase(),
-		displayName = displayName,
-		firstName = firstName,
-		familyName = familyName,
-		profileImageUrl = profileImageUrl,
-		provider = provider.toAuthProvider(),
-	)
-}
-
-private fun String.toAuthProvider(): AuthProvider {
-	return when (uppercase()) {
-		"EMAIL" -> AuthProvider.EMAIL
-		"GOOGLE" -> AuthProvider.GOOGLE
-		"APPLE" -> AuthProvider.APPLE
-		"FACEBOOK" -> AuthProvider.FACEBOOK
-		else -> AuthProvider.EMAIL
 	}
 }

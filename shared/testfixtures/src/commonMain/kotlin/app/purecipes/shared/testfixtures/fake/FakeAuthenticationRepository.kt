@@ -91,6 +91,11 @@ class FakeAuthenticationRepository(
 		return signInWithExternalProviderHandler(profile).also(::updateAuthenticationState)
 	}
 
+	override suspend fun deleteAccount(): Outcome<Unit> {
+		mutableAuthenticationState.value = AuthenticationState.SignedOut
+		return Ok(Unit)
+	}
+
 	override suspend fun signOut() {
 		mutableAuthenticationState.value = AuthenticationState.SignedOut
 	}
