@@ -5,8 +5,9 @@ import app.purecipes.feature.auth.data.datasource.AuthenticationRemoteDataSource
 import app.purecipes.feature.auth.data.datasource.AuthenticationStore
 import app.purecipes.feature.auth.data.datasource.AuthenticationStoreHolder
 import app.purecipes.feature.auth.data.datasource.FirebaseAuthenticationLocalDataSource
-import app.purecipes.feature.auth.data.datasource.toAuthenticationState
+import app.purecipes.feature.auth.domain.model.toAuthenticationState
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
@@ -94,6 +95,11 @@ interface AuthenticationDataModule {
 	@Provides
 	fun provideSignInWithGoogleUseCase(repository: AuthenticationRepository): SignInWithGoogleUseCase {
 		return SignInWithGoogleUseCase(repository)
+	}
+
+	@Provides
+	fun provideDeleteAccountUseCase(repository: AuthenticationRepository): DeleteAccountUseCase {
+		return DeleteAccountUseCase(repository)
 	}
 
 	@Provides

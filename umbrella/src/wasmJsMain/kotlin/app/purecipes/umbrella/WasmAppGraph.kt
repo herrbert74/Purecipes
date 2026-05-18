@@ -7,6 +7,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.data.repository.AuthenticationDataModule
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
@@ -90,6 +91,8 @@ interface WasmAppGraph :
 	val signInWithExternalProviderUseCase: SignInWithExternalProviderUseCase
 
 	val signInWithGoogleUseCase: SignInWithGoogleUseCase
+
+	val deleteAccountUseCase: DeleteAccountUseCase
 
 	val signOutUseCase: SignOutUseCase
 

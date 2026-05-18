@@ -27,5 +27,7 @@ interface AuthenticationRepository {
 
 	suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser>
 
+	suspend fun deleteAccount(): Outcome<Unit>
+
 	suspend fun signOut()
 }

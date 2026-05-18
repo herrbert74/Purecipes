@@ -24,6 +24,7 @@ import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -40,6 +41,7 @@ fun AuthenticationScreen(
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	showConsentForm: ShowConsentFormUseCase,
+	deleteAccount: DeleteAccountUseCase,
 	signOut: SignOutUseCase,
 	onOpenSettings: () -> Unit,
 	onNavigateToEmailRegistration: () -> Unit,
@@ -76,6 +78,7 @@ fun AuthenticationScreen(
 		observeAuthenticationState = observeAuthenticationState,
 		signInWithExternalProvider = signInWithExternalProvider,
 		signInWithGoogle = signInWithGoogle,
+		deleteAccount = deleteAccount,
 		signOut = signOut,
 	)
 
@@ -123,6 +126,7 @@ fun AuthenticationScreen(
 						isBusy = viewModel.isBusy,
 						onManagePrivacySettings = { showConsentForm() },
 						onSignOut = viewModel::signOut,
+						onDeleteAccount = viewModel::deleteAccount,
 					)
 				}
 

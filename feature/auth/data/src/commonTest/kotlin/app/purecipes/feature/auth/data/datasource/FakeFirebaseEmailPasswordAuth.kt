@@ -37,5 +37,7 @@ internal class FakeFirebaseEmailPasswordAuth(
 		sendPasswordResetHandler(email)
 	}
 
+	override suspend fun deleteCurrentUser() = Unit
+
 	override suspend fun signOut() = Unit
 }

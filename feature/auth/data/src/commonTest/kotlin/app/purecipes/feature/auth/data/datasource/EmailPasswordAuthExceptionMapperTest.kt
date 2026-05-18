@@ -20,6 +20,15 @@ class EmailPasswordAuthExceptionMapperTest {
 		mapEmailPasswordAuthException(IllegalStateException("Service unavailable")) shouldBe "Service unavailable"
 	}
 
+	@Test
+	fun `recent login required maps to user message`() {
+		mapEmailPasswordAuthException(RecentLoginRequiredException()) shouldBe
+			"Please sign in again before deleting your account."
+	}
+
+	private class RecentLoginRequiredException :
+		Exception("This operation is sensitive and requires recent authentication.")
+
 	private class InvalidCredentialsException(
 		override val message: String?,
 	) : Exception(message)

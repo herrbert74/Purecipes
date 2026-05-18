@@ -2,6 +2,7 @@ package app.purecipes.feature.auth.ui.authentication
 
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -28,6 +29,7 @@ class AuthenticationViewModelTest {
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			deleteAccount = DeleteAccountUseCase(repository),
 			signOut = SignOutUseCase(repository),
 			coroutineScope = viewModelScope,
 		)
@@ -46,6 +48,7 @@ class AuthenticationViewModelTest {
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			deleteAccount = DeleteAccountUseCase(repository),
 			signOut = SignOutUseCase(repository),
 			coroutineScope = viewModelScope,
 		)

@@ -1,7 +1,7 @@
 package app.purecipes.backend
 
+import app.purecipes.backend.auth.FirebaseIdTokenVerifier
 import app.purecipes.backend.auth.GoogleIdTokenVerificationResult
-import app.purecipes.backend.auth.GoogleIdTokenVerifier
 import app.purecipes.backend.fake.FakeSessionService
 import app.purecipes.shared.domain.model.VerifiedGoogleUser
 import io.kotest.matchers.shouldBe
@@ -23,7 +23,7 @@ class AuthenticationRouteTest {
 	fun `blank google token yields 400`() = testApplication {
 		application {
 			module(
-				googleIdTokenVerifier = FakeGoogleIdTokenVerifier(
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Should not be called"),
 				),
 			)
@@ -43,7 +43,7 @@ class AuthenticationRouteTest {
 		val sessionService = FakeSessionService()
 		application {
 			module(
-				googleIdTokenVerifier = FakeGoogleIdTokenVerifier(
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Success(
 						VerifiedGoogleUser(
 							id = "google-subject",
@@ -78,7 +78,7 @@ class AuthenticationRouteTest {
 	fun `invalid google token yields 401`() = testApplication {
 		application {
 			module(
-				googleIdTokenVerifier = FakeGoogleIdTokenVerifier(
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Google token verification failed"),
 				),
 			)
@@ -97,7 +97,7 @@ class AuthenticationRouteTest {
 	fun `current session requires bearer token`() = testApplication {
 		application {
 			module(
-				googleIdTokenVerifier = FakeGoogleIdTokenVerifier(
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
 				),
 				sessionService = FakeSessionService(),
@@ -124,7 +124,7 @@ class AuthenticationRouteTest {
 		)
 		application {
 			module(
-				googleIdTokenVerifier = FakeGoogleIdTokenVerifier(
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
 				),
 				sessionService = sessionService,
@@ -161,7 +161,7 @@ class AuthenticationRouteTest {
 		)
 		application {
 			module(
-				googleIdTokenVerifier = FakeGoogleIdTokenVerifier(
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
 				),
 				sessionService = sessionService,
@@ -181,9 +181,9 @@ class AuthenticationRouteTest {
 		sessionResponse.status shouldBe HttpStatusCode.Unauthorized
 	}
 
-	private class FakeGoogleIdTokenVerifier(
+	private class FakeFirebaseIdTokenVerifier(
 		private val result: GoogleIdTokenVerificationResult,
-	) : GoogleIdTokenVerifier {
+	) : FirebaseIdTokenVerifier {
 
 		override suspend fun verify(idToken: String): GoogleIdTokenVerificationResult = result
 	}

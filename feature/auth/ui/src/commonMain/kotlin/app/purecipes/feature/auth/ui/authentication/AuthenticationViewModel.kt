@@ -12,6 +12,7 @@ import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
+import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -27,6 +28,7 @@ internal class AuthenticationViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	private val signInWithGoogle: SignInWithGoogleUseCase,
+	private val deleteAccount: DeleteAccountUseCase,
 	private val signOut: SignOutUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
@@ -110,6 +112,14 @@ internal class AuthenticationViewModel(
 		}
 	}
 
+	fun deleteAccount() {
+		scope.launch {
+			isBusy = true
+			message = deleteAccount.invoke().getError()?.message
+			isBusy = false
+		}
+	}
+
 	override fun onCleared() {
 		if (ownsCoroutineScope) {
 			scope.cancel()
@@ -122,6 +132,7 @@ internal fun authenticationViewModel(
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
+	deleteAccount: DeleteAccountUseCase,
 	signOut: SignOutUseCase,
 ): AuthenticationViewModel {
 	return viewModel(
@@ -132,6 +143,7 @@ internal fun authenticationViewModel(
 					observeAuthenticationState = observeAuthenticationState,
 					signInWithExternalProvider = signInWithExternalProvider,
 					signInWithGoogle = signInWithGoogle,
+					deleteAccount = deleteAccount,
 					signOut = signOut,
 				)
 			}

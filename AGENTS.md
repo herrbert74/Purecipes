@@ -8,6 +8,7 @@ primary goal of the app to make it easier for users to follow recipe instruction
 - **NEVER use `@SuppressLint` or `@Suppress` to bypass errors/warnings unless explicitly instructed.**
 - **NEVER rename tests, modify test logic to bypass failures, or introduce hacky workarounds without asking first.**
 - Use **tabs** instead of spaces for tabs.
+- Run **`./gradlew detektAll`** before finishing any Kotlin change set, unless the user scopes validation differently.
 - Formatting adherence is a correctness requirement, not a cleanup task. Before every edit, match the file's existing formatting exactly and preserve the alignment style already in use.
 
 ## Additional Agent Guidance
