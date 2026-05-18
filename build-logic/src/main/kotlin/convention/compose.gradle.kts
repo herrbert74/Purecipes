@@ -29,6 +29,7 @@ extensions.configure<KotlinMultiplatformExtension> {
 			implementation(libs.jetbrains.composeRuntime)
 			implementation(libs.jetbrains.composeUi)
 			implementation(libs.jetbrains.composeResources)
+			implementation(libs.jetbrains.composeUiToolingPreview)
 		}
 
 		matching { it.name == "androidDeviceTest" }.all {
@@ -53,4 +54,8 @@ tasks.configureEach {
 	) {
 		enabled = false
 	}
+}
+
+dependencies {
+	add("androidRuntimeClasspath", libs.jetbrains.composeUiTooling)
 }

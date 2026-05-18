@@ -367,7 +367,7 @@ private fun CookbookDetailContent(
 }
 
 @Composable
-private fun SavedRecipesTabContent(
+internal fun SavedRecipesTabContent(
 	errorMessage: String?,
 	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
@@ -556,58 +556,6 @@ private fun CookbookRow(
 				modifier = Modifier.testTag("$DELETE_COOKBOOK_BUTTON_PREFIX${cookbook.id}"),
 			) {
 				Text(text = "Delete")
-			}
-		}
-	}
-}
-
-@Composable
-private fun FavoritesSignedOutContent(modifier: Modifier = Modifier) {
-	EmptyStateContent(
-		icon = Icons.Filled.Favorite,
-		iconContentDescription = "Favorites",
-		title = "Sign in to view favorites",
-		description = "Favorites are tied to your session, so each account keeps its own saved recipes.",
-		modifier = modifier,
-	)
-}
-
-@Composable
-private fun FavoriteRecipeRow(recipe: RecipeSummary, onClick: () -> Unit) {
-	Card(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clickable(onClick = onClick),
-		colors = CardDefaults.cardColors(
-			containerColor = PurecipesTheme.colorScheme.surfaceContainerLow,
-		),
-	) {
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(PurecipesTheme.space.s),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-			verticalAlignment = Alignment.CenterVertically,
-		) {
-			AsyncImage(
-				model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
-				contentDescription = recipe.title,
-				modifier = Modifier
-					.size(56.dp)
-					.clip(RoundedCornerShape(PurecipesTheme.space.s))
-					.background(PurecipesTheme.colorScheme.secondaryContainer),
-				contentScale = ContentScale.Crop,
-			)
-
-			Column(modifier = Modifier.weight(1f)) {
-				TitleText(text = recipe.title)
-				BodyText(
-					text = listOfNotNull(
-						recipe.cuisine?.displayName ?: "Unknown cuisine",
-						recipe.totalTime?.let { "$it min" },
-					).joinToString(separator = " • "),
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
 			}
 		}
 	}
