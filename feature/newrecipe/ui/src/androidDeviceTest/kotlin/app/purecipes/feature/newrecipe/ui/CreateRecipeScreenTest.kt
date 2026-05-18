@@ -19,7 +19,6 @@ import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import io.kotest.matchers.shouldBe
@@ -59,7 +58,7 @@ class CreateRecipeScreenTest {
 
 		onNodeWithText("Recipe uploaded.").performScrollTo().assertIsDisplayed()
 		repository.savedRequests.size shouldBe 1
-		onNodeWithTag("createRecipeSaveButton").assertStable()
+		onNodeWithTag("createRecipeSaveButton").assertTextContains("Update recipe")
 	}
 
 	@Test
