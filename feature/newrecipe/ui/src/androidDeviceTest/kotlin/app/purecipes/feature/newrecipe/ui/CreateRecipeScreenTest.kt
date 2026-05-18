@@ -3,6 +3,7 @@ package app.purecipes.feature.newrecipe.ui
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
@@ -48,10 +49,10 @@ class CreateRecipeScreenTest {
 
 		onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
 		onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
-		onNodeWithTag("createRecipeImagePickButton").assertIsDisplayed()
-		onNodeWithTag("createRecipeStepField0").performTextInput("Trim the carrots")
-		onNodeWithTag("createRecipeAddStepButton").performClick()
-		onNodeWithTag("createRecipeStepField1").performTextInput("Roast until tender")
+		onNodeWithTag("createRecipeImagePickButton").performScrollTo().assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
+		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
+		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Roast until tender")
 		onNodeWithTag("createRecipeSaveButton").performScrollTo().performClick()
 		waitForIdle()
 		waitUntil(timeoutMillis = 5_000) { repository.savedRequests.size == 1 }
@@ -82,12 +83,12 @@ class CreateRecipeScreenTest {
 			}
 		}
 
-		onNodeWithTag("createRecipeImagePickButton").performClick()
+		onNodeWithTag("createRecipeImagePickButton").performScrollTo().performClick()
 
 		onNodeWithText("Importing image").assertIsDisplayed()
-		onNodeWithText("Preparing image preview...").assertIsDisplayed()
+		onNodeWithText("Preparing image preview...").performScrollTo().assertIsDisplayed()
 		onNodeWithTag("createRecipeImagePickButton").assertIsNotEnabled()
-		onNodeWithTag("createRecipeSaveButton").assertIsNotEnabled()
+		onNodeWithTag("createRecipeSaveButton").performScrollTo().assertIsNotEnabled()
 	}
 
 	@Test
@@ -112,11 +113,11 @@ class CreateRecipeScreenTest {
 			}
 		}
 
-		onNodeWithTag("createRecipeImagePickButton").performClick()
+		onNodeWithTag("createRecipeImagePickButton").performScrollTo().performClick()
 
-		onNodeWithText("Could not import the selected image.").assertIsDisplayed()
+		onNodeWithText("Could not import the selected image.").performScrollTo().assertIsDisplayed()
 		onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
-		onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
+		onNodeWithTag("createRecipeSaveButton").performScrollTo().assertIsEnabled()
 	}
 
 	@Test
@@ -133,10 +134,13 @@ class CreateRecipeScreenTest {
 			}
 		}
 
-		onNodeWithTag("createRecipeCuisineField").performClick()
+		onNodeWithTag("createRecipeCuisineField").performScrollTo().performClick()
 
-		onNodeWithText("No cuisine").assertIsDisplayed()
-		onNodeWithText("Italian").assertIsDisplayed()
+		onNodeWithText("No cuisine", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithText("American", useUnmergedTree = true).assertIsDisplayed()
+		onAllNodesWithText("Italian", useUnmergedTree = true).fetchSemanticsNodes().size shouldBe 1
+		onNodeWithText("American", useUnmergedTree = true).performClick()
+		onNodeWithText("American").assertIsDisplayed()
 	}
 
 	@Test
@@ -153,7 +157,7 @@ class CreateRecipeScreenTest {
 			}
 		}
 
-		onNodeWithTag("createRecipeAddStepButton").performClick()
+		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		waitForIdle()
 
 		onNodeWithTag("createRecipeStepField1").performScrollTo().assertIsDisplayed()
@@ -173,10 +177,10 @@ class CreateRecipeScreenTest {
 			}
 		}
 
-		onNodeWithTag("createRecipeStepField0").performTextInput("First")
-		onNodeWithTag("createRecipeAddStepButton").performClick()
-		onNodeWithTag("createRecipeStepField1").performTextInput("Second")
-		onNodeWithTag("createRecipeReorderStepButton1").performTouchInput {
+		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("First")
+		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
+		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Second")
+		onNodeWithTag("createRecipeReorderStepButton1").performScrollTo().performTouchInput {
 			down(center)
 			advanceEventTime(STEP_REORDER_LONG_PRESS_MILLIS)
 			moveBy(Offset(x = 0f, y = STEP_REORDER_DRAG_DISTANCE))
@@ -184,8 +188,8 @@ class CreateRecipeScreenTest {
 		}
 		waitForIdle()
 
-		onNodeWithTag("createRecipeStepField0").assertTextContains("Second")
-		onNodeWithTag("createRecipeStepField1").assertTextContains("First")
+		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
+		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
 	}
 
 }
