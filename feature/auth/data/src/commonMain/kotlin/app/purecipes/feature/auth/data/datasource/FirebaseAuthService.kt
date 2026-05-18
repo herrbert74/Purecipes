@@ -9,5 +9,7 @@ internal expect class FirebaseAuthService() : FirebaseEmailPasswordAuth {
 
 	override suspend fun resendEmailVerification(email: String, password: String): EmailPasswordSignInResult
 
+	override suspend fun sendPasswordResetEmail(email: String)
+
 	override suspend fun signOut()
 }

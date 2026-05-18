@@ -8,7 +8,11 @@ internal class FakeFirebaseEmailPasswordAuth(
 	private val resendHandler: suspend (String, String) -> EmailPasswordSignInResult = { _, _ ->
 		EmailPasswordSignInResult()
 	},
+	private val sendPasswordResetHandler: suspend (String) -> Unit = {},
 ) : FirebaseEmailPasswordAuth {
+
+	var lastPasswordResetEmail: String? = null
+		private set
 
 	var lastRegisteredDisplayName: String? = null
 		private set
@@ -26,6 +30,11 @@ internal class FakeFirebaseEmailPasswordAuth(
 
 	override suspend fun resendEmailVerification(email: String, password: String): EmailPasswordSignInResult {
 		return resendHandler(email, password)
+	}
+
+	override suspend fun sendPasswordResetEmail(email: String) {
+		lastPasswordResetEmail = email
+		sendPasswordResetHandler(email)
 	}
 
 	override suspend fun signOut() = Unit

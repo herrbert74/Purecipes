@@ -36,6 +36,7 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
+import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -96,6 +97,7 @@ fun MainScreen(
 	signInWithEmail: SignInWithEmailUseCase,
 	registerWithEmail: RegisterWithEmailUseCase,
 	resendEmailVerification: ResendEmailVerificationUseCase,
+	sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	signInWithGoogle: SignInWithGoogleUseCase,
 	signOut: SignOutUseCase,
@@ -154,7 +156,8 @@ fun MainScreen(
 				previous is AuthenticationState.SignedIn && authenticationState is AuthenticationState.SignedOut ->
 					viewModel.clearPostLoginNavigationState()
 
-				previous is AuthenticationState.SignedOut && authenticationState is AuthenticationState.SignedIn ->
+				previous is AuthenticationState.SignedOut && authenticationState is AuthenticationState.SignedIn -> {
+					viewModel.onAuthenticationSucceeded(backStack)
 					when (viewModel.takePostLoginOriginAfterSignIn()) {
 						PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
 							viewModel.markPendingOpenSearchFiltersAfterLogin()
@@ -166,6 +169,7 @@ fun MainScreen(
 
 						null -> Unit
 					}
+				}
 			}
 		}
 		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
@@ -314,6 +318,7 @@ fun MainScreen(
 						SignInScreen(
 							signInWithEmail = signInWithEmail,
 							resendEmailVerification = resendEmailVerification,
+							sendPasswordResetEmail = sendPasswordResetEmail,
 							initialEmail = destination.prefilledEmail,
 							showRegistrationSuccessMessage = destination.showRegistrationSuccessMessage,
 							onBack = { viewModel.onBack(backStack) },

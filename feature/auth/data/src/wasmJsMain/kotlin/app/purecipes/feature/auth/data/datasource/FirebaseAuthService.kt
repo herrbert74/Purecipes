@@ -27,5 +27,9 @@ actual class FirebaseAuthService : FirebaseEmailPasswordAuth {
 		throw UnsupportedOperationException("Email authentication is not supported on WasmJS")
 	}
 
+	actual override suspend fun sendPasswordResetEmail(email: String) {
+		throw UnsupportedOperationException("Email authentication is not supported on WasmJS")
+	}
+
 	actual override suspend fun signOut() = Unit
 }

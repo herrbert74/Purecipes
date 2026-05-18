@@ -9,5 +9,7 @@ internal interface FirebaseEmailPasswordAuth {
 
 	suspend fun resendEmailVerification(email: String, password: String): EmailPasswordSignInResult
 
+	suspend fun sendPasswordResetEmail(email: String)
+
 	suspend fun signOut()
 }

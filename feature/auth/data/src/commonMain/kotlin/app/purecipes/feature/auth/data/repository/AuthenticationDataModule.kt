@@ -10,6 +10,7 @@ import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
+import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -74,6 +75,13 @@ interface AuthenticationDataModule {
 		repository: AuthenticationRepository,
 	): ResendEmailVerificationUseCase {
 		return ResendEmailVerificationUseCase(repository)
+	}
+
+	@Provides
+	fun provideSendPasswordResetEmailUseCase(
+		repository: AuthenticationRepository,
+	): SendPasswordResetEmailUseCase {
+		return SendPasswordResetEmailUseCase(repository)
 	}
 
 	@Provides

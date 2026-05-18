@@ -44,6 +44,10 @@ actual class FirebaseAuthService : FirebaseEmailPasswordAuth {
 		}.getOrElse { EmailPasswordSignInResult(errorMessage = mapEmailPasswordAuthException(it)) }
 	}
 
+	actual override suspend fun sendPasswordResetEmail(email: String) {
+		Firebase.auth.sendPasswordResetEmail(email)
+	}
+
 	actual override suspend fun signOut() {
 		Firebase.auth.signOut()
 	}

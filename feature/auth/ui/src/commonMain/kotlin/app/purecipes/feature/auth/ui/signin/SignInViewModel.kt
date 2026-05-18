@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
+import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 internal class SignInViewModel(
 	private val signInWithEmail: SignInWithEmailUseCase,
 	private val resendEmailVerification: ResendEmailVerificationUseCase,
+	private val sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	initialEmail: String,
 	showRegistrationSuccessMessage: Boolean,
 	coroutineScope: CoroutineScope? = null,
@@ -95,6 +97,21 @@ internal class SignInViewModel(
 		}
 	}
 
+	fun sendPasswordResetEmail() {
+		scope.launch {
+			isBusy = true
+			val result = sendPasswordResetEmail(email)
+			if (result.getError() == null) {
+				infoMessage = "Password reset email sent. Please check your inbox."
+				emailError = null
+				passwordError = null
+			} else {
+				setSignInError(result.getError()?.message)
+			}
+			isBusy = false
+		}
+	}
+
 	override fun onCleared() {
 		if (ownsCoroutineScope) {
 			scope.cancel()
@@ -124,16 +141,19 @@ internal class SignInViewModel(
 internal fun signInViewModel(
 	signInWithEmail: SignInWithEmailUseCase,
 	resendEmailVerification: ResendEmailVerificationUseCase,
+	sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	initialEmail: String,
 	showRegistrationSuccessMessage: Boolean,
 ): SignInViewModel {
 	return viewModel(
-		key = "SignInViewModel:$initialEmail:$showRegistrationSuccessMessage:${signInWithEmail.hashCode()}",
+		key = "SignInViewModel:$initialEmail:$showRegistrationSuccessMessage:" +
+			"${signInWithEmail.hashCode()}:${sendPasswordResetEmail.hashCode()}",
 		factory = viewModelFactory {
 			initializer {
 				SignInViewModel(
 					signInWithEmail = signInWithEmail,
 					resendEmailVerification = resendEmailVerification,
+					sendPasswordResetEmail = sendPasswordResetEmail,
 					initialEmail = initialEmail,
 					showRegistrationSuccessMessage = showRegistrationSuccessMessage,
 				)

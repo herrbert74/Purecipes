@@ -118,6 +118,16 @@ internal class MainViewModel : ViewModel() {
 			backStack.removeAt(backStack.lastIndex)
 		}
 	}
+
+	fun onAuthenticationSucceeded(backStack: MutableList<NavKey>) {
+		while (backStack.lastOrNull().isAccountAuthFlowDestination()) {
+			backStack.removeAt(backStack.lastIndex)
+		}
+	}
+
+	private fun NavKey?.isAccountAuthFlowDestination(): Boolean {
+		return this is EmailSignInDestination || this is EmailRegistrationDestination
+	}
 }
 
 @Composable

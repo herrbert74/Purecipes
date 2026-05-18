@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ internal fun SignInForm(
 	onPasswordChange: (String) -> Unit,
 	onSubmit: () -> Unit,
 	onResendVerificationEmail: () -> Unit,
+	onForgotPassword: () -> Unit,
 ) {
 	var isPasswordVisible by remember { mutableStateOf(false) }
 	val emailFocusRequester = remember { FocusRequester() }
@@ -127,6 +129,13 @@ internal fun SignInForm(
 					}
 				},
 			)
+			TextButton(
+				modifier = Modifier.testTag(SIGN_IN_FORGOT_PASSWORD_TAG),
+				onClick = onForgotPassword,
+				enabled = !isBusy,
+			) {
+				Text(text = "Forgot password?")
+			}
 			Button(
 				modifier = Modifier
 					.fillMaxWidth()
