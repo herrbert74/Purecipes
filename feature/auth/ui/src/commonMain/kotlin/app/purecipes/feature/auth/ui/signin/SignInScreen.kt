@@ -17,7 +17,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
+import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -25,6 +28,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 fun SignInScreen(
 	signInWithEmail: SignInWithEmailUseCase,
 	resendEmailVerification: ResendEmailVerificationUseCase,
+	sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	initialEmail: String,
 	showRegistrationSuccessMessage: Boolean,
 	onBack: () -> Unit,
@@ -33,10 +37,46 @@ fun SignInScreen(
 	val viewModel = signInViewModel(
 		signInWithEmail = signInWithEmail,
 		resendEmailVerification = resendEmailVerification,
+		sendPasswordResetEmail = sendPasswordResetEmail,
 		initialEmail = initialEmail,
 		showRegistrationSuccessMessage = showRegistrationSuccessMessage,
 	)
 
+	SignInScreenContent(
+		email = viewModel.email,
+		emailError = viewModel.emailError,
+		password = viewModel.password,
+		passwordError = viewModel.passwordError,
+		isBusy = viewModel.isBusy,
+		infoMessage = viewModel.infoMessage,
+		showResendVerificationEmail = viewModel.showResendVerificationEmail,
+		onEmailChange = viewModel::onEmailChange,
+		onPasswordChange = viewModel::onPasswordChange,
+		onSubmit = viewModel::submitSignIn,
+		onResendVerificationEmail = viewModel::resendVerificationEmail,
+		onForgotPassword = viewModel::sendPasswordResetEmail,
+		onBack = onBack,
+		modifier = modifier,
+	)
+}
+
+@Composable
+internal fun SignInScreenContent(
+	email: String,
+	emailError: String?,
+	password: String,
+	passwordError: String?,
+	isBusy: Boolean,
+	infoMessage: String?,
+	showResendVerificationEmail: Boolean,
+	onEmailChange: (String) -> Unit,
+	onPasswordChange: (String) -> Unit,
+	onSubmit: () -> Unit,
+	onResendVerificationEmail: () -> Unit,
+	onForgotPassword: () -> Unit,
+	onBack: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
@@ -67,26 +107,109 @@ fun SignInScreen(
 					.padding(PurecipesTheme.space.l),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
-				viewModel.infoMessage?.let { infoMessage ->
+				infoMessage?.let { message ->
 					Text(
-						text = infoMessage,
+						text = message,
+						modifier = Modifier.testTag(SIGN_IN_INFO_MESSAGE_TAG),
 						style = PurecipesTheme.typography.bodyMedium,
 						color = PurecipesTheme.colorScheme.primary,
 					)
 				}
 				SignInForm(
-					email = viewModel.email,
-					emailError = viewModel.emailError,
-					password = viewModel.password,
-					passwordError = viewModel.passwordError,
-					isBusy = viewModel.isBusy,
-					showResendVerificationEmail = viewModel.showResendVerificationEmail,
-					onEmailChange = viewModel::onEmailChange,
-					onPasswordChange = viewModel::onPasswordChange,
-					onSubmit = viewModel::submitSignIn,
-					onResendVerificationEmail = viewModel::resendVerificationEmail,
+					email = email,
+					emailError = emailError,
+					password = password,
+					passwordError = passwordError,
+					isBusy = isBusy,
+					showResendVerificationEmail = showResendVerificationEmail,
+					onEmailChange = onEmailChange,
+					onPasswordChange = onPasswordChange,
+					onSubmit = onSubmit,
+					onResendVerificationEmail = onResendVerificationEmail,
+					onForgotPassword = onForgotPassword,
 				)
 			}
 		}
+	}
+}
+
+@Preview(
+	name = "Sign in screen light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SignInScreenLightPreview() {
+	PurecipesTheme(darkTheme = false) {
+		SignInScreenContent(
+			email = "taylor@example.com",
+			emailError = null,
+			password = "",
+			passwordError = null,
+			isBusy = false,
+			infoMessage = null,
+			showResendVerificationEmail = false,
+			onEmailChange = {},
+			onPasswordChange = {},
+			onSubmit = {},
+			onResendVerificationEmail = {},
+			onForgotPassword = {},
+			onBack = {},
+		)
+	}
+}
+
+@Preview(
+	name = "Sign in screen registration success",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SignInScreenRegistrationSuccessPreview() {
+	PurecipesTheme(darkTheme = false) {
+		SignInScreenContent(
+			email = "taylor@example.com",
+			emailError = null,
+			password = "",
+			passwordError = null,
+			isBusy = false,
+			infoMessage = "Registration successful. Please check your email to verify your account.",
+			showResendVerificationEmail = true,
+			onEmailChange = {},
+			onPasswordChange = {},
+			onSubmit = {},
+			onResendVerificationEmail = {},
+			onForgotPassword = {},
+			onBack = {},
+		)
+	}
+}
+
+@Preview(
+	name = "Sign in screen dark",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFF121212,
+)
+@Composable
+private fun SignInScreenDarkPreview() {
+	PurecipesTheme(darkTheme = true) {
+		SignInScreenContent(
+			email = "taylor@example.com",
+			emailError = null,
+			password = "secret",
+			passwordError = null,
+			isBusy = false,
+			infoMessage = "Password reset email sent. Please check your inbox.",
+			showResendVerificationEmail = false,
+			onEmailChange = {},
+			onPasswordChange = {},
+			onSubmit = {},
+			onResendVerificationEmail = {},
+			onForgotPassword = {},
+			onBack = {},
+		)
 	}
 }

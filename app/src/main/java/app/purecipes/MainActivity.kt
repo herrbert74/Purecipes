@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
 				signInWithEmail = graph.signInWithEmailUseCase,
 				registerWithEmail = graph.registerWithEmailUseCase,
 				resendEmailVerification = graph.resendEmailVerificationUseCase,
+				sendPasswordResetEmail = graph.sendPasswordResetEmailUseCase,
 				signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
 				signInWithGoogle = graph.signInWithGoogleUseCase,
 				signOut = graph.signOutUseCase,

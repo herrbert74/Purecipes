@@ -1,28 +1,21 @@
 package app.purecipes.feature.recipedetails.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -31,12 +24,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,10 +36,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
@@ -61,20 +48,10 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import app.purecipes.shared.domain.model.CookbookRef
-import app.purecipes.shared.domain.model.IngredientGroup
-import app.purecipes.shared.domain.model.MeasurementSystem
-import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import coil3.compose.AsyncImage
-
-internal const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
-
-@Immutable
-private data class RecipeCookbooksList(val items: List<CookbookRef>)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -306,242 +283,6 @@ fun RecipeDetailsScreen(
 					}
 				}
 			}
-		}
-	}
-}
-
-@Composable
-private fun RecipeDetailsContent(
-	canManageFavorites: Boolean,
-	favoriteErrorMessage: String?,
-	isFavoriteUpdating: Boolean,
-	isRecipeConverted: Boolean,
-	recipe: RecipeDetails,
-	recipeCookbooks: RecipeCookbooksList,
-	onStartCooking: () -> Unit,
-	onToggleFavorite: () -> Unit,
-	modifier: Modifier = Modifier,
-) {
-	val cookbookRefs = recipeCookbooks.items
-	LazyColumn(
-		modifier = modifier
-			.fillMaxSize()
-			.testTag(RECIPE_DETAILS_CONTENT_TAG),
-		contentPadding = PaddingValues(
-			start = PurecipesTheme.space.m,
-			top = PurecipesTheme.space.m,
-			end = PurecipesTheme.space.m,
-			bottom = PurecipesTheme.space.l,
-		),
-		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-	) {
-		item {
-			AsyncImage(
-				model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
-				contentDescription = recipe.title,
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(240.dp)
-					.clip(RoundedCornerShape(PurecipesTheme.space.l))
-					.background(PurecipesTheme.colorScheme.surfaceContainerLow),
-				contentScale = ContentScale.Crop,
-			)
-		}
-
-		item {
-			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-				Text(
-					text = recipe.title,
-					style = PurecipesTheme.typography.headlineMedium,
-				)
-				Text(
-					text = recipe.description,
-					style = PurecipesTheme.typography.bodyLarge,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
-		}
-
-		item {
-			RecipeMetadataRow(recipe = recipe, isRecipeConverted = isRecipeConverted)
-		}
-
-		item {
-			if (cookbookRefs.isNotEmpty()) {
-				LazyRow(
-					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-					modifier = Modifier.fillMaxWidth(),
-				) {
-					items(cookbookRefs.size, key = { cookbookRefs[it].id }) { index ->
-						val cookbook = cookbookRefs[index]
-						Surface(
-							shape = RoundedCornerShape(999.dp),
-							color = PurecipesTheme.colorScheme.secondaryContainer,
-						) {
-							Text(
-								text = cookbook.name,
-								modifier = Modifier.padding(
-									horizontal = PurecipesTheme.space.s,
-									vertical = PurecipesTheme.space.s,
-								),
-								style = PurecipesTheme.typography.labelLarge,
-							)
-						}
-					}
-				}
-			}
-		}
-
-		item {
-			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-				Button(
-					onClick = onStartCooking,
-					enabled = recipe.steps.isNotEmpty(),
-					modifier = Modifier.fillMaxWidth(),
-				) {
-					Text(text = "Start cooking")
-				}
-				Button(
-					onClick = onToggleFavorite,
-					enabled = canManageFavorites && !isFavoriteUpdating,
-					modifier = Modifier.fillMaxWidth(),
-				) {
-					Text(
-						text = if (!canManageFavorites) {
-							"Sign in to save favorites"
-						} else if (recipe.isFavorite) {
-							"Remove from favorites"
-						} else {
-							"Add to favorites"
-						},
-					)
-				}
-				favoriteErrorMessage?.let {
-					ErrorText(text = it)
-				}
-			}
-		}
-
-		item {
-			Text(
-				text = "Ingredients",
-				style = PurecipesTheme.typography.titleLarge,
-			)
-		}
-
-		items(recipe.ingredientGroups) { group ->
-			IngredientGroupCard(group = group)
-		}
-
-		item {
-			Text(
-				text = "Steps",
-				style = PurecipesTheme.typography.titleLarge,
-			)
-		}
-
-		items(recipe.steps.indices.toList()) { stepIndex ->
-			StepCard(
-				stepNumber = stepIndex + 1,
-				step = recipe.steps[stepIndex],
-			)
-		}
-	}
-}
-
-@Composable
-private fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean) {
-	val items = listOfNotNull(
-		recipe.cuisine?.displayName,
-		recipe.totalTime?.let { "$it min" },
-		recipe.yields?.takeIf { it.isNotBlank() },
-		recipe.measurementSystem?.displayName(isRecipeConverted),
-	)
-
-	if (items.isEmpty()) return
-
-	Row(
-		modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-	) {
-		items.forEach { item ->
-			Surface(
-				shape = RoundedCornerShape(999.dp),
-				color = PurecipesTheme.colorScheme.secondaryContainer,
-			) {
-				Text(
-					text = item,
-					modifier = Modifier.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
-					style = PurecipesTheme.typography.labelLarge,
-				)
-			}
-		}
-	}
-}
-
-private fun MeasurementSystem.displayName(isRecipeConverted: Boolean): String {
-	return when (this) {
-		MeasurementSystem.IMPERIAL -> if (isRecipeConverted) "Converted to imperial" else "Imperial"
-		MeasurementSystem.METRIC -> if (isRecipeConverted) "Converted to metric" else "Metric"
-		MeasurementSystem.MIXED -> "Mixed"
-	}
-}
-
-@Composable
-private fun IngredientGroupCard(group: IngredientGroup) {
-	Card(
-		modifier = Modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
-	) {
-		Column(
-			modifier = Modifier.padding(PurecipesTheme.space.m),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-		) {
-			group.name?.takeIf { it.isNotBlank() }?.let {
-				Text(
-					text = it,
-					style = PurecipesTheme.typography.titleMedium,
-				)
-			}
-
-			group.ingredients.forEach { ingredient ->
-				Text(
-					text = "- $ingredient",
-					style = PurecipesTheme.typography.bodyLarge,
-				)
-			}
-		}
-	}
-}
-
-@Composable
-private fun StepCard(stepNumber: Int, step: String) {
-	Card(
-		modifier = Modifier.fillMaxWidth(),
-		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
-	) {
-		Row(
-			modifier = Modifier.padding(PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-		) {
-			Surface(
-				modifier = Modifier.size(PurecipesTheme.space.xl),
-				shape = RoundedCornerShape(PurecipesTheme.space.m),
-				color = PurecipesTheme.colorScheme.primaryContainer,
-			) {
-				Box(contentAlignment = Alignment.Center) {
-					Text(
-						text = stepNumber.toString(),
-						style = PurecipesTheme.typography.titleMedium,
-					)
-				}
-			}
-
-			Text(
-				text = step,
-				modifier = Modifier.weight(1f),
-				style = PurecipesTheme.typography.bodyLarge,
-			)
 		}
 	}
 }

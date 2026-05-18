@@ -130,6 +130,7 @@ jobs:
             ./gradlew
             --max-workers=2
             --no-parallel
+            --no-build-cache
             --no-configuration-cache
             -Pkotlin.native.enableKlibsCrossCompilation=false
             -Pkotlin.native.ignoreDisabledTargets=true
@@ -137,6 +138,9 @@ jobs:
             "-Dkotlin.daemon.jvmargs=-Xmx4g -XX:+UseParallelGC"
             connectedAndroidTest;
             killall -INT crashpad_handler || true
+
+      - name: Verify instrumented UI tests executed
+        run: ./.github/scripts/verify-connected-ui-tests.sh
 
       - name: Upload Test Reports
         if: always()

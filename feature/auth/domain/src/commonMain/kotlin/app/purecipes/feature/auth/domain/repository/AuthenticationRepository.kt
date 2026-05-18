@@ -21,6 +21,8 @@ interface AuthenticationRepository {
 
 	suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit>
 
+	suspend fun sendPasswordResetEmail(email: String): Outcome<Unit>
+
 	suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser>
 
 	suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser>

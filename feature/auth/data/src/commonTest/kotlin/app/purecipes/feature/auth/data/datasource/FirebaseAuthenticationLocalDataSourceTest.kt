@@ -64,4 +64,19 @@ class FirebaseAuthenticationLocalDataSourceTest {
 
 		result.getError()?.message shouldBe INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 	}
+
+	@Test
+	fun `send password reset email calls firebase with normalized email`() = runTest {
+		val firebaseAuthService = FakeFirebaseEmailPasswordAuth()
+		val dataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = FakeSessionTokenStore(),
+			firebaseAuthService = firebaseAuthService,
+		)
+
+		val result = dataSource.sendPasswordResetEmail("  Taylor@Example.com  ")
+
+		result.getError() shouldBe null
+		firebaseAuthService.lastPasswordResetEmail shouldBe "taylor@example.com"
+	}
 }

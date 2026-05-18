@@ -51,6 +51,31 @@ class MainViewModelTest {
 	}
 
 	@Test
+	fun `authentication succeeded pops email auth destinations`() {
+		val backStack = mutableListOf<NavKey>(
+			AccountDestination,
+			EmailRegistrationDestination,
+			EmailSignInDestination(prefilledEmail = "taylor@example.com"),
+		)
+
+		viewModel.onAuthenticationSucceeded(backStack)
+
+		backStack shouldBe listOf<NavKey>(AccountDestination)
+	}
+
+	@Test
+	fun `authentication succeeded leaves account settings on stack`() {
+		val backStack = mutableListOf<NavKey>(
+			AccountDestination,
+			AccountSettingsDestination,
+		)
+
+		viewModel.onAuthenticationSucceeded(backStack)
+
+		backStack shouldBe listOf<NavKey>(AccountDestination, AccountSettingsDestination)
+	}
+
+	@Test
 	fun `back removes only the top destination`() {
 		val backStack: MutableList<NavKey> = mutableListOf(
 			SearchDestination,

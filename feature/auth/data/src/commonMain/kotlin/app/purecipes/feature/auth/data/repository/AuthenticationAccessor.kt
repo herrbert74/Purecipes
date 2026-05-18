@@ -42,6 +42,11 @@ class AuthenticationAccessor(
 			.mapFailureUserMessage()
 			.map { }
 
+	override suspend fun sendPasswordResetEmail(email: String): Outcome<Unit> =
+		localDataSource.sendPasswordResetEmail(email)
+			.mapFailureUserMessage()
+			.map { }
+
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> =
 		remoteDataSource.signInWithGoogle(profile.idToken)
 			.andThen { session ->

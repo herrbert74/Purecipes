@@ -6,8 +6,10 @@ import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
+import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
+import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
@@ -47,13 +49,7 @@ class SignInViewModelTest {
 			},
 		)
 		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = SignInViewModel(
-			signInWithEmail = SignInWithEmailUseCase(repository),
-			resendEmailVerification = ResendEmailVerificationUseCase(repository),
-			initialEmail = "taylor@example.com",
-			showRegistrationSuccessMessage = false,
-			coroutineScope = viewModelScope,
-		)
+		val viewModel = createViewModel(repository, viewModelScope)
 
 		viewModel.onPasswordChange("secret")
 		viewModel.submitSignIn()
@@ -73,13 +69,7 @@ class SignInViewModelTest {
 			},
 		)
 		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = SignInViewModel(
-			signInWithEmail = SignInWithEmailUseCase(repository),
-			resendEmailVerification = ResendEmailVerificationUseCase(repository),
-			initialEmail = "taylor@example.com",
-			showRegistrationSuccessMessage = false,
-			coroutineScope = viewModelScope,
-		)
+		val viewModel = createViewModel(repository, viewModelScope)
 
 		viewModel.onPasswordChange("secret")
 		viewModel.submitSignIn()
@@ -100,13 +90,7 @@ class SignInViewModelTest {
 			},
 		)
 		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = SignInViewModel(
-			signInWithEmail = SignInWithEmailUseCase(repository),
-			resendEmailVerification = ResendEmailVerificationUseCase(repository),
-			initialEmail = "taylor@example.com",
-			showRegistrationSuccessMessage = false,
-			coroutineScope = viewModelScope,
-		)
+		val viewModel = createViewModel(repository, viewModelScope)
 
 		viewModel.onPasswordChange("wrong-password")
 		viewModel.submitSignIn()
@@ -125,6 +109,7 @@ class SignInViewModelTest {
 		val viewModel = SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			initialEmail = "not-an-email",
 			showRegistrationSuccessMessage = false,
 			coroutineScope = viewModelScope,
@@ -147,6 +132,7 @@ class SignInViewModelTest {
 		val viewModel = SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			initialEmail = "taylor@example.com",
 			showRegistrationSuccessMessage = true,
 			coroutineScope = viewModelScope,
@@ -155,5 +141,59 @@ class SignInViewModelTest {
 		viewModel.infoMessage shouldBe "Registration successful. Please check your email to verify your account."
 		viewModel.showResendVerificationEmail shouldBe true
 		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `forgot password with valid email shows success message`() = runTest {
+		val repository = FakeAuthenticationRepository(
+			sendPasswordResetEmailHandler = { Ok(Unit) },
+		)
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = createViewModel(repository, viewModelScope)
+
+		viewModel.sendPasswordResetEmail()
+
+		advanceUntilIdle()
+
+		viewModel.infoMessage shouldBe "Password reset email sent. Please check your inbox."
+		viewModel.emailError shouldBe null
+		viewModel.passwordError shouldBe null
+		viewModelScope.cancel()
+	}
+
+	@Test
+	fun `forgot password with blank email shows email field error`() = runTest {
+		val repository = FakeAuthenticationRepository()
+		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
+		val viewModel = SignInViewModel(
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+			initialEmail = "",
+			showRegistrationSuccessMessage = false,
+			coroutineScope = viewModelScope,
+		)
+
+		viewModel.sendPasswordResetEmail()
+
+		advanceUntilIdle()
+
+		viewModel.emailError shouldBe EMAIL_REQUIRED_MESSAGE
+		viewModel.infoMessage shouldBe null
+		viewModelScope.cancel()
+	}
+
+	private fun createViewModel(
+		repository: FakeAuthenticationRepository,
+		viewModelScope: CoroutineScope,
+	): SignInViewModel {
+		return SignInViewModel(
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+			initialEmail = "taylor@example.com",
+			showRegistrationSuccessMessage = false,
+			coroutineScope = viewModelScope,
+		)
 	}
 }

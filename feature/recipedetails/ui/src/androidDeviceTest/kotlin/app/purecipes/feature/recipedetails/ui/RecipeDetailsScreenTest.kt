@@ -5,7 +5,6 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
@@ -88,7 +87,9 @@ class RecipeDetailsScreenTest {
 		composeRule.onNodeWithText("Roasted Carrots").assertIsDisplayed()
 		composeRule.onNodeWithText("Sweet and savory side dish.").assertIsDisplayed()
 		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
-		composeRule.onNodeWithText("- 6 carrots").performScrollTo().assertIsDisplayed()
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasText("- 6 carrots"))
+		composeRule.onNodeWithText("- 6 carrots").assertIsDisplayed()
 		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText("Roast until tender"))
 		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()

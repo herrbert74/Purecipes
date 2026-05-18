@@ -2,45 +2,29 @@ package app.purecipes.feature.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
-import app.purecipes.shared.domain.model.MeasurementPreferences
-import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NotificationPreferences
-import app.purecipes.shared.domain.model.RecipeFormatHandling
-import app.purecipes.shared.ui.component.PurecipesOutlinedButton
-import app.purecipes.shared.ui.component.SectionHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.launch
 
@@ -103,108 +87,18 @@ private fun NotificationPreferencesSection(
 	val preferences by observeNotificationPreferences().collectAsState(initial = NotificationPreferences())
 	val scope = rememberCoroutineScope()
 
-	Surface(
-		modifier = modifier.fillMaxWidth(),
-		shape = PurecipesTheme.shapes.large,
-		tonalElevation = PurecipesTheme.space.quark,
-	) {
-		Column(
-			modifier = Modifier.padding(PurecipesTheme.space.m),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-		) {
-			SectionHeader(
-				title = "Notifications",
-				subtitle = "Manage push notification settings across devices.",
-			)
-
-			NotificationToggleRow(
-				label = "Enable All Notifications",
-				description = "Turn all notifications on or off globally",
-				checked = preferences.enableAll,
-				onCheckedChange = { checked ->
-					scope.launch {
-						saveNotificationPreferences(preferences.copy(enableAll = checked))
-					}
-				}
-			)
-
-			if (preferences.enableAll) {
-				HorizontalDivider()
-
-				NotificationToggleRow(
-					label = "Cooking Timers",
-					description = "Alerts when timers complete or steps change",
-					checked = preferences.enableTimers,
-					onCheckedChange = { checked ->
-						scope.launch {
-							saveNotificationPreferences(preferences.copy(enableTimers = checked))
-						}
-					}
-				)
-
-				NotificationToggleRow(
-					label = "Social Engagement",
-					description = "Comments and community interactions",
-					checked = preferences.enableSocial,
-					onCheckedChange = { checked ->
-						scope.launch {
-							saveNotificationPreferences(preferences.copy(enableSocial = checked))
-						}
-					}
-				)
-
-				NotificationToggleRow(
-					label = "Recipe Updates",
-					description = "New features, updates and suggestions",
-					checked = preferences.enableUpdates,
-					onCheckedChange = { checked ->
-						scope.launch {
-							saveNotificationPreferences(preferences.copy(enableUpdates = checked))
-						}
-					}
-				)
-				HorizontalDivider()
-
-				PurecipesOutlinedButton(
-					text = "Send Test Notification",
-					onClick = { sendTestNotification("Testing 1 2 3", "Push notifications are working!") },
-				)
+	NotificationPreferencesPanel(
+		preferences = preferences,
+		onPreferencesChange = { updatedPreferences ->
+			scope.launch {
+				saveNotificationPreferences(updatedPreferences)
 			}
-		}
-	}
-}
-
-@Composable
-private fun NotificationToggleRow(
-	label: String,
-	description: String,
-	checked: Boolean,
-	onCheckedChange: (Boolean) -> Unit,
-) {
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.padding(vertical = PurecipesTheme.space.xs),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.SpaceBetween,
-	) {
-		Column(modifier = Modifier.weight(1f).padding(end = PurecipesTheme.space.m)) {
-			Text(
-				text = label,
-				style = PurecipesTheme.typography.bodyMedium,
-				fontWeight = FontWeight.Medium,
-			)
-			Text(
-				text = description,
-				style = PurecipesTheme.typography.bodySmall,
-				color = PurecipesTheme.colorScheme.onSurfaceVariant,
-			)
-		}
-		Switch(
-			checked = checked,
-			onCheckedChange = onCheckedChange,
-		)
-	}
+		},
+		onSendTestNotification = {
+			sendTestNotification("Testing 1 2 3", "Push notifications are working!")
+		},
+		modifier = modifier,
+	)
 }
 
 @Composable
@@ -218,165 +112,12 @@ private fun MeasurementPreferencesSection(
 	val scope = rememberCoroutineScope()
 	val currentPreferences = preferences ?: return
 
-	Surface(
-		modifier = modifier.fillMaxWidth(),
-		shape = PurecipesTheme.shapes.large,
-		tonalElevation = PurecipesTheme.space.quark,
-	) {
-		Column(
-			modifier = Modifier.padding(PurecipesTheme.space.m),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-		) {
-			SectionHeader(
-				title = "Measurements",
-				subtitle = currentPreferences.measurementSummary(),
-			)
-			MeasurementSystemChooser(
-				preferences = currentPreferences,
-				onPreferencesChange = { updatedPreferences ->
-					scope.launch { saveMeasurementPreferences(updatedPreferences) }
-				},
-			)
-			HorizontalDivider()
-			RecipeFormatHandlingChooser(
-				preferences = currentPreferences,
-				onPreferencesChange = { updatedPreferences ->
-					scope.launch { saveMeasurementPreferences(updatedPreferences) }
-				},
-			)
-			PurecipesOutlinedButton(
-				text = "Reset to detected default",
-				onClick = { scope.launch { resetMeasurementPreferences() } },
-			)
-		}
-	}
-}
-
-@Composable
-private fun MeasurementSystemChooser(
-	preferences: MeasurementPreferences,
-	onPreferencesChange: (MeasurementPreferences) -> Unit,
-) {
-	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-		Text(
-			text = "Preferred system",
-			style = PurecipesTheme.typography.titleSmall,
-			fontWeight = FontWeight.Medium,
-		)
-		MeasurementOptionRow(
-			selected = preferences.preferredSystem == MeasurementSystem.METRIC,
-			label = "Metric",
-			description = "Grams, liters, Celsius",
-			onClick = {
-				onPreferencesChange(preferences.copy(preferredSystem = MeasurementSystem.METRIC))
-			},
-		)
-		MeasurementOptionRow(
-			selected = preferences.preferredSystem == MeasurementSystem.IMPERIAL,
-			label = "Imperial",
-			description = "Cups, ounces, Fahrenheit",
-			onClick = {
-				onPreferencesChange(preferences.copy(preferredSystem = MeasurementSystem.IMPERIAL))
-			},
-		)
-	}
-}
-
-@Composable
-private fun RecipeFormatHandlingChooser(
-	preferences: MeasurementPreferences,
-	onPreferencesChange: (MeasurementPreferences) -> Unit,
-) {
-	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-		Text(
-			text = "Recipes in another system",
-			style = PurecipesTheme.typography.titleSmall,
-			fontWeight = FontWeight.Medium,
-		)
-		MeasurementOptionRow(
-			selected = preferences.formatHandling == RecipeFormatHandling.KEEP_AS_IS,
-			label = "Keep as is",
-			description = "Show the recipe in its original measurements",
-			onClick = {
-				onPreferencesChange(preferences.copy(formatHandling = RecipeFormatHandling.KEEP_AS_IS))
-			},
-		)
-		MeasurementOptionRow(
-			selected = preferences.formatHandling == RecipeFormatHandling.FILTER_OUT,
-			label = "Filter out",
-			description = "Hide recipes that use another measurement system",
-			onClick = {
-				onPreferencesChange(preferences.copy(formatHandling = RecipeFormatHandling.FILTER_OUT))
-			},
-		)
-		MeasurementOptionRow(
-			selected = preferences.formatHandling == RecipeFormatHandling.CONVERT_TO_PREFERRED,
-			label = "Convert to my system",
-			description = "Convert common units and oven temperatures automatically",
-			onClick = {
-				onPreferencesChange(preferences.copy(formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED))
-			},
-		)
-	}
-}
-
-@Composable
-private fun MeasurementOptionRow(
-	selected: Boolean,
-	label: String,
-	description: String,
-	onClick: () -> Unit,
-) {
-	Surface(
-		modifier = Modifier.fillMaxWidth(),
-		shape = RoundedCornerShape(PurecipesTheme.space.m),
-		tonalElevation = if (selected) {
-			PurecipesTheme.space.quark
-		} else {
-			PurecipesTheme.space.none
+	MeasurementPreferencesPanel(
+		preferences = currentPreferences,
+		onPreferencesChange = { updatedPreferences ->
+			scope.launch { saveMeasurementPreferences(updatedPreferences) }
 		},
-	) {
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.selectable(
-					selected = selected,
-					onClick = onClick,
-					role = Role.RadioButton,
-				)
-				.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-		) {
-			RadioButton(
-				selected = selected,
-				onClick = null,
-			)
-			Column(
-				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.quark),
-			) {
-				Text(
-					text = label,
-					style = PurecipesTheme.typography.bodyMedium,
-					fontWeight = FontWeight.Medium,
-				)
-				Text(
-					text = description,
-					style = PurecipesTheme.typography.bodySmall,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
-		}
-	}
-}
-
-private fun MeasurementPreferences.measurementSummary(): String {
-	val region = detectedCountryCode ?: "Unknown region"
-	val systemLabel = when (preferredSystem) {
-		MeasurementSystem.METRIC -> "Metric"
-		MeasurementSystem.IMPERIAL -> "Imperial"
-		MeasurementSystem.MIXED -> "Mixed"
-	}
-	return "Detected region: $region. Current preference: $systemLabel."
+		onReset = { scope.launch { resetMeasurementPreferences() } },
+		modifier = modifier,
+	)
 }

@@ -39,6 +39,7 @@ class FakeAuthenticationRepository(
 			),
 		)
 	},
+	private val sendPasswordResetEmailHandler: suspend (String) -> Outcome<Unit> = { Ok(Unit) },
 	private val signInWithExternalProviderHandler: suspend (
 		ExternalAuthenticationProfile,
 	) -> Outcome<AuthUser> = { profile ->
@@ -77,6 +78,10 @@ class FakeAuthenticationRepository(
 	}
 
 	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> = Ok(Unit)
+
+	override suspend fun sendPasswordResetEmail(email: String): Outcome<Unit> {
+		return sendPasswordResetEmailHandler(email)
+	}
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
 		return signInWithGoogleHandler(profile).also(::updateAuthenticationState)

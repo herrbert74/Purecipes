@@ -4,10 +4,16 @@ import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_REQUIRED_MESSAGE
 
-internal fun validateEmailCredentials(email: String, password: String): String? {
+internal fun validateEmail(email: String): String? {
 	return when {
 		email.isBlank() -> EMAIL_REQUIRED_MESSAGE
 		!email.contains('@') -> INVALID_EMAIL_MESSAGE
+		else -> null
+	}
+}
+
+internal fun validateEmailCredentials(email: String, password: String): String? {
+	return validateEmail(email) ?: when {
 		password.isBlank() -> PASSWORD_REQUIRED_MESSAGE
 		else -> null
 	}

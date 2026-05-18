@@ -25,10 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.CenteredMessageContent
@@ -96,7 +100,7 @@ fun StepByStepCookingRoute(
 }
 
 @Composable
-private fun StepByStepCookingScreen(
+internal fun StepByStepCookingScreen(
 	recipe: RecipeDetails,
 	currentStepIndex: Int,
 	onStepChange: (Int) -> Unit,
@@ -172,5 +176,76 @@ private fun PagerIndicator(
 				.fillMaxHeight()
 				.background(PurecipesTheme.colorScheme.primary),
 		)
+	}
+}
+
+private val previewCookingRecipe = RecipeDetails(
+	id = 42,
+	title = "Tomato Pasta",
+	description = "A quick weeknight dinner.",
+	imageUrl = "https://example.com/pasta.jpg",
+	ingredientGroups = listOf(
+		IngredientGroup(
+			name = "Sauce",
+			ingredients = listOf("2 tomatoes", "1 garlic clove"),
+		),
+	),
+	steps = listOf(
+		"Bring a large pot of salted water to a boil.",
+		"Cook the pasta until al dente, then reserve some pasta water.",
+		"Sauté garlic in olive oil, add tomatoes, and simmer until saucy.",
+		"Toss pasta with sauce, adding pasta water to loosen if needed.",
+	),
+	totalTime = 25,
+	yields = "2 servings",
+	cuisine = Cuisine.ITALIAN,
+)
+
+@Preview(
+	name = "Step by step cooking light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun StepByStepCookingScreenLightPreview() {
+	StepByStepCookingScreenPreviewContent(darkTheme = false, currentStepIndex = 1)
+}
+
+@Preview(
+	name = "Step by step cooking dark",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFF121212,
+)
+@Composable
+private fun StepByStepCookingScreenDarkPreview() {
+	StepByStepCookingScreenPreviewContent(darkTheme = true, currentStepIndex = 0)
+}
+
+@Composable
+private fun StepByStepCookingScreenPreviewContent(
+	darkTheme: Boolean,
+	currentStepIndex: Int,
+) {
+	PurecipesTheme(darkTheme = darkTheme) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			topBar = {
+				TopAppBar(
+					title = { Text(text = previewCookingRecipe.title) },
+					navigationIcon = {
+						BackNavigationButton(onBack = {})
+					},
+				)
+			},
+		) { innerPadding ->
+			StepByStepCookingScreen(
+				recipe = previewCookingRecipe,
+				currentStepIndex = currentStepIndex,
+				onStepChange = {},
+				modifier = Modifier.padding(innerPadding),
+			)
+		}
 	}
 }

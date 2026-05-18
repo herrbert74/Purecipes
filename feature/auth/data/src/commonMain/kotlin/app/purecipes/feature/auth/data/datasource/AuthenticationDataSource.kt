@@ -35,6 +35,8 @@ interface AuthenticationDataSource {
 
 		suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit>
 
+		suspend fun sendPasswordResetEmail(email: String): Outcome<Unit>
+
 		suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser>
 
 		suspend fun signInWithExternalProvider(user: AuthUser): Outcome<AuthUser>
@@ -116,6 +118,17 @@ internal class FirebaseAuthenticationLocalDataSource(
 		val normalizedEmail = email.normalizedEmail()
 		return runCatching {
 			firebaseAuthService.resendEmailVerification(normalizedEmail, password).toResendOutcome()
+		}.fold(
+			onSuccess = { it },
+			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
+		)
+	}
+
+	override suspend fun sendPasswordResetEmail(email: String): Outcome<Unit> {
+		val normalizedEmail = email.normalizedEmail()
+		return runCatching {
+			firebaseAuthService.sendPasswordResetEmail(normalizedEmail)
+			Ok(Unit)
 		}.fold(
 			onSuccess = { it },
 			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
@@ -219,6 +232,8 @@ class InMemoryAuthenticationLocalDataSource(
 	}
 
 	override suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit> = Ok(Unit)
+
+	override suspend fun sendPasswordResetEmail(email: String): Outcome<Unit> = Ok(Unit)
 
 	override suspend fun signInWithBackendSession(session: AuthenticatedSession): Outcome<AuthUser> {
 		sessionTokenStore.saveSession(session)
