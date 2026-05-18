@@ -9,6 +9,18 @@ plugins {
 
 extensions.configure<KotlinMultiplatformExtension> {
 	sourceSets {
+		androidMain.dependencies {
+			implementation(libs.androidx.composeFoundationLayout)
+			implementation(libs.androidx.composeFoundation)
+			implementation(libs.androidx.composeMaterial3)
+			implementation(libs.androidx.composeMaterialIconsCore)
+			api(libs.androidx.composeRuntime)
+			implementation(libs.androidx.composeUiText)
+			api(libs.androidx.composeUi)
+			if (project.parent?.name == "shared" || project.parent?.name == "newrecipe") {
+				implementation(libs.androidx.activityCompose)
+			}
+		}
 		commonMain.dependencies {
 			implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
 			implementation(libs.jetbrains.composeFoundation)
@@ -17,12 +29,6 @@ extensions.configure<KotlinMultiplatformExtension> {
 			implementation(libs.jetbrains.composeRuntime)
 			implementation(libs.jetbrains.composeUi)
 			implementation(libs.jetbrains.composeResources)
-		}
-
-		matching { it.name == "androidMain" }.all {
-			dependencies {
-				implementation(libs.androidx.activityCompose)
-			}
 		}
 
 		matching { it.name == "androidDeviceTest" }.all {

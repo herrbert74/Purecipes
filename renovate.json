@@ -12,7 +12,11 @@
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],
-      "allowedVersions": "!/SNAPSHOT/"
+      "allowedVersions": "!/(SNAPSHOT|\\+dev)/"
+    },
+    {
+      "matchPackageNames": ["org.jetbrains.kotlinx:kotlinx-datetime"],
+      "allowedVersions": "!/-[0-9]+\\.x-compat$/"
     },
     {
       "groupName": "All Minor & Patch Updates",
