@@ -54,3 +54,22 @@ Dry run (no database writes, prints match coverage):
 Skip alias seeding on a large import (`-Pnutrition.skipAliases=true` or `--skip-aliases`) if you will run another import immediately after.
 
 The importer loads foods with energy (kcal) data, stores per-100g nutrients, imports household measures from FDC portions (plus a small supplemental list), and links pantry catalogue names and handwritten aliases to canonical foods.
+
+## Recipe nutrition backfill
+
+After seed data is loaded, parse ingredient lines, persist measurements and matches, and calculate totals for existing recipes:
+
+```bash
+# All recipes (summary + unmatched ingredient report)
+./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+
+# Single recipe with per-line issue details
+./gradlew calculateRecipeNutrition -Pnutrition.recipeId=42 -Pnutrition.verbose=true
+
+# Explicit subset
+./gradlew calculateRecipeNutrition -Pnutrition.recipeIds=1,2,3
+```
+
+The calculator writes `ingredient_measurements`, `ingredient_nutrition_matches`, and upserts `nutrition` when at least one ingredient matched. Backfill output lists recipes with partial or missing totals and aggregates unmatched parsed ingredient names so aliases and measures can be improved.
+
+New scraped recipes are calculated automatically when using the recipe scraper with default `--calculate-nutrition true` (see `scripts/README.md`).

@@ -70,11 +70,17 @@ internal class NutritionLookupIndex(
 		)
 	}
 
-	private companion object {
-		const val MATCH_SOURCE_ALIAS = "alias"
-		const val MATCH_SOURCE_NAME = "name"
-		val ALIAS_MATCH_CONFIDENCE = BigDecimal("1.00")
-		val NAME_MATCH_CONFIDENCE = BigDecimal("0.90")
-		val PREFIX_MATCH_CONFIDENCE = BigDecimal("0.75")
+	companion object {
+		val EMPTY = NutritionLookupIndex(
+			foodById = emptyMap(),
+			foodIdByNormalizedAlias = emptyMap(),
+			measuresByFoodId = emptyMap(),
+		)
+
+		private const val MATCH_SOURCE_ALIAS = "alias"
+		private const val MATCH_SOURCE_NAME = "name"
+		private val ALIAS_MATCH_CONFIDENCE = BigDecimal("1.00")
+		private val NAME_MATCH_CONFIDENCE = BigDecimal("0.90")
+		private val PREFIX_MATCH_CONFIDENCE = BigDecimal("0.75")
 	}
 }

@@ -132,6 +132,12 @@ tasks.register<JavaExec>("calculateRecipeNutrition") {
 		if (project.findProperty("nutrition.allRecipes")?.toString() == "true") {
 			add("--all-recipes")
 		}
+		if (project.findProperty("nutrition.verbose")?.toString() == "true") {
+			add("--verbose")
+		}
+		if (project.findProperty("nutrition.reportUnmatched")?.toString() == "true") {
+			add("--report-unmatched")
+		}
 	}
 	args = extraArgs
 }

@@ -6,6 +6,7 @@ internal data class RecipeNutritionPersistResult(
 	val recipeId: Int,
 	val totals: CalculatedNutritionTotals?,
 	val ingredientCount: Int,
+	val issues: List<IngredientNutritionIssue>,
 )
 
 internal class RecipeNutritionService(
@@ -25,6 +26,7 @@ internal class RecipeNutritionService(
 			recipeId = recipeId,
 			totals = calculation.totals,
 			ingredientCount = ingredients.size,
+			issues = calculation.collectIngredientIssues(),
 		)
 	}
 
