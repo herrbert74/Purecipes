@@ -115,3 +115,26 @@ tasks.register<JavaExec>("reportRecipeVisibility") {
 	mainClass.set("app.purecipes.backend.tools.RecipeVisibilityAnalysisReportKt")
 	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
 }
+
+tasks.register<JavaExec>("importNutritionSeed") {
+	group = "application"
+	description = "Imports USDA FoodData Central foundation foods into nutrition tables"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.NutritionSeedImporterMainKt")
+	val fdcJsonPath = project.findProperty("nutrition.fdcJson")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (fdcJsonPath.isNotBlank()) {
+			add("--fdc-json=$fdcJsonPath")
+		}
+		if (project.findProperty("nutrition.dryRun")?.toString() == "true") {
+			add("--dry-run")
+		}
+		if (project.findProperty("nutrition.replace")?.toString() == "true") {
+			add("--replace")
+		}
+		if (project.findProperty("nutrition.skipAliases")?.toString() == "true") {
+			add("--skip-aliases")
+		}
+	}
+	args = extraArgs
+}

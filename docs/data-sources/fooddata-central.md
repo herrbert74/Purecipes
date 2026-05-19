@@ -24,4 +24,33 @@ For the seed importer (feature 15, step 4), download from FoodData Central:
 
 Keep only MVP nutrients: calories, protein, carbohydrates, fat, fibre, sugar, and sodium. Normalize to canonical foods per 100 g.
 
-Downloads are not committed to the repository; the importer reads local CSV/JSON paths supplied at run time, or imports from a generated checked-in seed file after the first import.
+Downloads are not committed to the repository; the importer reads local JSON paths supplied at run time.
+
+## Seed import (backend)
+
+Run against a Postgres database configured with the usual `PURECIPES_DB_*` environment variables.
+
+The importer auto-detects `FoundationFoods` vs `SRLegacyFoods` from the JSON root key. Import **SR Legacy first**, then **Foundation** (do not use `-Pnutrition.replace=true` on the second run). Catalogue aliases are reseeded after each import using all foods in the database; Foundation wins ties over SR Legacy for the same `fdcId`.
+
+```bash
+# 1) SR Legacy (clears nutrition seed tables)
+./gradlew importNutritionSeed \
+  -Pnutrition.fdcJson=/path/to/FoodData_Central_sr_legacy_food_json_2018-04.json \
+  -Pnutrition.replace=true
+
+# 2) Foundation (adds higher-quality foods, refreshes aliases)
+./gradlew importNutritionSeed \
+  -Pnutrition.fdcJson=/path/to/FoodData_Central_foundation_food_json_YYYY-MM-DD.json
+```
+
+Dry run (no database writes, prints match coverage):
+
+```bash
+./gradlew importNutritionSeed \
+  -Pnutrition.fdcJson=/path/to/FoodData_Central_sr_legacy_food_json_2018-04.json \
+  -Pnutrition.dryRun=true
+```
+
+Skip alias seeding on a large import (`-Pnutrition.skipAliases=true` or `--skip-aliases`) if you will run another import immediately after.
+
+The importer loads foods with energy (kcal) data, stores per-100g nutrients, imports household measures from FDC portions (plus a small supplemental list), and links pantry catalogue names and handwritten aliases to canonical foods.
