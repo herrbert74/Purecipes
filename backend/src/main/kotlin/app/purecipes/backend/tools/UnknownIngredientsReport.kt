@@ -2,10 +2,9 @@ package app.purecipes.backend.tools
 
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.search.IngredientVocabulary
+import app.purecipes.shared.domain.model.IngredientCatalogue
 
 private const val ARG_OUTPUT = "--output"
-private const val DEFAULT_INGREDIENTS_SOURCE =
-	"feature/search/ui/src/commonMain/kotlin/app/purecipes/feature/search/ui/filter/IngredientFilterSection.kt"
 
 private data class RecipeIngredientRow(
 	val recipeId: Int,
@@ -116,46 +115,7 @@ private fun collectUnknownIngredients(
 		.toSortedMap(compareBy<RecipeKey> { it.recipeId }.thenBy { it.recipeTitle })
 }
 
-private fun loadAllowedIngredients(): Set<String> {
-	val sourceFile = resolveIngredientSourceFile()
-
-	if (!sourceFile.exists()) {
-		return emptySet()
-	}
-
-	val quotedStringPattern = Regex(""""([^"]+)"""")
-
-	return sourceFile.readLines()
-		.asSequence()
-		.filter { line ->
-			line.contains("items = listOf(") || line.trimStart().startsWith("\"")
-		}
-		.flatMap { line ->
-			quotedStringPattern.findAll(line).map { match -> match.groupValues[1] }
-		}
-		.map(String::trim)
-		.filter(String::isNotEmpty)
-		.toSet()
-}
-
-private fun resolveIngredientSourceFile(): java.io.File {
-	val explicitPath = System.getenv("PURECIPES_INGREDIENT_SOURCE_FILE")
-	if (!explicitPath.isNullOrBlank()) {
-		return java.io.File(explicitPath)
-	}
-
-	val currentDirectory = java.nio.file.Path.of(System.getProperty("user.dir"))
-	val repoRoot = generateSequence(currentDirectory) { it.parent }
-		.firstOrNull { candidate ->
-			candidate.resolve("settings.gradle.kts").toFile().exists()
-		}
-
-	if (repoRoot != null) {
-		return repoRoot.resolve(DEFAULT_INGREDIENTS_SOURCE).toFile()
-	}
-
-	return currentDirectory.resolve(DEFAULT_INGREDIENTS_SOURCE).toFile()
-}
+private fun loadAllowedIngredients(): Set<String> = IngredientCatalogue.allItems
 
 private data class RecipeKey(
 	val recipeId: Int,
