@@ -136,6 +136,7 @@ class RecipeRepository(
 		val isFavorite = isFavorite(conn, recipeRecord.id, userId)
 		val steps = loadStepsForRecipe(conn, recipeRecord.id, recipeRecord.instructions)
 		val mealType = recipeRecord.mealType?.let { runCatching { MealType.valueOf(it) }.getOrNull() }
+		val nutrition = RecipeNutritionSummaryLoader.load(conn, recipeRecord.id)
 
 		return RecipeDetails(
 			id = recipeRecord.id,
@@ -162,6 +163,7 @@ class RecipeRepository(
 				.mapNotNull { runCatching { DietaryPreference.valueOf(it) }.getOrNull() }
 				.toSet(),
 			tags = recipeRecord.tags.toSet(),
+			nutrition = nutrition,
 		)
 	}
 
