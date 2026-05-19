@@ -38,6 +38,7 @@ Batch controls:
 - `--sleep-seconds <n>` delay between scrapes in seconds (default: `0.4`)
 - `--urls-file <path>` use pre-extracted URL list instead of discovery
 - `--precheck-db true|false` skip URLs already in DB before scraping (default: `true`)
+- `--calculate-nutrition true|false` after postgres import, run backend nutrition calculator (default: `true`)
 
 Database options (optional, all have sensible defaults):
 - `--db-host localhost` 
@@ -61,6 +62,7 @@ Kotlin runner requirements:
 - Kotlin script runtime (`kotlin` command)
 - PostgreSQL server running (for web/json modes)
 - Internet access for first-time `@file:DependsOn` dependency resolution
+- Repository root with `./gradlew` when `--calculate-nutrition true` (default); run the scraper from the repo or a subdirectory so `settings.gradle.kts` can be found
 
 ### Run Web Mode: Scrape and Import
 
@@ -80,7 +82,15 @@ kotlin scripts/recipe_site_scraper.main.kts allrecipes ./tmp/allrecipes \
   --mode json
 ```
 
-This imports all `.json` files from `./tmp/allrecipes/recipes/` into the database without making any network requests. Useful for testing or re-syncing without re-scraping.
+This imports all `.json` files from `./tmp/allrecipes/recipes/` into the database without making any network requests. Useful for testing or re-syncing without re-scraping. When nutrition seed data is loaded, the script also invokes `./gradlew calculateRecipeNutrition` for newly imported recipe IDs.
+
+To skip automatic nutrition calculation:
+
+```bash
+kotlin scripts/recipe_site_scraper.main.kts allrecipes ./tmp/allrecipes \
+  --mode json \
+  --calculate-nutrition false
+```
 
 ### Use a Pre-Extracted URL List
 

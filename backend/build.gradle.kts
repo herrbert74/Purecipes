@@ -122,9 +122,12 @@ tasks.register<JavaExec>("calculateRecipeNutrition") {
 	classpath = sourceSets.main.get().runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.CalculateRecipeNutritionMainKt")
 	val recipeId = project.findProperty("nutrition.recipeId")?.toString().orEmpty()
+	val recipeIds = project.findProperty("nutrition.recipeIds")?.toString().orEmpty()
 	val extraArgs = buildList {
 		if (recipeId.isNotBlank()) {
 			add("--recipe-id=$recipeId")
+		} else if (recipeIds.isNotBlank()) {
+			add("--recipe-ids=$recipeIds")
 		}
 		if (project.findProperty("nutrition.allRecipes")?.toString() == "true") {
 			add("--all-recipes")

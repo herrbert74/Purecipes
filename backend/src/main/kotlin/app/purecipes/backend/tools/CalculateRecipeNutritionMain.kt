@@ -4,20 +4,23 @@ import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.nutrition.RecipeNutritionService
 
 private const val ARG_RECIPE_ID = "--recipe-id"
+private const val ARG_RECIPE_IDS = "--recipe-ids"
 private const val ARG_ALL_RECIPES = "--all-recipes"
 
 fun main(args: Array<String>) {
 	val recipeId = readArgumentValue(args, ARG_RECIPE_ID)?.toIntOrNull()
+	val recipeIds = readRecipeIdsArgument(args)
 	val allRecipes = args.contains(ARG_ALL_RECIPES)
-	if ((recipeId == null) == !allRecipes) {
-		error("Provide exactly one of $ARG_RECIPE_ID=<id> or $ARG_ALL_RECIPES")
+	val modeCount = listOf(recipeId != null, recipeIds.isNotEmpty(), allRecipes).count { it }
+	if (modeCount != 1) {
+		error("Provide exactly one of $ARG_RECIPE_ID=<id>, $ARG_RECIPE_IDS=<id,id,...>, or $ARG_ALL_RECIPES")
 	}
 
 	val service = RecipeNutritionService(Db.create().dataSource)
-	val results = if (allRecipes) {
-		service.calculateAndPersistAll()
-	} else {
-		listOf(service.calculateAndPersist(recipeId!!))
+	val results = when {
+		allRecipes -> service.calculateAndPersistAll()
+		recipeId != null -> listOf(service.calculateAndPersist(recipeId))
+		else -> service.calculateAndPersistRecipeIds(recipeIds)
 	}
 
 	println("Recipe nutrition calculation")
@@ -35,6 +38,12 @@ fun main(args: Array<String>) {
 		)
 	}
 }
+
+private fun readRecipeIdsArgument(args: Array<String>): List<Int> =
+	readArgumentValue(args, ARG_RECIPE_IDS)
+		?.split(",")
+		?.mapNotNull { value -> value.trim().toIntOrNull() }
+		.orEmpty()
 
 private fun readArgumentValue(args: Array<String>, key: String): String? {
 	args.forEach { arg ->

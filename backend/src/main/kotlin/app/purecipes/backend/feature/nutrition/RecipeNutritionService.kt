@@ -31,6 +31,9 @@ internal class RecipeNutritionService(
 	fun calculateAndPersistAll(): List<RecipeNutritionPersistResult> =
 		recipeNutritionRepository.listRecipeIds().map(::calculateAndPersist)
 
+	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> =
+		recipeIds.map(::calculateAndPersist)
+
 	private fun persist(recipeId: Int, calculation: RecipeNutritionCalculationResult) {
 		calculation.ingredientResults.forEach { result ->
 			recipeNutritionRepository.upsertIngredientMeasurement(
