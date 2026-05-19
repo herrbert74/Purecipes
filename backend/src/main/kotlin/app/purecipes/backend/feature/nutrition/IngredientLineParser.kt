@@ -5,8 +5,16 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 internal object IngredientLineParser {
+	private const val QUANTITY_SCALE = 4
+
 	private val quantityUnitNamePattern = Regex(
-		"""^\s*(?<qty>\d+(?:\.\d+)?|\d+\s*/\s*\d+)(?:\s*-\s*(?:\d+(?:\.\d+)?|\d+\s*/\s*\d+))?\s*(?<unit>[a-zA-Z][a-zA-Z.\-]*)?\s+(?<name>.+)$""",
+		"""
+		^\s*
+		(?<qty>\d+\s*/\s*\d+|\d+(?:\.\d+)?)
+		(?:\s*-\s*(?:\d+\s*/\s*\d+|\d+(?:\.\d+)?))?
+		\s*(?<unit>[a-zA-Z][a-zA-Z.\-]*)?
+		\s+(?<name>.+)$
+		""".trimIndent().replace("\n", ""),
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -67,19 +75,22 @@ internal object IngredientLineParser {
 		if (trimmed.isEmpty()) {
 			return null
 		}
-		if (trimmed.contains('/')) {
-			val parts = trimmed.split('/').map { it.trim() }
-			if (parts.size != 2) {
-				return null
-			}
-			val numerator = parts[0].toBigDecimalOrNull() ?: return null
-			val denominator = parts[1].toBigDecimalOrNull() ?: return null
-			if (denominator.compareTo(BigDecimal.ZERO) == 0) {
-				return null
-			}
-			return numerator.divide(denominator, SCALE, RoundingMode.HALF_UP)
+		if (!trimmed.contains('/')) {
+			return trimmed.toBigDecimalOrNull()
 		}
-		return trimmed.toBigDecimalOrNull()
+
+		val parts = trimmed.split('/').map { it.trim() }
+		val numerator = parts.getOrNull(0)?.toBigDecimalOrNull()
+		val denominator = parts.getOrNull(1)?.toBigDecimalOrNull()
+		val hasValidFraction = parts.size == 2 &&
+			numerator != null &&
+			denominator != null &&
+			denominator.compareTo(BigDecimal.ZERO) != 0
+		return if (hasValidFraction) {
+			numerator!!.divide(denominator!!, QUANTITY_SCALE, RoundingMode.HALF_UP)
+		} else {
+			null
+		}
 	}
 
 	private fun normalizeUnit(rawUnit: String?): String? {
@@ -100,6 +111,4 @@ internal object IngredientLineParser {
 			else -> unit
 		}
 	}
-
-	private const val SCALE = 4
 }

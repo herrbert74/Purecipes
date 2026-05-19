@@ -116,6 +116,23 @@ tasks.register<JavaExec>("reportRecipeVisibility") {
 	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
 }
 
+tasks.register<JavaExec>("calculateRecipeNutrition") {
+	group = "application"
+	description = "Calculates and stores recipe nutrition from parsed ingredients"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.CalculateRecipeNutritionMainKt")
+	val recipeId = project.findProperty("nutrition.recipeId")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (recipeId.isNotBlank()) {
+			add("--recipe-id=$recipeId")
+		}
+		if (project.findProperty("nutrition.allRecipes")?.toString() == "true") {
+			add("--all-recipes")
+		}
+	}
+	args = extraArgs
+}
+
 tasks.register<JavaExec>("importNutritionSeed") {
 	group = "application"
 	description = "Imports USDA FoodData Central foundation foods into nutrition tables"
