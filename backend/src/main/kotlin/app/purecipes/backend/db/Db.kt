@@ -82,7 +82,10 @@ class Db private constructor(
 					statement.execute(NUTRITION_ADD_CONFIDENCE_SQL)
 					statement.execute(NUTRITION_ADD_IS_COMPLETE_SQL)
 					statement.execute(NUTRITION_ADD_UPDATED_AT_SQL)
+					statement.execute(NUTRITION_ADD_TOTAL_WEIGHT_GRAMS_SQL)
+					statement.execute(NUTRITION_ADD_SERVING_COUNT_SQL)
 					statement.execute(INGREDIENT_NUTRITION_MATCHES_TABLE_SQL)
+					statement.execute(INGREDIENT_NUTRITION_CONTRIBUTIONS_TABLE_SQL)
 					statement.execute(SEARCH_FILTERS_TABLE_SQL)
 					statement.execute(USER_PANTRY_TABLE_SQL)
 				}

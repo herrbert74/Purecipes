@@ -5,15 +5,17 @@ import javax.sql.DataSource
 internal fun insertRecipeWithIngredients(
 	dataSource: DataSource,
 	ingredients: List<String>,
+	yields: String? = null,
 ): Int =
 	dataSource.connection.use { connection ->
 		val recipeId = connection.prepareStatement(
 			"""
-			INSERT INTO recipes (title, created_at)
-			VALUES ('Nutrition test recipe', CURRENT_TIMESTAMP)
+			INSERT INTO recipes (title, yields, created_at)
+			VALUES ('Nutrition test recipe', ?, CURRENT_TIMESTAMP)
 			RETURNING id
 			""".trimIndent(),
 		).use { statement ->
+			statement.setString(1, yields)
 			statement.executeQuery().use { resultSet ->
 				resultSet.next()
 				resultSet.getInt("id")

@@ -17,14 +17,14 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import kotlin.test.Test
 
-class RecipeNutritionSummaryLoaderTest {
+class RecipeNutritionDetailsLoaderTest {
 
 	@Test
 	fun loadMapsCalculatedNutritionFromDatabase() {
 		assumeTrue(isDockerAvailable())
 
 		val container = PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine")).apply {
-			withDatabaseName("purecipes_recipe_nutrition_summary_test")
+			withDatabaseName("purecipes_recipe_nutrition_details_test")
 			withUsername("postgres")
 			withPassword("postgres")
 			start()
@@ -53,21 +53,21 @@ class RecipeNutritionSummaryLoaderTest {
 			val recipeId = insertRecipeWithIngredients(
 				dataSource = dataSource,
 				ingredients = listOf("1 cup sugar"),
+				yields = "4 servings",
 			)
 			RecipeNutritionService(dataSource).calculateAndPersist(recipeId)
 
-			val recipeRepository = RecipeRepository(dataSource)
-			val recipe = recipeRepository.getRecipeDetails(recipeId)
-			recipe shouldNotBe null
-
-			val nutrition = recipe?.nutrition
+			val nutrition = RecipeRepository(dataSource).getRecipeDetails(recipeId)?.nutrition
 			nutrition shouldNotBe null
-			nutrition?.calories shouldNotBe null
-			nutrition?.matchedIngredientCount shouldBe 1
-			nutrition?.totalIngredientCount shouldBe 1
-			nutrition?.calculationSource shouldBe NutritionCalculationSource.CALCULATED
-			nutrition?.confidence shouldBe NutritionConfidence.COMPLETE
-			nutrition?.isComplete shouldBe true
+			nutrition?.recipeTotals?.calories shouldNotBe null
+			nutrition?.recipeTotals?.matchedIngredientCount shouldBe 1
+			nutrition?.recipeTotals?.totalIngredientCount shouldBe 1
+			nutrition?.recipeTotals?.calculationSource shouldBe NutritionCalculationSource.CALCULATED
+			nutrition?.recipeTotals?.confidence shouldBe NutritionConfidence.COMPLETE
+			nutrition?.recipeTotals?.isComplete shouldBe true
+			nutrition?.perServing?.calories shouldNotBe null
+			nutrition?.ingredients?.size shouldBe 1
+			nutrition?.ingredients?.first()?.isMatched shouldBe true
 		} finally {
 			dataSource.close()
 			container.close()
@@ -75,11 +75,11 @@ class RecipeNutritionSummaryLoaderTest {
 	}
 
 	@Test
-	fun loadMapsScrapedNutritionWithoutCalculationMetadata() {
+	fun loadMapsScrapedNutritionWhenCaloriesPresent() {
 		assumeTrue(isDockerAvailable())
 
 		val container = PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine")).apply {
-			withDatabaseName("purecipes_recipe_scraped_nutrition_summary_test")
+			withDatabaseName("purecipes_recipe_scraped_nutrition_details_test")
 			withUsername("postgres")
 			withPassword("postgres")
 			start()
@@ -118,12 +118,12 @@ class RecipeNutritionSummaryLoaderTest {
 
 			val nutrition = RecipeRepository(dataSource).getRecipeDetails(recipeId)?.nutrition
 			nutrition shouldNotBe null
-			nutrition?.calories shouldBe 500.0
-			nutrition?.protein shouldBe 12.0
-			nutrition?.calculationSource shouldBe NutritionCalculationSource.SCRAPED
-			nutrition?.matchedIngredientCount shouldBe null
-			nutrition?.confidence shouldBe null
-			nutrition?.isComplete shouldBe false
+			nutrition?.recipeTotals?.calories shouldBe 500.0
+			nutrition?.recipeTotals?.protein shouldBe 12.0
+			nutrition?.recipeTotals?.calculationSource shouldBe NutritionCalculationSource.SCRAPED
+			nutrition?.recipeTotals?.matchedIngredientCount shouldBe null
+			nutrition?.recipeTotals?.confidence shouldBe null
+			nutrition?.recipeTotals?.isComplete shouldBe false
 		} finally {
 			dataSource.close()
 			container.close()

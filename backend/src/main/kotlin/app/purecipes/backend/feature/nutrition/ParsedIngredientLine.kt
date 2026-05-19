@@ -17,6 +17,17 @@ internal data class IngredientNutritionContribution(
 	val confidence: BigDecimal,
 )
 
+internal data class StoredIngredientNutrition(
+	val grams: BigDecimal,
+	val calories: BigDecimal,
+	val protein: BigDecimal?,
+	val carbohydrates: BigDecimal?,
+	val fat: BigDecimal?,
+	val fiber: BigDecimal?,
+	val sugar: BigDecimal?,
+	val sodium: BigDecimal?,
+)
+
 internal data class CalculatedNutritionTotals(
 	val calories: BigDecimal,
 	val protein: BigDecimal?,

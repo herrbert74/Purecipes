@@ -1,5 +1,6 @@
 package app.purecipes.backend.feature.nutrition
 
+import java.math.BigDecimal
 import javax.sql.DataSource
 
 internal data class RecipeNutritionPersistResult(
@@ -20,8 +21,9 @@ internal class RecipeNutritionService(
 
 	fun calculateAndPersist(recipeId: Int): RecipeNutritionPersistResult {
 		val ingredients = recipeNutritionRepository.loadRecipeIngredients(recipeId)
-		val calculation = RecipeNutritionCalculator(lookupRepository.loadIndex()).calculate(ingredients)
-		persist(recipeId, calculation)
+		val lookupIndex = lookupRepository.loadIndex()
+		val calculation = RecipeNutritionCalculator(lookupIndex).calculate(ingredients)
+		persist(recipeId, calculation, lookupIndex)
 		return RecipeNutritionPersistResult(
 			recipeId = recipeId,
 			totals = calculation.totals,
@@ -36,7 +38,13 @@ internal class RecipeNutritionService(
 	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> =
 		recipeIds.map(::calculateAndPersist)
 
-	private fun persist(recipeId: Int, calculation: RecipeNutritionCalculationResult) {
+	private fun persist(
+		recipeId: Int,
+		calculation: RecipeNutritionCalculationResult,
+		lookupIndex: NutritionLookupIndex,
+	) {
+		var totalWeightGrams = BigDecimal.ZERO
+
 		calculation.ingredientResults.forEach { result ->
 			recipeNutritionRepository.upsertIngredientMeasurement(
 				ingredientId = result.ingredientId,
@@ -52,11 +60,30 @@ internal class RecipeNutritionService(
 			} else {
 				recipeNutritionRepository.deleteIngredientMatch(result.ingredientId)
 			}
+
+			val grams = result.grams
+			val food = foodMatch?.foodId?.let(lookupIndex::food)
+			if (food != null && grams != null) {
+				totalWeightGrams = totalWeightGrams.add(grams)
+				recipeNutritionRepository.upsertIngredientContribution(
+					ingredientId = result.ingredientId,
+					contribution = computeStoredIngredientNutrition(food, grams),
+				)
+			} else {
+				recipeNutritionRepository.deleteIngredientContribution(result.ingredientId)
+			}
 		}
 
 		val totals = calculation.totals
 		if (totals != null && totals.matchedIngredientCount > 0) {
-			recipeNutritionRepository.upsertRecipeNutrition(recipeId, totals)
+			val yields = recipeNutritionRepository.loadRecipeYields(recipeId)
+			val servingCount = ServingsParser.parse(yields)?.count?.let(BigDecimal::valueOf)
+			recipeNutritionRepository.upsertRecipeNutrition(
+				recipeId = recipeId,
+				totals = totals,
+				totalWeightGrams = totalWeightGrams.takeIf { weight -> weight > BigDecimal.ZERO },
+				servingCount = servingCount,
+			)
 		}
 	}
 }

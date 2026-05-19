@@ -35,6 +35,8 @@ fun Route.recipeRoutes(
 			call.respond(repo.getRecipesCreatedByUser(userId))
 		}
 
+		recipeNutritionEstimateRoutes(sessionService, dbProvider)
+
 		post {
 			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@post
 			val request = call.receiveRecipeWriteRequestOrRespond() ?: return@post

@@ -74,8 +74,8 @@ fun Application.module(
 			call.respond(
 				HttpStatusCode.InternalServerError,
 				ErrorResponse(
-					message = "Unexpected error",
-					detail = cause.message
+					message = "Something went wrong. Please try again.",
+					detail = cause.message,
 				)
 			)
 		}

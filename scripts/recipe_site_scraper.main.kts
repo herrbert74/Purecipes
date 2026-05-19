@@ -970,6 +970,29 @@ fun ensureSchema(connection: Connection) {
 	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS confidence VARCHAR(32);
 	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS is_complete BOOLEAN;
 	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_weight_grams DECIMAL(12,4);
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS serving_count DECIMAL(8,2);
+
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_contributions (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		grams_resolved DECIMAL(12,4),
+		calories DECIMAL(10,2),
+		protein DECIMAL(10,2),
+		carbohydrates DECIMAL(10,2),
+		fat DECIMAL(10,2),
+		fiber DECIMAL(10,2),
+		sugar DECIMAL(10,2),
+		sodium DECIMAL(10,2),
+		override_calories DECIMAL(10,2),
+		override_protein DECIMAL(10,2),
+		override_carbohydrates DECIMAL(10,2),
+		override_fat DECIMAL(10,2),
+		override_fiber DECIMAL(10,2),
+		override_sugar DECIMAL(10,2),
+		override_sodium DECIMAL(10,2),
+		uses_user_override BOOLEAN NOT NULL DEFAULT FALSE,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);
 
 	CREATE TABLE IF NOT EXISTS ingredient_nutrition_matches (
 		id SERIAL PRIMARY KEY,

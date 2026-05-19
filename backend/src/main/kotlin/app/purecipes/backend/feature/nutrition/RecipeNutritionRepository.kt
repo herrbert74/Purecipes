@@ -1,5 +1,8 @@
 package app.purecipes.backend.feature.nutrition
 
+import app.purecipes.backend.feature.recipe.getNullableString
+import java.math.BigDecimal
+import java.sql.Connection
 import javax.sql.DataSource
 
 private object IngredientMeasurementBindIndex {
@@ -36,6 +39,20 @@ private object RecipeNutritionBindIndex {
 	const val CALCULATION_SOURCE = 11
 	const val CONFIDENCE = 12
 	const val IS_COMPLETE = 13
+	const val TOTAL_WEIGHT_GRAMS = 14
+	const val SERVING_COUNT = 15
+}
+
+private object IngredientContributionBindIndex {
+	const val INGREDIENT_ID = 1
+	const val GRAMS = 2
+	const val CALORIES = 3
+	const val PROTEIN = 4
+	const val CARBOHYDRATES = 5
+	const val FAT = 6
+	const val FIBER = 7
+	const val SUGAR = 8
+	const val SODIUM = 9
 }
 
 internal data class RecipeIngredientRow(
@@ -167,6 +184,11 @@ internal class RecipeNutritionRepository(
 		}
 	}
 
+	fun loadRecipeYields(recipeId: Int): String? =
+		dataSource.connection.use { connection ->
+			connection.readRecipeYields(recipeId)
+		}
+
 	fun deleteIngredientMatch(ingredientId: Int) {
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
@@ -178,9 +200,67 @@ internal class RecipeNutritionRepository(
 		}
 	}
 
+	fun upsertIngredientContribution(
+		ingredientId: Int,
+		contribution: StoredIngredientNutrition,
+	) {
+		dataSource.connection.use { connection ->
+			connection.prepareStatement(
+				"""
+				INSERT INTO ingredient_nutrition_contributions (
+					ingredient_id,
+					grams_resolved,
+					calories,
+					protein,
+					carbohydrates,
+					fat,
+					fiber,
+					sugar,
+					sodium,
+					updated_at
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+				ON CONFLICT (ingredient_id) DO UPDATE SET
+					grams_resolved = EXCLUDED.grams_resolved,
+					calories = EXCLUDED.calories,
+					protein = EXCLUDED.protein,
+					carbohydrates = EXCLUDED.carbohydrates,
+					fat = EXCLUDED.fat,
+					fiber = EXCLUDED.fiber,
+					sugar = EXCLUDED.sugar,
+					sodium = EXCLUDED.sodium,
+					updated_at = CURRENT_TIMESTAMP
+				""".trimIndent(),
+			).use { statement ->
+				statement.setInt(IngredientContributionBindIndex.INGREDIENT_ID, ingredientId)
+				statement.setBigDecimal(IngredientContributionBindIndex.GRAMS, contribution.grams)
+				statement.setBigDecimal(IngredientContributionBindIndex.CALORIES, contribution.calories)
+				statement.setBigDecimal(IngredientContributionBindIndex.PROTEIN, contribution.protein)
+				statement.setBigDecimal(IngredientContributionBindIndex.CARBOHYDRATES, contribution.carbohydrates)
+				statement.setBigDecimal(IngredientContributionBindIndex.FAT, contribution.fat)
+				statement.setBigDecimal(IngredientContributionBindIndex.FIBER, contribution.fiber)
+				statement.setBigDecimal(IngredientContributionBindIndex.SUGAR, contribution.sugar)
+				statement.setBigDecimal(IngredientContributionBindIndex.SODIUM, contribution.sodium)
+				statement.executeUpdate()
+			}
+		}
+	}
+
+	fun deleteIngredientContribution(ingredientId: Int) {
+		dataSource.connection.use { connection ->
+			connection.prepareStatement(
+				"DELETE FROM ingredient_nutrition_contributions WHERE ingredient_id = ?",
+			).use { statement ->
+				statement.setInt(1, ingredientId)
+				statement.executeUpdate()
+			}
+		}
+	}
+
 	fun upsertRecipeNutrition(
 		recipeId: Int,
 		totals: CalculatedNutritionTotals,
+		totalWeightGrams: BigDecimal?,
+		servingCount: BigDecimal?,
 	) {
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
@@ -199,8 +279,10 @@ internal class RecipeNutritionRepository(
 					calculation_source,
 					confidence,
 					is_complete,
+					total_weight_grams,
+					serving_count,
 					updated_at
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
 				ON CONFLICT (recipe_id) DO UPDATE SET
 					calories = EXCLUDED.calories,
 					protein = EXCLUDED.protein,
@@ -214,6 +296,8 @@ internal class RecipeNutritionRepository(
 					calculation_source = EXCLUDED.calculation_source,
 					confidence = EXCLUDED.confidence,
 					is_complete = EXCLUDED.is_complete,
+					total_weight_grams = EXCLUDED.total_weight_grams,
+					serving_count = EXCLUDED.serving_count,
 					updated_at = CURRENT_TIMESTAMP
 				""".trimIndent(),
 			).use { statement ->
@@ -230,6 +314,8 @@ internal class RecipeNutritionRepository(
 				statement.setString(RecipeNutritionBindIndex.CALCULATION_SOURCE, CALCULATION_SOURCE)
 				statement.setString(RecipeNutritionBindIndex.CONFIDENCE, recipeConfidence(totals))
 				statement.setBoolean(RecipeNutritionBindIndex.IS_COMPLETE, totals.isComplete)
+				statement.setBigDecimal(RecipeNutritionBindIndex.TOTAL_WEIGHT_GRAMS, totalWeightGrams)
+				statement.setBigDecimal(RecipeNutritionBindIndex.SERVING_COUNT, servingCount)
 				statement.executeUpdate()
 			}
 		}
@@ -248,3 +334,15 @@ internal class RecipeNutritionRepository(
 		const val RECIPE_CONFIDENCE_PARTIAL = "partial"
 	}
 }
+
+private fun Connection.readRecipeYields(recipeId: Int): String? =
+	prepareStatement("SELECT yields FROM recipes WHERE id = ?").use { statement ->
+		statement.setInt(1, recipeId)
+		statement.executeQuery().use { resultSet ->
+			if (resultSet.next()) {
+				resultSet.getNullableString("yields")
+			} else {
+				null
+			}
+		}
+	}

@@ -304,6 +304,37 @@ internal const val NUTRITION_ADD_UPDATED_AT_SQL = """
 	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 """
 
+internal const val NUTRITION_ADD_TOTAL_WEIGHT_GRAMS_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_weight_grams DECIMAL(12,4)
+"""
+
+internal const val NUTRITION_ADD_SERVING_COUNT_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS serving_count DECIMAL(8,2)
+"""
+
+internal const val INGREDIENT_NUTRITION_CONTRIBUTIONS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_contributions (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		grams_resolved DECIMAL(12,4),
+		calories DECIMAL(10,2),
+		protein DECIMAL(10,2),
+		carbohydrates DECIMAL(10,2),
+		fat DECIMAL(10,2),
+		fiber DECIMAL(10,2),
+		sugar DECIMAL(10,2),
+		sodium DECIMAL(10,2),
+		override_calories DECIMAL(10,2),
+		override_protein DECIMAL(10,2),
+		override_carbohydrates DECIMAL(10,2),
+		override_fat DECIMAL(10,2),
+		override_fiber DECIMAL(10,2),
+		override_sugar DECIMAL(10,2),
+		override_sodium DECIMAL(10,2),
+		uses_user_override BOOLEAN NOT NULL DEFAULT FALSE,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
 internal const val INGREDIENT_NUTRITION_MATCHES_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS ingredient_nutrition_matches (
 		id SERIAL PRIMARY KEY,
