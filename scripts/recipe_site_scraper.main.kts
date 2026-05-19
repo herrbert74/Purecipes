@@ -900,6 +900,52 @@ fun ensureSchema(connection: Connection) {
 		order_index INTEGER NOT NULL
 	);
 
+	CREATE TABLE IF NOT EXISTS nutrition_foods (
+		id SERIAL PRIMARY KEY,
+		source_name VARCHAR(32) NOT NULL,
+		source_id TEXT NOT NULL,
+		display_name TEXT NOT NULL,
+		normalized_name TEXT NOT NULL,
+		calories_per_100g DECIMAL(10,2),
+		protein_per_100g DECIMAL(10,2),
+		carbohydrates_per_100g DECIMAL(10,2),
+		fat_per_100g DECIMAL(10,2),
+		fiber_per_100g DECIMAL(10,2),
+		sugar_per_100g DECIMAL(10,2),
+		sodium_per_100g DECIMAL(10,2),
+		source_metadata TEXT,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (source_name, source_id)
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_nutrition_foods_normalized_name
+	ON nutrition_foods (normalized_name);
+
+	CREATE TABLE IF NOT EXISTS nutrition_food_aliases (
+		id SERIAL PRIMARY KEY,
+		food_id INTEGER NOT NULL REFERENCES nutrition_foods(id) ON DELETE CASCADE,
+		alias TEXT NOT NULL,
+		normalized_alias TEXT NOT NULL,
+		UNIQUE (normalized_alias)
+	);
+
+	CREATE TABLE IF NOT EXISTS nutrition_food_measures (
+		id SERIAL PRIMARY KEY,
+		food_id INTEGER NOT NULL REFERENCES nutrition_foods(id) ON DELETE CASCADE,
+		measure_name VARCHAR(32) NOT NULL,
+		grams_per_measure DECIMAL(12,4) NOT NULL,
+		UNIQUE (food_id, measure_name)
+	);
+
+	CREATE TABLE IF NOT EXISTS ingredient_measurements (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		raw_text TEXT NOT NULL,
+		quantity DECIMAL(12,4),
+		unit VARCHAR(32),
+		parsed_name VARCHAR(255),
+		is_measurable BOOLEAN NOT NULL DEFAULT FALSE
+	);
+
 	CREATE TABLE IF NOT EXISTS nutrition (
 		id SERIAL PRIMARY KEY,
 		recipe_id INTEGER UNIQUE REFERENCES recipes(id) ON DELETE CASCADE,
@@ -910,6 +956,26 @@ fun ensureSchema(connection: Connection) {
 		fiber DECIMAL(10,2),
 		sugar DECIMAL(10,2),
 		sodium DECIMAL(10,2)
+	);
+
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS matched_ingredient_count INTEGER;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_ingredient_count INTEGER;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS calculation_source VARCHAR(32);
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS confidence VARCHAR(32);
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS is_complete BOOLEAN;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_matches (
+		id SERIAL PRIMARY KEY,
+		ingredient_id INTEGER NOT NULL UNIQUE REFERENCES ingredients(id) ON DELETE CASCADE,
+		raw_text TEXT NOT NULL,
+		quantity DECIMAL(12,4),
+		unit VARCHAR(32),
+		parsed_name VARCHAR(255),
+		food_id INTEGER REFERENCES nutrition_foods(id) ON DELETE SET NULL,
+		confidence DECIMAL(5,4),
+		match_source VARCHAR(32),
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
 
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS meal_type TEXT;
