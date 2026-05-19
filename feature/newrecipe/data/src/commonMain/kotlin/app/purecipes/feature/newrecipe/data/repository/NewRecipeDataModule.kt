@@ -2,11 +2,15 @@ package app.purecipes.feature.newrecipe.data.repository
 
 import app.purecipes.feature.newrecipe.data.datasource.CreatedRecipeDataSource
 import app.purecipes.feature.newrecipe.data.datasource.CreatedRecipeRemoteDataSource
+import app.purecipes.feature.newrecipe.data.datasource.RecipeNutritionEstimateDataSource
+import app.purecipes.feature.newrecipe.data.datasource.RecipeNutritionEstimateRemoteDataSource
 import app.purecipes.feature.newrecipe.data.image.PlatformRecipeImagePathLoader
 import app.purecipes.feature.newrecipe.data.image.RecipeImagePathLoader
 import app.purecipes.feature.newrecipe.data.image.RecipeImageRemoteUploader
 import app.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import app.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
+import app.purecipes.feature.newrecipe.domain.repository.RecipeNutritionEstimateRepository
+import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
@@ -55,5 +59,24 @@ interface NewRecipeDataModule {
 	@Provides
 	fun provideSaveCreatedRecipeUseCase(repository: CreatedRecipeRepository): SaveCreatedRecipeUseCase {
 		return SaveCreatedRecipeUseCase(repository)
+	}
+
+	@Provides
+	fun provideRecipeNutritionEstimateRemoteDataSource(api: PurecipesApi): RecipeNutritionEstimateDataSource.Remote {
+		return RecipeNutritionEstimateRemoteDataSource(api)
+	}
+
+	@Provides
+	fun provideRecipeNutritionEstimateRepository(
+		remoteDataSource: RecipeNutritionEstimateDataSource.Remote,
+	): RecipeNutritionEstimateRepository {
+		return RecipeNutritionEstimateAccessor(remoteDataSource)
+	}
+
+	@Provides
+	fun provideEstimateRecipeNutritionUseCase(
+		repository: RecipeNutritionEstimateRepository,
+	): EstimateRecipeNutritionUseCase {
+		return EstimateRecipeNutritionUseCase(repository)
 	}
 }

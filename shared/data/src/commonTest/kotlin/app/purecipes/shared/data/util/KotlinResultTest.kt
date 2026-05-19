@@ -87,6 +87,35 @@ class KotlinResultTest {
 	}
 
 	@Test
+	fun `http response handle maps 500 error response to user message`() = runTest {
+		val client = HttpClient(
+			MockEngine {
+				respond(
+					content = """
+						{
+							"message":"Something went wrong. Please try again.",
+							"detail":"This ResultSet is closed."
+						}
+						""".trimIndent(),
+					status = HttpStatusCode.InternalServerError,
+					headers = headersOf(
+						HttpHeaders.ContentType,
+						ContentType.Application.Json.toString(),
+					),
+				)
+			},
+		)
+
+		try {
+			client.get("https://example.com/error").body<String>()
+		} catch (exception: io.ktor.client.plugins.ServerResponseException) {
+			exception.response.handle() shouldBe Failure.ServerError("Something went wrong. Please try again.")
+		} finally {
+			client.close()
+		}
+	}
+
+	@Test
 	fun `http response handle maps not modified response`() = runTest {
 		val client = HttpClient(
 			MockEngine {

@@ -48,6 +48,7 @@ fun main() {
 			saveNotificationPreferences = graph.saveNotificationPreferencesUseCase,
 			sendTestNotification = graph.sendTestNotificationUseCase,
 			saveCreatedRecipe = graph.saveCreatedRecipeUseCase,
+			estimateRecipeNutrition = graph.estimateRecipeNutritionUseCase,
 			trackEvent = graph.trackEventUseCase,
 			getSearchFilters = graph.getSearchFiltersUseCase,
 			saveSearchFilters = graph.saveSearchFiltersUseCase,

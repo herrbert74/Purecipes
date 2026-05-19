@@ -10,6 +10,8 @@ import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
 import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.domain.model.RecipeNutritionEstimateRequest
+import app.purecipes.shared.domain.model.RecipeNutritionEstimateResponse
 import app.purecipes.shared.domain.model.RecipeWriteRequest
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchRequest
@@ -35,6 +37,10 @@ interface PurecipesApi {
 
 	@GET("recipes/mine")
 	suspend fun getCreatedRecipes(): List<RecipeDetails>
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("recipes/nutrition-estimate")
+	suspend fun estimateRecipeNutrition(@Body request: RecipeNutritionEstimateRequest): RecipeNutritionEstimateResponse
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("recipes")

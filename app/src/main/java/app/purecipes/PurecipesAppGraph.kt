@@ -36,6 +36,7 @@ import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForM
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.data.repository.NewRecipeDataModule
+import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.recipedetails.data.repository.RecipeDetailsDataModule
@@ -146,6 +147,8 @@ interface PurecipesAppGraph :
 	val sendTestNotificationUseCase: SendTestNotificationUseCase
 
 	val saveCreatedRecipeUseCase: SaveCreatedRecipeUseCase
+
+	val estimateRecipeNutritionUseCase: EstimateRecipeNutritionUseCase
 
 	val getSearchFiltersUseCase: GetSearchFiltersUseCase
 

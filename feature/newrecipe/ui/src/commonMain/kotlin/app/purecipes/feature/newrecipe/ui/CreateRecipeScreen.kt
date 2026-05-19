@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.domain.model.RecipeDetails
@@ -55,6 +56,7 @@ fun CreateRecipeScreen(
 	canUploadRecipes: Boolean,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	rememberImagePicker: RememberRecipeImagePicker = ::rememberRecipeImagePicker,
@@ -76,6 +78,7 @@ fun CreateRecipeScreen(
 	val viewModel = createRecipeViewModel(
 		getCreatedRecipes = getCreatedRecipes,
 		saveCreatedRecipe = saveCreatedRecipe,
+		estimateRecipeNutrition = estimateRecipeNutrition,
 		trackEvent = trackEvent,
 	)
 	var pickerErrorMessage by remember { mutableStateOf<String?>(null) }
@@ -130,7 +133,9 @@ fun CreateRecipeScreen(
 						imageUrlInput = viewModel.imageUrlInput,
 						ingredientsInput = viewModel.ingredientsInput,
 						isEditing = viewModel.isEditing,
+						isNutritionEstimateLoading = viewModel.isNutritionEstimateLoading,
 						isSaving = viewModel.isSaving,
+						nutritionEstimate = viewModel.nutritionEstimate,
 						onClearImageClick = {
 							isImportingImage = false
 							pickerErrorMessage = null

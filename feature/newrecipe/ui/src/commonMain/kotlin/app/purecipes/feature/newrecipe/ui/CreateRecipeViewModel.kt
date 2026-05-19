@@ -12,27 +12,33 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
+import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 internal class CreateRecipeViewModel(
 	private val getCreatedRecipes: GetCreatedRecipesUseCase,
 	private val saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	private val estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	private val trackEvent: TrackEventUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
 	private val ownsCoroutineScope = coroutineScope == null
 	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+	private var nutritionEstimateJob: Job? = null
 
 	var titleInput by mutableStateOf("")
 		private set
@@ -44,6 +50,12 @@ internal class CreateRecipeViewModel(
 		private set
 
 	var ingredientsInput by mutableStateOf("")
+		private set
+
+	var nutritionEstimate by mutableStateOf<NutritionSummary?>(null)
+		private set
+
+	var isNutritionEstimateLoading by mutableStateOf(false)
 		private set
 
 	val stepInputs = mutableStateListOf("")
@@ -98,6 +110,7 @@ internal class CreateRecipeViewModel(
 
 	fun onIngredientsChange(value: String) {
 		ingredientsInput = value
+		scheduleNutritionEstimate()
 	}
 
 	fun onStepChange(index: Int, value: String) {
@@ -166,8 +179,10 @@ internal class CreateRecipeViewModel(
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
 		yieldsInput = recipe.yields.orEmpty()
 		selectedCuisine = recipe.cuisine
+		nutritionEstimate = recipe.nutrition?.recipeTotals
 		formErrorMessage = null
 		successMessage = null
+		scheduleNutritionEstimate()
 	}
 
 	fun startNewRecipe() {
@@ -181,8 +196,11 @@ internal class CreateRecipeViewModel(
 		totalTimeInput = ""
 		yieldsInput = ""
 		selectedCuisine = null
+		nutritionEstimate = null
+		isNutritionEstimateLoading = false
 		formErrorMessage = null
 		successMessage = null
+		nutritionEstimateJob?.cancel()
 	}
 
 	fun retry() {
@@ -239,6 +257,23 @@ internal class CreateRecipeViewModel(
 		}
 	}
 
+	private fun scheduleNutritionEstimate() {
+		nutritionEstimateJob?.cancel()
+		nutritionEstimateJob = scope.launch {
+			val ingredients = ingredientsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList()
+			if (ingredients.isEmpty()) {
+				nutritionEstimate = null
+				isNutritionEstimateLoading = false
+				return@launch
+			}
+
+			delay(NUTRITION_ESTIMATE_DEBOUNCE_MS)
+			isNutritionEstimateLoading = true
+			nutritionEstimate = estimateRecipeNutrition(ingredients).get()
+			isNutritionEstimateLoading = false
+		}
+	}
+
 	private fun loadRecipes() {
 		scope.launch {
 			isLoading = true
@@ -270,9 +305,14 @@ internal class CreateRecipeViewModel(
 	}
 
 	override fun onCleared() {
+		nutritionEstimateJob?.cancel()
 		if (ownsCoroutineScope) {
 			scope.cancel()
 		}
+	}
+
+	private companion object {
+		const val NUTRITION_ESTIMATE_DEBOUNCE_MS = 400L
 	}
 }
 
@@ -280,6 +320,7 @@ internal class CreateRecipeViewModel(
 internal fun createRecipeViewModel(
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	trackEvent: TrackEventUseCase,
 ): CreateRecipeViewModel {
 	val viewModelKey = buildString {
@@ -287,6 +328,8 @@ internal fun createRecipeViewModel(
 		append(getCreatedRecipes.hashCode())
 		append(":")
 		append(saveCreatedRecipe.hashCode())
+		append(":")
+		append(estimateRecipeNutrition.hashCode())
 		append(":")
 		append(trackEvent.hashCode())
 	}
@@ -297,6 +340,7 @@ internal fun createRecipeViewModel(
 				CreateRecipeViewModel(
 					getCreatedRecipes = getCreatedRecipes,
 					saveCreatedRecipe = saveCreatedRecipe,
+					estimateRecipeNutrition = estimateRecipeNutrition,
 					trackEvent = trackEvent,
 				)
 			}
