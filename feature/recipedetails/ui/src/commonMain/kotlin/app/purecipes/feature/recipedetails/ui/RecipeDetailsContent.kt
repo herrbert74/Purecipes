@@ -45,6 +45,9 @@ internal fun RecipeDetailsContent(
 	isRecipeConverted: Boolean,
 	recipe: RecipeDetails,
 	recipeCookbooks: RecipeCookbooksList,
+	showNutrition: Boolean,
+	onShowNutrition: () -> Unit,
+	onShowCookbookSheet: () -> Unit,
 	onStartCooking: () -> Unit,
 	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -76,17 +79,24 @@ internal fun RecipeDetailsContent(
 		}
 
 		item {
-			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-				Text(
-					text = recipe.title,
-					style = PurecipesTheme.typography.headlineMedium,
-				)
-				Text(
-					text = recipe.description,
-					style = PurecipesTheme.typography.bodyLarge,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
+			RecipeDetailsTopBarActions(
+				canManageFavorites = canManageFavorites,
+				isFavorite = recipe.isFavorite,
+				isFavoriteUpdating = isFavoriteUpdating,
+				hasRecipe = true,
+				showNutrition = showNutrition,
+				onShowNutrition = onShowNutrition,
+				onToggleFavorite = onToggleFavorite,
+				onShowCookbookSheet = onShowCookbookSheet,
+			)
+		}
+
+		item {
+			Text(
+				text = recipe.description,
+				style = PurecipesTheme.typography.bodyLarge,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
+			)
 		}
 
 		item {
@@ -232,7 +242,7 @@ private fun RecipeDetailsContentPreviewScaffold(darkTheme: Boolean) {
 			modifier = Modifier.fillMaxSize(),
 			topBar = {
 				TopAppBar(
-					title = { Text(text = "Recipe details") },
+					title = { Text(text = previewRecipeDetails.title) },
 					navigationIcon = {
 						BackNavigationButton(onBack = {})
 					},
@@ -251,6 +261,9 @@ private fun RecipeDetailsContentPreviewScaffold(darkTheme: Boolean) {
 						CookbookRef(id = 2, name = "Pasta"),
 					),
 				),
+				showNutrition = false,
+				onShowNutrition = {},
+				onShowCookbookSheet = {},
 				onStartCooking = {},
 				onToggleFavorite = {},
 				modifier = Modifier.padding(innerPadding),

@@ -6,6 +6,7 @@ plugins {
 kotlin {
 	android {
 		namespace = "app.purecipes.feature.recipedetails.ui"
+		androidResources.enable = true
 		withDeviceTestBuilder {
 			sourceSetTreeName = "androidDeviceTest"
 		}.configure {

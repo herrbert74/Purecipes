@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
@@ -88,88 +89,85 @@ fun RecipeDetailsScreen(
 	Box(modifier = modifier.fillMaxSize()) {
 		Scaffold(
 			modifier = Modifier.fillMaxSize(),
-		topBar = {
-			TopAppBar(
-				title = { Text(text = "Recipe details") },
-				actions = {
-					RecipeDetailsTopBarActions(
-						canManageFavorites = canManageFavorites,
-						isFavorite = viewModel.recipeDetails?.isFavorite == true,
-						isFavoriteUpdating = viewModel.isFavoriteUpdating,
-						hasRecipe = viewModel.recipeDetails != null,
-						showNutrition = viewModel.recipeDetails?.nutrition?.hasDisplayableData() == true,
-						onShowNutrition = { showNutritionDialog = true },
-						onToggleFavorite = viewModel::toggleFavorite,
-						onShowCookbookSheet = {
-							viewModel.prepareCookbookPicker()
-							showCookbookSheet = true
-						},
-					)
-				},
-				navigationIcon = {
-					BackNavigationButton(onBack = onBack)
-				},
-			)
-		},
-	) { innerPadding ->
-		if (viewModel.showMeasurementMismatchDialog) {
-			AlertDialog(
-				onDismissRequest = viewModel::dismissMeasurementMismatchDialog,
-				confirmButton = {
-					Button(onClick = viewModel::convertCurrentRecipe) {
-						Text(text = "Convert recipe")
-					}
-				},
-				dismissButton = {
-					TextButton(onClick = viewModel::dismissMeasurementMismatchDialog) {
-						Text(text = "Keep original")
-					}
-				},
-				title = { Text(text = "Measurement system mismatch") },
-				text = {
-					Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-						Text(text = "This recipe uses measurements outside your preferred system.")
-						TextButton(onClick = onOpenMeasurementPreferences) {
-							Text(text = "Update my preferences")
+			topBar = {
+				TopAppBar(
+					title = {
+						Text(
+							text = viewModel.recipeDetails?.title ?: "Recipe details",
+							maxLines = 1,
+							overflow = TextOverflow.Ellipsis,
+						)
+					},
+					navigationIcon = {
+						BackNavigationButton(onBack = onBack)
+					},
+				)
+			},
+		) { innerPadding ->
+			if (viewModel.showMeasurementMismatchDialog) {
+				AlertDialog(
+					onDismissRequest = viewModel::dismissMeasurementMismatchDialog,
+					confirmButton = {
+						Button(onClick = viewModel::convertCurrentRecipe) {
+							Text(text = "Convert recipe")
 						}
-					}
-				},
-			)
-		}
-		when {
-			viewModel.isLoading -> Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding),
-				contentAlignment = Alignment.Center,
-			) {
-				CircularProgressIndicator()
+					},
+					dismissButton = {
+						TextButton(onClick = viewModel::dismissMeasurementMismatchDialog) {
+							Text(text = "Keep original")
+						}
+					},
+					title = { Text(text = "Measurement system mismatch") },
+					text = {
+						Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
+							Text(text = "This recipe uses measurements outside your preferred system.")
+							TextButton(onClick = onOpenMeasurementPreferences) {
+								Text(text = "Update my preferences")
+							}
+						}
+					},
+				)
 			}
+			when {
+				viewModel.isLoading -> Box(
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding),
+					contentAlignment = Alignment.Center,
+				) {
+					CircularProgressIndicator()
+				}
 
-			viewModel.errorMessage != null -> RecipeDetailsMessageScreen(
-				message = viewModel.errorMessage ?: "Unknown error",
-				onBack = onBack,
-				modifier = Modifier.padding(innerPadding),
-			)
+				viewModel.errorMessage != null -> RecipeDetailsMessageScreen(
+					message = viewModel.errorMessage ?: "Unknown error",
+					onBack = onBack,
+					modifier = Modifier.padding(innerPadding),
+				)
 
-			viewModel.recipeDetails != null -> RecipeDetailsContent(
-				canManageFavorites = canManageFavorites,
-				favoriteErrorMessage = viewModel.favoriteErrorMessage,
-				isFavoriteUpdating = viewModel.isFavoriteUpdating,
-				isRecipeConverted = viewModel.isRecipeConverted,
-				recipe = viewModel.recipeDetails ?: return@Scaffold,
-				recipeCookbooks = RecipeCookbooksList(viewModel.recipeCookbooks.toList()),
-				onStartCooking = { onStartCooking(recipeId) },
-				onToggleFavorite = viewModel::toggleFavorite,
-				modifier = Modifier.padding(innerPadding),
-			)
+				viewModel.recipeDetails != null -> RecipeDetailsContent(
+					canManageFavorites = canManageFavorites,
+					favoriteErrorMessage = viewModel.favoriteErrorMessage,
+					isFavoriteUpdating = viewModel.isFavoriteUpdating,
+					isRecipeConverted = viewModel.isRecipeConverted,
+					recipe = viewModel.recipeDetails ?: return@Scaffold,
+					recipeCookbooks = RecipeCookbooksList(viewModel.recipeCookbooks.toList()),
+					showNutrition = viewModel.recipeDetails?.nutrition?.hasDisplayableData() == true,
+					onShowNutrition = { showNutritionDialog = true },
+					onShowCookbookSheet = {
+						viewModel.prepareCookbookPicker()
+						showCookbookSheet = true
+					},
+					onStartCooking = { onStartCooking(recipeId) },
+					onToggleFavorite = viewModel::toggleFavorite,
+					modifier = Modifier.padding(innerPadding),
+				)
 
-			else -> RecipeDetailsMessageScreen(
-				message = "Recipe not found",
-				onBack = onBack,
-				modifier = Modifier.padding(innerPadding),
-			)
-		}
+				else -> RecipeDetailsMessageScreen(
+					message = "Recipe not found",
+					onBack = onBack,
+					modifier = Modifier.padding(innerPadding),
+				)
+			}
 		}
 
 		RecipeDetailsNutritionOverlay(
