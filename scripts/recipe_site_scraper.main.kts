@@ -143,7 +143,8 @@ data class Config(
 	val dbUser: String?,
 	val dbPassword: String?,
 	val precheckDb: Boolean,
-	val debug: Boolean
+	val calculateNutrition: Boolean,
+	val debug: Boolean,
 )
 
 fun printUsageAndExit(message: String? = null): Nothing {
@@ -173,6 +174,7 @@ fun printUsageAndExit(message: String? = null): Nothing {
 		--db-user <user>                          Default: postgres
 		--db-password <password>                  Default: postgres
 		--precheck-db true|false                  Default: true (postgres mode)
+		--calculate-nutrition true|false          Default: true (postgres import modes)
 
 	Modes:
 		web   Scrape recipes from the web, save JSON files with DB IDs, and insert into Postgres.
@@ -203,7 +205,8 @@ private val allowedOptions = setOf(
 	"--db-name",
 	"--db-user",
 	"--db-password",
-	"--precheck-db"
+	"--precheck-db",
+	"--calculate-nutrition",
 )
 
 fun parseOptions(scriptArgs: Array<String>): Config {
@@ -239,7 +242,8 @@ fun parseOptions(scriptArgs: Array<String>): Config {
 		dbUser = options["--db-user"] ?: "postgres",
 		dbPassword = options["--db-password"] ?: "postgres",
 		precheckDb = boolOptions["precheck"] ?: true,
-		debug = boolOptions["debug"] ?: false
+		calculateNutrition = boolOptions["calculateNutrition"] ?: true,
+		debug = boolOptions["debug"] ?: false,
 	)
 }
 
@@ -260,6 +264,8 @@ private fun parseRecipeUrlPattern(options: Map<String, String>): Regex {
 private fun parseBoolOptions(options: Map<String, String>): Map<String, Boolean> {
 	val boolOpts = mutableMapOf<String, Boolean>()
 	boolOpts["precheck"] = (options["--precheck-db"] ?: "true").equals("true", ignoreCase = true)
+	boolOpts["calculateNutrition"] =
+		(options["--calculate-nutrition"] ?: "true").equals("true", ignoreCase = true)
 	boolOpts["debug"] = (options["--debug"] ?: "false").equals("true", ignoreCase = true)
 	return boolOpts
 }
@@ -900,6 +906,52 @@ fun ensureSchema(connection: Connection) {
 		order_index INTEGER NOT NULL
 	);
 
+	CREATE TABLE IF NOT EXISTS nutrition_foods (
+		id SERIAL PRIMARY KEY,
+		source_name VARCHAR(32) NOT NULL,
+		source_id TEXT NOT NULL,
+		display_name TEXT NOT NULL,
+		normalized_name TEXT NOT NULL,
+		calories_per_100g DECIMAL(10,2),
+		protein_per_100g DECIMAL(10,2),
+		carbohydrates_per_100g DECIMAL(10,2),
+		fat_per_100g DECIMAL(10,2),
+		fiber_per_100g DECIMAL(10,2),
+		sugar_per_100g DECIMAL(10,2),
+		sodium_per_100g DECIMAL(10,2),
+		source_metadata TEXT,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (source_name, source_id)
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_nutrition_foods_normalized_name
+	ON nutrition_foods (normalized_name);
+
+	CREATE TABLE IF NOT EXISTS nutrition_food_aliases (
+		id SERIAL PRIMARY KEY,
+		food_id INTEGER NOT NULL REFERENCES nutrition_foods(id) ON DELETE CASCADE,
+		alias TEXT NOT NULL,
+		normalized_alias TEXT NOT NULL,
+		UNIQUE (normalized_alias)
+	);
+
+	CREATE TABLE IF NOT EXISTS nutrition_food_measures (
+		id SERIAL PRIMARY KEY,
+		food_id INTEGER NOT NULL REFERENCES nutrition_foods(id) ON DELETE CASCADE,
+		measure_name VARCHAR(32) NOT NULL,
+		grams_per_measure DECIMAL(12,4) NOT NULL,
+		UNIQUE (food_id, measure_name)
+	);
+
+	CREATE TABLE IF NOT EXISTS ingredient_measurements (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		raw_text TEXT NOT NULL,
+		quantity DECIMAL(12,4),
+		unit VARCHAR(32),
+		parsed_name VARCHAR(255),
+		is_measurable BOOLEAN NOT NULL DEFAULT FALSE
+	);
+
 	CREATE TABLE IF NOT EXISTS nutrition (
 		id SERIAL PRIMARY KEY,
 		recipe_id INTEGER UNIQUE REFERENCES recipes(id) ON DELETE CASCADE,
@@ -910,6 +962,49 @@ fun ensureSchema(connection: Connection) {
 		fiber DECIMAL(10,2),
 		sugar DECIMAL(10,2),
 		sodium DECIMAL(10,2)
+	);
+
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS matched_ingredient_count INTEGER;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_ingredient_count INTEGER;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS calculation_source VARCHAR(32);
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS confidence VARCHAR(32);
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS is_complete BOOLEAN;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_weight_grams DECIMAL(12,4);
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS serving_count DECIMAL(8,2);
+
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_contributions (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		grams_resolved DECIMAL(12,4),
+		calories DECIMAL(10,2),
+		protein DECIMAL(10,2),
+		carbohydrates DECIMAL(10,2),
+		fat DECIMAL(10,2),
+		fiber DECIMAL(10,2),
+		sugar DECIMAL(10,2),
+		sodium DECIMAL(10,2),
+		override_calories DECIMAL(10,2),
+		override_protein DECIMAL(10,2),
+		override_carbohydrates DECIMAL(10,2),
+		override_fat DECIMAL(10,2),
+		override_fiber DECIMAL(10,2),
+		override_sugar DECIMAL(10,2),
+		override_sodium DECIMAL(10,2),
+		uses_user_override BOOLEAN NOT NULL DEFAULT FALSE,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_matches (
+		id SERIAL PRIMARY KEY,
+		ingredient_id INTEGER NOT NULL UNIQUE REFERENCES ingredients(id) ON DELETE CASCADE,
+		raw_text TEXT NOT NULL,
+		quantity DECIMAL(12,4),
+		unit VARCHAR(32),
+		parsed_name VARCHAR(255),
+		food_id INTEGER REFERENCES nutrition_foods(id) ON DELETE SET NULL,
+		confidence DECIMAL(5,4),
+		match_source VARCHAR(32),
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
 
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS meal_type TEXT;
@@ -1213,26 +1308,87 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 		}
 	}
 
-	val nutrients = recipe.nutrients
-	connection.prepareStatement(
-		"""
-		INSERT INTO nutrition (recipe_id, calories, protein, carbohydrates, fat, fiber, sugar, sodium)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-		""".trimIndent()
-	).use { ps ->
-		ps.setInt(1, recipeId)
-		ps.setObject(2, parseNumber(nutrients["calories"]))
-		ps.setObject(3, parseNumber(nutrients["protein"]))
-		ps.setObject(4, parseNumber(nutrients["carbohydrates"] ?: nutrients["carbs"]))
-		ps.setObject(5, parseNumber(nutrients["fat"]))
-		ps.setObject(6, parseNumber(nutrients["fiber"]))
-		ps.setObject(7, parseNumber(nutrients["sugar"]))
-		ps.setObject(8, parseNumber(nutrients["sodium"]))
-		ps.executeUpdate()
+	if (recipe.hasScrapedNutrition()) {
+		val nutrients = recipe.nutrients
+		connection.prepareStatement(
+			"""
+			INSERT INTO nutrition (recipe_id, calories, protein, carbohydrates, fat, fiber, sugar, sodium)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT (recipe_id) DO UPDATE SET
+				calories = EXCLUDED.calories,
+				protein = EXCLUDED.protein,
+				carbohydrates = EXCLUDED.carbohydrates,
+				fat = EXCLUDED.fat,
+				fiber = EXCLUDED.fiber,
+				sugar = EXCLUDED.sugar,
+				sodium = EXCLUDED.sodium
+			""".trimIndent(),
+		).use { ps ->
+			ps.setInt(1, recipeId)
+			ps.setObject(2, parseNumber(nutrients["calories"]))
+			ps.setObject(3, parseNumber(nutrients["protein"]))
+			ps.setObject(4, parseNumber(nutrients["carbohydrates"] ?: nutrients["carbs"]))
+			ps.setObject(5, parseNumber(nutrients["fat"]))
+			ps.setObject(6, parseNumber(nutrients["fiber"]))
+			ps.setObject(7, parseNumber(nutrients["sugar"]))
+			ps.setObject(8, parseNumber(nutrients["sodium"]))
+			ps.executeUpdate()
+		}
 	}
 
 	connection.commit()
 	return recipeId
+}
+
+private fun RecipeData.hasScrapedNutrition(): Boolean =
+	nutrients.values.any { value ->
+		!value.isNullOrBlank() && parseNumber(value) != null
+	}
+
+private fun findRepoRoot(): java.nio.file.Path? {
+	val currentDirectory = java.nio.file.Path.of(System.getProperty("user.dir"))
+	return generateSequence(currentDirectory) { path -> path.parent }
+		.firstOrNull { candidate ->
+			candidate.resolve("settings.gradle.kts").toFile().exists()
+		}
+}
+
+fun calculateNutritionForRecipes(recipeIds: List<Int>) {
+	if (recipeIds.isEmpty()) {
+		return
+	}
+
+	val repoRoot = findRepoRoot()
+	if (repoRoot == null) {
+		println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
+		return
+	}
+
+	val gradlew = repoRoot.resolve("gradlew").toFile()
+	if (!gradlew.exists()) {
+		println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+		return
+	}
+
+	println("Calculating nutrition for ${recipeIds.size} imported recipes...")
+	val process = ProcessBuilder(
+		gradlew.absolutePath,
+		"calculateRecipeNutrition",
+		"-Pnutrition.recipeIds=${recipeIds.joinToString(",")}",
+		"-q",
+	)
+		.directory(repoRoot.toFile())
+		.redirectErrorStream(true)
+		.start()
+
+	process.inputStream.bufferedReader().use { reader ->
+		reader.forEachLine { line -> println(line) }
+	}
+
+	val exitCode = process.waitFor()
+	if (exitCode != 0) {
+		println("Nutrition calculation failed with exit code $exitCode")
+	}
 }
 
 fun buildJdbcUrl(config: Config): String {
@@ -1315,19 +1471,24 @@ fun importJsonFilesToDb(config: Config, recipesDir: File) {
 	openConnection(config).use { connection ->
 		connection.autoCommit = false
 		ensureSchema(connection)
-		importFilesToConnection(connection, jsonFiles)
+		val importedRecipeIds = importFilesToConnection(connection, jsonFiles)
+		if (config.calculateNutrition) {
+			calculateNutritionForRecipes(importedRecipeIds)
+		}
 	}
 }
 
-fun importFilesToConnection(connection: Connection, jsonFiles: List<File>) {
+fun importFilesToConnection(connection: Connection, jsonFiles: List<File>): List<Int> {
 	var imported = 0
 	var duplicates = 0
 	var errors = 0
+	val importedRecipeIds = mutableListOf<Int>()
 	for (file in jsonFiles) {
-		val outcome = processRecipeFile(connection, file)
+		val (outcome, recipeId) = processRecipeFile(connection, file)
 		when (outcome) {
 			ImportOutcome.SUCCESS -> {
 				imported++
+				recipeId?.let(importedRecipeIds::add)
 				if (imported % 100 == 0) println("Imported $imported so far...")
 			}
 			ImportOutcome.DUPLICATE -> duplicates++
@@ -1335,19 +1496,17 @@ fun importFilesToConnection(connection: Connection, jsonFiles: List<File>) {
 		}
 	}
 	println("Import complete. Imported=$imported Duplicates=$duplicates Errors=$errors")
+	return importedRecipeIds
 }
 
 private enum class ImportOutcome {
 	SUCCESS, DUPLICATE, ERROR
 }
 
-private fun processRecipeFile(connection: Connection, file: File): ImportOutcome {
-	val recipe = safeParseRecipeFile(file)
-	return when {
-		recipe == null -> ImportOutcome.ERROR
-		saveRecipe(connection, recipe) != null -> ImportOutcome.SUCCESS
-		else -> ImportOutcome.DUPLICATE
-	}
+private fun processRecipeFile(connection: Connection, file: File): Pair<ImportOutcome, Int?> {
+	val recipe = safeParseRecipeFile(file) ?: return ImportOutcome.ERROR to null
+	val recipeId = saveRecipe(connection, recipe) ?: return ImportOutcome.DUPLICATE to null
+	return ImportOutcome.SUCCESS to recipeId
 }
 
 private fun safeParseRecipeFile(file: File): RecipeData? {
@@ -1468,4 +1627,9 @@ println("Successfully scraped ${scraped.size} recipes")
 val alreadyInserted = scraped.count { (_, id) -> id != null }
 val duplicates = scraped.size - alreadyInserted
 println("Database import complete. Imported=$alreadyInserted Duplicates=$duplicates")
+
+if (config.calculateNutrition) {
+	val importedRecipeIds = scraped.mapNotNull { (_, recipeId) -> recipeId }
+	calculateNutritionForRecipes(importedRecipeIds)
+}
 }

@@ -5,7 +5,6 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import kotlinx.io.IOException
 import kotlinx.serialization.Serializable
@@ -37,10 +36,6 @@ suspend fun HttpResponse.handle(): Failure = when (status) {
 private suspend fun HttpResponse.errorMessage(): String {
 	val errorText = body<String>()
 
-	if (status.value !in BadRequest.value..<InternalServerError.value) {
-		return errorText
-	}
-
 	if (errorText.isBlank()) {
 		return status.description
 	}
@@ -49,10 +44,23 @@ private suspend fun HttpResponse.errorMessage(): String {
 		json.decodeFromString(ApiErrorBody.serializer(), errorText)
 	}.getOrNull()
 
-	return errorBody?.detail
-		?: errorBody?.message
-		?: errorBody?.error
-		?: errorText
+	if (errorBody != null) {
+		return if (status.value >= InternalServerError.value) {
+			errorBody.message?.takeIf { message -> message.isNotBlank() }
+				?: DEFAULT_SERVER_ERROR_MESSAGE
+		} else {
+			errorBody.detail?.takeIf { detail -> detail.isNotBlank() }
+				?: errorBody.message?.takeIf { message -> message.isNotBlank() }
+				?: errorBody.error?.takeIf { error -> error.isNotBlank() }
+				?: errorText
+		}
+	}
+
+	return if (status.value >= InternalServerError.value) {
+		DEFAULT_SERVER_ERROR_MESSAGE
+	} else {
+		errorText
+	}
 }
 
 @Serializable
@@ -61,3 +69,5 @@ private data class ApiErrorBody(
 	val error: String? = null,
 	val message: String? = null,
 )
+
+private const val DEFAULT_SERVER_ERROR_MESSAGE = "Something went wrong. Please try again."

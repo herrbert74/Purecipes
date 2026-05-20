@@ -64,6 +64,7 @@ import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPrefer
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.ui.CreateRecipeScreen
@@ -130,6 +131,7 @@ fun MainScreen(
 	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
 	sendTestNotification: SendTestNotificationUseCase,
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
+	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
@@ -287,6 +289,7 @@ fun MainScreen(
 							canUploadRecipes = canManageFavorites,
 							getCreatedRecipes = getCreatedRecipes,
 							saveCreatedRecipe = saveCreatedRecipe,
+							estimateRecipeNutrition = estimateRecipeNutrition,
 							trackEvent = trackEvent,
 							modifier = Modifier.fillMaxSize(),
 						)

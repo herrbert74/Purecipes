@@ -13,6 +13,8 @@ import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.PantryDelta
 import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.domain.model.RecipeNutritionEstimateRequest
+import app.purecipes.shared.domain.model.RecipeNutritionEstimateResponse
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.RecipeWriteRequest
 import app.purecipes.shared.domain.model.SearchFilters
@@ -82,6 +84,10 @@ class FakePurecipesApi(
 	}
 
 	override suspend fun getCreatedRecipes(): List<RecipeDetails> = createdRecipes.toList()
+
+	override suspend fun estimateRecipeNutrition(
+		request: RecipeNutritionEstimateRequest,
+	): RecipeNutritionEstimateResponse = RecipeNutritionEstimateResponse(nutrition = null)
 
 	override suspend fun createRecipe(request: RecipeWriteRequest): RecipeDetails {
 		createdRecipeRequests += request

@@ -15,10 +15,12 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -42,6 +44,9 @@ class CreateRecipeScreenTest {
 					canUploadRecipes = true,
 					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
+						FakeRecipeNutritionEstimateRepository(),
+					),
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				)
 			}
@@ -71,6 +76,9 @@ class CreateRecipeScreenTest {
 					canUploadRecipes = true,
 					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
+						FakeRecipeNutritionEstimateRepository(),
+					),
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					rememberImagePicker = { _, onImportStateChange, _ ->
 						object : RecipeImagePickerLauncher {
@@ -100,6 +108,9 @@ class CreateRecipeScreenTest {
 					canUploadRecipes = true,
 					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
+						FakeRecipeNutritionEstimateRepository(),
+					),
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					rememberImagePicker = { _, onImportStateChange, onPickerError ->
 						object : RecipeImagePickerLauncher {
@@ -129,6 +140,9 @@ class CreateRecipeScreenTest {
 					canUploadRecipes = true,
 					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
+						FakeRecipeNutritionEstimateRepository(),
+					),
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				)
 			}
@@ -152,6 +166,9 @@ class CreateRecipeScreenTest {
 					canUploadRecipes = true,
 					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
+						FakeRecipeNutritionEstimateRepository(),
+					),
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				)
 			}
@@ -172,6 +189,9 @@ class CreateRecipeScreenTest {
 					canUploadRecipes = true,
 					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
+						FakeRecipeNutritionEstimateRepository(),
+					),
 					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 				)
 			}

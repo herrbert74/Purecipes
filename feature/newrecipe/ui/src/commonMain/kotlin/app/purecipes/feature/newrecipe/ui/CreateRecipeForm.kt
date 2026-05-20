@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.NutritionSummary
+import app.purecipes.shared.ui.component.NutritionSummaryCard
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
@@ -87,7 +89,9 @@ internal fun CreateRecipeForm(
 	imageUrlInput: String,
 	ingredientsInput: String,
 	isEditing: Boolean,
+	isNutritionEstimateLoading: Boolean,
 	isSaving: Boolean,
+	nutritionEstimate: NutritionSummary?,
 	onClearImageClick: () -> Unit,
 	onCuisineChange: (Cuisine?) -> Unit,
 	onDescriptionChange: (String) -> Unit,
@@ -258,6 +262,10 @@ internal fun CreateRecipeForm(
 					.testTag(INGREDIENTS_FIELD_TAG),
 				label = { Text(text = "Ingredients") },
 				minLines = 4,
+			)
+			NutritionSummaryCard(
+				nutrition = nutritionEstimate,
+				isLoading = isNutritionEstimateLoading,
 			)
 			StepInputSection(
 				stepInputs = stepInputs,
@@ -603,7 +611,9 @@ private fun CreateRecipeFormLightPreview() {
 				imageUrlInput = "",
 				ingredientsInput = "400 g spaghetti\n2 tomatoes\n1 garlic clove",
 				isEditing = false,
+				isNutritionEstimateLoading = false,
 				isSaving = false,
+				nutritionEstimate = null,
 				onClearImageClick = {},
 				onCuisineChange = {},
 				onDescriptionChange = {},

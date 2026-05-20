@@ -210,6 +210,62 @@ internal const val COOKBOOK_RECIPES_RECIPE_INDEX_SQL = """
 	ON cookbook_recipes (recipe_id)
 """
 
+internal const val NUTRITION_FOODS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS nutrition_foods (
+		id SERIAL PRIMARY KEY,
+		source_name VARCHAR(32) NOT NULL,
+		source_id TEXT NOT NULL,
+		display_name TEXT NOT NULL,
+		normalized_name TEXT NOT NULL,
+		calories_per_100g DECIMAL(10,2),
+		protein_per_100g DECIMAL(10,2),
+		carbohydrates_per_100g DECIMAL(10,2),
+		fat_per_100g DECIMAL(10,2),
+		fiber_per_100g DECIMAL(10,2),
+		sugar_per_100g DECIMAL(10,2),
+		sodium_per_100g DECIMAL(10,2),
+		source_metadata TEXT,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (source_name, source_id)
+	)
+"""
+
+internal const val NUTRITION_FOODS_NORMALIZED_NAME_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_nutrition_foods_normalized_name
+	ON nutrition_foods (normalized_name)
+"""
+
+internal const val NUTRITION_FOOD_ALIASES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS nutrition_food_aliases (
+		id SERIAL PRIMARY KEY,
+		food_id INTEGER NOT NULL REFERENCES nutrition_foods(id) ON DELETE CASCADE,
+		alias TEXT NOT NULL,
+		normalized_alias TEXT NOT NULL,
+		UNIQUE (normalized_alias)
+	)
+"""
+
+internal const val NUTRITION_FOOD_MEASURES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS nutrition_food_measures (
+		id SERIAL PRIMARY KEY,
+		food_id INTEGER NOT NULL REFERENCES nutrition_foods(id) ON DELETE CASCADE,
+		measure_name VARCHAR(32) NOT NULL,
+		grams_per_measure DECIMAL(12,4) NOT NULL,
+		UNIQUE (food_id, measure_name)
+	)
+"""
+
+internal const val INGREDIENT_MEASUREMENTS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS ingredient_measurements (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		raw_text TEXT NOT NULL,
+		quantity DECIMAL(12,4),
+		unit VARCHAR(32),
+		parsed_name VARCHAR(255),
+		is_measurable BOOLEAN NOT NULL DEFAULT FALSE
+	)
+"""
+
 internal const val NUTRITION_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS nutrition (
 		id SERIAL PRIMARY KEY,
@@ -221,6 +277,76 @@ internal const val NUTRITION_TABLE_SQL = """
 		fiber DECIMAL(10,2),
 		sugar DECIMAL(10,2),
 		sodium DECIMAL(10,2)
+	)
+"""
+
+internal const val NUTRITION_ADD_MATCHED_INGREDIENT_COUNT_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS matched_ingredient_count INTEGER
+"""
+
+internal const val NUTRITION_ADD_TOTAL_INGREDIENT_COUNT_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_ingredient_count INTEGER
+"""
+
+internal const val NUTRITION_ADD_CALCULATION_SOURCE_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS calculation_source VARCHAR(32)
+"""
+
+internal const val NUTRITION_ADD_CONFIDENCE_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS confidence VARCHAR(32)
+"""
+
+internal const val NUTRITION_ADD_IS_COMPLETE_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS is_complete BOOLEAN
+"""
+
+internal const val NUTRITION_ADD_UPDATED_AT_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+"""
+
+internal const val NUTRITION_ADD_TOTAL_WEIGHT_GRAMS_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS total_weight_grams DECIMAL(12,4)
+"""
+
+internal const val NUTRITION_ADD_SERVING_COUNT_SQL = """
+	ALTER TABLE nutrition ADD COLUMN IF NOT EXISTS serving_count DECIMAL(8,2)
+"""
+
+internal const val INGREDIENT_NUTRITION_CONTRIBUTIONS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_contributions (
+		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
+		grams_resolved DECIMAL(12,4),
+		calories DECIMAL(10,2),
+		protein DECIMAL(10,2),
+		carbohydrates DECIMAL(10,2),
+		fat DECIMAL(10,2),
+		fiber DECIMAL(10,2),
+		sugar DECIMAL(10,2),
+		sodium DECIMAL(10,2),
+		override_calories DECIMAL(10,2),
+		override_protein DECIMAL(10,2),
+		override_carbohydrates DECIMAL(10,2),
+		override_fat DECIMAL(10,2),
+		override_fiber DECIMAL(10,2),
+		override_sugar DECIMAL(10,2),
+		override_sodium DECIMAL(10,2),
+		uses_user_override BOOLEAN NOT NULL DEFAULT FALSE,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val INGREDIENT_NUTRITION_MATCHES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS ingredient_nutrition_matches (
+		id SERIAL PRIMARY KEY,
+		ingredient_id INTEGER NOT NULL UNIQUE REFERENCES ingredients(id) ON DELETE CASCADE,
+		raw_text TEXT NOT NULL,
+		quantity DECIMAL(12,4),
+		unit VARCHAR(32),
+		parsed_name VARCHAR(255),
+		food_id INTEGER REFERENCES nutrition_foods(id) ON DELETE SET NULL,
+		confidence DECIMAL(5,4),
+		match_source VARCHAR(32),
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)
 """
 

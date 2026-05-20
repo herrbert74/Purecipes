@@ -1,0 +1,151 @@
+package app.purecipes.feature.recipedetails.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
+import app.purecipes.shared.ui.preview.PreviewScreenSizes
+import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
+import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.painterResource
+import purecipes.feature.recipedetails.ui.generated.resources.Res
+import purecipes.feature.recipedetails.ui.generated.resources.nutrition
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun RecipeDetailsTopBarActions(
+	canManageFavorites: Boolean,
+	isFavorite: Boolean,
+	isFavoriteUpdating: Boolean,
+	hasRecipe: Boolean,
+	showNutrition: Boolean,
+	onShowNutrition: () -> Unit,
+	onToggleFavorite: () -> Unit,
+	onShowCookbookSheet: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
+	FlowRow(
+		modifier = modifier.fillMaxWidth(),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+	) {
+		if (showNutrition) {
+			AssistChip(
+				onClick = onShowNutrition,
+				label = { Text(text = "Nutrition data") },
+				leadingIcon = {
+					Icon(
+						painter = painterResource(Res.drawable.nutrition),
+						contentDescription = null,
+					)
+				},
+				modifier = Modifier.testTag(NUTRITION_FACTS_BUTTON_TAG),
+			)
+		}
+		FilterChip(
+			selected = isFavorite,
+			onClick = onToggleFavorite,
+			label = { Text(text = "Favorites") },
+			leadingIcon = {
+				Icon(
+					imageVector = if (isFavorite) {
+						Icons.Filled.Favorite
+					} else {
+						Icons.Outlined.FavoriteBorder
+					},
+					contentDescription = null,
+					tint = if (isFavorite) {
+						PurecipesTheme.colorScheme.primary
+					} else {
+						PurecipesTheme.colorScheme.onSurfaceVariant
+					},
+				)
+			},
+			enabled = canManageFavorites && hasRecipe && !isFavoriteUpdating,
+		)
+		AssistChip(
+			onClick = onShowCookbookSheet,
+			label = { Text(text = "Cookbook") },
+			leadingIcon = {
+				Icon(
+					imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+					contentDescription = null,
+				)
+			},
+			enabled = canManageFavorites && isFavorite && !isFavoriteUpdating,
+		)
+	}
+}
+
+@PreviewScreenSizes
+@PreviewLightDark
+@Composable
+private fun RecipeDetailsTopBarActionsPreview(
+	@PreviewParameter(RecipeDetailsTopBarActionsPreviewParameterProvider::class)
+	previewCase: RecipeDetailsTopBarActionsPreviewCase,
+) {
+	PurecipesPreviewScaffold {
+		RecipeDetailsTopBarActions(
+			canManageFavorites = previewCase.canManageFavorites,
+			isFavorite = previewCase.isFavorite,
+			isFavoriteUpdating = false,
+			hasRecipe = true,
+			showNutrition = true,
+			onShowNutrition = {},
+			onToggleFavorite = {},
+			onShowCookbookSheet = {},
+		)
+	}
+}
+
+private data class RecipeDetailsTopBarActionsPreviewCase(
+	val canManageFavorites: Boolean,
+	val isFavorite: Boolean,
+) {
+	override fun toString(): String = if (canManageFavorites) {
+		"Signed in"
+	} else {
+		"Signed out"
+	}
+}
+
+private class RecipeDetailsTopBarActionsPreviewParameterProvider :
+	PreviewParameterProvider<RecipeDetailsTopBarActionsPreviewCase> {
+	override val values: Sequence<RecipeDetailsTopBarActionsPreviewCase> = sequenceOf(
+		RecipeDetailsTopBarActionsPreviewCase(
+			canManageFavorites = true,
+			isFavorite = true,
+		),
+		RecipeDetailsTopBarActionsPreviewCase(
+			canManageFavorites = true,
+			isFavorite = false,
+		),
+		RecipeDetailsTopBarActionsPreviewCase(
+			canManageFavorites = false,
+			isFavorite = false,
+		),
+	)
+
+	override fun getDisplayName(index: Int): String? {
+		return when (index) {
+			0 -> "Favorite"
+			1 -> "NOT Favorite"
+			else -> "Favorite disabled"
+		}
+	}
+}
