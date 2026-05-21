@@ -154,7 +154,7 @@ fun printUsageAndExit(message: String? = null): Nothing {
 	System.err.println(
 		"""
 	Usage:
-		kotlin scripts/recipe_site_scraper.main.kts -- <website> <output_dir> [options]
+		kotlin scripts/scraping/recipe_site_scraper.main.kts <website> <output_dir> [options]
 
 	Options:
 		--mode web|json                            Default: web
