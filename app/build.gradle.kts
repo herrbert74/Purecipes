@@ -1,5 +1,8 @@
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+
 plugins {
 	alias(libs.plugins.androidApplication)
+	alias(libs.plugins.appDistribution)
 	alias(libs.plugins.googleServices)
 	alias(libs.plugins.crashlytics)
 	alias(libs.plugins.ksp)
@@ -47,6 +50,14 @@ android {
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+			firebaseAppDistribution {
+				artifactType = "APK"
+				releaseNotesFile = rootProject.layout.buildDirectory.file("release-notes.txt").get().asFile.path
+				groups = "alpha-testers"
+				val credentialsFile = providers.gradleProperty("firebaseAppDistribution.serviceCredentialsFile")
+					.orElse(providers.environmentVariable("GOOGLE_APPLICATION_CREDENTIALS"))
+				credentialsFile.orNull?.let { serviceCredentialsFile = it }
+			}
 		}
 		create("staging") {
 			initWith(getByName("release"))
