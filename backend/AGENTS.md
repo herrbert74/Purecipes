@@ -12,7 +12,7 @@ When modifying the database schema:
 
 1. **Update schema definition** - Add or modify SQL table definitions in `SchemaSql.kt`
 2. **Update migration statements** - Add new `ALTER TABLE` or other migration SQL statements to `Db.kt`'s `ensureSchema()` function
-3. **Sync the scraper** - The recipe scraper script at `scripts/recipe_site_scraper.main.kts` maintains its own embedded schema and insertion logic. Review and update:
+3. **Sync the scraper** - The recipe scraper script at `scripts/scraping/recipe_site_scraper.main.kts` maintains its own embedded schema and insertion logic. Review and update:
    - The `ensureSchema()` function and SQL statements in the scraper
    - The `saveRecipe()` function to insert values into new columns
    - The `RecipeData` class to include new fields parsed from recipes
@@ -28,7 +28,7 @@ When modifying the database schema:
 
 Recipe data flows through two pipelines:
 
-1. **Web Scraper Pipeline** (`scripts/recipe_site_scraper.main.kts`):
+1. **Web Scraper Pipeline** (`scripts/scraping/recipe_site_scraper.main.kts`):
    - Fetches recipes from external websites
    - Scrapes and normalizes recipe data
    - Inserts into database via JDBC

@@ -1,6 +1,6 @@
-# Scripts Agent Guidelines
+# Scraping scripts — agent guidelines
 
-Guidelines for maintaining and extending the Purecipes recipe scraper and related scripts.
+Guidelines for maintaining [`recipe_site_scraper.main.kts`](recipe_site_scraper.main.kts).
 
 ## Rule: Recipe Scraper Schema Synchronization
 
@@ -8,7 +8,7 @@ The backend database schema (`backend/src/main/kotlin/com/purecipes/db/SchemaSql
 - Backend API requirements (new fields needed by the API)
 - Scraper requirements (new recipe attributes to extract and store)
 
-The scraper script (`recipe_site_scraper.main.kts`) embeds its own database schema and insertion logic and runs independently of the backend codebase.
+The scraper script embeds its own database schema and insertion logic and runs independently of the backend codebase.
 
 When the backend database schema changes (from either direction):
 

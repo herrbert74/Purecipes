@@ -72,4 +72,4 @@ After seed data is loaded, parse ingredient lines, persist measurements and matc
 
 The calculator writes `ingredient_measurements`, `ingredient_nutrition_matches`, and upserts `nutrition` when at least one ingredient matched. Backfill output lists recipes with partial or missing totals and aggregates unmatched parsed ingredient names so aliases and measures can be improved.
 
-New scraped recipes are calculated automatically when using the recipe scraper with default `--calculate-nutrition true` (see `scripts/README.md`).
+New scraped recipes are calculated automatically when using the recipe scraper with default `--calculate-nutrition true` (see [`scripts/scraping/README.md`](../../scripts/scraping/README.md)).
