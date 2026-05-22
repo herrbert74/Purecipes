@@ -3,9 +3,9 @@ package app.purecipes.backend.feature.favorites
 import app.purecipes.backend.feature.recipe.RecipeRepository
 import app.purecipes.backend.feature.recipe.RecipeRepositorySql
 import app.purecipes.backend.feature.recipe.getNullableMeasurementSystem
-import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.domain.model.cuisineFromRawValue
 import java.sql.Connection
 import javax.sql.DataSource
 
@@ -82,7 +82,7 @@ class FavoritesRepository(
 				RecipeSummary(
 					id = recipeId,
 					title = rs.getString("title"),
-					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
+					cuisine = cuisineFromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
 					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")

@@ -12,6 +12,7 @@ import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.RecipeWriteRequest
+import app.purecipes.shared.domain.model.cuisineFromRawValue
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
@@ -142,7 +143,7 @@ class RecipeRepository(
 			id = recipeRecord.id,
 			title = recipeRecord.title,
 			description = recipeRecord.description ?: buildDescription(
-				cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
+				cuisine = cuisineFromRawValue(recipeRecord.cuisine),
 				mealType = mealType,
 				totalTime = recipeRecord.totalTime,
 				yields = recipeRecord.yields,
@@ -152,7 +153,7 @@ class RecipeRepository(
 			steps = steps,
 			totalTime = recipeRecord.totalTime,
 			yields = recipeRecord.yields,
-			cuisine = Cuisine.fromRawValue(recipeRecord.cuisine),
+			cuisine = cuisineFromRawValue(recipeRecord.cuisine),
 			measurementSystem = measurementSystem,
 			isFavorite = isFavorite,
 			mealType = mealType,
@@ -192,7 +193,7 @@ class RecipeRepository(
 				RecipeSummary(
 					id = recipeId,
 					title = rs.getString("title"),
-					cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
+					cuisine = cuisineFromRawValue(rs.getString("cuisine")),
 					imageUrl = rs.getString("image_url"),
 					totalTime = rs.getObject("total_time") as? Int,
 					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")

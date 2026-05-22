@@ -13,6 +13,7 @@ import kotlinx.serialization.encoding.Encoder
 enum class Cuisine(
 	val displayName: String,
 ) {
+
 	AMERICAN("American"),
 	ARGENTINE("Argentine"),
 	BANGLADESHI("Bangladeshi"),
@@ -47,22 +48,21 @@ enum class Cuisine(
 	WEST_AFRICAN("West African");
 
 	override fun toString(): String = displayName
+}
 
-	companion object {
-		fun fromRawValue(value: String?): Cuisine? {
-			if (value == null) return null
-			val normalizedValue = value.trim().normalizeCuisineToken()
-			if (normalizedValue.isEmpty()) return null
+fun cuisineFromRawValue(value: String?): Cuisine? {
+	if (value == null) return null
+	val normalizedValue = value.trim().normalizeCuisineToken()
+	if (normalizedValue.isEmpty()) return null
 
-			return entries.firstOrNull { cuisine ->
-				cuisine.name.normalizeCuisineToken() == normalizedValue ||
-					cuisine.displayName.normalizeCuisineToken() == normalizedValue
-			}
-		}
+	return Cuisine.entries.firstOrNull { cuisine ->
+		cuisine.name.normalizeCuisineToken() == normalizedValue ||
+			cuisine.displayName.normalizeCuisineToken() == normalizedValue
 	}
 }
 
 object CuisineSerializer : KSerializer<Cuisine> {
+
 	override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Cuisine", PrimitiveKind.STRING)
 
 	override fun serialize(encoder: Encoder, value: Cuisine) {
@@ -70,7 +70,7 @@ object CuisineSerializer : KSerializer<Cuisine> {
 	}
 
 	override fun deserialize(decoder: Decoder): Cuisine {
-		return Cuisine.fromRawValue(decoder.decodeString())
+		return cuisineFromRawValue(decoder.decodeString())
 			?: throw SerializationException("Unknown cuisine value")
 	}
 }

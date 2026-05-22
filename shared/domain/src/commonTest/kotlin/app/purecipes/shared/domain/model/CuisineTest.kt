@@ -13,12 +13,12 @@ class CuisineTest {
 
 	@Test
 	fun cuisineParserAcceptsDisplayNameAndEnumName() {
-		Cuisine.fromRawValue("Middle Eastern") shouldBe Cuisine.MIDDLE_EASTERN
-		Cuisine.fromRawValue("middle_eastern") shouldBe Cuisine.MIDDLE_EASTERN
+		cuisineFromRawValue("Middle Eastern") shouldBe Cuisine.MIDDLE_EASTERN
+		cuisineFromRawValue("middle_eastern") shouldBe Cuisine.MIDDLE_EASTERN
 	}
 
 	@Test
 	fun cuisineParserReturnsNullForUnknownValue() {
-		Cuisine.fromRawValue("Martian") shouldBe null
+		cuisineFromRawValue("Martian") shouldBe null
 	}
 }

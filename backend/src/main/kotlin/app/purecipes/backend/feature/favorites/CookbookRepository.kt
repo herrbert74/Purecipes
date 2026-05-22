@@ -3,10 +3,10 @@ package app.purecipes.backend.feature.favorites
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
-import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.domain.model.cuisineFromRawValue
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -270,7 +270,7 @@ class CookbookRepository(
 			out += RecipeSummary(
 				id = recipeId,
 				title = rs.getString("title"),
-				cuisine = Cuisine.fromRawValue(rs.getString("cuisine")),
+				cuisine = cuisineFromRawValue(rs.getString("cuisine")),
 				imageUrl = rs.getString("image_url"),
 				totalTime = rs.getObject("total_time") as? Int,
 				measurementSystem = rs.getNullableMeasurementSystem("measurement_system"),
