@@ -71,7 +71,7 @@ The scraper supports two operating modes:
 
 Both modes share the same `saveRecipe()` insertion logic, so they must remain in sync regarding schema and duplicate detection.
 
-After a successful postgres import batch, web and json modes optionally invoke `./gradlew calculateRecipeNutrition -Pnutrition.recipeIds=...` (controlled by `--calculate-nutrition`, default `true`). Scraped website nutrient values are only written to `nutrition` when the JSON includes parseable numbers; calculated nutrition fills in or updates rows via the backend calculator.
+After a successful postgres import batch, web and json modes optionally invoke `./gradlew calculateRecipeNutrition -Pnutrition.recipeIds=...` (controlled by `--calculate-nutrition`, default `true`). The subprocess receives `PURECIPES_DB_URL`, `PURECIPES_DB_USER`, and `PURECIPES_DB_PASSWORD` derived from the same `--db-*` flags as the scraper import. Scraped website nutrient values are only written to `nutrition` when the JSON includes parseable numbers; calculated nutrition fills in or updates rows via the backend calculator.
 
 ## Rule: Change Validation for Scraper Changes
 

@@ -1353,7 +1353,15 @@ private fun findRepoRoot(): java.nio.file.Path? {
 		}
 }
 
-fun calculateNutritionForRecipes(recipeIds: List<Int>) {
+fun nutritionDatabaseEnvironment(config: Config): Map<String, String> = buildMap {
+	put("PURECIPES_DB_URL", buildJdbcUrl(config))
+	val user = config.dbUser
+		?: printUsageAndExit("For postgres mode provide --db-user (or include credentials in --db-dsn)")
+	put("PURECIPES_DB_USER", user)
+	config.dbPassword?.let { password -> put("PURECIPES_DB_PASSWORD", password) }
+}
+
+fun calculateNutritionForRecipes(config: Config, recipeIds: List<Int>) {
 	if (recipeIds.isEmpty()) {
 		return
 	}
@@ -1379,6 +1387,7 @@ fun calculateNutritionForRecipes(recipeIds: List<Int>) {
 	)
 		.directory(repoRoot.toFile())
 		.redirectErrorStream(true)
+		.apply { environment().putAll(nutritionDatabaseEnvironment(config)) }
 		.start()
 
 	process.inputStream.bufferedReader().use { reader ->
@@ -1473,7 +1482,7 @@ fun importJsonFilesToDb(config: Config, recipesDir: File) {
 		ensureSchema(connection)
 		val importedRecipeIds = importFilesToConnection(connection, jsonFiles)
 		if (config.calculateNutrition) {
-			calculateNutritionForRecipes(importedRecipeIds)
+			calculateNutritionForRecipes(config, importedRecipeIds)
 		}
 	}
 }
@@ -1630,6 +1639,6 @@ println("Database import complete. Imported=$alreadyInserted Duplicates=$duplica
 
 if (config.calculateNutrition) {
 	val importedRecipeIds = scraped.mapNotNull { (_, recipeId) -> recipeId }
-	calculateNutritionForRecipes(importedRecipeIds)
+	calculateNutritionForRecipes(config, importedRecipeIds)
 }
 }

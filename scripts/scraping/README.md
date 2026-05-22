@@ -50,7 +50,7 @@ Batch:
 - `--sleep-seconds <n>` (default `0.4`)
 - `--urls-file <path>` — skip API discovery
 - `--precheck-db true|false` (default `true`)
-- `--calculate-nutrition true|false` (default `true`)
+- `--calculate-nutrition true|false` (default `true`; uses the same `--db-*` connection as the import)
 
 Database (defaults shown):
 
