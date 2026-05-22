@@ -23,6 +23,7 @@ class AuthenticationRouteTest {
 	fun `blank google token yields 400`() = testApplication {
 		application {
 			module(
+				db = createInMemoryDb("authentication_route"),
 				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Should not be called"),
 				),
@@ -43,6 +44,7 @@ class AuthenticationRouteTest {
 		val sessionService = FakeSessionService()
 		application {
 			module(
+				db = createInMemoryDb("authentication_route"),
 				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Success(
 						VerifiedGoogleUser(
@@ -78,6 +80,7 @@ class AuthenticationRouteTest {
 	fun `invalid google token yields 401`() = testApplication {
 		application {
 			module(
+				db = createInMemoryDb("authentication_route"),
 				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Google token verification failed"),
 				),
@@ -97,6 +100,7 @@ class AuthenticationRouteTest {
 	fun `current session requires bearer token`() = testApplication {
 		application {
 			module(
+				db = createInMemoryDb("authentication_route"),
 				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
 				),
@@ -124,6 +128,7 @@ class AuthenticationRouteTest {
 		)
 		application {
 			module(
+				db = createInMemoryDb("authentication_route"),
 				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
 				),
@@ -161,6 +166,7 @@ class AuthenticationRouteTest {
 		)
 		application {
 			module(
+				db = createInMemoryDb("authentication_route"),
 				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
 					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
 				),

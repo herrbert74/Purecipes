@@ -17,14 +17,13 @@ import io.ktor.http.contentType
 import io.ktor.server.routing.get
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import org.h2.jdbcx.JdbcDataSource
 import kotlin.test.Test
 
 class RecipeSearchRouteTest {
 
 	@Test
 	fun `missing query yields 400`() = testApplication {
-		application { module() }
+		application { module(db = createInMemoryDb("recipe_search_route")) }
 
 		val response = client.get("/recipes/search")
 		response.status shouldBe HttpStatusCode.BadRequest
@@ -33,7 +32,7 @@ class RecipeSearchRouteTest {
 
 	@Test
 	fun `health endpoint returns ok`() = testApplication {
-		application { module() }
+		application { module(db = createInMemoryDb("recipe_search_route")) }
 
 		val response = client.get("/health")
 		response.status shouldBe HttpStatusCode.OK
@@ -43,11 +42,14 @@ class RecipeSearchRouteTest {
 	@Test
 	fun `unhandled exception yields message and detail`() = testApplication {
 		application {
-			module(extraRoutes = {
-				get("/boom") {
-					error("kaboom")
-				}
-			})
+			module(
+				db = createInMemoryDb("recipe_search_route"),
+				extraRoutes = {
+					get("/boom") {
+						error("kaboom")
+					}
+				},
+			)
 		}
 
 		val response = client.get("/boom")
@@ -58,7 +60,7 @@ class RecipeSearchRouteTest {
 
 	@Test
 	fun `invalid recipe id yields 400`() = testApplication {
-		application { module() }
+		application { module(db = createInMemoryDb("recipe_search_route")) }
 
 		val response = client.get("/recipes/not-a-number")
 		response.status shouldBe HttpStatusCode.BadRequest
@@ -67,7 +69,7 @@ class RecipeSearchRouteTest {
 
 	@Test
 	fun `invalid favorite recipe id yields 400 on add`() = testApplication {
-		application { module() }
+		application { module(db = createInMemoryDb("recipe_search_route")) }
 
 		val response = client.post("/favorites/not-a-number")
 		response.status shouldBe HttpStatusCode.BadRequest
@@ -76,7 +78,7 @@ class RecipeSearchRouteTest {
 
 	@Test
 	fun `invalid favorite recipe id yields 400 on delete`() = testApplication {
-		application { module() }
+		application { module(db = createInMemoryDb("recipe_search_route")) }
 
 		val response = client.delete("/favorites/not-a-number")
 		response.status shouldBe HttpStatusCode.BadRequest
@@ -588,15 +590,7 @@ class RecipeSearchRouteTest {
 		response.status shouldBe HttpStatusCode.OK
 	}
 
-	private fun createDb(): Db {
-		val dbName = "recipe_search_${System.nanoTime()}"
-		val dataSource = JdbcDataSource().apply {
-			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
-			user = "sa"
-			password = ""
-		}
-		return Db.fromDataSource(dataSource)
-	}
+	private fun createDb(): Db = createInMemoryDb("recipe_search")
 
 	private fun seedAppUsers(db: Db) {
 		db.dataSource.connection.use { connection ->
