@@ -52,7 +52,8 @@ class RecipeSearchRouteTest {
 
 		val response = client.get("/boom")
 		response.status shouldBe HttpStatusCode.InternalServerError
-		response.bodyAsText() shouldBe """{"message":"Unexpected error","detail":"kaboom"}"""
+		response.bodyAsText() shouldBe
+			"""{"message":"Something went wrong. Please try again.","detail":"kaboom"}"""
 	}
 
 	@Test
@@ -444,44 +445,44 @@ class RecipeSearchRouteTest {
 	@Test
 	fun `persisted pantry filtering applies before paging and returns total matches`() =
 		testApplication {
-		val db = createDb()
-		seedAppUsers(db)
-		val sessionService = FakeSessionService(
-			initialSessions = listOf(
-				FakeSessionService.createSession(),
-			),
-			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
-		)
-
-		application {
-			module(
-				db = db,
-				sessionService = sessionService,
+			val db = createDb()
+			seedAppUsers(db)
+			val sessionService = FakeSessionService(
+				initialSessions = listOf(
+					FakeSessionService.createSession(),
+				),
+				createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
 			)
-		}
 
-		repeat(26) { index ->
-			createRecipe(
+			application {
+				module(
+					db = db,
+					sessionService = sessionService,
+				)
+			}
+
+			repeat(26) { index ->
+				createRecipe(
+					accessToken = sessionService.session.accessToken,
+					title = "Non match $index",
+					ingredients = listOf("Rice", "Butter"),
+				)
+			}
+
+			repeat(4) { index ->
+				createRecipe(
+					accessToken = sessionService.session.accessToken,
+					title = "Match $index",
+					ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+				)
+			}
+			updatePantry(
 				accessToken = sessionService.session.accessToken,
-				title = "Non match $index",
-				ingredients = listOf("Rice", "Butter"),
+				add = listOf("Chicken", "Tomato", "Salt"),
 			)
-		}
 
-		repeat(4) { index ->
-			createRecipe(
-				accessToken = sessionService.session.accessToken,
-				title = "Match $index",
-				ingredients = listOf("Chicken breast", "Tomato", "Salt"),
-			)
-		}
-		updatePantry(
-			accessToken = sessionService.session.accessToken,
-			add = listOf("Chicken", "Tomato", "Salt"),
-		)
-
-		val responseBody = searchWithFilters(
-			"""
+			val responseBody = searchWithFilters(
+				"""
 				{
 					"query": "",
 					"pageNumber": 1,
@@ -489,13 +490,13 @@ class RecipeSearchRouteTest {
 					"filters": {}
 				}
 			""".trimIndent(),
-			accessToken = sessionService.session.accessToken,
-		)
+				accessToken = sessionService.session.accessToken,
+			)
 
-		responseBody.contains("\"totalMatches\":4") shouldBe true
-		responseBody.contains("Match 0") shouldBe true
-		responseBody.contains("Match 3") shouldBe true
-	}
+			responseBody.contains("\"totalMatches\":4") shouldBe true
+			responseBody.contains("Match 0") shouldBe true
+			responseBody.contains("Match 3") shouldBe true
+		}
 
 	private suspend fun ApplicationTestBuilder.createRecipe(
 		accessToken: String,

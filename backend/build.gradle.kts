@@ -100,6 +100,12 @@ tasks.jar {
 	}
 }
 
+tasks.register("jvmTest") {
+	group = "verification"
+	description = "Runs JVM unit tests."
+	dependsOn(tasks.test)
+}
+
 tasks.register<JavaExec>("reportUnknownIngredients") {
 	group = "verification"
 	description = "Reports recipe ingredients that do not match app ingredient options"

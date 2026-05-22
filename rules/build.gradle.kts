@@ -6,6 +6,12 @@ tasks.withType<Test>().configureEach {
 	useJUnitPlatform()
 }
 
+tasks.register("jvmTest") {
+	group = "verification"
+	description = "Runs JVM unit tests."
+	dependsOn(tasks.test)
+}
+
 dependencies {
 	compileOnly(libs.detekt.api)
 	testImplementation(libs.detekt.test)
