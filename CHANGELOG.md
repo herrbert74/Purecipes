@@ -4,6 +4,29 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.0] - 2026-05-24
+
+### Added
+
+- Nutrition summary on recipe details when data is available (calories, protein, carbohydrates, fat, and more).
+- Live nutrition estimate while creating or editing a recipe as you add ingredients.
+- Reset your password if you forget your sign-in credentials.
+- Delete your account from account settings.
+- More ingredient categories for search and recipe filtering.
+- Email verification after signing up with email.
+
+### Changed
+
+- Collapsible search bar on the recipe search screen so you can see more results at a glance.
+- Redesigned account area with clearer layout and navigation.
+- Separate sign-in and registration screens with clearer password rules and field-level error messages.
+- Single display name instead of separate first and last name when signing up.
+- Password fields include a show/hide toggle.
+
+### Fixed
+
+- Email sign-in and registration reliability, including clearer validation feedback.
+
 ## [0.1.0] - 2026-01-01
 
 ### Added
