@@ -680,7 +680,7 @@ val ingredientHeadingExactFilters = setOf(
 	"toppings",
 )
 
-const val maxIngredientLength = 255
+val maxIngredientLength = 255
 
 val ingredientQuantityWithUnitPattern =
 	"""(?:\d+(?:\s+\d+/\d+|/\d+)?|\d+\s+\d+/\d+)\s*(?:""" +
@@ -1145,8 +1145,8 @@ fun normalizeScrapedNutrients(raw: Map<String, String?>): Map<String, String?> {
 	val rawByLowerKey = raw.mapKeys { (key, _) -> key.lowercase(Locale.ROOT) }
 	return scrapedNutrientKeyAliases.mapNotNull { (canonical, aliases) ->
 		val value = aliases.firstNotNullOfOrNull { alias ->
-			raw[alias]?.takeIf { !it.isNullOrBlank() }
-				?: rawByLowerKey[alias.lowercase(Locale.ROOT)]?.takeIf { !it.isNullOrBlank() }
+			raw[alias]?.takeIf { it.isNotBlank() }
+				?: rawByLowerKey[alias.lowercase(Locale.ROOT)]?.takeIf { it.isNotBlank() }
 		}
 		value?.let { canonical to it }
 	}.toMap()
