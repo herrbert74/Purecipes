@@ -10,22 +10,30 @@ Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.
 
 | Script | Role |
 |--------|------|
-| [`open_android_release_pr.main.kts`](open_android_release_pr.main.kts) | After you draft `CHANGELOG.md`, bump versions and open a review PR via `gh` |
 | [`bump_android_version.main.kts`](bump_android_version.main.kts) | Set `versionName` / increment `versionCode` in `gradle/libs.versions.toml` |
+| [`open_android_release_pr.main.kts`](open_android_release_pr.main.kts) | Validate changelog, bump versions, commit, and push branch `release/v<version>-changelog` (open PR via GitHub MCP) |
 | [`extract_release_notes.main.kts`](extract_release_notes.main.kts) | Extract a version section from `CHANGELOG.md` → `build/release-notes.txt` (CI on tag) |
 
 ## Prepare a release (local, no CI)
 
 1. Ensure `main` CI is green.
 2. With your AI assistant and the **GitHub MCP server**, gather merged PRs since the previous tag. Draft a new `## [version]` section in [`CHANGELOG.md`](../../CHANGELOG.md) using [`.github/prompts/android-release-changelog.md`](../../.github/prompts/android-release-changelog.md). Edit until accurate.
-3. Open the PR:
+3. Bump `versionName` and increment `versionCode` in [`gradle/libs.versions.toml`](../../gradle/libs.versions.toml) (release builds read both from this file):
 
-```bash
-kotlin scripts/release/open_android_release_pr.main.kts 0.2.0 v0.1.0 true
-```
+   ```bash
+   kotlin scripts/release/bump_android_version.main.kts 0.2.0 true
+   ```
 
-4. Review the PR on GitHub; merge when ready.
-5. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` and `git push origin v0.2.0`.
+4. Open PR `release/v<version>-changelog` with GitHub MCP (`create_branch`, `push_files`, `create_pull_request`), or push with local `git` after:
+
+   ```bash
+   kotlin scripts/release/open_android_release_pr.main.kts 0.2.0 0.1.0 true
+   ```
+
+   Then use GitHub MCP `create_pull_request` (see suggested body in `build/release-pr-body.md`).
+
+5. Review the PR on GitHub; merge when ready.
+6. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` and `git push origin v0.2.0`.
 
 ## CI
 

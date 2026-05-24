@@ -9,8 +9,9 @@ Release automation lives in `scripts/release/*.main.kts`. Prefer Kotlin scripts 
 ## Rule: Prepare releases locally with GitHub MCP
 
 - Draft `CHANGELOG.md` locally using the GitHub MCP server and [`.github/prompts/android-release-changelog.md`](../../.github/prompts/android-release-changelog.md).
+- Bump `versionName` and increment `versionCode` in `gradle/libs.versions.toml` (see [`bump_android_version.main.kts`](bump_android_version.main.kts)); release builds use these values.
+- Open the release PR with GitHub MCP (`create_branch`, `push_files`, `create_pull_request`). Never commit release prep directly to `main`.
 - Do not add changelog LLM API keys or OpenAI calls to GitHub Actions.
-- After the maintainer reviews the changelog section, run [`open_android_release_pr.main.kts`](open_android_release_pr.main.kts) to open a PR (never commit release prep directly to `main`).
 
 See [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md).
 

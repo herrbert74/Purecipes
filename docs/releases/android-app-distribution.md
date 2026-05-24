@@ -34,11 +34,17 @@ Never tag before the changelog PR is merged.
 
 1. Ensure `main` CI is green.
 2. **Locally (AI assistant + GitHub MCP):** list merged PRs since the previous tag; draft and review `## [version]` in [CHANGELOG.md](../../CHANGELOG.md) (see [prompt](../../.github/prompts/android-release-changelog.md)).
-3. **Locally:** run `kotlin scripts/release/open_android_release_pr.main.kts <version> <previous_tag> true` to bump `versionCode` / `versionName` and open PR `release/v<version>-changelog`.
-4. Review and merge the PR.
-5. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` then `git push origin v0.2.0` (optional suffix, e.g. `v0.2.0-rc.1`).
-6. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds, uploads to Firebase.
-7. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing).
+3. **Locally:** bump `versionName` and increment `versionCode` in [gradle/libs.versions.toml](../../gradle/libs.versions.toml) (release APKs use these values):
+
+   ```bash
+   kotlin scripts/release/bump_android_version.main.kts 0.2.0 true
+   ```
+
+4. **GitHub MCP:** push `CHANGELOG.md` and `gradle/libs.versions.toml` on branch `release/v<version>-changelog` and open a PR to `main` (`create_branch`, `push_files`, `create_pull_request`). Optional: [`open_android_release_pr.main.kts`](../../scripts/release/open_android_release_pr.main.kts) for local `git` push, then `create_pull_request`.
+5. Review and merge the PR.
+6. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` then `git push origin v0.2.0` (optional suffix, e.g. `v0.2.0-rc.1`).
+7. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds, uploads to Firebase.
+8. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing).
 
 ## Tag naming
 
@@ -48,7 +54,8 @@ Never tag before the changelog PR is merged.
 ## Local commands
 
 ```bash
-kotlin scripts/release/open_android_release_pr.main.kts 0.2.0 v0.1.0 true
+kotlin scripts/release/bump_android_version.main.kts 0.2.0 true
+kotlin scripts/release/open_android_release_pr.main.kts 0.2.0 0.1.0 true
 kotlin scripts/release/extract_release_notes.main.kts 0.2.0
 ```
 

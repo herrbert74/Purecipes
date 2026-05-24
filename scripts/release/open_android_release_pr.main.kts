@@ -91,7 +91,8 @@ fun main(args: Array<String>) {
 		)
 		System.err.println("  <version> <previous_tag> [bump_version_code]")
 		System.err.println("  Requires CHANGELOG.md section ## [version] drafted locally first.")
-		System.err.println("  Requires git and gh CLI authenticated for this repository.")
+		System.err.println("  Requires git authenticated for this repository.")
+		System.err.println("  Open the PR with GitHub MCP create_pull_request (see build/release-pr-body.md).")
 		kotlin.system.exitProcess(1)
 	}
 	val version = args[0]
@@ -110,18 +111,6 @@ fun main(args: Array<String>) {
 	}
 
 	val branch = "release/v$version-changelog"
-	runCommand(root, "git", "fetch", "origin", "main")
-	runCommand(root, "git", "checkout", "main")
-	runCommand(root, "git", "pull", "--ff-only", "origin", "main")
-
-	val notesOnMain = changelogSectionLines(changelogFile, version)
-	if (!changelogSectionHasContent(notesOnMain)) {
-		error(
-			"CHANGELOG.md on main has no content for $version; " +
-				"merge or copy your section onto main before running this script",
-		)
-	}
-
 	bumpVersion(versionsFile, version, bumpCode)
 	runCommand(root, "git", "checkout", "-b", branch)
 	runCommand(root, "git", "add", "CHANGELOG.md", "gradle/libs.versions.toml")
@@ -147,21 +136,12 @@ fun main(args: Array<String>) {
 	val bodyFile = File(root, "build/release-pr-body.md")
 	bodyFile.parentFile?.mkdirs()
 	bodyFile.writeText(prBody)
-	runCommand(
-		root,
-		"gh",
-		"pr",
-		"create",
-		"--base",
-		"main",
-		"--head",
-		branch,
-		"--title",
-		"Release $version changelog",
-		"--body-file",
-		bodyFile.absolutePath,
-	)
-	println("Opened pull request for release $version")
+	println("Pushed branch $branch")
+	println("Open a PR with GitHub MCP create_pull_request:")
+	println("  title: Release $version changelog")
+	println("  base: main")
+	println("  head: $branch")
+	println("  body: ${bodyFile.absolutePath}")
 }
 
 main(args)
