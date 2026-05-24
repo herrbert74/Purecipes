@@ -54,6 +54,24 @@ internal fun insertRecipeWithIngredients(
 		recipeId
 	}
 
+internal fun insertScrapedRecipeNutrition(
+	dataSource: DataSource,
+	recipeId: Int,
+	calories: java.math.BigDecimal,
+): Unit =
+	dataSource.connection.use { connection ->
+		connection.prepareStatement(
+			"""
+			INSERT INTO nutrition (recipe_id, calories, calculation_source)
+			VALUES (?, ?, 'scraped')
+			""".trimIndent(),
+		).use { statement ->
+			statement.setInt(1, recipeId)
+			statement.setBigDecimal(2, calories)
+			statement.executeUpdate()
+		}
+	}
+
 internal fun readRecipeCalories(dataSource: DataSource, recipeId: Int): java.math.BigDecimal? =
 	dataSource.connection.use { connection ->
 		connection.prepareStatement(

@@ -21,6 +21,8 @@ Keep detailed, tool-agnostic guidance under:
 
 Agents should treat those files as extensions of this document when the task matches them.
 
+For scraping, PostgreSQL maintenance, and deleting imported recipes by site, also follow [`scripts/scraping/AGENTS.md`](scripts/scraping/AGENTS.md) (including local `psql` via `sudo -u postgres`).
+
 ---
 
 ## Project structure

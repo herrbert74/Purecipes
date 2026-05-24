@@ -94,6 +94,21 @@ internal class RecipeNutritionRepository(
 			}
 		}
 
+	fun loadNutritionCalculationSource(recipeId: Int): String? =
+		dataSource.connection.use { connection ->
+			readNutritionCalculationSource(connection, recipeId)
+		}
+
+	private fun readNutritionCalculationSource(connection: Connection, recipeId: Int): String? =
+		connection.prepareStatement(
+			"SELECT calculation_source FROM nutrition WHERE recipe_id = ?",
+		).use { statement ->
+			statement.setInt(1, recipeId)
+			statement.executeQuery().use { resultSet ->
+				resultSet.takeIf { row -> row.next() }?.getString("calculation_source")
+			}
+		}
+
 	fun listRecipeIds(): List<Int> =
 		dataSource.connection.use { connection ->
 			connection.createStatement().use { statement ->

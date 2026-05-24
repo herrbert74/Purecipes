@@ -73,6 +73,43 @@ Both modes share the same `saveRecipe()` insertion logic, so they must remain in
 
 After a successful postgres import batch, web and json modes optionally invoke `./gradlew calculateRecipeNutrition -Pnutrition.recipeIds=...` (controlled by `--calculate-nutrition`, default `true`). The subprocess receives `PURECIPES_DB_URL`, `PURECIPES_DB_USER`, and `PURECIPES_DB_PASSWORD` derived from the same `--db-*` flags as the scraper import. Scraped website nutrient values are only written to `nutrition` when the JSON includes parseable numbers; calculated nutrition fills in or updates rows via the backend calculator.
 
+## Rule: PostgreSQL CLI (local development)
+
+On some macOS/Linux setups, bare `psql` (or `psql -U postgres`) fails unless you run it as the OS **`postgres`** user (lowercase). Use:
+
+```bash
+sudo -u postgres psql -d purecipes -c "<SQL>"
+```
+
+Match `-d` to the scraper/backend database name (default `purecipes`). Do not rely on `-U POSTGRES` or other uppercase spellings.
+
+## Rule: Deleting scraped recipes for one site
+
+Scraped recipes are rows in `recipes` identified by `source_url` (for example `https://www.seriouseats.com/...`). There is no per-site table.
+
+**Cascade behavior:** Related rows are removed automatically because child tables use foreign keys with `ON DELETE CASCADE` on `recipe_id` (see `backend/src/main/kotlin/app/purecipes/backend/db/SchemaSql.kt` — `ingredient_groups`, `ingredients`, `instruction_steps`, `nutrition`, `favorites`, `cookbook_recipes`, etc.). You do **not** add a `CASCADE` keyword to the `DELETE` statement; PostgreSQL applies the FK cascade when parent `recipes` rows are deleted.
+
+Preview count (Serious Eats example):
+
+```bash
+sudo -u postgres psql -d purecipes -c "
+SELECT COUNT(*) AS seriouseats_recipes
+FROM recipes
+WHERE source_url ILIKE '%seriouseats.com%';
+"
+```
+
+Delete all Serious Eats scraped recipes:
+
+```bash
+sudo -u postgres psql -d purecipes -c "
+DELETE FROM recipes
+WHERE source_url ILIKE '%seriouseats.com%';
+"
+```
+
+This is irreversible unless you have a backup or the JSON files under the scrape output directory. Favorites and cookbook membership for those recipes are removed as part of the cascade.
+
 ## Rule: Change Validation for Scraper Changes
 
 For scraper script changes:

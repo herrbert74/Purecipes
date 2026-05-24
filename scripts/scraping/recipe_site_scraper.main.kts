@@ -680,6 +680,90 @@ val ingredientHeadingExactFilters = setOf(
 	"toppings",
 )
 
+const val maxIngredientLength = 255
+
+val ingredientQuantityWithUnitPattern =
+	"""(?:\d+(?:\s+\d+/\d+|/\d+)?|\d+\s+\d+/\d+)\s*(?:""" +
+		"""pound|pounds|lb|lbs|ounce|ounces|oz|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|""" +
+		"""cup|cups|gram|grams|g|milliliters?|ml|liters?|liter|l|kilogram|kilograms|kg|clove|cloves|""" +
+		"""can|cans|package|packages|pinch|dash|bunch|head|stick|sticks|slice|slices|piece|pieces|""" +
+		"""quart|quarts|qt|gallon|gallons|pint|pints|fluid\s+ounce|fl\.?\s*oz)"""
+
+val concatenatedIngredientSplitRegex = Regex(
+	pattern = """(?<=[\p{L})])(?=$ingredientQuantityWithUnitPattern)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+fun splitConcatenatedIngredient(line: String): List<String> {
+	val splitPositions = concatenatedIngredientSplitRegex
+		.findAll(line)
+		.map { it.range.first }
+		.filter { it > 0 }
+		.toList()
+	if (splitPositions.isEmpty()) {
+		return listOf(line)
+	}
+
+	val parts = mutableListOf<String>()
+	var start = 0
+	splitPositions.forEach { position ->
+		val part = line.substring(start, position).trim()
+		if (part.isNotBlank()) {
+			parts += part
+		}
+		start = position
+	}
+	val lastPart = line.substring(start).trim()
+	if (lastPart.isNotBlank()) {
+		parts += lastPart
+	}
+	return parts.ifEmpty { listOf(line) }
+}
+
+fun splitIngredientLine(raw: String): List<String> {
+	val normalized = raw.replace("\r\n", "\n").trim()
+	if (normalized.isBlank()) {
+		return emptyList()
+	}
+
+	return normalized
+		.split('\n')
+		.flatMap { line ->
+			val trimmedLine = line.trim()
+			if (trimmedLine.isBlank()) {
+				emptyList()
+			} else {
+				val shouldSplitConcatenated =
+					trimmedLine.length > maxIngredientLength ||
+						concatenatedIngredientSplitRegex.findAll(trimmedLine).any { it.range.first > 0 }
+				if (shouldSplitConcatenated) {
+					splitConcatenatedIngredient(trimmedLine)
+				} else {
+					listOf(trimmedLine)
+				}
+			}
+		}
+}
+
+fun clampIngredientForDatabase(ingredient: String, sourceUrl: String): String {
+	if (ingredient.length <= maxIngredientLength) {
+		return ingredient
+	}
+	println(
+		"WARNING: ingredient exceeds $maxIngredientLength characters for $sourceUrl; truncating: " +
+			ingredient.take(80) + "…"
+	)
+	return ingredient.take(maxIngredientLength)
+}
+
+fun appendSanitizedIngredientLines(currentItems: MutableList<String>, rawItem: String) {
+	splitIngredientLine(rawItem).forEach { line ->
+		sanitizeIngredientLine(line)?.let { sanitizedItem ->
+			currentItems += sanitizedItem
+		}
+	}
+}
+
 val ingredientToolKeywords = listOf(
 	"baking sheet",
 	"blender",
@@ -717,9 +801,9 @@ fun sanitizeIngredientLine(raw: String): String? {
 	val hasDigit = lower.any(Char::isDigit)
 	val isHeadingLike =
 		lower.endsWith(':') ||
-		ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
-		ingredientHeadingExactFilters.contains(lower) ||
-		lower.contains("recipe follows")
+			ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
+			ingredientHeadingExactFilters.contains(lower) ||
+			lower.contains("recipe follows")
 	val isEquipmentLike = !hasDigit && ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
 
 	return if (isHeadingLike || isEquipmentLike) {
@@ -779,9 +863,7 @@ fun normalizeIngredientGroups(
 			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
 			currentItems = mutableListOf()
 		} else {
-			sanitizeIngredientLine(rawItem)?.let { sanitizedItem ->
-				currentItems += sanitizedItem
-			}
+			appendSanitizedIngredientLines(currentItems, rawItem)
 		}
 	}
 
@@ -830,7 +912,11 @@ fun parseRecipe(rawJson: String): RecipeData? {
 		?: emptyList()
 
 	val nutrientsObject = root["nutrients"]?.jsonObject ?: JsonObject(emptyMap())
-	val nutrients = nutrientsObject.mapValues { (_, v) -> v.jsonPrimitive.contentOrNull }
+	val nutrients = normalizeScrapedNutrients(
+		nutrientsObject.mapNotNull { (key, value) ->
+			parseNutrientJsonValue(value)?.let { key to it }
+		}.toMap(),
+	)
 
 	val linksObject = root["links"]?.jsonObject ?: JsonObject(emptyMap())
 	val links = linksObject.mapValues { (_, v) -> v.jsonPrimitive.contentOrNull }
@@ -1033,6 +1119,37 @@ fun parseNumber(value: String?): Double? {
 	if (value.isNullOrBlank()) return null
 	val match = Regex("""-?\d+(?:\.\d+)?""").find(value) ?: return null
 	return match.value.toDoubleOrNull()
+}
+
+private val scrapedNutrientKeyAliases = mapOf(
+	"calories" to listOf("calories", "energy", "calorie"),
+	"protein" to listOf("protein", "proteinContent"),
+	"carbohydrates" to listOf("carbohydrates", "carbs", "carbohydrateContent"),
+	"fat" to listOf("fat", "fatContent"),
+	"fiber" to listOf("fiber", "fiberContent"),
+	"sugar" to listOf("sugar", "sugarContent"),
+	"sodium" to listOf("sodium", "sodiumContent"),
+)
+
+fun parseNutrientJsonValue(element: kotlinx.serialization.json.JsonElement): String? =
+	when (element) {
+		is JsonPrimitive -> when {
+			element.isString -> element.content.trim().takeIf { it.isNotBlank() }
+			else -> element.content.toDoubleOrNull()?.toString()
+		}
+
+		else -> null
+	}
+
+fun normalizeScrapedNutrients(raw: Map<String, String?>): Map<String, String?> {
+	val rawByLowerKey = raw.mapKeys { (key, _) -> key.lowercase(Locale.ROOT) }
+	return scrapedNutrientKeyAliases.mapNotNull { (canonical, aliases) ->
+		val value = aliases.firstNotNullOfOrNull { alias ->
+			raw[alias]?.takeIf { !it.isNullOrBlank() }
+				?: rawByLowerKey[alias.lowercase(Locale.ROOT)]?.takeIf { !it.isNullOrBlank() }
+		}
+		value?.let { canonical to it }
+	}.toMap()
 }
 
 private data class ScrapedCategoryColumns(
@@ -1286,7 +1403,7 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 		connection.prepareStatement(insertIngredientSql).use { ps ->
 			items.forEachIndexed { itemIndex, ingredient ->
 				ps.setInt(1, groupId)
-				ps.setString(2, ingredient)
+				ps.setString(2, clampIngredientForDatabase(ingredient, recipe.sourceUrl))
 				ps.setInt(3, itemIndex)
 				ps.addBatch()
 			}
@@ -1312,8 +1429,18 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 		val nutrients = recipe.nutrients
 		connection.prepareStatement(
 			"""
-			INSERT INTO nutrition (recipe_id, calories, protein, carbohydrates, fat, fiber, sugar, sodium)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			INSERT INTO nutrition (
+				recipe_id,
+				calories,
+				protein,
+				carbohydrates,
+				fat,
+				fiber,
+				sugar,
+				sodium,
+				calculation_source
+			)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 			ON CONFLICT (recipe_id) DO UPDATE SET
 				calories = EXCLUDED.calories,
 				protein = EXCLUDED.protein,
@@ -1321,17 +1448,19 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 				fat = EXCLUDED.fat,
 				fiber = EXCLUDED.fiber,
 				sugar = EXCLUDED.sugar,
-				sodium = EXCLUDED.sodium
+				sodium = EXCLUDED.sodium,
+				calculation_source = EXCLUDED.calculation_source
 			""".trimIndent(),
 		).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.setObject(2, parseNumber(nutrients["calories"]))
 			ps.setObject(3, parseNumber(nutrients["protein"]))
-			ps.setObject(4, parseNumber(nutrients["carbohydrates"] ?: nutrients["carbs"]))
+			ps.setObject(4, parseNumber(nutrients["carbohydrates"]))
 			ps.setObject(5, parseNumber(nutrients["fat"]))
 			ps.setObject(6, parseNumber(nutrients["fiber"]))
 			ps.setObject(7, parseNumber(nutrients["sugar"]))
 			ps.setObject(8, parseNumber(nutrients["sodium"]))
+			ps.setString(9, "scraped")
 			ps.executeUpdate()
 		}
 	}

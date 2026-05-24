@@ -10,6 +10,8 @@ internal data class RecipeNutritionPersistResult(
 	val issues: List<IngredientNutritionIssue>,
 )
 
+private const val SCRAPED_CALCULATION_SOURCE = "scraped"
+
 internal class RecipeNutritionService(
 	private val recipeNutritionRepository: RecipeNutritionRepository,
 	private val lookupRepository: NutritionLookupRepository,
@@ -72,6 +74,10 @@ internal class RecipeNutritionService(
 			} else {
 				recipeNutritionRepository.deleteIngredientContribution(result.ingredientId)
 			}
+		}
+
+		if (recipeNutritionRepository.loadNutritionCalculationSource(recipeId) == SCRAPED_CALCULATION_SOURCE) {
+			return
 		}
 
 		val totals = calculation.totals
