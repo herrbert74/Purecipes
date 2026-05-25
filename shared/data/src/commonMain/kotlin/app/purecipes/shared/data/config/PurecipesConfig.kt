@@ -3,6 +3,8 @@ package app.purecipes.shared.data.config
 interface PurecipesConfig {
 	fun buildType(): PurecipesBuildType
 
+	fun debugBackendHostOverride(): String? = null
+
 	fun googleWebClientId(): String? = null
 
 	fun gaMeasurementId(): String? = null

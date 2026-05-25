@@ -38,6 +38,20 @@ When running the mobile and Wasm app against the local backend, start it on port
 PURECIPES_BACKEND_PORT=9090 ./gradlew :backend:run
 ```
 
+The backend listens on all interfaces by default (`PURECIPES_BACKEND_HOST` defaults to `0.0.0.0`). Clients still need a concrete host (not `0.0.0.0`).
+
+Debug client hosts:
+
+- Android emulator: `10.0.2.2` (automatic)
+- Android physical device over USB: `127.0.0.1` after `adb reverse tcp:9090 tcp:9090` (automatic)
+- Android physical device or iOS device on Wi‑Fi: set your machine's LAN IP in `local.properties`:
+
+```properties
+purecipes.debugBackendHost=192.168.1.42
+```
+
+Rebuild the debug app after changing that value. iOS Simulator and Wasm use `localhost` when the property is unset.
+
 Health check:
 
 ```bash

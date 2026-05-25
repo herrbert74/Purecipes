@@ -33,7 +33,10 @@ interface DataNetworkModule {
 
 	@Provides
 	fun providePurecipesApi(httpClient: HttpClient, purecipesConfig: PurecipesConfig): PurecipesApi {
-		val backendBaseUrl = backendBaseUrl(purecipesConfig.buildType())
+		val backendBaseUrl = backendBaseUrl(
+			purecipesConfig.buildType(),
+			purecipesConfig.debugBackendHostOverride(),
+		)
 		val ktorfit = Ktorfit.Builder()
 			.baseUrl(if (backendBaseUrl.endsWith("/")) backendBaseUrl else "$backendBaseUrl/")
 			.httpClient(httpClient)

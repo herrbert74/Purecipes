@@ -1,4 +1,5 @@
 import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+import java.util.Properties
 
 plugins {
 	alias(libs.plugins.androidApplication)
@@ -43,6 +44,11 @@ android {
 	buildTypes {
 		debug {
 			applicationIdSuffix = ".debug"
+			buildConfigField(
+				"String",
+				"PURECIPES_DEBUG_BACKEND_HOST",
+				purecipesDebugBackendHost().asBuildConfigString(),
+			)
 		}
 		release {
 			isMinifyEnabled = true
@@ -163,6 +169,21 @@ private fun Project.usercentricsSettingsId(): String {
 		.orElse(providers.environmentVariable("PURECIPES_USERCENTRICS_SETTINGS_ID"))
 		.orNull
 		.orEmpty()
+}
+
+private fun Project.purecipesDebugBackendHost(): String {
+	providers.gradleProperty("purecipes.debugBackendHost").orNull
+		?.takeIf { it.isNotBlank() }
+		?.let { return it }
+
+	val localPropertiesFile = rootProject.file("local.properties")
+	if (!localPropertiesFile.exists()) {
+		return ""
+	}
+
+	val properties = Properties()
+	localPropertiesFile.inputStream().use { properties.load(it) }
+	return properties.getProperty("purecipes.debugBackendHost").orEmpty()
 }
 
 private fun String.asBuildConfigString(): String {

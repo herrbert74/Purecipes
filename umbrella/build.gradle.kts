@@ -2,6 +2,7 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmJsTargetDsl
+import java.util.Properties
 
 plugins {
 	id("convention.kmp")
@@ -56,6 +57,21 @@ private fun Project.currentPurecipesBuildType(): String {
 		?: "debug"
 }
 
+private fun Project.purecipesDebugBackendHost(): String {
+	providers.gradleProperty("purecipes.debugBackendHost").orNull
+		?.takeIf { it.isNotBlank() }
+		?.let { return it }
+
+	val localPropertiesFile = rootProject.file("local.properties")
+	if (!localPropertiesFile.exists()) {
+		return ""
+	}
+
+	val properties = Properties()
+	localPropertiesFile.inputStream().use { properties.load(it) }
+	return properties.getProperty("purecipes.debugBackendHost").orEmpty()
+}
+
 private fun Project.androidBuildTypeFromTasks(): String? {
 	val taskRequests = gradle.startParameter.taskRequests.toString()
 	val match = Regex("(?:assemble|bundle|install|compile|test|lint|connected)\\w*(Debug|Staging|Release)")
@@ -70,6 +86,7 @@ buildkonfig {
 
 	defaultConfigs {
 		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
+		buildConfigField(STRING, "purecipesDebugBackendHost", purecipesDebugBackendHost())
 		buildConfigField(STRING, "purecipesGoogleWebClientId", googleWebClientId())
 		buildConfigField(STRING, "purecipesGaMeasurementId", gaMeasurementId())
 		buildConfigField(STRING, "purecipesMixpanelProjectToken", mixpanelProjectToken())
@@ -99,6 +116,7 @@ kotlin {
 				baseName = "umbrella"
 				isStatic = true
 				export(project(":feature:analytics:domain"))
+				export(project(":feature:sharing:domain"))
 				export(project(":feature:main"))
 				export(project(":feature:auth:domain"))
 				export(project(":feature:favorites:domain"))
@@ -116,6 +134,8 @@ kotlin {
 			dependencies {
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:analytics:data"))
+				api(project(":feature:sharing:domain"))
+				api(project(":feature:sharing:data"))
 				api(project(":feature:auth:domain"))
 				api(project(":feature:auth:data"))
 				api(project(":feature:main"))
