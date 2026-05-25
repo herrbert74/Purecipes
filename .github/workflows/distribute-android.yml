@@ -67,8 +67,18 @@ jobs:
           echo "${FIREBASE_SERVICE_ACCOUNT_JSON}" > "${CREDS_PATH}"
           echo "GOOGLE_APPLICATION_CREDENTIALS=${CREDS_PATH}" >> "${GITHUB_ENV}"
 
+      - name: Require Google web client ID for release build
+        env:
+          PURECIPES_GOOGLE_WEB_CLIENT_ID: ${{ secrets.PURECIPES_GOOGLE_WEB_CLIENT_ID }}
+        run: |
+          if [[ -z "${PURECIPES_GOOGLE_WEB_CLIENT_ID}" ]]; then
+            echo "::error::PURECIPES_GOOGLE_WEB_CLIENT_ID repository secret is required for release builds (Google Sign-In)." >&2
+            exit 1
+          fi
+
       - name: Build and distribute release APK
         env:
+          PURECIPES_GOOGLE_WEB_CLIENT_ID: ${{ secrets.PURECIPES_GOOGLE_WEB_CLIENT_ID }}
           PURECIPES_SIGNING_STORE_PASSWORD: ${{ secrets.PURECIPES_SIGNING_STORE_PASSWORD }}
           PURECIPES_SIGNING_KEY_ALIAS: ${{ secrets.PURECIPES_SIGNING_KEY_ALIAS }}
           PURECIPES_SIGNING_KEY_PASSWORD: ${{ secrets.PURECIPES_SIGNING_KEY_PASSWORD }}
