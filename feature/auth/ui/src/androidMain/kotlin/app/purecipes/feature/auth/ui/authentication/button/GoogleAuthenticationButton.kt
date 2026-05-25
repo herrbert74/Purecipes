@@ -2,10 +2,13 @@ package app.purecipes.feature.auth.ui.authentication.button
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.mmk.kmpauth.google.GoogleAuthCredentials
@@ -28,6 +31,18 @@ internal actual fun GoogleAuthenticationButton(
 	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
 	onUnavailable: () -> Unit,
 ) {
+	if (LocalInspectionMode.current) {
+		OutlinedButton(
+			onClick = {},
+			enabled = false,
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(PurecipesButtonDefaults.providerButtonHeight),
+		) {
+			Text(text = "Continue with Google")
+		}
+		return
+	}
 	val coroutineScope = rememberCoroutineScope()
 	if (isConfigured) {
 		GoogleButtonUiContainerFirebase(

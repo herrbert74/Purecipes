@@ -10,6 +10,7 @@ primary goal of the app to make it easier for users to follow recipe instruction
 - Use **tabs** instead of spaces for tabs.
 - Run **`./gradlew detektAll`** before finishing any Kotlin change set, unless the user scopes validation differently.
 - Formatting adherence is a correctness requirement, not a cleanup task. Before every edit, match the file's existing formatting exactly and preserve the alignment style already in use.
+- **Compose UI file layout:** keep `@Preview` functions in the **same** `.kt` file as the `@Composable` they preview (usually private, at the bottom). Put **other** top-level types and `@Composable` helpers in **their own** `.kt` files (for example `SignInScreenContent.kt`, preview stubs). Do **not** stack multiple production composables in one screen file, and do **not** move previews into separate preview-only files. Avoid thin call-through composables that only forward args—inline into the screen or extract to a dedicated file when the split helps previews, tests, or reuse. Composables that touch uninitialized platform SDKs in Android Studio (Google/Apple/Facebook auth, etc.) must branch on `LocalInspectionMode.current` and render preview-safe placeholders; `@Preview` call sites should still prefer stubs when they do not need the real widget.
 
 ## Additional Agent Guidance
 
@@ -69,6 +70,10 @@ Add suffixes to designate types and prefixes for designate the features.
 ### Presentation classes
 
 Top level composables that represent a screen have the Screen suffix.
+
+## Rule: Compose UI file layout
+
+See the **Compose UI file layout** bullet under [Core Principles](#core-principles). In short: previews co-located with the composable they show; every other type or composable gets its own file when it is not the single screen entry composable for that file; platform auth/SDK UI must use `LocalInspectionMode` placeholders so Android Studio preview can render.
 
 ## Rule: Use IDE Index plugin (android-studio-index MCP server) whenever possible
 

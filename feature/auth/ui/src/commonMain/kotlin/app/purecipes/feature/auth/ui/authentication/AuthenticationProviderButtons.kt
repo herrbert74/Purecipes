@@ -8,6 +8,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.AppleAuthenticationButton
@@ -24,6 +25,10 @@ internal fun AuthenticationProviderButtons(
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 ) {
+	if (LocalInspectionMode.current) {
+		PreviewAuthenticationProviderButtons(onEmailProviderClick = onEmailProviderClick)
+		return
+	}
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 		FilledTonalButton(
 			modifier = Modifier
