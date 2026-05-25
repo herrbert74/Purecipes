@@ -133,7 +133,7 @@ class GetCookingInstructions(
     private val recipeRepository: RecipeRepository,
     private val aiService: AIService
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         recipeId: String,
         userPreferences: UserPreferences
     ): CookingInstructions {
@@ -303,22 +303,21 @@ POST   /api/ai/personalize       # Get personalized instructions
 - iOS platform support via umbrella module
 - Backend API development
 
-### Phase 2: More Core Features (Features 011-017) + Iteration  -- *alpha*
+### Phase 2: More Core Features (Features 011-016) + Iteration  -- *alpha*
 - Feature 011: Basic monetisation with ads and RevenueCat
 - Feature 012: Advanced recipe search with chip/tag filtering
-- Feature 013: AI-assisted translations
-- Feature 014: Feature flag & A/B testing
-- Feature 015: Calorie calculator and nutrition tracking
-- Feature 016: Recipe sharing and deep linking
-- Feature 017: Launching animation
+- Feature 013: Feature flag & A/B testing
+- Feature 014: Calorie calculator and nutrition tracking
+- Feature 015: Recipe sharing and deep linking
+- Feature 016: Launching animation
 - Iteration and refinement of Phase 0 and 1 features
-- Performance optimization
+- Performance optimisation
 - Testing and bug fixes
 
-### Phase 3: Advanced Features & Polish (Features 018-020) + Iteration -- *beta*
-- Feature 018: Baseline profiles and benchmarking
-- Feature 019: Placeholder for loading lists/images
-- Feature 020: Vote/Suggest features
+### Phase 3: Advanced Features & Polish (Features 017-019) + Iteration -- *beta*
+- Feature 017: Baseline profiles and benchmarking
+- Feature 018: Placeholder for loading lists/images
+- Feature 019: Vote/Suggest features
 - Iteration and refinement of Phase 0-2 features
 - Advanced UI/UX improvements
 - Production deployment preparation (CI/CD, release signing, store listings)
@@ -326,7 +325,8 @@ POST   /api/ai/personalize       # Get personalized instructions
 - Open beta distribution on Android and iOS
 - **Public Launch** at the end of beta
 
-### Phase 4: Production Hardening & Iteration (Features 021-023) -- *post launch*
+### Phase 4: Production Hardening & Iteration (Features 020-023) -- *post launch*
+- Feature 020: AI-assisted translations
 - Feature 021: AI recipe creation from image
 - Feature 022: Image creation from recipe
 - Feature 023: Smart kitchen integration

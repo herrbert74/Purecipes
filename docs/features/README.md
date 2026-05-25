@@ -44,11 +44,11 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Personal recipe collection
 
 ### User Interface & Experience
-- **Launching animation (017)**
-- **Placeholder for loading lists/images (019)**
+- **Launching animation (016)**
+- **Placeholder for loading lists/images (018)**
 
 ### User Engagement & Communication
-- **Vote/Suggest features (020)**
+- **Vote/Suggest features (019)**
 - **Push notifications with Firebase Cloud Messaging (010)**
 - Cooking timer notifications
 - Meal planning reminders
@@ -70,21 +70,21 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Privacy-compliant data collection
 
 ### Experimentation & Optimization
-- **Feature Flag & A/B Testing (014)**
-- **Baseline profiles and benchmarking (018)**
+- **Feature Flag & A/B Testing (013)**
+- **Baseline profiles and benchmarking (017)**
 - Remote configuration management
 - Safe feature rollouts
 - User experience optimization
 - Cross-platform consistency
 
 ### AI & Machine Learning
-- **AI-assisted translations (013)**
+- **AI-assisted translations (020)**
 - **Recipe creation from images (021)**
 - **Image generation from recipes (022)**
 - Advanced personalization
 
 ### Health & Nutrition
-- **Calorie calculator (015)**
+- **Calorie calculator (014)**
 - Dietary restriction management
 - Allergy detection and alerts
 - Nutrition tracking
@@ -96,7 +96,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Voice control enhancements
 
 ### Social & Community
-- **Recipe sharing & deep linking (016)**
+- **Recipe sharing & deep linking (015)**
 - Community cooking sessions
 - User-generated content
 - Social features

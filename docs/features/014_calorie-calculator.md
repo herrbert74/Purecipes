@@ -51,7 +51,7 @@ The recipe scraper can insert scraped nutrition into this table when source webs
 currently scraped websites do not provide nutrition data, so this table is effectively empty. That means
 exposing existing recipe nutrition alone is not enough for the MVP.
 
-`RecipeDetails` currently exposes `calorieRange`, but not the actual nutrition totals. Feature 15 should add
+`RecipeDetails` currently exposes `calorieRange`, but not the actual nutrition totals. Feature 14 should add
 a shared nutrition model and include it in recipe details, but the main first-day work is to create nutrition
 totals from ingredients.
 
@@ -106,7 +106,7 @@ after saving a recipe, or a backend job can recalculate all recipes in batches.
 
 ## Ingredient Catalogue Reuse
 
-`IngredientFilterSection` currently owns a private UI-only ingredient catalogue. Feature 15 should move that
+`IngredientFilterSection` currently owns a private UI-only ingredient catalogue. Feature 14 should move that
 catalogue to a shared package before depending on it for nutrition work.
 
 Suggested shape:

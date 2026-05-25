@@ -1,6 +1,6 @@
 # USDA FoodData Central (MVP nutrition source)
 
-## Licence decision (feature 15)
+## Licence decision (feature 14)
 
 - **Source:** [USDA FoodData Central](https://fdc.nal.usda.gov/)
 - **Licence:** [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — no copyright restriction; no permission required for use or redistribution.
@@ -17,7 +17,7 @@ Suggested wording:
 
 ## Importer inputs
 
-For the seed importer (feature 15, step 4), download from FoodData Central:
+For the seed importer (feature 14, step 4), download from FoodData Central:
 
 - **Foundation Foods** (preferred first subset)
 - **SR Legacy** (optional, for broader generic foods)

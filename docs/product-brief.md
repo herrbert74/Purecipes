@@ -114,24 +114,23 @@ Traditional recipe apps present information in a one-size-fits-all manner, creat
 - Cross-platform synchronization
 - Android and iOS deployment (closed internal builds)
 
-### Phase 2: More Core Features (Features 011-017) + Iteration -- *alpha*
+### Phase 2: More Core Features (Features 011-016) + Iteration -- *alpha*
 - Feature 011: Basic monetisation with ads and RevenueCat
 - Feature 012: Advanced recipe search with chip/tag filtering
-- Feature 013: AI-assisted translations
-- Feature 014: Feature flag & A/B testing
-- Feature 015: Calorie calculator and nutrition tracking
-- Feature 016: Recipe sharing and deep linking
-- Feature 017: Launching animation
+- Feature 013: Feature flag & A/B testing
+- Feature 014: Calorie calculator and nutrition tracking
+- Feature 015: Recipe sharing and deep linking
+- Feature 016: Launching animation
 - Text-to-speech cooking instructions
 - Multi-language support (English, Spanish, French)
 - Iteration and refinement of Phase 0 and 1 features
 - Performance optimization
 - Closed alpha distribution to invited testers
 
-### Phase 3: Advanced Features & Polish (Features 018-020) + Iteration -- *beta*
-- Feature 018: Baseline profiles and benchmarking
-- Feature 019: Placeholder for loading lists/images
-- Feature 020: Vote/Suggest features
+### Phase 3: Advanced Features & Polish (Features 017-019) + Iteration -- *beta*
+- Feature 017: Baseline profiles and benchmarking
+- Feature 018: Placeholder for loading lists/images
+- Feature 019: Vote/Suggest features
 - Full personalization engine
 - Advanced accessibility features
 - Advanced voice recognition
@@ -142,7 +141,8 @@ Traditional recipe apps present information in a one-size-fits-all manner, creat
 - Open beta on Android and iOS
 - **Public Launch** at the end of beta
 
-### Phase 4: Growth & Ecosystem (Features 021-023) -- *post launch*
+### Phase 4: Growth & Ecosystem (Features 020-023) -- *post launch*
+- Feature 020: AI-assisted translations
 - Feature 021: AI recipe creation from image
 - Feature 022: Image creation from recipe
 - Feature 023: Smart kitchen integration
