@@ -4,6 +4,12 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.2] - 2026-05-25
+
+### Fixed
+
+- Google Sign-In on distributed Android builds: release builds from CI now receive the Google Web Client ID required for sign-in.
+
 ## [0.2.1] - 2026-05-25
 
 ### Fixed
