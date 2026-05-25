@@ -19,6 +19,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
@@ -107,6 +110,12 @@ fun AuthenticationScreen(
 					.padding(PurecipesTheme.space.l),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
+				viewModel.message?.let { message ->
+					ErrorText(
+						text = message,
+						modifier = Modifier.testTag(AUTH_ERROR_MESSAGE_TAG),
+					)
+				}
 				when (val state = viewModel.authenticationState) {
 					AuthenticationState.SignedOut -> SignedOutContent(
 						consentState = consentState,
@@ -129,13 +138,54 @@ fun AuthenticationScreen(
 						onDeleteAccount = viewModel::deleteAccount,
 					)
 				}
+			}
+		}
+	}
+}
 
-				viewModel.message?.let { message ->
-					ErrorText(
-						text = message,
-						modifier = Modifier.testTag(AUTH_ERROR_MESSAGE_TAG),
-					)
-				}
+@Preview(
+	name = "Account screen error light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun AuthenticationScreenErrorPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			topBar = {
+				TopAppBar(title = { Text(text = "Account") })
+			},
+		) { innerPadding ->
+			Column(
+				modifier = Modifier
+					.fillMaxSize()
+					.verticalScroll(rememberScrollState())
+					.padding(innerPadding)
+					.padding(PurecipesTheme.space.l),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+			) {
+				ErrorText(text = "Google sign-in is not configured on this build.")
+				SignedOutContent(
+					consentState = ConsentState.OBTAINED,
+					isGoogleConfigured = false,
+					onEmailRegistrationClick = {},
+					onSignInClick = {},
+					onExternalProviderSignInResult = { _, _ -> },
+					onGoogleSignInResult = { _, _, _, _ -> },
+					onManagePrivacySettings = {},
+					onGoogleUnavailableClick = {},
+					authenticationProviderButtons = { configured, onEmail, onExternal, onGoogle, onUnavailable ->
+						AuthenticationProviderButtons(
+							isGoogleConfigured = configured,
+							onEmailProviderClick = onEmail,
+							onExternalProviderSignInResult = onExternal,
+							onGoogleSignInResult = onGoogle,
+							onGoogleUnavailableClick = onUnavailable,
+						)
+					},
+				)
 			}
 		}
 	}

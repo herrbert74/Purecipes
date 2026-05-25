@@ -2,15 +2,19 @@ package app.purecipes.feature.auth.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,7 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -97,5 +104,81 @@ internal fun SignedInContent(
 				)
 			},
 		)
+	}
+}
+
+private val signedInPreviewUser = AuthUser(
+	id = "preview-user",
+	email = "taylor@example.com",
+	displayName = "Taylor Example",
+	firstName = "Taylor",
+	familyName = "Example",
+	profileImageUrl = null,
+	provider = AuthProvider.GOOGLE,
+)
+
+@Preview(
+	name = "Signed in content light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SignedInContentLightPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			topBar = {
+				TopAppBar(title = { Text(text = "Account") })
+			},
+		) { innerPadding ->
+			Column(
+				modifier = Modifier
+					.padding(innerPadding)
+					.padding(PurecipesTheme.space.l),
+			) {
+				SignedInContent(
+					consentState = ConsentState.REQUIRED,
+					user = signedInPreviewUser,
+					isBusy = false,
+					onManagePrivacySettings = {},
+					onSignOut = {},
+					onDeleteAccount = {},
+				)
+			}
+		}
+	}
+}
+
+@Preview(
+	name = "Signed in content busy light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SignedInContentBusyPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			topBar = {
+				TopAppBar(title = { Text(text = "Account") })
+			},
+		) { innerPadding ->
+			Column(
+				modifier = Modifier
+					.padding(innerPadding)
+					.padding(PurecipesTheme.space.l),
+			) {
+				SignedInContent(
+					consentState = ConsentState.OBTAINED,
+					user = signedInPreviewUser,
+					isBusy = true,
+					onManagePrivacySettings = {},
+					onSignOut = {},
+					onDeleteAccount = {},
+				)
+			}
+		}
 	}
 }

@@ -2,10 +2,17 @@ package app.purecipes.feature.auth.ui.authentication
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -51,5 +58,49 @@ internal fun SignedOutContent(
 			consentState = consentState,
 			onManagePrivacySettings = onManagePrivacySettings,
 		)
+	}
+}
+
+@Preview(
+	name = "Signed out content light",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SignedOutContentLightPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			topBar = {
+				TopAppBar(title = { Text(text = "Account") })
+			},
+		) { innerPadding ->
+			Column(
+				modifier = Modifier
+					.padding(innerPadding)
+					.padding(PurecipesTheme.space.l),
+			) {
+				SignedOutContent(
+					consentState = ConsentState.OBTAINED,
+					isGoogleConfigured = true,
+					onEmailRegistrationClick = {},
+					onSignInClick = {},
+					onExternalProviderSignInResult = { _, _ -> },
+					onGoogleSignInResult = { _, _, _, _ -> },
+					onManagePrivacySettings = {},
+					onGoogleUnavailableClick = {},
+					authenticationProviderButtons = { configured, onEmail, onExternal, onGoogle, onUnavailable ->
+						AuthenticationProviderButtons(
+							isGoogleConfigured = configured,
+							onEmailProviderClick = onEmail,
+							onExternalProviderSignInResult = onExternal,
+							onGoogleSignInResult = onGoogle,
+							onGoogleUnavailableClick = onUnavailable,
+						)
+					},
+				)
+			}
+		}
 	}
 }
