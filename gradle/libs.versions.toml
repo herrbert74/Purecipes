@@ -19,7 +19,7 @@ crashlyticsPlugin = "3.0.7"
 jdk = "21"
 kotlin = "2.3.21"
 kotlinx-collections = "0.4.0"
-kotlinx-datetime = "0.8.0"
+kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
 ksp = "2.3.8"
 
@@ -27,9 +27,9 @@ ksp = "2.3.8"
 
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
-androidx-composeBom = "2026.05.00"
-androidx-composeMaterial3 = "1.5.0-alpha19" #For alpha releases only
-androidx-composeUiAndroidTest = "1.11.1"
+androidx-composeBom = "2026.05.01"
+androidx-composeMaterial3 = "1.5.0-alpha20" #For alpha releases only
+androidx-composeUiAndroidTest = "1.11.2"
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
 #androidx-paletteKtx = "1.0.0"
@@ -42,7 +42,7 @@ androidx-testEspresso = "3.7.0"
 #androidx-work = "2.10.2"
 #autoBind = "2.0.0"
 babestudios-base = "3.2.1"
-buildKonfig = "0.21.0"
+buildKonfig = "0.21.2"
 #compose-screenshotTesting = "0.0.1-alpha09"
 #chucker = "4.2.0"
 coil = "3.5.0-beta01"
@@ -66,7 +66,7 @@ jetBrains-compose = "1.11.0"
 jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
-jUnit5 = "6.0.3"
+jUnit5 = "6.1.0"
 kmpauth = "2.5.0-alpha01"
 kmpnotifier = "1.6.1"
 kotest = "6.1.11"
@@ -165,7 +165,7 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 #androidx-roomRuntime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
 #androidx-roomTesting = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
 
-androidx-savedState = "androidx.savedstate:savedstate:1.4.0"
+androidx-savedState = "androidx.savedstate:savedstate:1.5.0"
 #androidx-splash = "androidx.core:core-splashscreen:1.0.1"
 #androidx-sqlite = "androidx.sqlite:sqlite:2.5.2"
 #androidx-startup = "androidx.startup:startup-runtime:1.2.0"
@@ -266,7 +266,7 @@ jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
 jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
 #jUnit5-jupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit5" }
-jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.3" }
+jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.0" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
 kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
