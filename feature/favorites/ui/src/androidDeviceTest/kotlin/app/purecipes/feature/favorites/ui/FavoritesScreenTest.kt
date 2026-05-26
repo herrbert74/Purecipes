@@ -282,7 +282,7 @@ private val testCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
 
 private fun favoritesViewModelForTest(
 	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
-	cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
+	cookbooksRepository: CookbooksRepository = FakeCookbooksRepository(),
 	sessionKey: String? = "session",
 ): FavoritesViewModel = FavoritesViewModel(
 	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),

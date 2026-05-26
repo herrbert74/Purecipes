@@ -19,7 +19,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @Inject
-@ViewModelKey(RegistrationViewModel::class)
+@ViewModelKey
 @ContributesIntoMap(AppScope::class)
 class RegistrationViewModel(
 	private val registerWithEmail: RegisterWithEmailUseCase,

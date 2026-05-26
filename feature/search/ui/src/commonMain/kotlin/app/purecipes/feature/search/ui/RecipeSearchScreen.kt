@@ -41,9 +41,8 @@ fun RecipeSearchScreen(
 		)
 	},
 ) {
-	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
 	if (viewModel.isFilterSheetVisible) {
+		val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 		FilterBottomSheet(
 			filters = viewModel.activeFilters,
 			isSignedIn = isSignedIn,

@@ -25,7 +25,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @Inject
-@ViewModelKey(AuthenticationViewModel::class)
+@ViewModelKey
 @ContributesIntoMap(AppScope::class)
 class AuthenticationViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,

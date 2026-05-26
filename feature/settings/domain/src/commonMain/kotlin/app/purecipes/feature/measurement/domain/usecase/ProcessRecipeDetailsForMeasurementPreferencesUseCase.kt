@@ -102,12 +102,10 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 				MeasurementSystem.METRIC -> metricTemperatureFromFahrenheit(rawValue)
 				MeasurementSystem.MIXED -> rawValue
 			}
-			val convertedUnit = if (targetSystem == MeasurementSystem.IMPERIAL) {
-				IMPERIAL_TEMPERATURE_LABEL
-			} else if (targetSystem == MeasurementSystem.METRIC) {
-				METRIC_TEMPERATURE_LABEL
-			} else {
-				rawUnit
+			val convertedUnit = when (targetSystem) {
+				MeasurementSystem.IMPERIAL -> IMPERIAL_TEMPERATURE_LABEL
+				MeasurementSystem.METRIC -> METRIC_TEMPERATURE_LABEL
+				else -> rawUnit
 			}
 			convertedText = convertedText.replaceRange(
 				match.range,

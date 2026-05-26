@@ -29,7 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Inject
-@ViewModelKey(CreateRecipeViewModel::class)
+@ViewModelKey
 @ContributesIntoMap(AppScope::class)
 class CreateRecipeViewModel(
 	private val getCreatedRecipes: GetCreatedRecipesUseCase,

@@ -7,7 +7,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
@@ -43,15 +42,18 @@ class RecipeSearchScreenTest {
 	@Test
 	fun searchScreenTypingDoesNotRecomposeResults() = runRecompositionTrackingUiTest {
 		val searchRepository = FakeRecipeSearchRepository()
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
+		waitUntil(timeoutMillis = 5_000) { searchRepository.queries.isNotEmpty() }
+		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).assertIsDisplayed()
 		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
-		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).performTextInput("Pas")
+		runOnIdle { viewModel.onSearchQueryChange("Pas") }
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertStable()
 	}
 

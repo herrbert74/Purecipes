@@ -229,7 +229,7 @@ class RecipeSearchViewModel(
 	}
 
 	@AssistedFactory
-	@ManualViewModelAssistedFactoryKey(Factory::class)
+	@ManualViewModelAssistedFactoryKey
 	@ContributesIntoMap(AppScope::class)
 	interface Factory : ManualViewModelAssistedFactory {
 
