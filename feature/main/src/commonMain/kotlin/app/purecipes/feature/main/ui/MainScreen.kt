@@ -38,19 +38,14 @@ import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.feature.auth.ui.signin.SignInScreen
 import app.purecipes.feature.cooking.ui.StepByStepCookingRoute
-import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.ui.FavoritesScreen
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
@@ -88,7 +83,6 @@ fun MainScreen(
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
-	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	getCookbooksPage: GetCookbooksPageUseCase,
@@ -96,14 +90,10 @@ fun MainScreen(
 	deleteCookbook: DeleteCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
-	getRecipeCookbooks: GetRecipeCookbooksUseCase,
-	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
-	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
 	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
-	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
 	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
@@ -237,23 +227,11 @@ fun MainScreen(
 						entry<RecipeDetailsDestination> { destination ->
 							RecipeDetailsScreen(
 								recipeId = destination.recipeId,
-								addFavoriteRecipe = addFavoriteRecipe,
-								addRecipeToCookbook = addRecipeToCookbook,
 								canManageFavorites = canManageFavorites,
-								createCookbook = createCookbook,
-								getCookbooksPage = getCookbooksPage,
-								getRecipeCookbooks = getRecipeCookbooks,
-								getRecipeDetails = getRecipeDetails,
-								getMeasurementPreferences = getMeasurementPreferences,
-								markMeasurementMismatchSeen = markMeasurementMismatchSeen,
 								onOpenMeasurementPreferences = { viewModel.onOpenSettings() },
-								processRecipeDetailsForMeasurementPreferences =
-									processRecipeDetailsForMeasurementPreferences,
-								trackEvent = trackEvent,
 								onBack = { viewModel.onBack() },
 								onFavoriteChange = { favoritesRefreshSignal += 1 },
 								onStartCooking = { recipeId -> viewModel.onStartCooking(recipeId) },
-								removeFavoriteRecipe = removeFavoriteRecipe,
 								shareRecipe = shareRecipe,
 								sessionKey = sessionKey,
 								modifier = Modifier.fillMaxSize(),

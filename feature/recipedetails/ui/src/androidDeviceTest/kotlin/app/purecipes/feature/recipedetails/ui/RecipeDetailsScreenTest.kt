@@ -45,14 +45,22 @@ class RecipeDetailsScreenTest {
 			PurecipesTheme {
 				RecipeDetailsScreen(
 					recipeId = 7,
-					addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
-					addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 					canManageFavorites = true,
-					createCookbook = CreateCookbookUseCase(cookbooksRepository),
-					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
-					getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
-					getRecipeDetails = GetRecipeDetailsUseCase(
-						FakeRecipeDetailsRepository(
+					onOpenMeasurementPreferences = {},
+					onBack = {},
+					onFavoriteChange = {},
+					onStartCooking = {},
+					shareRecipe = ShareRecipeUseCase(
+						object : ShareRepository {
+							override fun shareText(text: String, title: String?) = Unit
+						},
+					),
+					viewModel = recipeDetailsViewModelForTest(
+						recipeId = 7,
+						favoritesRepository = favoritesRepository,
+						cookbooksRepository = cookbooksRepository,
+						measurementRepository = measurementRepository,
+						recipeDetailsRepository = FakeRecipeDetailsRepository(
 							fakeRecipeDetails(
 								id = 7,
 								title = "Roasted Carrots",
@@ -70,23 +78,8 @@ class RecipeDetailsScreenTest {
 								cuisine = Cuisine.MEDITERRANEAN,
 							),
 						),
+						sessionKey = "user-7",
 					),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
-					markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
-					onOpenMeasurementPreferences = {},
-					processRecipeDetailsForMeasurementPreferences =
-						ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					onBack = {},
-					onFavoriteChange = {},
-					onStartCooking = {},
-					removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
-					shareRecipe = ShareRecipeUseCase(
-						object : ShareRepository {
-							override fun shareText(text: String, title: String?) = Unit
-						},
-					),
-					sessionKey = "user-7",
 				)
 			}
 		}
@@ -102,3 +95,26 @@ class RecipeDetailsScreenTest {
 		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()
 	}
 }
+
+private fun recipeDetailsViewModelForTest(
+	recipeId: Int,
+	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+	cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
+	measurementRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
+	recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(fakeRecipeDetails()),
+	sessionKey: String? = null,
+): RecipeDetailsViewModel = RecipeDetailsViewModel(
+	addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
+	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
+	getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+	markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
+	getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+	createCookbook = CreateCookbookUseCase(cookbooksRepository),
+	addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+	recipeId = recipeId,
+	sessionKey = sessionKey,
+)
