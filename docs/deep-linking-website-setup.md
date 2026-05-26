@@ -3,7 +3,7 @@
 Canonical share URLs are always:
 
 - `https://purecipes.app/r/{recipeId}`
-- `https://purecipes.app/c/{cookbookId}`
+- `https://purecipes.app/c/{cookbookShareToken}` (UUID; opens import flow in the app, not a raw cookbook database id)
 
 With **Universal Links (iOS)** and **App Links (Android)** configured, the OS opens the native app directly when the user taps those HTTPS links. No HTML redirect page is required in the app or on the server for that flow.
 

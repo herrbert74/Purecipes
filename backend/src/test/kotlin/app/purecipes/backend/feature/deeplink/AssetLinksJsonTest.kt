@@ -2,9 +2,9 @@ package app.purecipes.backend.feature.deeplink
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import kotlin.test.Test
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import kotlin.test.Test
 
 class AssetLinksJsonTest {
 
@@ -17,7 +17,8 @@ class AssetLinksJsonTest {
 					namespace = "android_app",
 					packageName = "app.purecipes.debug",
 					sha256CertFingerprints = listOf(
-						"18:0D:AE:62:87:2E:E9:0A:A0:18:FD:76:23:EB:3E:37:62:94:78:C3:3A:57:B2:4E:DE:51:A0:0D:00:4D:4B:53",
+						"18:0D:AE:62:87:2E:E9:0A:A0:18:FD:76:23:EB:3E:37:62:94:78:C3:3A:57:B2:4E:" +
+							"DE:51:A0:0D:00:4D:4B:53",
 					),
 				),
 			),

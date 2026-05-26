@@ -3,7 +3,7 @@ package app.purecipes.feature.sharing.domain.model
 sealed interface PurecipesLink {
 	data class Recipe(val id: Int) : PurecipesLink
 
-	data class Cookbook(val id: Int) : PurecipesLink
+	data class CookbookShare(val token: String) : PurecipesLink
 }
 
 object PurecipesLinkUrls {
@@ -12,13 +12,13 @@ object PurecipesLinkUrls {
 
 	fun recipeHttps(id: Int): String = "https://$WEB_HOST/r/$id"
 
-	fun cookbookHttps(id: Int): String = "https://$WEB_HOST/c/$id"
+	fun cookbookHttps(token: String): String = "https://$WEB_HOST/c/$token"
 
 	fun recipeCustomScheme(id: Int): String = "$CUSTOM_SCHEME://r/$id"
 
-	fun cookbookCustomScheme(id: Int): String = "$CUSTOM_SCHEME://c/$id"
+	fun cookbookCustomScheme(token: String): String = "$CUSTOM_SCHEME://c/$token"
 
 	fun canonicalRecipeShareUrl(id: Int): String = recipeHttps(id)
 
-	fun canonicalCookbookShareUrl(id: Int): String = cookbookHttps(id)
+	fun canonicalCookbookShareUrl(token: String): String = cookbookHttps(token)
 }

@@ -38,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -55,6 +56,7 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUs
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -69,6 +71,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
 
 internal const val FAVORITES_TITLE_TAG = "favoritesTitle"
 internal const val DELETE_COOKBOOK_BUTTON_PREFIX = "deleteCookbookButton:"
@@ -86,10 +89,12 @@ fun FavoritesScreen(
 	refreshSignal: Int,
 	sessionKey: String?,
 	shareCookbook: ShareCookbookUseCase,
+	importCookbookShare: ImportCookbookShareUseCase,
 	modifier: Modifier = Modifier,
-	initialOpenCookbookId: Int? = null,
+	initialCookbookShareToken: String? = null,
 	onRecipeSelect: (Int) -> Unit = {},
 ) {
+	val shareScope = rememberCoroutineScope()
 	val viewModel = favoritesViewModel(
 		getFavoriteRecipesPage = getFavoriteRecipesPage,
 		getCookbooksPage = getCookbooksPage,
@@ -97,6 +102,7 @@ fun FavoritesScreen(
 		deleteCookbook = deleteCookbook,
 		getCookbookRecipesPage = getCookbookRecipesPage,
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+		importCookbookShare = importCookbookShare,
 		sessionKey = sessionKey,
 	)
 
@@ -109,10 +115,10 @@ fun FavoritesScreen(
 		}
 	}
 
-	LaunchedEffect(initialOpenCookbookId, sessionKey) {
-		val cookbookId = initialOpenCookbookId ?: return@LaunchedEffect
+	LaunchedEffect(initialCookbookShareToken, sessionKey) {
+		val shareToken = initialCookbookShareToken ?: return@LaunchedEffect
 		if (sessionKey != null) {
-			viewModel.openCookbookDetailById(cookbookId)
+			viewModel.importSharedCookbook(shareToken)
 		}
 	}
 
@@ -126,6 +132,31 @@ fun FavoritesScreen(
 	) { innerPadding ->
 		if (sessionKey == null) {
 			FavoritesSignedOutContent(modifier = Modifier.padding(innerPadding))
+			return@Scaffold
+		}
+
+		if (viewModel.isImportingSharedCookbook) {
+			Box(
+				modifier = Modifier
+					.padding(innerPadding)
+					.fillMaxSize(),
+				contentAlignment = Alignment.Center,
+			) {
+				CircularProgressIndicator()
+			}
+			return@Scaffold
+		}
+
+		viewModel.sharedCookbookImportErrorMessage?.let { message ->
+			Box(
+				modifier = Modifier
+					.padding(innerPadding)
+					.fillMaxSize()
+					.padding(PurecipesTheme.space.l),
+				contentAlignment = Alignment.Center,
+			) {
+				ErrorText(text = message, textAlign = TextAlign.Center)
+			}
 			return@Scaffold
 		}
 
@@ -144,10 +175,12 @@ fun FavoritesScreen(
 				coverUrl = detailCoverUrl,
 				onBack = viewModel::closeCookbookDetail,
 				onShare = {
-					shareCookbook(
-						cookbookId = cookbookId,
-						title = viewModel.viewingCookbookName,
-					)
+					shareScope.launch {
+						shareCookbook(
+							cookbookId = cookbookId,
+							title = viewModel.viewingCookbookName,
+						)
+					}
 				},
 				modifier = Modifier.padding(innerPadding),
 				onRecipeSelect = onRecipeSelect,

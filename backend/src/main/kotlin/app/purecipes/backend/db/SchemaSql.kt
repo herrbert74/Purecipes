@@ -210,6 +210,30 @@ internal const val COOKBOOK_RECIPES_RECIPE_INDEX_SQL = """
 	ON cookbook_recipes (recipe_id)
 """
 
+internal const val COOKBOOK_SHARES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS cookbook_shares (
+		token TEXT PRIMARY KEY,
+		cookbook_id INTEGER NOT NULL REFERENCES cookbooks(id) ON DELETE CASCADE,
+		created_by_user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val COOKBOOK_SHARES_COOKBOOK_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_cookbook_shares_cookbook
+	ON cookbook_shares (cookbook_id)
+"""
+
+internal const val COOKBOOK_SHARE_IMPORTS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS cookbook_share_imports (
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		share_token TEXT NOT NULL REFERENCES cookbook_shares(token) ON DELETE CASCADE,
+		imported_cookbook_id INTEGER NOT NULL REFERENCES cookbooks(id) ON DELETE CASCADE,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (user_id, share_token)
+	)
+"""
+
 internal const val NUTRITION_FOODS_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS nutrition_foods (
 		id SERIAL PRIMARY KEY,

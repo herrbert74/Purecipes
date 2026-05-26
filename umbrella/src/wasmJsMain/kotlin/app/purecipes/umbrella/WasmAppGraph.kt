@@ -53,6 +53,7 @@ import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferences
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import app.purecipes.feature.sharing.data.repository.SharingDataModule
 import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
@@ -173,4 +174,6 @@ interface WasmAppGraph :
 	val shareRecipeUseCase: ShareRecipeUseCase
 
 	val shareCookbookUseCase: ShareCookbookUseCase
+
+	val importCookbookShareUseCase: ImportCookbookShareUseCase
 }

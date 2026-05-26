@@ -12,7 +12,7 @@ internal class MainViewModel : ViewModel() {
 
 	private var pendingPostLoginOrigin: PostLoginNavOrigin? = null
 	private var pendingOpenSearchFiltersAfterLogin: Boolean = false
-	private var pendingOpenCookbookId: Int? = null
+	private var pendingCookbookShareToken: String? = null
 
 	fun clearPostLoginNavigationState() {
 		pendingPostLoginOrigin = null
@@ -63,18 +63,22 @@ internal class MainViewModel : ViewModel() {
 	fun onDeepLink(backStack: MutableList<NavKey>, link: PurecipesLink) {
 		when (link) {
 			is PurecipesLink.Recipe -> navigateToRecipe(backStack, link.id)
-			is PurecipesLink.Cookbook -> navigateToCookbook(backStack, link.id)
+			is PurecipesLink.CookbookShare -> navigateToCookbookShare(backStack, link.token)
 		}
 	}
 
-	fun takePendingOpenCookbookId(): Int? {
-		val cookbookId = pendingOpenCookbookId
-		pendingOpenCookbookId = null
-		return cookbookId
+	fun stageCookbookShareImport(token: String) {
+		pendingCookbookShareToken = token
+	}
+
+	fun takePendingCookbookShareToken(): String? {
+		val token = pendingCookbookShareToken
+		pendingCookbookShareToken = null
+		return token
 	}
 
 	private fun navigateToRecipe(backStack: MutableList<NavKey>, recipeId: Int) {
-		pendingOpenCookbookId = null
+		pendingCookbookShareToken = null
 		if (backStack.firstOrNull() != SearchDestination) {
 			backStack.clear()
 			backStack += SearchDestination
@@ -88,8 +92,8 @@ internal class MainViewModel : ViewModel() {
 		backStack += RecipeDetailsDestination(recipeId)
 	}
 
-	private fun navigateToCookbook(backStack: MutableList<NavKey>, cookbookId: Int) {
-		pendingOpenCookbookId = cookbookId
+	private fun navigateToCookbookShare(backStack: MutableList<NavKey>, token: String) {
+		stageCookbookShareImport(token)
 		onTabSelected(backStack, mainTabs.first { it.destination == FavoritesDestination })
 	}
 

@@ -12,6 +12,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:sharing:domain"))
+				implementation(project(":shared:data"))
 				implementation(libs.kotlinx.coroutinesCore)
 			}
 		}

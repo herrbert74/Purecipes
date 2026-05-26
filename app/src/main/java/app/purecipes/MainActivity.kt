@@ -94,6 +94,7 @@ class MainActivity : ComponentActivity() {
 				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
 				shareRecipe = graph.shareRecipeUseCase,
 				shareCookbook = graph.shareCookbookUseCase,
+				importCookbookShare = graph.importCookbookShareUseCase,
 				onExitRequest = ::finish,
 			)
 		}

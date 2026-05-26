@@ -58,6 +58,7 @@ fun main() {
 				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
 				shareRecipe = graph.shareRecipeUseCase,
 				shareCookbook = graph.shareCookbookUseCase,
+				importCookbookShare = graph.importCookbookShareUseCase,
 		)
 	})
 }

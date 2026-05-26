@@ -67,6 +67,7 @@ class FavoritesViewModelTest {
 			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			importCookbookShare = unusedImportCookbookShareUseCase(),
 			coroutineScope = this,
 		)
 
@@ -90,6 +91,7 @@ class FavoritesViewModelTest {
 			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			importCookbookShare = unusedImportCookbookShareUseCase(),
 			coroutineScope = this,
 		)
 
@@ -125,6 +127,7 @@ class FavoritesViewModelTest {
 			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			importCookbookShare = unusedImportCookbookShareUseCase(),
 			coroutineScope = this,
 		)
 		viewModel.loadFavorites()
@@ -151,6 +154,7 @@ class FavoritesViewModelTest {
 			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			importCookbookShare = unusedImportCookbookShareUseCase(),
 			coroutineScope = this,
 		)
 		var deleted = true
@@ -181,6 +185,7 @@ class FavoritesViewModelTest {
 			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			importCookbookShare = unusedImportCookbookShareUseCase(),
 			coroutineScope = this,
 		)
 		var deleted = false

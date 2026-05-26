@@ -9,6 +9,8 @@ class MainViewModelTest {
 
 	private val viewModel = MainViewModel()
 
+	private val sampleShareToken = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
 	@Test
 	fun `should exit only on search root`() {
 		viewModel.shouldExit(listOf(SearchDestination)) shouldBe true
@@ -86,13 +88,23 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `deep link to cookbook switches to favorites and stores pending cookbook id`() {
+	fun `deep link to cookbook share switches to favorites and stores pending share token`() {
 		val backStack = mutableListOf<NavKey>(SearchDestination)
 
-		viewModel.onDeepLink(backStack, PurecipesLink.Cookbook(5))
+		viewModel.onDeepLink(backStack, PurecipesLink.CookbookShare(sampleShareToken))
 
 		backStack shouldBe listOf<NavKey>(FavoritesDestination)
-		viewModel.takePendingOpenCookbookId() shouldBe 5
+		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
+	}
+
+	@Test
+	fun `stage cookbook share import stores token without changing tabs`() {
+		val backStack = mutableListOf<NavKey>(SearchDestination)
+
+		viewModel.stageCookbookShareImport(sampleShareToken)
+
+		backStack shouldBe listOf<NavKey>(SearchDestination)
+		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
 	}
 
 	@Test
