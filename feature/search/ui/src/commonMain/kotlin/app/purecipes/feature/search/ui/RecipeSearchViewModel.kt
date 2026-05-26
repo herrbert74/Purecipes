@@ -1,15 +1,11 @@
 package app.purecipes.feature.search.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
@@ -28,6 +24,13 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.paging.PaginationState
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -37,7 +40,8 @@ import kotlinx.coroutines.launch
 private const val FIRST_PAGE_NUMBER = 1
 private const val PAGE_SIZE = 20
 
-internal class RecipeSearchViewModel(
+@AssistedInject
+class RecipeSearchViewModel(
 	private val filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val searchRecipes: SearchRecipesUseCase,
@@ -46,7 +50,8 @@ internal class RecipeSearchViewModel(
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
 	private val getUserPantry: GetUserPantryUseCase,
 	private val updateUserPantry: UpdateUserPantryUseCase,
-	private val initialShowFilterSheet: Boolean,
+	@Assisted initialShowFilterSheet: Boolean,
+	@Assisted private val sessionKey: String?,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -98,7 +103,7 @@ internal class RecipeSearchViewModel(
 		scope.launch {
 			val saved = getSearchFilters()
 			activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
-			pantryIngredients = getUserPantry()
+			pantryIngredients = if (sessionKey != null) getUserPantry() else emptySet()
 			lastSearchedFilters = activeFilters
 			lastSavedPantry = pantryIngredients
 			if (initialShowFilterSheet) {
@@ -222,55 +227,12 @@ internal class RecipeSearchViewModel(
 			RecipeFormatHandling.KEEP_AS_IS -> null
 		}
 	}
-}
 
-@Composable
-internal fun recipeSearchViewModel(
-	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	searchRecipes: SearchRecipesUseCase,
-	trackEvent: TrackEventUseCase,
-	getSearchFilters: GetSearchFiltersUseCase,
-	saveSearchFilters: SaveSearchFiltersUseCase,
-	getUserPantry: GetUserPantryUseCase,
-	updateUserPantry: UpdateUserPantryUseCase,
-	initialShowFilterSheet: Boolean,
-	sessionKey: String?,
-): RecipeSearchViewModel {
-	val viewModelKey = buildString {
-		append("RecipeSearchViewModel:")
-		append(searchRecipes.hashCode())
-		append(':')
-		append(getMeasurementPreferences.hashCode())
-		append(':')
-		append(trackEvent.hashCode())
-		append(':')
-		append(getSearchFilters.hashCode())
-		append(':')
-		append(saveSearchFilters.hashCode())
-		append(':')
-		append(getUserPantry.hashCode())
-		append(':')
-		append(updateUserPantry.hashCode())
-		append(':')
-		append(sessionKey ?: "guest")
+	@AssistedFactory
+	@ManualViewModelAssistedFactoryKey(Factory::class)
+	@ContributesIntoMap(AppScope::class)
+	interface Factory : ManualViewModelAssistedFactory {
+
+		fun create(initialShowFilterSheet: Boolean, sessionKey: String?): RecipeSearchViewModel
 	}
-	return viewModel(
-		key = viewModelKey,
-		factory = viewModelFactory {
-			initializer {
-				RecipeSearchViewModel(
-					filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
-					getMeasurementPreferences = getMeasurementPreferences,
-					searchRecipes = searchRecipes,
-					trackEvent = trackEvent,
-					getSearchFilters = getSearchFilters,
-					saveSearchFilters = saveSearchFilters,
-					getUserPantry = getUserPantry,
-					updateUserPantry = updateUserPantry,
-					initialShowFilterSheet = initialShowFilterSheet,
-				)
-			}
-		},
-	)
 }

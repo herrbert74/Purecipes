@@ -14,34 +14,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
-import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
-import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
-import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
-import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.filter.FilterBottomSheet
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableSet
 
 @Composable
 fun RecipeSearchScreen(
-	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	searchRecipes: SearchRecipesUseCase,
-	trackEvent: TrackEventUseCase,
-	getSearchFilters: GetSearchFiltersUseCase,
-	saveSearchFilters: SaveSearchFiltersUseCase,
-	getUserPantry: GetUserPantryUseCase,
-	updateUserPantry: UpdateUserPantryUseCase,
 	modifier: Modifier = Modifier,
 	initialShowFilterSheet: Boolean = false,
 	isSignedIn: Boolean = true,
@@ -49,19 +34,13 @@ fun RecipeSearchScreen(
 	onRequestLogInForFilters: () -> Unit = {},
 	closeScreen: () -> Unit = {},
 	sessionKey: String? = null,
+	viewModel: RecipeSearchViewModel = assistedMetroViewModel<RecipeSearchViewModel, RecipeSearchViewModel.Factory> {
+		create(
+			initialShowFilterSheet = initialShowFilterSheet,
+			sessionKey = sessionKey,
+		)
+	},
 ) {
-	val viewModel = recipeSearchViewModel(
-		filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
-		getMeasurementPreferences = getMeasurementPreferences,
-		getSearchFilters = getSearchFilters,
-		getUserPantry = getUserPantry,
-		initialShowFilterSheet = initialShowFilterSheet,
-		saveSearchFilters = saveSearchFilters,
-		searchRecipes = searchRecipes,
-		sessionKey = sessionKey,
-		trackEvent = trackEvent,
-		updateUserPantry = updateUserPantry,
-	)
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
 	if (viewModel.isFilterSheetVisible) {

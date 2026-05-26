@@ -49,7 +49,6 @@ import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseC
 import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.ui.FavoritesScreen
-import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
@@ -62,11 +61,6 @@ import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
-import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
-import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
-import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
-import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
-import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
@@ -95,7 +89,6 @@ fun MainScreen(
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
-	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
 	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	getCookbooksPage: GetCookbooksPageUseCase,
@@ -106,11 +99,6 @@ fun MainScreen(
 	getRecipeCookbooks: GetRecipeCookbooksUseCase,
 	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	searchRecipes: SearchRecipesUseCase,
-	getSearchFilters: GetSearchFiltersUseCase,
-	saveSearchFilters: SaveSearchFiltersUseCase,
-	getUserPantry: GetUserPantryUseCase,
-	updateUserPantry: UpdateUserPantryUseCase,
 	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
 	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
@@ -234,10 +222,6 @@ fun MainScreen(
 								viewModel.takePendingOpenSearchFilters()
 							}
 							RecipeSearchScreen(
-								filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
-								getMeasurementPreferences = getMeasurementPreferences,
-								getSearchFilters = getSearchFilters,
-								getUserPantry = getUserPantry,
 								initialShowFilterSheet = initialShowFilterSheet,
 								isSignedIn = authenticationState is AuthenticationState.SignedIn,
 								modifier = Modifier.fillMaxSize(),
@@ -247,11 +231,7 @@ fun MainScreen(
 										PostLoginNavOrigin.RECIPE_SEARCH_FILTERS,
 									)
 								},
-								saveSearchFilters = saveSearchFilters,
-								searchRecipes = searchRecipes,
 								sessionKey = sessionKey,
-								trackEvent = trackEvent,
-								updateUserPantry = updateUserPantry,
 							)
 						}
 						entry<RecipeDetailsDestination> { destination ->
