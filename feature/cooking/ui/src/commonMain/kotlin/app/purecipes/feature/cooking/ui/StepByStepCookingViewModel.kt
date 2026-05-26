@@ -1,14 +1,10 @@
 package app.purecipes.feature.cooking.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -17,18 +13,26 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-internal class StepByStepCookingViewModel(
-	private val recipeId: Int,
+@AssistedInject
+class StepByStepCookingViewModel(
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val trackEvent: TrackEventUseCase,
+	@Assisted private val recipeId: Int,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -75,11 +79,11 @@ internal class StepByStepCookingViewModel(
 			errorMessage = null
 			recipeDetails = null
 
-				val preferences = getMeasurementPreferences()
+			val preferences = getMeasurementPreferences()
 			val outcome = getRecipeDetails(recipeId)
-				recipeDetails = outcome.get()?.let { recipe ->
-					processRecipeDetailsForMeasurementPreferences(recipe, preferences).recipe
-				}
+			recipeDetails = outcome.get()?.let { recipe ->
+				processRecipeDetailsForMeasurementPreferences(recipe, preferences).recipe
+			}
 			if (recipeDetails != null) {
 				trackEvent(AnalyticsEvent.CookingStarted(recipeId))
 			}
@@ -94,38 +98,12 @@ internal class StepByStepCookingViewModel(
 			scope.cancel()
 		}
 	}
-}
 
-@Composable
-internal fun stepByStepCookingViewModel(
-	recipeId: Int,
-	getRecipeDetails: GetRecipeDetailsUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
-	trackEvent: TrackEventUseCase,
-): StepByStepCookingViewModel {
-	val viewModelKey = buildString {
-		append("StepByStepCookingViewModel:")
-		append(recipeId)
-		append(':')
-		append(getRecipeDetails.hashCode())
-		append(':')
-		append(getMeasurementPreferences.hashCode())
-		append(':')
-		append(trackEvent.hashCode())
+	@AssistedFactory
+	@ManualViewModelAssistedFactoryKey(Factory::class)
+	@ContributesIntoMap(AppScope::class)
+	interface Factory : ManualViewModelAssistedFactory {
+
+		fun create(recipeId: Int): StepByStepCookingViewModel
 	}
-	return viewModel(
-		key = viewModelKey,
-		factory = viewModelFactory {
-			initializer {
-				StepByStepCookingViewModel(
-					recipeId = recipeId,
-					getRecipeDetails = getRecipeDetails,
-					getMeasurementPreferences = getMeasurementPreferences,
-					processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
-					trackEvent = trackEvent,
-				)
-			}
-		},
-	)
 }

@@ -24,11 +24,11 @@ class StepByStepCookingViewModelTest {
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = StepByStepCookingViewModel(
-			recipeId = recipe.id,
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			recipeId = recipe.id,
 			coroutineScope = this,
 		)
 
@@ -53,11 +53,11 @@ class StepByStepCookingViewModelTest {
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = StepByStepCookingViewModel(
-			recipeId = recipe.id,
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			recipeId = recipe.id,
 			coroutineScope = this,
 		)
 

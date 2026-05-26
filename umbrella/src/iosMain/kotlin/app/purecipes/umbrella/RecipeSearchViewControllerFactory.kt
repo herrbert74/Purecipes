@@ -30,11 +30,7 @@ class RecipeSearchViewControllerFactory {
 				deleteCookbook = graph.deleteCookbookUseCase,
 				getCookbookRecipesPage = graph.getCookbookRecipesPageUseCase,
 				getCookbookCoverImageUrl = graph.getCookbookCoverImageUrlUseCase,
-				getMeasurementPreferences = graph.getMeasurementPreferencesUseCase,
-				getRecipeDetails = graph.getRecipeDetailsUseCase,
 				googleWebClientId = graph.purecipesConfig.googleWebClientId(),
-				processRecipeDetailsForMeasurementPreferences =
-					graph.processRecipeDetailsForMeasurementPreferencesUseCase,
 				resetMeasurementPreferences = graph.resetMeasurementPreferencesUseCase,
 				saveMeasurementPreferences = graph.saveMeasurementPreferencesUseCase,
 				saveNotificationPreferences = graph.saveNotificationPreferencesUseCase,

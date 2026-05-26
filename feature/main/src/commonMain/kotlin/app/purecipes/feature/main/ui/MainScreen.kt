@@ -45,16 +45,13 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseC
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.favorites.ui.FavoritesScreen
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.ui.CreateRecipeScreen
-import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
@@ -90,10 +87,7 @@ fun MainScreen(
 	deleteCookbook: DeleteCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	getRecipeDetails: GetRecipeDetailsUseCase,
 	googleWebClientId: String?,
-	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
 	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
@@ -240,11 +234,6 @@ fun MainScreen(
 						entry<RecipeCookingDestination> { destination ->
 							StepByStepCookingRoute(
 								recipeId = destination.recipeId,
-								getRecipeDetails = getRecipeDetails,
-								getMeasurementPreferences = getMeasurementPreferences,
-								processRecipeDetailsForMeasurementPreferences =
-									processRecipeDetailsForMeasurementPreferences,
-								trackEvent = trackEvent,
 								onBack = { viewModel.onBack() },
 								modifier = Modifier.fillMaxSize(),
 							)
