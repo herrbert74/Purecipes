@@ -178,6 +178,7 @@ fun FavoritesScreen(
 					shareScope.launch {
 						shareCookbook(
 							cookbookId = cookbookId,
+							recipeCount = viewModel.totalCookbookDetailMatches,
 							title = viewModel.viewingCookbookName,
 						)
 					}
