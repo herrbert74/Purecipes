@@ -13,12 +13,14 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -31,15 +33,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
-import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
-import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
-import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
-import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
-import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.feature.auth.ui.signin.SignInScreen
@@ -86,6 +80,8 @@ import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.ui.component.HandleSystemBack
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
+import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 
@@ -98,14 +94,6 @@ fun MainScreen(
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
-	signInWithEmail: SignInWithEmailUseCase,
-	registerWithEmail: RegisterWithEmailUseCase,
-	resendEmailVerification: ResendEmailVerificationUseCase,
-	sendPasswordResetEmail: SendPasswordResetEmailUseCase,
-	signInWithExternalProvider: SignInWithExternalProviderUseCase,
-	signInWithGoogle: SignInWithGoogleUseCase,
-	deleteAccount: DeleteAccountUseCase,
-	signOut: SignOutUseCase,
 	addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
@@ -140,52 +128,54 @@ fun MainScreen(
 	shareRecipe: ShareRecipeUseCase,
 	shareCookbook: ShareCookbookUseCase,
 	importCookbookShare: ImportCookbookShareUseCase,
+	metroViewModelFactory: MetroViewModelFactory,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
 ) {
 	PurecipesTheme {
-		val viewModel = mainViewModel()
-		val backStack = viewModel.mainBackStack()
-		val rootDestination = backStack.firstOrNull()
-		val authenticationState by observeAuthenticationState().collectAsState()
-		var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
-		val sessionKey = when (val state = authenticationState) {
-			is AuthenticationState.SignedIn -> state.user.id
-			AuthenticationState.SignedOut -> null
-		}
-		val deliverPendingIncomingLinkCallback = onDeliverPendingIncomingLink
-		val observeIncomingLinksFlow = observeIncomingLinks
-		LaunchedEffect(Unit) {
-			refreshConsent()
-		}
-		LaunchedEffect(Unit) {
-			publishWebLaunchLink()
-		}
-		LaunchedEffect(sessionKey) {
-			deliverPendingIncomingLinkCallback()
-			val isSignedIn = sessionKey != null
-			observeIncomingLinksFlow().collectLatest { link ->
-				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
-					viewModel.stageCookbookShareImport(link.token)
-					viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
-				} else {
-					viewModel.onDeepLink(link)
+		CompositionLocalProvider(LocalMetroViewModelFactory provides metroViewModelFactory) {
+			val viewModel = mainViewModel()
+			val backStack = viewModel.mainBackStack()
+			val rootDestination = backStack.firstOrNull()
+			val authenticationState by observeAuthenticationState().collectAsState()
+			var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
+			val sessionKey = when (val state = authenticationState) {
+				is AuthenticationState.SignedIn -> state.user.id
+				AuthenticationState.SignedOut -> null
+			}
+			val currentOnDeliverPendingIncomingLink by rememberUpdatedState(onDeliverPendingIncomingLink)
+			val currentObserveIncomingLinks by rememberUpdatedState(observeIncomingLinks)
+			LaunchedEffect(Unit) {
+				refreshConsent()
+			}
+			LaunchedEffect(Unit) {
+				publishWebLaunchLink()
+			}
+			LaunchedEffect(sessionKey) {
+				currentOnDeliverPendingIncomingLink()
+				val isSignedIn = sessionKey != null
+				currentObserveIncomingLinks().collectLatest { link ->
+					if (link is PurecipesLink.CookbookShare && !isSignedIn) {
+						viewModel.stageCookbookShareImport(link.token)
+						viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
+					} else {
+						viewModel.onDeepLink(link)
+					}
 				}
 			}
-		}
-		LaunchedEffect(sessionKey) {
-			setAnalyticsUserId(sessionKey)
-		}
-		var previousAuthenticationState by remember { mutableStateOf<AuthenticationState?>(null) }
-		LaunchedEffect(authenticationState) {
-			val previous = previousAuthenticationState
-			previousAuthenticationState = authenticationState
-			when {
-				previous is AuthenticationState.SignedIn && authenticationState is AuthenticationState.SignedOut ->
+			LaunchedEffect(sessionKey) {
+				setAnalyticsUserId(sessionKey)
+			}
+			var previousAuthenticationState by remember { mutableStateOf<AuthenticationState?>(null) }
+			LaunchedEffect(authenticationState) {
+				val previous = previousAuthenticationState
+				previousAuthenticationState = authenticationState
+				if (previous is AuthenticationState.SignedIn && authenticationState is AuthenticationState.SignedOut) {
 					viewModel.clearPostLoginNavigationState()
-
-				previous is AuthenticationState.SignedOut && authenticationState is AuthenticationState.SignedIn -> {
+				} else if (previous is AuthenticationState.SignedOut &&
+					authenticationState is AuthenticationState.SignedIn
+				) {
 					viewModel.onAuthenticationSucceeded()
 					when (viewModel.takePostLoginOriginAfterSignIn()) {
 						PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
@@ -200,203 +190,180 @@ fun MainScreen(
 					}
 				}
 			}
-		}
-		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
-		HandleSystemBack(
-			enabled = true,
-			onBack = {
-				if (!viewModel.onBack()) {
-					onExitRequest()
-				}
-			},
-		)
-
-		Scaffold(
-			modifier = modifier.fillMaxSize(),
-			bottomBar = {
-				NavigationBar {
-					mainTabs.forEach { tab ->
-						NavigationBarItem(
-							selected = tab.isSelected(rootDestination),
-							onClick = { viewModel.onTabSelected(tab) },
-							icon = {
-								Icon(
-									imageVector = tab.icon,
-									contentDescription = tab.label,
-								)
-							},
-							label = { Text(text = tab.label) },
-						)
-					}
-				}
-			},
-		) { innerPadding ->
-			NavDisplay(
-				backStack = backStack,
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding),
+			val canManageFavorites = authenticationState is AuthenticationState.SignedIn
+			HandleSystemBack(
+				enabled = true,
 				onBack = {
-					viewModel.onBack()
-					Unit
-				},
-				entryProvider = entryProvider {
-					entry<SearchDestination> {
-						val initialShowFilterSheet = remember(sessionKey) {
-							viewModel.takePendingOpenSearchFilters()
-						}
-						RecipeSearchScreen(
-							filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
-							getMeasurementPreferences = getMeasurementPreferences,
-							getSearchFilters = getSearchFilters,
-							getUserPantry = getUserPantry,
-							initialShowFilterSheet = initialShowFilterSheet,
-							isSignedIn = authenticationState is AuthenticationState.SignedIn,
-							modifier = Modifier.fillMaxSize(),
-							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
-							onRequestLogInForFilters = {
-								viewModel.requestLoginForPostLoginAction(
-									PostLoginNavOrigin.RECIPE_SEARCH_FILTERS,
-								)
-							},
-							saveSearchFilters = saveSearchFilters,
-							searchRecipes = searchRecipes,
-							sessionKey = sessionKey,
-							trackEvent = trackEvent,
-							updateUserPantry = updateUserPantry,
-						)
-					}
-					entry<RecipeDetailsDestination> { destination ->
-						RecipeDetailsScreen(
-							recipeId = destination.recipeId,
-							addFavoriteRecipe = addFavoriteRecipe,
-							addRecipeToCookbook = addRecipeToCookbook,
-							canManageFavorites = canManageFavorites,
-							createCookbook = createCookbook,
-							getCookbooksPage = getCookbooksPage,
-							getRecipeCookbooks = getRecipeCookbooks,
-							getRecipeDetails = getRecipeDetails,
-							getMeasurementPreferences = getMeasurementPreferences,
-							markMeasurementMismatchSeen = markMeasurementMismatchSeen,
-							onOpenMeasurementPreferences = { viewModel.onOpenSettings() },
-							processRecipeDetailsForMeasurementPreferences =
-								processRecipeDetailsForMeasurementPreferences,
-							trackEvent = trackEvent,
-							onBack = {
-								viewModel.onBack()
-								Unit
-							},
-							onFavoriteChange = { favoritesRefreshSignal += 1 },
-							onStartCooking = { recipeId -> viewModel.onStartCooking(recipeId) },
-							removeFavoriteRecipe = removeFavoriteRecipe,
-							shareRecipe = shareRecipe,
-							sessionKey = sessionKey,
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
-					entry<RecipeCookingDestination> { destination ->
-						StepByStepCookingRoute(
-							recipeId = destination.recipeId,
-							getRecipeDetails = getRecipeDetails,
-							getMeasurementPreferences = getMeasurementPreferences,
-							processRecipeDetailsForMeasurementPreferences =
-								processRecipeDetailsForMeasurementPreferences,
-							trackEvent = trackEvent,
-							onBack = {
-								viewModel.onBack()
-								Unit
-							},
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
-					entry<FavoritesDestination> {
-						val initialCookbookShareToken = remember {
-							viewModel.takePendingCookbookShareToken()
-						}
-						FavoritesScreen(
-							getFavoriteRecipesPage = getFavoriteRecipesPage,
-							getCookbooksPage = getCookbooksPage,
-							createCookbook = createCookbook,
-							deleteCookbook = deleteCookbook,
-							getCookbookRecipesPage = getCookbookRecipesPage,
-							getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-							refreshSignal = favoritesRefreshSignal,
-							sessionKey = sessionKey,
-							shareCookbook = shareCookbook,
-							importCookbookShare = importCookbookShare,
-							modifier = Modifier.fillMaxSize(),
-							initialCookbookShareToken = initialCookbookShareToken,
-							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
-						)
-					}
-					entry<CreateDestination> {
-						CreateRecipeScreen(
-							canUploadRecipes = canManageFavorites,
-							getCreatedRecipes = getCreatedRecipes,
-							saveCreatedRecipe = saveCreatedRecipe,
-							estimateRecipeNutrition = estimateRecipeNutrition,
-							trackEvent = trackEvent,
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
-					entry<AccountDestination> {
-						AuthenticationScreen(
-							observeConsentState = observeConsentState,
-							observeAuthenticationState = observeAuthenticationState,
-							signInWithExternalProvider = signInWithExternalProvider,
-							signInWithGoogle = signInWithGoogle,
-							showConsentForm = showConsentForm,
-							deleteAccount = deleteAccount,
-							signOut = signOut,
-							onOpenSettings = { viewModel.onOpenSettings() },
-							onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration() },
-							onNavigateToSignIn = { viewModel.onOpenEmailSignIn() },
-							googleWebClientId = googleWebClientId,
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
-					entry<EmailRegistrationDestination> {
-						RegistrationScreen(
-							registerWithEmail = registerWithEmail,
-							onBack = {
-								viewModel.onBack()
-								Unit
-							},
-							onRegistrationSuccess = { email -> viewModel.onRegistrationSuccess(email) },
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
-					entry<EmailSignInDestination> { destination ->
-						SignInScreen(
-							signInWithEmail = signInWithEmail,
-							resendEmailVerification = resendEmailVerification,
-							sendPasswordResetEmail = sendPasswordResetEmail,
-							initialEmail = destination.prefilledEmail,
-							showRegistrationSuccessMessage = destination.showRegistrationSuccessMessage,
-							onBack = {
-								viewModel.onBack()
-								Unit
-							},
-							modifier = Modifier.fillMaxSize(),
-						)
-					}
-					entry<AccountSettingsDestination> {
-						SettingsScreen(
-							observeMeasurementPreferences = observeMeasurementPreferences,
-							resetMeasurementPreferences = resetMeasurementPreferences,
-							saveMeasurementPreferences = saveMeasurementPreferences,
-							saveNotificationPreferences = saveNotificationPreferences,
-							observeNotificationPreferences = observeNotificationPreferences,
-							sendTestNotification = sendTestNotification,
-							onBack = {
-								viewModel.onBack()
-								Unit
-							},
-							modifier = Modifier.fillMaxSize(),
-						)
+					if (!viewModel.onBack()) {
+						onExitRequest()
 					}
 				},
 			)
+
+			Scaffold(
+				modifier = modifier.fillMaxSize(),
+				bottomBar = {
+					NavigationBar {
+						mainTabs.forEach { tab ->
+							NavigationBarItem(
+								selected = tab.isSelected(rootDestination),
+								onClick = { viewModel.onTabSelected(tab) },
+								icon = {
+									Icon(
+										imageVector = tab.icon,
+										contentDescription = tab.label,
+									)
+								},
+								label = { Text(text = tab.label) },
+							)
+						}
+					}
+				},
+			) { innerPadding ->
+				NavDisplay(
+					backStack = backStack,
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding),
+					onBack = {
+						viewModel.onBack()
+					},
+					entryProvider = entryProvider {
+						entry<SearchDestination> {
+							val initialShowFilterSheet = remember(sessionKey) {
+								viewModel.takePendingOpenSearchFilters()
+							}
+							RecipeSearchScreen(
+								filterRecipesForMeasurementPreferences = filterRecipesForMeasurementPreferences,
+								getMeasurementPreferences = getMeasurementPreferences,
+								getSearchFilters = getSearchFilters,
+								getUserPantry = getUserPantry,
+								initialShowFilterSheet = initialShowFilterSheet,
+								isSignedIn = authenticationState is AuthenticationState.SignedIn,
+								modifier = Modifier.fillMaxSize(),
+								onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
+								onRequestLogInForFilters = {
+									viewModel.requestLoginForPostLoginAction(
+										PostLoginNavOrigin.RECIPE_SEARCH_FILTERS,
+									)
+								},
+								saveSearchFilters = saveSearchFilters,
+								searchRecipes = searchRecipes,
+								sessionKey = sessionKey,
+								trackEvent = trackEvent,
+								updateUserPantry = updateUserPantry,
+							)
+						}
+						entry<RecipeDetailsDestination> { destination ->
+							RecipeDetailsScreen(
+								recipeId = destination.recipeId,
+								addFavoriteRecipe = addFavoriteRecipe,
+								addRecipeToCookbook = addRecipeToCookbook,
+								canManageFavorites = canManageFavorites,
+								createCookbook = createCookbook,
+								getCookbooksPage = getCookbooksPage,
+								getRecipeCookbooks = getRecipeCookbooks,
+								getRecipeDetails = getRecipeDetails,
+								getMeasurementPreferences = getMeasurementPreferences,
+								markMeasurementMismatchSeen = markMeasurementMismatchSeen,
+								onOpenMeasurementPreferences = { viewModel.onOpenSettings() },
+								processRecipeDetailsForMeasurementPreferences =
+									processRecipeDetailsForMeasurementPreferences,
+								trackEvent = trackEvent,
+								onBack = { viewModel.onBack() },
+								onFavoriteChange = { favoritesRefreshSignal += 1 },
+								onStartCooking = { recipeId -> viewModel.onStartCooking(recipeId) },
+								removeFavoriteRecipe = removeFavoriteRecipe,
+								shareRecipe = shareRecipe,
+								sessionKey = sessionKey,
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+						entry<RecipeCookingDestination> { destination ->
+							StepByStepCookingRoute(
+								recipeId = destination.recipeId,
+								getRecipeDetails = getRecipeDetails,
+								getMeasurementPreferences = getMeasurementPreferences,
+								processRecipeDetailsForMeasurementPreferences =
+									processRecipeDetailsForMeasurementPreferences,
+								trackEvent = trackEvent,
+								onBack = { viewModel.onBack() },
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+						entry<FavoritesDestination> {
+							val initialCookbookShareToken = remember {
+								viewModel.takePendingCookbookShareToken()
+							}
+							FavoritesScreen(
+								getFavoriteRecipesPage = getFavoriteRecipesPage,
+								getCookbooksPage = getCookbooksPage,
+								createCookbook = createCookbook,
+								deleteCookbook = deleteCookbook,
+								getCookbookRecipesPage = getCookbookRecipesPage,
+								getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+								refreshSignal = favoritesRefreshSignal,
+								sessionKey = sessionKey,
+								shareCookbook = shareCookbook,
+								importCookbookShare = importCookbookShare,
+								modifier = Modifier.fillMaxSize(),
+								initialCookbookShareToken = initialCookbookShareToken,
+								onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
+							)
+						}
+						entry<CreateDestination> {
+							CreateRecipeScreen(
+								canUploadRecipes = canManageFavorites,
+								getCreatedRecipes = getCreatedRecipes,
+								saveCreatedRecipe = saveCreatedRecipe,
+								estimateRecipeNutrition = estimateRecipeNutrition,
+								trackEvent = trackEvent,
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+						entry<AccountDestination> {
+							AuthenticationScreen(
+								observeConsentState = observeConsentState,
+								showConsentForm = showConsentForm,
+								onOpenSettings = { viewModel.onOpenSettings() },
+								onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration() },
+								onNavigateToSignIn = { viewModel.onOpenEmailSignIn() },
+								googleWebClientId = googleWebClientId,
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+						entry<EmailRegistrationDestination> {
+							RegistrationScreen(
+								onBack = { viewModel.onBack() },
+								onRegistrationSuccess = { email -> viewModel.onRegistrationSuccess(email) },
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+						entry<EmailSignInDestination> { destination ->
+							SignInScreen(
+								initialEmail = destination.prefilledEmail,
+								showRegistrationSuccessMessage = destination.showRegistrationSuccessMessage,
+								onBack = { viewModel.onBack() },
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+						entry<AccountSettingsDestination> {
+							SettingsScreen(
+								observeMeasurementPreferences = observeMeasurementPreferences,
+								resetMeasurementPreferences = resetMeasurementPreferences,
+								saveMeasurementPreferences = saveMeasurementPreferences,
+								saveNotificationPreferences = saveNotificationPreferences,
+								observeNotificationPreferences = observeNotificationPreferences,
+								sendTestNotification = sendTestNotification,
+								onBack = {
+									viewModel.onBack()
+								},
+								modifier = Modifier.fillMaxSize(),
+							)
+						}
+					},
+				)
+			}
 		}
 	}
 }

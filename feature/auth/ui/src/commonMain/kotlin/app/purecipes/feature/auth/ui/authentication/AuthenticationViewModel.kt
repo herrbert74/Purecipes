@@ -1,13 +1,9 @@
 package app.purecipes.feature.auth.ui.authentication
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -18,13 +14,20 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCa
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.github.michaelbull.result.getError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-internal class AuthenticationViewModel(
+@Inject
+@ViewModelKey(AuthenticationViewModel::class)
+@ContributesIntoMap(AppScope::class)
+class AuthenticationViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val signInWithExternalProvider: SignInWithExternalProviderUseCase,
 	private val signInWithGoogle: SignInWithGoogleUseCase,
@@ -125,30 +128,6 @@ internal class AuthenticationViewModel(
 			scope.cancel()
 		}
 	}
-}
-
-@Composable
-internal fun authenticationViewModel(
-	observeAuthenticationState: ObserveAuthenticationStateUseCase,
-	signInWithExternalProvider: SignInWithExternalProviderUseCase,
-	signInWithGoogle: SignInWithGoogleUseCase,
-	deleteAccount: DeleteAccountUseCase,
-	signOut: SignOutUseCase,
-): AuthenticationViewModel {
-	return viewModel(
-		key = "AuthenticationViewModel:${observeAuthenticationState.hashCode()}",
-		factory = viewModelFactory {
-			initializer {
-				AuthenticationViewModel(
-					observeAuthenticationState = observeAuthenticationState,
-					signInWithExternalProvider = signInWithExternalProvider,
-					signInWithGoogle = signInWithGoogle,
-					deleteAccount = deleteAccount,
-					signOut = signOut,
-				)
-			}
-		},
-	)
 }
 
 private fun AuthProvider.providerDisplayName(): String {

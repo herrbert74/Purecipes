@@ -19,29 +19,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
-import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
 @Composable
 fun SignInScreen(
-	signInWithEmail: SignInWithEmailUseCase,
-	resendEmailVerification: ResendEmailVerificationUseCase,
-	sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	initialEmail: String,
 	showRegistrationSuccessMessage: Boolean,
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
+	viewModel: SignInViewModel = assistedMetroViewModel<SignInViewModel, SignInViewModel.Factory> {
+		create(
+			initialEmail = initialEmail,
+			showRegistrationSuccessMessage = showRegistrationSuccessMessage,
+		)
+	},
 ) {
-	val viewModel = signInViewModel(
-		signInWithEmail = signInWithEmail,
-		resendEmailVerification = resendEmailVerification,
-		sendPasswordResetEmail = sendPasswordResetEmail,
-		initialEmail = initialEmail,
-		showRegistrationSuccessMessage = showRegistrationSuccessMessage,
-	)
-
 	SignInScreenContent(
 		email = viewModel.email,
 		emailError = viewModel.emailError,

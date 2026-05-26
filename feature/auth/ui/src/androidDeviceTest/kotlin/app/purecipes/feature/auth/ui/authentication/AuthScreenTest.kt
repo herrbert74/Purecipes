@@ -33,6 +33,7 @@ import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_FIELD_TA
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_POLICY_SUPPORTING_TEXT_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_SUBMIT_TAG
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
+import app.purecipes.feature.auth.ui.registration.RegistrationViewModel
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
@@ -58,23 +59,25 @@ class AuthScreenTest {
 			PurecipesTheme {
 				AuthenticationScreen(
 					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
-					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 					showConsentForm = ShowConsentFormUseCase(consentRepo),
-					deleteAccount = DeleteAccountUseCase(authRepo),
-					signOut = SignOutUseCase(authRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
 					googleWebClientId = null,
+					viewModel = AuthenticationViewModel(
+						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+						deleteAccount = DeleteAccountUseCase(authRepo),
+						signOut = SignOutUseCase(authRepo),
+					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = {
-						_,
-						onEmailProviderClick,
-						_,
-						_,
-						_,
+							_,
+							onEmailProviderClick,
+							_,
+							_,
+							_,
 						->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = onEmailProviderClick)
 					},
@@ -147,16 +150,18 @@ class AuthScreenTest {
 			PurecipesTheme {
 				AuthenticationScreen(
 					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
-					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 					showConsentForm = ShowConsentFormUseCase(consentRepo),
-					deleteAccount = DeleteAccountUseCase(authRepo),
-					signOut = SignOutUseCase(authRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
 					googleWebClientId = null,
+					viewModel = AuthenticationViewModel(
+						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+						deleteAccount = DeleteAccountUseCase(authRepo),
+						signOut = SignOutUseCase(authRepo),
+					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _ ->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = {})
@@ -171,9 +176,11 @@ class AuthScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				RegistrationScreen(
-					registerWithEmail = RegisterWithEmailUseCase(authRepo),
 					onBack = {},
 					onRegistrationSuccess = {},
+					viewModel = RegistrationViewModel(
+						registerWithEmail = RegisterWithEmailUseCase(authRepo),
+					),
 				)
 			}
 		}

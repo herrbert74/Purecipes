@@ -52,14 +52,6 @@ class MainActivity : ComponentActivity() {
 				refreshConsent = graph.refreshConsentUseCase,
 				setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
 				showConsentForm = graph.showConsentFormUseCase,
-				signInWithEmail = graph.signInWithEmailUseCase,
-				registerWithEmail = graph.registerWithEmailUseCase,
-				resendEmailVerification = graph.resendEmailVerificationUseCase,
-				sendPasswordResetEmail = graph.sendPasswordResetEmailUseCase,
-				signInWithExternalProvider = graph.signInWithExternalProviderUseCase,
-				signInWithGoogle = graph.signInWithGoogleUseCase,
-				deleteAccount = graph.deleteAccountUseCase,
-				signOut = graph.signOutUseCase,
 				addFavoriteRecipe = graph.addFavoriteRecipeUseCase,
 				filterRecipesForMeasurementPreferences = graph.filterRecipesForMeasurementPreferencesUseCase,
 				getCreatedRecipes = graph.getCreatedRecipesUseCase,
@@ -95,6 +87,7 @@ class MainActivity : ComponentActivity() {
 				shareRecipe = graph.shareRecipeUseCase,
 				shareCookbook = graph.shareCookbookUseCase,
 				importCookbookShare = graph.importCookbookShareUseCase,
+				metroViewModelFactory = graph.metroViewModelFactory,
 				onExitRequest = ::finish,
 			)
 		}
