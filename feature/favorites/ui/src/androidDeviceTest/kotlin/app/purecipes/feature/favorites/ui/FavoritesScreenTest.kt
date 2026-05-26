@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -189,11 +190,17 @@ class FavoritesScreenTest {
 		}
 
 		onNodeWithText("Cookbooks").performClick()
-		onNodeWithTag("$DELETE_COOKBOOK_BUTTON_PREFIX$EMPTY_COOKBOOK_ID").performClick()
-		onNodeWithText("Delete cookbook?").assertIsDisplayed()
-		onNodeWithTag(DELETE_COOKBOOK_DIALOG_CONFIRM_TAG).performClick()
+		val deleteCookbookButtonTag = "$DELETE_COOKBOOK_BUTTON_PREFIX$EMPTY_COOKBOOK_ID"
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(deleteCookbookButtonTag).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(deleteCookbookButtonTag).performClick()
+		onNodeWithText("Delete cookbook?", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithTag(DELETE_COOKBOOK_DIALOG_CONFIRM_TAG, useUnmergedTree = true).performClick()
 
-		waitForIdle()
+		waitUntil(timeoutMillis = 5_000) {
+			cookbooksRepo.deleteCookbookCallCount == 1
+		}
 		assertEquals(1, cookbooksRepo.deleteCookbookCallCount)
 	}
 

@@ -24,9 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import androidx.savedstate.serialization.SavedStateConfiguration
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
@@ -90,9 +88,6 @@ import app.purecipes.shared.ui.component.HandleSystemBack
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 @Composable
 fun MainScreen(
@@ -151,7 +146,7 @@ fun MainScreen(
 ) {
 	PurecipesTheme {
 		val viewModel = mainViewModel()
-		val backStack = rememberMainBackStack()
+		val backStack = viewModel.mainBackStack()
 		val rootDestination = backStack.firstOrNull()
 		val authenticationState by observeAuthenticationState().collectAsState()
 		var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
@@ -173,12 +168,9 @@ fun MainScreen(
 			observeIncomingLinksFlow().collectLatest { link ->
 				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
 					viewModel.stageCookbookShareImport(link.token)
-					viewModel.requestLoginForPostLoginAction(
-						PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT,
-						backStack,
-					)
+					viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
 				} else {
-					viewModel.onDeepLink(backStack, link)
+					viewModel.onDeepLink(link)
 				}
 			}
 		}
@@ -194,21 +186,15 @@ fun MainScreen(
 					viewModel.clearPostLoginNavigationState()
 
 				previous is AuthenticationState.SignedOut && authenticationState is AuthenticationState.SignedIn -> {
-					viewModel.onAuthenticationSucceeded(backStack)
+					viewModel.onAuthenticationSucceeded()
 					when (viewModel.takePostLoginOriginAfterSignIn()) {
 						PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
 							viewModel.markPendingOpenSearchFiltersAfterLogin()
-							viewModel.onTabSelected(
-								backStack,
-								mainTabs.first { it.destination == SearchDestination },
-							)
+							viewModel.onTabSelected(mainTabs.first { it.destination == SearchDestination })
 						}
 
 						PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT ->
-							viewModel.onTabSelected(
-								backStack,
-								mainTabs.first { it.destination == FavoritesDestination },
-							)
+							viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
 
 						null -> Unit
 					}
@@ -217,8 +203,12 @@ fun MainScreen(
 		}
 		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 		HandleSystemBack(
-			enabled = viewModel.shouldExit(backStack),
-			onBack = onExitRequest,
+			enabled = true,
+			onBack = {
+				if (!viewModel.onBack()) {
+					onExitRequest()
+				}
+			},
 		)
 
 		Scaffold(
@@ -228,7 +218,7 @@ fun MainScreen(
 					mainTabs.forEach { tab ->
 						NavigationBarItem(
 							selected = tab.isSelected(rootDestination),
-							onClick = { viewModel.onTabSelected(backStack, tab) },
+							onClick = { viewModel.onTabSelected(tab) },
 							icon = {
 								Icon(
 									imageVector = tab.icon,
@@ -246,6 +236,10 @@ fun MainScreen(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
+				onBack = {
+					viewModel.onBack()
+					Unit
+				},
 				entryProvider = entryProvider {
 					entry<SearchDestination> {
 						val initialShowFilterSheet = remember(sessionKey) {
@@ -259,11 +253,10 @@ fun MainScreen(
 							initialShowFilterSheet = initialShowFilterSheet,
 							isSignedIn = authenticationState is AuthenticationState.SignedIn,
 							modifier = Modifier.fillMaxSize(),
-							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
+							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
 							onRequestLogInForFilters = {
 								viewModel.requestLoginForPostLoginAction(
 									PostLoginNavOrigin.RECIPE_SEARCH_FILTERS,
-									backStack,
 								)
 							},
 							saveSearchFilters = saveSearchFilters,
@@ -285,13 +278,16 @@ fun MainScreen(
 							getRecipeDetails = getRecipeDetails,
 							getMeasurementPreferences = getMeasurementPreferences,
 							markMeasurementMismatchSeen = markMeasurementMismatchSeen,
-							onOpenMeasurementPreferences = { viewModel.onOpenSettings(backStack) },
+							onOpenMeasurementPreferences = { viewModel.onOpenSettings() },
 							processRecipeDetailsForMeasurementPreferences =
 								processRecipeDetailsForMeasurementPreferences,
 							trackEvent = trackEvent,
-							onBack = { viewModel.onBack(backStack) },
+							onBack = {
+								viewModel.onBack()
+								Unit
+							},
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
-							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
+							onStartCooking = { recipeId -> viewModel.onStartCooking(recipeId) },
 							removeFavoriteRecipe = removeFavoriteRecipe,
 							shareRecipe = shareRecipe,
 							sessionKey = sessionKey,
@@ -306,7 +302,10 @@ fun MainScreen(
 							processRecipeDetailsForMeasurementPreferences =
 								processRecipeDetailsForMeasurementPreferences,
 							trackEvent = trackEvent,
-							onBack = { viewModel.onBack(backStack) },
+							onBack = {
+								viewModel.onBack()
+								Unit
+							},
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -327,7 +326,7 @@ fun MainScreen(
 							importCookbookShare = importCookbookShare,
 							modifier = Modifier.fillMaxSize(),
 							initialCookbookShareToken = initialCookbookShareToken,
-							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
+							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
 						)
 					}
 					entry<CreateDestination> {
@@ -349,9 +348,9 @@ fun MainScreen(
 							showConsentForm = showConsentForm,
 							deleteAccount = deleteAccount,
 							signOut = signOut,
-							onOpenSettings = { viewModel.onOpenSettings(backStack) },
-							onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration(backStack) },
-							onNavigateToSignIn = { viewModel.onOpenEmailSignIn(backStack) },
+							onOpenSettings = { viewModel.onOpenSettings() },
+							onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration() },
+							onNavigateToSignIn = { viewModel.onOpenEmailSignIn() },
 							googleWebClientId = googleWebClientId,
 							modifier = Modifier.fillMaxSize(),
 						)
@@ -359,10 +358,11 @@ fun MainScreen(
 					entry<EmailRegistrationDestination> {
 						RegistrationScreen(
 							registerWithEmail = registerWithEmail,
-							onBack = { viewModel.onBack(backStack) },
-							onRegistrationSuccess = { email ->
-								viewModel.onRegistrationSuccess(backStack, email)
+							onBack = {
+								viewModel.onBack()
+								Unit
 							},
+							onRegistrationSuccess = { email -> viewModel.onRegistrationSuccess(email) },
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -373,7 +373,10 @@ fun MainScreen(
 							sendPasswordResetEmail = sendPasswordResetEmail,
 							initialEmail = destination.prefilledEmail,
 							showRegistrationSuccessMessage = destination.showRegistrationSuccessMessage,
-							onBack = { viewModel.onBack(backStack) },
+							onBack = {
+								viewModel.onBack()
+								Unit
+							},
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -385,7 +388,10 @@ fun MainScreen(
 							saveNotificationPreferences = saveNotificationPreferences,
 							observeNotificationPreferences = observeNotificationPreferences,
 							sendTestNotification = sendTestNotification,
-							onBack = { viewModel.onBack(backStack) },
+							onBack = {
+								viewModel.onBack()
+								Unit
+							},
 							modifier = Modifier.fillMaxSize(),
 						)
 					}
@@ -394,28 +400,6 @@ fun MainScreen(
 		}
 	}
 }
-
-@Composable
-private fun rememberMainBackStack() = rememberNavBackStack(
-	configuration = remember {
-		SavedStateConfiguration {
-			serializersModule = SerializersModule {
-				polymorphic(baseClass = NavKey::class) {
-					subclass(SearchDestination.serializer())
-					subclass(RecipeDetailsDestination.serializer())
-					subclass(RecipeCookingDestination.serializer())
-					subclass(FavoritesDestination.serializer())
-					subclass(CreateDestination.serializer())
-					subclass(AccountDestination.serializer())
-					subclass(EmailRegistrationDestination.serializer())
-					subclass(EmailSignInDestination.serializer())
-					subclass(AccountSettingsDestination.serializer())
-				}
-			}
-		}
-	},
-	SearchDestination,
-)
 
 internal sealed interface MainDestination : NavKey
 
