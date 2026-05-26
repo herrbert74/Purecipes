@@ -55,6 +55,8 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUs
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
+import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.BodyText
@@ -83,7 +85,9 @@ fun FavoritesScreen(
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	refreshSignal: Int,
 	sessionKey: String?,
+	shareCookbook: ShareCookbookUseCase,
 	modifier: Modifier = Modifier,
+	initialOpenCookbookId: Int? = null,
 	onRecipeSelect: (Int) -> Unit = {},
 ) {
 	val viewModel = favoritesViewModel(
@@ -102,6 +106,13 @@ fun FavoritesScreen(
 	LaunchedEffect(refreshSignal, sessionKey) {
 		if (sessionKey != null) {
 			viewModel.loadFavorites()
+		}
+	}
+
+	LaunchedEffect(initialOpenCookbookId, sessionKey) {
+		val cookbookId = initialOpenCookbookId ?: return@LaunchedEffect
+		if (sessionKey != null) {
+			viewModel.openCookbookDetailById(cookbookId)
 		}
 	}
 
@@ -132,6 +143,12 @@ fun FavoritesScreen(
 				totalMatches = viewModel.totalCookbookDetailMatches,
 				coverUrl = detailCoverUrl,
 				onBack = viewModel::closeCookbookDetail,
+				onShare = {
+					shareCookbook(
+						cookbookId = cookbookId,
+						title = viewModel.viewingCookbookName,
+					)
+				},
 				modifier = Modifier.padding(innerPadding),
 				onRecipeSelect = onRecipeSelect,
 			)
@@ -301,6 +318,7 @@ private fun CookbookDetailContent(
 	totalMatches: Int,
 	coverUrl: String?,
 	onBack: () -> Unit,
+	onShare: () -> Unit,
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit,
 ) {
@@ -329,6 +347,10 @@ private fun CookbookDetailContent(
 				text = title,
 				style = MaterialTheme.typography.titleLarge,
 				modifier = Modifier.weight(1f),
+			)
+			ShareIconButton(
+				onShare = onShare,
+				contentDescription = "Share cookbook",
 			)
 		}
 		when {

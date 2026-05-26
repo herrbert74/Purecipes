@@ -133,6 +133,10 @@ internal class FavoritesViewModel(
 		selectedTab = tab
 	}
 
+	fun openCookbookDetailById(cookbookId: Int) {
+		openCookbookDetail(cookbookId, name = "Cookbook")
+	}
+
 	fun openCookbookDetail(cookbookId: Int, name: String) {
 		viewingCookbookId = cookbookId
 		viewingCookbookName = name

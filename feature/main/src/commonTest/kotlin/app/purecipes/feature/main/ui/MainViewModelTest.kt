@@ -1,6 +1,7 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -73,6 +74,25 @@ class MainViewModelTest {
 		viewModel.onAuthenticationSucceeded(backStack)
 
 		backStack shouldBe listOf<NavKey>(AccountDestination, AccountSettingsDestination)
+	}
+
+	@Test
+	fun `deep link to recipe opens recipe details on search tab`() {
+		val backStack = mutableListOf<NavKey>(FavoritesDestination)
+
+		viewModel.onDeepLink(backStack, PurecipesLink.Recipe(99))
+
+		backStack shouldBe listOf<NavKey>(SearchDestination, RecipeDetailsDestination(99))
+	}
+
+	@Test
+	fun `deep link to cookbook switches to favorites and stores pending cookbook id`() {
+		val backStack = mutableListOf<NavKey>(SearchDestination)
+
+		viewModel.onDeepLink(backStack, PurecipesLink.Cookbook(5))
+
+		backStack shouldBe listOf<NavKey>(FavoritesDestination)
+		viewModel.takePendingOpenCookbookId() shouldBe 5
 	}
 
 	@Test

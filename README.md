@@ -21,6 +21,8 @@ PURECIPES_BACKEND_PORT=9090 java -jar backend/build/libs/backend.jar
 
 For a physical Android device over USB, also run `adb reverse tcp:9090 tcp:9090`. For Wi‑Fi devices (or a fixed LAN IP), add `purecipes.debugBackendHost=<your-machine-ip>` to `local.properties` and rebuild the debug app. See [backend/README.md](backend/README.md).
 
+Deep linking and share URLs: [docs/deep-linking-website-setup.md](docs/deep-linking-website-setup.md) (website `/.well-known` files and local `adb` testing).
+
 ### 🌐 Wasm
 
 Wasm builds use a system-installed Node.js and Yarn Classic instead of letting the Kotlin Gradle plugin download them.

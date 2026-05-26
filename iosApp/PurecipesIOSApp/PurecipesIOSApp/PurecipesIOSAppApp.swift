@@ -63,6 +63,10 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         _ url: URL,
         options: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
+        if deliverPurecipesDeepLink(url) {
+            return true
+        }
+
         #if canImport(GoogleSignIn)
         if GIDSignIn.sharedInstance.handle(url) {
             return true
@@ -80,6 +84,30 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         #endif
 
         return false
+    }
+
+    func application(
+        _ application: UIApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+    ) -> Bool {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL else {
+            return false
+        }
+        return deliverPurecipesDeepLink(url)
+    }
+
+    private func deliverPurecipesDeepLink(_ url: URL) -> Bool {
+        let urlString = url.absoluteString
+        let isPurecipesScheme = url.scheme?.lowercased() == "purecipes"
+        let isPurecipesWeb = url.host?.lowercased() == "purecipes.app"
+            || url.host?.lowercased() == "www.purecipes.app"
+        guard isPurecipesScheme || isPurecipesWeb else {
+            return false
+        }
+        IosIncomingLinkHandler.shared.handle(url: urlString)
+        return true
     }
 
     private func installAnalyticsBridges() {
@@ -213,6 +241,12 @@ struct PurecipesIOSAppApp: App {
         WindowGroup {
             ContentView()
                 .onOpenURL { url in
+                    _ = appDelegate.handleOpenURL(url)
+                }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                    guard let url = activity.webpageURL else {
+                        return
+                    }
                     _ = appDelegate.handleOpenURL(url)
                 }
         }

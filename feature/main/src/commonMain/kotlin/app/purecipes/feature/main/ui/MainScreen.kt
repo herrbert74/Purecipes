@@ -80,8 +80,13 @@ import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferen
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import app.purecipes.feature.settings.ui.SettingsScreen
+import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
+import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.ui.component.HandleSystemBack
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -133,6 +138,10 @@ fun MainScreen(
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	trackEvent: TrackEventUseCase,
+	observeIncomingLinks: ObserveIncomingLinksUseCase,
+	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
+	shareRecipe: ShareRecipeUseCase,
+	shareCookbook: ShareCookbookUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 ) {
@@ -148,6 +157,14 @@ fun MainScreen(
 		}
 		LaunchedEffect(Unit) {
 			refreshConsent()
+		}
+		LaunchedEffect(Unit) {
+			publishWebLaunchLink()
+		}
+		LaunchedEffect(Unit) {
+			observeIncomingLinks().collectLatest { link ->
+				viewModel.onDeepLink(backStack, link)
+			}
 		}
 		LaunchedEffect(sessionKey) {
 			setAnalyticsUserId(sessionKey)
@@ -254,6 +271,7 @@ fun MainScreen(
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
 							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
 							removeFavoriteRecipe = removeFavoriteRecipe,
+							shareRecipe = shareRecipe,
 							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),
 						)
@@ -271,6 +289,9 @@ fun MainScreen(
 						)
 					}
 					entry<FavoritesDestination> {
+						val initialOpenCookbookId = remember {
+							viewModel.takePendingOpenCookbookId()
+						}
 						FavoritesScreen(
 							getFavoriteRecipesPage = getFavoriteRecipesPage,
 							getCookbooksPage = getCookbooksPage,
@@ -280,7 +301,9 @@ fun MainScreen(
 							getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 							refreshSignal = favoritesRefreshSignal,
 							sessionKey = sessionKey,
+							shareCookbook = shareCookbook,
 							modifier = Modifier.fillMaxSize(),
+							initialOpenCookbookId = initialOpenCookbookId,
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}

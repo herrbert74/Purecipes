@@ -17,12 +17,13 @@ As a user, I want to share a recipe link with a friend through any messaging app
 - **Copy Link**: One-tap copy of the canonical recipe URL
 
 ## Technical Implementation
-- **Canonical URLs**: `https://purecipes.app/r/{recipeId}` and `/s/{sessionId}` handled by all three clients
+- **Canonical URLs**: `https://purecipes.app/r/{recipeId}` and `/c/{cookbookId}` handled by all three clients
 - **Routing**: Hook into the Jetpack Navigation graph in `umbrella` so the same routes resolve on Android and iOS
 - **Android**: App Links with `assetlinks.json` hosted by the backend
 - **iOS**: Universal Links with `apple-app-site-association` hosted by the backend
 - **Web**: SSR-friendly metadata so previews render even before Wasm boots
 - **Backend**: Endpoints serving link-verification files and share-preview metadata
+- **Website setup**: See [deep-linking-website-setup.md](../deep-linking-website-setup.md) for `assetlinks.json`, `apple-app-site-association`, and local `adb` testing
 
 ## Platform Considerations
 - **Android**: `ShareCompat.IntentBuilder` plus App Links intent filters

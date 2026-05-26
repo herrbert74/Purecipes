@@ -9,6 +9,7 @@ class RecipeSearchViewControllerFactory {
 
 	fun make(): UIViewController {
 		val graph = createGraph<IosAppGraph>()
+		IosIncomingLinkHandler.install(graph.deliverIncomingLinkUseCase)
 		return ComposeUIViewController(
 			configure = {
 				enforceStrictPlistSanityCheck = false
@@ -60,6 +61,10 @@ class RecipeSearchViewControllerFactory {
 				saveSearchFilters = graph.saveSearchFiltersUseCase,
 				getUserPantry = graph.getUserPantryUseCase,
 				updateUserPantry = graph.updateUserPantryUseCase,
+				observeIncomingLinks = graph.observeIncomingLinksUseCase,
+				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
+				shareRecipe = graph.shareRecipeUseCase,
+				shareCookbook = graph.shareCookbookUseCase,
 			)
 		}
 	}
