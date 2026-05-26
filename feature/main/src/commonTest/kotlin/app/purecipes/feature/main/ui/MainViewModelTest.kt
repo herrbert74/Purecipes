@@ -1,12 +1,15 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
 class MainViewModelTest {
 
 	private val viewModel = MainViewModel()
+
+	private val sampleShareToken = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 	@Test
 	fun `should exit only on search root`() {
@@ -73,6 +76,35 @@ class MainViewModelTest {
 		viewModel.onAuthenticationSucceeded(backStack)
 
 		backStack shouldBe listOf<NavKey>(AccountDestination, AccountSettingsDestination)
+	}
+
+	@Test
+	fun `deep link to recipe opens recipe details on search tab`() {
+		val backStack = mutableListOf<NavKey>(FavoritesDestination)
+
+		viewModel.onDeepLink(backStack, PurecipesLink.Recipe(99))
+
+		backStack shouldBe listOf<NavKey>(SearchDestination, RecipeDetailsDestination(99))
+	}
+
+	@Test
+	fun `deep link to cookbook share switches to favorites and stores pending share token`() {
+		val backStack = mutableListOf<NavKey>(SearchDestination)
+
+		viewModel.onDeepLink(backStack, PurecipesLink.CookbookShare(sampleShareToken))
+
+		backStack shouldBe listOf<NavKey>(FavoritesDestination)
+		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
+	}
+
+	@Test
+	fun `stage cookbook share import stores token without changing tabs`() {
+		val backStack = mutableListOf<NavKey>(SearchDestination)
+
+		viewModel.stageCookbookShareImport(sampleShareToken)
+
+		backStack shouldBe listOf<NavKey>(SearchDestination)
+		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
 	}
 
 	@Test

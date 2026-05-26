@@ -18,6 +18,8 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:favorites:domain"))
+				api(project(":feature:sharing:domain"))
+				implementation(project(":feature:sharing:ui"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.kotlinx.collectionsImmutable)

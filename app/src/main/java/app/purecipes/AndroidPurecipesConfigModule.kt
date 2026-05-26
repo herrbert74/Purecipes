@@ -14,6 +14,10 @@ interface AndroidPurecipesConfigModule {
 		return object : PurecipesConfig {
 			override fun buildType() = purecipesBuildType(BuildConfig.BUILD_TYPE)
 
+			override fun debugBackendHostOverride(): String? {
+				return BuildConfig.PURECIPES_DEBUG_BACKEND_HOST.takeIf { it.isNotBlank() }
+			}
+
 			override fun googleWebClientId(): String? {
 				return BuildConfig.PURECIPES_GOOGLE_WEB_CLIENT_ID.takeIf { it.isNotBlank() }
 			}

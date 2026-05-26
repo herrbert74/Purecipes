@@ -14,6 +14,10 @@ interface WasmPurecipesConfigModule {
 		return object : PurecipesConfig {
 			override fun buildType() = purecipesBuildType(BuildKonfig.purecipesBuildType)
 
+			override fun debugBackendHostOverride(): String? {
+				return BuildKonfig.purecipesDebugBackendHost.takeIf { it.isNotBlank() }
+			}
+
 			override fun googleWebClientId(): String? {
 				return BuildKonfig.purecipesGoogleWebClientId.takeIf { it.isNotBlank() }
 			}

@@ -67,6 +67,8 @@ class FavoritesScreenTest {
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
+					shareCookbook = unusedShareCookbookUseCase(),
+					importCookbookShare = unusedImportCookbookShareUseCase(),
 					onRecipeSelect = {},
 				)
 			}
@@ -106,6 +108,8 @@ class FavoritesScreenTest {
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
+					shareCookbook = unusedShareCookbookUseCase(),
+					importCookbookShare = unusedImportCookbookShareUseCase(),
 					onRecipeSelect = {},
 				)
 			}
@@ -130,6 +134,8 @@ class FavoritesScreenTest {
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
+					shareCookbook = unusedShareCookbookUseCase(),
+					importCookbookShare = unusedImportCookbookShareUseCase(),
 					onRecipeSelect = {},
 				)
 			}
@@ -175,6 +181,8 @@ class FavoritesScreenTest {
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
+					shareCookbook = unusedShareCookbookUseCase(),
+					importCookbookShare = unusedImportCookbookShareUseCase(),
 					onRecipeSelect = {},
 				)
 			}
@@ -205,6 +213,8 @@ class FavoritesScreenTest {
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = refreshSignalState.intValue,
 					sessionKey = "session",
+					shareCookbook = unusedShareCookbookUseCase(),
+					importCookbookShare = unusedImportCookbookShareUseCase(),
 					onRecipeSelect = {},
 				)
 			}

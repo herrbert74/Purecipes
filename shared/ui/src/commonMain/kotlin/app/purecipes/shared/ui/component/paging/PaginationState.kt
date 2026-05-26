@@ -92,7 +92,7 @@ class PaginationState<KEY, T>(
 		)
 	}
 
-	internal fun requestPage(
+	fun requestPage(
 		initialPageKey: KEY,
 		requestedPageKey: KEY,
 		items: List<T>? = null,

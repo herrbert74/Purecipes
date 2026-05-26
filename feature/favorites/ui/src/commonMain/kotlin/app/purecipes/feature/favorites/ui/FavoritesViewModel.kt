@@ -17,6 +17,7 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUs
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -48,6 +49,7 @@ internal class FavoritesViewModel(
 	private val deleteCookbookUseCase: DeleteCookbookUseCase,
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
+	private val importCookbookShare: ImportCookbookShareUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -73,6 +75,12 @@ internal class FavoritesViewModel(
 		private set
 
 	var cookbookDetailErrorMessage by mutableStateOf<String?>(null)
+		private set
+
+	var isImportingSharedCookbook by mutableStateOf(false)
+		private set
+
+	var sharedCookbookImportErrorMessage by mutableStateOf<String?>(null)
 		private set
 
 	var totalSavedMatches by mutableIntStateOf(0)
@@ -131,6 +139,7 @@ internal class FavoritesViewModel(
 
 	fun onTabSelected(tab: FavoritesTab) {
 		selectedTab = tab
+		sharedCookbookImportErrorMessage = null
 	}
 
 	fun openCookbookDetail(cookbookId: Int, name: String) {
@@ -179,6 +188,24 @@ internal class FavoritesViewModel(
 		cookbookDetailErrorMessage = null
 		cookbookDetailPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 		loadCookbookDetailPage(FIRST_PAGE_NUMBER)
+	}
+
+	fun importSharedCookbook(shareToken: String) {
+		scope.launch {
+			isImportingSharedCookbook = true
+			sharedCookbookImportErrorMessage = null
+			val outcome = importCookbookShare(shareToken)
+			val result = outcome.get()
+			isImportingSharedCookbook = false
+			if (result != null) {
+				selectedTab = FavoritesTab.Cookbooks
+				cookbooksPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
+				loadCookbooksPage(FIRST_PAGE_NUMBER)
+				openCookbookDetail(result.cookbook.id, result.cookbook.name)
+			} else {
+				sharedCookbookImportErrorMessage = outcome.getError()?.message
+			}
+		}
 	}
 
 	fun loadCookbookCover(cookbookId: Int) {
@@ -340,6 +367,7 @@ internal fun favoritesViewModel(
 	deleteCookbook: DeleteCookbookUseCase,
 	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
+	importCookbookShare: ImportCookbookShareUseCase,
 	sessionKey: String?,
 ): FavoritesViewModel {
 	return viewModel(
@@ -353,6 +381,7 @@ internal fun favoritesViewModel(
 					deleteCookbookUseCase = deleteCookbook,
 					getCookbookRecipesPage = getCookbookRecipesPage,
 					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+					importCookbookShare = importCookbookShare,
 				)
 			}
 		},

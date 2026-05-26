@@ -80,8 +80,15 @@ import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferen
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import app.purecipes.feature.settings.ui.SettingsScreen
+import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
+import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
+import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.ui.component.HandleSystemBack
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -133,8 +140,14 @@ fun MainScreen(
 	saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	trackEvent: TrackEventUseCase,
+	observeIncomingLinks: ObserveIncomingLinksUseCase,
+	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
+	shareRecipe: ShareRecipeUseCase,
+	shareCookbook: ShareCookbookUseCase,
+	importCookbookShare: ImportCookbookShareUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
+	onDeliverPendingIncomingLink: () -> Unit = {},
 ) {
 	PurecipesTheme {
 		val viewModel = mainViewModel()
@@ -146,8 +159,28 @@ fun MainScreen(
 			is AuthenticationState.SignedIn -> state.user.id
 			AuthenticationState.SignedOut -> null
 		}
+		val deliverPendingIncomingLinkCallback = onDeliverPendingIncomingLink
+		val observeIncomingLinksFlow = observeIncomingLinks
 		LaunchedEffect(Unit) {
 			refreshConsent()
+		}
+		LaunchedEffect(Unit) {
+			publishWebLaunchLink()
+		}
+		LaunchedEffect(sessionKey) {
+			deliverPendingIncomingLinkCallback()
+			val isSignedIn = sessionKey != null
+			observeIncomingLinksFlow().collectLatest { link ->
+				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
+					viewModel.stageCookbookShareImport(link.token)
+					viewModel.requestLoginForPostLoginAction(
+						PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT,
+						backStack,
+					)
+				} else {
+					viewModel.onDeepLink(backStack, link)
+				}
+			}
 		}
 		LaunchedEffect(sessionKey) {
 			setAnalyticsUserId(sessionKey)
@@ -170,6 +203,12 @@ fun MainScreen(
 								mainTabs.first { it.destination == SearchDestination },
 							)
 						}
+
+						PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT ->
+							viewModel.onTabSelected(
+								backStack,
+								mainTabs.first { it.destination == FavoritesDestination },
+							)
 
 						null -> Unit
 					}
@@ -254,6 +293,7 @@ fun MainScreen(
 							onFavoriteChange = { favoritesRefreshSignal += 1 },
 							onStartCooking = { recipeId -> viewModel.onStartCooking(backStack, recipeId) },
 							removeFavoriteRecipe = removeFavoriteRecipe,
+							shareRecipe = shareRecipe,
 							sessionKey = sessionKey,
 							modifier = Modifier.fillMaxSize(),
 						)
@@ -271,6 +311,9 @@ fun MainScreen(
 						)
 					}
 					entry<FavoritesDestination> {
+						val initialCookbookShareToken = remember {
+							viewModel.takePendingCookbookShareToken()
+						}
 						FavoritesScreen(
 							getFavoriteRecipesPage = getFavoriteRecipesPage,
 							getCookbooksPage = getCookbooksPage,
@@ -280,7 +323,10 @@ fun MainScreen(
 							getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 							refreshSignal = favoritesRefreshSignal,
 							sessionKey = sessionKey,
+							shareCookbook = shareCookbook,
+							importCookbookShare = importCookbookShare,
 							modifier = Modifier.fillMaxSize(),
+							initialCookbookShareToken = initialCookbookShareToken,
 							onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(backStack, recipeId) },
 						)
 					}

@@ -17,6 +17,8 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.repository.ShareRepository
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -79,6 +81,11 @@ class RecipeDetailsScreenTest {
 					onFavoriteChange = {},
 					onStartCooking = {},
 					removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+					shareRecipe = ShareRecipeUseCase(
+						object : ShareRepository {
+							override fun shareText(text: String, title: String?) = Unit
+						},
+					),
 					sessionKey = "user-7",
 				)
 			}

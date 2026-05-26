@@ -6,11 +6,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.sharing.domain.model.PurecipesLink
 
 internal class MainViewModel : ViewModel() {
 
 	private var pendingPostLoginOrigin: PostLoginNavOrigin? = null
 	private var pendingOpenSearchFiltersAfterLogin: Boolean = false
+	private var pendingCookbookShareToken: String? = null
 
 	fun clearPostLoginNavigationState() {
 		pendingPostLoginOrigin = null
@@ -56,6 +58,43 @@ internal class MainViewModel : ViewModel() {
 
 	fun onRecipeSelected(backStack: MutableList<NavKey>, recipeId: Int) {
 		backStack += RecipeDetailsDestination(recipeId)
+	}
+
+	fun onDeepLink(backStack: MutableList<NavKey>, link: PurecipesLink) {
+		when (link) {
+			is PurecipesLink.Recipe -> navigateToRecipe(backStack, link.id)
+			is PurecipesLink.CookbookShare -> navigateToCookbookShare(backStack, link.token)
+		}
+	}
+
+	fun stageCookbookShareImport(token: String) {
+		pendingCookbookShareToken = token
+	}
+
+	fun takePendingCookbookShareToken(): String? {
+		val token = pendingCookbookShareToken
+		pendingCookbookShareToken = null
+		return token
+	}
+
+	private fun navigateToRecipe(backStack: MutableList<NavKey>, recipeId: Int) {
+		pendingCookbookShareToken = null
+		if (backStack.firstOrNull() != SearchDestination) {
+			backStack.clear()
+			backStack += SearchDestination
+		}
+		while (
+			backStack.lastOrNull() is RecipeDetailsDestination ||
+				backStack.lastOrNull() is RecipeCookingDestination
+		) {
+			backStack.removeAt(backStack.lastIndex)
+		}
+		backStack += RecipeDetailsDestination(recipeId)
+	}
+
+	private fun navigateToCookbookShare(backStack: MutableList<NavKey>, token: String) {
+		stageCookbookShareImport(token)
+		onTabSelected(backStack, mainTabs.first { it.destination == FavoritesDestination })
 	}
 
 	fun onStartCooking(backStack: MutableList<NavKey>, recipeId: Int) {

@@ -10,19 +10,22 @@ As a user, I want to share a recipe link with a friend through any messaging app
 
 ## Core Functionality
 - **Share Action**: System share sheet integration from recipe and cooking-step screens
-- **Deep Links**: Universal Links (iOS) and App Links (Android) for recipe and cooking-session URLs
+- **Deep Links**: Universal Links (iOS) and App Links (Android) for recipe URLs and cookbook share URLs
+- **Cookbook sharing**: Share links use an opaque token (`/c/{uuid}`); opening the link imports a copy into the signed-in user's library (favorites + new cookbook), not the owner's mutable cookbook
 - **Web Fallback**: The same canonical URL renders the recipe in the Wasm web app when the native app is not installed
 - **Deferred Deep Links**: After install, the user is routed to the originally shared recipe
 - **Rich Previews**: Open Graph / Twitter Card metadata for share-target previews
 - **Copy Link**: One-tap copy of the canonical recipe URL
 
 ## Technical Implementation
-- **Canonical URLs**: `https://purecipes.app/r/{recipeId}` and `/s/{sessionId}` handled by all three clients
+- **Canonical URLs**: `https://purecipes.app/r/{recipeId}` and `/c/{cookbookShareToken}` handled by all three clients
+- **Cookbook import API**: `POST /cookbooks/{id}/share` creates or returns a share token; `POST /cookbook-shares/{token}/import` copies recipes into the recipient account (idempotent per user and token)
 - **Routing**: Hook into the Jetpack Navigation graph in `umbrella` so the same routes resolve on Android and iOS
 - **Android**: App Links with `assetlinks.json` hosted by the backend
 - **iOS**: Universal Links with `apple-app-site-association` hosted by the backend
 - **Web**: SSR-friendly metadata so previews render even before Wasm boots
 - **Backend**: Endpoints serving link-verification files and share-preview metadata
+- **Website setup**: See [deep-linking-website-setup.md](../deep-linking-website-setup.md) for `assetlinks.json`, `apple-app-site-association`, and local `adb` testing
 
 ## Platform Considerations
 - **Android**: `ShareCompat.IntentBuilder` plus App Links intent filters
@@ -45,6 +48,7 @@ As a user, I want to share a recipe link with a friend through any messaging app
 - Keeping a single source of truth for routes across Android, iOS, and Wasm
 - Verifying `assetlinks.json` / `apple-app-site-association` in CI to avoid silent breakage
 - Permission model for private vs public recipes when shared
+- Cookbook import may skip recipes that no longer exist; partial import messaging on the client
 - Deferred deep-link reliability on iOS
 
 ## Privacy Considerations

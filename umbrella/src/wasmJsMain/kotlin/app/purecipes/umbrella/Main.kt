@@ -53,7 +53,12 @@ fun main() {
 			getSearchFilters = graph.getSearchFiltersUseCase,
 			saveSearchFilters = graph.saveSearchFiltersUseCase,
 			getUserPantry = graph.getUserPantryUseCase,
-			updateUserPantry = graph.updateUserPantryUseCase,
+				updateUserPantry = graph.updateUserPantryUseCase,
+				observeIncomingLinks = graph.observeIncomingLinksUseCase,
+				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
+				shareRecipe = graph.shareRecipeUseCase,
+				shareCookbook = graph.shareCookbookUseCase,
+				importCookbookShare = graph.importCookbookShareUseCase,
 		)
 	})
 }

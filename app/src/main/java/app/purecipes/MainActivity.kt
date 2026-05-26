@@ -2,6 +2,7 @@ package app.purecipes
 
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,6 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.main.ui.MainScreen
+import app.purecipes.feature.sharing.data.runtime.SharingAndroidRuntime
+import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
 import com.mmk.kmpauth.core.KMPAuth
 import com.mmk.kmpauth.facebook.handleFacebookActivityResult
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
@@ -19,6 +22,8 @@ import dev.zacsweers.metro.createGraph
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+	private lateinit var deliverIncomingLinkUseCase: DeliverIncomingLinkUseCase
 
 	private val requestNotificationPermission =
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -33,11 +38,13 @@ class MainActivity : ComponentActivity() {
 		}
 
 		val graph = createGraph<PurecipesAppGraph>()
+		deliverIncomingLinkUseCase = graph.deliverIncomingLinkUseCase
 
 		lifecycleScope.launch { graph.initializeNotificationsUseCase() }
 
 		setContent {
 			MainScreen(
+				onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
 				observeConsentState = graph.observeConsentStateUseCase,
 				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
 				observeMeasurementPreferences = graph.observeMeasurementPreferencesUseCase,
@@ -83,6 +90,11 @@ class MainActivity : ComponentActivity() {
 				saveSearchFilters = graph.saveSearchFiltersUseCase,
 				getUserPantry = graph.getUserPantryUseCase,
 				updateUserPantry = graph.updateUserPantryUseCase,
+				observeIncomingLinks = graph.observeIncomingLinksUseCase,
+				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
+				shareRecipe = graph.shareRecipeUseCase,
+				shareCookbook = graph.shareCookbookUseCase,
+				importCookbookShare = graph.importCookbookShareUseCase,
 				onExitRequest = ::finish,
 			)
 		}
@@ -90,16 +102,25 @@ class MainActivity : ComponentActivity() {
 
 	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
+		setIntent(intent)
 		NotifierManager.onCreateOrOnNewIntent(intent)
+		deliverDeepLinkFromIntent(intent)
+	}
+
+	private fun deliverDeepLinkFromIntent(intent: Intent?) {
+		val data: Uri = intent?.data ?: return
+		deliverIncomingLinkUseCase(data.toString())
 	}
 
 	override fun onStart() {
 		super.onStart()
 		AnalyticsAndroidRuntime.onActivityStarted(this)
+		SharingAndroidRuntime.onActivityStarted(this)
 	}
 
 	override fun onStop() {
 		AnalyticsAndroidRuntime.onActivityStopped(this)
+		SharingAndroidRuntime.onActivityStopped(this)
 		super.onStop()
 	}
 

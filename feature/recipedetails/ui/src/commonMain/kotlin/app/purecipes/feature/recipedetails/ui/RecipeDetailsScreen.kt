@@ -34,6 +34,8 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -57,6 +59,7 @@ fun RecipeDetailsScreen(
 	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
 	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	shareRecipe: ShareRecipeUseCase,
 	sessionKey: String?,
 	modifier: Modifier = Modifier,
 ) {
@@ -100,6 +103,17 @@ fun RecipeDetailsScreen(
 					},
 					navigationIcon = {
 						BackNavigationButton(onBack = onBack)
+					},
+					actions = {
+						ShareIconButton(
+							onShare = {
+								shareRecipe(
+									recipeId = recipeId,
+									title = viewModel.recipeDetails?.title,
+								)
+							},
+							contentDescription = "Share recipe",
+						)
 					},
 				)
 			},

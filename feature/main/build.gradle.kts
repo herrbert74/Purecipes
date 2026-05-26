@@ -25,6 +25,8 @@ kotlin {
 				implementation(project(":feature:recipedetails:ui"))
 				api(project(":feature:search:domain"))
 				implementation(project(":feature:search:ui"))
+				api(project(":feature:sharing:domain"))
+				implementation(project(":feature:sharing:ui"))
 				api(project(":feature:settings:domain"))
 				api(project(":shared:data"))
 				api(project(":shared:domain"))

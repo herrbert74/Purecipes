@@ -52,6 +52,13 @@ import app.purecipes.feature.settings.domain.usecase.InitializeNotificationsUseC
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
+import app.purecipes.feature.sharing.data.repository.SharingDataModule
+import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
+import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
+import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metro.AppScope
@@ -66,7 +73,8 @@ interface PurecipesAppGraph :
 	NewRecipeDataModule,
 	RecipeDetailsDataModule,
 	SettingsDataModule,
-	SearchDataModule {
+	SearchDataModule,
+	SharingDataModule {
 
 	val purecipesConfig: PurecipesConfig
 
@@ -159,4 +167,16 @@ interface PurecipesAppGraph :
 	val updateUserPantryUseCase: UpdateUserPantryUseCase
 
 	val searchRecipesUseCase: SearchRecipesUseCase
+
+	val deliverIncomingLinkUseCase: DeliverIncomingLinkUseCase
+
+	val observeIncomingLinksUseCase: ObserveIncomingLinksUseCase
+
+	val publishWebLaunchLinkUseCase: PublishWebLaunchLinkUseCase
+
+	val shareRecipeUseCase: ShareRecipeUseCase
+
+	val shareCookbookUseCase: ShareCookbookUseCase
+
+	val importCookbookShareUseCase: ImportCookbookShareUseCase
 }

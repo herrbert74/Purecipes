@@ -40,7 +40,10 @@ class RecipeImageRemoteUploader(
 	purecipesConfig: PurecipesConfig,
 ) : RecipeImageUploader {
 
-	private val uploadEndpoint = backendBaseUrl(purecipesConfig.buildType()).trimEnd('/') + "/recipe-images"
+	private val uploadEndpoint = backendBaseUrl(
+		purecipesConfig.buildType(),
+		purecipesConfig.debugBackendHostOverride(),
+	).trimEnd('/') + "/recipe-images"
 
 	override suspend fun upload(image: RecipeImageUpload): Outcome<String> {
 		return runCatchingApi {

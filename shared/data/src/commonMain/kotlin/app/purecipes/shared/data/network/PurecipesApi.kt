@@ -2,8 +2,10 @@ package app.purecipes.shared.data.network
 
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.CookbookCreateRequest
+import app.purecipes.shared.domain.model.CookbookImportResult
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
+import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
@@ -110,6 +112,12 @@ interface PurecipesApi {
 
 	@GET("recipes/{id}/cookbooks")
 	suspend fun getRecipeCookbooks(@Path("id") recipeId: Int): List<CookbookRef>
+
+	@POST("cookbooks/{id}/share")
+	suspend fun createCookbookShare(@Path("id") cookbookId: Int): CookbookShareToken
+
+	@POST("cookbook-shares/{token}/import")
+	suspend fun importCookbookShare(@Path("token") token: String): CookbookImportResult
 
 	@GET("settings/measurement")
 	suspend fun getMeasurementPreferences(): MeasurementPreferences

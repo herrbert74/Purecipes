@@ -4,8 +4,10 @@ import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.CookbookCreateRequest
+import app.purecipes.shared.domain.model.CookbookImportResult
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
+import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
@@ -38,6 +40,8 @@ class FakePurecipesApi(
 	private val createdRecipes = initialRecipeDetails.toMutableList()
 	private val cookbooks = initialCookbooks.toMutableList()
 	private val cookbookRecipeIds = mutableMapOf<Int, MutableSet<Int>>()
+	private val cookbookShares = mutableMapOf<String, Int>()
+	private val cookbookShareImports = mutableMapOf<Pair<String, String>, Int>()
 	private var nextCookbookId: Int = (initialCookbooks.maxOfOrNull { it.id } ?: 0) + 1
 
 	init {
@@ -203,6 +207,55 @@ class FakePurecipesApi(
 			.map { CookbookRef(id = it.id, name = it.name) }
 	}
 
+	override suspend fun createCookbookShare(cookbookId: Int): CookbookShareToken {
+		val token = "00000000-0000-4000-8000-${cookbookId.toString().padStart(FAKE_SHARE_TOKEN_ID_WIDTH, '0')}"
+		cookbookShares[token] = cookbookId
+		return CookbookShareToken(token)
+	}
+
+	override suspend fun importCookbookShare(token: String): CookbookImportResult {
+		val sourceCookbookId = cookbookShares[token]
+			?: error("Share not found: $token")
+		val importKey = token to session.user.id
+		val existingCookbookId = cookbookShareImports[importKey]
+		if (existingCookbookId != null) {
+			val cookbook = cookbooks.first { it.id == existingCookbookId }
+			return CookbookImportResult(
+				cookbook = cookbook,
+				recipesImported = 0,
+				recipesSkipped = 0,
+				alreadyImported = true,
+			)
+		}
+		val source = cookbooks.first { it.id == sourceCookbookId }
+		val imported = createCookbook(CookbookCreateRequest(name = source.name))
+		val recipeIds = cookbookRecipeIds[sourceCookbookId].orEmpty()
+		var recipesImported = 0
+		for (recipeId in recipeIds) {
+			if (favoriteRecipes.none { it.id == recipeId }) {
+				favoriteRecipes = favoriteRecipes + RecipeSummary(
+					id = recipeId,
+					title = "Recipe $recipeId",
+					cuisine = null,
+					imageUrl = null,
+					totalTime = null,
+					measurementSystem = MeasurementSystem.METRIC,
+					isFavorite = true,
+				)
+			}
+			addRecipeToCookbook(imported.id, recipeId)
+			recipesImported += 1
+		}
+		cookbookShareImports[importKey] = imported.id
+		val updatedCookbook = cookbooks.first { it.id == imported.id }
+		return CookbookImportResult(
+			cookbook = updatedCookbook,
+			recipesImported = recipesImported,
+			recipesSkipped = 0,
+			alreadyImported = false,
+		)
+	}
+
 	override suspend fun getMeasurementPreferences(): MeasurementPreferences = measurementPreferences
 
 	override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences): MeasurementPreferences {
@@ -249,6 +302,8 @@ class FakePurecipesApi(
 	}
 
 	private companion object {
+
+		private const val FAKE_SHARE_TOKEN_ID_WIDTH = 12
 
 		fun defaultAuthenticatedSession(): AuthenticatedSession {
 			return AuthenticatedSession(
