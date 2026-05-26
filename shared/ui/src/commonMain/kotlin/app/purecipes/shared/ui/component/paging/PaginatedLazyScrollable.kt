@@ -38,6 +38,7 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
 	newPageErrorIndicator: @Composable (e: Exception) -> Unit = {},
 	firstPageEmptyIndicator: @Composable () -> Unit = {},
 	newPageEmptyIndicator: @Composable () -> Unit = {},
+	requestInitialPageAutomatically: Boolean = true,
 	concreteLazyList: LazyScrollable<LAZY_SCROLLABLE_SCOPE>,
 ) {
 	var internalState by paginationState.internalState
@@ -137,13 +138,15 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
 		}
 	}
 
-	LaunchedEffect(internalState) {
-		if (internalState is PaginationInternalState.Initial) {
-			paginationState.requestPage(
-				initialPageKey = internalState.initialPageKey,
-				requestedPageKey = internalState.initialPageKey,
-				items = internalState.items
-			)
+	if (requestInitialPageAutomatically) {
+		LaunchedEffect(internalState) {
+			if (internalState is PaginationInternalState.Initial) {
+				paginationState.requestPage(
+					initialPageKey = internalState.initialPageKey,
+					requestedPageKey = internalState.initialPageKey,
+					items = internalState.items,
+				)
+			}
 		}
 	}
 }

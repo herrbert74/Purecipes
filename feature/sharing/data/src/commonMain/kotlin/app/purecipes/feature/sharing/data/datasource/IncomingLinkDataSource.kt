@@ -1,16 +1,16 @@
 package app.purecipes.feature.sharing.data.datasource
 
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 
 internal class IncomingLinkDataSource {
 
-	private val urls = MutableSharedFlow<String>(extraBufferCapacity = 8)
+	private val urls = Channel<String>(capacity = Channel.UNLIMITED)
 
-	val incomingUrls: SharedFlow<String> = urls.asSharedFlow()
+	val incomingUrls: Flow<String> = urls.receiveAsFlow()
 
 	fun deliver(url: String) {
-		urls.tryEmit(url)
+		urls.trySend(url)
 	}
 }

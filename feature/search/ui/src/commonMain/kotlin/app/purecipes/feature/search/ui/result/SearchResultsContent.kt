@@ -50,6 +50,7 @@ internal fun SearchResultsContent(
 
 		else -> PaginatedLazyColumn(
 			paginationState = paginationState,
+			requestInitialPageAutomatically = false,
 			modifier = modifier.fillMaxWidth(),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),

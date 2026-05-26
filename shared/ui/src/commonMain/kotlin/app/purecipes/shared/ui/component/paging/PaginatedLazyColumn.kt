@@ -26,6 +26,7 @@ fun <KEY, T> PaginatedLazyColumn(
 	newPageErrorIndicator: @Composable (e: Exception) -> Unit = {},
 	firstPageEmptyIndicator: @Composable () -> Unit = {},
 	newPageEmptyIndicator: @Composable () -> Unit = {},
+	requestInitialPageAutomatically: Boolean = true,
 	state: LazyListState = rememberLazyListState(),
 	contentPadding: PaddingValues = PaddingValues(0.dp),
 	reverseLayout: Boolean = false,
@@ -44,6 +45,7 @@ fun <KEY, T> PaginatedLazyColumn(
 		newPageErrorIndicator,
 		firstPageEmptyIndicator,
 		newPageEmptyIndicator,
+		requestInitialPageAutomatically,
 	) { paginatedItemsHandler ->
 		LazyColumn(
 			modifier = modifier,

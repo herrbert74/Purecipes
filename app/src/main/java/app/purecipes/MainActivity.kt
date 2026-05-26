@@ -39,12 +39,12 @@ class MainActivity : ComponentActivity() {
 
 		val graph = createGraph<PurecipesAppGraph>()
 		deliverIncomingLinkUseCase = graph.deliverIncomingLinkUseCase
-		deliverDeepLinkFromIntent(intent)
 
 		lifecycleScope.launch { graph.initializeNotificationsUseCase() }
 
 		setContent {
 			MainScreen(
+				onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
 				observeConsentState = graph.observeConsentStateUseCase,
 				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
 				observeMeasurementPreferences = graph.observeMeasurementPreferencesUseCase,

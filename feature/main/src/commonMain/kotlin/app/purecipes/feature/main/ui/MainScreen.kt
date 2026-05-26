@@ -144,6 +144,7 @@ fun MainScreen(
 	shareCookbook: ShareCookbookUseCase,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
+	onDeliverPendingIncomingLink: () -> Unit = {},
 ) {
 	PurecipesTheme {
 		val viewModel = mainViewModel()
@@ -162,6 +163,7 @@ fun MainScreen(
 			publishWebLaunchLink()
 		}
 		LaunchedEffect(Unit) {
+			onDeliverPendingIncomingLink()
 			observeIncomingLinks().collectLatest { link ->
 				viewModel.onDeepLink(backStack, link)
 			}

@@ -14,10 +14,12 @@ import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 
 @ContributesTo(AppScope::class)
 interface SharingDataModule {
 
+	@SingleIn(AppScope::class)
 	@Provides
 	fun provideIncomingLinkRepository(): IncomingLinkRepository {
 		return IncomingLinkAccessor(IncomingLinkDataSource())
