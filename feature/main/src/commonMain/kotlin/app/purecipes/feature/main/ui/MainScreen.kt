@@ -38,12 +38,6 @@ import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.feature.auth.ui.signin.SignInScreen
 import app.purecipes.feature.cooking.ui.StepByStepCookingRoute
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.favorites.ui.FavoritesScreen
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
@@ -59,7 +53,6 @@ import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferences
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import app.purecipes.feature.settings.ui.SettingsScreen
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
-import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
@@ -81,12 +74,6 @@ fun MainScreen(
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
 	getCreatedRecipes: GetCreatedRecipesUseCase,
-	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
-	getCookbooksPage: GetCookbooksPageUseCase,
-	createCookbook: CreateCookbookUseCase,
-	deleteCookbook: DeleteCookbookUseCase,
-	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
-	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	googleWebClientId: String?,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
@@ -99,7 +86,6 @@ fun MainScreen(
 	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	shareRecipe: ShareRecipeUseCase,
 	shareCookbook: ShareCookbookUseCase,
-	importCookbookShare: ImportCookbookShareUseCase,
 	metroViewModelFactory: MetroViewModelFactory,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
@@ -243,17 +229,10 @@ fun MainScreen(
 								viewModel.takePendingCookbookShareToken()
 							}
 							FavoritesScreen(
-								getFavoriteRecipesPage = getFavoriteRecipesPage,
-								getCookbooksPage = getCookbooksPage,
-								createCookbook = createCookbook,
-								deleteCookbook = deleteCookbook,
-								getCookbookRecipesPage = getCookbookRecipesPage,
-								getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 								refreshSignal = favoritesRefreshSignal,
-								sessionKey = sessionKey,
 								shareCookbook = shareCookbook,
-								importCookbookShare = importCookbookShare,
 								modifier = Modifier.fillMaxSize(),
+								sessionKey = sessionKey,
 								initialCookbookShareToken = initialCookbookShareToken,
 								onRecipeSelect = { recipeId -> viewModel.onRecipeSelected(recipeId) },
 							)

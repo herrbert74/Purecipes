@@ -18,12 +18,6 @@ fun main() {
 			setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
 			showConsentForm = graph.showConsentFormUseCase,
 			getCreatedRecipes = graph.getCreatedRecipesUseCase,
-			getFavoriteRecipesPage = graph.getFavoriteRecipesPageUseCase,
-			getCookbooksPage = graph.getCookbooksPageUseCase,
-			createCookbook = graph.createCookbookUseCase,
-			deleteCookbook = graph.deleteCookbookUseCase,
-			getCookbookRecipesPage = graph.getCookbookRecipesPageUseCase,
-			getCookbookCoverImageUrl = graph.getCookbookCoverImageUrlUseCase,
 			googleWebClientId = graph.purecipesConfig.googleWebClientId(),
 			resetMeasurementPreferences = graph.resetMeasurementPreferencesUseCase,
 			saveMeasurementPreferences = graph.saveMeasurementPreferencesUseCase,
@@ -36,7 +30,6 @@ fun main() {
 			publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
 			shareRecipe = graph.shareRecipeUseCase,
 			shareCookbook = graph.shareCookbookUseCase,
-			importCookbookShare = graph.importCookbookShareUseCase,
 			metroViewModelFactory = graph.metroViewModelFactory,
 		)
 	})
