@@ -31,7 +31,6 @@ import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
-import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
@@ -42,9 +41,6 @@ import app.purecipes.feature.favorites.ui.FavoritesScreen
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.search.ui.RecipeSearchScreen
@@ -73,15 +69,11 @@ fun MainScreen(
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	showConsentForm: ShowConsentFormUseCase,
-	getCreatedRecipes: GetCreatedRecipesUseCase,
 	googleWebClientId: String?,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
 	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
 	sendTestNotification: SendTestNotificationUseCase,
-	saveCreatedRecipe: SaveCreatedRecipeUseCase,
-	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
-	trackEvent: TrackEventUseCase,
 	observeIncomingLinks: ObserveIncomingLinksUseCase,
 	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	shareRecipe: ShareRecipeUseCase,
@@ -240,10 +232,6 @@ fun MainScreen(
 						entry<CreateDestination> {
 							CreateRecipeScreen(
 								canUploadRecipes = canManageFavorites,
-								getCreatedRecipes = getCreatedRecipes,
-								saveCreatedRecipe = saveCreatedRecipe,
-								estimateRecipeNutrition = estimateRecipeNutrition,
-								trackEvent = trackEvent,
 								modifier = Modifier.fillMaxSize(),
 							)
 						}

@@ -42,12 +42,7 @@ class CreateRecipeScreenTest {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
-					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
-						FakeRecipeNutritionEstimateRepository(),
-					),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					viewModel = createRecipeViewModelForTest(repository = repository),
 				)
 			}
 		}
@@ -69,17 +64,11 @@ class CreateRecipeScreenTest {
 
 	@Test
 	fun createRecipeScreenDisablesFormWhileImageImportIsInProgress() = runRecompositionTrackingUiTest {
-		val repository = FakeCreatedRecipeRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
-					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
-						FakeRecipeNutritionEstimateRepository(),
-					),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					viewModel = createRecipeViewModelForTest(),
 					rememberImagePicker = { _, onImportStateChange, _ ->
 						object : RecipeImagePickerLauncher {
 							override fun launch() {
@@ -101,17 +90,11 @@ class CreateRecipeScreenTest {
 
 	@Test
 	fun createRecipeScreenShowsImageImportErrorAndReEnablesForm() = runRecompositionTrackingUiTest {
-		val repository = FakeCreatedRecipeRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
-					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
-						FakeRecipeNutritionEstimateRepository(),
-					),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					viewModel = createRecipeViewModelForTest(),
 					rememberImagePicker = { _, onImportStateChange, onPickerError ->
 						object : RecipeImagePickerLauncher {
 							override fun launch() {
@@ -133,17 +116,11 @@ class CreateRecipeScreenTest {
 
 	@Test
 	fun createRecipeScreenOpensCuisinePicker() = runRecompositionTrackingUiTest {
-		val repository = FakeCreatedRecipeRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
-					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
-						FakeRecipeNutritionEstimateRepository(),
-					),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					viewModel = createRecipeViewModelForTest(),
 				)
 			}
 		}
@@ -159,17 +136,11 @@ class CreateRecipeScreenTest {
 
 	@Test
 	fun createRecipeScreenAddsAnotherStepField() = runRecompositionTrackingUiTest {
-		val repository = FakeCreatedRecipeRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
-					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
-						FakeRecipeNutritionEstimateRepository(),
-					),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					viewModel = createRecipeViewModelForTest(),
 				)
 			}
 		}
@@ -182,17 +153,11 @@ class CreateRecipeScreenTest {
 
 	@Test
 	fun createRecipeScreenReordersSteps() = runRecompositionTrackingUiTest {
-		val repository = FakeCreatedRecipeRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
-					getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-					saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-					estimateRecipeNutrition = EstimateRecipeNutritionUseCase(
-						FakeRecipeNutritionEstimateRepository(),
-					),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					viewModel = createRecipeViewModelForTest(),
 				)
 			}
 		}
@@ -211,5 +176,14 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
 		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
 	}
-
 }
+
+private fun createRecipeViewModelForTest(
+	repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
+	estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
+): CreateRecipeViewModel = CreateRecipeViewModel(
+	getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+	saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+	estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+)
