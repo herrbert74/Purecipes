@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
 	id("convention.data")
 	id("convention.common-test")
@@ -125,7 +127,7 @@ kotlin {
 	}
 
 	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
-	if (name.contains("Ios")) {
+	targets.withType<KotlinNativeTarget>().configureEach {
 		compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
 	}
 	if (name.contains("WasmJs")) {
