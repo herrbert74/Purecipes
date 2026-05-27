@@ -43,6 +43,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				implementation(project(":shared:domain"))
+				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlin.stdlib)
 			}
 		}

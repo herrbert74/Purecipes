@@ -1,6 +1,7 @@
 plugins {
 	id("convention.ui")
 	id("convention.common-test")
+	alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -20,6 +21,8 @@ kotlin {
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:settings:domain"))
 				api(project(":shared:domain"))
+				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.kotlinx.serializationJson)
 			}
 		}
 		commonTest {

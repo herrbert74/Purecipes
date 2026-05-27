@@ -3,6 +3,9 @@ package app.purecipes.feature.main.ui
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
+import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
