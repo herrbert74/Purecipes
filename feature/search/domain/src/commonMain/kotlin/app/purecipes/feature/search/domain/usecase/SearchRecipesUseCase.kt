@@ -4,7 +4,9 @@ import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.repository.SearchOutcome
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
+import dev.zacsweers.metro.Inject
 
+@Inject
 class SearchRecipesUseCase(
 	private val repository: RecipeSearchRepository,
 ) {

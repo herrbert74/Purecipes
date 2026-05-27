@@ -4,7 +4,9 @@ import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import app.purecipes.shared.domain.model.RecipeDetails
+import dev.zacsweers.metro.Inject
 
+@Inject
 class SaveCreatedRecipeUseCase(
 	private val repository: CreatedRecipeRepository,
 ) {

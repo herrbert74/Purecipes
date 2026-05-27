@@ -5,7 +5,9 @@ import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import com.github.michaelbull.result.Err
+import dev.zacsweers.metro.Inject
 
+@Inject
 class SignInWithEmailUseCase(
 	private val repository: AuthenticationRepository,
 ) {

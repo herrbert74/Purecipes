@@ -4,7 +4,9 @@ import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.RecipeSummary
+import dev.zacsweers.metro.Inject
 
+@Inject
 class FilterRecipesForMeasurementPreferencesUseCase {
 
 	operator fun invoke(

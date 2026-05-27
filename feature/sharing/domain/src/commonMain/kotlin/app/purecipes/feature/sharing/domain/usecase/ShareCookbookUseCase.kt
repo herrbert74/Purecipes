@@ -3,7 +3,9 @@ package app.purecipes.feature.sharing.domain.usecase
 import app.purecipes.feature.sharing.domain.model.PurecipesLinkUrls
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import com.github.michaelbull.result.get
+import dev.zacsweers.metro.Inject
 
+@Inject
 class ShareCookbookUseCase(
 	private val createCookbookShareUseCase: CreateCookbookShareUseCase,
 	private val shareRepository: ShareRepository,

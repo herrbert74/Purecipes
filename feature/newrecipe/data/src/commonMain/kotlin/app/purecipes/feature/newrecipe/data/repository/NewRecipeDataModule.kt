@@ -10,9 +10,6 @@ import app.purecipes.feature.newrecipe.data.image.RecipeImageRemoteUploader
 import app.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import app.purecipes.feature.newrecipe.domain.repository.CreatedRecipeRepository
 import app.purecipes.feature.newrecipe.domain.repository.RecipeNutritionEstimateRepository
-import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.network.PurecipesApi
 import dev.zacsweers.metro.AppScope
@@ -52,16 +49,6 @@ interface NewRecipeDataModule {
 	}
 
 	@Provides
-	fun provideGetCreatedRecipesUseCase(repository: CreatedRecipeRepository): GetCreatedRecipesUseCase {
-		return GetCreatedRecipesUseCase(repository)
-	}
-
-	@Provides
-	fun provideSaveCreatedRecipeUseCase(repository: CreatedRecipeRepository): SaveCreatedRecipeUseCase {
-		return SaveCreatedRecipeUseCase(repository)
-	}
-
-	@Provides
 	fun provideRecipeNutritionEstimateRemoteDataSource(api: PurecipesApi): RecipeNutritionEstimateDataSource.Remote {
 		return RecipeNutritionEstimateRemoteDataSource(api)
 	}
@@ -71,12 +58,5 @@ interface NewRecipeDataModule {
 		remoteDataSource: RecipeNutritionEstimateDataSource.Remote,
 	): RecipeNutritionEstimateRepository {
 		return RecipeNutritionEstimateAccessor(remoteDataSource)
-	}
-
-	@Provides
-	fun provideEstimateRecipeNutritionUseCase(
-		repository: RecipeNutritionEstimateRepository,
-	): EstimateRecipeNutritionUseCase {
-		return EstimateRecipeNutritionUseCase(repository)
 	}
 }

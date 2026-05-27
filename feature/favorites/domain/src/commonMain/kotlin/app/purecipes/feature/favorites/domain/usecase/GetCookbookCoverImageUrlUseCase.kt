@@ -1,8 +1,10 @@
 package app.purecipes.feature.favorites.domain.usecase
 
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
+import dev.zacsweers.metro.Inject
 import kotlin.random.Random
 
+@Inject
 class GetCookbookCoverImageUrlUseCase(
 	private val repository: CookbookCoverRepository,
 ) {

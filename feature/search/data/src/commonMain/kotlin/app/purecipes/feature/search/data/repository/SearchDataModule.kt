@@ -11,11 +11,6 @@ import app.purecipes.feature.search.data.datasource.UserPantryRemoteDataSource
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.repository.UserPantryRepository
-import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
-import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
-import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
-import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
-import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.shared.data.network.PurecipesApi
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
@@ -31,11 +26,6 @@ interface SearchDataModule {
 	@Provides
 	fun provideRecipeSearchRepository(remoteDataSource: RecipeSearchDataSource.Remote): RecipeSearchRepository {
 		return RecipeSearchAccessor(remoteDataSource)
-	}
-
-	@Provides
-	fun provideSearchRecipesUseCase(repository: RecipeSearchRepository): SearchRecipesUseCase {
-		return SearchRecipesUseCase(repository)
 	}
 
 	@Provides
@@ -57,16 +47,6 @@ interface SearchDataModule {
 	}
 
 	@Provides
-	fun provideGetSearchFiltersUseCase(repository: RecipeSearchFilterRepository): GetSearchFiltersUseCase {
-		return GetSearchFiltersUseCase(repository)
-	}
-
-	@Provides
-	fun provideSaveSearchFiltersUseCase(repository: RecipeSearchFilterRepository): SaveSearchFiltersUseCase {
-		return SaveSearchFiltersUseCase(repository)
-	}
-
-	@Provides
 	fun provideUserPantryRemoteDataSource(api: PurecipesApi): UserPantryDataSource.Remote {
 		return UserPantryRemoteDataSource(api)
 	}
@@ -82,15 +62,5 @@ interface SearchDataModule {
 		localDataSource: UserPantryDataSource.Local,
 	): UserPantryRepository {
 		return UserPantryAccessor(remoteDataSource, localDataSource)
-	}
-
-	@Provides
-	fun provideGetUserPantryUseCase(repository: UserPantryRepository): GetUserPantryUseCase {
-		return GetUserPantryUseCase(repository)
-	}
-
-	@Provides
-	fun provideUpdateUserPantryUseCase(repository: UserPantryRepository): UpdateUserPantryUseCase {
-		return UpdateUserPantryUseCase(repository)
 	}
 }
