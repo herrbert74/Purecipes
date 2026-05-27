@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
@@ -31,10 +32,6 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 private const val FIRST_PAGE_NUMBER = 1
@@ -52,11 +49,7 @@ class RecipeSearchViewModel(
 	private val updateUserPantry: UpdateUserPantryUseCase,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	var searchQuery by mutableStateOf("")
 		private set
@@ -93,14 +86,14 @@ class RecipeSearchViewModel(
 	val paginationState: PaginationState<Int, RecipeSummary> = PaginationState(
 		initialPageKey = FIRST_PAGE_NUMBER,
 		onRequestPage = { pageKey ->
-			scope.launch {
+			viewModelScope.launch {
 				loadPageOfResults(pageKey)
 			}
 		},
 	)
 
 	init {
-		scope.launch {
+		viewModelScope.launch {
 			val saved = getSearchFilters()
 			activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
 			pantryIngredients = if (sessionKey != null) getUserPantry() else emptySet()
@@ -130,7 +123,7 @@ class RecipeSearchViewModel(
 		val filtersChanged = activeFilters != lastSearchedFilters
 		val pantryChanged = pantryIngredients != lastSavedPantry
 		if (!filtersChanged && !pantryChanged) return
-		scope.launch {
+		viewModelScope.launch {
 			if (filtersChanged) {
 				saveSearchFilters(activeFilters)
 				lastSearchedFilters = activeFilters
@@ -158,7 +151,7 @@ class RecipeSearchViewModel(
 	}
 
 	fun searchNow() {
-		scope.launch { doSearch() }
+		viewModelScope.launch { doSearch() }
 	}
 
 	private suspend fun doSearch() {
@@ -207,12 +200,6 @@ class RecipeSearchViewModel(
 		}
 		if (pageNumber == FIRST_PAGE_NUMBER) {
 			isSearching = false
-		}
-	}
-
-	override fun onCleared() {
-		if (ownsCoroutineScope) {
-			scope.cancel()
 		}
 	}
 

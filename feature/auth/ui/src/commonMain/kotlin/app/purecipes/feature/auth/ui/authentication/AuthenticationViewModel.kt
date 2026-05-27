@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
@@ -21,10 +22,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -39,11 +36,7 @@ class AuthenticationViewModel(
 	private val signOut: SignOutUseCase,
 	observeConsentState: ObserveConsentStateUseCase,
 	private val showConsentForm: ShowConsentFormUseCase,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	val consentState: StateFlow<ConsentState> = observeConsentState()
 
@@ -57,7 +50,7 @@ class AuthenticationViewModel(
 		private set
 
 	init {
-		scope.launch {
+		viewModelScope.launch {
 			observeAuthenticationState().collect { state ->
 				authenticationState = state
 				if (state is AuthenticationState.SignedIn) {
@@ -85,7 +78,7 @@ class AuthenticationViewModel(
 			message = "Google sign-in was cancelled."
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			val result = signInWithGoogle(
 				GoogleAuthenticationProfile(
@@ -111,7 +104,7 @@ class AuthenticationViewModel(
 			message = "${provider.providerDisplayName()} sign-in was cancelled."
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			val signInResult = signInWithExternalProvider(profile)
 			message = signInResult.getError()?.message
@@ -120,7 +113,7 @@ class AuthenticationViewModel(
 	}
 
 	fun signOut() {
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			signOut.invoke()
 			isBusy = false
@@ -128,18 +121,13 @@ class AuthenticationViewModel(
 	}
 
 	fun deleteAccount() {
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			message = deleteAccount.invoke().getError()?.message
 			isBusy = false
 		}
 	}
 
-	override fun onCleared() {
-		if (ownsCoroutineScope) {
-			scope.cancel()
-		}
-	}
 }
 
 private fun AuthProvider.providerDisplayName(): String {

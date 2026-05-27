@@ -6,27 +6,20 @@ import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_UPPERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_TOO_SHORT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.runViewModelTest
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RegistrationViewModelTest {
 
 	@Test
-	fun `register with short password shows policy error`() = runTest {
+	fun `register with short password shows policy error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = RegistrationViewModel(
 			registerWithEmail = RegisterWithEmailUseCase(repository),
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onDisplayNameChange("Taylor Baker")
@@ -35,64 +28,52 @@ class RegistrationViewModelTest {
 		viewModel.submitRegistration { }
 
 		viewModel.passwordError shouldBe PASSWORD_TOO_SHORT_MESSAGE
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `register with password missing uppercase shows policy error`() = runTest {
+	fun `register with password missing uppercase shows policy error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = RegistrationViewModel(
 			registerWithEmail = RegisterWithEmailUseCase(repository),
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onPasswordChange("validpass12")
 		viewModel.submitRegistration { }
 
 		viewModel.passwordError shouldBe PASSWORD_MISSING_UPPERCASE_MESSAGE
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `register with password missing lowercase shows policy error`() = runTest {
+	fun `register with password missing lowercase shows policy error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = RegistrationViewModel(
 			registerWithEmail = RegisterWithEmailUseCase(repository),
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onPasswordChange("VALIDPASS12")
 		viewModel.submitRegistration { }
 
 		viewModel.passwordError shouldBe PASSWORD_MISSING_LOWERCASE_MESSAGE
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `register with password missing number shows policy error`() = runTest {
+	fun `register with password missing number shows policy error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = RegistrationViewModel(
 			registerWithEmail = RegisterWithEmailUseCase(repository),
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onPasswordChange("ValidPasswd")
 		viewModel.submitRegistration { }
 
 		viewModel.passwordError shouldBe PASSWORD_MISSING_NUMBER_MESSAGE
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `successful registration invokes callback with email`() = runTest {
+	fun `successful registration invokes callback with email`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = RegistrationViewModel(
 			registerWithEmail = RegisterWithEmailUseCase(repository),
-			coroutineScope = viewModelScope,
 		)
 		var registeredEmail: String? = null
 
@@ -104,6 +85,5 @@ class RegistrationViewModelTest {
 		advanceUntilIdle()
 
 		registeredEmail shouldBe "taylor@example.com"
-		viewModelScope.cancel()
 	}
 }

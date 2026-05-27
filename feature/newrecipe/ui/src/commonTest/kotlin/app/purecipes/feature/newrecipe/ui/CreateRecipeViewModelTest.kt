@@ -11,23 +11,22 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
+import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreateRecipeViewModelTest {
 
 	@Test
-	fun `loading recipes exposes the existing saved list`() = runTest {
+	fun `loading recipes exposes the existing saved list`() = runViewModelTest {
 		val recipe = sampleCreatedRecipe()
 		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
-		val viewModel = createViewModel(repository = repository, coroutineScope = this)
+		val viewModel = createViewModel(repository = repository)
 
 		advanceUntilIdle()
 
@@ -36,9 +35,9 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `save validates required fields`() = runTest {
+	fun `save validates required fields`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
-		val viewModel = createViewModel(repository = repository, coroutineScope = this)
+		val viewModel = createViewModel(repository = repository)
 
 		advanceUntilIdle()
 		viewModel.saveRecipe()
@@ -48,9 +47,9 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `save adds a new recipe to the list`() = runTest {
+	fun `save adds a new recipe to the list`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
-		val viewModel = createViewModel(repository = repository, coroutineScope = this)
+		val viewModel = createViewModel(repository = repository)
 
 		advanceUntilIdle()
 		viewModel.onTitleChange("Tomato Pasta")
@@ -70,9 +69,9 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `editing a recipe updates the existing item`() = runTest {
+	fun `editing a recipe updates the existing item`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleCreatedRecipe()))
-		val viewModel = createViewModel(repository = repository, coroutineScope = this)
+		val viewModel = createViewModel(repository = repository)
 
 		advanceUntilIdle()
 		viewModel.editRecipe(viewModel.recipes.single())
@@ -87,9 +86,9 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `add step appends a new editable step`() = runTest {
+	fun `add step appends a new editable step`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
-		val viewModel = createViewModel(repository = repository, coroutineScope = this)
+		val viewModel = createViewModel(repository = repository)
 
 		advanceUntilIdle()
 		viewModel.onStepChange(index = 0, value = "Boil the pasta")
@@ -100,9 +99,9 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `move step up reorders the list`() = runTest {
+	fun `move step up reorders the list`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
-		val viewModel = createViewModel(repository = repository, coroutineScope = this)
+		val viewModel = createViewModel(repository = repository)
 
 		advanceUntilIdle()
 		viewModel.onStepChange(index = 0, value = "Boil the pasta")
@@ -114,7 +113,7 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `ingredient changes request nutrition estimate`() = runTest {
+	fun `ingredient changes request nutrition estimate`() = runViewModelTest {
 		val estimateRepository = FakeRecipeNutritionEstimateRepository(
 			estimateResult = Ok(
 				NutritionSummary(
@@ -124,10 +123,7 @@ class CreateRecipeViewModelTest {
 				),
 			),
 		)
-		val viewModel = createViewModel(
-			estimateRepository = estimateRepository,
-			coroutineScope = this,
-		)
+		val viewModel = createViewModel(estimateRepository = estimateRepository)
 
 		advanceUntilIdle()
 		viewModel.onIngredientsChange("1 cup sugar")
@@ -137,20 +133,18 @@ class CreateRecipeViewModelTest {
 		estimateRepository.lastIngredients shouldBe listOf("1 cup sugar")
 		viewModel.nutritionEstimate?.calories shouldBe 120.0
 	}
-}
 
-private fun createViewModel(
-	repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
-	estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
-	coroutineScope: CoroutineScope,
-): CreateRecipeViewModel =
-	CreateRecipeViewModel(
-		getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-		saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-		estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
-		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-		coroutineScope = coroutineScope,
-	)
+	private fun createViewModel(
+		repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
+		estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
+	): CreateRecipeViewModel =
+		CreateRecipeViewModel(
+			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+			estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		)
+}
 
 private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(
 	id = -1,

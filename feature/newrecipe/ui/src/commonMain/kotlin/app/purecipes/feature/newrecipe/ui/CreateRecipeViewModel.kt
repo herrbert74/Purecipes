@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
@@ -20,11 +21,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -36,11 +33,8 @@ class CreateRecipeViewModel(
 	private val saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	private val estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	private val trackEvent: TrackEventUseCase,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 	private var nutritionEstimateJob: Job? = null
 
 	var titleInput by mutableStateOf("")
@@ -223,7 +217,7 @@ class CreateRecipeViewModel(
 		errorMessage = null
 		val wasEditing = isEditing
 
-		scope.launch {
+		viewModelScope.launch {
 			val outcome = saveCreatedRecipe(
 				SaveCreatedRecipeRequest(
 					recipeId = editingRecipeId,
@@ -262,7 +256,7 @@ class CreateRecipeViewModel(
 
 	private fun scheduleNutritionEstimate() {
 		nutritionEstimateJob?.cancel()
-		nutritionEstimateJob = scope.launch {
+		nutritionEstimateJob = viewModelScope.launch {
 			val ingredients = ingredientsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList()
 			if (ingredients.isEmpty()) {
 				nutritionEstimate = null
@@ -278,7 +272,7 @@ class CreateRecipeViewModel(
 	}
 
 	private fun loadRecipes() {
-		scope.launch {
+		viewModelScope.launch {
 			isLoading = true
 			errorMessage = null
 			val outcome = getCreatedRecipes()
@@ -305,13 +299,6 @@ class CreateRecipeViewModel(
 				totalTimeInput.isNotBlank() && totalTimeInput.trim().toIntOrNull() == null
 			},
 		).firstOrNull()
-	}
-
-	override fun onCleared() {
-		nutritionEstimateJob?.cancel()
-		if (ownsCoroutineScope) {
-			scope.cancel()
-		}
 	}
 
 	private companion object {

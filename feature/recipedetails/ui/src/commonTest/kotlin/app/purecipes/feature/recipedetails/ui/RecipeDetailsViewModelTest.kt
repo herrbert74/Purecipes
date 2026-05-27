@@ -25,13 +25,13 @@ import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,7 +45,7 @@ class RecipeDetailsViewModelTest {
 	)
 
 	@Test
-	fun detailsViewModelLoadsRecipeDetails() = runTest {
+	fun detailsViewModelLoadsRecipeDetails() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -64,7 +64,6 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -75,7 +74,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun `details view model exposes repository error`() = runTest {
+	fun `details view model exposes repository error`() = runViewModelTest {
 		val repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed")))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
@@ -93,7 +92,6 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -104,7 +102,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun `toggle favorite updates recipe state`() = runTest {
+	fun `toggle favorite updates recipe state`() = runViewModelTest {
 		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoritesRepository = FakeFavoritesRepository()
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -123,7 +121,6 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -136,7 +133,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun `toggle favorite marks updating synchronously`() = runTest {
+	fun `toggle favorite marks updating synchronously`() = runViewModelTest {
 		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoriteStarted = CompletableDeferred<Unit>()
 		val finishFavorite = CompletableDeferred<Unit>()
@@ -157,7 +154,6 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -179,7 +175,7 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
-	fun `create cookbook and add rejects duplicate name`() = runTest {
+	fun `create cookbook and add rejects duplicate name`() = runViewModelTest {
 		val cookbooksRepository = FakeCookbooksRepository(
 			cookbooksPageResult = Ok(
 				CookbookListPage(
@@ -214,7 +210,6 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 			shareRecipe = shareRecipe,
-			coroutineScope = this,
 		)
 		advanceUntilIdle()
 		viewModel.prepareCookbookPicker()

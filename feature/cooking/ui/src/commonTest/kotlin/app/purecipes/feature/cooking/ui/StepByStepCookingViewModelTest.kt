@@ -8,18 +8,18 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StepByStepCookingViewModelTest {
 
 	@Test
-	fun `step by step view model advances and clamps navigation`() = runTest {
+	fun `step by step view model advances and clamps navigation`() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -29,7 +29,6 @@ class StepByStepCookingViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			recipeId = recipe.id,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -48,7 +47,7 @@ class StepByStepCookingViewModelTest {
 	}
 
 	@Test
-	fun `step by step view model sets and clamps current page`() = runTest {
+	fun `step by step view model sets and clamps current page`() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -58,7 +57,6 @@ class StepByStepCookingViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			recipeId = recipe.id,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -72,5 +70,4 @@ class StepByStepCookingViewModelTest {
 		viewModel.setCurrentStep(-1)
 		viewModel.currentStepIndex shouldBe 0
 	}
-
 }

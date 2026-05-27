@@ -12,23 +12,17 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.runViewModelTest
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthenticationViewModelTest {
 
 	@Test
-	fun `external provider cancellation exposes a message`() = runTest {
+	fun `external provider cancellation exposes a message`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val consentRepository = FakeConsentRepository(ConsentState.OBTAINED)
 		val viewModel = AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
@@ -38,19 +32,16 @@ class AuthenticationViewModelTest {
 			signOut = SignOutUseCase(repository),
 			observeConsentState = ObserveConsentStateUseCase(consentRepository),
 			showConsentForm = ShowConsentFormUseCase(consentRepository),
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onExternalProviderSignInResult(AuthProvider.APPLE, Result.success(null))
 
 		viewModel.message shouldBe "Apple sign-in was cancelled."
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `blank google result shows cancellation message`() = runTest {
+	fun `blank google result shows cancellation message`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val consentRepository = FakeConsentRepository(ConsentState.OBTAINED)
 		val viewModel = AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
@@ -60,12 +51,10 @@ class AuthenticationViewModelTest {
 			signOut = SignOutUseCase(repository),
 			observeConsentState = ObserveConsentStateUseCase(consentRepository),
 			showConsentForm = ShowConsentFormUseCase(consentRepository),
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onGoogleSignInResult(idToken = null, email = null, displayName = "", profileImageUrl = null)
 		viewModel.message shouldBe "Google sign-in was cancelled."
 		(viewModel.authenticationState is AuthenticationState.SignedOut) shouldBe true
-		viewModelScope.cancel()
 	}
 }

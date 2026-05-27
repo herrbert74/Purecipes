@@ -14,21 +14,15 @@ import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal fun mainViewModelForTest(
 	authenticationRepository: FakeAuthenticationRepository = FakeAuthenticationRepository(),
 	incomingLinkRepository: IncomingLinkRepository = emptyIncomingLinkRepository(),
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	consentRepository: FakeConsentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
 	onDeliverPendingIncomingLink: () -> Unit = {},
-	coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + UnconfinedTestDispatcher()),
 ): MainViewModel = MainViewModel(
 	observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
 	refreshConsent = RefreshConsentUseCase(consentRepository),
@@ -44,7 +38,6 @@ internal fun mainViewModelForTest(
 		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 	},
 	onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
-	coroutineScope = coroutineScope,
 )
 
 internal fun emptyIncomingLinkRepository(): IncomingLinkRepository = object : IncomingLinkRepository {
