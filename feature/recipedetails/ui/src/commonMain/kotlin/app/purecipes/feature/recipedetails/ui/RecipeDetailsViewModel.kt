@@ -18,6 +18,7 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -53,6 +54,7 @@ class RecipeDetailsViewModel(
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
 	private val addRecipeToCookbook: AddRecipeToCookbookUseCase,
+	private val shareRecipe: ShareRecipeUseCase,
 	@Assisted private val recipeId: Int,
 	@Assisted private val sessionKey: String?,
 	coroutineScope: CoroutineScope? = null,
@@ -214,6 +216,13 @@ class RecipeDetailsViewModel(
 			isCookbookActionInFlight = false
 			onDone(err)
 		}
+	}
+
+	fun shareCurrentRecipe() {
+		shareRecipe(
+			recipeId = recipeId,
+			title = recipeDetails?.title,
+		)
 	}
 
 	private fun refreshCookbookMembership() {

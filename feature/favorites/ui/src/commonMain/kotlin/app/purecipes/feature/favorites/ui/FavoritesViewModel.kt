@@ -14,6 +14,7 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseC
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -54,6 +55,7 @@ class FavoritesViewModel(
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val importCookbookShare: ImportCookbookShareUseCase,
+	private val shareCookbook: ShareCookbookUseCase,
 	@Assisted private val sessionKey: String?,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
@@ -281,6 +283,18 @@ class FavoritesViewModel(
 			}
 			isDeletingCookbook = false
 			onDone(ok)
+		}
+	}
+
+	fun shareOpenCookbook() {
+		val cookbookId = viewingCookbookId ?: return
+		val title = viewingCookbookName.takeIf { it.isNotBlank() }
+		scope.launch {
+			shareCookbook(
+				cookbookId = cookbookId,
+				recipeCount = totalCookbookDetailMatches,
+				title = title,
+			)
 		}
 	}
 

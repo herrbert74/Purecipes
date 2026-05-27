@@ -48,7 +48,6 @@ class FavoritesScreenTest {
 			PurecipesTheme {
 				FavoritesScreen(
 					refreshSignal = REFRESH_SIGNAL,
-					shareCookbook = unusedShareCookbookUseCase(),
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(),
 					onRecipeSelect = {},
@@ -82,7 +81,6 @@ class FavoritesScreenTest {
 			PurecipesTheme {
 				FavoritesScreen(
 					refreshSignal = REFRESH_SIGNAL,
-					shareCookbook = unusedShareCookbookUseCase(),
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -101,7 +99,6 @@ class FavoritesScreenTest {
 			PurecipesTheme {
 				FavoritesScreen(
 					refreshSignal = REFRESH_SIGNAL,
-					shareCookbook = unusedShareCookbookUseCase(),
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -141,7 +138,6 @@ class FavoritesScreenTest {
 			PurecipesTheme {
 				FavoritesScreen(
 					refreshSignal = REFRESH_SIGNAL,
-					shareCookbook = unusedShareCookbookUseCase(),
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -172,7 +168,6 @@ class FavoritesScreenTest {
 			PurecipesTheme {
 				FavoritesScreen(
 					refreshSignal = refreshSignalState.intValue,
-					shareCookbook = unusedShareCookbookUseCase(),
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -292,5 +287,6 @@ private fun favoritesViewModelForTest(
 	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
 	importCookbookShare = unusedImportCookbookShareUseCase(),
+	shareCookbook = unusedShareCookbookUseCase(),
 	sessionKey = sessionKey,
 )

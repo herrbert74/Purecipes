@@ -68,6 +68,7 @@ class FavoritesViewModelTest {
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 			coroutineScope = this,
 		)
@@ -93,6 +94,7 @@ class FavoritesViewModelTest {
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 			coroutineScope = this,
 		)
@@ -130,6 +132,7 @@ class FavoritesViewModelTest {
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 			coroutineScope = this,
 		)
@@ -158,6 +161,7 @@ class FavoritesViewModelTest {
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 			coroutineScope = this,
 		)
@@ -190,6 +194,7 @@ class FavoritesViewModelTest {
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 			coroutineScope = this,
 		)

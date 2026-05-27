@@ -51,8 +51,6 @@ import app.purecipes.feature.settings.ui.SettingsScreen
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.ui.component.HandleSystemBack
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
@@ -76,8 +74,6 @@ fun MainScreen(
 	sendTestNotification: SendTestNotificationUseCase,
 	observeIncomingLinks: ObserveIncomingLinksUseCase,
 	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
-	shareRecipe: ShareRecipeUseCase,
-	shareCookbook: ShareCookbookUseCase,
 	metroViewModelFactory: MetroViewModelFactory,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
@@ -204,7 +200,6 @@ fun MainScreen(
 								onBack = { viewModel.onBack() },
 								onFavoriteChange = { favoritesRefreshSignal += 1 },
 								onStartCooking = { recipeId -> viewModel.onStartCooking(recipeId) },
-								shareRecipe = shareRecipe,
 								sessionKey = sessionKey,
 								modifier = Modifier.fillMaxSize(),
 							)
@@ -222,7 +217,6 @@ fun MainScreen(
 							}
 							FavoritesScreen(
 								refreshSignal = favoritesRefreshSignal,
-								shareCookbook = shareCookbook,
 								modifier = Modifier.fillMaxSize(),
 								sessionKey = sessionKey,
 								initialCookbookShareToken = initialCookbookShareToken,

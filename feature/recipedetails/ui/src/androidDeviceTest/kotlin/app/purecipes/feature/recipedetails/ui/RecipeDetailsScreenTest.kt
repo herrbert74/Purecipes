@@ -50,11 +50,6 @@ class RecipeDetailsScreenTest {
 					onBack = {},
 					onFavoriteChange = {},
 					onStartCooking = {},
-					shareRecipe = ShareRecipeUseCase(
-						object : ShareRepository {
-							override fun shareText(text: String, title: String?) = Unit
-						},
-					),
 					viewModel = recipeDetailsViewModelForTest(
 						recipeId = 7,
 						favoritesRepository = favoritesRepository,
@@ -115,6 +110,11 @@ private fun recipeDetailsViewModelForTest(
 	getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 	createCookbook = CreateCookbookUseCase(cookbooksRepository),
 	addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+	shareRecipe = ShareRecipeUseCase(
+		object : ShareRepository {
+			override fun shareText(text: String, title: String?) = Unit
+		},
+	),
 	recipeId = recipeId,
 	sessionKey = sessionKey,
 )

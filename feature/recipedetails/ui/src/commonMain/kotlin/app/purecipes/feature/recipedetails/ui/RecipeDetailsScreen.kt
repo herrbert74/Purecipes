@@ -23,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -38,7 +37,6 @@ fun RecipeDetailsScreen(
 	onBack: () -> Unit,
 	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
-	shareRecipe: ShareRecipeUseCase,
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
 	viewModel: RecipeDetailsViewModel = assistedMetroViewModel<RecipeDetailsViewModel, RecipeDetailsViewModel.Factory> {
@@ -73,12 +71,7 @@ fun RecipeDetailsScreen(
 					},
 					actions = {
 						ShareIconButton(
-							onShare = {
-								shareRecipe(
-									recipeId = recipeId,
-									title = viewModel.recipeDetails?.title,
-								)
-							},
+							onShare = viewModel::shareCurrentRecipe,
 							contentDescription = "Share recipe",
 						)
 					},

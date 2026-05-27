@@ -30,8 +30,6 @@ class RecipeSearchViewControllerFactory {
 				sendTestNotification = graph.sendTestNotificationUseCase,
 				observeIncomingLinks = graph.observeIncomingLinksUseCase,
 				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
-				shareRecipe = graph.shareRecipeUseCase,
-				shareCookbook = graph.shareCookbookUseCase,
 				metroViewModelFactory = graph.metroViewModelFactory,
 			)
 		}
