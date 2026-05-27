@@ -10,13 +10,11 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
 fun EntryProviderScope<NavKey>.installFavoritesFlow(
-	refreshSignal: Int,
 	sessionKey: String?,
 	onRecipeSelect: (Int) -> Unit,
 ) {
 	entry<FavoritesDestination> { destination ->
 		FavoritesScreen(
-			refreshSignal = refreshSignal,
 			modifier = Modifier.fillMaxSize(),
 			sessionKey = sessionKey,
 			initialCookbookShareToken = destination.cookbookShareToken,

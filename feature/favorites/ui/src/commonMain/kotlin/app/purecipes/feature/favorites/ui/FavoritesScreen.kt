@@ -71,7 +71,6 @@ internal const val CREATE_COOKBOOK_DIALOG_INPUT_TAG = "createCookbookDialogInput
 
 @Composable
 fun FavoritesScreen(
-	refreshSignal: Int,
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
 	initialCookbookShareToken: String? = null,
@@ -84,7 +83,7 @@ fun FavoritesScreen(
 	var showCreateCookbookDialog by remember { mutableStateOf(false) }
 	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
 
-	LaunchedEffect(refreshSignal, sessionKey) {
+	LaunchedEffect(sessionKey) {
 		if (sessionKey != null) {
 			viewModel.loadFavorites()
 		}

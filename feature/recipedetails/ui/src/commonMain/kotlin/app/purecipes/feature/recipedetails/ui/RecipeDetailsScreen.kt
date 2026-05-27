@@ -14,11 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +33,6 @@ fun RecipeDetailsScreen(
 	canManageFavorites: Boolean,
 	onOpenMeasurementPreferences: () -> Unit,
 	onBack: () -> Unit,
-	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
@@ -43,16 +40,9 @@ fun RecipeDetailsScreen(
 		create(recipeId = recipeId, sessionKey = sessionKey)
 	},
 ) {
-	val currentOnFavoriteChange by rememberUpdatedState(onFavoriteChange)
 	var showCookbookSheet by remember { mutableStateOf(false) }
 	var showNutritionDialog by remember { mutableStateOf(false) }
 	var newCookbookName by remember { mutableStateOf("") }
-
-	LaunchedEffect(viewModel.favoriteChangeCount) {
-		if (viewModel.favoriteChangeCount > 0) {
-			currentOnFavoriteChange()
-		}
-	}
 
 	Box(modifier = modifier.fillMaxSize()) {
 		Scaffold(

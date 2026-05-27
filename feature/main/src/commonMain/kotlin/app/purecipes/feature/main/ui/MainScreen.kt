@@ -11,9 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -65,7 +62,6 @@ private fun MainScreenContent(
 			val backStack = viewModel.mainBackStack()
 			val rootDestination = backStack.firstOrNull()
 			val authenticationState = viewModel.authenticationState
-			var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
 			val sessionKey = when (authenticationState) {
 				is AuthenticationState.SignedIn -> authenticationState.user.id
 				AuthenticationState.SignedOut -> null
@@ -121,7 +117,6 @@ private fun MainScreenContent(
 							navigator = viewModel.navigator,
 							canManageFavorites = canManageFavorites,
 							sessionKey = sessionKey,
-							onFavoriteChange = { favoritesRefreshSignal += 1 },
 							onStartCooking = viewModel::onStartCooking,
 							onOpenMeasurementPreferences = viewModel::onOpenSettings,
 						)
@@ -129,7 +124,6 @@ private fun MainScreenContent(
 							navigator = viewModel.navigator,
 						)
 						installFavoritesFlow(
-							refreshSignal = favoritesRefreshSignal,
 							sessionKey = sessionKey,
 							onRecipeSelect = viewModel::onRecipeSelected,
 						)

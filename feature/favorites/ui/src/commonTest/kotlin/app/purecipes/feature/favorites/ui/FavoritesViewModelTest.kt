@@ -1,6 +1,7 @@
 package app.purecipes.feature.favorites.ui
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
@@ -8,6 +9,7 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUs
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.Cuisine
@@ -68,6 +70,7 @@ class FavoritesViewModelTest {
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 		)
@@ -81,18 +84,18 @@ class FavoritesViewModelTest {
 
 	@Test
 	fun `load favorites exposes error`() = runViewModelTest {
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Err(Failure.ServerError("Favorites failed")),
+		)
 		val viewModel = FavoritesViewModel(
-			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(
-				FakeFavoritesRepository(
-					getFavoriteRecipesPageResult = Err(Failure.ServerError("Favorites failed")),
-				),
-			),
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
 		)
@@ -102,6 +105,58 @@ class FavoritesViewModelTest {
 
 		kotlin.test.assertEquals("Favorites failed", viewModel.savedErrorMessage)
 		kotlin.test.assertEquals(emptyList(), viewModel.savedRecipes.toList())
+	}
+
+	@Test
+	fun `favorite event reloads saved recipes`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = FavoritesViewModel(
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
+			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
+			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
+			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
+			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
+			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+			importCookbookShare = unusedImportCookbookShareUseCase(),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			shareCookbook = unusedShareCookbookUseCase(),
+			sessionKey = "session",
+		)
+
+		viewModel.loadFavorites()
+		advanceUntilIdle()
+		kotlin.test.assertEquals(listOf(recipe), viewModel.savedRecipes.toList())
+
+		favoritesRepo.getFavoriteRecipesPageResult = Ok(
+			SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 0,
+			),
+		)
+		favoritesRepo.emitFavoriteEvent(FavoriteEvent.Removed(recipeId = recipe.id))
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(emptyList(), viewModel.savedRecipes.toList())
+		kotlin.test.assertEquals(0, viewModel.totalSavedMatches)
 	}
 
 	@Test
@@ -122,16 +177,10 @@ class FavoritesViewModelTest {
 				),
 			),
 		)
-		val viewModel = FavoritesViewModel(
-			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
-			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
-			createCookbook = CreateCookbookUseCase(cookbooksRepository),
-			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
-			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
-			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-			importCookbookShare = unusedImportCookbookShareUseCase(),
-			shareCookbook = unusedShareCookbookUseCase(),
-			sessionKey = "session",
+		val favoritesRepo = FakeFavoritesRepository()
+		val viewModel = favoritesViewModel(
+			favoritesRepository = favoritesRepo,
+			cookbooksRepository = cookbooksRepository,
 		)
 		viewModel.loadFavorites()
 		advanceUntilIdle()
@@ -150,17 +199,7 @@ class FavoritesViewModelTest {
 	@Test
 	fun `delete cookbook rejects non-empty cookbook`() = runViewModelTest {
 		val cookbooksRepository = FakeCookbooksRepository()
-		val viewModel = FavoritesViewModel(
-			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
-			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
-			createCookbook = CreateCookbookUseCase(cookbooksRepository),
-			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
-			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
-			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-			importCookbookShare = unusedImportCookbookShareUseCase(),
-			shareCookbook = unusedShareCookbookUseCase(),
-			sessionKey = "session",
-		)
+		val viewModel = favoritesViewModel(cookbooksRepository = cookbooksRepository)
 		var deleted = true
 
 		viewModel.deleteCookbook(
@@ -182,17 +221,7 @@ class FavoritesViewModelTest {
 	@Test
 	fun `delete cookbook succeeds for empty cookbook`() = runViewModelTest {
 		val cookbooksRepository = FakeCookbooksRepository()
-		val viewModel = FavoritesViewModel(
-			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
-			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
-			createCookbook = CreateCookbookUseCase(cookbooksRepository),
-			deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
-			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
-			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-			importCookbookShare = unusedImportCookbookShareUseCase(),
-			shareCookbook = unusedShareCookbookUseCase(),
-			sessionKey = "session",
-		)
+		val viewModel = favoritesViewModel(cookbooksRepository = cookbooksRepository)
 		var deleted = false
 
 		viewModel.deleteCookbook(
@@ -211,4 +240,21 @@ class FavoritesViewModelTest {
 		kotlin.test.assertEquals(null, viewModel.deleteCookbookError)
 		kotlin.test.assertEquals(1, cookbooksRepository.deleteCookbookCallCount)
 	}
+
+	private fun favoritesViewModel(
+		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
+		sessionKey: String? = "session",
+	): FavoritesViewModel = FavoritesViewModel(
+		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),
+		getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+		createCookbook = CreateCookbookUseCase(cookbooksRepository),
+		deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
+		importCookbookShare = unusedImportCookbookShareUseCase(),
+		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+		shareCookbook = unusedShareCookbookUseCase(),
+		sessionKey = sessionKey,
+	)
 }

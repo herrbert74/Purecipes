@@ -48,7 +48,6 @@ class RecipeDetailsScreenTest {
 					canManageFavorites = true,
 					onOpenMeasurementPreferences = {},
 					onBack = {},
-					onFavoriteChange = {},
 					onStartCooking = {},
 					viewModel = recipeDetailsViewModelForTest(
 						recipeId = 7,
