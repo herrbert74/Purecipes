@@ -9,7 +9,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-inline fun EntryProviderScope<NavKey>.installCreateFlow(
+fun EntryProviderScope<NavKey>.installCreateFlow(
 	canUploadRecipes: Boolean,
 ) {
 	entry<CreateDestination> {

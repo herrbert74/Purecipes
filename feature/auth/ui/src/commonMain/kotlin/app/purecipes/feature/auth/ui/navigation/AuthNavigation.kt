@@ -12,13 +12,13 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-inline fun EntryProviderScope<NavKey>.installAuthFlow(
+fun EntryProviderScope<NavKey>.installAuthFlow(
 	navigator: Navigator,
 	googleWebClientId: String?,
-	noinline onOpenSettings: () -> Unit,
-	noinline onNavigateToEmailRegistration: () -> Unit,
-	noinline onNavigateToSignIn: () -> Unit,
-	noinline onRegistrationSuccess: (String) -> Unit,
+	onOpenSettings: () -> Unit,
+	onNavigateToEmailRegistration: () -> Unit,
+	onNavigateToSignIn: () -> Unit,
+	onRegistrationSuccess: (String) -> Unit,
 ) {
 	entry<AccountDestination> {
 		AuthenticationScreen(
