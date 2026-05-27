@@ -16,8 +16,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -40,6 +38,7 @@ import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.domain.model.PASSWORD_TOO_SHORT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
@@ -133,17 +132,7 @@ class AuthScreenTest {
 
 	private fun ComposeUiTest.showSignedInAccountScreen() {
 		val authRepo = FakeAuthenticationRepository(
-			AuthenticationState.SignedIn(
-				AuthUser(
-					id = "user-1",
-					email = "taylor@example.com",
-					displayName = "Taylor Baker",
-					firstName = null,
-					familyName = null,
-					profileImageUrl = null,
-					provider = AuthProvider.EMAIL,
-				),
-			),
+			AuthenticationState.SignedIn(fakeAuthUser()),
 		)
 		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
 		setTrackedContent {

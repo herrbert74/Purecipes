@@ -311,7 +311,7 @@ class MainViewModel(
 			is AuthenticationState.SignedIn -> state.user.id
 			AuthenticationState.SignedOut -> null
 		}
-		if (sessionKey == previousSessionKey) {
+		if (sessionKey == previousSessionKey && incomingLinksCollectionJob != null) {
 			return
 		}
 		previousSessionKey = sessionKey

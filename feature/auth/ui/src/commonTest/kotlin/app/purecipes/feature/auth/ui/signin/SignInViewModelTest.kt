@@ -1,8 +1,6 @@
 package app.purecipes.feature.auth.ui.signin
 
 import app.purecipes.base.kotlin.result.Failure
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
@@ -13,6 +11,7 @@ import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
@@ -35,17 +34,7 @@ class SignInViewModelTest {
 	fun `sign in does not enforce password policy`() = runTest {
 		val repository = FakeAuthenticationRepository(
 			signInWithEmailHandler = { _, _ ->
-				Ok(
-					AuthUser(
-						id = "user-1",
-						email = "taylor@example.com",
-						displayName = "Taylor Baker",
-						firstName = null,
-						familyName = null,
-						profileImageUrl = null,
-						provider = AuthProvider.EMAIL,
-					),
-				)
+				Ok(fakeAuthUser())
 			},
 		)
 		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))

@@ -1,10 +1,9 @@
 package app.purecipes.feature.auth.data.datasource
 
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
+import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -90,15 +89,7 @@ class FirebaseAuthenticationLocalDataSourceTest {
 			sessionTokenStore = sessionTokenStore,
 			firebaseAuthService = FakeFirebaseEmailPasswordAuth(),
 		)
-		val user = AuthUser(
-			id = "firebase-user",
-			email = "taylor@example.com",
-			displayName = "Taylor Baker",
-			firstName = null,
-			familyName = null,
-			profileImageUrl = null,
-			provider = AuthProvider.EMAIL,
-		)
+		val user = fakeAuthUser(id = "firebase-user")
 		dataSource.signInWithExternalProvider(user)
 
 		val result = dataSource.deleteAccount()

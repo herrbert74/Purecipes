@@ -28,12 +28,10 @@ class FakeAuthenticationRepository(
 	},
 	private val signInWithGoogleHandler: suspend (GoogleAuthenticationProfile) -> Outcome<AuthUser> = { profile ->
 		Ok(
-			AuthUser(
+			fakeAuthUser(
 				id = profile.idToken,
 				email = profile.email.orEmpty(),
 				displayName = profile.displayName,
-				firstName = null,
-				familyName = null,
 				profileImageUrl = profile.profileImageUrl,
 				provider = AuthProvider.GOOGLE,
 			),
@@ -44,12 +42,10 @@ class FakeAuthenticationRepository(
 		ExternalAuthenticationProfile,
 	) -> Outcome<AuthUser> = { profile ->
 		Ok(
-			AuthUser(
+			fakeAuthUser(
 				id = profile.id,
 				email = profile.email.orEmpty(),
 				displayName = profile.displayName.orEmpty(),
-				firstName = null,
-				familyName = null,
 				profileImageUrl = profile.profileImageUrl,
 				provider = profile.provider,
 			),

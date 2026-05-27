@@ -1,26 +1,8 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
-import app.purecipes.feature.analytics.domain.model.ConsentState
-import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
-import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
-import app.purecipes.feature.auth.domain.model.AuthenticationState
-import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
-import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
-import app.purecipes.feature.sharing.domain.repository.WebLaunchLinkRepository
-import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
-import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
-import app.purecipes.shared.data.config.PurecipesBuildType
-import app.purecipes.shared.data.config.PurecipesConfig
-import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
-import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
-import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.test.Test
 
 class MainViewModelTest {
@@ -138,33 +120,3 @@ class MainViewModelTest {
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination, RecipeDetailsDestination(42))
 	}
 }
-
-private fun mainViewModelForTest(): MainViewModel = MainViewModel(
-	observeAuthenticationState = ObserveAuthenticationStateUseCase(
-		FakeAuthenticationRepository(AuthenticationState.SignedOut),
-	),
-	refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
-	setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
-	observeIncomingLinks = ObserveIncomingLinksUseCase(
-		object : IncomingLinkRepository {
-			override fun observeLinks() = emptyFlow<PurecipesLink>()
-
-			override fun deliver(url: String) = Unit
-		},
-	),
-	publishWebLaunchLink = PublishWebLaunchLinkUseCase(
-		object : WebLaunchLinkRepository {
-			override fun readLaunchUrl(): String? = null
-		},
-		object : IncomingLinkRepository {
-			override fun observeLinks() = emptyFlow<PurecipesLink>()
-
-			override fun deliver(url: String) = Unit
-		},
-	),
-	purecipesConfig = object : PurecipesConfig {
-		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
-	},
-	onDeliverPendingIncomingLink = {},
-	coroutineScope = CoroutineScope(SupervisorJob() + UnconfinedTestDispatcher()),
-)
