@@ -1,5 +1,6 @@
 package app.purecipes.feature.main.ui
 
+import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
@@ -7,6 +8,7 @@ import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +29,17 @@ class MainViewModelStartTest {
 		displayName = "Taylor",
 		provider = AuthProvider.GOOGLE,
 	)
+
+	@Test
+	fun `start refreshes consent on startup`() = runTest {
+		val consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED)
+		mainViewModelForTest(
+			consentRepository = consentRepository,
+			coroutineScope = testViewModelScope(),
+		).start()
+
+		consentRepository.refreshConsentCalled shouldBe true
+	}
 
 	@Test
 	fun `start observes sign in and resumes post login filters navigation`() = runTest {
@@ -50,6 +63,29 @@ class MainViewModelStartTest {
 		viewModel.authenticationState shouldBe AuthenticationState.SignedIn(sampleUser)
 		viewModel.peekBackStack() shouldBe listOf(SearchDestination)
 		viewModel.takePendingOpenSearchFilters() shouldBe true
+	}
+
+	@Test
+	fun `start resumes cookbook share import after sign in`() = runTest {
+		val authenticationRepository = FakeAuthenticationRepository()
+		val viewModel = mainViewModelForTest(
+			authenticationRepository = authenticationRepository,
+			coroutineScope = testViewModelScope(),
+		)
+		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
+		viewModel.stageCookbookShareImport(sampleShareToken)
+		viewModel.start()
+		authenticationRepository.signInWithGoogle(
+			GoogleAuthenticationProfile(
+				idToken = sampleUser.id,
+				email = sampleUser.email,
+				displayName = sampleUser.displayName,
+				profileImageUrl = sampleUser.profileImageUrl,
+			),
+		)
+
+		viewModel.peekBackStack() shouldBe listOf(FavoritesDestination)
+		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
 	}
 
 	@Test

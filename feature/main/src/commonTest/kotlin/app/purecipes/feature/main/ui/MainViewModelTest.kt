@@ -27,22 +27,6 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `post login resume opens search tab and enables open filters`() {
-		val viewModel = mainViewModelForTest()
-		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
-
-		viewModel.onOpenEmailSignIn(prefilledEmail = "taylor@example.com")
-		viewModel.onAuthenticationSucceeded()
-
-		viewModel.takePostLoginOriginAfterSignIn() shouldBe PostLoginNavOrigin.RECIPE_SEARCH_FILTERS
-		viewModel.markPendingOpenSearchFiltersAfterLogin()
-
-		viewModel.onTabSelected(mainTabs.first { it.destination == SearchDestination })
-		viewModel.takePendingOpenSearchFilters() shouldBe true
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination)
-	}
-
-	@Test
 	fun `selecting search tab clears pending post login origin without consuming open filters flag`() {
 		val viewModel = mainViewModelForTest()
 
