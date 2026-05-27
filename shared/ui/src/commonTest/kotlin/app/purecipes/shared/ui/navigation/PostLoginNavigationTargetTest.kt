@@ -1,0 +1,21 @@
+package app.purecipes.shared.ui.navigation
+
+import io.kotest.matchers.shouldBe
+import kotlin.test.Test
+
+class PostLoginNavigationTargetTest {
+
+	private val sampleShareToken = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+	@Test
+	fun `open search filters resolves to search with filters target`() {
+		resolvePostLoginNavigationTarget(PostLoginAction.OpenSearchFilters) shouldBe
+			PostLoginNavigationTarget.OpenSearchWithFilters
+	}
+
+	@Test
+	fun `import cookbook share resolves to favorites with token`() {
+		resolvePostLoginNavigationTarget(PostLoginAction.ImportCookbookShare(sampleShareToken)) shouldBe
+			PostLoginNavigationTarget.OpenFavoritesWithCookbookShare(sampleShareToken)
+	}
+}

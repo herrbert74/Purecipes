@@ -26,6 +26,7 @@ import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlo
 import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
 import app.purecipes.shared.ui.component.HandleSystemBack
+import app.purecipes.shared.ui.navigation.PostLoginAction
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
@@ -113,9 +114,7 @@ private fun MainScreenContent(
 							sessionKey = sessionKey,
 							onRecipeSelect = viewModel::onRecipeSelected,
 							onRequestLogInForFilters = {
-								viewModel.requestLoginForPostLoginAction(
-									PostLoginNavOrigin.RECIPE_SEARCH_FILTERS,
-								)
+								viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 							},
 						)
 						installRecipeDetailsFlow(

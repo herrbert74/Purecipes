@@ -28,6 +28,9 @@ import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.ui.navigation.Navigator
+import app.purecipes.shared.ui.navigation.PostLoginAction
+import app.purecipes.shared.ui.navigation.PostLoginNavigationTarget
+import app.purecipes.shared.ui.navigation.resolvePostLoginNavigationTarget
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -51,8 +54,7 @@ class MainViewModel(
 
 	private var backStack: NavBackStack<NavKey> = NavBackStack(SearchDestination())
 
-	private var pendingPostLoginOrigin: PostLoginNavOrigin? = null
-	private var stagedCookbookShareToken: String? = null
+	private var pendingPostLoginAction: PostLoginAction? = null
 
 	private var previousAuthenticationState: AuthenticationState? = null
 	private var previousSessionKey: String? = null
@@ -117,12 +119,11 @@ class MainViewModel(
 	}
 
 	fun clearPostLoginNavigationState() {
-		pendingPostLoginOrigin = null
-		stagedCookbookShareToken = null
+		pendingPostLoginAction = null
 	}
 
-	internal fun requestLoginForPostLoginAction(origin: PostLoginNavOrigin) {
-		pendingPostLoginOrigin = origin
+	internal fun requestLoginForPostLoginAction(action: PostLoginAction) {
+		pendingPostLoginAction = action
 		onTabSelected(mainTabs.first { it.destination == AccountDestination })
 	}
 
@@ -140,10 +141,10 @@ class MainViewModel(
 		return stack
 	}
 
-	internal fun takePostLoginOriginAfterSignIn(): PostLoginNavOrigin? {
-		val origin = pendingPostLoginOrigin
-		pendingPostLoginOrigin = null
-		return origin
+	internal fun takePendingPostLoginAction(): PostLoginAction? {
+		val action = pendingPostLoginAction
+		pendingPostLoginAction = null
+		return action
 	}
 
 	fun shouldExit(): Boolean = backStack.size == 1 && backStack.firstOrNull() is SearchDestination
@@ -152,7 +153,7 @@ class MainViewModel(
 
 	internal fun onTabSelected(tab: MainTab) {
 		if (tab.destination !is AccountDestination) {
-			pendingPostLoginOrigin = null
+			pendingPostLoginAction = null
 		}
 		val root = tabRootDestination(tab)
 		if (backStack.size != 1 || !backStack.firstOrNull().isSameTabRoot(root)) {
@@ -171,12 +172,7 @@ class MainViewModel(
 		}
 	}
 
-	fun stageCookbookShareImport(token: String) {
-		stagedCookbookShareToken = token
-	}
-
 	private fun navigateToRecipe(recipeId: Int) {
-		stagedCookbookShareToken = null
 		if (backStack.firstOrNull() !is SearchDestination) {
 			backStack.clear()
 			backStack += SearchDestination()
@@ -191,7 +187,6 @@ class MainViewModel(
 	}
 
 	private fun navigateToCookbookShare(token: String) {
-		stagedCookbookShareToken = null
 		navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = token))
 	}
 
@@ -259,15 +254,7 @@ class MainViewModel(
 			clearPostLoginNavigationState()
 		} else if (previous is AuthenticationState.SignedOut && state is AuthenticationState.SignedIn) {
 			onAuthenticationSucceeded()
-			when (takePostLoginOriginAfterSignIn()) {
-				PostLoginNavOrigin.RECIPE_SEARCH_FILTERS ->
-					navigator.replaceTabRoot(SearchDestination(openFiltersOnStart = true))
-
-				PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT ->
-					onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
-
-				null -> Unit
-			}
+			takePendingPostLoginAction()?.let(::applyPostLoginNavigation)
 		}
 	}
 
@@ -287,8 +274,7 @@ class MainViewModel(
 		incomingLinksCollectionJob = viewModelScope.launch {
 			observeIncomingLinks().collect { link ->
 				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
-					stageCookbookShareImport(link.token)
-					requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
+					requestLoginForPostLoginAction(PostLoginAction.ImportCookbookShare(link.token))
 				} else {
 					onDeepLink(link)
 				}
@@ -296,16 +282,20 @@ class MainViewModel(
 		}
 	}
 
-	private fun tabRootDestination(tab: MainTab): NavKey = when (tab.destination) {
-		is SearchDestination -> SearchDestination()
-		is FavoritesDestination -> FavoritesDestination(cookbookShareToken = consumeStagedCookbookShareToken())
-		else -> tab.destination
+	private fun applyPostLoginNavigation(action: PostLoginAction) {
+		when (val target = resolvePostLoginNavigationTarget(action)) {
+			PostLoginNavigationTarget.OpenSearchWithFilters ->
+				navigator.replaceTabRoot(SearchDestination(openFiltersOnStart = true))
+
+			is PostLoginNavigationTarget.OpenFavoritesWithCookbookShare ->
+				navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = target.token))
+		}
 	}
 
-	private fun consumeStagedCookbookShareToken(): String? {
-		val token = stagedCookbookShareToken
-		stagedCookbookShareToken = null
-		return token
+	private fun tabRootDestination(tab: MainTab): NavKey = when (tab.destination) {
+		is SearchDestination -> SearchDestination()
+		is FavoritesDestination -> FavoritesDestination()
+		else -> tab.destination
 	}
 
 	private fun NavKey?.isSameTabRoot(root: NavKey): Boolean = when (root) {
