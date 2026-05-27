@@ -1,6 +1,7 @@
 plugins {
 	id("convention.ui")
 	id("convention.common-test")
+	alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -26,6 +27,8 @@ kotlin {
 				api(project(":shared:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
+				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.kotlinx.serializationJson)
 			}
 		}
 		commonTest {

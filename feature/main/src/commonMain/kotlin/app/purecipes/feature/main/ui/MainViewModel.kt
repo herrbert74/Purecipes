@@ -14,11 +14,19 @@ import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
-import app.purecipes.feature.main.ui.navigation.Navigator
+import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
+import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
+import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
+import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
+import app.purecipes.feature.search.ui.navigation.SearchDestination
+import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.ui.navigation.Navigator
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -32,9 +40,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 @AssistedInject
 class MainViewModel(
@@ -134,19 +139,7 @@ class MainViewModel(
 		val stack = rememberNavBackStack(
 			configuration = remember {
 				SavedStateConfiguration {
-					serializersModule = SerializersModule {
-						polymorphic(baseClass = NavKey::class) {
-							subclass(SearchDestination.serializer())
-							subclass(RecipeDetailsDestination.serializer())
-							subclass(RecipeCookingDestination.serializer())
-							subclass(FavoritesDestination.serializer())
-							subclass(CreateDestination.serializer())
-							subclass(AccountDestination.serializer())
-							subclass(EmailRegistrationDestination.serializer())
-							subclass(EmailSignInDestination.serializer())
-							subclass(AccountSettingsDestination.serializer())
-						}
-					}
+					serializersModule = mainNavigationSerializersModule()
 				}
 			},
 			SearchDestination,

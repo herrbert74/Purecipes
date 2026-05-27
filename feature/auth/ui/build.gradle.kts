@@ -1,6 +1,7 @@
 plugins {
 	id("convention.ui")
 	id("convention.common-test")
+	alias(libs.plugins.kotlin.serialization)
 	id("org.jetbrains.kotlin.native.cocoapods")
 }
 
@@ -111,7 +112,9 @@ kotlin {
 				api(project(":feature:auth:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
+				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kmpauth.uihelper)
+				implementation(libs.kotlinx.serializationJson)
 			}
 		}
 		commonTest {

@@ -1,6 +1,11 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
+import app.purecipes.feature.search.ui.navigation.SearchDestination
+import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
