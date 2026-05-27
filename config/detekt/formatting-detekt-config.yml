@@ -158,7 +158,7 @@ formatting:
     active: true
     autoCorrect: true
   NoUnusedImports:
-    active: true
+    active: false
     autoCorrect: true
   NoWildcardImports:
     active: true
