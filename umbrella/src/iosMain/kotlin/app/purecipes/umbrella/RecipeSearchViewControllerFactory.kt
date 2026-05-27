@@ -16,12 +16,6 @@ class RecipeSearchViewControllerFactory {
 			}
 		) {
 			MainScreen(
-				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
-				refreshConsent = graph.refreshConsentUseCase,
-				setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
-				googleWebClientId = graph.purecipesConfig.googleWebClientId(),
-				observeIncomingLinks = graph.observeIncomingLinksUseCase,
-				publishWebLaunchLink = graph.publishWebLaunchLinkUseCase,
 				metroViewModelFactory = graph.metroViewModelFactory,
 			)
 		}

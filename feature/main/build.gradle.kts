@@ -43,5 +43,10 @@ kotlin {
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
 	}
 }

@@ -1,28 +1,72 @@
 package app.purecipes.feature.main.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
+import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.main.ui.navigation.Navigator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
+import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.shared.data.config.PurecipesConfig
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-internal class MainViewModel : ViewModel() {
+@AssistedInject
+class MainViewModel(
+	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
+	private val refreshConsent: RefreshConsentUseCase,
+	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
+	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
+	private val purecipesConfig: PurecipesConfig,
+	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
+	coroutineScope: CoroutineScope? = null,
+) : ViewModel() {
+
+	private val ownsCoroutineScope = coroutineScope == null
+	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	private var backStack: NavBackStack<NavKey> = NavBackStack(SearchDestination)
 
 	private var pendingPostLoginOrigin: PostLoginNavOrigin? = null
 	private var pendingOpenSearchFiltersAfterLogin: Boolean = false
 	private var pendingCookbookShareToken: String? = null
+
+	private var previousAuthenticationState: AuthenticationState? = null
+	private var previousSessionKey: String? = null
+	private var incomingLinksCollectionJob: Job? = null
+	private var isStarted = false
+
+	var authenticationState by mutableStateOf(observeAuthenticationState().value)
+		private set
+
+	val googleWebClientId: String?
+		get() = purecipesConfig.googleWebClientId()
 
 	private val navigatorImpl: Navigator = object : Navigator {
 		override fun push(destination: NavKey) {
@@ -55,12 +99,32 @@ internal class MainViewModel : ViewModel() {
 
 	internal val navigator: Navigator get() = navigatorImpl
 
+	fun start() {
+		if (isStarted) {
+			return
+		}
+		isStarted = true
+		scope.launch {
+			refreshConsent()
+		}
+		scope.launch {
+			publishWebLaunchLink()
+		}
+		scope.launch {
+			observeAuthenticationState().collect { state ->
+				authenticationState = state
+				handleAuthenticationStateTransition(state)
+				updateSessionScopedWork(state)
+			}
+		}
+	}
+
 	fun clearPostLoginNavigationState() {
 		pendingPostLoginOrigin = null
 		pendingOpenSearchFiltersAfterLogin = false
 	}
 
-	fun requestLoginForPostLoginAction(origin: PostLoginNavOrigin) {
+	internal fun requestLoginForPostLoginAction(origin: PostLoginNavOrigin) {
 		pendingPostLoginOrigin = origin
 		onTabSelected(mainTabs.first { it.destination == AccountDestination })
 	}
@@ -91,17 +155,17 @@ internal class MainViewModel : ViewModel() {
 		return stack
 	}
 
-	fun takePostLoginOriginAfterSignIn(): PostLoginNavOrigin? {
+	internal fun takePostLoginOriginAfterSignIn(): PostLoginNavOrigin? {
 		val origin = pendingPostLoginOrigin
 		pendingPostLoginOrigin = null
 		return origin
 	}
 
-	fun markPendingOpenSearchFiltersAfterLogin() {
+	internal fun markPendingOpenSearchFiltersAfterLogin() {
 		pendingOpenSearchFiltersAfterLogin = true
 	}
 
-	fun takePendingOpenSearchFilters(): Boolean {
+	internal fun takePendingOpenSearchFilters(): Boolean {
 		if (!pendingOpenSearchFiltersAfterLogin) return false
 		pendingOpenSearchFiltersAfterLogin = false
 		return true
@@ -111,7 +175,7 @@ internal class MainViewModel : ViewModel() {
 
 	internal fun peekBackStack(): List<NavKey> = backStack.toList()
 
-	fun onTabSelected(tab: MainTab) {
+	internal fun onTabSelected(tab: MainTab) {
 		if (tab.destination !is AccountDestination) {
 			pendingPostLoginOrigin = null
 			if (tab.destination != SearchDestination) {
@@ -138,7 +202,7 @@ internal class MainViewModel : ViewModel() {
 		pendingCookbookShareToken = token
 	}
 
-	fun takePendingCookbookShareToken(): String? {
+	internal fun takePendingCookbookShareToken(): String? {
 		val token = pendingCookbookShareToken
 		pendingCookbookShareToken = null
 		return token
@@ -221,14 +285,68 @@ internal class MainViewModel : ViewModel() {
 		}
 	}
 
+	private fun handleAuthenticationStateTransition(state: AuthenticationState) {
+		val previous = previousAuthenticationState
+		previousAuthenticationState = state
+		if (previous is AuthenticationState.SignedIn && state is AuthenticationState.SignedOut) {
+			clearPostLoginNavigationState()
+		} else if (previous is AuthenticationState.SignedOut && state is AuthenticationState.SignedIn) {
+			onAuthenticationSucceeded()
+			when (takePostLoginOriginAfterSignIn()) {
+				PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
+					markPendingOpenSearchFiltersAfterLogin()
+					onTabSelected(mainTabs.first { it.destination == SearchDestination })
+				}
+
+				PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT ->
+					onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
+
+				null -> Unit
+			}
+		}
+	}
+
+	private fun updateSessionScopedWork(state: AuthenticationState) {
+		val sessionKey = when (state) {
+			is AuthenticationState.SignedIn -> state.user.id
+			AuthenticationState.SignedOut -> null
+		}
+		if (sessionKey == previousSessionKey) {
+			return
+		}
+		previousSessionKey = sessionKey
+		setAnalyticsUserId(sessionKey)
+		onDeliverPendingIncomingLink()
+		incomingLinksCollectionJob?.cancel()
+		val isSignedIn = sessionKey != null
+		incomingLinksCollectionJob = scope.launch {
+			observeIncomingLinks().collect { link ->
+				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
+					stageCookbookShareImport(link.token)
+					requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
+				} else {
+					onDeepLink(link)
+				}
+			}
+		}
+	}
+
 	private fun NavKey?.isAccountAuthFlowDestination(): Boolean {
 		return this is EmailSignInDestination || this is EmailRegistrationDestination
 	}
-}
 
-@Composable
-internal fun mainViewModel(): MainViewModel = viewModel(
-	factory = viewModelFactory {
-		initializer { MainViewModel() }
-	},
-)
+	override fun onCleared() {
+		incomingLinksCollectionJob?.cancel()
+		if (ownsCoroutineScope) {
+			scope.cancel()
+		}
+	}
+
+	@AssistedFactory
+	@ManualViewModelAssistedFactoryKey
+	@ContributesIntoMap(AppScope::class)
+	interface Factory : ManualViewModelAssistedFactory {
+
+		fun create(onDeliverPendingIncomingLink: () -> Unit): MainViewModel
+	}
+}

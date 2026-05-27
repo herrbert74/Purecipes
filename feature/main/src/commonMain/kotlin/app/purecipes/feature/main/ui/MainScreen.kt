@@ -15,22 +15,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
-import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
-import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.feature.auth.ui.signin.SignInScreen
@@ -40,85 +34,50 @@ import app.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.settings.ui.SettingsScreen
-import app.purecipes.feature.sharing.domain.model.PurecipesLink
-import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
-import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.shared.ui.component.HandleSystemBack
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
-import kotlinx.coroutines.flow.collectLatest
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.serialization.Serializable
 
 @Composable
 fun MainScreen(
-	observeAuthenticationState: ObserveAuthenticationStateUseCase,
-	refreshConsent: RefreshConsentUseCase,
-	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
-	googleWebClientId: String?,
-	observeIncomingLinks: ObserveIncomingLinksUseCase,
-	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	metroViewModelFactory: MetroViewModelFactory,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
 ) {
+	MainScreenContent(
+		metroViewModelFactory = metroViewModelFactory,
+		modifier = modifier,
+		onExitRequest = onExitRequest,
+		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
+	)
+}
+
+@Composable
+private fun MainScreenContent(
+	metroViewModelFactory: MetroViewModelFactory,
+	modifier: Modifier = Modifier,
+	onExitRequest: () -> Unit = {},
+	onDeliverPendingIncomingLink: () -> Unit = {},
+	viewModel: MainViewModel = assistedMetroViewModel<MainViewModel, MainViewModel.Factory> {
+		create(onDeliverPendingIncomingLink = onDeliverPendingIncomingLink)
+	},
+) {
 	PurecipesTheme {
 		CompositionLocalProvider(LocalMetroViewModelFactory provides metroViewModelFactory) {
-			val viewModel = mainViewModel()
+			LaunchedEffect(viewModel) {
+				viewModel.start()
+			}
 			val backStack = viewModel.mainBackStack()
 			val rootDestination = backStack.firstOrNull()
-			val authenticationState by observeAuthenticationState().collectAsState()
+			val authenticationState = viewModel.authenticationState
 			var favoritesRefreshSignal by remember { mutableIntStateOf(0) }
-			val sessionKey = when (val state = authenticationState) {
-				is AuthenticationState.SignedIn -> state.user.id
+			val sessionKey = when (authenticationState) {
+				is AuthenticationState.SignedIn -> authenticationState.user.id
 				AuthenticationState.SignedOut -> null
-			}
-			val currentOnDeliverPendingIncomingLink by rememberUpdatedState(onDeliverPendingIncomingLink)
-			val currentObserveIncomingLinks by rememberUpdatedState(observeIncomingLinks)
-			LaunchedEffect(Unit) {
-				refreshConsent()
-			}
-			LaunchedEffect(Unit) {
-				publishWebLaunchLink()
-			}
-			LaunchedEffect(sessionKey) {
-				currentOnDeliverPendingIncomingLink()
-				val isSignedIn = sessionKey != null
-				currentObserveIncomingLinks().collectLatest { link ->
-					if (link is PurecipesLink.CookbookShare && !isSignedIn) {
-						viewModel.stageCookbookShareImport(link.token)
-						viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
-					} else {
-						viewModel.onDeepLink(link)
-					}
-				}
-			}
-			LaunchedEffect(sessionKey) {
-				setAnalyticsUserId(sessionKey)
-			}
-			var previousAuthenticationState by remember { mutableStateOf<AuthenticationState?>(null) }
-			LaunchedEffect(authenticationState) {
-				val previous = previousAuthenticationState
-				previousAuthenticationState = authenticationState
-				if (previous is AuthenticationState.SignedIn && authenticationState is AuthenticationState.SignedOut) {
-					viewModel.clearPostLoginNavigationState()
-				} else if (previous is AuthenticationState.SignedOut &&
-					authenticationState is AuthenticationState.SignedIn
-				) {
-					viewModel.onAuthenticationSucceeded()
-					when (viewModel.takePostLoginOriginAfterSignIn()) {
-						PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
-							viewModel.markPendingOpenSearchFiltersAfterLogin()
-							viewModel.onTabSelected(mainTabs.first { it.destination == SearchDestination })
-						}
-
-						PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT ->
-							viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
-
-						null -> Unit
-					}
-				}
 			}
 			val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 			HandleSystemBack(
@@ -218,7 +177,7 @@ fun MainScreen(
 								onOpenSettings = { viewModel.onOpenSettings() },
 								onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration() },
 								onNavigateToSignIn = { viewModel.onOpenEmailSignIn() },
-								googleWebClientId = googleWebClientId,
+								googleWebClientId = viewModel.googleWebClientId,
 								modifier = Modifier.fillMaxSize(),
 							)
 						}

@@ -1,8 +1,26 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
+import app.purecipes.feature.sharing.domain.repository.WebLaunchLinkRepository
+import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
+import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.shared.data.config.PurecipesBuildType
+import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlin.test.Test
 
 class MainViewModelTest {
@@ -11,7 +29,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `should exit only on search root`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.shouldExit() shouldBe true
 		viewModel.onRecipeSelected(42)
 		viewModel.shouldExit() shouldBe false
@@ -19,7 +37,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `requestLoginForPostLoginAction navigates to account and preserves origin until sign in`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(AccountDestination)
@@ -28,7 +46,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `post login resume opens search tab and enables open filters`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
 
 		viewModel.onOpenEmailSignIn(prefilledEmail = "taylor@example.com")
@@ -44,7 +62,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `selecting search tab clears pending post login origin without consuming open filters flag`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 
 		viewModel.onTabSelected(mainTabs.first { it.destination == AccountDestination })
 		viewModel.markPendingOpenSearchFiltersAfterLogin()
@@ -57,7 +75,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `tab selection resets stack to selected destination`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
 		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
 
@@ -66,7 +84,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `authentication succeeded pops email auth destinations`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onOpenEmailRegistration()
 		viewModel.onOpenEmailSignIn(prefilledEmail = "taylor@example.com")
 		viewModel.onAuthenticationSucceeded()
@@ -76,7 +94,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `authentication succeeded leaves account settings on stack`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onOpenSettings()
 		viewModel.onAuthenticationSucceeded()
 
@@ -85,7 +103,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `deep link to recipe opens recipe details on search tab`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
@@ -94,7 +112,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `deep link to cookbook share switches to favorites and stores pending share token`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onDeepLink(PurecipesLink.CookbookShare(sampleShareToken))
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination)
@@ -103,7 +121,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `stage cookbook share import stores token without changing tabs`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.stageCookbookShareImport(sampleShareToken)
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination)
@@ -112,7 +130,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `back removes only the top destination`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
 		viewModel.onStartCooking(42)
 		viewModel.onBack()
@@ -120,3 +138,33 @@ class MainViewModelTest {
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination, RecipeDetailsDestination(42))
 	}
 }
+
+private fun mainViewModelForTest(): MainViewModel = MainViewModel(
+	observeAuthenticationState = ObserveAuthenticationStateUseCase(
+		FakeAuthenticationRepository(AuthenticationState.SignedOut),
+	),
+	refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
+	setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
+	observeIncomingLinks = ObserveIncomingLinksUseCase(
+		object : IncomingLinkRepository {
+			override fun observeLinks() = emptyFlow<PurecipesLink>()
+
+			override fun deliver(url: String) = Unit
+		},
+	),
+	publishWebLaunchLink = PublishWebLaunchLinkUseCase(
+		object : WebLaunchLinkRepository {
+			override fun readLaunchUrl(): String? = null
+		},
+		object : IncomingLinkRepository {
+			override fun observeLinks() = emptyFlow<PurecipesLink>()
+
+			override fun deliver(url: String) = Unit
+		},
+	),
+	purecipesConfig = object : PurecipesConfig {
+		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
+	},
+	onDeliverPendingIncomingLink = {},
+	coroutineScope = CoroutineScope(SupervisorJob() + UnconfinedTestDispatcher()),
+)
