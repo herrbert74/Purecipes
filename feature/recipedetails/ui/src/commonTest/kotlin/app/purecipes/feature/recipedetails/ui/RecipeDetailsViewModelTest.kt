@@ -3,6 +3,7 @@ package app.purecipes.feature.recipedetails.ui
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.FavoritesRepository
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
@@ -31,6 +32,7 @@ import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 
@@ -128,7 +130,6 @@ class RecipeDetailsViewModelTest {
 		advanceUntilIdle()
 
 		true shouldBe viewModel.recipeDetails?.isFavorite
-		viewModel.favoriteChangeCount shouldBe 1
 		viewModel.favoriteErrorMessage shouldBe null
 	}
 
@@ -248,6 +249,8 @@ class RecipeDetailsViewModelTest {
 		)
 
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
+
+		override fun observeFavoriteEvents() = emptyFlow<FavoriteEvent>()
 	}
 
 }

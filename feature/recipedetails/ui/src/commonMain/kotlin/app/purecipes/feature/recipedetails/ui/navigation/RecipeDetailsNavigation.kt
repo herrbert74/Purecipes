@@ -14,7 +14,6 @@ fun EntryProviderScope<NavKey>.installRecipeDetailsFlow(
 	navigator: Navigator,
 	canManageFavorites: Boolean,
 	sessionKey: String?,
-	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
 	onOpenMeasurementPreferences: () -> Unit,
 ) {
@@ -24,7 +23,6 @@ fun EntryProviderScope<NavKey>.installRecipeDetailsFlow(
 			canManageFavorites = canManageFavorites,
 			onOpenMeasurementPreferences = onOpenMeasurementPreferences,
 			onBack = { navigator.back() },
-			onFavoriteChange = onFavoriteChange,
 			onStartCooking = onStartCooking,
 			sessionKey = sessionKey,
 			modifier = Modifier.fillMaxSize(),

@@ -14,6 +14,7 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUs
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -53,8 +54,19 @@ class FavoritesViewModel(
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val importCookbookShare: ImportCookbookShareUseCase,
 	private val shareCookbook: ShareCookbookUseCase,
+	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	@Assisted private val sessionKey: String?,
 ) : ViewModel() {
+
+	init {
+		if (sessionKey != null) {
+			viewModelScope.launch {
+				observeFavoriteEvents().collect {
+					loadFavorites()
+				}
+			}
+		}
+	}
 
 	var selectedTab by mutableStateOf(FavoritesTab.SavedRecipes)
 		private set

@@ -1,6 +1,5 @@
 package app.purecipes.feature.favorites.ui
 
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -13,6 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.repository.CookbooksRepository
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
@@ -21,6 +21,7 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUs
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -47,7 +48,6 @@ class FavoritesScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(),
 					onRecipeSelect = {},
@@ -80,7 +80,6 @@ class FavoritesScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -98,7 +97,6 @@ class FavoritesScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -137,7 +135,6 @@ class FavoritesScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
@@ -161,15 +158,17 @@ class FavoritesScreenTest {
 	}
 
 	@Test
-	fun cookbookDetailRefreshRemovesRecipeAfterFavoritesRefreshSignal() = runRecompositionTrackingUiTest {
+	fun cookbookDetailRefreshRemovesRecipeAfterFavoriteEvent() = runRecompositionTrackingUiTest {
 		val cookbooksRepo = MutableCookbooksRepository()
-		val refreshSignalState = mutableIntStateOf(REFRESH_SIGNAL)
+		val favoritesRepo = FakeFavoritesRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					refreshSignal = refreshSignalState.intValue,
 					sessionKey = "session",
-					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
+					viewModel = favoritesViewModelForTest(
+						favoritesRepository = favoritesRepo,
+						cookbooksRepository = cookbooksRepo,
+					),
 					onRecipeSelect = {},
 				)
 			}
@@ -182,18 +181,17 @@ class FavoritesScreenTest {
 
 		runOnIdle {
 			cookbooksRepo.setCookbookRecipes(emptyList())
-			refreshSignalState.intValue += 1
+			favoritesRepo.emitFavoriteEvent(FavoriteEvent.Removed(recipeId = TEST_RECIPE_ID))
 		}
 
-		waitForIdle()
-		onNodeWithText("Cookbooks").performClick()
-		onNodeWithText(TEST_COOKBOOK_NAME).performClick()
-		onAllNodesWithText(TEST_RECIPE_TITLE).assertCountEquals(0)
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText(TEST_RECIPE_TITLE).fetchSemanticsNodes().isEmpty()
+		}
+		onNodeWithText("0 recipes").assertIsDisplayed()
 	}
 
 	private companion object {
 
-		const val REFRESH_SIGNAL = 1
 		const val NON_EMPTY_COOKBOOK_ID = 21
 		const val EMPTY_COOKBOOK_ID = 22
 		const val TEST_COOKBOOK_ID = 23
@@ -287,6 +285,7 @@ private fun favoritesViewModelForTest(
 	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
 	importCookbookShare = unusedImportCookbookShareUseCase(),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 	shareCookbook = unusedShareCookbookUseCase(),
 	sessionKey = sessionKey,
 )
