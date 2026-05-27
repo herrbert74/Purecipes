@@ -2,7 +2,9 @@ package app.purecipes.feature.search.domain.usecase
 
 import app.purecipes.feature.search.domain.repository.UserPantryRepository
 import app.purecipes.shared.domain.model.PantryDelta
+import dev.zacsweers.metro.Inject
 
+@Inject
 class UpdateUserPantryUseCase(
 	private val repository: UserPantryRepository,
 ) {

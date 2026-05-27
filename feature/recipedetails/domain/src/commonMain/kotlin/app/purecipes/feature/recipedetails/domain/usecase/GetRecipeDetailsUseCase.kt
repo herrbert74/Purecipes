@@ -3,7 +3,9 @@ package app.purecipes.feature.recipedetails.domain.usecase
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import app.purecipes.shared.domain.model.RecipeDetails
+import dev.zacsweers.metro.Inject
 
+@Inject
 class GetRecipeDetailsUseCase(
 	private val repository: RecipeDetailsRepository,
 ) {

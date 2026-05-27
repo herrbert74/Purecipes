@@ -6,9 +6,11 @@ import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
+import dev.zacsweers.metro.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
+@Inject
 class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 
 	operator fun invoke(

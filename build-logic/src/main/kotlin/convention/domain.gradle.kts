@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 plugins {
 	id("convention.kmp")
+	id("dev.zacsweers.metro")
 }
 
 extensions.configure<KotlinMultiplatformExtension> {
