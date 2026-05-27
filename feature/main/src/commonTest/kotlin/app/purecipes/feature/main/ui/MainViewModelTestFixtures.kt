@@ -26,11 +26,12 @@ internal fun mainViewModelForTest(
 	authenticationRepository: FakeAuthenticationRepository = FakeAuthenticationRepository(),
 	incomingLinkRepository: IncomingLinkRepository = emptyIncomingLinkRepository(),
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+	consentRepository: FakeConsentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
 	onDeliverPendingIncomingLink: () -> Unit = {},
 	coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + UnconfinedTestDispatcher()),
 ): MainViewModel = MainViewModel(
 	observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
-	refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
+	refreshConsent = RefreshConsentUseCase(consentRepository),
 	setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
 	observeIncomingLinks = ObserveIncomingLinksUseCase(incomingLinkRepository),
 	publishWebLaunchLink = PublishWebLaunchLinkUseCase(
