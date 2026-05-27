@@ -86,30 +86,31 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start routes unsigned cookbook share to account login then favorites with token`() = runUnconfinedViewModelTest {
-		val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
-		val authenticationRepository = FakeAuthenticationRepository()
-		val viewModel = mainViewModelForTest(
-			authenticationRepository = authenticationRepository,
-			incomingLinkRepository = incomingLinksRepository(links),
-		)
-		viewModel.start()
-		links.emit(PurecipesLink.CookbookShare(sampleShareToken))
+	fun `start routes unsigned cookbook share to account login then favorites with token`() =
+		runUnconfinedViewModelTest {
+			val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
+			val authenticationRepository = FakeAuthenticationRepository()
+			val viewModel = mainViewModelForTest(
+				authenticationRepository = authenticationRepository,
+				incomingLinkRepository = incomingLinksRepository(links),
+			)
+			viewModel.start()
+			links.emit(PurecipesLink.CookbookShare(sampleShareToken))
 
-		viewModel.peekBackStack() shouldBe listOf(AccountDestination)
-		authenticationRepository.signInWithGoogle(
-			GoogleAuthenticationProfile(
-				idToken = sampleUser.id,
-				email = sampleUser.email,
-				displayName = sampleUser.displayName,
-				profileImageUrl = sampleUser.profileImageUrl,
-			),
-		)
+			viewModel.peekBackStack() shouldBe listOf(AccountDestination)
+			authenticationRepository.signInWithGoogle(
+				GoogleAuthenticationProfile(
+					idToken = sampleUser.id,
+					email = sampleUser.email,
+					displayName = sampleUser.displayName,
+					profileImageUrl = sampleUser.profileImageUrl,
+				),
+			)
 
-		viewModel.peekBackStack() shouldBe listOf(
-			FavoritesDestination(cookbookShareToken = sampleShareToken),
-		)
-	}
+			viewModel.peekBackStack() shouldBe listOf(
+				FavoritesDestination(cookbookShareToken = sampleShareToken),
+			)
+		}
 
 	@Test
 	fun `start delivers recipe link when signed in`() = runUnconfinedViewModelTest {
