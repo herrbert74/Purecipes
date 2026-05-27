@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -20,10 +21,6 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -33,11 +30,7 @@ class StepByStepCookingViewModel(
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val trackEvent: TrackEventUseCase,
 	@Assisted private val recipeId: Int,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	var isLoading by mutableStateOf(true)
 		private set
@@ -74,7 +67,7 @@ class StepByStepCookingViewModel(
 	}
 
 	private fun loadRecipe() {
-		scope.launch {
+		viewModelScope.launch {
 			isLoading = true
 			errorMessage = null
 			recipeDetails = null
@@ -90,12 +83,6 @@ class StepByStepCookingViewModel(
 			errorMessage = outcome.getError()?.message
 			currentStepIndex = 0
 			isLoading = false
-		}
-	}
-
-	override fun onCleared() {
-		if (ownsCoroutineScope) {
-			scope.cancel()
 		}
 	}
 

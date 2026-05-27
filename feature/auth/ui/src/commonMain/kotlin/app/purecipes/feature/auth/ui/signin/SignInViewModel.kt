@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
@@ -18,10 +19,6 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -31,11 +28,7 @@ class SignInViewModel(
 	private val sendPasswordResetEmail: SendPasswordResetEmailUseCase,
 	@Assisted initialEmail: String,
 	@Assisted showRegistrationSuccessMessage: Boolean,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	var email by mutableStateOf(initialEmail)
 		private set
@@ -77,7 +70,7 @@ class SignInViewModel(
 	fun submitSignIn() {
 		emailError = null
 		passwordError = null
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			val result = signInWithEmail(email, password)
 			setSignInError(result.getError()?.message)
@@ -86,7 +79,7 @@ class SignInViewModel(
 	}
 
 	fun resendVerificationEmail() {
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			val result = resendEmailVerification(email, password)
 			if (result.getError() == null) {
@@ -102,7 +95,7 @@ class SignInViewModel(
 	}
 
 	fun sendPasswordResetEmail() {
-		scope.launch {
+		viewModelScope.launch {
 			isBusy = true
 			val result = sendPasswordResetEmail(email)
 			if (result.getError() == null) {
@@ -113,12 +106,6 @@ class SignInViewModel(
 				setSignInError(result.getError()?.message)
 			}
 			isBusy = false
-		}
-	}
-
-	override fun onCleared() {
-		if (ownsCoroutineScope) {
-			scope.cancel()
 		}
 	}
 

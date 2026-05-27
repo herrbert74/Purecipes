@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -34,11 +35,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -50,11 +47,7 @@ class MainViewModel(
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	private val purecipesConfig: PurecipesConfig,
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	private var backStack: NavBackStack<NavKey> = NavBackStack(SearchDestination)
 
@@ -109,13 +102,13 @@ class MainViewModel(
 			return
 		}
 		isStarted = true
-		scope.launch {
+		viewModelScope.launch {
 			refreshConsent()
 		}
-		scope.launch {
+		viewModelScope.launch {
 			publishWebLaunchLink()
 		}
-		scope.launch {
+		viewModelScope.launch {
 			observeAuthenticationState().collect { state ->
 				authenticationState = state
 				handleAuthenticationStateTransition(state)
@@ -312,7 +305,7 @@ class MainViewModel(
 		onDeliverPendingIncomingLink()
 		incomingLinksCollectionJob?.cancel()
 		val isSignedIn = sessionKey != null
-		incomingLinksCollectionJob = scope.launch {
+		incomingLinksCollectionJob = viewModelScope.launch {
 			observeIncomingLinks().collect { link ->
 				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
 					stageCookbookShareImport(link.token)
@@ -326,13 +319,6 @@ class MainViewModel(
 
 	private fun NavKey?.isAccountAuthFlowDestination(): Boolean {
 		return this is EmailSignInDestination || this is EmailRegistrationDestination
-	}
-
-	override fun onCleared() {
-		incomingLinksCollectionJob?.cancel()
-		if (ownsCoroutineScope) {
-			scope.cancel()
-		}
 	}
 
 	@AssistedFactory

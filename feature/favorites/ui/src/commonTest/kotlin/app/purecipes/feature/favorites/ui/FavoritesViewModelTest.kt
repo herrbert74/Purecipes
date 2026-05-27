@@ -15,11 +15,11 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
 import kotlin.test.Test
 
@@ -39,7 +39,7 @@ class FavoritesViewModelTest {
 		)
 
 	@Test
-	fun `load favorites populates recipes`() = runTest {
+	fun `load favorites populates recipes`() = runViewModelTest {
 		val expected = listOf(
 			RecipeSummary(
 				id = 42,
@@ -70,7 +70,6 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
-			coroutineScope = this,
 		)
 
 		viewModel.loadFavorites()
@@ -81,7 +80,7 @@ class FavoritesViewModelTest {
 	}
 
 	@Test
-	fun `load favorites exposes error`() = runTest {
+	fun `load favorites exposes error`() = runViewModelTest {
 		val viewModel = FavoritesViewModel(
 			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(
 				FakeFavoritesRepository(
@@ -96,7 +95,6 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
-			coroutineScope = this,
 		)
 
 		viewModel.loadFavorites()
@@ -107,7 +105,7 @@ class FavoritesViewModelTest {
 	}
 
 	@Test
-	fun `create cookbook from name rejects duplicate name`() = runTest {
+	fun `create cookbook from name rejects duplicate name`() = runViewModelTest {
 		val existingCookbook = CookbookSummary(
 			id = 10,
 			name = "Weeknight Dinners",
@@ -134,7 +132,6 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
-			coroutineScope = this,
 		)
 		viewModel.loadFavorites()
 		advanceUntilIdle()
@@ -151,7 +148,7 @@ class FavoritesViewModelTest {
 	}
 
 	@Test
-	fun `delete cookbook rejects non-empty cookbook`() = runTest {
+	fun `delete cookbook rejects non-empty cookbook`() = runViewModelTest {
 		val cookbooksRepository = FakeCookbooksRepository()
 		val viewModel = FavoritesViewModel(
 			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
@@ -163,7 +160,6 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
-			coroutineScope = this,
 		)
 		var deleted = true
 
@@ -184,7 +180,7 @@ class FavoritesViewModelTest {
 	}
 
 	@Test
-	fun `delete cookbook succeeds for empty cookbook`() = runTest {
+	fun `delete cookbook succeeds for empty cookbook`() = runViewModelTest {
 		val cookbooksRepository = FakeCookbooksRepository()
 		val viewModel = FavoritesViewModel(
 			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
@@ -196,7 +192,6 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			shareCookbook = unusedShareCookbookUseCase(),
 			sessionKey = "session",
-			coroutineScope = this,
 		)
 		var deleted = false
 

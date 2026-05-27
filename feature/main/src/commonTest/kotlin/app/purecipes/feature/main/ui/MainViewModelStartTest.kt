@@ -14,14 +14,10 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
+import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,22 +31,20 @@ class MainViewModelStartTest {
 	)
 
 	@Test
-	fun `start refreshes consent on startup`() = runTest {
+	fun `start refreshes consent on startup`() = runUnconfinedViewModelTest {
 		val consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED)
 		mainViewModelForTest(
 			consentRepository = consentRepository,
-			coroutineScope = testViewModelScope(),
 		).start()
 
 		consentRepository.refreshConsentCalled shouldBe true
 	}
 
 	@Test
-	fun `start observes sign in and resumes post login filters navigation`() = runTest {
+	fun `start observes sign in and resumes post login filters navigation`() = runUnconfinedViewModelTest {
 		val authenticationRepository = FakeAuthenticationRepository()
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
-			coroutineScope = testViewModelScope(),
 		)
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
 		viewModel.onOpenEmailSignIn(prefilledEmail = sampleUser.email)
@@ -70,11 +64,10 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start resumes cookbook share import after sign in`() = runTest {
+	fun `start resumes cookbook share import after sign in`() = runUnconfinedViewModelTest {
 		val authenticationRepository = FakeAuthenticationRepository()
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
-			coroutineScope = testViewModelScope(),
 		)
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
 		viewModel.stageCookbookShareImport(sampleShareToken)
@@ -93,11 +86,10 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start routes unsigned cookbook share to account login`() = runTest {
+	fun `start routes unsigned cookbook share to account login`() = runUnconfinedViewModelTest {
 		val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
 		val viewModel = mainViewModelForTest(
 			incomingLinkRepository = incomingLinksRepository(links),
-			coroutineScope = testViewModelScope(),
 		)
 		viewModel.start()
 		links.emit(PurecipesLink.CookbookShare(sampleShareToken))
@@ -108,12 +100,11 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start delivers recipe link when signed in`() = runTest {
+	fun `start delivers recipe link when signed in`() = runUnconfinedViewModelTest {
 		val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = FakeAuthenticationRepository(AuthenticationState.SignedIn(sampleUser)),
 			incomingLinkRepository = incomingLinksRepository(links),
-			coroutineScope = testViewModelScope(),
 		)
 		viewModel.start()
 		links.emit(PurecipesLink.Recipe(77))
@@ -122,13 +113,12 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start invokes pending link delivery when user signs in`() = runTest {
+	fun `start invokes pending link delivery when user signs in`() = runUnconfinedViewModelTest {
 		var deliveryCount = 0
 		val authenticationRepository = FakeAuthenticationRepository()
 		mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
 			onDeliverPendingIncomingLink = { deliveryCount++ },
-			coroutineScope = testViewModelScope(),
 		).start()
 		deliveryCount shouldBe 1
 		authenticationRepository.signInWithGoogle(
@@ -144,13 +134,12 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start sets analytics user id when user signs in`() = runTest {
+	fun `start sets analytics user id when user signs in`() = runUnconfinedViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val authenticationRepository = FakeAuthenticationRepository()
 		mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
 			analyticsRepository = analyticsRepository,
-			coroutineScope = testViewModelScope(),
 		).start()
 		authenticationRepository.signInWithGoogle(
 			GoogleAuthenticationProfile(
@@ -165,11 +154,10 @@ class MainViewModelStartTest {
 	}
 
 	@Test
-	fun `start clears post login state on sign out`() = runTest {
+	fun `start clears post login state on sign out`() = runUnconfinedViewModelTest {
 		val authenticationRepository = FakeAuthenticationRepository()
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
-			coroutineScope = testViewModelScope(),
 		)
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
 		viewModel.start()
@@ -189,10 +177,6 @@ class MainViewModelStartTest {
 		viewModel.takePostLoginOriginAfterSignIn() shouldBe null
 	}
 }
-
-@OptIn(ExperimentalCoroutinesApi::class)
-private fun TestScope.testViewModelScope(): CoroutineScope =
-	CoroutineScope(SupervisorJob() + UnconfinedTestDispatcher(testScheduler))
 
 private fun incomingLinksRepository(links: MutableSharedFlow<PurecipesLink>): IncomingLinkRepository =
 	object : IncomingLinkRepository {

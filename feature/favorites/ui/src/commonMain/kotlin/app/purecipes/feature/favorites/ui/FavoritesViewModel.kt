@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
@@ -27,10 +28,6 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Clock
@@ -57,11 +54,7 @@ class FavoritesViewModel(
 	private val importCookbookShare: ImportCookbookShareUseCase,
 	private val shareCookbook: ShareCookbookUseCase,
 	@Assisted private val sessionKey: String?,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	var selectedTab by mutableStateOf(FavoritesTab.SavedRecipes)
 		private set
@@ -120,7 +113,7 @@ class FavoritesViewModel(
 	val savedPaginationState: PaginationState<Int, RecipeSummary> = PaginationState(
 		initialPageKey = FIRST_PAGE_NUMBER,
 		onRequestPage = { pageKey ->
-			scope.launch {
+			viewModelScope.launch {
 				loadSavedPage(pageKey)
 			}
 		},
@@ -129,7 +122,7 @@ class FavoritesViewModel(
 	val cookbooksPaginationState: PaginationState<Int, CookbookSummary> = PaginationState(
 		initialPageKey = FIRST_PAGE_NUMBER,
 		onRequestPage = { pageKey ->
-			scope.launch {
+			viewModelScope.launch {
 				loadCookbooksPage(pageKey)
 			}
 		},
@@ -138,7 +131,7 @@ class FavoritesViewModel(
 	val cookbookDetailPaginationState: PaginationState<Int, RecipeSummary> = PaginationState(
 		initialPageKey = FIRST_PAGE_NUMBER,
 		onRequestPage = { pageKey ->
-			scope.launch {
+			viewModelScope.launch {
 				loadCookbookDetailPage(pageKey)
 			}
 		},
@@ -156,7 +149,7 @@ class FavoritesViewModel(
 		totalCookbookDetailMatches = 0
 		cookbookDetailErrorMessage = null
 		cookbookDetailPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
-		scope.launch {
+		viewModelScope.launch {
 			loadCookbookDetailPage(FIRST_PAGE_NUMBER)
 		}
 	}
@@ -172,7 +165,7 @@ class FavoritesViewModel(
 		if (sessionKey == null) {
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isInitialLoading = true
 			savedErrorMessage = null
 			cookbooksErrorMessage = null
@@ -204,7 +197,7 @@ class FavoritesViewModel(
 		if (sessionKey == null) {
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isImportingSharedCookbook = true
 			sharedCookbookImportErrorMessage = null
 			val outcome = importCookbookShare(shareToken)
@@ -222,7 +215,7 @@ class FavoritesViewModel(
 	}
 
 	fun loadCookbookCover(cookbookId: Int) {
-		scope.launch {
+		viewModelScope.launch {
 			val page = getCookbookRecipesPage(cookbookId, FIRST_PAGE_NUMBER, COVER_FETCH_PAGE_SIZE).get()
 				?: return@launch
 			val urls = page.items.mapNotNull { it.imageUrl?.trim()?.takeIf { u -> u.isNotEmpty() } }
@@ -247,7 +240,7 @@ class FavoritesViewModel(
 			onDone(false)
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isCreatingCookbook = true
 			createCookbookError = null
 			val outcome = createCookbook(trimmed)
@@ -270,7 +263,7 @@ class FavoritesViewModel(
 			onDone(false)
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isDeletingCookbook = true
 			deleteCookbookError = null
 			val outcome = deleteCookbookUseCase(cookbook.id)
@@ -289,7 +282,7 @@ class FavoritesViewModel(
 	fun shareOpenCookbook() {
 		val cookbookId = viewingCookbookId ?: return
 		val title = viewingCookbookName.takeIf { it.isNotBlank() }
-		scope.launch {
+		viewModelScope.launch {
 			shareCookbook(
 				cookbookId = cookbookId,
 				recipeCount = totalCookbookDetailMatches,
@@ -374,12 +367,6 @@ class FavoritesViewModel(
 				cookbookDetailPaginationState.setError(IllegalStateException(err.message))
 				cookbookDetailErrorMessage = err.message
 			}
-		}
-	}
-
-	override fun onCleared() {
-		if (ownsCoroutineScope) {
-			scope.cancel()
 		}
 	}
 

@@ -21,6 +21,7 @@ kotlin {
 				api(project(":shared:domain"))
 				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinx.coroutinesCore)
+				implementation(libs.kotlinx.coroutinesTest)
 			}
 		}
 	}

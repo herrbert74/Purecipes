@@ -19,20 +19,19 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RecipeSearchViewModelTest {
 
 	@Test
-	fun `search loads recipes on init`() = runTest {
+	fun `search loads recipes on init`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(
 				listOf(
@@ -46,7 +45,7 @@ class RecipeSearchViewModelTest {
 				),
 			),
 		)
-		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		val viewModel = makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -59,9 +58,9 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `search now keeps search bar expanded when already expanded`() = runTest {
+	fun `search now keeps search bar expanded when already expanded`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		val viewModel = makeViewModel(searchRepository = repository)
 		advanceUntilIdle()
 
 		viewModel.onSearchBarExpandedChange(true)
@@ -72,11 +71,11 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `search exposes repository error message`() = runTest {
+	fun `search exposes repository error message`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Err(Failure.ServerError("Search failed")),
 		)
-		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		val viewModel = makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -85,7 +84,7 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `search stores total matches from paged response`() = runTest {
+	fun `search stores total matches from paged response`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(
 				listOf(
@@ -100,7 +99,7 @@ class RecipeSearchViewModelTest {
 			),
 			totalMatches = 37,
 		)
-		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		val viewModel = makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -109,9 +108,9 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `search now sends updated query and first page request`() = runTest {
+	fun `search now sends updated query and first page request`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = repository, coroutineScope = this)
+		val viewModel = makeViewModel(searchRepository = repository)
 		advanceUntilIdle()
 
 		viewModel.onSearchQueryChange("chicken")
@@ -124,9 +123,9 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `init uses default filters when saved filters are empty`() = runTest {
+	fun `init uses default filters when saved filters are empty`() = runViewModelTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
-		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
+		val viewModel = makeViewModel(filterRepository = filterRepository)
 
 		advanceUntilIdle()
 
@@ -135,10 +134,10 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `init uses saved filters when they are not empty`() = runTest {
+	fun `init uses saved filters when they are not empty`() = runViewModelTest {
 		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
-		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
+		val viewModel = makeViewModel(filterRepository = filterRepository)
 
 		advanceUntilIdle()
 
@@ -146,9 +145,9 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFiltersChange updates active filters without saving`() = runTest {
+	fun `onFiltersChange updates active filters without saving`() = runViewModelTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
-		val viewModel = makeViewModel(filterRepository = filterRepository, coroutineScope = this)
+		val viewModel = makeViewModel(filterRepository = filterRepository)
 		advanceUntilIdle()
 		val savedAfterInit = filterRepository.savedFilters
 
@@ -161,9 +160,9 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFiltersChange does not trigger a new search`() = runTest {
+	fun `onFiltersChange does not trigger a new search`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = searchRepository, coroutineScope = this)
+		val viewModel = makeViewModel(searchRepository = searchRepository)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
 
@@ -174,15 +173,15 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `filter sheet is hidden by default`() = runTest {
-		val viewModel = makeViewModel(coroutineScope = this)
+	fun `filter sheet is hidden by default`() = runViewModelTest {
+		val viewModel = makeViewModel()
 
 		viewModel.isFilterSheetVisible shouldBe false
 	}
 
 	@Test
-	fun `onFilterButtonClick shows the filter sheet`() = runTest {
-		val viewModel = makeViewModel(coroutineScope = this)
+	fun `onFilterButtonClick shows the filter sheet`() = runViewModelTest {
+		val viewModel = makeViewModel()
 
 		viewModel.onFilterButtonClick()
 
@@ -190,7 +189,7 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `init shows filter sheet when initialShowFilterSheet is true`() = runTest {
+	fun `init shows filter sheet when initialShowFilterSheet is true`() = runViewModelTest {
 		val viewModel = RecipeSearchViewModel(
 			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
@@ -202,7 +201,6 @@ class RecipeSearchViewModelTest {
 			updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
 			initialShowFilterSheet = true,
 			sessionKey = null,
-			coroutineScope = this,
 		)
 
 		advanceUntilIdle()
@@ -211,8 +209,8 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFilterSheetDismiss hides the filter sheet`() = runTest {
-		val viewModel = makeViewModel(coroutineScope = this)
+	fun `onFilterSheetDismiss hides the filter sheet`() = runViewModelTest {
+		val viewModel = makeViewModel()
 		viewModel.onFilterButtonClick()
 
 		viewModel.onFilterSheetDismiss()
@@ -221,13 +219,12 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFilterSheetDismiss saves filters and triggers search when filters changed`() = runTest {
+	fun `onFilterSheetDismiss saves filters and triggers search when filters changed`() = runViewModelTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val viewModel = makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
-			coroutineScope = this,
 		)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
@@ -242,13 +239,12 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFilterSheetDismiss updates pantry and triggers search when pantry changed`() = runTest {
+	fun `onFilterSheetDismiss updates pantry and triggers search when pantry changed`() = runViewModelTest {
 		val pantryRepository = FakeUserPantryRepository(setOf("Chicken"))
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val viewModel = makeViewModel(
 			searchRepository = searchRepository,
 			pantryRepository = pantryRepository,
-			coroutineScope = this,
 		)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
@@ -262,14 +258,13 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
-	fun `onFilterSheetDismiss does not save or search when filters are unchanged`() = runTest {
+	fun `onFilterSheetDismiss does not save or search when filters are unchanged`() = runViewModelTest {
 		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val viewModel = makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
-			coroutineScope = this,
 		)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
@@ -287,7 +282,6 @@ class RecipeSearchViewModelTest {
 		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
 		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
 		pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
-		coroutineScope: CoroutineScope? = null,
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
@@ -299,6 +293,5 @@ class RecipeSearchViewModelTest {
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 		initialShowFilterSheet = false,
 		sessionKey = null,
-		coroutineScope = coroutineScope,
 	)
 }

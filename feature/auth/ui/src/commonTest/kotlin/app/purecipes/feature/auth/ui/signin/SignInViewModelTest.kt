@@ -12,33 +12,27 @@ import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
+import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SignInViewModelTest {
 
 	@Test
-	fun `sign in does not enforce password policy`() = runTest {
+	fun `sign in does not enforce password policy`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository(
 			signInWithEmailHandler = { _, _ ->
 				Ok(fakeAuthUser())
 			},
 		)
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = createViewModel(repository, viewModelScope)
+		val viewModel = createViewModel(repository)
 
 		viewModel.onPasswordChange("secret")
 		viewModel.submitSignIn()
@@ -47,18 +41,16 @@ class SignInViewModelTest {
 
 		ObserveAuthenticationStateUseCase(repository)().first()
 			.shouldBeInstanceOf<AuthenticationState.SignedIn>()
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `unverified email sign in shows resend button`() = runTest {
+	fun `unverified email sign in shows resend button`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository(
 			signInWithEmailHandler = { _, _ ->
 				Err(Failure.ServerError(EMAIL_NOT_VERIFIED_MESSAGE))
 			},
 		)
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = createViewModel(repository, viewModelScope)
+		val viewModel = createViewModel(repository)
 
 		viewModel.onPasswordChange("secret")
 		viewModel.submitSignIn()
@@ -68,18 +60,16 @@ class SignInViewModelTest {
 		viewModel.emailError shouldBe EMAIL_NOT_VERIFIED_MESSAGE
 		viewModel.passwordError shouldBe null
 		viewModel.showResendVerificationEmail shouldBe true
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `sign in with incorrect password shows password field error`() = runTest {
+	fun `sign in with incorrect password shows password field error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository(
 			signInWithEmailHandler = { _, _ ->
 				Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
 			},
 		)
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = createViewModel(repository, viewModelScope)
+		val viewModel = createViewModel(repository)
 
 		viewModel.onPasswordChange("wrong-password")
 		viewModel.submitSignIn()
@@ -88,20 +78,17 @@ class SignInViewModelTest {
 
 		viewModel.passwordError shouldBe INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 		viewModel.emailError shouldBe null
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `sign in with invalid email shows email field error`() = runTest {
+	fun `sign in with invalid email shows email field error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			initialEmail = "not-an-email",
 			showRegistrationSuccessMessage = false,
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.onPasswordChange("secret")
@@ -111,34 +98,29 @@ class SignInViewModelTest {
 
 		viewModel.emailError shouldBe INVALID_EMAIL_MESSAGE
 		viewModel.passwordError shouldBe null
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `registration success shows info message`() = runTest {
+	fun `registration success shows info message`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			initialEmail = "taylor@example.com",
 			showRegistrationSuccessMessage = true,
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.infoMessage shouldBe "Registration successful. Please check your email to verify your account."
 		viewModel.showResendVerificationEmail shouldBe true
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `forgot password with valid email shows success message`() = runTest {
+	fun `forgot password with valid email shows success message`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository(
 			sendPasswordResetEmailHandler = { Ok(Unit) },
 		)
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
-		val viewModel = createViewModel(repository, viewModelScope)
+		val viewModel = createViewModel(repository)
 
 		viewModel.sendPasswordResetEmail()
 
@@ -147,20 +129,17 @@ class SignInViewModelTest {
 		viewModel.infoMessage shouldBe "Password reset email sent. Please check your inbox."
 		viewModel.emailError shouldBe null
 		viewModel.passwordError shouldBe null
-		viewModelScope.cancel()
 	}
 
 	@Test
-	fun `forgot password with blank email shows email field error`() = runTest {
+	fun `forgot password with blank email shows email field error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModelScope = CoroutineScope(SupervisorJob(Job()) + StandardTestDispatcher(testScheduler))
 		val viewModel = SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			initialEmail = "",
 			showRegistrationSuccessMessage = false,
-			coroutineScope = viewModelScope,
 		)
 
 		viewModel.sendPasswordResetEmail()
@@ -169,20 +148,15 @@ class SignInViewModelTest {
 
 		viewModel.emailError shouldBe EMAIL_REQUIRED_MESSAGE
 		viewModel.infoMessage shouldBe null
-		viewModelScope.cancel()
 	}
 
-	private fun createViewModel(
-		repository: FakeAuthenticationRepository,
-		viewModelScope: CoroutineScope,
-	): SignInViewModel {
+	private fun createViewModel(repository: FakeAuthenticationRepository): SignInViewModel {
 		return SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			initialEmail = "taylor@example.com",
 			showRegistrationSuccessMessage = false,
-			coroutineScope = viewModelScope,
 		)
 	}
 }

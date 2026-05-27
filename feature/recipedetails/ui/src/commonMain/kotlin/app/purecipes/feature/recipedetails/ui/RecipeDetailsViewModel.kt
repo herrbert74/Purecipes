@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
@@ -33,10 +34,6 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 private const val COOKBOOK_PICKER_PAGE_SIZE = 100
@@ -57,11 +54,7 @@ class RecipeDetailsViewModel(
 	private val shareRecipe: ShareRecipeUseCase,
 	@Assisted private val recipeId: Int,
 	@Assisted private val sessionKey: String?,
-	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
-
-	private val ownsCoroutineScope = coroutineScope == null
-	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	var isLoading by mutableStateOf(true)
 		private set
@@ -111,7 +104,7 @@ class RecipeDetailsViewModel(
 
 	fun dismissMeasurementMismatchDialog() {
 		showMeasurementMismatchDialog = false
-		scope.launch {
+		viewModelScope.launch {
 			markMeasurementMismatchSeen(recipeId)
 		}
 	}
@@ -126,7 +119,7 @@ class RecipeDetailsViewModel(
 		recipeDetails = processed.recipe
 		isRecipeConverted = processed.isConverted
 		showMeasurementMismatchDialog = false
-		scope.launch {
+		viewModelScope.launch {
 			markMeasurementMismatchSeen(recipeId)
 		}
 	}
@@ -137,7 +130,7 @@ class RecipeDetailsViewModel(
 		isFavoriteUpdating = true
 		favoriteErrorMessage = null
 
-		scope.launch {
+		viewModelScope.launch {
 			val outcome = if (currentRecipe.isFavorite) {
 				removeFavoriteRecipe(currentRecipe.id)
 			} else {
@@ -163,7 +156,7 @@ class RecipeDetailsViewModel(
 	}
 
 	fun prepareCookbookPicker() {
-		scope.launch {
+		viewModelScope.launch {
 			sheetCookbooks.clear()
 			val page = getCookbooksPage(1, COOKBOOK_PICKER_PAGE_SIZE).get() ?: return@launch
 			sheetCookbooks.addAll(page.items)
@@ -172,7 +165,7 @@ class RecipeDetailsViewModel(
 
 	fun addRecipeToCookbookId(cookbookId: Int, onDone: (String?) -> Unit) {
 		val recipe = recipeDetails ?: return onDone(null)
-		scope.launch {
+		viewModelScope.launch {
 			isCookbookActionInFlight = true
 			cookbookActionError = null
 			val outcome = addRecipeToCookbook(cookbookId, recipe.id)
@@ -198,7 +191,7 @@ class RecipeDetailsViewModel(
 			onDone(duplicateMessage)
 			return
 		}
-		scope.launch {
+		viewModelScope.launch {
 			isCookbookActionInFlight = true
 			cookbookActionError = null
 			val createOutcome = createCookbook(trimmed)
@@ -226,7 +219,7 @@ class RecipeDetailsViewModel(
 	}
 
 	private fun refreshCookbookMembership() {
-		scope.launch {
+		viewModelScope.launch {
 			cookbookActionError = null
 			if (sessionKey == null) {
 				recipeCookbooks.clear()
@@ -244,7 +237,7 @@ class RecipeDetailsViewModel(
 	}
 
 	private fun loadRecipe() {
-		scope.launch {
+		viewModelScope.launch {
 			isLoading = true
 			errorMessage = null
 			favoriteErrorMessage = null
@@ -269,12 +262,6 @@ class RecipeDetailsViewModel(
 			errorMessage = outcome.getError()?.message
 			isLoading = false
 			refreshCookbookMembership()
-		}
-	}
-
-	override fun onCleared() {
-		if (ownsCoroutineScope) {
-			scope.cancel()
 		}
 	}
 
