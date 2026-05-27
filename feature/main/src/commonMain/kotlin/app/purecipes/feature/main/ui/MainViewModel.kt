@@ -56,11 +56,10 @@ class MainViewModel(
 	private val ownsCoroutineScope = coroutineScope == null
 	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-	private var backStack: NavBackStack<NavKey> = NavBackStack(SearchDestination)
+	private var backStack: NavBackStack<NavKey> = NavBackStack(SearchDestination())
 
 	private var pendingPostLoginOrigin: PostLoginNavOrigin? = null
-	private var pendingOpenSearchFiltersAfterLogin: Boolean = false
-	private var pendingCookbookShareToken: String? = null
+	private var stagedCookbookShareToken: String? = null
 
 	private var previousAuthenticationState: AuthenticationState? = null
 	private var previousSessionKey: String? = null
@@ -98,7 +97,7 @@ class MainViewModel(
 				backStack.removeAt(backStack.lastIndex)
 				return true
 			}
-			return backStack.firstOrNull() != SearchDestination
+			return backStack.firstOrNull() !is SearchDestination
 		}
 	}
 
@@ -126,7 +125,7 @@ class MainViewModel(
 
 	fun clearPostLoginNavigationState() {
 		pendingPostLoginOrigin = null
-		pendingOpenSearchFiltersAfterLogin = false
+		stagedCookbookShareToken = null
 	}
 
 	internal fun requestLoginForPostLoginAction(origin: PostLoginNavOrigin) {
@@ -142,7 +141,7 @@ class MainViewModel(
 					serializersModule = mainNavigationSerializersModule()
 				}
 			},
-			SearchDestination,
+			SearchDestination(),
 		)
 		backStack = stack
 		return stack
@@ -154,29 +153,17 @@ class MainViewModel(
 		return origin
 	}
 
-	internal fun markPendingOpenSearchFiltersAfterLogin() {
-		pendingOpenSearchFiltersAfterLogin = true
-	}
-
-	internal fun takePendingOpenSearchFilters(): Boolean {
-		if (!pendingOpenSearchFiltersAfterLogin) return false
-		pendingOpenSearchFiltersAfterLogin = false
-		return true
-	}
-
-	fun shouldExit(): Boolean = backStack.size == 1 && backStack.firstOrNull() == SearchDestination
+	fun shouldExit(): Boolean = backStack.size == 1 && backStack.firstOrNull() is SearchDestination
 
 	internal fun peekBackStack(): List<NavKey> = backStack.toList()
 
 	internal fun onTabSelected(tab: MainTab) {
 		if (tab.destination !is AccountDestination) {
 			pendingPostLoginOrigin = null
-			if (tab.destination != SearchDestination) {
-				pendingOpenSearchFiltersAfterLogin = false
-			}
 		}
-		if (backStack.size != 1 || backStack.firstOrNull() != tab.destination) {
-			navigator.replaceTabRoot(tab.destination)
+		val root = tabRootDestination(tab)
+		if (backStack.size != 1 || !backStack.firstOrNull().isSameTabRoot(root)) {
+			navigator.replaceTabRoot(root)
 		}
 	}
 
@@ -192,20 +179,14 @@ class MainViewModel(
 	}
 
 	fun stageCookbookShareImport(token: String) {
-		pendingCookbookShareToken = token
-	}
-
-	internal fun takePendingCookbookShareToken(): String? {
-		val token = pendingCookbookShareToken
-		pendingCookbookShareToken = null
-		return token
+		stagedCookbookShareToken = token
 	}
 
 	private fun navigateToRecipe(recipeId: Int) {
-		pendingCookbookShareToken = null
-		if (backStack.firstOrNull() != SearchDestination) {
+		stagedCookbookShareToken = null
+		if (backStack.firstOrNull() !is SearchDestination) {
 			backStack.clear()
-			backStack += SearchDestination
+			backStack += SearchDestination()
 		}
 		while (
 			backStack.lastOrNull() is RecipeDetailsDestination ||
@@ -217,8 +198,8 @@ class MainViewModel(
 	}
 
 	private fun navigateToCookbookShare(token: String) {
-		stageCookbookShareImport(token)
-		onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
+		stagedCookbookShareToken = null
+		navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = token))
 	}
 
 	fun onStartCooking(recipeId: Int) {
@@ -286,13 +267,11 @@ class MainViewModel(
 		} else if (previous is AuthenticationState.SignedOut && state is AuthenticationState.SignedIn) {
 			onAuthenticationSucceeded()
 			when (takePostLoginOriginAfterSignIn()) {
-				PostLoginNavOrigin.RECIPE_SEARCH_FILTERS -> {
-					markPendingOpenSearchFiltersAfterLogin()
-					onTabSelected(mainTabs.first { it.destination == SearchDestination })
-				}
+				PostLoginNavOrigin.RECIPE_SEARCH_FILTERS ->
+					navigator.replaceTabRoot(SearchDestination(openFiltersOnStart = true))
 
 				PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT ->
-					onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
+					onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
 
 				null -> Unit
 			}
@@ -322,6 +301,24 @@ class MainViewModel(
 				}
 			}
 		}
+	}
+
+	private fun tabRootDestination(tab: MainTab): NavKey = when (tab.destination) {
+		is SearchDestination -> SearchDestination()
+		is FavoritesDestination -> FavoritesDestination(cookbookShareToken = consumeStagedCookbookShareToken())
+		else -> tab.destination
+	}
+
+	private fun consumeStagedCookbookShareToken(): String? {
+		val token = stagedCookbookShareToken
+		stagedCookbookShareToken = null
+		return token
+	}
+
+	private fun NavKey?.isSameTabRoot(root: NavKey): Boolean = when (root) {
+		is SearchDestination -> this is SearchDestination
+		is FavoritesDestination -> this is FavoritesDestination
+		else -> this == root
 	}
 
 	private fun NavKey?.isAccountAuthFlowDestination(): Boolean {

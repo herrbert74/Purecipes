@@ -9,16 +9,15 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-inline fun EntryProviderScope<NavKey>.installSearchFlow(
+fun EntryProviderScope<NavKey>.installSearchFlow(
 	isSignedIn: Boolean,
 	sessionKey: String?,
-	initialShowFilterSheet: Boolean,
-	noinline onRecipeSelect: (Int) -> Unit,
-	noinline onRequestLogInForFilters: () -> Unit,
+	onRecipeSelect: (Int) -> Unit,
+	onRequestLogInForFilters: () -> Unit,
 ) {
-	entry<SearchDestination> {
+	entry<SearchDestination> { destination ->
 		RecipeSearchScreen(
-			initialShowFilterSheet = initialShowFilterSheet,
+			initialShowFilterSheet = destination.openFiltersOnStart,
 			isSignedIn = isSignedIn,
 			modifier = Modifier.fillMaxSize(),
 			onRecipeSelect = onRecipeSelect,

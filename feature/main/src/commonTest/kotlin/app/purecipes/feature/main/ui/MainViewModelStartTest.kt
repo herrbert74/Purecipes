@@ -65,8 +65,7 @@ class MainViewModelStartTest {
 		)
 
 		viewModel.authenticationState shouldBe AuthenticationState.SignedIn(sampleUser)
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination)
-		viewModel.takePendingOpenSearchFilters() shouldBe true
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(openFiltersOnStart = true))
 	}
 
 	@Test
@@ -88,14 +87,17 @@ class MainViewModelStartTest {
 			),
 		)
 
-		viewModel.peekBackStack() shouldBe listOf(FavoritesDestination)
-		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
+		viewModel.peekBackStack() shouldBe listOf(
+			FavoritesDestination(cookbookShareToken = sampleShareToken),
+		)
 	}
 
 	@Test
-	fun `start routes unsigned cookbook share to account login`() = runTest {
+	fun `start routes unsigned cookbook share to account login then favorites with token`() = runTest {
 		val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
+		val authenticationRepository = FakeAuthenticationRepository()
 		val viewModel = mainViewModelForTest(
+			authenticationRepository = authenticationRepository,
 			incomingLinkRepository = incomingLinksRepository(links),
 			coroutineScope = testViewModelScope(),
 		)
@@ -103,8 +105,18 @@ class MainViewModelStartTest {
 		links.emit(PurecipesLink.CookbookShare(sampleShareToken))
 
 		viewModel.peekBackStack() shouldBe listOf(AccountDestination)
-		viewModel.takePostLoginOriginAfterSignIn() shouldBe PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT
-		viewModel.takePendingCookbookShareToken() shouldBe sampleShareToken
+		authenticationRepository.signInWithGoogle(
+			GoogleAuthenticationProfile(
+				idToken = sampleUser.id,
+				email = sampleUser.email,
+				displayName = sampleUser.displayName,
+				profileImageUrl = sampleUser.profileImageUrl,
+			),
+		)
+
+		viewModel.peekBackStack() shouldBe listOf(
+			FavoritesDestination(cookbookShareToken = sampleShareToken),
+		)
 	}
 
 	@Test
@@ -118,7 +130,7 @@ class MainViewModelStartTest {
 		viewModel.start()
 		links.emit(PurecipesLink.Recipe(77))
 
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination, RecipeDetailsDestination(77))
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(77))
 	}
 
 	@Test
@@ -181,11 +193,10 @@ class MainViewModelStartTest {
 				profileImageUrl = sampleUser.profileImageUrl,
 			),
 		)
-		viewModel.takePendingOpenSearchFilters() shouldBe true
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(openFiltersOnStart = true))
 
 		authenticationRepository.signOut()
 
-		viewModel.takePendingOpenSearchFilters() shouldBe false
 		viewModel.takePostLoginOriginAfterSignIn() shouldBe null
 	}
 }

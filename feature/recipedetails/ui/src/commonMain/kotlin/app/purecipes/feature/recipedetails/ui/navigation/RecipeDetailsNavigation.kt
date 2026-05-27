@@ -10,13 +10,13 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-inline fun EntryProviderScope<NavKey>.installRecipeDetailsFlow(
+fun EntryProviderScope<NavKey>.installRecipeDetailsFlow(
 	navigator: Navigator,
 	canManageFavorites: Boolean,
 	sessionKey: String?,
-	noinline onFavoriteChange: () -> Unit,
-	noinline onStartCooking: (Int) -> Unit,
-	noinline onOpenMeasurementPreferences: () -> Unit,
+	onFavoriteChange: () -> Unit,
+	onStartCooking: (Int) -> Unit,
+	onOpenMeasurementPreferences: () -> Unit,
 ) {
 	entry<RecipeDetailsDestination> { destination ->
 		RecipeDetailsScreen(
