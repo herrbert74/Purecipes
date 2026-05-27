@@ -16,13 +16,11 @@ class RecipeSearchViewControllerFactory {
 			}
 		) {
 			MainScreen(
-				observeConsentState = graph.observeConsentStateUseCase,
 				observeAuthenticationState = graph.observeAuthenticationStateUseCase,
 				observeMeasurementPreferences = graph.observeMeasurementPreferencesUseCase,
 				observeNotificationPreferences = graph.observeNotificationPreferencesUseCase,
 				refreshConsent = graph.refreshConsentUseCase,
 				setAnalyticsUserId = graph.setAnalyticsUserIdUseCase,
-				showConsentForm = graph.showConsentFormUseCase,
 				googleWebClientId = graph.purecipesConfig.googleWebClientId(),
 				resetMeasurementPreferences = graph.resetMeasurementPreferencesUseCase,
 				saveMeasurementPreferences = graph.saveMeasurementPreferencesUseCase,

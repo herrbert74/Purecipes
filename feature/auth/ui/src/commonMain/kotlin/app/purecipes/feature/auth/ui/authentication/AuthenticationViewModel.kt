@@ -4,6 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -22,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Inject
@@ -33,11 +37,15 @@ class AuthenticationViewModel(
 	private val signInWithGoogle: SignInWithGoogleUseCase,
 	private val deleteAccount: DeleteAccountUseCase,
 	private val signOut: SignOutUseCase,
+	observeConsentState: ObserveConsentStateUseCase,
+	private val showConsentForm: ShowConsentFormUseCase,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
 	private val ownsCoroutineScope = coroutineScope == null
 	private val scope = coroutineScope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+	val consentState: StateFlow<ConsentState> = observeConsentState()
 
 	var authenticationState by mutableStateOf<AuthenticationState>(observeAuthenticationState().value)
 		private set
@@ -61,6 +69,10 @@ class AuthenticationViewModel(
 
 	fun onGoogleUnavailableSelected() {
 		message = "Google sign-in needs a configured Web Client ID before it can be enabled."
+	}
+
+	fun onManagePrivacySettingsClick() {
+		showConsentForm()
 	}
 
 	fun onGoogleSignInResult(

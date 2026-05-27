@@ -27,10 +27,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
-import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.ui.authentication.AuthenticationScreen
@@ -60,13 +58,11 @@ import kotlinx.serialization.Serializable
 
 @Composable
 fun MainScreen(
-	observeConsentState: ObserveConsentStateUseCase,
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
-	showConsentForm: ShowConsentFormUseCase,
 	googleWebClientId: String?,
 	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
@@ -231,8 +227,6 @@ fun MainScreen(
 						}
 						entry<AccountDestination> {
 							AuthenticationScreen(
-								observeConsentState = observeConsentState,
-								showConsentForm = showConsentForm,
 								onOpenSettings = { viewModel.onOpenSettings() },
 								onNavigateToEmailRegistration = { viewModel.onOpenEmailRegistration() },
 								onNavigateToSignIn = { viewModel.onOpenEmailSignIn() },

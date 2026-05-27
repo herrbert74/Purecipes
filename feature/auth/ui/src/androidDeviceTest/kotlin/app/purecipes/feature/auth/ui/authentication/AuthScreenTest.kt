@@ -58,8 +58,6 @@ class AuthScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				AuthenticationScreen(
-					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					showConsentForm = ShowConsentFormUseCase(consentRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
@@ -70,6 +68,8 @@ class AuthScreenTest {
 						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 						deleteAccount = DeleteAccountUseCase(authRepo),
 						signOut = SignOutUseCase(authRepo),
+						observeConsentState = ObserveConsentStateUseCase(consentRepo),
+						showConsentForm = ShowConsentFormUseCase(consentRepo),
 					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = {
@@ -149,8 +149,6 @@ class AuthScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				AuthenticationScreen(
-					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					showConsentForm = ShowConsentFormUseCase(consentRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
@@ -161,6 +159,8 @@ class AuthScreenTest {
 						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 						deleteAccount = DeleteAccountUseCase(authRepo),
 						signOut = SignOutUseCase(authRepo),
+						observeConsentState = ObserveConsentStateUseCase(consentRepo),
+						showConsentForm = ShowConsentFormUseCase(consentRepo),
 					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _ ->

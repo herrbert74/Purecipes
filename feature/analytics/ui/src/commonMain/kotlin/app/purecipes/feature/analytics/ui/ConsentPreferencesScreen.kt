@@ -14,20 +14,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.analytics.domain.model.toDisplayText
-import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
-import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 
 @Composable
 fun ConsentPreferencesScreen(
-	observeConsentState: ObserveConsentStateUseCase,
-	showConsentForm: ShowConsentFormUseCase,
 	modifier: Modifier = Modifier,
+	viewModel: ConsentViewModel = metroViewModel(),
 ) {
-	val viewModel = consentViewModel(
-		observeConsentState = observeConsentState,
-		showConsentForm = showConsentForm,
-	)
 	val consentState by viewModel.consentState.collectAsState()
 
 	Scaffold(

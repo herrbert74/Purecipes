@@ -22,8 +22,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
-import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
-import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -35,8 +33,6 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 
 @Composable
 fun AuthenticationScreen(
-	observeConsentState: ObserveConsentStateUseCase,
-	showConsentForm: ShowConsentFormUseCase,
 	onOpenSettings: () -> Unit,
 	onNavigateToEmailRegistration: () -> Unit,
 	onNavigateToSignIn: () -> Unit,
@@ -68,7 +64,7 @@ fun AuthenticationScreen(
 	},
 ) {
 	initializeGoogleAuthenticationProvider(googleWebClientId)
-	val consentState by observeConsentState().collectAsState()
+	val consentState by viewModel.consentState.collectAsState()
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -109,7 +105,7 @@ fun AuthenticationScreen(
 						onSignInClick = onNavigateToSignIn,
 						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
-						onManagePrivacySettings = { showConsentForm() },
+						onManagePrivacySettings = viewModel::onManagePrivacySettingsClick,
 						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
 						authenticationProviderButtons = authenticationProviderButtons,
 					)
@@ -118,7 +114,7 @@ fun AuthenticationScreen(
 						consentState = consentState,
 						user = state.user,
 						isBusy = viewModel.isBusy,
-						onManagePrivacySettings = { showConsentForm() },
+						onManagePrivacySettings = viewModel::onManagePrivacySettingsClick,
 						onSignOut = viewModel::signOut,
 						onDeleteAccount = viewModel::deleteAccount,
 					)
