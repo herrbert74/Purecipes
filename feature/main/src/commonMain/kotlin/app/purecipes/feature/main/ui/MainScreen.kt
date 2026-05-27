@@ -36,15 +36,9 @@ import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.feature.auth.ui.signin.SignInScreen
 import app.purecipes.feature.cooking.ui.StepByStepCookingRoute
 import app.purecipes.feature.favorites.ui.FavoritesScreen
-import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.ui.CreateRecipeScreen
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.search.ui.RecipeSearchScreen
-import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
-import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
-import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
 import app.purecipes.feature.settings.ui.SettingsScreen
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
@@ -59,15 +53,9 @@ import kotlinx.serialization.Serializable
 @Composable
 fun MainScreen(
 	observeAuthenticationState: ObserveAuthenticationStateUseCase,
-	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
-	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
 	refreshConsent: RefreshConsentUseCase,
 	setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	googleWebClientId: String?,
-	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
-	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
-	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
-	sendTestNotification: SendTestNotificationUseCase,
 	observeIncomingLinks: ObserveIncomingLinksUseCase,
 	publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	metroViewModelFactory: MetroViewModelFactory,
@@ -251,12 +239,6 @@ fun MainScreen(
 						}
 						entry<AccountSettingsDestination> {
 							SettingsScreen(
-								observeMeasurementPreferences = observeMeasurementPreferences,
-								resetMeasurementPreferences = resetMeasurementPreferences,
-								saveMeasurementPreferences = saveMeasurementPreferences,
-								saveNotificationPreferences = saveNotificationPreferences,
-								observeNotificationPreferences = observeNotificationPreferences,
-								sendTestNotification = sendTestNotification,
 								onBack = {
 									viewModel.onBack()
 								},

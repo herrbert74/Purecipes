@@ -16,29 +16,23 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
-import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
-import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
-import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
+import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import kotlinx.coroutines.launch
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 
 @Composable
 fun SettingsScreen(
-	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
-	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
-	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
-	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
-	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
-	sendTestNotification: SendTestNotificationUseCase,
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
+	viewModel: SettingsViewModel = metroViewModel(),
 ) {
+	val notificationPreferences by viewModel.notificationPreferences.collectAsState(
+		initial = NotificationPreferences(),
+	)
+	val measurementPreferences by viewModel.measurementPreferences.collectAsState(initial = null)
+
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
@@ -63,15 +57,17 @@ fun SettingsScreen(
 				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
-			MeasurementPreferencesSection(
-				observeMeasurementPreferences = observeMeasurementPreferences,
-				resetMeasurementPreferences = resetMeasurementPreferences,
-				saveMeasurementPreferences = saveMeasurementPreferences,
-			)
+			measurementPreferences?.let { preferences ->
+				MeasurementPreferencesSection(
+					preferences = preferences,
+					onPreferencesChange = viewModel::onMeasurementPreferencesChange,
+					onReset = viewModel::onResetMeasurementPreferences,
+				)
+			}
 			NotificationPreferencesSection(
-				observeNotificationPreferences = observeNotificationPreferences,
-				saveNotificationPreferences = saveNotificationPreferences,
-				sendTestNotification = sendTestNotification,
+				preferences = notificationPreferences,
+				onPreferencesChange = viewModel::onNotificationPreferencesChange,
+				onSendTestNotification = viewModel::onSendTestNotification,
 			)
 		}
 	}
@@ -79,45 +75,30 @@ fun SettingsScreen(
 
 @Composable
 private fun NotificationPreferencesSection(
-	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
-	saveNotificationPreferences: SaveNotificationPreferencesUseCase,
-	sendTestNotification: SendTestNotificationUseCase,
+	preferences: NotificationPreferences,
+	onPreferencesChange: (NotificationPreferences) -> Unit,
+	onSendTestNotification: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val preferences by observeNotificationPreferences().collectAsState(initial = NotificationPreferences())
-	val scope = rememberCoroutineScope()
-
 	NotificationPreferencesPanel(
 		preferences = preferences,
-		onPreferencesChange = { updatedPreferences ->
-			scope.launch {
-				saveNotificationPreferences(updatedPreferences)
-			}
-		},
-		onSendTestNotification = {
-			sendTestNotification("Testing 1 2 3", "Push notifications are working!")
-		},
+		onPreferencesChange = onPreferencesChange,
+		onSendTestNotification = onSendTestNotification,
 		modifier = modifier,
 	)
 }
 
 @Composable
 private fun MeasurementPreferencesSection(
-	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
-	resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
-	saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
+	preferences: MeasurementPreferences,
+	onPreferencesChange: (MeasurementPreferences) -> Unit,
+	onReset: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val preferences by observeMeasurementPreferences().collectAsState(initial = null)
-	val scope = rememberCoroutineScope()
-	val currentPreferences = preferences ?: return
-
 	MeasurementPreferencesPanel(
-		preferences = currentPreferences,
-		onPreferencesChange = { updatedPreferences ->
-			scope.launch { saveMeasurementPreferences(updatedPreferences) }
-		},
-		onReset = { scope.launch { resetMeasurementPreferences() } },
+		preferences = preferences,
+		onPreferencesChange = onPreferencesChange,
+		onReset = onReset,
 		modifier = modifier,
 	)
 }
