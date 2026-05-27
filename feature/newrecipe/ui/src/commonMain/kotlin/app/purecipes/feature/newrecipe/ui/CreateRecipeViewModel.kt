@@ -1,14 +1,10 @@
 package app.purecipes.feature.newrecipe.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
@@ -20,6 +16,10 @@ import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +28,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-internal class CreateRecipeViewModel(
+@Inject
+@ViewModelKey
+@ContributesIntoMap(AppScope::class)
+class CreateRecipeViewModel(
 	private val getCreatedRecipes: GetCreatedRecipesUseCase,
 	private val saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	private val estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
@@ -314,36 +317,4 @@ internal class CreateRecipeViewModel(
 	private companion object {
 		const val NUTRITION_ESTIMATE_DEBOUNCE_MS = 400L
 	}
-}
-
-@Composable
-internal fun createRecipeViewModel(
-	getCreatedRecipes: GetCreatedRecipesUseCase,
-	saveCreatedRecipe: SaveCreatedRecipeUseCase,
-	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
-	trackEvent: TrackEventUseCase,
-): CreateRecipeViewModel {
-	val viewModelKey = buildString {
-		append("CreateRecipeViewModel:")
-		append(getCreatedRecipes.hashCode())
-		append(":")
-		append(saveCreatedRecipe.hashCode())
-		append(":")
-		append(estimateRecipeNutrition.hashCode())
-		append(":")
-		append(trackEvent.hashCode())
-	}
-	return viewModel(
-		key = viewModelKey,
-		factory = viewModelFactory {
-			initializer {
-				CreateRecipeViewModel(
-					getCreatedRecipes = getCreatedRecipes,
-					saveCreatedRecipe = saveCreatedRecipe,
-					estimateRecipeNutrition = estimateRecipeNutrition,
-					trackEvent = trackEvent,
-				)
-			}
-		},
-	)
 }

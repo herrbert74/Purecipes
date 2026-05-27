@@ -14,6 +14,8 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.repository.ShareRepository
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
@@ -36,6 +38,11 @@ import kotlin.test.Test
 class RecipeDetailsViewModelTest {
 
 	private val fakeCookbooksRepository = FakeCookbooksRepository()
+	private val shareRecipe = ShareRecipeUseCase(
+		object : ShareRepository {
+			override fun shareText(text: String, title: String?) = Unit
+		},
+	)
 
 	@Test
 	fun detailsViewModelLoadsRecipeDetails() = runTest {
@@ -56,6 +63,7 @@ class RecipeDetailsViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
 			coroutineScope = this,
 		)
 
@@ -84,6 +92,7 @@ class RecipeDetailsViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
 			coroutineScope = this,
 		)
 
@@ -113,6 +122,7 @@ class RecipeDetailsViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
 			coroutineScope = this,
 		)
 
@@ -146,6 +156,7 @@ class RecipeDetailsViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
 			coroutineScope = this,
 		)
 
@@ -202,6 +213,7 @@ class RecipeDetailsViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+			shareRecipe = shareRecipe,
 			coroutineScope = this,
 		)
 		advanceUntilIdle()

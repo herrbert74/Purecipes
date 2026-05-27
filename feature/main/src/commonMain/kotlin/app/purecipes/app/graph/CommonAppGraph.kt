@@ -60,6 +60,7 @@ import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.network.DataNetworkModule
+import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 
 interface CommonAppGraph :
 	AnalyticsDataModule,
@@ -70,7 +71,8 @@ interface CommonAppGraph :
 	RecipeDetailsDataModule,
 	SettingsDataModule,
 	SearchDataModule,
-	SharingDataModule {
+	SharingDataModule,
+	ViewModelGraph {
 
 	val purecipesConfig: PurecipesConfig
 

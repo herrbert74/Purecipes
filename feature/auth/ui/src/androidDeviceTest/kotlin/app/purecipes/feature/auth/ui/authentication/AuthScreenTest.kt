@@ -16,8 +16,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -33,12 +31,14 @@ import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_FIELD_TA
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_POLICY_SUPPORTING_TEXT_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_SUBMIT_TAG
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
+import app.purecipes.feature.auth.ui.registration.RegistrationViewModel
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.domain.model.PASSWORD_TOO_SHORT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
@@ -57,24 +57,26 @@ class AuthScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				AuthenticationScreen(
-					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
-					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
-					showConsentForm = ShowConsentFormUseCase(consentRepo),
-					deleteAccount = DeleteAccountUseCase(authRepo),
-					signOut = SignOutUseCase(authRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
 					googleWebClientId = null,
+					viewModel = AuthenticationViewModel(
+						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+						deleteAccount = DeleteAccountUseCase(authRepo),
+						signOut = SignOutUseCase(authRepo),
+						observeConsentState = ObserveConsentStateUseCase(consentRepo),
+						showConsentForm = ShowConsentFormUseCase(consentRepo),
+					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = {
-						_,
-						onEmailProviderClick,
-						_,
-						_,
-						_,
+							_,
+							onEmailProviderClick,
+							_,
+							_,
+							_,
 						->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = onEmailProviderClick)
 					},
@@ -130,33 +132,25 @@ class AuthScreenTest {
 
 	private fun ComposeUiTest.showSignedInAccountScreen() {
 		val authRepo = FakeAuthenticationRepository(
-			AuthenticationState.SignedIn(
-				AuthUser(
-					id = "user-1",
-					email = "taylor@example.com",
-					displayName = "Taylor Baker",
-					firstName = null,
-					familyName = null,
-					profileImageUrl = null,
-					provider = AuthProvider.EMAIL,
-				),
-			),
+			AuthenticationState.SignedIn(fakeAuthUser()),
 		)
 		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
 		setTrackedContent {
 			PurecipesTheme {
 				AuthenticationScreen(
-					observeConsentState = ObserveConsentStateUseCase(consentRepo),
-					observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-					signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
-					signInWithGoogle = SignInWithGoogleUseCase(authRepo),
-					showConsentForm = ShowConsentFormUseCase(consentRepo),
-					deleteAccount = DeleteAccountUseCase(authRepo),
-					signOut = SignOutUseCase(authRepo),
 					onOpenSettings = {},
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
 					googleWebClientId = null,
+					viewModel = AuthenticationViewModel(
+						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+						deleteAccount = DeleteAccountUseCase(authRepo),
+						signOut = SignOutUseCase(authRepo),
+						observeConsentState = ObserveConsentStateUseCase(consentRepo),
+						showConsentForm = ShowConsentFormUseCase(consentRepo),
+					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _ ->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = {})
@@ -171,9 +165,11 @@ class AuthScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				RegistrationScreen(
-					registerWithEmail = RegisterWithEmailUseCase(authRepo),
 					onBack = {},
 					onRegistrationSuccess = {},
+					viewModel = RegistrationViewModel(
+						registerWithEmail = RegisterWithEmailUseCase(authRepo),
+					),
 				)
 			}
 		}

@@ -1,15 +1,11 @@
 package app.purecipes.feature.recipedetails.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
@@ -22,6 +18,7 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -29,6 +26,13 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -37,8 +41,8 @@ import kotlinx.coroutines.launch
 
 private const val COOKBOOK_PICKER_PAGE_SIZE = 100
 
-internal class RecipeDetailsViewModel(
-	private val recipeId: Int,
+@AssistedInject
+class RecipeDetailsViewModel(
 	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
@@ -46,11 +50,13 @@ internal class RecipeDetailsViewModel(
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	private val trackEvent: TrackEventUseCase,
-	private val sessionKey: String?,
 	private val getRecipeCookbooks: GetRecipeCookbooksUseCase,
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
 	private val addRecipeToCookbook: AddRecipeToCookbookUseCase,
+	private val shareRecipe: ShareRecipeUseCase,
+	@Assisted private val recipeId: Int,
+	@Assisted private val sessionKey: String?,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -139,7 +145,7 @@ internal class RecipeDetailsViewModel(
 			}
 
 			if (outcome.getError() == null) {
-					baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = !currentRecipe.isFavorite)
+				baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = !currentRecipe.isFavorite)
 				recipeDetails = currentRecipe.copy(isFavorite = !currentRecipe.isFavorite)
 				favoriteChangeCount += 1
 				trackEvent(
@@ -212,6 +218,13 @@ internal class RecipeDetailsViewModel(
 		}
 	}
 
+	fun shareCurrentRecipe() {
+		shareRecipe(
+			recipeId = recipeId,
+			title = recipeDetails?.title,
+		)
+	}
+
 	private fun refreshCookbookMembership() {
 		scope.launch {
 			cookbookActionError = null
@@ -236,20 +249,20 @@ internal class RecipeDetailsViewModel(
 			errorMessage = null
 			favoriteErrorMessage = null
 			recipeDetails = null
-				showMeasurementMismatchDialog = false
+			showMeasurementMismatchDialog = false
 
-				measurementPreferences = getMeasurementPreferences()
+			measurementPreferences = getMeasurementPreferences()
 			val outcome = getRecipeDetails(recipeId)
-				baseRecipeDetails = outcome.get()
-				val processedRecipe = baseRecipeDetails?.let { loadedRecipe ->
-					processRecipeDetailsForMeasurementPreferences(
-						recipe = loadedRecipe,
-						preferences = measurementPreferences ?: return@let null,
-					)
-				}
-				recipeDetails = processedRecipe?.recipe
-				isRecipeConverted = processedRecipe?.isConverted == true
-				showMeasurementMismatchDialog = processedRecipe?.shouldShowMismatchNotification == true
+			baseRecipeDetails = outcome.get()
+			val processedRecipe = baseRecipeDetails?.let { loadedRecipe ->
+				processRecipeDetailsForMeasurementPreferences(
+					recipe = loadedRecipe,
+					preferences = measurementPreferences ?: return@let null,
+				)
+			}
+			recipeDetails = processedRecipe?.recipe
+			isRecipeConverted = processedRecipe?.isConverted == true
+			showMeasurementMismatchDialog = processedRecipe?.shouldShowMismatchNotification == true
 			if (recipeDetails != null) {
 				trackEvent(AnalyticsEvent.RecipeViewed(recipeId))
 			}
@@ -264,69 +277,12 @@ internal class RecipeDetailsViewModel(
 			scope.cancel()
 		}
 	}
-}
 
-@Composable
-internal fun recipeDetailsViewModel(
-	recipeId: Int,
-	addFavoriteRecipe: AddFavoriteRecipeUseCase,
-	getRecipeDetails: GetRecipeDetailsUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
-	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
-	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
-	trackEvent: TrackEventUseCase,
-	sessionKey: String?,
-	getRecipeCookbooks: GetRecipeCookbooksUseCase,
-	getCookbooksPage: GetCookbooksPageUseCase,
-	createCookbook: CreateCookbookUseCase,
-	addRecipeToCookbook: AddRecipeToCookbookUseCase,
-): RecipeDetailsViewModel {
-	val viewModelKey =
-		buildString {
-			append("RecipeDetailsViewModel:")
-			append(recipeId)
-			append(':')
-			append(addFavoriteRecipe.hashCode())
-			append(':')
-			append(getRecipeDetails.hashCode())
-			append(':')
-			append(getMeasurementPreferences.hashCode())
-			append(':')
-			append(removeFavoriteRecipe.hashCode())
-			append(':')
-			append(trackEvent.hashCode())
-			append(':')
-			append(sessionKey ?: "signed-out")
-			append(':')
-			append(getRecipeCookbooks.hashCode())
-			append(':')
-			append(getCookbooksPage.hashCode())
-			append(':')
-			append(createCookbook.hashCode())
-			append(':')
-			append(addRecipeToCookbook.hashCode())
-		}
-	return viewModel(
-		key = viewModelKey,
-		factory = viewModelFactory {
-			initializer {
-				RecipeDetailsViewModel(
-					recipeId = recipeId,
-					addFavoriteRecipe = addFavoriteRecipe,
-					getRecipeDetails = getRecipeDetails,
-					getMeasurementPreferences = getMeasurementPreferences,
-					markMeasurementMismatchSeen = markMeasurementMismatchSeen,
-					processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
-					removeFavoriteRecipe = removeFavoriteRecipe,
-					trackEvent = trackEvent,
-					sessionKey = sessionKey,
-					getRecipeCookbooks = getRecipeCookbooks,
-					getCookbooksPage = getCookbooksPage,
-					createCookbook = createCookbook,
-					addRecipeToCookbook = addRecipeToCookbook,
-				)
-			}
-		},
-	)
+	@AssistedFactory
+	@ManualViewModelAssistedFactoryKey
+	@ContributesIntoMap(AppScope::class)
+	interface Factory : ManualViewModelAssistedFactory {
+
+		fun create(recipeId: Int, sessionKey: String?): RecipeDetailsViewModel
+	}
 }

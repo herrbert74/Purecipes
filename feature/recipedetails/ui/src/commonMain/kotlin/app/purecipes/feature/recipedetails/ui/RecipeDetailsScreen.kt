@@ -23,61 +23,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
-import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
-import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailsScreen(
 	recipeId: Int,
-	addFavoriteRecipe: AddFavoriteRecipeUseCase,
-	addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	canManageFavorites: Boolean,
-	createCookbook: CreateCookbookUseCase,
-	getCookbooksPage: GetCookbooksPageUseCase,
-	getRecipeCookbooks: GetRecipeCookbooksUseCase,
-	getRecipeDetails: GetRecipeDetailsUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
 	onOpenMeasurementPreferences: () -> Unit,
-	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
-	trackEvent: TrackEventUseCase,
 	onBack: () -> Unit,
 	onFavoriteChange: () -> Unit,
 	onStartCooking: (Int) -> Unit,
-	removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
-	shareRecipe: ShareRecipeUseCase,
-	sessionKey: String?,
 	modifier: Modifier = Modifier,
+	sessionKey: String? = null,
+	viewModel: RecipeDetailsViewModel = assistedMetroViewModel<RecipeDetailsViewModel, RecipeDetailsViewModel.Factory> {
+		create(recipeId = recipeId, sessionKey = sessionKey)
+	},
 ) {
-	val viewModel = recipeDetailsViewModel(
-		recipeId = recipeId,
-		addFavoriteRecipe = addFavoriteRecipe,
-		getRecipeDetails = getRecipeDetails,
-		getMeasurementPreferences = getMeasurementPreferences,
-		markMeasurementMismatchSeen = markMeasurementMismatchSeen,
-		processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
-		removeFavoriteRecipe = removeFavoriteRecipe,
-		trackEvent = trackEvent,
-		sessionKey = sessionKey,
-		getRecipeCookbooks = getRecipeCookbooks,
-		getCookbooksPage = getCookbooksPage,
-		createCookbook = createCookbook,
-		addRecipeToCookbook = addRecipeToCookbook,
-	)
 	val currentOnFavoriteChange by rememberUpdatedState(onFavoriteChange)
 	var showCookbookSheet by remember { mutableStateOf(false) }
 	var showNutritionDialog by remember { mutableStateOf(false) }
@@ -106,12 +71,7 @@ fun RecipeDetailsScreen(
 					},
 					actions = {
 						ShareIconButton(
-							onShare = {
-								shareRecipe(
-									recipeId = recipeId,
-									title = viewModel.recipeDetails?.title,
-								)
-							},
+							onShare = viewModel::shareCurrentRecipe,
 							contentDescription = "Share recipe",
 						)
 					},

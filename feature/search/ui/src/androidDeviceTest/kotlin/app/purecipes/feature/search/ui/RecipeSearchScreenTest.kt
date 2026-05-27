@@ -7,7 +7,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
@@ -43,25 +42,18 @@ class RecipeSearchScreenTest {
 	@Test
 	fun searchScreenTypingDoesNotRecomposeResults() = runRecompositionTrackingUiTest {
 		val searchRepository = FakeRecipeSearchRepository()
-		val filterRepository = FakeRecipeSearchFilterRepository()
-		val pantryRepository = FakeUserPantryRepository()
-		val settingsRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-					searchRecipes = SearchRecipesUseCase(searchRepository),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-					getUserPantry = GetUserPantryUseCase(pantryRepository),
-					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
+		waitUntil(timeoutMillis = 5_000) { searchRepository.queries.isNotEmpty() }
+		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).assertIsDisplayed()
 		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
-		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).performTextInput("Pas")
+		runOnIdle { viewModel.onSearchQueryChange("Pas") }
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertStable()
 	}
 
@@ -80,21 +72,11 @@ class RecipeSearchScreenTest {
 				),
 			),
 		)
-		val filterRepository = FakeRecipeSearchFilterRepository()
-		val pantryRepository = FakeUserPantryRepository()
-		val settingsRepository = FakeMeasurementPreferencesRepository()
 
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-					searchRecipes = SearchRecipesUseCase(searchRepository),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-					getUserPantry = GetUserPantryUseCase(pantryRepository),
-					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
 				)
 			}
 		}
@@ -107,21 +89,11 @@ class RecipeSearchScreenTest {
 		val searchRepository = FakeRecipeSearchRepository(
 			result = Err(Failure.ServerError("Search failed")),
 		)
-		val filterRepository = FakeRecipeSearchFilterRepository()
-		val pantryRepository = FakeUserPantryRepository()
-		val settingsRepository = FakeMeasurementPreferencesRepository()
 
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-					searchRecipes = SearchRecipesUseCase(searchRepository),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-					getUserPantry = GetUserPantryUseCase(pantryRepository),
-					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
 				)
 			}
 		}
@@ -131,22 +103,11 @@ class RecipeSearchScreenTest {
 
 	@Test
 	fun whenSignedOutOpeningFiltersShowsSignInPrompt() = runRecompositionTrackingUiTest {
-		val searchRepository = FakeRecipeSearchRepository()
-		val filterRepository = FakeRecipeSearchFilterRepository()
-		val pantryRepository = FakeUserPantryRepository()
-		val settingsRepository = FakeMeasurementPreferencesRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-					searchRecipes = SearchRecipesUseCase(searchRepository),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-					getUserPantry = GetUserPantryUseCase(pantryRepository),
-					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 					isSignedIn = false,
+					viewModel = recipeSearchViewModelForTest(),
 				)
 			}
 		}
@@ -160,24 +121,13 @@ class RecipeSearchScreenTest {
 
 	@Test
 	fun whenSignedOutGoToAccountDismissesSheetAndInvokesCallback() = runRecompositionTrackingUiTest {
-		val searchRepository = FakeRecipeSearchRepository()
-		val filterRepository = FakeRecipeSearchFilterRepository()
-		val pantryRepository = FakeUserPantryRepository()
-		val settingsRepository = FakeMeasurementPreferencesRepository()
 		var loginRequestCount = 0
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-					searchRecipes = SearchRecipesUseCase(searchRepository),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-					getUserPantry = GetUserPantryUseCase(pantryRepository),
-					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 					isSignedIn = false,
 					onRequestLogInForFilters = { loginRequestCount++ },
+					viewModel = recipeSearchViewModelForTest(),
 				)
 			}
 		}
@@ -194,22 +144,11 @@ class RecipeSearchScreenTest {
 
 	@Test
 	fun whenSignedInOpeningFiltersShowsPantrySection() = runRecompositionTrackingUiTest {
-		val searchRepository = FakeRecipeSearchRepository()
-		val filterRepository = FakeRecipeSearchFilterRepository()
-		val pantryRepository = FakeUserPantryRepository()
-		val settingsRepository = FakeMeasurementPreferencesRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-					searchRecipes = SearchRecipesUseCase(searchRepository),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-					saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-					getUserPantry = GetUserPantryUseCase(pantryRepository),
-					updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
 				)
 			}
 		}
@@ -220,3 +159,22 @@ class RecipeSearchScreenTest {
 		onNodeWithText("Pantry").assertIsDisplayed()
 	}
 }
+
+private fun recipeSearchViewModelForTest(
+	searchRepository: FakeRecipeSearchRepository = FakeRecipeSearchRepository(),
+	filterRepository: FakeRecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
+	pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
+	settingsRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
+	initialShowFilterSheet: Boolean = false,
+): RecipeSearchViewModel = RecipeSearchViewModel(
+	filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+	getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+	searchRecipes = SearchRecipesUseCase(searchRepository),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+	saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+	getUserPantry = GetUserPantryUseCase(pantryRepository),
+	updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+	initialShowFilterSheet = initialShowFilterSheet,
+	sessionKey = null,
+)

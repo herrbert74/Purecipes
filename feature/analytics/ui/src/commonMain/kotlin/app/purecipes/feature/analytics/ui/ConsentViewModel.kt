@@ -1,16 +1,19 @@
 package app.purecipes.feature.analytics.ui
 
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import kotlinx.coroutines.flow.StateFlow
 
-internal class ConsentViewModel(
+@Inject
+@ViewModelKey
+@ContributesIntoMap(AppScope::class)
+class ConsentViewModel(
 	observeConsentState: ObserveConsentStateUseCase,
 	private val showConsentForm: ShowConsentFormUseCase,
 ) : ViewModel() {
@@ -20,22 +23,4 @@ internal class ConsentViewModel(
 	fun onManagePrivacySettingsClick() {
 		showConsentForm()
 	}
-}
-
-@Composable
-internal fun consentViewModel(
-	observeConsentState: ObserveConsentStateUseCase,
-	showConsentForm: ShowConsentFormUseCase,
-): ConsentViewModel {
-	return viewModel(
-		key = "ConsentViewModel:${observeConsentState.hashCode()}:${showConsentForm.hashCode()}",
-		factory = viewModelFactory {
-			initializer {
-				ConsentViewModel(
-					observeConsentState = observeConsentState,
-					showConsentForm = showConsentForm,
-				)
-			}
-		},
-	)
 }

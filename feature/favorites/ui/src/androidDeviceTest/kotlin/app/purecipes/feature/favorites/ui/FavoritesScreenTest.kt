@@ -42,34 +42,14 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalTestApi::class)
 class FavoritesScreenTest {
 
-	private val getCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
-		repository = object : CookbookCoverRepository {
-			override fun getCookbookCoverImageUrl(
-				cookbookId: Int,
-				candidateImageUrls: List<String>,
-				nowMillis: Long,
-				random: kotlin.random.Random,
-			): String? = candidateImageUrls.firstOrNull()
-		},
-	)
-
 	@Test
 	fun favoritesScreenDoesNotRecomposeTitle() = runRecompositionTrackingUiTest {
-		val favoritesRepo = FakeFavoritesRepository()
-		val cookbooksRepo = FakeCookbooksRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
-					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepo),
-					createCookbook = CreateCookbookUseCase(cookbooksRepo),
-					deleteCookbook = DeleteCookbookUseCase(cookbooksRepo),
-					getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepo),
-					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
-					shareCookbook = unusedShareCookbookUseCase(),
-					importCookbookShare = unusedImportCookbookShareUseCase(),
+					viewModel = favoritesViewModelForTest(),
 					onRecipeSelect = {},
 				)
 			}
@@ -80,7 +60,6 @@ class FavoritesScreenTest {
 
 	@Test
 	fun cookbookDeleteButtonDisabledForNonEmptyCookbook() = runRecompositionTrackingUiTest {
-		val favoritesRepo = FakeFavoritesRepository()
 		val cookbooksRepo = FakeCookbooksRepository(
 			cookbooksPageResult = Ok(
 				CookbookListPage(
@@ -101,16 +80,9 @@ class FavoritesScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
-					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepo),
-					createCookbook = CreateCookbookUseCase(cookbooksRepo),
-					deleteCookbook = DeleteCookbookUseCase(cookbooksRepo),
-					getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepo),
-					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
-					shareCookbook = unusedShareCookbookUseCase(),
-					importCookbookShare = unusedImportCookbookShareUseCase(),
+					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
 				)
 			}
@@ -122,21 +94,13 @@ class FavoritesScreenTest {
 
 	@Test
 	fun createCookbookInvokesCreateUseCase() = runRecompositionTrackingUiTest {
-		val favoritesRepo = FakeFavoritesRepository()
 		val cookbooksRepo = FakeCookbooksRepository()
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
-					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepo),
-					createCookbook = CreateCookbookUseCase(cookbooksRepo),
-					deleteCookbook = DeleteCookbookUseCase(cookbooksRepo),
-					getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepo),
-					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
-					shareCookbook = unusedShareCookbookUseCase(),
-					importCookbookShare = unusedImportCookbookShareUseCase(),
+					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
 				)
 			}
@@ -153,7 +117,6 @@ class FavoritesScreenTest {
 
 	@Test
 	fun deleteCookbookRequiresConfirmationAndInvokesDeleteUseCase() = runRecompositionTrackingUiTest {
-		val favoritesRepo = FakeFavoritesRepository()
 		val cookbooksRepo = FakeCookbooksRepository(
 			cookbooksPageResult = Ok(
 				CookbookListPage(
@@ -174,16 +137,9 @@ class FavoritesScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
-					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepo),
-					createCookbook = CreateCookbookUseCase(cookbooksRepo),
-					deleteCookbook = DeleteCookbookUseCase(cookbooksRepo),
-					getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepo),
-					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = REFRESH_SIGNAL,
 					sessionKey = "session",
-					shareCookbook = unusedShareCookbookUseCase(),
-					importCookbookShare = unusedImportCookbookShareUseCase(),
+					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
 				)
 			}
@@ -206,22 +162,14 @@ class FavoritesScreenTest {
 
 	@Test
 	fun cookbookDetailRefreshRemovesRecipeAfterFavoritesRefreshSignal() = runRecompositionTrackingUiTest {
-		val favoritesRepo = FakeFavoritesRepository()
 		val cookbooksRepo = MutableCookbooksRepository()
 		val refreshSignalState = mutableIntStateOf(REFRESH_SIGNAL)
 		setTrackedContent {
 			PurecipesTheme {
 				FavoritesScreen(
-					getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepo),
-					getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepo),
-					createCookbook = CreateCookbookUseCase(cookbooksRepo),
-					deleteCookbook = DeleteCookbookUseCase(cookbooksRepo),
-					getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepo),
-					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 					refreshSignal = refreshSignalState.intValue,
 					sessionKey = "session",
-					shareCookbook = unusedShareCookbookUseCase(),
-					importCookbookShare = unusedImportCookbookShareUseCase(),
+					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
 					onRecipeSelect = {},
 				)
 			}
@@ -315,3 +263,30 @@ class FavoritesScreenTest {
 		}
 	}
 }
+
+private val testCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
+	repository = object : CookbookCoverRepository {
+		override fun getCookbookCoverImageUrl(
+			cookbookId: Int,
+			candidateImageUrls: List<String>,
+			nowMillis: Long,
+			random: kotlin.random.Random,
+		): String? = candidateImageUrls.firstOrNull()
+	},
+)
+
+private fun favoritesViewModelForTest(
+	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+	cookbooksRepository: CookbooksRepository = FakeCookbooksRepository(),
+	sessionKey: String? = "session",
+): FavoritesViewModel = FavoritesViewModel(
+	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),
+	getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+	createCookbook = CreateCookbookUseCase(cookbooksRepository),
+	deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
+	importCookbookShare = unusedImportCookbookShareUseCase(),
+	shareCookbook = unusedShareCookbookUseCase(),
+	sessionKey = sessionKey,
+)

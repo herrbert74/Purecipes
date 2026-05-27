@@ -100,6 +100,7 @@ dependencies {
 	implementation(libs.androidx.activityCompose)
 	implementation(libs.kmpauth.facebook)
 	implementation(libs.kmpnotifier)
+	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.metro.runtime)
 }

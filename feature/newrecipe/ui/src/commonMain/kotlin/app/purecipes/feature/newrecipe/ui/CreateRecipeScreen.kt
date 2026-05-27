@@ -36,14 +36,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
-import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.ui.component.SectionHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 
 typealias RememberRecipeImagePicker = @Composable (
 	onImageSelect: (String) -> Unit,
@@ -54,12 +51,9 @@ typealias RememberRecipeImagePicker = @Composable (
 @Composable
 fun CreateRecipeScreen(
 	canUploadRecipes: Boolean,
-	getCreatedRecipes: GetCreatedRecipesUseCase,
-	saveCreatedRecipe: SaveCreatedRecipeUseCase,
-	estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
-	trackEvent: TrackEventUseCase,
 	modifier: Modifier = Modifier,
 	rememberImagePicker: RememberRecipeImagePicker = ::rememberRecipeImagePicker,
+	viewModel: CreateRecipeViewModel = metroViewModel(),
 ) {
 	if (!canUploadRecipes) {
 		Scaffold(
@@ -75,12 +69,6 @@ fun CreateRecipeScreen(
 		return
 	}
 
-	val viewModel = createRecipeViewModel(
-		getCreatedRecipes = getCreatedRecipes,
-		saveCreatedRecipe = saveCreatedRecipe,
-		estimateRecipeNutrition = estimateRecipeNutrition,
-		trackEvent = trackEvent,
-	)
 	var pickerErrorMessage by remember { mutableStateOf<String?>(null) }
 	var isImportingImage by remember { mutableStateOf(false) }
 	val imagePickerLauncher = rememberImagePicker(

@@ -17,18 +17,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 
 @Composable
 fun RegistrationScreen(
-	registerWithEmail: RegisterWithEmailUseCase,
 	onBack: () -> Unit,
 	onRegistrationSuccess: (email: String) -> Unit,
 	modifier: Modifier = Modifier,
+	viewModel: RegistrationViewModel = metroViewModel(),
 ) {
-	val viewModel = registrationViewModel(registerWithEmail = registerWithEmail)
-
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {

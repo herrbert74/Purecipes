@@ -201,6 +201,7 @@ class RecipeSearchViewModelTest {
 			getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
 			updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
 			initialShowFilterSheet = true,
+			sessionKey = null,
 			coroutineScope = this,
 		)
 
@@ -297,6 +298,7 @@ class RecipeSearchViewModelTest {
 		getUserPantry = GetUserPantryUseCase(pantryRepository),
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 		initialShowFilterSheet = false,
+		sessionKey = null,
 		coroutineScope = coroutineScope,
 	)
 }

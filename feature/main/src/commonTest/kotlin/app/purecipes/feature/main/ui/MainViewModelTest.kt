@@ -11,7 +11,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `should exit only on search root`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.shouldExit() shouldBe true
 		viewModel.onRecipeSelected(42)
 		viewModel.shouldExit() shouldBe false
@@ -19,7 +19,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `requestLoginForPostLoginAction navigates to account and preserves origin until sign in`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(AccountDestination)
@@ -28,7 +28,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `post login resume opens search tab and enables open filters`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
 
 		viewModel.onOpenEmailSignIn(prefilledEmail = "taylor@example.com")
@@ -44,7 +44,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `selecting search tab clears pending post login origin without consuming open filters flag`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 
 		viewModel.onTabSelected(mainTabs.first { it.destination == AccountDestination })
 		viewModel.markPendingOpenSearchFiltersAfterLogin()
@@ -57,7 +57,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `tab selection resets stack to selected destination`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
 		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
 
@@ -66,7 +66,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `authentication succeeded pops email auth destinations`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onOpenEmailRegistration()
 		viewModel.onOpenEmailSignIn(prefilledEmail = "taylor@example.com")
 		viewModel.onAuthenticationSucceeded()
@@ -76,7 +76,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `authentication succeeded leaves account settings on stack`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onOpenSettings()
 		viewModel.onAuthenticationSucceeded()
 
@@ -85,7 +85,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `deep link to recipe opens recipe details on search tab`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
@@ -94,7 +94,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `deep link to cookbook share switches to favorites and stores pending share token`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onDeepLink(PurecipesLink.CookbookShare(sampleShareToken))
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination)
@@ -103,7 +103,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `stage cookbook share import stores token without changing tabs`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.stageCookbookShareImport(sampleShareToken)
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination)
@@ -112,7 +112,7 @@ class MainViewModelTest {
 
 	@Test
 	fun `back removes only the top destination`() {
-		val viewModel = MainViewModel()
+		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
 		viewModel.onStartCooking(42)
 		viewModel.onBack()

@@ -35,8 +35,11 @@ class StepByStepCookingRouteTest {
 			PurecipesTheme {
 				StepByStepCookingRoute(
 					recipeId = 9,
-					getRecipeDetails = GetRecipeDetailsUseCase(
-						FakeRecipeDetailsRepository(
+					onBack = {},
+					viewModel = stepByStepCookingViewModelForTest(
+						recipeId = 9,
+						measurementRepository = measurementRepository,
+						recipeDetailsRepository = FakeRecipeDetailsRepository(
 							fakeRecipeDetails(
 								id = 9,
 								title = "Roasted Carrots",
@@ -55,11 +58,6 @@ class StepByStepCookingRouteTest {
 							),
 						),
 					),
-					getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
-					processRecipeDetailsForMeasurementPreferences =
-						ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
-					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					onBack = {},
 				)
 			}
 		}
@@ -77,3 +75,15 @@ class StepByStepCookingRouteTest {
 		onNodeWithTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG).assertStable()
 	}
 }
+
+private fun stepByStepCookingViewModelForTest(
+	recipeId: Int,
+	measurementRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
+	recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(fakeRecipeDetails()),
+): StepByStepCookingViewModel = StepByStepCookingViewModel(
+	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
+	getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	recipeId = recipeId,
+)

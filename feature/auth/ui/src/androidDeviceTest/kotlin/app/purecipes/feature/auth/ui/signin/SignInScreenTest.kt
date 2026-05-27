@@ -62,12 +62,16 @@ class SignInScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				SignInScreen(
-					signInWithEmail = SignInWithEmailUseCase(repository),
-					resendEmailVerification = ResendEmailVerificationUseCase(repository),
-					sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 					initialEmail = "",
 					showRegistrationSuccessMessage = false,
 					onBack = {},
+					viewModel = SignInViewModel(
+						signInWithEmail = SignInWithEmailUseCase(repository),
+						resendEmailVerification = ResendEmailVerificationUseCase(repository),
+						sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+						initialEmail = "",
+						showRegistrationSuccessMessage = false,
+					),
 				)
 			}
 		}

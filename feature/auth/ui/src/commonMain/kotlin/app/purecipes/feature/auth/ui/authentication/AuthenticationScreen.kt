@@ -22,35 +22,23 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
-import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
-import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
-import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
-import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
-import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.feature.auth.ui.authentication.button.InitializeGoogleAuthenticationProvider
 import app.purecipes.feature.auth.ui.profile.SignedInContent
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 
 @Composable
 fun AuthenticationScreen(
-	observeConsentState: ObserveConsentStateUseCase,
-	observeAuthenticationState: ObserveAuthenticationStateUseCase,
-	signInWithExternalProvider: SignInWithExternalProviderUseCase,
-	signInWithGoogle: SignInWithGoogleUseCase,
-	showConsentForm: ShowConsentFormUseCase,
-	deleteAccount: DeleteAccountUseCase,
-	signOut: SignOutUseCase,
 	onOpenSettings: () -> Unit,
 	onNavigateToEmailRegistration: () -> Unit,
 	onNavigateToSignIn: () -> Unit,
 	googleWebClientId: String?,
 	modifier: Modifier = Modifier,
+	viewModel: AuthenticationViewModel = metroViewModel(),
 	initializeGoogleAuthenticationProvider: @Composable (String?) -> Unit =
 		{ InitializeGoogleAuthenticationProvider(it) },
 	authenticationProviderButtons: @Composable (
@@ -60,11 +48,11 @@ fun AuthenticationScreen(
 		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit = {
-		isGoogleConfigured,
-		onEmailProviderClick,
-		onExternalProviderSignInResult,
-		onGoogleSignInResult,
-		onGoogleUnavailableClick,
+			isGoogleConfigured,
+			onEmailProviderClick,
+			onExternalProviderSignInResult,
+			onGoogleSignInResult,
+			onGoogleUnavailableClick,
 		->
 		AuthenticationProviderButtons(
 			isGoogleConfigured = isGoogleConfigured,
@@ -76,14 +64,7 @@ fun AuthenticationScreen(
 	},
 ) {
 	initializeGoogleAuthenticationProvider(googleWebClientId)
-	val consentState by observeConsentState().collectAsState()
-	val viewModel = authenticationViewModel(
-		observeAuthenticationState = observeAuthenticationState,
-		signInWithExternalProvider = signInWithExternalProvider,
-		signInWithGoogle = signInWithGoogle,
-		deleteAccount = deleteAccount,
-		signOut = signOut,
-	)
+	val consentState by viewModel.consentState.collectAsState()
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -124,7 +105,7 @@ fun AuthenticationScreen(
 						onSignInClick = onNavigateToSignIn,
 						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
-						onManagePrivacySettings = { showConsentForm() },
+						onManagePrivacySettings = viewModel::onManagePrivacySettingsClick,
 						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
 						authenticationProviderButtons = authenticationProviderButtons,
 					)
@@ -133,7 +114,7 @@ fun AuthenticationScreen(
 						consentState = consentState,
 						user = state.user,
 						isBusy = viewModel.isBusy,
-						onManagePrivacySettings = { showConsentForm() },
+						onManagePrivacySettings = viewModel::onManagePrivacySettingsClick,
 						onSignOut = viewModel::signOut,
 						onDeleteAccount = viewModel::deleteAccount,
 					)

@@ -27,37 +27,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
-import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.CenteredMessageContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
 internal const val STEP_BY_STEP_CURRENT_STEP_TEXT_TAG = "stepByStepCurrentStepText"
 
 @Composable
 fun StepByStepCookingRoute(
 	recipeId: Int,
-	getRecipeDetails: GetRecipeDetailsUseCase,
-	getMeasurementPreferences: GetMeasurementPreferencesUseCase,
-	processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
-	trackEvent: TrackEventUseCase,
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
+	viewModel: StepByStepCookingViewModel =
+		assistedMetroViewModel<StepByStepCookingViewModel, StepByStepCookingViewModel.Factory> {
+			create(recipeId = recipeId)
+		},
 ) {
-	val viewModel = stepByStepCookingViewModel(
-		recipeId = recipeId,
-		getRecipeDetails = getRecipeDetails,
-		getMeasurementPreferences = getMeasurementPreferences,
-		processRecipeDetailsForMeasurementPreferences = processRecipeDetailsForMeasurementPreferences,
-		trackEvent = trackEvent,
-	)
-
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {

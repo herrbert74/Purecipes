@@ -38,7 +38,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -50,14 +49,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
-import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -69,9 +60,9 @@ import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.launch
 
 internal const val FAVORITES_TITLE_TAG = "favoritesTitle"
 internal const val DELETE_COOKBOOK_BUTTON_PREFIX = "deleteCookbookButton:"
@@ -80,32 +71,16 @@ internal const val CREATE_COOKBOOK_DIALOG_INPUT_TAG = "createCookbookDialogInput
 
 @Composable
 fun FavoritesScreen(
-	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
-	getCookbooksPage: GetCookbooksPageUseCase,
-	createCookbook: CreateCookbookUseCase,
-	deleteCookbook: DeleteCookbookUseCase,
-	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
-	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	refreshSignal: Int,
-	sessionKey: String?,
-	shareCookbook: ShareCookbookUseCase,
-	importCookbookShare: ImportCookbookShareUseCase,
 	modifier: Modifier = Modifier,
+	sessionKey: String? = null,
 	initialCookbookShareToken: String? = null,
 	onRecipeSelect: (Int) -> Unit = {},
+	viewModel: FavoritesViewModel =
+		assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
+			create(sessionKey = sessionKey)
+		},
 ) {
-	val shareScope = rememberCoroutineScope()
-	val viewModel = favoritesViewModel(
-		getFavoriteRecipesPage = getFavoriteRecipesPage,
-		getCookbooksPage = getCookbooksPage,
-		createCookbook = createCookbook,
-		deleteCookbook = deleteCookbook,
-		getCookbookRecipesPage = getCookbookRecipesPage,
-		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-		importCookbookShare = importCookbookShare,
-		sessionKey = sessionKey,
-	)
-
 	var showCreateCookbookDialog by remember { mutableStateOf(false) }
 	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
 
@@ -174,15 +149,7 @@ fun FavoritesScreen(
 				totalMatches = viewModel.totalCookbookDetailMatches,
 				coverUrl = detailCoverUrl,
 				onBack = viewModel::closeCookbookDetail,
-				onShare = {
-					shareScope.launch {
-						shareCookbook(
-							cookbookId = cookbookId,
-							recipeCount = viewModel.totalCookbookDetailMatches,
-							title = viewModel.viewingCookbookName,
-						)
-					}
-				},
+				onShare = viewModel::shareOpenCookbook,
 				modifier = Modifier.padding(innerPadding),
 				onRecipeSelect = onRecipeSelect,
 			)

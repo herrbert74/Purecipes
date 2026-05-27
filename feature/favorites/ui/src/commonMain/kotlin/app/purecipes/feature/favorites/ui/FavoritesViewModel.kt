@@ -1,6 +1,5 @@
 package app.purecipes.feature.favorites.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -8,9 +7,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
@@ -18,11 +14,19 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseC
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -37,12 +41,13 @@ private const val PAGE_SIZE = 20
 
 private const val COVER_FETCH_PAGE_SIZE = 50
 
-internal enum class FavoritesTab {
+enum class FavoritesTab {
 	SavedRecipes,
 	Cookbooks,
 }
 
-internal class FavoritesViewModel(
+@AssistedInject
+class FavoritesViewModel(
 	private val getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
@@ -50,6 +55,8 @@ internal class FavoritesViewModel(
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val importCookbookShare: ImportCookbookShareUseCase,
+	private val shareCookbook: ShareCookbookUseCase,
+	@Assisted private val sessionKey: String?,
 	coroutineScope: CoroutineScope? = null,
 ) : ViewModel() {
 
@@ -162,6 +169,9 @@ internal class FavoritesViewModel(
 	}
 
 	fun loadFavorites() {
+		if (sessionKey == null) {
+			return
+		}
 		scope.launch {
 			isInitialLoading = true
 			savedErrorMessage = null
@@ -191,6 +201,9 @@ internal class FavoritesViewModel(
 	}
 
 	fun importSharedCookbook(shareToken: String) {
+		if (sessionKey == null) {
+			return
+		}
 		scope.launch {
 			isImportingSharedCookbook = true
 			sharedCookbookImportErrorMessage = null
@@ -270,6 +283,18 @@ internal class FavoritesViewModel(
 			}
 			isDeletingCookbook = false
 			onDone(ok)
+		}
+	}
+
+	fun shareOpenCookbook() {
+		val cookbookId = viewingCookbookId ?: return
+		val title = viewingCookbookName.takeIf { it.isNotBlank() }
+		scope.launch {
+			shareCookbook(
+				cookbookId = cookbookId,
+				recipeCount = totalCookbookDetailMatches,
+				title = title,
+			)
 		}
 	}
 
@@ -357,33 +382,12 @@ internal class FavoritesViewModel(
 			scope.cancel()
 		}
 	}
-}
 
-@Composable
-internal fun favoritesViewModel(
-	getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
-	getCookbooksPage: GetCookbooksPageUseCase,
-	createCookbook: CreateCookbookUseCase,
-	deleteCookbook: DeleteCookbookUseCase,
-	getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
-	getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
-	importCookbookShare: ImportCookbookShareUseCase,
-	sessionKey: String?,
-): FavoritesViewModel {
-	return viewModel(
-		key = "FavoritesViewModel:${getFavoriteRecipesPage.hashCode()}:${sessionKey ?: "signed-out"}",
-		factory = viewModelFactory {
-			initializer {
-				FavoritesViewModel(
-					getFavoriteRecipesPage = getFavoriteRecipesPage,
-					getCookbooksPage = getCookbooksPage,
-					createCookbook = createCookbook,
-					deleteCookbookUseCase = deleteCookbook,
-					getCookbookRecipesPage = getCookbookRecipesPage,
-					getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-					importCookbookShare = importCookbookShare,
-				)
-			}
-		},
-	)
+	@AssistedFactory
+	@ManualViewModelAssistedFactoryKey
+	@ContributesIntoMap(AppScope::class)
+	interface Factory : ManualViewModelAssistedFactory {
+
+		fun create(sessionKey: String?): FavoritesViewModel
+	}
 }
