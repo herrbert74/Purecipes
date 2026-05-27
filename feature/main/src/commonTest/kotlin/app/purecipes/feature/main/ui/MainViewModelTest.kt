@@ -36,7 +36,7 @@ class MainViewModelTest {
 		val viewModel = mainViewModelForTest()
 
 		viewModel.onTabSelected(mainTabs.first { it.destination == AccountDestination })
-		viewModel.onTabSelected(mainTabs.first { it.destination == SearchDestination })
+		viewModel.onTabSelected(mainTabs.first { it.destination is SearchDestination })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
 		viewModel.takePostLoginOriginAfterSignIn() shouldBe null
@@ -46,7 +46,7 @@ class MainViewModelTest {
 	fun `tab selection resets stack to selected destination`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
-		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
+		viewModel.onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
 	}
@@ -67,16 +67,16 @@ class MainViewModelTest {
 		viewModel.onOpenSettings()
 		viewModel.onAuthenticationSucceeded()
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(AccountDestination, AccountSettingsDestination)
+		viewModel.peekBackStack() shouldBe listOf(AccountDestination, AccountSettingsDestination)
 	}
 
 	@Test
 	fun `deep link to recipe opens recipe details on search tab`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
+		viewModel.onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination(), RecipeDetailsDestination(99))
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(99))
 	}
 
 	@Test
@@ -95,7 +95,7 @@ class MainViewModelTest {
 		viewModel.stageCookbookShareImport(sampleShareToken)
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
-		viewModel.onTabSelected(mainTabs.first { it.destination == FavoritesDestination })
+		viewModel.onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(
 			FavoritesDestination(cookbookShareToken = sampleShareToken),
@@ -109,6 +109,6 @@ class MainViewModelTest {
 		viewModel.onStartCooking(42)
 		viewModel.onBack()
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination(), RecipeDetailsDestination(42))
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(42))
 	}
 }
