@@ -15,6 +15,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
+import app.purecipes.shared.ui.navigation.PostLoginAction
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -46,7 +47,7 @@ class MainViewModelStartTest {
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
 		)
-		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
+		viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 		viewModel.onOpenEmailSignIn(prefilledEmail = sampleUser.email)
 		viewModel.start()
 		authenticationRepository.signInWithGoogle(
@@ -68,8 +69,7 @@ class MainViewModelStartTest {
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
 		)
-		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.COOKBOOK_SHARE_IMPORT)
-		viewModel.stageCookbookShareImport(sampleShareToken)
+		viewModel.requestLoginForPostLoginAction(PostLoginAction.ImportCookbookShare(sampleShareToken))
 		viewModel.start()
 		authenticationRepository.signInWithGoogle(
 			GoogleAuthenticationProfile(
@@ -172,7 +172,7 @@ class MainViewModelStartTest {
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
 		)
-		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
+		viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 		viewModel.start()
 		authenticationRepository.signInWithGoogle(
 			GoogleAuthenticationProfile(
@@ -186,7 +186,7 @@ class MainViewModelStartTest {
 
 		authenticationRepository.signOut()
 
-		viewModel.takePostLoginOriginAfterSignIn() shouldBe null
+		viewModel.takePendingPostLoginAction() shouldBe null
 	}
 }
 

@@ -7,6 +7,7 @@ import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestinatio
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.shared.ui.navigation.PostLoginAction
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -25,10 +26,10 @@ class MainViewModelTest {
 	@Test
 	fun `requestLoginForPostLoginAction navigates to account and preserves origin until sign in`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.requestLoginForPostLoginAction(PostLoginNavOrigin.RECIPE_SEARCH_FILTERS)
+		viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(AccountDestination)
-		viewModel.takePostLoginOriginAfterSignIn() shouldBe PostLoginNavOrigin.RECIPE_SEARCH_FILTERS
+		viewModel.takePendingPostLoginAction() shouldBe PostLoginAction.OpenSearchFilters
 	}
 
 	@Test
@@ -39,7 +40,7 @@ class MainViewModelTest {
 		viewModel.onTabSelected(mainTabs.first { it.destination is SearchDestination })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
-		viewModel.takePostLoginOriginAfterSignIn() shouldBe null
+		viewModel.takePendingPostLoginAction() shouldBe null
 	}
 
 	@Test
@@ -90,16 +91,13 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `stage cookbook share import stores token until favorites tab is selected`() {
+	fun `requestLoginForPostLoginAction preserves cookbook share token until sign in`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.stageCookbookShareImport(sampleShareToken)
+		viewModel.requestLoginForPostLoginAction(PostLoginAction.ImportCookbookShare(sampleShareToken))
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
-		viewModel.onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
-
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(
-			FavoritesDestination(cookbookShareToken = sampleShareToken),
-		)
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(AccountDestination)
+		viewModel.takePendingPostLoginAction() shouldBe
+			PostLoginAction.ImportCookbookShare(sampleShareToken)
 	}
 
 	@Test

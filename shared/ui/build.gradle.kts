@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
 	id("convention.kmp")
 	id("convention.compose")
+	id("convention.common-test")
 }
 
 kotlin {
