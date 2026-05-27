@@ -111,9 +111,6 @@ private fun MainScreenContent(
 						installSearchFlow(
 							isSignedIn = authenticationState is AuthenticationState.SignedIn,
 							sessionKey = sessionKey,
-							initialShowFilterSheet = remember(sessionKey) {
-								viewModel.takePendingOpenSearchFilters()
-							},
 							onRecipeSelect = viewModel::onRecipeSelected,
 							onRequestLogInForFilters = {
 								viewModel.requestLoginForPostLoginAction(
@@ -135,9 +132,6 @@ private fun MainScreenContent(
 						installFavoritesFlow(
 							refreshSignal = favoritesRefreshSignal,
 							sessionKey = sessionKey,
-							initialCookbookShareToken = remember {
-								viewModel.takePendingCookbookShareToken()
-							},
 							onRecipeSelect = viewModel::onRecipeSelected,
 						)
 						installCreateFlow(

@@ -19,11 +19,11 @@ internal data class MainTab(
 
 internal val mainTabs = listOf(
 	MainTab(
-		destination = SearchDestination,
+		destination = SearchDestination(),
 		label = "Search",
 	),
 	MainTab(
-		destination = FavoritesDestination,
+		destination = FavoritesDestination(),
 		label = "Favorites",
 	),
 	MainTab(
@@ -36,12 +36,16 @@ internal val mainTabs = listOf(
 	),
 )
 
-internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = rootDestination == destination
+internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = when (destination) {
+	is SearchDestination -> rootDestination is SearchDestination
+	is FavoritesDestination -> rootDestination is FavoritesDestination
+	else -> rootDestination == destination
+}
 
 internal val MainTab.icon: ImageVector
 	get() = when (destination) {
-		SearchDestination -> Icons.Filled.Search
-		FavoritesDestination -> Icons.Filled.Favorite
+		is SearchDestination -> Icons.Filled.Search
+		is FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
 		AccountDestination -> Icons.Filled.Person
 		else -> error("$destination is not a tab destination")
