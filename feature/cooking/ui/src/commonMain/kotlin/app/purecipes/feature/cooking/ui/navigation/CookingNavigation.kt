@@ -10,7 +10,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-inline fun EntryProviderScope<NavKey>.installCookingFlow(
+fun EntryProviderScope<NavKey>.installCookingFlow(
 	navigator: Navigator,
 ) {
 	entry<RecipeCookingDestination> { destination ->
