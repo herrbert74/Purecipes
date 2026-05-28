@@ -22,7 +22,7 @@ import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
 import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
-import app.purecipes.shared.ui.component.HandleSystemBack
+import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
@@ -67,8 +67,9 @@ private fun MainScreenContent(
 				AuthenticationState.SignedOut -> null
 			}
 			val canManageFavorites = authenticationState is AuthenticationState.SignedIn
-			HandleSystemBack(
+			NavigationBackHandler(
 				enabled = true,
+				backStackDepth = backStack.size,
 				onBack = {
 					if (!viewModel.onBack()) {
 						onExitRequest()

@@ -101,6 +101,12 @@ class MainViewModelTest {
 	}
 
 	@Test
+	fun `onBack at search root returns false`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onBack() shouldBe false
+	}
+
+	@Test
 	fun `back removes only the top destination`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)

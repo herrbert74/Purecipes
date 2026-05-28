@@ -7,6 +7,11 @@ plugins {
 kotlin {
 	android {
 		namespace = "app.purecipes.feature.main"
+		withDeviceTestBuilder {
+			sourceSetTreeName = "androidDeviceTest"
+		}.configure {
+			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+		}
 	}
 
 	sourceSets {
@@ -45,6 +50,12 @@ kotlin {
 		}
 		commonTest {
 			dependencies {
+				implementation(project(":shared:testfixtures"))
+			}
+		}
+		named("androidDeviceTest") {
+			dependencies {
+				implementation(libs.androidx.activityCompose)
 				implementation(project(":shared:testfixtures"))
 			}
 		}
