@@ -11,7 +11,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import androidx.test.espresso.Espresso.pressBack
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
@@ -113,7 +112,9 @@ class MainScreenHardwareBackTest {
 		composeRule.onNodeWithText("Sweet and savory side dish.").assertIsDisplayed()
 		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
 
-		pressBack()
+		composeRule.runOnIdle {
+			composeRule.activity.onBackPressedDispatcher.onBackPressed()
+		}
 
 		composeRule.waitForIdle()
 		composeRule.onNodeWithText("1 recipes found").assertIsDisplayed()

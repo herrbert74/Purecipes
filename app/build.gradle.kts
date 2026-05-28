@@ -86,6 +86,14 @@ dependencies {
 	implementation(project(":feature:analytics:data"))
 	implementation(project(":feature:sharing:data"))
 	implementation(project(":feature:main"))
+	implementation(project(":feature:analytics:ui"))
+	implementation(project(":feature:auth:ui"))
+	implementation(project(":feature:cooking:ui"))
+	implementation(project(":feature:favorites:ui"))
+	implementation(project(":feature:newrecipe:ui"))
+	implementation(project(":feature:recipedetails:ui"))
+	implementation(project(":feature:search:ui"))
+	implementation(project(":feature:settings:ui"))
 	implementation(project(":feature:favorites:data"))
 	implementation(project(":feature:newrecipe:data"))
 	implementation(project(":feature:recipedetails:data"))
@@ -104,6 +112,12 @@ dependencies {
 	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.metro.runtime)
+
+	androidTestImplementation(libs.androidx.testExtJUnit)
+	androidTestImplementation(libs.androidx.testRunner)
+	androidTestImplementation(project(":feature:search:ui"))
+	androidTestImplementation(libs.metro.runtime)
+	androidTestImplementation(libs.metrox.viewmodel)
 }
 
 private fun Project.releaseSigningStoreFile(): String {
