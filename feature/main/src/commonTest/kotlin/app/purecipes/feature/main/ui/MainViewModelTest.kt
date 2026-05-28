@@ -36,20 +36,42 @@ class MainViewModelTest {
 	fun `selecting search tab clears pending post login origin and resets open filters destination`() {
 		val viewModel = mainViewModelForTest()
 
-		viewModel.onTabSelected(mainTabs.first { it.destination == AccountDestination })
-		viewModel.onTabSelected(mainTabs.first { it.destination is SearchDestination })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Account })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
 		viewModel.takePendingPostLoginAction() shouldBe null
 	}
 
 	@Test
-	fun `tab selection resets stack to selected destination`() {
+	fun `switching tabs preserves in tab depth`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
-		viewModel.onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(42))
+	}
+
+	@Test
+	fun `re tapping active tab pops to tab root`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onRecipeSelected(42)
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+	}
+
+	@Test
+	fun `back at non search tab root switches to search`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+
+		viewModel.onBack() shouldBe true
+
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
 	}
 
 	@Test
@@ -74,10 +96,21 @@ class MainViewModelTest {
 	@Test
 	fun `deep link to recipe opens recipe details on search tab`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.destination is FavoritesDestination })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
 		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(99))
+	}
+
+	@Test
+	fun `deep link to recipe does not clobber other tab stacks`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onDeepLink(PurecipesLink.Recipe(99))
+
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
 	}
 
 	@Test

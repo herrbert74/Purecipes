@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
@@ -20,6 +19,7 @@ import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
@@ -52,7 +52,10 @@ class MainViewModel(
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
 ) : ViewModel() {
 
-	private var backStack: NavBackStack<NavKey> = NavBackStack(SearchDestination())
+	private val tabBackStacks = mutableMapOf<MainTabStackId, NavBackStack<NavKey>>()
+
+	internal var selectedTab by mutableStateOf(mainTabs.first { it.stackId == MainTabStackId.Search })
+		private set
 
 	private var pendingPostLoginAction: PostLoginAction? = null
 
@@ -67,32 +70,40 @@ class MainViewModel(
 	val googleWebClientId: String?
 		get() = purecipesConfig.googleWebClientId()
 
+	private val activeStack: NavBackStack<NavKey>
+		get() = stackFor(selectedTab.stackId)
+
 	private val navigatorImpl: Navigator = object : Navigator {
 		override fun push(destination: NavKey) {
-			backStack += destination
+			activeStack += destination
 		}
 
 		override fun replaceTabRoot(destination: NavKey) {
-			backStack.clear()
-			backStack += destination
+			replaceStackRoot(destination)
 		}
 
 		override fun popTo(destination: NavKey) {
-			while (backStack.isNotEmpty() && backStack.lastOrNull() != destination) {
-				backStack.removeAt(backStack.lastIndex)
+			val stack = activeStack
+			while (stack.isNotEmpty() && stack.lastOrNull() != destination) {
+				stack.removeAt(stack.lastIndex)
 			}
-			if (backStack.lastOrNull() != destination) {
-				backStack.clear()
-				backStack += destination
+			if (stack.lastOrNull() != destination) {
+				stack.clear()
+				stack += destination
 			}
 		}
 
 		override fun back(): Boolean {
-			if (backStack.size > 1) {
-				backStack.removeAt(backStack.lastIndex)
+			val stack = activeStack
+			if (stack.size > 1) {
+				stack.removeAt(stack.lastIndex)
 				return true
 			}
-			return backStack.firstOrNull() !is SearchDestination
+			if (selectedTab.stackId != MainTabStackId.Search) {
+				selectTab(MainTabStackId.Search)
+				return true
+			}
+			return false
 		}
 	}
 
@@ -124,21 +135,24 @@ class MainViewModel(
 
 	internal fun requestLoginForPostLoginAction(action: PostLoginAction) {
 		pendingPostLoginAction = action
-		onTabSelected(mainTabs.first { it.destination == AccountDestination })
+		onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Account })
 	}
 
 	@Composable
 	internal fun mainBackStack(): NavBackStack<NavKey> {
-		val stack = rememberNavBackStack(
-			configuration = remember {
-				SavedStateConfiguration {
-					serializersModule = mainNavigationSerializersModule()
-				}
-			},
-			SearchDestination(),
-		)
-		backStack = stack
-		return stack
+		val configuration = remember {
+			SavedStateConfiguration {
+				serializersModule = mainNavigationSerializersModule()
+			}
+		}
+		mainTabs.forEach { tab ->
+			tabBackStacks[tab.stackId] = rememberMainTabNavBackStack(
+				saveStateKey = tab.stackId.saveStateKey,
+				configuration = configuration,
+				root = tabRootDestination(tab),
+			)
+		}
+		return activeStack
 	}
 
 	internal fun takePendingPostLoginAction(): PostLoginAction? {
@@ -147,18 +161,24 @@ class MainViewModel(
 		return action
 	}
 
-	fun shouldExit(): Boolean = backStack.size == 1 && backStack.firstOrNull() is SearchDestination
+	fun shouldExit(): Boolean =
+		selectedTab.stackId == MainTabStackId.Search && activeStack.size == 1
 
-	internal fun peekBackStack(): List<NavKey> = backStack.toList()
+	internal fun peekBackStack(): List<NavKey> = activeStack.toList()
 
 	internal fun onTabSelected(tab: MainTab) {
 		if (tab.destination !is AccountDestination) {
 			pendingPostLoginAction = null
 		}
 		val root = tabRootDestination(tab)
-		if (backStack.size != 1 || !backStack.firstOrNull().isSameTabRoot(root)) {
-			navigator.replaceTabRoot(root)
+		if (tab.stackId == selectedTab.stackId) {
+			val stack = stackFor(tab.stackId)
+			if (stack.size != 1 || !stack.firstOrNull().isSameTabRoot(root)) {
+				replaceStackRoot(root)
+			}
+			return
 		}
+		selectTab(tab.stackId)
 	}
 
 	fun onRecipeSelected(recipeId: Int) {
@@ -173,17 +193,15 @@ class MainViewModel(
 	}
 
 	private fun navigateToRecipe(recipeId: Int) {
-		if (backStack.firstOrNull() !is SearchDestination) {
-			backStack.clear()
-			backStack += SearchDestination()
-		}
+		selectTab(MainTabStackId.Search)
+		val stack = stackFor(MainTabStackId.Search)
 		while (
-			backStack.lastOrNull() is RecipeDetailsDestination ||
-				backStack.lastOrNull() is RecipeCookingDestination
+			stack.lastOrNull() is RecipeDetailsDestination ||
+				stack.lastOrNull() is RecipeCookingDestination
 		) {
-			backStack.removeAt(backStack.lastIndex)
+			stack.removeAt(stack.lastIndex)
 		}
-		backStack += RecipeDetailsDestination(recipeId)
+		stack += RecipeDetailsDestination(recipeId)
 	}
 
 	private fun navigateToCookbookShare(token: String) {
@@ -195,18 +213,18 @@ class MainViewModel(
 	}
 
 	fun onOpenSettings() {
-		if (backStack.firstOrNull() != AccountDestination) {
-			navigator.replaceTabRoot(AccountDestination)
-		}
-		if (backStack.lastOrNull() != AccountSettingsDestination) {
-			navigator.push(AccountSettingsDestination)
+		ensureAccountRoot()
+		val stack = stackFor(MainTabStackId.Account)
+		if (stack.lastOrNull() != AccountSettingsDestination) {
+			stack += AccountSettingsDestination
 		}
 	}
 
 	fun onOpenEmailRegistration() {
 		ensureAccountRoot()
-		if (backStack.lastOrNull() != EmailRegistrationDestination) {
-			navigator.push(EmailRegistrationDestination)
+		val stack = stackFor(MainTabStackId.Account)
+		if (stack.lastOrNull() != EmailRegistrationDestination) {
+			stack += EmailRegistrationDestination
 		}
 	}
 
@@ -215,35 +233,40 @@ class MainViewModel(
 		showRegistrationSuccessMessage: Boolean = false,
 	) {
 		ensureAccountRoot()
+		val stack = stackFor(MainTabStackId.Account)
 		val destination = EmailSignInDestination(
 			prefilledEmail = prefilledEmail,
 			showRegistrationSuccessMessage = showRegistrationSuccessMessage,
 		)
-		if (backStack.lastOrNull() == destination) {
+		if (stack.lastOrNull() == destination) {
 			return
 		}
-		navigator.push(destination)
+		stack += destination
 	}
 
 	fun onRegistrationSuccess(email: String) {
-		if (backStack.lastOrNull() == EmailRegistrationDestination) {
-			backStack.removeAt(backStack.lastIndex)
+		val stack = stackFor(MainTabStackId.Account)
+		if (stack.lastOrNull() == EmailRegistrationDestination) {
+			stack.removeAt(stack.lastIndex)
 		}
 		onOpenEmailSignIn(prefilledEmail = email, showRegistrationSuccessMessage = true)
 	}
 
 	private fun ensureAccountRoot() {
-		if (backStack.firstOrNull() != AccountDestination) {
-			backStack.clear()
-			backStack += AccountDestination
+		selectTab(MainTabStackId.Account)
+		val stack = stackFor(MainTabStackId.Account)
+		if (stack.firstOrNull() != AccountDestination) {
+			stack.clear()
+			stack += AccountDestination
 		}
 	}
 
 	fun onBack(): Boolean = navigator.back()
 
 	fun onAuthenticationSucceeded() {
-		while (backStack.lastOrNull().isAccountAuthFlowDestination()) {
-			backStack.removeAt(backStack.lastIndex)
+		val stack = stackFor(MainTabStackId.Account)
+		while (stack.lastOrNull().isAccountAuthFlowDestination()) {
+			stack.removeAt(stack.lastIndex)
 		}
 	}
 
@@ -292,10 +315,52 @@ class MainViewModel(
 		}
 	}
 
-	private fun tabRootDestination(tab: MainTab): NavKey = when (tab.destination) {
-		is SearchDestination -> SearchDestination()
-		is FavoritesDestination -> FavoritesDestination()
-		else -> tab.destination
+	private fun replaceStackRoot(destination: NavKey) {
+		val stackId = tabStackIdForRoot(destination)
+		val stack = stackFor(stackId)
+		val root = tabRootForDestination(destination, stackId)
+		stack.clear()
+		stack += root
+		selectTab(stackId)
+	}
+
+	private fun stackFor(stackId: MainTabStackId): NavBackStack<NavKey> =
+		tabBackStacks.getOrPut(stackId) {
+			NavBackStack(tabRootForStack(stackId))
+		}
+
+	private fun selectTab(stackId: MainTabStackId) {
+		selectedTab = mainTabs.first { it.stackId == stackId }
+	}
+
+	private fun tabRootDestination(tab: MainTab): NavKey = tabRootForStack(tab.stackId)
+
+	private fun tabRootForStack(stackId: MainTabStackId): NavKey = when (stackId) {
+		MainTabStackId.Search -> SearchDestination()
+		MainTabStackId.Favorites -> FavoritesDestination()
+		MainTabStackId.Create -> CreateDestination
+		MainTabStackId.Account -> AccountDestination
+	}
+
+	private fun tabRootForDestination(destination: NavKey, stackId: MainTabStackId): NavKey =
+		when (stackId) {
+			MainTabStackId.Search -> when (destination) {
+				is SearchDestination -> destination
+				else -> SearchDestination()
+			}
+			MainTabStackId.Favorites -> when (destination) {
+				is FavoritesDestination -> destination
+				else -> FavoritesDestination()
+			}
+			else -> destination
+		}
+
+	private fun tabStackIdForRoot(destination: NavKey): MainTabStackId = when (destination) {
+		is SearchDestination -> MainTabStackId.Search
+		is FavoritesDestination -> MainTabStackId.Favorites
+		CreateDestination -> MainTabStackId.Create
+		AccountDestination -> MainTabStackId.Account
+		else -> error("$destination is not a tab root destination")
 	}
 
 	private fun NavKey?.isSameTabRoot(root: NavKey): Boolean = when (root) {
