@@ -11,6 +11,7 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:measurement:domain"))
 				api(project(":feature:settings:domain"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.serializationJson)
