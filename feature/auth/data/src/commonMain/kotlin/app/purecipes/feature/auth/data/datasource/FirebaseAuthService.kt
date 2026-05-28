@@ -1,6 +1,6 @@
 package app.purecipes.feature.auth.data.datasource
 
-internal expect class FirebaseAuthService() : FirebaseEmailPasswordAuth {
+expect class FirebaseAuthService() : FirebaseEmailPasswordAuth {
 	override suspend fun signInWithEmailAndPassword(email: String, password: String): EmailPasswordSignInResult
 
 	override suspend fun createUserWithEmailAndPassword(email: String, password: String, displayName: String)

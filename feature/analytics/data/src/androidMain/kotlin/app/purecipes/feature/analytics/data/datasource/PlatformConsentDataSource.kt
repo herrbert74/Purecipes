@@ -9,10 +9,15 @@ import com.usercentrics.sdk.UsercentricsBanner
 import com.usercentrics.sdk.UsercentricsOptions
 import com.usercentrics.sdk.UsercentricsServiceConsent
 import com.usercentrics.sdk.models.common.UsercentricsLoggerLevel
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-internal actual class PlatformConsentDataSource actual constructor(
+@Inject
+@ContributesBinding(AppScope::class)
+actual class PlatformConsentDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
 ) : ConsentDataSource {
 

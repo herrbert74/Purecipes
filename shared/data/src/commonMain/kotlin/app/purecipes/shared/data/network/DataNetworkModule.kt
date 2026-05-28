@@ -2,7 +2,6 @@ package app.purecipes.shared.data.network
 
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.session.SessionTokenStore
-import app.purecipes.shared.data.session.SettingsSessionTokenStore
 import com.diamondedge.logging.Logger
 import com.diamondedge.logging.logging
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -20,11 +19,6 @@ import kotlinx.serialization.json.Json
 
 @ContributesTo(AppScope::class)
 interface DataNetworkModule {
-
-	@Provides
-	fun provideSessionTokenStore(): SessionTokenStore {
-		return SettingsSessionTokenStore()
-	}
 
 	@Provides
 	fun provideHttpClient(sessionTokenStore: SessionTokenStore): HttpClient {

@@ -13,8 +13,13 @@ import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import com.github.michaelbull.result.andThen
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.mapError
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.StateFlow
 
+@Inject
+@ContributesBinding(AppScope::class)
 class AuthenticationAccessor(
 	private val localDataSource: AuthenticationDataSource.Local,
 	private val remoteDataSource: AuthenticationDataSource.Remote,

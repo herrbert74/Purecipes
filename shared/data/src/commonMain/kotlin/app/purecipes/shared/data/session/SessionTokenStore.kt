@@ -3,6 +3,9 @@ package app.purecipes.shared.data.session
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -17,6 +20,8 @@ interface SessionTokenStore {
 	fun clearSession()
 }
 
+@Inject
+@ContributesBinding(AppScope::class)
 class SettingsSessionTokenStore(
 	private val settings: Settings = Settings(),
 	private val json: Json = Json {

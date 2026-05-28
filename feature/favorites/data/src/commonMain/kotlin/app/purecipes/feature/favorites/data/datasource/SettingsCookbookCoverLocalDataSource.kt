@@ -1,6 +1,9 @@
 package app.purecipes.feature.favorites.data.datasource
 
 import com.russhwolf.settings.Settings
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
@@ -19,6 +22,8 @@ private data class CookbookCoverEntry(
 	val nextRotationEpochMillis: Long,
 )
 
+@Inject
+@ContributesBinding(AppScope::class)
 class SettingsCookbookCoverLocalDataSource(
 	private val settings: Settings = Settings(),
 ) : CookbookCoverDataSource.Local {

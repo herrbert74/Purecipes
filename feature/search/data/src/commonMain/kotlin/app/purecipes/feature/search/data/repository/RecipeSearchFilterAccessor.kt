@@ -4,7 +4,12 @@ import app.purecipes.feature.search.data.datasource.RecipeSearchFilterDataSource
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.shared.domain.model.SearchFilters
 import com.github.michaelbull.result.getOr
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
+@ContributesBinding(AppScope::class)
 class RecipeSearchFilterAccessor(
 	private val remoteDataSource: RecipeSearchFilterDataSource.Remote,
 	private val localDataSource: RecipeSearchFilterDataSource.Local,

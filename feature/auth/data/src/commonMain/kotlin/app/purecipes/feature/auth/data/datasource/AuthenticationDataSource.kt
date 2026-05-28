@@ -16,6 +16,9 @@ import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,6 +61,8 @@ interface AuthenticationDataSource {
 	}
 }
 
+@Inject
+@ContributesBinding(AppScope::class)
 class AuthenticationRemoteDataSource(
 	private val api: PurecipesApi,
 ) : AuthenticationDataSource.Remote {
@@ -98,7 +103,9 @@ internal data class EmailAccountRecord(
 	val profileImageUrl: String?,
 )
 
-internal class FirebaseAuthenticationLocalDataSource(
+@Inject
+@ContributesBinding(AppScope::class)
+class FirebaseAuthenticationLocalDataSource(
 	private val store: AuthenticationStore,
 	private val sessionTokenStore: SessionTokenStore,
 	private val firebaseAuthService: FirebaseEmailPasswordAuth = FirebaseAuthService(),

@@ -5,7 +5,9 @@ import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.CookbookImportResult
 import app.purecipes.shared.domain.model.CookbookShareToken
+import dev.zacsweers.metro.Inject
 
+@Inject
 class CookbookShareRemoteDataSource(
 	private val api: PurecipesApi,
 ) {

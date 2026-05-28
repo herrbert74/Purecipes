@@ -1,6 +1,6 @@
 package app.purecipes.feature.sharing.data.datasource
 
-internal expect class WebLaunchLinkPlatformDataSource() {
+expect class WebLaunchLinkPlatformDataSource() {
 
 	fun readLaunchUrl(): String?
 }

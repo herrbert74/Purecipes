@@ -8,6 +8,9 @@ import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.RecipeImageUploadResponse
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -27,6 +30,8 @@ interface RecipeImagePathLoader {
 	suspend fun load(path: String): Outcome<RecipeImageUpload>
 }
 
+@Inject
+@ContributesBinding(AppScope::class)
 class PlatformRecipeImagePathLoader : RecipeImagePathLoader {
 	override suspend fun load(path: String): Outcome<RecipeImageUpload> = readRecipeImageUpload(path)
 }
@@ -35,6 +40,8 @@ interface RecipeImageUploader {
 	suspend fun upload(image: RecipeImageUpload): Outcome<String>
 }
 
+@Inject
+@ContributesBinding(AppScope::class)
 class RecipeImageRemoteUploader(
 	private val httpClient: HttpClient,
 	purecipesConfig: PurecipesConfig,

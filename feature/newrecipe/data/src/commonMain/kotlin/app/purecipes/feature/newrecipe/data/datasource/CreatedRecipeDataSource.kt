@@ -10,6 +10,9 @@ import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
 interface CreatedRecipeDataSource {
 
@@ -20,7 +23,9 @@ interface CreatedRecipeDataSource {
 	}
 }
 
-internal class CreatedRecipeRemoteDataSource(
+@Inject
+@ContributesBinding(AppScope::class)
+class CreatedRecipeRemoteDataSource(
 	private val api: PurecipesApi,
 	private val imagePathLoader: RecipeImagePathLoader,
 	private val imageUploader: RecipeImageUploader,

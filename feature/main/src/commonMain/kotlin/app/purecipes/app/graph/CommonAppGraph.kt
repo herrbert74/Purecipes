@@ -16,7 +16,6 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
-import app.purecipes.feature.favorites.data.repository.FavoritesDataModule
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
@@ -35,23 +34,18 @@ import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPrefer
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
-import app.purecipes.feature.newrecipe.data.repository.NewRecipeDataModule
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
-import app.purecipes.feature.recipedetails.data.repository.RecipeDetailsDataModule
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
-import app.purecipes.feature.search.data.repository.SearchDataModule
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
-import app.purecipes.feature.settings.data.repository.SettingsDataModule
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
-import app.purecipes.feature.sharing.data.repository.SharingDataModule
 import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
@@ -66,12 +60,6 @@ interface CommonAppGraph :
 	AnalyticsDataModule,
 	AuthenticationDataModule,
 	DataNetworkModule,
-	FavoritesDataModule,
-	NewRecipeDataModule,
-	RecipeDetailsDataModule,
-	SettingsDataModule,
-	SearchDataModule,
-	SharingDataModule,
 	ViewModelGraph {
 
 	val purecipesConfig: PurecipesConfig

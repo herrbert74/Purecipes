@@ -1,8 +1,13 @@
 package app.purecipes.feature.analytics.data.datasource
 
 import co.touchlab.crashkios.crashlytics.CrashlyticsKotlin
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
-internal actual class CrashlyticsDataSource actual constructor() : CrashDataSource {
+@Inject
+@ContributesBinding(AppScope::class)
+actual class CrashlyticsDataSource actual constructor() : CrashDataSource {
 
 	actual override fun logBreadcrumb(message: String) {
 		CrashlyticsKotlin.logMessage(message)
