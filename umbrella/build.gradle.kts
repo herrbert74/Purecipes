@@ -147,6 +147,7 @@ kotlin {
 				api(project(":feature:recipedetails:data"))
 				api(project(":feature:search:domain"))
 				api(project(":feature:search:data"))
+				api(project(":feature:measurement:data"))
 				api(project(":feature:settings:data"))
 				api(project(":shared:data"))
 				api(project(":shared:domain"))

@@ -17,7 +17,7 @@ kotlin {
 				api(project(":feature:newrecipe:domain"))
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:search:domain"))
-				api(project(":feature:settings:domain"))
+				api(project(":feature:measurement:domain"))
 				api(project(":shared:domain"))
 				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinx.coroutinesCore)

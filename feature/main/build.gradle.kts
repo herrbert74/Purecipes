@@ -34,6 +34,8 @@ kotlin {
 				api(project(":feature:sharing:data"))
 				api(project(":feature:sharing:domain"))
 				implementation(project(":feature:sharing:ui"))
+				api(project(":feature:measurement:data"))
+				api(project(":feature:measurement:domain"))
 				api(project(":feature:settings:data"))
 				api(project(":feature:settings:domain"))
 				api(project(":shared:data"))

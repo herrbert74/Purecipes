@@ -37,6 +37,8 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
   * **recipe details**
   * **step-by-step cooking**
   * **new recipe**
+  * **measurement** (preferences and unit conversion; consumed by search, recipe details, cooking, and settings UI)
+  * **auth**, **favorites**, **settings**, **sharing**, and **analytics** also live under `feature/`
 * **Submodules** within above features.
   * **domain** - Contains the feature **api interfaces** and optionally **use cases**. Domain depends only on itself and all interaction it does is via _dependency
       inversion_.
@@ -66,6 +68,7 @@ Add suffixes to designate types and prefixes for designate the features.
 * The DataSource interfaces have the suffix DataSource, and nested within them are the interfaces Local and Remote.
 * The Repository interfaces using the DataSources have the suffix Repository, while their implementations have the suffix Accessor.
 * Use cases have the suffix UseCase.
+* Put each use case in its own `.kt` file named after the class (for example `GetMeasurementPreferencesUseCase.kt`). Do not group multiple use case classes in one file (for example `MeasurementPreferencesUseCases.kt` or `NotificationPreferencesUseCases.kt`).
 
 ### Presentation classes
 

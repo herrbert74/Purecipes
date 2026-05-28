@@ -19,7 +19,7 @@ kotlin {
 			dependencies {
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:recipedetails:domain"))
-				api(project(":feature:settings:domain"))
+				api(project(":feature:measurement:domain"))
 				api(project(":shared:domain"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.serializationJson)
