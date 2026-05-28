@@ -36,17 +36,17 @@ fun MainScreen(
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
 ) {
-	MainScreenContent(
-		metroViewModelFactory = metroViewModelFactory,
-		modifier = modifier,
-		onExitRequest = onExitRequest,
-		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
-	)
+	CompositionLocalProvider(LocalMetroViewModelFactory provides metroViewModelFactory) {
+		MainScreenContent(
+			modifier = modifier,
+			onExitRequest = onExitRequest,
+			onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
+		)
+	}
 }
 
 @Composable
 private fun MainScreenContent(
-	metroViewModelFactory: MetroViewModelFactory,
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
@@ -55,96 +55,94 @@ private fun MainScreenContent(
 	},
 ) {
 	PurecipesTheme {
-		CompositionLocalProvider(LocalMetroViewModelFactory provides metroViewModelFactory) {
-			LaunchedEffect(viewModel) {
-				viewModel.start()
-			}
-			val backStack = viewModel.mainBackStack()
-			val rootDestination = backStack.firstOrNull()
-			val authenticationState = viewModel.authenticationState
-			val sessionKey = when (authenticationState) {
-				is AuthenticationState.SignedIn -> authenticationState.user.id
-				AuthenticationState.SignedOut -> null
-			}
-			val canManageFavorites = authenticationState is AuthenticationState.SignedIn
-			NavigationBackHandler(
-				enabled = true,
-				backStackDepth = backStack.size,
-				onBack = {
-					if (!viewModel.onBack()) {
-						onExitRequest()
+		LaunchedEffect(viewModel) {
+			viewModel.start()
+		}
+		val backStack = viewModel.mainBackStack()
+		val rootDestination = backStack.firstOrNull()
+		val authenticationState = viewModel.authenticationState
+		val sessionKey = when (authenticationState) {
+			is AuthenticationState.SignedIn -> authenticationState.user.id
+			AuthenticationState.SignedOut -> null
+		}
+		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
+		NavigationBackHandler(
+			enabled = true,
+			backStackDepth = backStack.size,
+			onBack = {
+				if (!viewModel.onBack()) {
+					onExitRequest()
+				}
+			},
+		)
+
+		Scaffold(
+			modifier = modifier.fillMaxSize(),
+			bottomBar = {
+				NavigationBar {
+					mainTabs.forEach { tab ->
+						NavigationBarItem(
+							selected = tab.isSelected(rootDestination),
+							onClick = { viewModel.onTabSelected(tab) },
+							icon = {
+								Icon(
+									imageVector = tab.icon,
+									contentDescription = tab.label,
+								)
+							},
+							label = { Text(text = tab.label) },
+						)
 					}
+				}
+			},
+		) { innerPadding ->
+			NavDisplay(
+				backStack = backStack,
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(innerPadding),
+				onBack = {
+					viewModel.onBack()
+				},
+				entryProvider = entryProvider {
+					installSearchFlow(
+						isSignedIn = authenticationState is AuthenticationState.SignedIn,
+						sessionKey = sessionKey,
+						onRecipeSelect = viewModel::onRecipeSelected,
+						onRequestLogInForFilters = {
+							viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
+						},
+					)
+					installRecipeDetailsFlow(
+						navigator = viewModel.navigator,
+						canManageFavorites = canManageFavorites,
+						sessionKey = sessionKey,
+						onStartCooking = viewModel::onStartCooking,
+						onOpenMeasurementPreferences = viewModel::onOpenSettings,
+					)
+					installCookingFlow(
+						navigator = viewModel.navigator,
+					)
+					installFavoritesFlow(
+						sessionKey = sessionKey,
+						onRecipeSelect = viewModel::onRecipeSelected,
+					)
+					installCreateFlow(
+						canUploadRecipes = canManageFavorites,
+					)
+					installAuthFlow(
+						navigator = viewModel.navigator,
+						googleWebClientId = viewModel.googleWebClientId,
+						onOpenSettings = viewModel::onOpenSettings,
+						onNavigateToEmailRegistration = viewModel::onOpenEmailRegistration,
+						onNavigateToSignIn = viewModel::onOpenEmailSignIn,
+						onRegistrationSuccess = viewModel::onRegistrationSuccess,
+					)
+					installSettingsFlow(
+						navigator = viewModel.navigator,
+					)
 				},
 			)
-
-			Scaffold(
-				modifier = modifier.fillMaxSize(),
-				bottomBar = {
-					NavigationBar {
-						mainTabs.forEach { tab ->
-							NavigationBarItem(
-								selected = tab.isSelected(rootDestination),
-								onClick = { viewModel.onTabSelected(tab) },
-								icon = {
-									Icon(
-										imageVector = tab.icon,
-										contentDescription = tab.label,
-									)
-								},
-								label = { Text(text = tab.label) },
-							)
-						}
-					}
-				},
-			) { innerPadding ->
-				NavDisplay(
-					backStack = backStack,
-					modifier = Modifier
-						.fillMaxSize()
-						.padding(innerPadding),
-					onBack = {
-						viewModel.onBack()
-					},
-					entryProvider = entryProvider {
-						installSearchFlow(
-							isSignedIn = authenticationState is AuthenticationState.SignedIn,
-							sessionKey = sessionKey,
-							onRecipeSelect = viewModel::onRecipeSelected,
-							onRequestLogInForFilters = {
-								viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
-							},
-						)
-						installRecipeDetailsFlow(
-							navigator = viewModel.navigator,
-							canManageFavorites = canManageFavorites,
-							sessionKey = sessionKey,
-							onStartCooking = viewModel::onStartCooking,
-							onOpenMeasurementPreferences = viewModel::onOpenSettings,
-						)
-						installCookingFlow(
-							navigator = viewModel.navigator,
-						)
-						installFavoritesFlow(
-							sessionKey = sessionKey,
-							onRecipeSelect = viewModel::onRecipeSelected,
-						)
-						installCreateFlow(
-							canUploadRecipes = canManageFavorites,
-						)
-						installAuthFlow(
-							navigator = viewModel.navigator,
-							googleWebClientId = viewModel.googleWebClientId,
-							onOpenSettings = viewModel::onOpenSettings,
-							onNavigateToEmailRegistration = viewModel::onOpenEmailRegistration,
-							onNavigateToSignIn = viewModel::onOpenEmailSignIn,
-							onRegistrationSuccess = viewModel::onRegistrationSuccess,
-						)
-						installSettingsFlow(
-							navigator = viewModel.navigator,
-						)
-					},
-				)
-			}
 		}
 	}
 }
