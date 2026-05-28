@@ -5,6 +5,9 @@ import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeNutritionEstimateRequest
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
 interface RecipeNutritionEstimateDataSource {
 
@@ -14,7 +17,9 @@ interface RecipeNutritionEstimateDataSource {
 	}
 }
 
-internal class RecipeNutritionEstimateRemoteDataSource(
+@Inject
+@ContributesBinding(AppScope::class)
+class RecipeNutritionEstimateRemoteDataSource(
 	private val api: PurecipesApi,
 ) : RecipeNutritionEstimateDataSource.Remote {
 

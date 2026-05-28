@@ -2,7 +2,12 @@ package app.purecipes.feature.favorites.data.repository
 
 import app.purecipes.feature.favorites.data.datasource.CookbooksDataSource
 import app.purecipes.feature.favorites.domain.repository.CookbooksRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
+@ContributesBinding(AppScope::class)
 class CookbooksAccessor(
 	private val remoteDataSource: CookbooksDataSource.Remote,
 ) : CookbooksRepository {

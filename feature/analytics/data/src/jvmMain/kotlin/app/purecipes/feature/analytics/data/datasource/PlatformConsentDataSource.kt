@@ -2,10 +2,15 @@ package app.purecipes.feature.analytics.data.datasource
 
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.shared.data.config.PurecipesConfig
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-internal actual class PlatformConsentDataSource actual constructor(
+@Inject
+@ContributesBinding(AppScope::class)
+actual class PlatformConsentDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
 ) : ConsentDataSource {
 

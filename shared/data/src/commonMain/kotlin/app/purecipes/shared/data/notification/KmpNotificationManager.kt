@@ -5,12 +5,15 @@ import app.purecipes.shared.domain.notification.NotificationManager
 import com.diamondedge.logging.logging
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.PayloadData
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 @Inject
+@ContributesBinding(AppScope::class)
 class KmpNotificationManager : NotificationManager {
 
 	private val _token = MutableStateFlow<String?>(null)

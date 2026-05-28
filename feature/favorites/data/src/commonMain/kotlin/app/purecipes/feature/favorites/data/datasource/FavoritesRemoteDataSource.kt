@@ -3,6 +3,12 @@ package app.purecipes.feature.favorites.data.datasource
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.data.util.runCatchingApi
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+
+@Inject
+@ContributesBinding(AppScope::class)
 class FavoritesRemoteDataSource(
 	private val api: PurecipesApi,
 ) : FavoritesDataSource.Remote {

@@ -2,8 +2,13 @@ package app.purecipes.feature.analytics.data.repository
 
 import app.purecipes.feature.analytics.data.datasource.CrashDataSource
 import app.purecipes.feature.analytics.domain.repository.CrashRepository
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
-internal class CrashAccessor(
+@Inject
+@ContributesBinding(AppScope::class)
+class CrashAccessor(
 	private val crashDataSource: CrashDataSource,
 ) : CrashRepository {
 

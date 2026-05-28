@@ -8,7 +8,12 @@ import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
+@ContributesBinding(AppScope::class)
 class CookbooksRemoteDataSource(
 	private val api: PurecipesApi,
 ) : CookbooksDataSource.Remote {

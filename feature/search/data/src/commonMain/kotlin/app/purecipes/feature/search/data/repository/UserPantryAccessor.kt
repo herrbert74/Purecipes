@@ -4,7 +4,12 @@ import app.purecipes.feature.search.data.datasource.UserPantryDataSource
 import app.purecipes.feature.search.domain.repository.UserPantryRepository
 import app.purecipes.shared.domain.model.PantryDelta
 import com.github.michaelbull.result.getOr
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
+@ContributesBinding(AppScope::class)
 class UserPantryAccessor(
 	private val remoteDataSource: UserPantryDataSource.Remote,
 	private val localDataSource: UserPantryDataSource.Local,

@@ -5,7 +5,12 @@ import app.purecipes.feature.sharing.data.datasource.CookbookShareRemoteDataSour
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.shared.domain.model.CookbookImportResult
 import app.purecipes.shared.domain.model.CookbookShareToken
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
+@ContributesBinding(AppScope::class)
 class CookbookShareAccessor(
 	private val remoteDataSource: CookbookShareRemoteDataSource,
 ) : CookbookShareRepository {

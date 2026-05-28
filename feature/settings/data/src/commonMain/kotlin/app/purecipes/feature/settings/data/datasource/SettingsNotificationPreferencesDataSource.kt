@@ -3,10 +3,15 @@ package app.purecipes.feature.settings.data.datasource
 import app.purecipes.shared.domain.model.NotificationPreferences
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
 
+@Inject
+@ContributesBinding(AppScope::class)
 class SettingsNotificationPreferencesDataSource(
 	private val settings: Settings = Settings(),
 	private val json: Json = Json {

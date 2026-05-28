@@ -6,7 +6,12 @@ import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchRequest
 import app.purecipes.shared.domain.model.SearchResultsPage
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
+@ContributesBinding(AppScope::class)
 class RecipeSearchRemoteDataSource(
 	private val api: PurecipesApi,
 ) : RecipeSearchDataSource.Remote {

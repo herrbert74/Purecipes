@@ -1,6 +1,12 @@
 package app.purecipes.feature.analytics.data.datasource
 
-internal actual class CrashlyticsDataSource actual constructor() : CrashDataSource {
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+
+@Inject
+@ContributesBinding(AppScope::class)
+actual class CrashlyticsDataSource actual constructor() : CrashDataSource {
 
 	actual override fun logBreadcrumb(message: String) = Unit
 
