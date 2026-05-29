@@ -1,16 +1,24 @@
 package app.purecipes.feature.main.ui
 
+import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
+import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
+import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
+import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
+import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import app.purecipes.feature.favorites.ui.FavoritesViewModel
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -24,14 +32,20 @@ import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.RecipeSearchViewModel
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.repository.WebLaunchLinkRepository
+import app.purecipes.feature.sharing.domain.usecase.CreateCookbookShareUseCase
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
@@ -42,9 +56,56 @@ import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.flow.emptyFlow
 
 internal const val HARDWARE_BACK_TEST_RECIPE_ID = 7
+
+internal const val HARDWARE_BACK_TEST_RECIPE_DESCRIPTION = "Sweet and savory side dish."
+
+internal data class HardwareBackTestEnvironment(
+	val mainViewModel: MainViewModel,
+	val searchViewModel: RecipeSearchViewModel,
+	val recipeDetailsViewModel: RecipeDetailsViewModel,
+	val favoritesViewModel: FavoritesViewModel,
+	val recipeId: Int = HARDWARE_BACK_TEST_RECIPE_ID,
+)
+
+internal fun hardwareBackTestEnvironment(): HardwareBackTestEnvironment {
+	val recipeId = HARDWARE_BACK_TEST_RECIPE_ID
+	return HardwareBackTestEnvironment(
+		mainViewModel = mainViewModelForDeviceTest(),
+		searchViewModel = recipeSearchViewModelForDeviceTest(
+			searchRepository = FakeRecipeSearchRepository(
+				result = Ok(
+					listOf(
+						RecipeSummary(
+							id = recipeId,
+							title = "Roasted Carrots",
+							cuisine = Cuisine.MEDITERRANEAN,
+							imageUrl = null,
+							totalTime = 35,
+						),
+					),
+				),
+			),
+		),
+		recipeDetailsViewModel = recipeDetailsViewModelForDeviceTest(
+			recipeId = recipeId,
+			recipeDetailsRepository = FakeRecipeDetailsRepository(
+				fakeRecipeDetails(
+					id = recipeId,
+					title = "Roasted Carrots",
+					description = HARDWARE_BACK_TEST_RECIPE_DESCRIPTION,
+				),
+			),
+		),
+		favoritesViewModel = favoritesViewModelForDeviceTest(),
+		recipeId = recipeId,
+	)
+}
 
 internal fun mainViewModelForDeviceTest(): MainViewModel = MainViewModel(
 	observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
@@ -61,7 +122,7 @@ internal fun mainViewModelForDeviceTest(): MainViewModel = MainViewModel(
 		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 	},
 	onDeliverPendingIncomingLink = {},
-)
+).also { it.initializeTabBackStacksForTest() }
 
 internal fun recipeSearchViewModelForDeviceTest(
 	searchRepository: FakeRecipeSearchRepository = FakeRecipeSearchRepository(),
@@ -100,6 +161,45 @@ internal fun recipeDetailsViewModelForDeviceTest(
 	),
 	recipeId = recipeId,
 	sessionKey = null,
+)
+
+internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesViewModel(
+	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
+	getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
+	createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
+	deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
+	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
+	getCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
+		object : CookbookCoverRepository {
+			override fun getCookbookCoverImageUrl(
+				cookbookId: Int,
+				candidateImageUrls: List<String>,
+				nowMillis: Long,
+				random: kotlin.random.Random,
+			): String? = candidateImageUrls.firstOrNull()
+		},
+	),
+	importCookbookShare = ImportCookbookShareUseCase(
+		object : CookbookShareRepository {
+			override suspend fun createShare(cookbookId: Int) = Err(Failure.ServerError("unused"))
+
+			override suspend fun importShare(token: String) = Err(Failure.ServerError("unused"))
+		},
+	),
+	shareCookbook = ShareCookbookUseCase(
+		createCookbookShareUseCase = CreateCookbookShareUseCase(
+			object : CookbookShareRepository {
+				override suspend fun createShare(cookbookId: Int) = Err(Failure.ServerError("unused"))
+
+				override suspend fun importShare(token: String) = Err(Failure.ServerError("unused"))
+			},
+		),
+		shareRepository = object : ShareRepository {
+			override fun shareText(text: String, title: String?) = Unit
+		},
+	),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	sessionKey = "hardware-back-test",
 )
 
 private fun emptyIncomingLinkRepositoryForDeviceTest(): IncomingLinkRepository = object : IncomingLinkRepository {

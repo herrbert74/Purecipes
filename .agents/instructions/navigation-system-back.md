@@ -6,7 +6,7 @@
 
 Nested destinations are popped via `Navigator.back()` on the shared `NavBackStack`. In-UI back controls (`BackNavigationButton`, toolbar buttons) call the same `navigator.back()` path through feature `onBack` callbacks.
 
-`NavDisplay` `onBack` is wired for navigation3 predictive back integration; system back is handled by `HandleSystemBack`, not duplicate `BackHandler` registrations elsewhere.
+System back is handled only by `HandleSystemBack` (`NavigationBackHandler`). Do not pass `NavDisplay` `onBack` for the same pop path: that duplicates pops with `MainViewModel.onBack()` and can finish the activity while nested destinations are still open. `NavDisplay` is keyed by `MainTabStackId` so tab switches do not mutate inactive tab stacks.
 
 ## Wasm
 

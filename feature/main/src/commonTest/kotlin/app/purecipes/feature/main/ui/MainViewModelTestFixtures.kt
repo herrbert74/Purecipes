@@ -23,22 +23,26 @@ internal fun mainViewModelForTest(
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	consentRepository: FakeConsentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
 	onDeliverPendingIncomingLink: () -> Unit = {},
-): MainViewModel = MainViewModel(
-	observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
-	refreshConsent = RefreshConsentUseCase(consentRepository),
-	setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
-	observeIncomingLinks = ObserveIncomingLinksUseCase(incomingLinkRepository),
-	publishWebLaunchLink = PublishWebLaunchLinkUseCase(
-		object : WebLaunchLinkRepository {
-			override fun readLaunchUrl(): String? = null
+): MainViewModel {
+	val viewModel = MainViewModel(
+		observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
+		refreshConsent = RefreshConsentUseCase(consentRepository),
+		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
+		observeIncomingLinks = ObserveIncomingLinksUseCase(incomingLinkRepository),
+		publishWebLaunchLink = PublishWebLaunchLinkUseCase(
+			object : WebLaunchLinkRepository {
+				override fun readLaunchUrl(): String? = null
+			},
+			incomingLinkRepository,
+		),
+		purecipesConfig = object : PurecipesConfig {
+			override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 		},
-		incomingLinkRepository,
-	),
-	purecipesConfig = object : PurecipesConfig {
-		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
-	},
-	onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
-)
+		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
+	)
+	viewModel.initializeTabBackStacksForTest()
+	return viewModel
+}
 
 internal fun emptyIncomingLinkRepository(): IncomingLinkRepository = object : IncomingLinkRepository {
 	override fun observeLinks(): Flow<PurecipesLink> = emptyFlow()
