@@ -1,6 +1,7 @@
 package app.purecipes.feature.main.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -139,20 +140,44 @@ class MainViewModel(
 	}
 
 	@Composable
-	internal fun mainBackStack(): NavBackStack<NavKey> {
+	internal fun rememberActiveTabBackStack(): NavBackStack<NavKey> {
 		val configuration = remember {
 			SavedStateConfiguration {
 				serializersModule = mainNavigationSerializersModule()
 			}
 		}
-		mainTabs.forEach { tab ->
-			tabBackStacks[tab.stackId] = rememberMainTabNavBackStack(
-				saveStateKey = tab.stackId.saveStateKey,
-				configuration = configuration,
-				root = tabRootDestination(tab),
-			)
+		val searchStack = rememberMainTabNavBackStack(
+			saveStateKey = MainTabStackId.Search.saveStateKey,
+			configuration = configuration,
+			root = tabRootForStack(MainTabStackId.Search),
+		)
+		val favoritesStack = rememberMainTabNavBackStack(
+			saveStateKey = MainTabStackId.Favorites.saveStateKey,
+			configuration = configuration,
+			root = tabRootForStack(MainTabStackId.Favorites),
+		)
+		val createStack = rememberMainTabNavBackStack(
+			saveStateKey = MainTabStackId.Create.saveStateKey,
+			configuration = configuration,
+			root = tabRootForStack(MainTabStackId.Create),
+		)
+		val accountStack = rememberMainTabNavBackStack(
+			saveStateKey = MainTabStackId.Account.saveStateKey,
+			configuration = configuration,
+			root = tabRootForStack(MainTabStackId.Account),
+		)
+		SideEffect {
+			tabBackStacks[MainTabStackId.Search] = searchStack
+			tabBackStacks[MainTabStackId.Favorites] = favoritesStack
+			tabBackStacks[MainTabStackId.Create] = createStack
+			tabBackStacks[MainTabStackId.Account] = accountStack
 		}
-		return activeStack
+		return when (selectedTab.stackId) {
+			MainTabStackId.Search -> searchStack
+			MainTabStackId.Favorites -> favoritesStack
+			MainTabStackId.Create -> createStack
+			MainTabStackId.Account -> accountStack
+		}
 	}
 
 	internal fun takePendingPostLoginAction(): PostLoginAction? {
@@ -165,6 +190,12 @@ class MainViewModel(
 		selectedTab.stackId == MainTabStackId.Search && activeStack.size == 1
 
 	internal fun peekBackStack(): List<NavKey> = activeStack.toList()
+
+	internal fun initializeTabBackStacksForTest() {
+		MainTabStackId.entries.forEach { stackId ->
+			tabBackStacks[stackId] = NavBackStack(tabRootForStack(stackId))
+		}
+	}
 
 	internal fun onTabSelected(tab: MainTab) {
 		if (tab.destination !is AccountDestination) {
@@ -325,9 +356,7 @@ class MainViewModel(
 	}
 
 	private fun stackFor(stackId: MainTabStackId): NavBackStack<NavKey> =
-		tabBackStacks.getOrPut(stackId) {
-			NavBackStack(tabRootForStack(stackId))
-		}
+		tabBackStacks[stackId] ?: error("Tab back stack for $stackId is not bound yet")
 
 	private fun selectTab(stackId: MainTabStackId) {
 		selectedTab = mainTabs.first { it.stackId == stackId }

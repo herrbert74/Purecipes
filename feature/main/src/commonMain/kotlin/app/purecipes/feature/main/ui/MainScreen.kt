@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -58,8 +59,7 @@ private fun MainScreenContent(
 		LaunchedEffect(viewModel) {
 			viewModel.start()
 		}
-		val backStack = viewModel.mainBackStack()
-		val rootDestination = backStack.firstOrNull()
+		val tabBackStack = viewModel.rememberActiveTabBackStack()
 		val authenticationState = viewModel.authenticationState
 		val sessionKey = when (authenticationState) {
 			is AuthenticationState.SignedIn -> authenticationState.user.id
@@ -68,9 +68,9 @@ private fun MainScreenContent(
 		val canManageFavorites = authenticationState is AuthenticationState.SignedIn
 		NavigationBackHandler(
 			enabled = true,
-			backStackDepth = backStack.size,
+			backStackDepth = tabBackStack.size,
 			onBack = {
-				if (!viewModel.onBack()) {
+				if (!viewModel.onBack() && viewModel.shouldExit()) {
 					onExitRequest()
 				}
 			},
@@ -82,7 +82,7 @@ private fun MainScreenContent(
 				NavigationBar {
 					mainTabs.forEach { tab ->
 						NavigationBarItem(
-							selected = tab.isSelected(rootDestination),
+							selected = tab.stackId == viewModel.selectedTab.stackId,
 							onClick = { viewModel.onTabSelected(tab) },
 							icon = {
 								Icon(
@@ -96,53 +96,52 @@ private fun MainScreenContent(
 				}
 			},
 		) { innerPadding ->
-			NavDisplay(
-				backStack = backStack,
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding),
-				onBack = {
-					viewModel.onBack()
-				},
-				entryProvider = entryProvider {
-					installSearchFlow(
-						isSignedIn = authenticationState is AuthenticationState.SignedIn,
-						sessionKey = sessionKey,
-						onRecipeSelect = viewModel::onRecipeSelected,
-						onRequestLogInForFilters = {
-							viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
-						},
-					)
-					installRecipeDetailsFlow(
-						navigator = viewModel.navigator,
-						canManageFavorites = canManageFavorites,
-						sessionKey = sessionKey,
-						onStartCooking = viewModel::onStartCooking,
-						onOpenMeasurementPreferences = viewModel::onOpenSettings,
-					)
-					installCookingFlow(
-						navigator = viewModel.navigator,
-					)
-					installFavoritesFlow(
-						sessionKey = sessionKey,
-						onRecipeSelect = viewModel::onRecipeSelected,
-					)
-					installCreateFlow(
-						canUploadRecipes = canManageFavorites,
-					)
-					installAuthFlow(
-						navigator = viewModel.navigator,
-						googleWebClientId = viewModel.googleWebClientId,
-						onOpenSettings = viewModel::onOpenSettings,
-						onNavigateToEmailRegistration = viewModel::onOpenEmailRegistration,
-						onNavigateToSignIn = viewModel::onOpenEmailSignIn,
-						onRegistrationSuccess = viewModel::onRegistrationSuccess,
-					)
-					installSettingsFlow(
-						navigator = viewModel.navigator,
-					)
-				},
-			)
+			key(viewModel.selectedTab.stackId) {
+				NavDisplay(
+					backStack = tabBackStack,
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding),
+					entryProvider = entryProvider {
+						installSearchFlow(
+							isSignedIn = authenticationState is AuthenticationState.SignedIn,
+							sessionKey = sessionKey,
+							onRecipeSelect = viewModel::onRecipeSelected,
+							onRequestLogInForFilters = {
+								viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
+							},
+						)
+						installRecipeDetailsFlow(
+							navigator = viewModel.navigator,
+							canManageFavorites = canManageFavorites,
+							sessionKey = sessionKey,
+							onStartCooking = viewModel::onStartCooking,
+							onOpenMeasurementPreferences = viewModel::onOpenSettings,
+						)
+						installCookingFlow(
+							navigator = viewModel.navigator,
+						)
+						installFavoritesFlow(
+							sessionKey = sessionKey,
+							onRecipeSelect = viewModel::onRecipeSelected,
+						)
+						installCreateFlow(
+							canUploadRecipes = canManageFavorites,
+						)
+						installAuthFlow(
+							navigator = viewModel.navigator,
+							googleWebClientId = viewModel.googleWebClientId,
+							onOpenSettings = viewModel::onOpenSettings,
+							onNavigateToEmailRegistration = viewModel::onOpenEmailRegistration,
+							onNavigateToSignIn = viewModel::onOpenEmailSignIn,
+							onRegistrationSuccess = viewModel::onRegistrationSuccess,
+						)
+						installSettingsFlow(
+							navigator = viewModel.navigator,
+						)
+					},
+				)
+			}
 		}
 	}
 }
