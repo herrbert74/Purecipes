@@ -4,6 +4,7 @@ import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
 import app.purecipes.feature.sharing.domain.repository.WebLaunchLinkRepository
@@ -38,6 +39,7 @@ internal fun mainViewModelForTest(
 		purecipesConfig = object : PurecipesConfig {
 			override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 		},
+		searchReadiness = SearchReadinessCoordinator(),
 		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
 	)
 	viewModel.initializeTabBackStacksForTest()

@@ -107,6 +107,7 @@ dependencies {
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
+	implementation(libs.androidx.splash)
 	implementation(libs.kmpauth.facebook)
 	implementation(libs.kmpnotifier)
 	implementation(libs.metrox.viewmodel)

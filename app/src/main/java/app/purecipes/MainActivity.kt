@@ -9,6 +9,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.main.ui.MainScreen
@@ -29,6 +32,10 @@ class MainActivity : ComponentActivity() {
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		val splashScreen = installSplashScreen()
+		var firstFrameDrawn = false
+		splashScreen.setKeepOnScreenCondition { !firstFrameDrawn }
+
 		super.onCreate(savedInstanceState)
 		NotifierManager.onCreateOrOnNewIntent(intent)
 		enableEdgeToEdge()
@@ -43,6 +50,10 @@ class MainActivity : ComponentActivity() {
 		lifecycleScope.launch { graph.initializeNotificationsUseCase() }
 
 		setContent {
+			LaunchedEffect(Unit) {
+				withFrameNanos { }
+				firstFrameDrawn = true
+			}
 			MainScreen(
 				onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
 				metroViewModelFactory = graph.metroViewModelFactory,

@@ -12,6 +12,7 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
@@ -175,6 +176,7 @@ private fun recipeSearchViewModelForTest(
 	saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 	getUserPantry = GetUserPantryUseCase(pantryRepository),
 	updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+	searchReadiness = SearchReadinessCoordinator(),
 	initialShowFilterSheet = initialShowFilterSheet,
 	sessionKey = null,
 )

@@ -11,6 +11,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
@@ -47,6 +48,7 @@ class RecipeSearchViewModel(
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
 	private val getUserPantry: GetUserPantryUseCase,
 	private val updateUserPantry: UpdateUserPantryUseCase,
+	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
 ) : ViewModel() {
@@ -200,6 +202,7 @@ class RecipeSearchViewModel(
 		}
 		if (pageNumber == FIRST_PAGE_NUMBER) {
 			isSearching = false
+			searchReadiness.reportReady()
 		}
 	}
 

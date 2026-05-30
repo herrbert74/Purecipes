@@ -4,6 +4,7 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
@@ -55,6 +56,31 @@ class RecipeSearchViewModelTest {
 		viewModel.isSearching shouldBe false
 		viewModel.isSearchBarActive shouldBe false
 		viewModel.errorMessage shouldBe null
+	}
+
+	@Test
+	fun `reports readiness once the first page finishes loading`() = runViewModelTest {
+		val readiness = SearchReadinessCoordinator()
+		val viewModel = makeViewModel(searchReadiness = readiness)
+
+		readiness.isReady.value shouldBe false
+		advanceUntilIdle()
+
+		readiness.isReady.value shouldBe true
+		viewModel.isSearching shouldBe false
+	}
+
+	@Test
+	fun `reports readiness even when the first page fails`() = runViewModelTest {
+		val readiness = SearchReadinessCoordinator()
+		makeViewModel(
+			searchRepository = FakeRecipeSearchRepository(result = Err(Failure.ServerError("Search failed"))),
+			searchReadiness = readiness,
+		)
+
+		advanceUntilIdle()
+
+		readiness.isReady.value shouldBe true
 	}
 
 	@Test
@@ -199,6 +225,7 @@ class RecipeSearchViewModelTest {
 			saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 			getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
 			updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
+			searchReadiness = SearchReadinessCoordinator(),
 			initialShowFilterSheet = true,
 			sessionKey = null,
 		)
@@ -282,6 +309,7 @@ class RecipeSearchViewModelTest {
 		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
 		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
 		pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
+		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
@@ -291,6 +319,7 @@ class RecipeSearchViewModelTest {
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 		getUserPantry = GetUserPantryUseCase(pantryRepository),
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+		searchReadiness = searchReadiness,
 		initialShowFilterSheet = false,
 		sessionKey = null,
 	)
