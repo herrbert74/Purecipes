@@ -18,10 +18,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.surfaceLight
 
 private const val FADE_OUT_DURATION_MILLIS = 400
-private const val POT_SIZE_DP = 200
 
 @Composable
 fun SplashOverlay(
@@ -50,16 +50,22 @@ fun SplashOverlay(
 			.background(backgroundColor),
 		contentAlignment = Alignment.Center,
 	) {
-		StirringPot(modifier = Modifier.size(POT_SIZE_DP.dp))
+		StirringPot(modifier = Modifier.size(SplashAnimatedIconSpec.VISIBLE_SIZE_DP.dp))
 	}
 }
 
-@Preview
+@Preview(
+	name = "Splash overlay",
+	showBackground = true,
+)
 @Composable
 private fun SplashOverlayPreview() {
-	SplashOverlay(
-		isVisible = true,
-		backgroundColor = surfaceLight,
-		onExitComplete = {},
-	)
+	PurecipesPreviewScaffold {
+		SplashOverlay(
+			isVisible = true,
+			backgroundColor = surfaceLight,
+			onExitComplete = {},
+			modifier = Modifier.fillMaxSize(),
+		)
+	}
 }

@@ -35,6 +35,9 @@ class MainActivity : ComponentActivity() {
 		val splashScreen = installSplashScreen()
 		var firstFrameDrawn = false
 		splashScreen.setKeepOnScreenCondition { !firstFrameDrawn }
+		splashScreen.setOnExitAnimationListener { splashScreenView ->
+			splashScreenView.remove()
+		}
 
 		super.onCreate(savedInstanceState)
 		NotifierManager.onCreateOrOnNewIntent(intent)
