@@ -1,0 +1,15 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+	android:drawable="@drawable/ic_launcher_splash_vector">
+
+	<target
+		android:name="spoonStir"
+		android:animation="@animator/splash_stir_spoon" />
+
+	<target
+		android:name="armStroke"
+		android:animation="@animator/splash_stir_arm" />
+
+	<target
+		android:name="handStir"
+		android:animation="@animator/splash_stir_hand" />
+</animated-vector>

@@ -9,8 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
@@ -22,46 +22,82 @@ import com.mmk.kmpauth.facebook.handleFacebookActivityResult
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import com.mmk.kmpnotifier.notification.NotifierManager
 import dev.zacsweers.metro.createGraph
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
-	private lateinit var deliverIncomingLinkUseCase: DeliverIncomingLinkUseCase
+	private val graphState = mutableStateOf<PurecipesAppGraph?>(null)
+
+	private var appGraph: PurecipesAppGraph? = null
+	private var graphLoadStarted = false
+	private var startupSplashDrawn = false
+	private lateinit var osSplashBridge: AndroidOsSplashBridge
 
 	private val requestNotificationPermission =
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		val splashScreen = installSplashScreen()
-		var firstFrameDrawn = false
-		splashScreen.setKeepOnScreenCondition { !firstFrameDrawn }
-		splashScreen.setOnExitAnimationListener { splashScreenView ->
-			splashScreenView.remove()
-		}
+		var keepOsSplashOnScreen = true
+		splashScreen.setKeepOnScreenCondition { keepOsSplashOnScreen }
+
+		osSplashBridge = AndroidOsSplashBridge(
+			activity = this,
+			onSplashDrawn = ::onStartupSplashDrawn,
+		)
+		osSplashBridge.install(splashScreen)
 
 		super.onCreate(savedInstanceState)
 		NotifierManager.onCreateOrOnNewIntent(intent)
 		enableEdgeToEdge()
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-		}
-
-		val graph = createGraph<PurecipesAppGraph>()
-		deliverIncomingLinkUseCase = graph.deliverIncomingLinkUseCase
-
-		lifecycleScope.launch { graph.initializeNotificationsUseCase() }
+		appGraph = graphState.value
 
 		setContent {
-			LaunchedEffect(Unit) {
-				withFrameNanos { }
-				firstFrameDrawn = true
+			val readyGraph by graphState
+			readyGraph?.let { graph ->
+				MainScreen(
+					onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
+					metroViewModelFactory = graph.metroViewModelFactory,
+					onExitRequest = ::finish,
+					deferMainContentUntilOverlayDrawn = false,
+					onPlatformSplashExitStart = osSplashBridge::beginExit,
+				)
 			}
-			MainScreen(
-				onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
-				metroViewModelFactory = graph.metroViewModelFactory,
-				onExitRequest = ::finish,
-			)
+		}
+
+		keepOsSplashOnScreen = false
+	}
+
+	private fun onStartupSplashDrawn() {
+		if (startupSplashDrawn) {
+			return
+		}
+		startupSplashDrawn = true
+		startGraphLoadIfNeeded()
+		requestNotificationPermissionIfNeeded()
+	}
+
+	private fun startGraphLoadIfNeeded() {
+		if (graphLoadStarted) {
+			return
+		}
+		graphLoadStarted = true
+		lifecycleScope.launch {
+			val graph = withContext(Dispatchers.Default) {
+				createGraph<PurecipesAppGraph>()
+			}
+			graph.initializeNotificationsUseCase()
+			appGraph = graph
+			graphState.value = graph
+		}
+	}
+
+	private fun requestNotificationPermissionIfNeeded() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
 		}
 	}
 
@@ -73,8 +109,9 @@ class MainActivity : ComponentActivity() {
 	}
 
 	private fun deliverDeepLinkFromIntent(intent: Intent?) {
+		val useCase: DeliverIncomingLinkUseCase = appGraph?.deliverIncomingLinkUseCase ?: return
 		val data: Uri = intent?.data ?: return
-		deliverIncomingLinkUseCase(data.toString())
+		useCase(data.toString())
 	}
 
 	override fun onStart() {
