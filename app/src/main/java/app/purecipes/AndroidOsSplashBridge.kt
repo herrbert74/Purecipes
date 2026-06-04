@@ -1,24 +1,16 @@
 package app.purecipes
 
+import android.graphics.drawable.Animatable
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
+import android.widget.ImageView
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
-import app.purecipes.shared.ui.splash.SplashOverlay
-import app.purecipes.shared.ui.theme.surfaceLight
 
 private const val SPLASH_FADE_OUT_MILLIS = 600L
 
-class AndroidOsSplashBridge(
-	private val activity: ComponentActivity,
-	private val onSplashDrawn: () -> Unit,
-) {
+class AndroidOsSplashBridge {
+
 	private var splashScreenViewProvider: SplashScreenViewProvider? = null
-	private var splashDrawn = false
 
 	fun install(splashScreen: SplashScreen) {
 		splashScreen.setOnExitAnimationListener(::onSplashExit)
@@ -26,41 +18,24 @@ class AndroidOsSplashBridge(
 
 	private fun onSplashExit(provider: SplashScreenViewProvider) {
 		splashScreenViewProvider = provider
-		provider.iconView.visibility = View.GONE
-		val splashRoot = provider.view as ViewGroup
-		val composeView = ComposeView(activity).apply {
-			setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-			setContent {
-				SplashOverlay(
-					isVisible = true,
-					backgroundColor = surfaceLight,
-					onExitComplete = {},
-					onOverlayDraw = ::reportSplashDrawn,
-				)
-			}
-		}
-		splashRoot.addView(
-			composeView,
-			FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.MATCH_PARENT,
-			),
-		)
+		startThemeSplashAnimation(provider.iconView)
 	}
 
-	private fun reportSplashDrawn() {
-		if (splashDrawn) {
-			return
+	private fun startThemeSplashAnimation(iconView: View) {
+		if (iconView is ImageView) {
+			(iconView.drawable as? Animatable)?.start()
 		}
-		splashDrawn = true
-		onSplashDrawn()
 	}
 
-	fun beginExit(onEnd: () -> Unit = {}) {
+	fun dismiss(onEnd: () -> Unit = {}) {
 		val provider = splashScreenViewProvider
 		if (provider == null) {
 			onEnd()
 			return
+		}
+		val iconView = provider.iconView
+		if (iconView is ImageView) {
+			(iconView.drawable as? Animatable)?.stop()
 		}
 		provider.view.animate()
 			.alpha(0f)

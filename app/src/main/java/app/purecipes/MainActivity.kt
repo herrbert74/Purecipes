@@ -29,11 +29,10 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
 
 	private val graphState = mutableStateOf<PurecipesAppGraph?>(null)
+	private val osSplashBridge = AndroidOsSplashBridge()
 
 	private var appGraph: PurecipesAppGraph? = null
 	private var graphLoadStarted = false
-	private var startupSplashDrawn = false
-	private lateinit var osSplashBridge: AndroidOsSplashBridge
 
 	private val requestNotificationPermission =
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -42,16 +41,13 @@ class MainActivity : ComponentActivity() {
 		val splashScreen = installSplashScreen()
 		var keepOsSplashOnScreen = true
 		splashScreen.setKeepOnScreenCondition { keepOsSplashOnScreen }
-
-		osSplashBridge = AndroidOsSplashBridge(
-			activity = this,
-			onSplashDrawn = ::onStartupSplashDrawn,
-		)
 		osSplashBridge.install(splashScreen)
 
 		super.onCreate(savedInstanceState)
 		NotifierManager.onCreateOrOnNewIntent(intent)
 		enableEdgeToEdge()
+		startGraphLoadIfNeeded()
+		requestNotificationPermissionIfNeeded()
 
 		appGraph = graphState.value
 
@@ -63,21 +59,13 @@ class MainActivity : ComponentActivity() {
 					metroViewModelFactory = graph.metroViewModelFactory,
 					onExitRequest = ::finish,
 					deferMainContentUntilOverlayDrawn = false,
-					onPlatformSplashExitStart = osSplashBridge::beginExit,
+					useComposeSplashOverlay = false,
+					onPlatformSplashExitStart = osSplashBridge::dismiss,
 				)
 			}
 		}
 
 		keepOsSplashOnScreen = false
-	}
-
-	private fun onStartupSplashDrawn() {
-		if (startupSplashDrawn) {
-			return
-		}
-		startupSplashDrawn = true
-		startGraphLoadIfNeeded()
-		requestNotificationPermissionIfNeeded()
 	}
 
 	private fun startGraphLoadIfNeeded() {
