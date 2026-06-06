@@ -18,41 +18,34 @@
 	</group>
 
 	<group
-		android:name="spoonStir"
-		android:translateX="18"
-		android:translateY="0">
-		<group android:translateX="205" android:translateY="108">
-			<path
-				android:fillColor="#CE9559"
-				android:pathData="M103,0L41,53S35,53,28,53S10,60,5,73S8,98,21,94S41,84,44,77S44,68,48,61L109,8S114-1,103,0" />
+		android:name="stirPivot"
+		android:pivotX="302"
+		android:pivotY="212">
+		<group android:translateX="-12" android:translateY="10">
+			<group android:translateX="205" android:translateY="108">
+				<path
+					android:fillColor="#CE9559"
+					android:pathData="M103,0L41,53S35,53,28,53S10,60,5,73S8,98,21,94S41,84,44,77S44,68,48,61L109,8S114-1,103,0" />
+			</group>
+			<group android:translateX="237" android:translateY="166">
+				<path
+					android:fillColor="#AD7239"
+					android:pathData="A12,20 50 1,0 1,0" />
+			</group>
 		</group>
-		<group android:translateX="237" android:translateY="166">
+		<group android:translateX="302" android:translateY="212">
 			<path
-				android:fillColor="#AD7239"
-				android:pathData="A12,20 50 1,0 1,0" />
+				android:fillColor="@android:color/transparent"
+				android:pathData="M0,0 Q47,-42 -19.5,-82.3"
+				android:strokeWidth="12"
+				android:strokeColor="#DF205B"
+				android:strokeLineCap="round" />
 		</group>
-	</group>
-
-	<group
-		android:name="armShoulder"
-		android:translateX="302"
-		android:translateY="212">
-		<path
-			android:name="armStroke"
-			android:fillColor="@android:color/transparent"
-			android:pathData="M0,0 Q56,-42 -3,-80.6"
-			android:strokeWidth="12"
-			android:strokeColor="#DF205B"
-			android:strokeLineCap="round" />
-	</group>
-
-	<group
-		android:name="handStir"
-		android:translateX="299"
-		android:translateY="131.4">
-		<path
-			android:fillColor="#DF205B"
-			android:pathData="M0,-12 A12,12 0 1,1 0,12 A12,12 0 1,1 0,-12 Z" />
+		<group android:translateX="282.5" android:translateY="129.7">
+			<path
+				android:fillColor="#DF205B"
+				android:pathData="M0,-12 A12,12 0 1,1 0,12 A12,12 0 1,1 0,-12 Z" />
+		</group>
 	</group>
 
 	<group android:translateX="142" android:translateY="160">

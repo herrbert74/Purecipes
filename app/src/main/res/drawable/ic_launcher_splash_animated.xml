@@ -2,155 +2,17 @@
 	xmlns:aapt="http://schemas.android.com/aapt"
 	android:drawable="@drawable/ic_launcher_splash_vector">
 
-	<target android:name="spoonStir">
+	<target android:name="stirPivot">
 		<aapt:attr name="android:animation">
-			<set android:ordering="together">
-				<objectAnimator
-					android:duration="1500"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="translateX"
-					android:repeatCount="infinite"
-					android:repeatMode="restart"
-					android:valueType="floatType">
-					<propertyValuesHolder android:propertyName="translateX">
-						<keyframe
-							android:fraction="0"
-							android:value="18" />
-						<keyframe
-							android:fraction="0.25"
-							android:value="0" />
-						<keyframe
-							android:fraction="0.5"
-							android:value="-18" />
-						<keyframe
-							android:fraction="0.75"
-							android:value="0" />
-						<keyframe
-							android:fraction="1"
-							android:value="18" />
-					</propertyValuesHolder>
-				</objectAnimator>
-				<objectAnimator
-					android:duration="1500"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="translateY"
-					android:repeatCount="infinite"
-					android:repeatMode="restart"
-					android:valueType="floatType">
-					<propertyValuesHolder android:propertyName="translateY">
-						<keyframe
-							android:fraction="0"
-							android:value="0" />
-						<keyframe
-							android:fraction="0.25"
-							android:value="15" />
-						<keyframe
-							android:fraction="0.5"
-							android:value="0" />
-						<keyframe
-							android:fraction="0.75"
-							android:value="-15" />
-						<keyframe
-							android:fraction="1"
-							android:value="0" />
-					</propertyValuesHolder>
-				</objectAnimator>
-			</set>
-		</aapt:attr>
-	</target>
-
-	<target android:name="handStir">
-		<aapt:attr name="android:animation">
-			<set android:ordering="together">
-				<objectAnimator
-					android:duration="1500"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="translateX"
-					android:repeatCount="infinite"
-					android:repeatMode="restart"
-					android:valueType="floatType">
-					<propertyValuesHolder android:propertyName="translateX">
-						<keyframe
-							android:fraction="0"
-							android:value="299" />
-						<keyframe
-							android:fraction="0.25"
-							android:value="281" />
-						<keyframe
-							android:fraction="0.5"
-							android:value="263" />
-						<keyframe
-							android:fraction="0.75"
-							android:value="281" />
-						<keyframe
-							android:fraction="1"
-							android:value="299" />
-					</propertyValuesHolder>
-				</objectAnimator>
-				<objectAnimator
-					android:duration="1500"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="translateY"
-					android:repeatCount="infinite"
-					android:repeatMode="restart"
-					android:valueType="floatType">
-					<propertyValuesHolder android:propertyName="translateY">
-						<keyframe
-							android:fraction="0"
-							android:value="131.4" />
-						<keyframe
-							android:fraction="0.25"
-							android:value="146.4" />
-						<keyframe
-							android:fraction="0.5"
-							android:value="131.4" />
-						<keyframe
-							android:fraction="0.75"
-							android:value="116.4" />
-						<keyframe
-							android:fraction="1"
-							android:value="131.4" />
-					</propertyValuesHolder>
-				</objectAnimator>
-			</set>
-		</aapt:attr>
-	</target>
-
-	<target android:name="armStroke">
-		<aapt:attr name="android:animation">
-			<set
-				android:ordering="sequentially"
+			<objectAnimator
+				android:duration="1500"
+				android:interpolator="@android:interpolator/linear"
+				android:propertyName="rotation"
 				android:repeatCount="infinite"
-				android:repeatMode="restart">
-				<objectAnimator
-					android:duration="375"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="pathData"
-					android:valueFrom="M0,0 Q56,-42 -3,-80.6"
-					android:valueTo="M0,0 Q47,-34.5 -21,-65.6"
-					android:valueType="pathType" />
-				<objectAnimator
-					android:duration="375"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="pathData"
-					android:valueFrom="M0,0 Q47,-34.5 -21,-65.6"
-					android:valueTo="M0,0 Q38,-42 -39,-80.6"
-					android:valueType="pathType" />
-				<objectAnimator
-					android:duration="375"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="pathData"
-					android:valueFrom="M0,0 Q38,-42 -39,-80.6"
-					android:valueTo="M0,0 Q47,-49.5 -21,-95.6"
-					android:valueType="pathType" />
-				<objectAnimator
-					android:duration="375"
-					android:interpolator="@android:interpolator/linear"
-					android:propertyName="pathData"
-					android:valueFrom="M0,0 Q47,-49.5 -21,-95.6"
-					android:valueTo="M0,0 Q56,-42 -3,-80.6"
-					android:valueType="pathType" />
-			</set>
+				android:repeatMode="reverse"
+				android:valueFrom="0"
+				android:valueTo="-28"
+				android:valueType="floatType" />
 		</aapt:attr>
 	</target>
 </animated-vector>

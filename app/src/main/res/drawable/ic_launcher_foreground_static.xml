@@ -17,29 +17,36 @@
 			android:strokeColor="#E02058" />
 	</group>
 
-	<group android:translateX="18">
-		<group android:translateX="205" android:translateY="108">
-			<path
-				android:fillColor="#CE9559"
-				android:pathData="M103,0L41,53S35,53,28,53S10,60,5,73S8,98,21,94S41,84,44,77S44,68,48,61L109,8S114-1,103,0" />
+	<group
+		android:pivotX="302"
+		android:pivotY="212">
+		<group android:translateX="-12" android:translateY="10">
+			<group android:translateX="205" android:translateY="108">
+				<path
+					android:fillColor="#CE9559"
+					android:pathData="M103,0L41,53S35,53,28,53S10,60,5,73S8,98,21,94S41,84,44,77S44,68,48,61L109,8S114-1,103,0" />
+			</group>
+			<group android:translateX="237" android:translateY="166">
+				<path
+					android:fillColor="#AD7239"
+					android:pathData="A12,20 50 1,0 1,0" />
+			</group>
 		</group>
-		<group android:translateX="237" android:translateY="166">
+		<group android:translateX="302" android:translateY="212">
 			<path
-				android:fillColor="#AD7239"
-				android:pathData="A12,20 50 1,0 1,0" />
+				android:fillColor="@android:color/transparent"
+				android:pathData="M0,0 Q47,-42 -19.5,-82.3"
+				android:strokeWidth="12"
+				android:strokeColor="#DF205B"
+				android:strokeLineCap="round" />
+		</group>
+		<group android:translateX="282.5" android:translateY="129.7">
+			<path
+				android:fillColor="#DF205B"
+				android:pathData="M0,-12 A12,12 0 1,1 0,12 A12,12 0 1,1 0,-12 Z" />
 		</group>
 	</group>
 
-	<path
-		android:fillColor="@android:color/transparent"
-		android:pathData="M302,212 Q358,170 299,131.4"
-		android:strokeWidth="12"
-		android:strokeColor="#DF205B"
-		android:strokeLineCap="round" />
-
-	<path
-		android:fillColor="#DF205B"
-		android:pathData="M311,131.4 A12,12 0 1,1 287,131.4 A12,12 0 1,1 311,131.4 Z" />
 	<group android:translateX="142" android:translateY="160">
 		<path android:fillColor="#E02058" android:pathData="M-9,25 C-30 23 -35 55 -11,58" />
 	</group>
