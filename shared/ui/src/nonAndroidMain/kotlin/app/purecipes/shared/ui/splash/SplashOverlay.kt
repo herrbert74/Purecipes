@@ -24,8 +24,6 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.surfaceLight
 
-private const val FADE_OUT_DURATION_MILLIS = 600
-
 @Composable
 fun SplashOverlay(
 	isVisible: Boolean,
@@ -43,7 +41,10 @@ fun SplashOverlay(
 		if (!isVisible) {
 			alpha.animateTo(
 				targetValue = 0f,
-				animationSpec = tween(durationMillis = FADE_OUT_DURATION_MILLIS, easing = FastOutLinearInEasing),
+				animationSpec = tween(
+					durationMillis = SplashTimings.FADE_OUT_MILLIS,
+					easing = FastOutLinearInEasing,
+				),
 			)
 			currentOnExitComplete()
 		}

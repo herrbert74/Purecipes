@@ -4,8 +4,9 @@
 
 	<target android:name="stirPivot">
 		<aapt:attr name="android:animation">
+			<!-- SplashTimings.STIR_PERIOD_MILLIS -->
 			<objectAnimator
-				android:duration="1500"
+				android:duration="1000"
 				android:interpolator="@android:interpolator/linear"
 				android:propertyName="rotation"
 				android:repeatCount="infinite"

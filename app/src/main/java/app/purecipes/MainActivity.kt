@@ -58,8 +58,6 @@ class MainActivity : ComponentActivity() {
 					onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
 					metroViewModelFactory = graph.metroViewModelFactory,
 					onExitRequest = ::finish,
-					deferMainContentUntilOverlayDrawn = false,
-					useComposeSplashOverlay = false,
 					onPlatformSplashExitStart = osSplashBridge::dismiss,
 				)
 			}

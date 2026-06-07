@@ -33,7 +33,6 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-private const val STIR_PERIOD_MILLIS = 1500
 private const val VIEWPORT_SIZE = SplashAnimatedIconSpec.CANVAS_VIEWPORT_SIZE
 private const val FULL_TURN_RADIANS = (2 * PI).toFloat()
 private const val HALF = 2f
@@ -72,9 +71,6 @@ private val ArmColor = Color(ARM_COLOR_ARGB)
 private const val SPLASH_PREVIEW_BACKGROUND_COLOR = 0xFFF8F7L
 
 @Composable
-expect fun StirringPotLayersPreview(modifier: Modifier = Modifier)
-
-@Composable
 fun StirringPot(modifier: Modifier = Modifier) {
 	val bg = vectorResource(Res.drawable.splash_pot_bg)
 	val spoon = vectorResource(Res.drawable.splash_pot_spoon)
@@ -90,7 +86,7 @@ fun StirringPot(modifier: Modifier = Modifier) {
 		initialValue = 0f,
 		targetValue = 1f,
 		animationSpec = infiniteRepeatable(
-			animation = tween(durationMillis = STIR_PERIOD_MILLIS, easing = LinearEasing),
+			animation = tween(durationMillis = SplashTimings.STIR_PERIOD_MILLIS, easing = LinearEasing),
 			repeatMode = RepeatMode.Restart,
 		),
 		label = "stirPhase",

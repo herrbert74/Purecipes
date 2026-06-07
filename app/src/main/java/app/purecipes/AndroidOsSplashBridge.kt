@@ -5,8 +5,7 @@ import android.view.View
 import android.widget.ImageView
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
-
-private const val SPLASH_FADE_OUT_MILLIS = 600L
+import app.purecipes.shared.ui.splash.SplashTimings
 
 class AndroidOsSplashBridge {
 
@@ -39,7 +38,7 @@ class AndroidOsSplashBridge {
 		}
 		provider.view.animate()
 			.alpha(0f)
-			.setDuration(SPLASH_FADE_OUT_MILLIS)
+			.setDuration(SplashTimings.FADE_OUT_MILLIS.toLong())
 			.withEndAction {
 				provider.remove()
 				splashScreenViewProvider = null

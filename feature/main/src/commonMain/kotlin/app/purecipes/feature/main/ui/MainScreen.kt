@@ -1,6 +1,5 @@
 package app.purecipes.feature.main.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -30,11 +29,7 @@ import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.navigation.PostLoginAction
-import app.purecipes.shared.ui.splash.SplashHost
-import app.purecipes.shared.ui.splash.SplashOverlay
-import app.purecipes.shared.ui.splash.SplashReadinessEffect
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import app.purecipes.shared.ui.theme.surfaceLight
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -46,8 +41,6 @@ fun MainScreen(
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
 	onSplashOverlayDraw: () -> Unit = {},
-	deferMainContentUntilOverlayDrawn: Boolean = true,
-	useComposeSplashOverlay: Boolean = true,
 	onPlatformSplashExitStart: () -> Unit = {},
 ) {
 	CompositionLocalProvider(LocalMetroViewModelFactory provides metroViewModelFactory) {
@@ -56,8 +49,6 @@ fun MainScreen(
 			onExitRequest = onExitRequest,
 			onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
 			onSplashOverlayDraw = onSplashOverlayDraw,
-			deferMainContentUntilOverlayDrawn = deferMainContentUntilOverlayDrawn,
-			useComposeSplashOverlay = useComposeSplashOverlay,
 			onPlatformSplashExitStart = onPlatformSplashExitStart,
 		)
 	}
@@ -69,15 +60,13 @@ private fun MainScreenContent(
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
 	onSplashOverlayDraw: () -> Unit = {},
-	deferMainContentUntilOverlayDrawn: Boolean = true,
-	useComposeSplashOverlay: Boolean = true,
 	onPlatformSplashExitStart: () -> Unit = {},
 	viewModel: MainViewModel = assistedMetroViewModel<MainViewModel, MainViewModel.Factory> {
 		create(onDeliverPendingIncomingLink = onDeliverPendingIncomingLink)
 	},
 ) {
 	PurecipesTheme {
-		var mainContentReady by remember { mutableStateOf(!deferMainContentUntilOverlayDrawn) }
+		var mainContentReady by remember { mutableStateOf(false) }
 		LaunchedEffect(viewModel, mainContentReady) {
 			if (mainContentReady) {
 				viewModel.start()
@@ -172,33 +161,16 @@ private fun MainScreenContent(
 				}
 			}
 		}
-		if (useComposeSplashOverlay) {
-			SplashHost(
-				isAppReady = isAppReady,
-				onSplashExitStart = onPlatformSplashExitStart,
-				splash = { isVisible, onExitComplete ->
-					SplashOverlay(
-						isVisible = isVisible,
-						backgroundColor = surfaceLight,
-						onExitComplete = onExitComplete,
-						onOverlayDraw = {
-							mainContentReady = true
-							onSplashOverlayDraw()
-						},
-					)
-				},
-				modifier = modifier,
-			) {
-				mainContent()
-			}
-		} else {
-			SplashReadinessEffect(
-				isAppReady = isAppReady,
-				onSplashDismiss = onPlatformSplashExitStart,
-			)
-			Box(modifier = modifier.fillMaxSize()) {
-				mainContent()
-			}
+		PlatformSplash(
+			isAppReady = isAppReady,
+			onSplashExitStart = onPlatformSplashExitStart,
+			onOverlayDraw = {
+				mainContentReady = true
+				onSplashOverlayDraw()
+			},
+			modifier = modifier,
+		) {
+			mainContent()
 		}
 	}
 }

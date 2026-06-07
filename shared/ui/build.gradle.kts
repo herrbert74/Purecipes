@@ -41,6 +41,14 @@ kotlin {
 	// common to share sources between related targets.
 	// See: https://kotlinlang.org/docs/multiplatform-hierarchy.html
 	sourceSets {
+		val nonAndroidMain by creating {
+			dependsOn(commonMain.get())
+		}
+
+		iosMain.get().dependsOn(nonAndroidMain)
+		wasmJsMain.get().dependsOn(nonAndroidMain)
+		jvmMain.get().dependsOn(nonAndroidMain)
+
 		commonMain {
 			dependencies {
 				implementation(project(":shared:domain"))
