@@ -77,9 +77,11 @@ class MainActivity : ComponentActivity() {
 			val graph = withContext(Dispatchers.Default) {
 				createGraph<PurecipesAppGraph>()
 			}
-			graph.initializeNotificationsUseCase()
 			appGraph = graph
 			graphState.value = graph
+			launch {
+				graph.initializeNotificationsUseCase()
+			}
 		}
 	}
 
