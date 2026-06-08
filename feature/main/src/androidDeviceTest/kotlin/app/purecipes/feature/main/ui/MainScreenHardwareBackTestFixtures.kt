@@ -25,6 +25,7 @@ import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchS
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
@@ -121,6 +122,7 @@ internal fun mainViewModelForDeviceTest(): MainViewModel = MainViewModel(
 	purecipesConfig = object : PurecipesConfig {
 		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 	},
+	searchReadiness = SearchReadinessCoordinator(),
 	onDeliverPendingIncomingLink = {},
 ).also { it.initializeTabBackStacksForTest() }
 
@@ -135,6 +137,7 @@ internal fun recipeSearchViewModelForDeviceTest(
 	saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 	getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
 	updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
+	searchReadiness = SearchReadinessCoordinator(),
 	initialShowFilterSheet = false,
 	sessionKey = null,
 )

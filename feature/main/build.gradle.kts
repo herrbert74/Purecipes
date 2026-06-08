@@ -61,5 +61,13 @@ kotlin {
 				implementation(project(":shared:testfixtures"))
 			}
 		}
+
+		val nonAndroidMain by creating {
+			dependsOn(commonMain.get())
+		}
+
+		iosMain.get().dependsOn(nonAndroidMain)
+		wasmJsMain.get().dependsOn(nonAndroidMain)
+		jvmMain.get().dependsOn(nonAndroidMain)
 	}
 }

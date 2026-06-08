@@ -1,4 +1,12 @@
 <resources>
 
 	<style name="Theme.Purecipes" parent="@android:style/Theme.Material.Light.NoActionBar.TranslucentDecor" />
+
+	<style name="Theme.Purecipes.Splash" parent="Theme.SplashScreen">
+		<item name="windowSplashScreenBackground">@color/splash_background</item>
+		<item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_splash_animated</item>
+		<!-- SplashTimings.STIR_PERIOD_MILLIS -->
+		<item name="windowSplashScreenAnimationDuration">1000</item>
+		<item name="postSplashScreenTheme">@style/Theme.Purecipes</item>
+	</style>
 </resources>

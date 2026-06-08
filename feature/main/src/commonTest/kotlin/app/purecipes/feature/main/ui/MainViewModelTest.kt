@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -14,6 +15,16 @@ import kotlin.test.Test
 class MainViewModelTest {
 
 	private val sampleShareToken = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+	@Test
+	fun `isContentReady reflects search readiness coordinator`() {
+		val readiness = SearchReadinessCoordinator()
+		val viewModel = mainViewModelForTest(searchReadiness = readiness)
+
+		viewModel.isContentReady.value shouldBe false
+		readiness.reportReady()
+		viewModel.isContentReady.value shouldBe true
+	}
 
 	@Test
 	fun `should exit only on search root`() {

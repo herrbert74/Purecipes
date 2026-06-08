@@ -166,7 +166,7 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 #androidx-roomTesting = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
 
 androidx-savedState = "androidx.savedstate:savedstate:1.5.0"
-#androidx-splash = "androidx.core:core-splashscreen:1.0.1"
+androidx-splash = "androidx.core:core-splashscreen:1.0.1"
 #androidx-sqlite = "androidx.sqlite:sqlite:2.5.2"
 #androidx-startup = "androidx.startup:startup-runtime:1.2.0"
 #androidx-swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
@@ -185,6 +185,7 @@ androidx-testExtJUnit = { module = "androidx.test.ext:junit", version.ref = "and
 #androidx-testExtJUnitKtx = { module = "androidx.test.ext:junit-ktx", version.ref = "androidx-testExtJUnit" }
 #androidx-testRules = { module = "androidx.test:rules", version.ref = "androidx-testRules" }
 androidx-testRunner = { module = "androidx.test:runner", version.ref = "androidx-testRunner" }
+androidx-vectordrawableAnimated = "androidx.vectordrawable:vectordrawable-animated:1.2.0"
 #androidx-testOrchestrator = "androidx.test:orchestrator:1.5.1"
 #androidx-testUiAutomator = "androidx.test.uiautomator:uiautomator:2.3.0"
 

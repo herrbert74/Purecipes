@@ -22,6 +22,7 @@ import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
+import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -40,6 +41,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -50,8 +52,11 @@ class MainViewModel(
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	private val purecipesConfig: PurecipesConfig,
+	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
 ) : ViewModel() {
+
+	val isContentReady: StateFlow<Boolean> = searchReadiness.isReady
 
 	private val tabBackStacks = mutableMapOf<MainTabStackId, NavBackStack<NavKey>>()
 
