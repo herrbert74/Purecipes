@@ -4,6 +4,12 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.1] - 2026-06-08
+
+### Fixed
+
+- Android release builds now include all required app configuration, so tester updates can be distributed successfully.
+
 ## [0.3.0] - 2026-06-08
 
 ### Added
