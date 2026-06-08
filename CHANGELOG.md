@@ -4,6 +4,26 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-06-08
+
+### Added
+
+- Animated splash screen when the app starts.
+- Share a recipe from recipe details with a link others can open in Purecipes.
+- Share a cookbook from your favorites so others can import it.
+- Deep links that open a recipe or import a shared cookbook when you tap a Purecipes link.
+
+### Changed
+
+- Bottom navigation keeps a separate back stack for each tab, so switching tabs restores where you left off.
+- Tapping the active tab again returns to that tab's home screen.
+- Android back button navigates nested screens more predictably; from other tabs' home screens it returns to Search.
+
+### Fixed
+
+- Favorites list updates automatically when you favorite or unfavorite a recipe elsewhere in the app.
+- Search filter and cookbook share links work reliably after sign-in and when reopening the app.
+
 ## [0.2.2] - 2026-05-25
 
 ### Fixed
