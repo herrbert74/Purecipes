@@ -185,6 +185,7 @@ androidx-testExtJUnit = { module = "androidx.test.ext:junit", version.ref = "and
 #androidx-testExtJUnitKtx = { module = "androidx.test.ext:junit-ktx", version.ref = "androidx-testExtJUnit" }
 #androidx-testRules = { module = "androidx.test:rules", version.ref = "androidx-testRules" }
 androidx-testRunner = { module = "androidx.test:runner", version.ref = "androidx-testRunner" }
+androidx-vectordrawableAnimated = "androidx.vectordrawable:vectordrawable-animated:1.2.0"
 #androidx-testOrchestrator = "androidx.test:orchestrator:1.5.1"
 #androidx-testUiAutomator = "androidx.test.uiautomator:uiautomator:2.3.0"
 

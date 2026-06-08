@@ -10,7 +10,7 @@ import app.purecipes.shared.ui.theme.surfaceLight
 actual fun PlatformSplash(
 	isAppReady: Boolean,
 	onSplashExitStart: () -> Unit,
-	onOverlayDraw: () -> Unit,
+	onMainContentStart: () -> Unit,
 	modifier: Modifier,
 	content: @Composable () -> Unit,
 ) {
@@ -22,7 +22,7 @@ actual fun PlatformSplash(
 				isVisible = isVisible,
 				backgroundColor = surfaceLight,
 				onExitComplete = onExitComplete,
-				onOverlayDraw = onOverlayDraw,
+				onOverlayDraw = onMainContentStart,
 			)
 		},
 		modifier = modifier,

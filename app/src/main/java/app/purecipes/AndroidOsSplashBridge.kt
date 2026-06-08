@@ -1,10 +1,13 @@
 package app.purecipes
 
 import android.graphics.drawable.Animatable
+import android.graphics.drawable.Drawable
+import android.os.Build
 import android.view.View
 import android.widget.ImageView
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import app.purecipes.shared.ui.splash.SplashTimings
 
 class AndroidOsSplashBridge {
@@ -21,9 +24,23 @@ class AndroidOsSplashBridge {
 	}
 
 	private fun startThemeSplashAnimation(iconView: View) {
-		if (iconView is ImageView) {
-			(iconView.drawable as? Animatable)?.start()
+		if (iconView !is ImageView) {
+			return
 		}
+		val animation = iconView.drawable as? Animatable ?: loadPreApi31SplashAnimation(iconView)
+		animation?.start()
+	}
+
+	private fun loadPreApi31SplashAnimation(iconView: ImageView): Animatable? {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			return null
+		}
+		val animatedDrawable = AnimatedVectorDrawableCompat.create(
+			iconView.context,
+			R.drawable.ic_launcher_splash_animated,
+		) ?: return null
+		iconView.setImageDrawable(animatedDrawable)
+		return animatedDrawable
 	}
 
 	fun dismiss(onEnd: () -> Unit = {}) {
@@ -34,7 +51,7 @@ class AndroidOsSplashBridge {
 		}
 		val iconView = provider.iconView
 		if (iconView is ImageView) {
-			(iconView.drawable as? Animatable)?.stop()
+			stopSplashAnimation(iconView.drawable)
 		}
 		provider.view.animate()
 			.alpha(0f)
@@ -45,5 +62,9 @@ class AndroidOsSplashBridge {
 				onEnd()
 			}
 			.start()
+	}
+
+	private fun stopSplashAnimation(drawable: Drawable?) {
+		(drawable as? Animatable)?.stop()
 	}
 }

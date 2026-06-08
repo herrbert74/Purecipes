@@ -40,7 +40,6 @@ fun MainScreen(
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
-	onSplashOverlayDraw: () -> Unit = {},
 	onPlatformSplashExitStart: () -> Unit = {},
 ) {
 	CompositionLocalProvider(LocalMetroViewModelFactory provides metroViewModelFactory) {
@@ -48,7 +47,6 @@ fun MainScreen(
 			modifier = modifier,
 			onExitRequest = onExitRequest,
 			onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
-			onSplashOverlayDraw = onSplashOverlayDraw,
 			onPlatformSplashExitStart = onPlatformSplashExitStart,
 		)
 	}
@@ -59,7 +57,6 @@ private fun MainScreenContent(
 	modifier: Modifier = Modifier,
 	onExitRequest: () -> Unit = {},
 	onDeliverPendingIncomingLink: () -> Unit = {},
-	onSplashOverlayDraw: () -> Unit = {},
 	onPlatformSplashExitStart: () -> Unit = {},
 	viewModel: MainViewModel = assistedMetroViewModel<MainViewModel, MainViewModel.Factory> {
 		create(onDeliverPendingIncomingLink = onDeliverPendingIncomingLink)
@@ -164,10 +161,7 @@ private fun MainScreenContent(
 		PlatformSplash(
 			isAppReady = isAppReady,
 			onSplashExitStart = onPlatformSplashExitStart,
-			onOverlayDraw = {
-				mainContentReady = true
-				onSplashOverlayDraw()
-			},
+			onMainContentStart = { mainContentReady = true },
 			modifier = modifier,
 		) {
 			mainContent()

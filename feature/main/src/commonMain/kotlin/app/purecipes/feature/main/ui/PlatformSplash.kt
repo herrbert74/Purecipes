@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 expect fun PlatformSplash(
 	isAppReady: Boolean,
 	onSplashExitStart: () -> Unit,
-	onOverlayDraw: () -> Unit,
+	onMainContentStart: () -> Unit,
 	modifier: Modifier = Modifier,
 	content: @Composable () -> Unit,
 )

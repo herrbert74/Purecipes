@@ -11,7 +11,6 @@
 	</group>
 	<group android:translateX="143" android:translateY="176">
 		<path
-			android:fillColor="@android:color/transparent"
 			android:pathData="M151,0C151-25-5-25-5,0"
 			android:strokeWidth="10"
 			android:strokeColor="#E02058" />
@@ -34,7 +33,6 @@
 		</group>
 		<group android:translateX="302" android:translateY="212">
 			<path
-				android:fillColor="@android:color/transparent"
 				android:pathData="M0,0 Q47,-42 -19.5,-82.3"
 				android:strokeWidth="12"
 				android:strokeColor="#DF205B"
@@ -61,7 +59,6 @@
 	</group>
 	<group android:translateX="134" android:translateY="219">
 		<path
-			android:fillColor="@android:color/transparent"
 			android:pathData="C -14,-3 -30 35 -25,44"
 			android:strokeWidth="10"
 			android:strokeColor="#E02058" />
@@ -71,7 +68,6 @@
 	</group>
 	<group android:translateX="143" android:translateY="176">
 		<path
-			android:fillColor="@android:color/transparent"
 			android:pathData="M151,0 C151 25-5 25-5,0"
 			android:strokeWidth="10"
 			android:strokeColor="#E02058" />

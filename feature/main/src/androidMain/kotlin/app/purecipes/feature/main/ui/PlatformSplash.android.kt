@@ -13,7 +13,7 @@ import app.purecipes.shared.ui.splash.SplashReadinessEffect
 actual fun PlatformSplash(
 	isAppReady: Boolean,
 	onSplashExitStart: () -> Unit,
-	onOverlayDraw: () -> Unit,
+	onMainContentStart: () -> Unit,
 	modifier: Modifier,
 	content: @Composable () -> Unit,
 ) {
@@ -21,9 +21,9 @@ actual fun PlatformSplash(
 		isAppReady = isAppReady,
 		onSplashDismiss = onSplashExitStart,
 	)
-	val currentOnOverlayDraw by rememberUpdatedState(onOverlayDraw)
+	val currentOnMainContentStart by rememberUpdatedState(onMainContentStart)
 	LaunchedEffect(Unit) {
-		currentOnOverlayDraw()
+		currentOnMainContentStart()
 	}
 	Box(modifier = modifier.fillMaxSize()) {
 		content()

@@ -23,6 +23,7 @@ internal fun mainViewModelForTest(
 	incomingLinkRepository: IncomingLinkRepository = emptyIncomingLinkRepository(),
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	consentRepository: FakeConsentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
+	searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 	onDeliverPendingIncomingLink: () -> Unit = {},
 ): MainViewModel {
 	val viewModel = MainViewModel(
@@ -39,7 +40,7 @@ internal fun mainViewModelForTest(
 		purecipesConfig = object : PurecipesConfig {
 			override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 		},
-		searchReadiness = SearchReadinessCoordinator(),
+		searchReadiness = searchReadiness,
 		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
 	)
 	viewModel.initializeTabBackStacksForTest()
