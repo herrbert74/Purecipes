@@ -27,6 +27,7 @@ android {
 		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_MIXPANEL_PROJECT_TOKEN", mixpanelProjectToken().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_DEBUG_BACKEND_HOST", "\"\"")
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}

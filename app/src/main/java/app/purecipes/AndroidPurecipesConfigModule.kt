@@ -15,6 +15,9 @@ interface AndroidPurecipesConfigModule {
 			override fun buildType() = purecipesBuildType(BuildConfig.BUILD_TYPE)
 
 			override fun debugBackendHostOverride(): String? {
+				if (!BuildConfig.DEBUG) {
+					return null
+				}
 				return BuildConfig.PURECIPES_DEBUG_BACKEND_HOST.takeIf { it.isNotBlank() }
 			}
 
