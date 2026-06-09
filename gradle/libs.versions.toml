@@ -74,7 +74,6 @@ kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.5.0"
 ktorfit = "2.7.5"
-ktorfit-converters = "2.7.5"
 metro = "1.1.1"
 mixpanelAndroid = "8.8.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
@@ -328,7 +327,7 @@ ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-an
 ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit" }
 ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
-ktorfit-convertersResponse = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-converters-response", version.ref = "ktorfit-converters" }
+ktorfit-convertersResponse = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-converters-response", version.ref = "ktorfit" }
 
 #leakCanary = "com.squareup.leakcanary:leakcanary-android:2.14"
 
