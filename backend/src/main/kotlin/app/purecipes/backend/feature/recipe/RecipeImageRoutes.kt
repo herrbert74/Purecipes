@@ -37,7 +37,7 @@ fun Route.recipeImageRoutes(
 					originalFileName = part.originalFileName
 					contentType = part.contentType
 				}
-				part.dispose()
+				part.release()
 			}
 
 			val bytes = imageBytes

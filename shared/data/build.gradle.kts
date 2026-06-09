@@ -66,5 +66,18 @@ kotlin {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+	if (name != "kspCommonMainKotlinMetadata") {
+		dependsOn("kspCommonMainKotlinMetadata")
+	}
 	compilerOptions.freeCompilerArgs.add("-opt-in=kotlin.contracts.ExperimentalContracts")
+}
+
+tasks.matching { it.name.startsWith("ksp") && it.name != "kspCommonMainKotlinMetadata" }.configureEach {
+	dependsOn("kspCommonMainKotlinMetadata")
+}
+
+dependencies {
+	add("kspCommonMainMetadata", libs.ktorfit.ksp)
+	add("kspAndroidMain", libs.ktorfit.ksp)
+	add("kspWasmJs", libs.ktorfit.ksp)
 }
