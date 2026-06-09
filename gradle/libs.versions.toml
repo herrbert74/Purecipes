@@ -17,8 +17,8 @@ coroutines = "1.11.0"
 crashkios = "0.9.0"
 crashlyticsPlugin = "3.0.7"
 jdk = "21"
-kotlin = "2.3.21"
-kotlinx-collections = "0.4.0"
+kotlin = "2.4.0"
+kotlinx-collections = "0.5.0"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
 ksp = "2.3.9"
@@ -28,7 +28,7 @@ ksp = "2.3.9"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
 androidx-composeBom = "2026.05.01"
-androidx-composeMaterial3 = "1.5.0-alpha20" #For alpha releases only
+androidx-composeMaterial3 = "1.5.0-alpha21" #For alpha releases only
 androidx-composeUiAndroidTest = "1.11.2"
 androidx-lifecycle = "2.10.0"
 #androidx-navigation = "2.9.1"
@@ -56,7 +56,7 @@ diamondedge-logging = "2.1.1"
 essenty = "2.5.0"
 h2 = "2.4.240"
 #facebook = "16.1.2"
-firebaseBom = "34.14.0"
+firebaseBom = "34.14.1"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
@@ -73,14 +73,13 @@ kotest = "6.1.11"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.5.0"
-ktorfit = "2.7.3"
-ktorfit-converters = "2.7.2"
+ktorfit = "2.7.5"
 metro = "1.1.1"
-mixpanelAndroid = "8.7.0"
+mixpanelAndroid = "8.8.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
-mokkery = "3.3.0"
+mokkery = "3.4.1"
 multiplatform-settings = "1.3.0"
-okhttp = "5.3.2"
+okhttp = "5.4.0"
 #parcelize-darwin = "0.2.4"
 postgresql = "42.7.11"
 #retrofit = "2.11.0"
@@ -138,7 +137,7 @@ androidx-composeMaterial3 = { module = "androidx.compose.material3:material3", v
 #androidx-constraintLayout = "androidx.constraintlayout:constraintlayout:2.2.1"
 androidx-constraintLayoutCompose = "androidx.constraintlayout:constraintlayout-compose:1.1.1"
 
-androidx-core = "androidx.core:core:1.18.0" #Bundle
+androidx-core = "androidx.core:core:1.19.0" #Bundle
 #androidx-coreKtx = "androidx.core:core-ktx:1.16.0" #Bundle
 
 #androidx-datastore = "androidx.datastore:datastore-preferences:1.1.7"
@@ -166,7 +165,7 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 #androidx-roomTesting = { module = "androidx.room:room-testing", version.ref = "androidx-room" }
 
 androidx-savedState = "androidx.savedstate:savedstate:1.5.0"
-androidx-splash = "androidx.core:core-splashscreen:1.0.1"
+androidx-splash = "androidx.core:core-splashscreen:1.2.0"
 #androidx-sqlite = "androidx.sqlite:sqlite:2.5.2"
 #androidx-startup = "androidx.startup:startup-runtime:1.2.0"
 #androidx-swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
@@ -328,7 +327,7 @@ ktorfit-annotations = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-an
 ktorfit-lib = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit" }
 ktorfit-libLight = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib-light", version.ref = "ktorfit" }
 ktorfit-ksp = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-ksp", version.ref = "ktorfit" }
-ktorfit-convertersResponse = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-converters-response", version.ref = "ktorfit-converters" }
+ktorfit-convertersResponse = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-converters-response", version.ref = "ktorfit" }
 
 #leakCanary = "com.squareup.leakcanary:leakcanary-android:2.14"
 

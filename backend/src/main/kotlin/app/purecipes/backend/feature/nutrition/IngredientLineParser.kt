@@ -45,16 +45,13 @@ internal object IngredientLineParser {
 			)
 		}
 
-		val match = quantityUnitNamePattern.find(rawText)
-		if (match == null) {
-			return ParsedIngredientLine(
-				rawText = rawText,
-				quantity = null,
-				unit = null,
-				parsedName = rawText,
-				isMeasurable = false,
-			)
-		}
+		val match = quantityUnitNamePattern.find(rawText) ?: return ParsedIngredientLine(
+			rawText = rawText,
+			quantity = null,
+			unit = null,
+			parsedName = rawText,
+			isMeasurable = false,
+		)
 
 		val quantity = parseQuantity(match.groups["qty"]?.value.orEmpty())
 		val unit = normalizeUnit(match.groups["unit"]?.value)
