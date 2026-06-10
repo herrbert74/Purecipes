@@ -36,7 +36,9 @@ fun RecipeDetailsScreen(
 	onStartCooking: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
-	viewModel: RecipeDetailsViewModel = assistedMetroViewModel<RecipeDetailsViewModel, RecipeDetailsViewModel.Factory> {
+	viewModel: RecipeDetailsViewModel = assistedMetroViewModel<RecipeDetailsViewModel, RecipeDetailsViewModel.Factory>(
+		key = recipeId.toString(),
+	) {
 		create(recipeId = recipeId, sessionKey = sessionKey)
 	},
 ) {

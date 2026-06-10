@@ -151,6 +151,15 @@ class MainViewModelTest {
 	}
 
 	@Test
+	fun `selecting another recipe replaces current recipe details destination`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onRecipeSelected(42)
+		viewModel.onRecipeSelected(99)
+
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(99))
+	}
+
+	@Test
 	fun `back removes only the top destination`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
