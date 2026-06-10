@@ -43,7 +43,9 @@ fun StepByStepCookingRoute(
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: StepByStepCookingViewModel =
-		assistedMetroViewModel<StepByStepCookingViewModel, StepByStepCookingViewModel.Factory> {
+		assistedMetroViewModel<StepByStepCookingViewModel, StepByStepCookingViewModel.Factory>(
+			key = recipeId.toString(),
+		) {
 			create(recipeId = recipeId)
 		},
 ) {

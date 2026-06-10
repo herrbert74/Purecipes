@@ -218,7 +218,7 @@ class MainViewModel(
 	}
 
 	fun onRecipeSelected(recipeId: Int) {
-		navigator.push(RecipeDetailsDestination(recipeId))
+		openRecipeDetails(recipeId)
 	}
 
 	fun onDeepLink(link: PurecipesLink) {
@@ -230,7 +230,10 @@ class MainViewModel(
 
 	private fun navigateToRecipe(recipeId: Int) {
 		selectTab(MainTabStackId.Search)
-		val stack = stackFor(MainTabStackId.Search)
+		openRecipeDetails(recipeId, stackFor(MainTabStackId.Search))
+	}
+
+	private fun openRecipeDetails(recipeId: Int, stack: NavBackStack<NavKey> = activeStack) {
 		while (
 			stack.lastOrNull() is RecipeDetailsDestination ||
 				stack.lastOrNull() is RecipeCookingDestination

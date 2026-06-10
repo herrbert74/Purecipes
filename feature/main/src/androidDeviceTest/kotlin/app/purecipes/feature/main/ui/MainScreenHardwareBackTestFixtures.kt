@@ -145,6 +145,7 @@ internal fun recipeSearchViewModelForDeviceTest(
 internal fun recipeDetailsViewModelForDeviceTest(
 	recipeId: Int,
 	recipeDetailsRepository: FakeRecipeDetailsRepository,
+	sessionKey: String? = null,
 ): RecipeDetailsViewModel = RecipeDetailsViewModel(
 	addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
@@ -163,7 +164,7 @@ internal fun recipeDetailsViewModelForDeviceTest(
 		},
 	),
 	recipeId = recipeId,
-	sessionKey = null,
+	sessionKey = sessionKey,
 )
 
 internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesViewModel(
