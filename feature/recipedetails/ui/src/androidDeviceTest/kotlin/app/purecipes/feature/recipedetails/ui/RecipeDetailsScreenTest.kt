@@ -13,8 +13,8 @@ import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
@@ -100,7 +100,7 @@ private fun recipeDetailsViewModelForTest(
 ): RecipeDetailsViewModel = RecipeDetailsViewModel(
 	addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
-	getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 	markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),

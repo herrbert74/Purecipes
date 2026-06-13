@@ -18,6 +18,8 @@ class FakeMeasurementPreferencesRepository(
 
 	override suspend fun getMeasurementPreferences(): MeasurementPreferences = flow.value
 
+	override suspend fun syncMeasurementPreferencesWithRemote() = Unit
+
 	override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {
 		flow.value = preferences
 	}

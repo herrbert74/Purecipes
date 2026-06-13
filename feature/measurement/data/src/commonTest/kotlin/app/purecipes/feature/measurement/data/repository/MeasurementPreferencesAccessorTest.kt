@@ -24,6 +24,39 @@ import kotlin.test.Test
 class MeasurementPreferencesAccessorTest {
 
 	@Test
+	fun `get returns local preferences without overwriting from remote`() = runTest {
+		val localPreferences = MeasurementPreferences(
+			preferredSystem = MeasurementSystem.METRIC,
+			formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED,
+		)
+		val remotePreferences = MeasurementPreferences(
+			preferredSystem = MeasurementSystem.IMPERIAL,
+			formatHandling = RecipeFormatHandling.KEEP_AS_IS,
+		)
+		val session = AuthenticatedSession(
+			accessToken = "session-token",
+			expiresAtEpochSeconds = 4_000_000_000,
+			user = AuthenticatedBackendUser(
+				id = "1",
+				email = "user@example.com",
+				displayName = "User",
+				firstName = "User",
+				familyName = "Example",
+				profileImageUrl = null,
+				provider = "GOOGLE",
+			),
+		)
+		val remoteDataSource = FakeMeasurementPreferencesRemoteDataSource(remotePreferences)
+		val accessor = MeasurementPreferencesAccessor(
+			localDataSource = FakeMeasurementPreferencesLocalDataSource(localPreferences),
+			remoteDataSource = remoteDataSource,
+			sessionTokenStore = FakeSessionTokenStore(session),
+		)
+
+		accessor.getMeasurementPreferences() shouldBe localPreferences
+	}
+
+	@Test
 	fun `save completes remote sync even when caller is cancelled`() = runTest {
 		val initialPreferences = MeasurementPreferences(
 			preferredSystem = MeasurementSystem.METRIC,

@@ -11,14 +11,18 @@ import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.MeasurementPreferences
+import app.purecipes.shared.domain.model.MeasurementSystem
+import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
@@ -30,6 +34,7 @@ import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
@@ -47,6 +52,54 @@ class RecipeDetailsViewModelTest {
 	)
 
 	@Test
+	fun `measurement preference changes reprocess loaded recipe`() = runViewModelTest {
+		val recipe = fakeRecipeDetails(
+			ingredientGroups = listOf(
+				IngredientGroup(
+					ingredients = listOf("2 cups flour"),
+				),
+			),
+			measurementSystem = MeasurementSystem.IMPERIAL,
+		)
+		val measurementRepository = FakeMeasurementPreferencesRepository(
+			defaults = MeasurementPreferences(
+				preferredSystem = MeasurementSystem.METRIC,
+				formatHandling = RecipeFormatHandling.KEEP_AS_IS,
+			),
+		)
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(recipe)),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			sessionKey = null,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+
+		advanceUntilIdle()
+		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single() shouldBe "2 cups flour"
+
+		measurementRepository.saveMeasurementPreferences(
+			MeasurementPreferences(
+				preferredSystem = MeasurementSystem.METRIC,
+				formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED,
+			),
+		)
+		advanceUntilIdle()
+
+		viewModel.isRecipeConverted shouldBe true
+		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single().orEmpty() shouldContain "mL"
+	}
+
+	@Test
 	fun detailsViewModelLoadsRecipeDetails() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val repository = FakeRecipeDetailsRepository(Ok(recipe))
@@ -55,7 +108,7 @@ class RecipeDetailsViewModelTest {
 			recipeId = recipe.id,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
@@ -83,7 +136,7 @@ class RecipeDetailsViewModelTest {
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
@@ -112,7 +165,7 @@ class RecipeDetailsViewModelTest {
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
@@ -144,7 +197,7 @@ class RecipeDetailsViewModelTest {
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
@@ -200,7 +253,7 @@ class RecipeDetailsViewModelTest {
 			recipeId = 42,
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),

@@ -9,8 +9,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 
 @Inject
@@ -22,27 +20,15 @@ class MeasurementPreferencesAccessor(
 ) : MeasurementPreferencesRepository {
 
 	override fun observeMeasurementPreferences(): Flow<MeasurementPreferences> {
-		return flow {
-			syncRemoteToLocalIfAuthenticated()
-			emitAll(localDataSource.observeMeasurementPreferences())
-		}
+		return localDataSource.observeMeasurementPreferences()
 	}
 
 	override suspend fun getMeasurementPreferences(): MeasurementPreferences {
-		val localPreferences = localDataSource.getMeasurementPreferences()
-		if (!isAuthenticated()) {
-			return localPreferences
-		}
+		return localDataSource.getMeasurementPreferences()
+	}
 
-		val result = remoteDataSource.getMeasurementPreferences()
-		if (result.isOk) {
-			return result.component1()
-				?.also(localDataSource::saveMeasurementPreferences)
-				?: localPreferences
-		}
-
-		syncLocalToRemote(localPreferences)
-		return localPreferences
+	override suspend fun syncMeasurementPreferencesWithRemote() {
+		syncRemoteToLocalIfAuthenticated()
 	}
 
 	override suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences) {

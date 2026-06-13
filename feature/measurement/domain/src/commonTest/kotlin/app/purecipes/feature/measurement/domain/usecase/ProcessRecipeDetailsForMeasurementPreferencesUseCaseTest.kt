@@ -6,9 +6,63 @@ import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 
 class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
+
+	@Test
+	fun `convert to preferred transforms imperial recipe ingredients`() {
+		val useCase = ProcessRecipeDetailsForMeasurementPreferencesUseCase()
+		val recipe = RecipeDetails(
+			id = 1,
+			title = "Cake",
+			description = "Imperial recipe",
+			ingredientGroups = listOf(
+				IngredientGroup(
+					ingredients = listOf("2 cups flour"),
+				),
+			),
+			steps = listOf("Bake at 350F"),
+			measurementSystem = MeasurementSystem.IMPERIAL,
+		)
+		val preferences = MeasurementPreferences(
+			preferredSystem = MeasurementSystem.METRIC,
+			formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED,
+		)
+
+		val result = useCase(recipe, preferences)
+
+		result.isConverted shouldBe true
+		result.recipe.ingredientGroups.single().ingredients.single() shouldContain "mL"
+		result.recipe.steps.single() shouldContain "C"
+	}
+
+	@Test
+	fun `convert to preferred detects measurement system when metadata is missing`() {
+		val useCase = ProcessRecipeDetailsForMeasurementPreferencesUseCase()
+		val recipe = RecipeDetails(
+			id = 2,
+			title = "Bread",
+			description = "Imperial recipe without metadata",
+			ingredientGroups = listOf(
+				IngredientGroup(
+					ingredients = listOf("3 lb bread flour"),
+				),
+			),
+			steps = emptyList(),
+			measurementSystem = null,
+		)
+		val preferences = MeasurementPreferences(
+			preferredSystem = MeasurementSystem.METRIC,
+			formatHandling = RecipeFormatHandling.CONVERT_TO_PREFERRED,
+		)
+
+		val result = useCase(recipe, preferences)
+
+		result.isConverted shouldBe true
+		result.recipe.ingredientGroups.single().ingredients.single() shouldContain "kg"
+	}
 
 	@Test
 	fun `mixed measurement recipes stay unchanged when user prefers metric conversion`() {

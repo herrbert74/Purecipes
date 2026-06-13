@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
+import app.purecipes.feature.measurement.domain.usecase.SyncMeasurementPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
@@ -24,6 +25,7 @@ class SettingsViewModel(
 	observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val resetMeasurementPreferences: ResetMeasurementPreferencesUseCase,
 	private val saveMeasurementPreferences: SaveMeasurementPreferencesUseCase,
+	private val syncMeasurementPreferences: SyncMeasurementPreferencesUseCase,
 	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
 	private val saveNotificationPreferences: SaveNotificationPreferencesUseCase,
 	private val sendTestNotification: SendTestNotificationUseCase,
@@ -32,6 +34,12 @@ class SettingsViewModel(
 	val measurementPreferences: Flow<MeasurementPreferences> = observeMeasurementPreferences()
 
 	val notificationPreferences: Flow<NotificationPreferences> = observeNotificationPreferences()
+
+	init {
+		viewModelScope.launch {
+			syncMeasurementPreferences()
+		}
+	}
 
 	fun onMeasurementPreferencesChange(preferences: MeasurementPreferences) {
 		viewModelScope.launch {
