@@ -3,7 +3,6 @@ package app.purecipes.shared.ui.theme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.font.FontWeight
 import org.jetbrains.compose.resources.Font
 import purecipes.shared.ui.generated.resources.Res
@@ -36,7 +35,6 @@ fun getAppTypography(): Typography {
 		titleMedium = baseline.titleMedium.copy(
 			fontFamily = cabinFontFamily,
 			fontWeight = FontWeight.Bold,
-			fontStyle = Italic
 		),
 		titleSmall = baseline.titleSmall.copy(fontFamily = cabinFontFamily),
 		bodyLarge = baseline.bodyLarge.copy(fontFamily = cabinFontFamily),
