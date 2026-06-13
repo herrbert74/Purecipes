@@ -8,9 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
@@ -21,12 +22,13 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AssistedInject
 class StepByStepCookingViewModel(
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
-	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val trackEvent: TrackEventUseCase,
 	@Assisted private val recipeId: Int,
@@ -44,7 +46,17 @@ class StepByStepCookingViewModel(
 	var currentStepIndex by mutableIntStateOf(0)
 		private set
 
+	private var baseRecipeDetails: RecipeDetails? = null
+
+	private var measurementPreferences: MeasurementPreferences? = null
+
 	init {
+		viewModelScope.launch {
+			observeMeasurementPreferences().collectLatest { preferences ->
+				measurementPreferences = preferences
+				applyMeasurementPreferences()
+			}
+		}
 		loadRecipe()
 	}
 
@@ -66,17 +78,21 @@ class StepByStepCookingViewModel(
 		currentStepIndex = stepIndex.coerceIn(0, lastIndex)
 	}
 
+	private fun applyMeasurementPreferences() {
+		val rawRecipe = baseRecipeDetails ?: return
+		val preferences = measurementPreferences ?: return
+		recipeDetails = processRecipeDetailsForMeasurementPreferences(rawRecipe, preferences).recipe
+	}
+
 	private fun loadRecipe() {
 		viewModelScope.launch {
 			isLoading = true
 			errorMessage = null
 			recipeDetails = null
 
-			val preferences = getMeasurementPreferences()
 			val outcome = getRecipeDetails(recipeId)
-			recipeDetails = outcome.get()?.let { recipe ->
-				processRecipeDetailsForMeasurementPreferences(recipe, preferences).recipe
-			}
+			baseRecipeDetails = outcome.get()
+			applyMeasurementPreferences()
 			if (recipeDetails != null) {
 				trackEvent(AnalyticsEvent.CookingStarted(recipeId))
 			}

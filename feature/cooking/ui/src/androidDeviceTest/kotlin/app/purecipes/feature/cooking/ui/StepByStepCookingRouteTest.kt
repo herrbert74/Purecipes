@@ -8,7 +8,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.shared.domain.model.Cuisine
@@ -82,7 +82,7 @@ private fun stepByStepCookingViewModelForTest(
 	recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(fakeRecipeDetails()),
 ): StepByStepCookingViewModel = StepByStepCookingViewModel(
 	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
-	getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	recipeId = recipeId,

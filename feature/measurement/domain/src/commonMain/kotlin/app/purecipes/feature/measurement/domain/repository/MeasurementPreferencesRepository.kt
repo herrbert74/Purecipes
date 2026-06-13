@@ -9,6 +9,8 @@ interface MeasurementPreferencesRepository {
 
 	suspend fun getMeasurementPreferences(): MeasurementPreferences
 
+	suspend fun syncMeasurementPreferencesWithRemote()
+
 	suspend fun saveMeasurementPreferences(preferences: MeasurementPreferences)
 
 	suspend fun resetMeasurementPreferences()

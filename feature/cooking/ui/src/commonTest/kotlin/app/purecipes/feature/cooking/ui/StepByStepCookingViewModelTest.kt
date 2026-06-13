@@ -1,7 +1,7 @@
 package app.purecipes.feature.cooking.ui
 
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -25,7 +25,7 @@ class StepByStepCookingViewModelTest {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = StepByStepCookingViewModel(
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			recipeId = recipe.id,
@@ -53,7 +53,7 @@ class StepByStepCookingViewModelTest {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = StepByStepCookingViewModel(
 			getRecipeDetails = GetRecipeDetailsUseCase(repository),
-			getMeasurementPreferences = GetMeasurementPreferencesUseCase(measurementRepository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			recipeId = recipe.id,

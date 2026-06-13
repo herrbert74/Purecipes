@@ -17,7 +17,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 		recipe: RecipeDetails,
 		preferences: MeasurementPreferences,
 	): ProcessedRecipeDetails {
-		val originalMeasurementSystem = recipe.measurementSystem
+		val originalMeasurementSystem = recipe.effectiveMeasurementSystem()
 		val preferredSystem = preferences.preferredSystem
 		val isMismatch =
 			originalMeasurementSystem != null &&
@@ -50,6 +50,34 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 				preferences.formatHandling == RecipeFormatHandling.KEEP_AS_IS &&
 					recipe.id !in preferences.notificationSeenRecipeIds,
 		)
+	}
+
+	private fun RecipeDetails.effectiveMeasurementSystem(): MeasurementSystem? {
+		return measurementSystem ?: detectMeasurementSystem(ingredientGroups)
+	}
+
+	private fun detectMeasurementSystem(ingredientGroups: List<IngredientGroup>): MeasurementSystem? {
+		var imperialHits = 0
+		var metricHits = 0
+		ingredientGroups.asSequence()
+			.flatMap { it.ingredients.asSequence() }
+			.forEach { ingredient ->
+				ingredientConversionRegex.findAll(ingredient).forEach { match ->
+					val unitInfo = unitInfoFor(match.groups[SECOND_CAPTURE_GROUP]?.value ?: return@forEach)
+						?: return@forEach
+					when (unitInfo.system) {
+						MeasurementSystem.IMPERIAL -> imperialHits += 1
+						MeasurementSystem.METRIC -> metricHits += 1
+						MeasurementSystem.MIXED -> Unit
+					}
+				}
+			}
+		return when {
+			imperialHits == 0 && metricHits == 0 -> null
+			imperialHits > 0 && metricHits > 0 -> MeasurementSystem.MIXED
+			imperialHits > 0 -> MeasurementSystem.IMPERIAL
+			else -> MeasurementSystem.METRIC
+		}
 	}
 
 	private fun RecipeDetails.convertTo(preferredSystem: MeasurementSystem): RecipeDetails {

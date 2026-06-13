@@ -14,8 +14,8 @@ import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
 import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
@@ -33,6 +33,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 private const val COOKBOOK_PICKER_PAGE_SIZE = 100
@@ -41,7 +42,7 @@ private const val COOKBOOK_PICKER_PAGE_SIZE = 100
 class RecipeDetailsViewModel(
 	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
-	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
+	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
@@ -91,6 +92,12 @@ class RecipeDetailsViewModel(
 	private var measurementPreferences: MeasurementPreferences? = null
 
 	init {
+		viewModelScope.launch {
+			observeMeasurementPreferences().collectLatest { preferences ->
+				measurementPreferences = preferences
+				applyMeasurementPreferences()
+			}
+		}
 		loadRecipe()
 	}
 
@@ -231,6 +238,20 @@ class RecipeDetailsViewModel(
 		}
 	}
 
+	private fun applyMeasurementPreferences() {
+		val rawRecipe = baseRecipeDetails ?: return
+		val preferences = measurementPreferences ?: return
+		val processedRecipe = processRecipeDetailsForMeasurementPreferences(
+			recipe = rawRecipe,
+			preferences = preferences,
+		)
+		recipeDetails = processedRecipe.recipe
+		isRecipeConverted = processedRecipe.isConverted
+		if (!isLoading) {
+			showMeasurementMismatchDialog = processedRecipe.shouldShowMismatchNotification
+		}
+	}
+
 	private fun loadRecipe() {
 		viewModelScope.launch {
 			isLoading = true
@@ -239,18 +260,9 @@ class RecipeDetailsViewModel(
 			recipeDetails = null
 			showMeasurementMismatchDialog = false
 
-			measurementPreferences = getMeasurementPreferences()
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
-			val processedRecipe = baseRecipeDetails?.let { loadedRecipe ->
-				processRecipeDetailsForMeasurementPreferences(
-					recipe = loadedRecipe,
-					preferences = measurementPreferences ?: return@let null,
-				)
-			}
-			recipeDetails = processedRecipe?.recipe
-			isRecipeConverted = processedRecipe?.isConverted == true
-			showMeasurementMismatchDialog = processedRecipe?.shouldShowMismatchNotification == true
+			applyMeasurementPreferences()
 			if (recipeDetails != null) {
 				trackEvent(AnalyticsEvent.RecipeViewed(recipeId))
 			}
