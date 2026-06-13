@@ -35,7 +35,7 @@ import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
-internal const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
+const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
 
 @Composable
 internal fun RecipeDetailsContent(

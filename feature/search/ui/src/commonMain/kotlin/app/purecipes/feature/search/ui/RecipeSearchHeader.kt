@@ -1,6 +1,7 @@
 package app.purecipes.feature.search.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -125,7 +127,13 @@ internal fun RecipeSearchHeader(
 								requestFocus { false }
 							},
 						singleLine = true,
-						placeholder = { Text(RECIPE_SEARCH_TITLE) },
+						placeholder = {
+							Text(
+								text = RECIPE_SEARCH_TITLE,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis,
+							)
+						},
 						keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
 						keyboardActions = KeyboardActions(
 							onSearch = { onSearchImeSearch() },
@@ -227,6 +235,45 @@ private fun RecipeSearchHeaderExpandedLightPreview() {
 			RecipeSearchHeader(
 				isSearchBarActive = true,
 				searchQuery = "pasta",
+				hasActiveFilters = false,
+				onFilterClick = {},
+				onExpandSearch = {},
+				onCloseSearch = {},
+				onSearchQueryChange = {},
+				onSearchImeSearch = {},
+				onClearSearchText = {},
+			)
+		}
+	}
+}
+
+@Preview(
+	name = "Recipe search header expanded narrow screen",
+	widthDp = 320,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun RecipeSearchHeaderExpandedNarrowScreenPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Column(
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+		) {
+			RecipeSearchHeader(
+				isSearchBarActive = true,
+				searchQuery = "",
+				hasActiveFilters = false,
+				onFilterClick = {},
+				onExpandSearch = {},
+				onCloseSearch = {},
+				onSearchQueryChange = {},
+				onSearchImeSearch = {},
+				onClearSearchText = {},
+			)
+			RecipeSearchHeader(
+				isSearchBarActive = true,
+				searchQuery = "extraordinarily long pasta recipe title search query",
 				hasActiveFilters = false,
 				onFilterClick = {},
 				onExpandSearch = {},

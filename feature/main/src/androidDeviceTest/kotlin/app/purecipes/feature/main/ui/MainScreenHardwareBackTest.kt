@@ -13,14 +13,19 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.favorites.ui.FavoritesScreen
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.recipedetails.ui.RECIPE_DETAILS_CONTENT_TAG
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.RecipeSearchScreen
@@ -45,7 +50,7 @@ class MainScreenHardwareBackTest {
 		openRecipeDetails(environment)
 		pressHardwareBack()
 
-		composeRule.onNodeWithText("1 recipes found").assertIsDisplayed()
+		assertSearchResultsCountDisplayed()
 		composeRule.onAllNodesWithText("Start cooking").assertCountEquals(0)
 	}
 
@@ -59,8 +64,7 @@ class MainScreenHardwareBackTest {
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
 		selectMainTab(environment, MainTabStackId.Search)
 
-		composeRule.onNodeWithText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION).assertIsDisplayed()
-		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
+		assertRecipeDetailsScreenDisplayed()
 	}
 
 	@Test
@@ -71,7 +75,7 @@ class MainScreenHardwareBackTest {
 		openRecipeDetails(environment)
 		selectMainTab(environment, MainTabStackId.Search)
 
-		composeRule.onNodeWithText("1 recipes found").assertIsDisplayed()
+		assertSearchResultsCountDisplayed()
 		composeRule.onAllNodesWithText("Start cooking").assertCountEquals(0)
 	}
 
@@ -84,7 +88,7 @@ class MainScreenHardwareBackTest {
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
 		pressHardwareBack()
 
-		composeRule.onNodeWithText("1 recipes found").assertIsDisplayed()
+		assertSearchResultsCountDisplayed()
 	}
 
 	private fun setUpHarness(environment: HardwareBackTestEnvironment) {
@@ -103,6 +107,7 @@ class MainScreenHardwareBackTest {
 					backStackDepth = tabBackStack.size,
 					onBack = {
 						if (!mainViewModel.onBack() && mainViewModel.shouldExit()) {
+							@Suppress("UnusedExpression")
 							Unit
 						}
 					},
@@ -168,7 +173,7 @@ class MainScreenHardwareBackTest {
 			}
 		}
 		composeRule.waitForIdle()
-		composeRule.onNodeWithText("1 recipes found").assertIsDisplayed()
+		assertSearchResultsCountDisplayed()
 	}
 
 	private fun openRecipeDetails(environment: HardwareBackTestEnvironment) {
@@ -176,7 +181,21 @@ class MainScreenHardwareBackTest {
 			environment.mainViewModel.onRecipeSelected(environment.recipeId)
 		}
 		composeRule.waitForIdle()
+		assertRecipeDetailsScreenDisplayed()
+	}
+
+	private fun assertSearchResultsCountDisplayed() {
+		composeRule.onNodeWithText("1 recipes found")
+			.performScrollTo()
+			.assertIsDisplayed()
+	}
+
+	private fun assertRecipeDetailsScreenDisplayed() {
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION))
 		composeRule.onNodeWithText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION).assertIsDisplayed()
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasText("Start cooking"))
 		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
 	}
 
