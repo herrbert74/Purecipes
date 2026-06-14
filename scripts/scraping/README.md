@@ -77,6 +77,32 @@ Also required:
 
 Run from the repo root or any subdirectory (the script locates `settings.gradle.kts`).
 
+## Ingredient normalization tests
+
+Ingredient parsing and sanitization (including inserting a space between quantities and units like `60g` → `60 g`) lives in [`RecipeIngredientNormalization.kt`](RecipeIngredientNormalization.kt). Run the offline test script from the repo root:
+
+```bash
+kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts
+```
+
+Add cases to `recipe_site_scraper_ingredient_test.main.kts` when fixing new ingredient formatting edge cases.
+
+## Normalize existing ingredients
+
+To fix ingredient text already stored in PostgreSQL and/or saved scrape JSON files (without re-scraping, nutrition, or enrichment):
+
+```bash
+./scripts/scraping/normalize_existing_ingredients.sh \
+  --json-dir ~/documents/output/recipes \
+  --db-name purecipes \
+  --dry-run true \
+  --verbose true
+```
+
+The shell wrapper clears the Kotlin script cache first. If you run `kotlin scripts/scraping/normalize_existing_ingredients.main.kts` directly, stale cached rules may cause zero updates; delete `~/Library/Caches/main.kts.compiled.cache/` when that happens.
+
+Remove `--dry-run true` to apply changes. Repeat `--json-dir` for multiple output folders. Database flags are optional; omit them to update JSON only.
+
 ## Examples
 
 Web mode — scrape and import:

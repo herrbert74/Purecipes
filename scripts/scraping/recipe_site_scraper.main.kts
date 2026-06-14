@@ -1,6 +1,7 @@
 #!/usr/bin/env kotlin
 @file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 @file:DependsOn("org.postgresql:postgresql:42.7.11")
+@file:Import("RecipeIngredientNormalization.kt")
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -656,222 +657,15 @@ private fun resolvePageUri(pageUrl: String, timeoutSeconds: Long): Pair<URI, Htt
 
 fun parseInt(value: String?): Int? = value?.trim()?.toIntOrNull()
 
-val ingredientHeadingPrefixFilters = listOf(
-	"for ",
-	"special equipment",
-	"equipment list",
-	"in the box",
-	"from your cupboard",
-	"shopping list",
-	"optional",
-	"serve with",
-	"to garnish",
-)
-
-val ingredientHeadingExactFilters = setOf(
-	"for",
-	"dough",
-	"filling",
-	"garnish",
-	"garnishes",
-	"marinade",
-	"sauce",
-	"salad",
-	"toppings",
-)
-
-val maxIngredientLength = 255
-
-val ingredientQuantityWithUnitPattern =
-	"""(?:\d+(?:\s+\d+/\d+|/\d+)?|\d+\s+\d+/\d+)\s*(?:""" +
-		"""pound|pounds|lb|lbs|ounce|ounces|oz|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|""" +
-		"""cup|cups|gram|grams|g|milliliters?|ml|liters?|liter|l|kilogram|kilograms|kg|clove|cloves|""" +
-		"""can|cans|package|packages|pinch|dash|bunch|head|stick|sticks|slice|slices|piece|pieces|""" +
-		"""quart|quarts|qt|gallon|gallons|pint|pints|fluid\s+ounce|fl\.?\s*oz)"""
-
-val concatenatedIngredientSplitRegex = Regex(
-	pattern = """(?<=[\p{L})])(?=$ingredientQuantityWithUnitPattern)""",
-	options = setOf(RegexOption.IGNORE_CASE),
-)
-
-fun splitConcatenatedIngredient(line: String): List<String> {
-	val splitPositions = concatenatedIngredientSplitRegex
-		.findAll(line)
-		.map { it.range.first }
-		.filter { it > 0 }
-		.toList()
-	if (splitPositions.isEmpty()) {
-		return listOf(line)
-	}
-
-	val parts = mutableListOf<String>()
-	var start = 0
-	splitPositions.forEach { position ->
-		val part = line.substring(start, position).trim()
-		if (part.isNotBlank()) {
-			parts += part
-		}
-		start = position
-	}
-	val lastPart = line.substring(start).trim()
-	if (lastPart.isNotBlank()) {
-		parts += lastPart
-	}
-	return parts.ifEmpty { listOf(line) }
-}
-
-fun splitIngredientLine(raw: String): List<String> {
-	val normalized = raw.replace("\r\n", "\n").trim()
-	if (normalized.isBlank()) {
-		return emptyList()
-	}
-
-	return normalized
-		.split('\n')
-		.flatMap { line ->
-			val trimmedLine = line.trim()
-			if (trimmedLine.isBlank()) {
-				emptyList()
-			} else {
-				val shouldSplitConcatenated =
-					trimmedLine.length > maxIngredientLength ||
-						concatenatedIngredientSplitRegex.findAll(trimmedLine).any { it.range.first > 0 }
-				if (shouldSplitConcatenated) {
-					splitConcatenatedIngredient(trimmedLine)
-				} else {
-					listOf(trimmedLine)
-				}
-			}
-		}
-}
-
 fun clampIngredientForDatabase(ingredient: String, sourceUrl: String): String {
-	if (ingredient.length <= maxIngredientLength) {
+	if (ingredient.length <= MAX_INGREDIENT_LENGTH) {
 		return ingredient
 	}
 	println(
-		"WARNING: ingredient exceeds $maxIngredientLength characters for $sourceUrl; truncating: " +
+		"WARNING: ingredient exceeds $MAX_INGREDIENT_LENGTH characters for $sourceUrl; truncating: " +
 			ingredient.take(80) + "…"
 	)
-	return ingredient.take(maxIngredientLength)
-}
-
-fun appendSanitizedIngredientLines(currentItems: MutableList<String>, rawItem: String) {
-	splitIngredientLine(rawItem).forEach { line ->
-		sanitizeIngredientLine(line)?.let { sanitizedItem ->
-			currentItems += sanitizedItem
-		}
-	}
-}
-
-val ingredientToolKeywords = listOf(
-	"baking sheet",
-	"blender",
-	"board",
-	"bowl",
-	"cutter",
-	"colander",
-	"food processor",
-	"grill pan",
-	"instant pot",
-	"kitchen paper",
-	"knife",
-	"mandoline",
-	"microplane",
-	"pan",
-	"pastry bag",
-	"pot",
-	"pressure cooker",
-	"saucepan",
-	"sheet",
-	"skewer",
-	"slotted spoon",
-	"spoon",
-	"toothpick",
-	"whisk",
-)
-
-fun sanitizeIngredientLine(raw: String): String? {
-	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
-	if (normalizedWhitespace.isBlank()) {
-		return null
-	}
-
-	val lower = normalizedWhitespace.lowercase(Locale.ROOT)
-	val hasDigit = lower.any(Char::isDigit)
-	val isHeadingLike =
-		lower.endsWith(':') ||
-			ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
-			ingredientHeadingExactFilters.contains(lower) ||
-			lower.contains("recipe follows")
-	val isEquipmentLike = !hasDigit && ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
-
-	return if (isHeadingLike || isEquipmentLike) {
-		null
-	} else {
-		normalizedWhitespace
-	}
-}
-
-fun isIngredientGroupHeading(raw: String): Boolean {
-	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
-	if (normalizedWhitespace.isBlank()) {
-		return false
-	}
-
-	val lower = normalizedWhitespace.lowercase(Locale.ROOT)
-	return lower.endsWith(':') ||
-		ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
-		ingredientHeadingExactFilters.contains(lower) ||
-		lower.contains("recipe follows")
-}
-
-fun normalizeIngredientGroupName(raw: String): String? {
-	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
-	if (normalizedWhitespace.isBlank()) {
-		return null
-	}
-
-	val withoutColon = normalizedWhitespace.removeSuffix(":").trim()
-	val withoutPrefix = withoutColon
-		.removePrefix("For the ")
-		.removePrefix("for the ")
-		.removePrefix("For ")
-		.removePrefix("for ")
-		.trim()
-
-	return withoutPrefix.ifBlank { null }
-}
-
-fun normalizeIngredientGroups(
-	groupName: String?,
-	rawItems: List<String>,
-): List<Pair<String?, List<String>>> {
-	if (rawItems.isEmpty()) {
-		return emptyList()
-	}
-
-	val normalizedGroups = mutableListOf<Pair<String?, List<String>>>()
-	var currentGroupName = groupName
-	var currentItems = mutableListOf<String>()
-
-	rawItems.forEach { rawItem ->
-		if (isIngredientGroupHeading(rawItem)) {
-			if (currentItems.isNotEmpty()) {
-				normalizedGroups += (currentGroupName to currentItems.toList())
-			}
-			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
-			currentItems = mutableListOf()
-		} else {
-			appendSanitizedIngredientLines(currentItems, rawItem)
-		}
-	}
-
-	if (currentItems.isNotEmpty()) {
-		normalizedGroups += (currentGroupName to currentItems.toList())
-	}
-
-	return normalizedGroups
+	return ingredient.take(MAX_INGREDIENT_LENGTH)
 }
 
 fun parseRecipe(rawJson: String): RecipeData? {
