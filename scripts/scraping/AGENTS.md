@@ -114,5 +114,7 @@ This is irreversible unless you have a backup or the JSON files under the scrape
 
 For scraper script changes:
 - **Detekt compliance**: Run `./gradlew detektAll` to verify linting rules pass
+- **Ingredient normalization tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
+- **Existing ingredient backfill**: Run `./scripts/scraping/normalize_existing_ingredients.sh` (clears Kotlin script cache) to update scraped DB rows and/or saved JSON archives
 - **Functional testing**: Test changes against actual recipe websites (or use `--mode json` with previously saved files for offline testing)
 - **Schema alignment**: After backend schema changes, verify scraper schema and insertion logic still work end-to-end
