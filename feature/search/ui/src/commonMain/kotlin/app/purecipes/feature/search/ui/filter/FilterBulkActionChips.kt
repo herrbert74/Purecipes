@@ -15,11 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
+internal const val MIN_SELECTED_COUNT_FOR_CLEAR_ALL = 2
+
 @Composable
 internal fun FilterBulkActionChips(
 	onSelectAll: () -> Unit,
 	onClearAll: () -> Unit,
 	modifier: Modifier = Modifier,
+	showClearAll: Boolean = true,
 	selectAllTestTag: String? = null,
 	clearAllTestTag: String? = null,
 ) {
@@ -45,6 +48,39 @@ internal fun FilterBulkActionChips(
 			},
 			modifier = selectAllTestTag?.let { Modifier.testTag(it) } ?: Modifier,
 		)
+		if (showClearAll) {
+			AssistChip(
+				onClick = onClearAll,
+				label = { Text(text = "Clear all") },
+				leadingIcon = {
+					Icon(
+						imageVector = Icons.Default.Clear,
+						contentDescription = null,
+					)
+				},
+				modifier = clearAllTestTag?.let { Modifier.testTag(it) } ?: Modifier,
+			)
+		}
+	}
+}
+
+@Composable
+internal fun FilterClearActionChip(
+	onClearAll: () -> Unit,
+	modifier: Modifier = Modifier,
+	clearAllTestTag: String? = null,
+) {
+	FlowRow(
+		modifier = modifier
+			.fillMaxWidth()
+			.padding(
+				start = PurecipesTheme.space.m,
+				end = PurecipesTheme.space.m,
+				bottom = PurecipesTheme.space.xs,
+			),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+	) {
 		AssistChip(
 			onClick = onClearAll,
 			label = { Text(text = "Clear all") },

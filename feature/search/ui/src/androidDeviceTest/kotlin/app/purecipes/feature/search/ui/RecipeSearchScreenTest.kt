@@ -25,7 +25,6 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
-import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_CLEAR_ALL_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -189,7 +188,26 @@ class RecipeSearchScreenTest {
 	}
 
 	@Test
-	fun whenSignedInOpeningPantryTabShowsBulkActionChips() = runRecompositionTrackingUiTest {
+	fun whenSignedInRecipeFiltersTabHasNoSelectAllActions() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onAllNodesWithText("Select all").assertCountEquals(0)
+	}
+
+	@Test
+	fun whenSignedInOpeningPantryTabShowsSelectAllChipOnlyWhenPantryEmpty() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
@@ -203,7 +221,33 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
 		waitForIdle()
 		onNodeWithTag(FILTER_PANTRY_BULK_SELECT_ALL_TAG).assertIsDisplayed()
-		onNodeWithTag(FILTER_PANTRY_BULK_CLEAR_ALL_TAG).assertIsDisplayed()
+		onAllNodesWithText("Clear all").assertCountEquals(0)
+	}
+
+	@Test
+	fun whenSignedInRecipeFiltersSectionShowsClearActionWhenTwoOrMoreSelected() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithText("Cuisine").performClick()
+		waitForIdle()
+		onNodeWithText("Italian").performClick()
+		waitForIdle()
+		onAllNodesWithText("Clear all").assertCountEquals(0)
+		onNodeWithText("French").performClick()
+		waitForIdle()
+		onNodeWithText("Clear all").assertIsDisplayed()
 	}
 
 	@Test
@@ -223,7 +267,7 @@ class RecipeSearchScreenTest {
 		onNodeWithText("Poultry & Eggs").performClick()
 		waitForIdle()
 		onAllNodesWithText("Select all").assertCountEquals(2)
-		onAllNodesWithText("Clear all").assertCountEquals(2)
+		onAllNodesWithText("Clear all").assertCountEquals(0)
 	}
 }
 

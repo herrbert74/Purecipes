@@ -38,6 +38,7 @@ internal fun IngredientFilterSection(
 		FilterBulkActionChips(
 			onSelectAll = { onSelectionChange(allItems) },
 			onClearAll = { onSelectionChange(emptySet()) },
+			showClearAll = availableIngredients.size >= MIN_SELECTED_COUNT_FOR_CLEAR_ALL,
 			selectAllTestTag = FILTER_PANTRY_BULK_SELECT_ALL_TAG,
 			clearAllTestTag = FILTER_PANTRY_BULK_CLEAR_ALL_TAG,
 		)
@@ -78,6 +79,7 @@ private fun IngredientGroupChips(
 					onClearAll = {
 						onSelectionChange(availableIngredients - group.items.toSet())
 					},
+					showClearAll = group.items.count { it in availableIngredients } >= MIN_SELECTED_COUNT_FOR_CLEAR_ALL,
 				)
 				FlowRow(
 					modifier = Modifier

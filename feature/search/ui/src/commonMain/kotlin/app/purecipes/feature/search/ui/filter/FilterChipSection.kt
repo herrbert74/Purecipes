@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -44,8 +42,6 @@ internal fun <T : Any> FilterChipSection(
 	Column(modifier = modifier) {
 		FilterSectionHeader(
 			title = title,
-			onSelectAll = { onSelectionChange(items.toSet()) },
-			onClearAll = { onSelectionChange(emptySet()) },
 			isCollapsed = collapsed,
 			onToggleCollapse = { collapsed = !collapsed },
 		)
@@ -54,22 +50,33 @@ internal fun <T : Any> FilterChipSection(
 			enter = expandVertically(),
 			exit = shrinkVertically(),
 		) {
-			FlowRow(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(horizontal = PurecipesTheme.space.m),
-				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
-			) {
-				items.forEach { item ->
-					FilterChip(
-						selected = item in selected,
-						onClick = {
-							val updated = if (item in selected) selected - item else selected + item
-							onSelectionChange(updated)
-						},
-						label = { Text(itemLabel(item)) },
+			Column {
+				AnimatedVisibility(
+					visible = selected.size >= MIN_SELECTED_COUNT_FOR_CLEAR_ALL,
+					enter = expandVertically(),
+					exit = shrinkVertically(),
+				) {
+					FilterClearActionChip(
+						onClearAll = { onSelectionChange(emptySet()) },
 					)
+				}
+				FlowRow(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = PurecipesTheme.space.m),
+					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+				) {
+					items.forEach { item ->
+						FilterChip(
+							selected = item in selected,
+							onClick = {
+								val updated = if (item in selected) selected - item else selected + item
+								onSelectionChange(updated)
+							},
+							label = { Text(itemLabel(item)) },
+						)
+					}
 				}
 			}
 		}
@@ -82,8 +89,6 @@ internal fun FilterSectionHeader(
 	modifier: Modifier = Modifier,
 	isCollapsed: Boolean = false,
 	onToggleCollapse: (() -> Unit)? = null,
-	onSelectAll: (() -> Unit)? = null,
-	onClearAll: (() -> Unit)? = null,
 ) {
 	val chevronRotation by animateFloatAsState(
 		targetValue = if (isCollapsed) -90f else 0f,
@@ -107,22 +112,6 @@ internal fun FilterSectionHeader(
 			style = PurecipesTheme.typography.titleSmall,
 			modifier = Modifier.weight(1f),
 		)
-		if (onSelectAll != null) {
-			IconButton(onClick = onSelectAll) {
-				Icon(
-					imageVector = Icons.Default.DoneAll,
-					contentDescription = "Select all $title",
-				)
-			}
-		}
-		if (onClearAll != null) {
-			IconButton(onClick = onClearAll) {
-				Icon(
-					imageVector = Icons.Default.Clear,
-					contentDescription = "Clear $title",
-				)
-			}
-		}
 		if (onToggleCollapse != null) {
 			IconButton(onClick = onToggleCollapse) {
 				Icon(

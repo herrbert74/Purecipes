@@ -3,11 +3,13 @@ package app.purecipes.feature.search.ui.filter
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,10 +35,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
@@ -109,50 +111,56 @@ private fun FilterBottomSheetContent(
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
 	} else {
 		var selectedTab by remember { mutableStateOf(FilterTab.Pantry) }
-		val tabContentHeightFraction = filterTabContentHeightFraction()
-		Column(modifier = Modifier.fillMaxWidth()) {
-			PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
-				Tab(
-					selected = selectedTab == FilterTab.Pantry,
-					onClick = { selectedTab = FilterTab.Pantry },
-					modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG),
-					text = { Text(text = "Pantry") },
-				)
-				Tab(
-					selected = selectedTab == FilterTab.RecipeFilters,
-					onClick = { selectedTab = FilterTab.RecipeFilters },
-					modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG),
-					text = { Text(text = "Recipe filters") },
-				)
+		BoxWithConstraints(
+			modifier = Modifier
+				.fillMaxWidth()
+				.fillMaxHeight(),
+		) {
+			val sheetMaxHeight = maxHeight
+			val tabContentHeightFraction = if (sheetMaxHeight < FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP.dp) {
+				FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL
+			} else {
+				FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE
 			}
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.fillMaxHeight(tabContentHeightFraction),
-			) {
-				when (selectedTab) {
-					FilterTab.Pantry -> PantryFilterTabContent(
-						pantryIngredients = pantryIngredients,
-						onPantryIngredientsChange = onPantryIngredientsChange,
+			val tabContentModifier = if (sheetMaxHeight != Dp.Infinity) {
+				Modifier.height(sheetMaxHeight * tabContentHeightFraction)
+			} else {
+				Modifier.fillMaxHeight(tabContentHeightFraction)
+			}
+			Column(modifier = Modifier.fillMaxWidth()) {
+				PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
+					Tab(
+						selected = selectedTab == FilterTab.Pantry,
+						onClick = { selectedTab = FilterTab.Pantry },
+						modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG),
+						text = { Text(text = "Pantry") },
 					)
+					Tab(
+						selected = selectedTab == FilterTab.RecipeFilters,
+						onClick = { selectedTab = FilterTab.RecipeFilters },
+						modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG),
+						text = { Text(text = "Recipe filters") },
+					)
+				}
+				Box(
+					modifier = Modifier
+						.fillMaxWidth()
+						.then(tabContentModifier),
+				) {
+					when (selectedTab) {
+						FilterTab.Pantry -> PantryFilterTabContent(
+							pantryIngredients = pantryIngredients,
+							onPantryIngredientsChange = onPantryIngredientsChange,
+						)
 
-					FilterTab.RecipeFilters -> RecipeFiltersTabContent(
-						filters = filters,
-						onFiltersChange = onFiltersChange,
-					)
+						FilterTab.RecipeFilters -> RecipeFiltersTabContent(
+							filters = filters,
+							onFiltersChange = onFiltersChange,
+						)
+					}
 				}
 			}
 		}
-	}
-}
-
-@Composable
-private fun filterTabContentHeightFraction(): Float {
-	val screenHeightDp = LocalConfiguration.current.screenHeightDp
-	return if (screenHeightDp < FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP) {
-		FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL
-	} else {
-		FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE
 	}
 }
 
