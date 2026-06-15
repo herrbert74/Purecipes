@@ -11,17 +11,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -51,6 +56,15 @@ private const val SCROLLBAR_MIN_THUMB_FRACTION = 0.1f
 
 internal const val FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG = "filterBottomSheetSignInPromptTitle"
 internal const val FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG = "filterBottomSheetGoToAccountButton"
+internal const val FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG = "filterBottomSheetPantryTab"
+internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG = "filterBottomSheetRecipeFiltersTab"
+internal const val FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG = "filterBottomSheetPantryIntro"
+internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG = "filterBottomSheetRecipeFiltersIntro"
+
+private enum class FilterTab {
+	Pantry,
+	RecipeFilters,
+}
 
 @Composable
 internal fun FilterBottomSheet(
@@ -90,119 +104,175 @@ private fun FilterBottomSheetContent(
 	if (!isSignedIn) {
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
 	} else {
-		val scrollState = rememberLazyListState()
-		Box(modifier = Modifier.fillMaxWidth()) {
-			LazyColumn(
-				state = scrollState,
-				contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
-			) {
-				item {
-					Text(
-						text = "We will show only the recipes that have no missing ingredients " +
-							"from your pantry, unless there are no complete matches.",
-						style = PurecipesTheme.typography.bodyMedium,
-						modifier = Modifier.padding(
-							start = PurecipesTheme.space.m,
-							end = PurecipesTheme.space.m,
-							top = PurecipesTheme.space.s,
-						),
-					)
-				}
-				item {
-					IngredientFilterSection(
-						availableIngredients = pantryIngredients,
-						onSelectionChange = onPantryIngredientsChange,
-					)
-				}
-				item {
-					Text(
-						text = "With the filters below you can get a more tailored result.",
-						style = PurecipesTheme.typography.bodyMedium,
-						modifier = Modifier.padding(
-							start = PurecipesTheme.space.m,
-							end = PurecipesTheme.space.m,
-							top = PurecipesTheme.space.m,
-						),
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Dietary Preferences",
-						items = DietaryPreference.entries.toImmutableList(),
-						selected = filters.dietaryPreferences.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(dietaryPreferences = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Cuisine",
-						items = Cuisine.entries.toImmutableList(),
-						selected = filters.cuisines.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(cuisines = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Meal Type",
-						items = MealType.entries.toImmutableList(),
-						selected = filters.mealTypes.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(mealTypes = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Cooking Time",
-						items = CookingTimeRange.entries.toImmutableList(),
-						selected = filters.cookingTimeRanges.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(cookingTimeRanges = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Difficulty Level",
-						items = DifficultyLevel.entries.toImmutableList(),
-						selected = filters.difficultyLevels.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(difficultyLevels = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Cooking Method",
-						items = CookingMethod.entries.toImmutableList(),
-						selected = filters.cookingMethods.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(cookingMethods = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Calorie Range",
-						items = CalorieRange.entries.toImmutableList(),
-						selected = filters.calorieRanges.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
-					)
-				}
-				item {
-					FilterChipSection(
-						title = "Nutrition",
-						items = NutritionFilter.entries.toImmutableList(),
-						selected = filters.nutritionFilters.toImmutableSet(),
-						itemLabel = { it.displayName },
-						onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
-					)
-				}
+		var selectedTab by remember { mutableStateOf(FilterTab.Pantry) }
+		Column(modifier = Modifier.fillMaxWidth()) {
+			PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
+				Tab(
+					selected = selectedTab == FilterTab.Pantry,
+					onClick = { selectedTab = FilterTab.Pantry },
+					modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG),
+					text = { Text(text = "Pantry") },
+				)
+				Tab(
+					selected = selectedTab == FilterTab.RecipeFilters,
+					onClick = { selectedTab = FilterTab.RecipeFilters },
+					modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG),
+					text = { Text(text = "Recipe filters") },
+				)
 			}
-			VerticalScrollbar(
-				state = scrollState,
-				modifier = Modifier.align(Alignment.CenterEnd),
+			when (selectedTab) {
+				FilterTab.Pantry -> PantryFilterTabContent(
+					pantryIngredients = pantryIngredients,
+					onPantryIngredientsChange = onPantryIngredientsChange,
+				)
+
+				FilterTab.RecipeFilters -> RecipeFiltersTabContent(
+					filters = filters,
+					onFiltersChange = onFiltersChange,
+				)
+			}
+		}
+	}
+}
+
+@Composable
+private fun PantryFilterTabContent(
+	pantryIngredients: ImmutableSet<String>,
+	onPantryIngredientsChange: (Set<String>) -> Unit,
+) {
+	FilterScrollableColumn {
+		item {
+			Text(
+				text = "We will show only the recipes that have no missing ingredients " +
+					"from your pantry, unless there are no complete matches.",
+				style = PurecipesTheme.typography.bodyMedium,
+				modifier = Modifier
+					.testTag(FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG)
+					.padding(
+						start = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.s,
+					),
 			)
 		}
+		item {
+			IngredientFilterSection(
+				availableIngredients = pantryIngredients,
+				onSelectionChange = onPantryIngredientsChange,
+			)
+		}
+	}
+}
+
+@Composable
+private fun RecipeFiltersTabContent(
+	filters: SearchFilters,
+	onFiltersChange: (SearchFilters) -> Unit,
+) {
+	FilterScrollableColumn {
+		item {
+			Text(
+				text = "With the filters below you can get a more tailored result.",
+				style = PurecipesTheme.typography.bodyMedium,
+				modifier = Modifier
+					.testTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG)
+					.padding(
+						start = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.s,
+					),
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Dietary Preferences",
+				items = DietaryPreference.entries.toImmutableList(),
+				selected = filters.dietaryPreferences.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(dietaryPreferences = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Cuisine",
+				items = Cuisine.entries.toImmutableList(),
+				selected = filters.cuisines.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(cuisines = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Meal Type",
+				items = MealType.entries.toImmutableList(),
+				selected = filters.mealTypes.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(mealTypes = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Cooking Time",
+				items = CookingTimeRange.entries.toImmutableList(),
+				selected = filters.cookingTimeRanges.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(cookingTimeRanges = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Difficulty Level",
+				items = DifficultyLevel.entries.toImmutableList(),
+				selected = filters.difficultyLevels.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(difficultyLevels = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Cooking Method",
+				items = CookingMethod.entries.toImmutableList(),
+				selected = filters.cookingMethods.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(cookingMethods = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Calorie Range",
+				items = CalorieRange.entries.toImmutableList(),
+				selected = filters.calorieRanges.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Nutrition",
+				items = NutritionFilter.entries.toImmutableList(),
+				selected = filters.nutritionFilters.toImmutableSet(),
+				itemLabel = { it.displayName },
+				onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
+			)
+		}
+	}
+}
+
+@Composable
+private fun FilterScrollableColumn(
+	content: LazyListScope.() -> Unit,
+) {
+	val scrollState = rememberLazyListState()
+	Box(modifier = Modifier.fillMaxWidth()) {
+		LazyColumn(
+			state = scrollState,
+			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
+			content = content,
+		)
+		VerticalScrollbar(
+			state = scrollState,
+			modifier = Modifier.align(Alignment.CenterEnd),
+		)
 	}
 }
 
