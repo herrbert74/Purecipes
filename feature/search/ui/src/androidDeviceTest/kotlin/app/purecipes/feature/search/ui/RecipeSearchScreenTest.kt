@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,9 +20,17 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
+import app.purecipes.feature.search.ui.filter.filterRecipeClearAllTag
+import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
@@ -144,7 +153,7 @@ class RecipeSearchScreenTest {
 	}
 
 	@Test
-	fun whenSignedInOpeningFiltersShowsPantrySection() = runRecompositionTrackingUiTest {
+	fun whenSignedInOpeningFiltersShowsPantryTabByDefault() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
@@ -157,7 +166,123 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
 		waitForIdle()
-		onNodeWithText("Pantry").assertIsDisplayed()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInSwitchingToRecipeFiltersTabShowsRecipeFiltersIntro() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInRecipeFiltersTabHasNoSelectAllActions() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onAllNodesWithText("Select all").assertCountEquals(0)
+	}
+
+	@Test
+	fun whenSignedInOpeningPantryTabShowsSelectAllChipOnlyWhenPantryEmpty() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_PANTRY_BULK_SELECT_ALL_TAG).assertIsDisplayed()
+		onAllNodesWithText("Clear all").assertCountEquals(0)
+	}
+
+	@Test
+	fun whenSignedInRecipeFiltersSectionShowsClearActionWhenTwoOrMoreSelected() = runRecompositionTrackingUiTest {
+		val cuisineSectionTag = filterSectionToggleTag("Cuisine")
+		val cuisineClearAllTag = filterRecipeClearAllTag("Cuisine")
+		val viewModel = recipeSearchViewModelForTest()
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(cuisineSectionTag).performClick()
+		waitForIdle()
+		runOnIdle {
+			viewModel.onFiltersChange(SearchFilters(cuisines = setOf(Cuisine.ITALIAN)))
+		}
+		waitForIdle()
+		onAllNodesWithTag(cuisineClearAllTag).assertCountEquals(0)
+		runOnIdle {
+			viewModel.onFiltersChange(
+				SearchFilters(cuisines = setOf(Cuisine.ITALIAN, Cuisine.FRENCH)),
+			)
+		}
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(cuisineClearAllTag).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(cuisineClearAllTag).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInExpandingPantryGroupShowsBulkActionChips() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithText("Poultry & Eggs").performClick()
+		waitForIdle()
+		onAllNodesWithText("Select all").assertCountEquals(2)
+		onAllNodesWithText("Clear all").assertCountEquals(0)
 	}
 }
 

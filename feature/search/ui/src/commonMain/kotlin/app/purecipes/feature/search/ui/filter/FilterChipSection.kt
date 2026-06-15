@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -27,9 +25,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
+
+internal fun filterSectionToggleTag(title: String): String =
+	"filterSection${title.filter(Char::isLetterOrDigit)}"
+
+internal fun filterChipTag(sectionTitle: String, itemLabel: String): String =
+	"filterChip${sectionTitle.filter(Char::isLetterOrDigit)}${itemLabel.filter(Char::isLetterOrDigit)}"
+
+internal fun filterRecipeClearAllTag(sectionTitle: String): String =
+	"filterRecipeClearAll${sectionTitle.filter(Char::isLetterOrDigit)}"
 
 @Composable
 internal fun <T : Any> FilterChipSection(
@@ -44,32 +52,44 @@ internal fun <T : Any> FilterChipSection(
 	Column(modifier = modifier) {
 		FilterSectionHeader(
 			title = title,
-			onSelectAll = { onSelectionChange(items.toSet()) },
-			onClearAll = { onSelectionChange(emptySet()) },
 			isCollapsed = collapsed,
 			onToggleCollapse = { collapsed = !collapsed },
+			modifier = Modifier.testTag(filterSectionToggleTag(title)),
 		)
 		AnimatedVisibility(
 			visible = !collapsed,
 			enter = expandVertically(),
 			exit = shrinkVertically(),
 		) {
-			FlowRow(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(horizontal = PurecipesTheme.space.m),
-				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
-			) {
-				items.forEach { item ->
-					FilterChip(
-						selected = item in selected,
-						onClick = {
-							val updated = if (item in selected) selected - item else selected + item
-							onSelectionChange(updated)
-						},
-						label = { Text(itemLabel(item)) },
+			Column {
+				AnimatedVisibility(
+					visible = selected.size >= MIN_SELECTED_COUNT_FOR_CLEAR_ALL,
+					enter = expandVertically(),
+					exit = shrinkVertically(),
+				) {
+					FilterClearActionChip(
+						onClearAll = { onSelectionChange(emptySet()) },
+						clearAllTestTag = filterRecipeClearAllTag(title),
 					)
+				}
+				FlowRow(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = PurecipesTheme.space.m),
+					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+				) {
+					items.forEach { item ->
+						FilterChip(
+							selected = item in selected,
+							onClick = {
+								val updated = if (item in selected) selected - item else selected + item
+								onSelectionChange(updated)
+							},
+							label = { Text(itemLabel(item)) },
+							modifier = Modifier.testTag(filterChipTag(title, itemLabel(item))),
+						)
+					}
 				}
 			}
 		}
@@ -79,8 +99,6 @@ internal fun <T : Any> FilterChipSection(
 @Composable
 internal fun FilterSectionHeader(
 	title: String,
-	onSelectAll: () -> Unit,
-	onClearAll: () -> Unit,
 	modifier: Modifier = Modifier,
 	isCollapsed: Boolean = false,
 	onToggleCollapse: (() -> Unit)? = null,
@@ -107,18 +125,6 @@ internal fun FilterSectionHeader(
 			style = PurecipesTheme.typography.titleSmall,
 			modifier = Modifier.weight(1f),
 		)
-		IconButton(onClick = onSelectAll) {
-			Icon(
-				imageVector = Icons.Default.DoneAll,
-				contentDescription = "Select all $title",
-			)
-		}
-		IconButton(onClick = onClearAll) {
-			Icon(
-				imageVector = Icons.Default.Clear,
-				contentDescription = "Clear $title",
-			)
-		}
 		if (onToggleCollapse != null) {
 			IconButton(onClick = onToggleCollapse) {
 				Icon(
