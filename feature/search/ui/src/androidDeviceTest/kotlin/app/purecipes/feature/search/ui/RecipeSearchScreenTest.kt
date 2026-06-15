@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -24,6 +25,8 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_CLEAR_ALL_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -183,6 +186,44 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
 		waitForIdle()
 		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInOpeningPantryTabShowsBulkActionChips() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_PANTRY_BULK_SELECT_ALL_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_PANTRY_BULK_CLEAR_ALL_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInExpandingPantryGroupShowsBulkActionChips() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithText("Poultry & Eggs").performClick()
+		waitForIdle()
+		onAllNodesWithText("Select all").assertCountEquals(2)
+		onAllNodesWithText("Clear all").assertCountEquals(2)
 	}
 }
 

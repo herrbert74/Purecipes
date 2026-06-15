@@ -21,6 +21,9 @@ import app.purecipes.shared.domain.model.IngredientCatalogueGroup
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 
+internal const val FILTER_PANTRY_BULK_SELECT_ALL_TAG = "filterPantryBulkSelectAll"
+internal const val FILTER_PANTRY_BULK_CLEAR_ALL_TAG = "filterPantryBulkClearAll"
+
 private enum class IngredientChipState { NEUTRAL, SELECTED }
 
 @Composable
@@ -30,30 +33,20 @@ internal fun IngredientFilterSection(
 	modifier: Modifier = Modifier,
 ) {
 	val allItems = IngredientCatalogue.allItems
-	var collapsed by rememberSaveable { mutableStateOf(true) }
 
 	Column(modifier = modifier) {
-		FilterSectionHeader(
-			title = "Pantry",
+		FilterBulkActionChips(
 			onSelectAll = { onSelectionChange(allItems) },
 			onClearAll = { onSelectionChange(emptySet()) },
-			isCollapsed = collapsed,
-			onToggleCollapse = { collapsed = !collapsed },
+			selectAllTestTag = FILTER_PANTRY_BULK_SELECT_ALL_TAG,
+			clearAllTestTag = FILTER_PANTRY_BULK_CLEAR_ALL_TAG,
 		)
-		AnimatedVisibility(
-			visible = !collapsed,
-			enter = expandVertically(),
-			exit = shrinkVertically(),
-		) {
-			Column {
-				IngredientCatalogue.groups.forEach { group ->
-					IngredientGroupChips(
-						group = group,
-						availableIngredients = availableIngredients,
-						onSelectionChange = onSelectionChange,
-					)
-				}
-			}
+		IngredientCatalogue.groups.forEach { group ->
+			IngredientGroupChips(
+				group = group,
+				availableIngredients = availableIngredients,
+				onSelectionChange = onSelectionChange,
+			)
 		}
 	}
 }
@@ -68,12 +61,6 @@ private fun IngredientGroupChips(
 	Column {
 		FilterSectionHeader(
 			title = group.name,
-			onSelectAll = {
-				onSelectionChange(availableIngredients + group.items)
-			},
-			onClearAll = {
-				onSelectionChange(availableIngredients - group.items.toSet())
-			},
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
 			isCollapsed = collapsed,
 			onToggleCollapse = { collapsed = !collapsed },
@@ -83,29 +70,39 @@ private fun IngredientGroupChips(
 			enter = expandVertically(),
 			exit = shrinkVertically(),
 		) {
-			FlowRow(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(horizontal = PurecipesTheme.space.xl),
-				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
-			) {
-				group.items.forEach { item ->
-					val state = when (item) {
-						in availableIngredients -> IngredientChipState.SELECTED
-						else -> IngredientChipState.NEUTRAL
+			Column {
+				FilterBulkActionChips(
+					onSelectAll = {
+						onSelectionChange(availableIngredients + group.items)
+					},
+					onClearAll = {
+						onSelectionChange(availableIngredients - group.items.toSet())
+					},
+				)
+				FlowRow(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = PurecipesTheme.space.xl),
+					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+				) {
+					group.items.forEach { item ->
+						val state = when (item) {
+							in availableIngredients -> IngredientChipState.SELECTED
+							else -> IngredientChipState.NEUTRAL
+						}
+						IngredientTriStateChip(
+							item = item,
+							state = state,
+							onToggle = {
+								val newAvailable = when (state) {
+									IngredientChipState.NEUTRAL -> availableIngredients + item
+									IngredientChipState.SELECTED -> availableIngredients - item
+								}
+								onSelectionChange(newAvailable)
+							},
+						)
 					}
-					IngredientTriStateChip(
-						item = item,
-						state = state,
-						onToggle = {
-							val newAvailable = when (state) {
-								IngredientChipState.NEUTRAL -> availableIngredients + item
-								IngredientChipState.SELECTED -> availableIngredients - item
-							}
-							onSelectionChange(newAvailable)
-						},
-					)
 				}
 			}
 		}

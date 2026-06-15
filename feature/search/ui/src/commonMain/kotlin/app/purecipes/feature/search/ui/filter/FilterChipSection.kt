@@ -79,11 +79,11 @@ internal fun <T : Any> FilterChipSection(
 @Composable
 internal fun FilterSectionHeader(
 	title: String,
-	onSelectAll: () -> Unit,
-	onClearAll: () -> Unit,
 	modifier: Modifier = Modifier,
 	isCollapsed: Boolean = false,
 	onToggleCollapse: (() -> Unit)? = null,
+	onSelectAll: (() -> Unit)? = null,
+	onClearAll: (() -> Unit)? = null,
 ) {
 	val chevronRotation by animateFloatAsState(
 		targetValue = if (isCollapsed) -90f else 0f,
@@ -107,17 +107,21 @@ internal fun FilterSectionHeader(
 			style = PurecipesTheme.typography.titleSmall,
 			modifier = Modifier.weight(1f),
 		)
-		IconButton(onClick = onSelectAll) {
-			Icon(
-				imageVector = Icons.Default.DoneAll,
-				contentDescription = "Select all $title",
-			)
+		if (onSelectAll != null) {
+			IconButton(onClick = onSelectAll) {
+				Icon(
+					imageVector = Icons.Default.DoneAll,
+					contentDescription = "Select all $title",
+				)
+			}
 		}
-		IconButton(onClick = onClearAll) {
-			Icon(
-				imageVector = Icons.Default.Clear,
-				contentDescription = "Clear $title",
-			)
+		if (onClearAll != null) {
+			IconButton(onClick = onClearAll) {
+				Icon(
+					imageVector = Icons.Default.Clear,
+					contentDescription = "Clear $title",
+				)
+			}
 		}
 		if (onToggleCollapse != null) {
 			IconButton(onClick = onToggleCollapse) {

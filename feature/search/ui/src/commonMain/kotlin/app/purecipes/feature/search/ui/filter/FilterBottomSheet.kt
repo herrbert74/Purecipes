@@ -33,6 +33,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,6 +54,9 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 
 private const val SCROLLBAR_MIN_THUMB_FRACTION = 0.1f
+private const val FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP = 720
+private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE = 0.55f
+private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL = 0.8f
 
 internal const val FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG = "filterBottomSheetSignInPromptTitle"
 internal const val FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG = "filterBottomSheetGoToAccountButton"
@@ -105,6 +109,7 @@ private fun FilterBottomSheetContent(
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
 	} else {
 		var selectedTab by remember { mutableStateOf(FilterTab.Pantry) }
+		val tabContentHeightFraction = filterTabContentHeightFraction()
 		Column(modifier = Modifier.fillMaxWidth()) {
 			PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
 				Tab(
@@ -120,18 +125,34 @@ private fun FilterBottomSheetContent(
 					text = { Text(text = "Recipe filters") },
 				)
 			}
-			when (selectedTab) {
-				FilterTab.Pantry -> PantryFilterTabContent(
-					pantryIngredients = pantryIngredients,
-					onPantryIngredientsChange = onPantryIngredientsChange,
-				)
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.fillMaxHeight(tabContentHeightFraction),
+			) {
+				when (selectedTab) {
+					FilterTab.Pantry -> PantryFilterTabContent(
+						pantryIngredients = pantryIngredients,
+						onPantryIngredientsChange = onPantryIngredientsChange,
+					)
 
-				FilterTab.RecipeFilters -> RecipeFiltersTabContent(
-					filters = filters,
-					onFiltersChange = onFiltersChange,
-				)
+					FilterTab.RecipeFilters -> RecipeFiltersTabContent(
+						filters = filters,
+						onFiltersChange = onFiltersChange,
+					)
+				}
 			}
 		}
+	}
+}
+
+@Composable
+private fun filterTabContentHeightFraction(): Float {
+	val screenHeightDp = LocalConfiguration.current.screenHeightDp
+	return if (screenHeightDp < FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP) {
+		FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL
+	} else {
+		FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE
 	}
 }
 
@@ -263,8 +284,9 @@ private fun FilterScrollableColumn(
 	content: LazyListScope.() -> Unit,
 ) {
 	val scrollState = rememberLazyListState()
-	Box(modifier = Modifier.fillMaxWidth()) {
+	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
+			modifier = Modifier.fillMaxSize(),
 			state = scrollState,
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
 			content = content,
