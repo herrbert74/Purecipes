@@ -28,41 +28,6 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 		),
 	),
 	IngredientCatalogueGroup(
-		name = "Fish",
-		items = listOf(
-			"Anchovy",
-			"Cod",
-			"Fish",
-			"Haddock",
-			"Mackerel",
-			"Salmon",
-			"Sardines",
-			"Tilapia",
-			"Tuna",
-		),
-	),
-	IngredientCatalogueGroup(
-		name = "Seafood",
-		items = listOf(
-			"Clams",
-			"Crab",
-			"Mussels",
-			"Prawns",
-			"Scallops",
-			"Shrimp",
-		),
-	),
-	IngredientCatalogueGroup(
-		name = "Dairy-Free and Meat Substitutes",
-		items = listOf(
-			"Jackfruit",
-			"Plant-Based Mince",
-			"Seitan",
-			"Tempeh",
-			"Tofu",
-		),
-	),
-	IngredientCatalogueGroup(
 		name = "Vegetables",
 		items = listOf(
 			"Anaheim Pepper",
@@ -116,6 +81,31 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"White Onion",
 			"Yellow Onion",
 			"Zucchini",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Fish",
+		items = listOf(
+			"Anchovy",
+			"Cod",
+			"Fish",
+			"Haddock",
+			"Mackerel",
+			"Salmon",
+			"Sardines",
+			"Tilapia",
+			"Tuna",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Seafood",
+		items = listOf(
+			"Clams",
+			"Crab",
+			"Mussels",
+			"Prawns",
+			"Scallops",
+			"Shrimp",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -187,6 +177,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Mascarpone",
 			"Milk",
 			"Ricotta",
+			"Single Cream",
 			"Sour Cream",
 			"Yoghurt",
 		),
@@ -218,56 +209,6 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Quinoa",
 			"Rice",
 			"Semolina",
-		),
-	),
-	IngredientCatalogueGroup(
-		name = "Pasta",
-		items = listOf(
-			"Fettuccine",
-			"Fusilli",
-			"Lasagna Sheets",
-			"Linguine",
-			"Noodles",
-			"Orzo",
-			"Pasta",
-			"Penne",
-			"Ramen",
-			"Rigatoni",
-			"Spaghetti",
-			"Tagliatelle",
-			"Udon",
-		),
-	),
-	IngredientCatalogueGroup(
-		name = "Bread & Salty Snacks",
-		items = listOf(
-			"Bread",
-			"Breadcrumbs",
-			"Brioche Buns",
-			"Ciabatta",
-			"Hash Browns",
-			"Hot Dog Buns",
-			"Panko",
-		),
-	),
-	IngredientCatalogueGroup(
-		name = "Baking",
-		items = listOf(
-			"Baking Powder",
-			"Cornflour",
-			"Flour",
-			"Sourdough Starter",
-			"Vanilla",
-		),
-	),
-	IngredientCatalogueGroup(
-		name = "Pre-Made Doughs & Wrappers",
-		items = listOf(
-			"Filo Pastry",
-			"Pizza Dough",
-			"Puff Pastry",
-			"Spring Roll Wrappers",
-			"Tortilla",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -316,6 +257,24 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 		),
 	),
 	IngredientCatalogueGroup(
+		name = "Pasta",
+		items = listOf(
+			"Fettuccine",
+			"Fusilli",
+			"Lasagna Sheets",
+			"Linguine",
+			"Noodles",
+			"Orzo",
+			"Pasta",
+			"Penne",
+			"Ramen",
+			"Rigatoni",
+			"Spaghetti",
+			"Tagliatelle",
+			"Udon",
+		),
+	),
+	IngredientCatalogueGroup(
 		name = "Oils & Fats",
 		items = listOf(
 			"Canola Oil",
@@ -325,6 +284,29 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Olive Oil",
 			"Sesame Oil",
 			"Sunflower Oil",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Bread & Salty Snacks",
+		items = listOf(
+			"Bread",
+			"Breadcrumbs",
+			"Brioche Buns",
+			"Ciabatta",
+			"Hash Browns",
+			"Hot Dog Buns",
+			"Panko",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Baking",
+		items = listOf(
+			"Baking Powder",
+			"Baking Soda",
+			"Cornflour",
+			"Flour",
+			"Sourdough Starter",
+			"Vanilla",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -363,6 +345,16 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Shaoxing Wine",
 			"Vodka",
 			"White Wine",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Canned Food",
+		items = listOf(
+			"Capers",
+			"Coconut Milk",
+			"Diced Tomatoes",
+			"Passata",
+			"Tomato Paste",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -407,16 +399,6 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 		),
 	),
 	IngredientCatalogueGroup(
-		name = "Canned Food",
-		items = listOf(
-			"Capers",
-			"Coconut Milk",
-			"Diced Tomatoes",
-			"Passata",
-			"Tomato Paste",
-		),
-	),
-	IngredientCatalogueGroup(
 		name = "Supplements & Extracts",
 		items = listOf(
 			"Almond Extract",
@@ -454,6 +436,27 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Cocoa Powder",
 			"Icing Sugar",
 			"Marshmallows",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Dairy-Free and Meat Substitutes",
+		items = listOf(
+			"Jackfruit",
+			"Plant-Based Mince",
+			"Seitan",
+			"Tempeh",
+			"Tofu",
+		),
+	),
+	IngredientCatalogueGroup(
+		name = "Pre-Made Doughs & Wrappers",
+		items = listOf(
+			"Filo Pastry",
+			"Pizza Dough",
+			"Puff Pastry",
+			"Shortcrust Pastry",
+			"Spring Roll Wrappers",
+			"Tortilla",
 		),
 	),
 )
