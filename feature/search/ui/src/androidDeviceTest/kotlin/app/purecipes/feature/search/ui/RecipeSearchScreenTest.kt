@@ -26,8 +26,11 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
+import app.purecipes.feature.search.ui.filter.filterRecipeClearAllTag
+import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
@@ -226,11 +229,15 @@ class RecipeSearchScreenTest {
 
 	@Test
 	fun whenSignedInRecipeFiltersSectionShowsClearActionWhenTwoOrMoreSelected() = runRecompositionTrackingUiTest {
+		val cuisineSectionTag = filterSectionToggleTag("Cuisine")
+		val cuisineClearAllTag = filterRecipeClearAllTag("Cuisine")
+		val viewModel = recipeSearchViewModelForTest()
+
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
 					isSignedIn = true,
-					viewModel = recipeSearchViewModelForTest(),
+					viewModel = viewModel,
 				)
 			}
 		}
@@ -240,14 +247,22 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
 		waitForIdle()
-		onNodeWithText("Cuisine").performClick()
+		onNodeWithTag(cuisineSectionTag).performClick()
 		waitForIdle()
-		onNodeWithText("Italian").performClick()
+		runOnIdle {
+			viewModel.onFiltersChange(SearchFilters(cuisines = setOf(Cuisine.ITALIAN)))
+		}
 		waitForIdle()
-		onAllNodesWithText("Clear all").assertCountEquals(0)
-		onNodeWithText("French").performClick()
-		waitForIdle()
-		onNodeWithText("Clear all").assertIsDisplayed()
+		onAllNodesWithTag(cuisineClearAllTag).assertCountEquals(0)
+		runOnIdle {
+			viewModel.onFiltersChange(
+				SearchFilters(cuisines = setOf(Cuisine.ITALIAN, Cuisine.FRENCH)),
+			)
+		}
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(cuisineClearAllTag).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(cuisineClearAllTag).assertIsDisplayed()
 	}
 
 	@Test

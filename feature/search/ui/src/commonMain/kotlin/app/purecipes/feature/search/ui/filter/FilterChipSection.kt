@@ -25,9 +25,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
+
+internal fun filterSectionToggleTag(title: String): String =
+	"filterSection${title.filter(Char::isLetterOrDigit)}"
+
+internal fun filterChipTag(sectionTitle: String, itemLabel: String): String =
+	"filterChip${sectionTitle.filter(Char::isLetterOrDigit)}${itemLabel.filter(Char::isLetterOrDigit)}"
+
+internal fun filterRecipeClearAllTag(sectionTitle: String): String =
+	"filterRecipeClearAll${sectionTitle.filter(Char::isLetterOrDigit)}"
 
 @Composable
 internal fun <T : Any> FilterChipSection(
@@ -44,6 +54,7 @@ internal fun <T : Any> FilterChipSection(
 			title = title,
 			isCollapsed = collapsed,
 			onToggleCollapse = { collapsed = !collapsed },
+			modifier = Modifier.testTag(filterSectionToggleTag(title)),
 		)
 		AnimatedVisibility(
 			visible = !collapsed,
@@ -58,6 +69,7 @@ internal fun <T : Any> FilterChipSection(
 				) {
 					FilterClearActionChip(
 						onClearAll = { onSelectionChange(emptySet()) },
+						clearAllTestTag = filterRecipeClearAllTag(title),
 					)
 				}
 				FlowRow(
@@ -75,6 +87,7 @@ internal fun <T : Any> FilterChipSection(
 								onSelectionChange(updated)
 							},
 							label = { Text(itemLabel(item)) },
+							modifier = Modifier.testTag(filterChipTag(title, itemLabel(item))),
 						)
 					}
 				}
