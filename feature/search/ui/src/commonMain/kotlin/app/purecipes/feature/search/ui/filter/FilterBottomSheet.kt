@@ -57,8 +57,8 @@ import kotlinx.collections.immutable.toImmutableSet
 
 private const val SCROLLBAR_MIN_THUMB_FRACTION = 0.1f
 private const val FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP = 720
-private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE = 0.55f
-private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL = 0.8f
+private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE = 0.8f
+private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL = 0.9f
 
 internal const val FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG = "filterBottomSheetSignInPromptTitle"
 internal const val FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG = "filterBottomSheetGoToAccountButton"
@@ -111,23 +111,22 @@ private fun FilterBottomSheetContent(
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
 	} else {
 		var selectedTab by remember { mutableStateOf(FilterTab.Pantry) }
-		BoxWithConstraints(
-			modifier = Modifier
-				.fillMaxWidth()
-				.fillMaxHeight(),
-		) {
-			val sheetMaxHeight = maxHeight
-			val tabContentHeightFraction = if (sheetMaxHeight < FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP.dp) {
+		BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+			val sheetHeightFraction = if (maxHeight < FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP.dp) {
 				FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL
 			} else {
 				FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE
 			}
-			val tabContentModifier = if (sheetMaxHeight != Dp.Infinity) {
-				Modifier.height(sheetMaxHeight * tabContentHeightFraction)
+			val sheetHeightModifier = if (maxHeight != Dp.Infinity) {
+				Modifier.height(maxHeight * sheetHeightFraction)
 			} else {
-				Modifier.fillMaxHeight(tabContentHeightFraction)
+				Modifier
 			}
-			Column(modifier = Modifier.fillMaxWidth()) {
+			Column(
+				modifier = Modifier
+					.fillMaxWidth()
+					.then(sheetHeightModifier),
+			) {
 				PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
 					Tab(
 						selected = selectedTab == FilterTab.Pantry,
@@ -145,7 +144,7 @@ private fun FilterBottomSheetContent(
 				Box(
 					modifier = Modifier
 						.fillMaxWidth()
-						.then(tabContentModifier),
+						.weight(1f),
 				) {
 					when (selectedTab) {
 						FilterTab.Pantry -> PantryFilterTabContent(
