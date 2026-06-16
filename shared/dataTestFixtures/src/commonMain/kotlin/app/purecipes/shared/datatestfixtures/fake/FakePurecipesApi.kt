@@ -10,6 +10,7 @@ import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
+import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
@@ -67,6 +68,9 @@ class FakePurecipesApi(
 		private set
 
 	var userPantry: Set<String> = emptySet()
+		private set
+
+	var userExcludedIngredients: Set<String> = emptySet()
 		private set
 
 	override suspend fun searchWithFilters(request: SearchRequest): SearchResultsPage {
@@ -277,6 +281,13 @@ class FakePurecipesApi(
 	override suspend fun updateUserPantry(delta: PantryDelta): Set<String> {
 		userPantry = (userPantry + delta.add) - delta.remove
 		return userPantry
+	}
+
+	override suspend fun getUserExcludedIngredients(): Set<String> = userExcludedIngredients
+
+	override suspend fun updateUserExcludedIngredients(delta: ExcludedIngredientsDelta): Set<String> {
+		userExcludedIngredients = (userExcludedIngredients + delta.add) - delta.remove
+		return userExcludedIngredients
 	}
 
 	fun storeRecipe(recipe: RecipeDetails) {

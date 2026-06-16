@@ -91,6 +91,7 @@ class Db private constructor(
 					statement.execute(INGREDIENT_NUTRITION_CONTRIBUTIONS_TABLE_SQL)
 					statement.execute(SEARCH_FILTERS_TABLE_SQL)
 					statement.execute(USER_PANTRY_TABLE_SQL)
+					statement.execute(USER_EXCLUDED_INGREDIENTS_TABLE_SQL)
 				}
 			}
 		}

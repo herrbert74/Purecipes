@@ -8,9 +8,11 @@ import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -19,6 +21,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
@@ -225,6 +228,10 @@ class RecipeSearchViewModelTest {
 			saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 			getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
 			updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
+			getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
+			updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(
+				FakeUserExcludedIngredientsRepository(),
+			),
 			searchReadiness = SearchReadinessCoordinator(),
 			initialShowFilterSheet = true,
 			sessionKey = null,
@@ -276,12 +283,46 @@ class RecipeSearchViewModelTest {
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
 
-		viewModel.onPantryIngredientsChange(setOf("Chicken", "Tomato"))
+		viewModel.onIngredientSelectionChange(setOf("Chicken", "Tomato"), emptySet())
 		viewModel.onFilterSheetDismiss()
 		advanceUntilIdle()
 
 		pantryRepository.getPantry() shouldBe setOf("Chicken", "Tomato")
 		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+	}
+
+	@Test
+	fun `onFilterSheetDismiss updates excluded ingredients and triggers search when excluded changed`() =
+		runViewModelTest {
+			val excludedRepository = FakeUserExcludedIngredientsRepository(setOf("Garlic"))
+			val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+			val viewModel = makeViewModel(
+				searchRepository = searchRepository,
+				excludedIngredientsRepository = excludedRepository,
+			)
+			advanceUntilIdle()
+			val searchCountAfterInit = searchRepository.queries.size
+
+			viewModel.onIngredientSelectionChange(emptySet(), setOf("Garlic", "Peanut"))
+			viewModel.onFilterSheetDismiss()
+			advanceUntilIdle()
+
+			excludedRepository.getExcludedIngredients() shouldBe setOf("Garlic", "Peanut")
+			searchRepository.queries.size shouldBe searchCountAfterInit + 1
+		}
+
+	@Test
+	fun `onIngredientSelectionChange keeps pantry and excluded ingredients mutually exclusive`() = runViewModelTest {
+		val viewModel = makeViewModel()
+		advanceUntilIdle()
+
+		viewModel.onIngredientSelectionChange(setOf("Chicken"), emptySet())
+		viewModel.pantryIngredients shouldBe setOf("Chicken")
+		viewModel.excludedIngredients shouldBe emptySet()
+
+		viewModel.onIngredientSelectionChange(emptySet(), setOf("Chicken"))
+		viewModel.pantryIngredients shouldBe emptySet()
+		viewModel.excludedIngredients shouldBe setOf("Chicken")
 	}
 
 	@Test
@@ -305,10 +346,53 @@ class RecipeSearchViewModelTest {
 		searchRepository.queries.size shouldBe searchCountAfterInit
 	}
 
+	@Test
+	fun `onSessionKeyChanged reloads filters pantry excluded ingredients and searches`() = runViewModelTest {
+		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
+		val pantryRepository = FakeUserPantryRepository(setOf("Chicken"))
+		val excludedRepository = FakeUserExcludedIngredientsRepository(setOf("Garlic"))
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			filterRepository = filterRepository,
+			pantryRepository = pantryRepository,
+			excludedIngredientsRepository = excludedRepository,
+		)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+		viewModel.pantryIngredients shouldBe emptySet()
+		viewModel.excludedIngredients shouldBe emptySet()
+
+		filterRepository.savedFilters = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+
+		viewModel.onSessionKeyChanged("user-1")
+		advanceUntilIdle()
+
+		viewModel.activeFilters shouldBe SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+		viewModel.pantryIngredients shouldBe setOf("Chicken")
+		viewModel.excludedIngredients shouldBe setOf("Garlic")
+		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+	}
+
+	@Test
+	fun `onSessionKeyChanged does nothing when session key is unchanged`() = runViewModelTest {
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = searchRepository)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+
+		viewModel.onSessionKeyChanged(null)
+		advanceUntilIdle()
+
+		searchRepository.queries.size shouldBe searchCountAfterInit
+	}
+
 	private fun makeViewModel(
 		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
 		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
 		pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
+		excludedIngredientsRepository: FakeUserExcludedIngredientsRepository =
+			FakeUserExcludedIngredientsRepository(),
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
@@ -319,6 +403,8 @@ class RecipeSearchViewModelTest {
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 		getUserPantry = GetUserPantryUseCase(pantryRepository),
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+		getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
+		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		searchReadiness = searchReadiness,
 		initialShowFilterSheet = false,
 		sessionKey = null,

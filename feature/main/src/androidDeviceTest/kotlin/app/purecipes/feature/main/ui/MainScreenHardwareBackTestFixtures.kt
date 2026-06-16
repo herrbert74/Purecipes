@@ -28,9 +28,11 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.RecipeSearchViewModel
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -57,6 +59,7 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import com.github.michaelbull.result.Err
@@ -138,6 +141,8 @@ internal fun recipeSearchViewModelForDeviceTest(
 	saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 	getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
 	updateUserPantry = UpdateUserPantryUseCase(FakeUserPantryRepository()),
+	getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
+	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
 	initialShowFilterSheet = false,
 	sessionKey = null,

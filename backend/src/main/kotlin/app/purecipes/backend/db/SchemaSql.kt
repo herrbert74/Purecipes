@@ -389,3 +389,11 @@ internal const val USER_PANTRY_TABLE_SQL = """
 		PRIMARY KEY (user_id, ingredient)
 	)
 """
+
+internal const val USER_EXCLUDED_INGREDIENTS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS user_excluded_ingredients (
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		ingredient TEXT NOT NULL,
+		PRIMARY KEY (user_id, ingredient)
+	)
+"""

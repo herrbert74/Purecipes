@@ -13,10 +13,13 @@ import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurem
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.PantryDelta
@@ -48,6 +51,8 @@ class RecipeSearchViewModel(
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
 	private val getUserPantry: GetUserPantryUseCase,
 	private val updateUserPantry: UpdateUserPantryUseCase,
+	private val getUserExcludedIngredients: GetUserExcludedIngredientsUseCase,
+	private val updateUserExcludedIngredients: UpdateUserExcludedIngredientsUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
@@ -77,8 +82,13 @@ class RecipeSearchViewModel(
 	var pantryIngredients by mutableStateOf(emptySet<String>())
 		private set
 
+	var excludedIngredients by mutableStateOf(emptySet<String>())
+		private set
+
 	private var lastSearchedFilters: SearchFilters = SearchFilters()
 	private var lastSavedPantry: Set<String> = emptySet()
+	private var lastSavedExcludedIngredients: Set<String> = emptySet()
+	private var loadedSessionKey: String? = null
 
 	var totalMatches by mutableIntStateOf(0)
 		private set
@@ -96,14 +106,20 @@ class RecipeSearchViewModel(
 
 	init {
 		viewModelScope.launch {
-			val saved = getSearchFilters()
-			activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
-			pantryIngredients = if (sessionKey != null) getUserPantry() else emptySet()
-			lastSearchedFilters = activeFilters
-			lastSavedPantry = pantryIngredients
+			reloadSessionState(sessionKey)
+			loadedSessionKey = sessionKey
 			if (initialShowFilterSheet) {
 				isFilterSheetVisible = true
 			}
+			doSearch()
+		}
+	}
+
+	fun onSessionKeyChanged(sessionKey: String?) {
+		if (sessionKey == loadedSessionKey) return
+		viewModelScope.launch {
+			reloadSessionState(sessionKey)
+			loadedSessionKey = sessionKey
 			doSearch()
 		}
 	}
@@ -124,7 +140,8 @@ class RecipeSearchViewModel(
 		isFilterSheetVisible = false
 		val filtersChanged = activeFilters != lastSearchedFilters
 		val pantryChanged = pantryIngredients != lastSavedPantry
-		if (!filtersChanged && !pantryChanged) return
+		val excludedChanged = excludedIngredients != lastSavedExcludedIngredients
+		if (!filtersChanged && !pantryChanged && !excludedChanged) return
 		viewModelScope.launch {
 			if (filtersChanged) {
 				saveSearchFilters(activeFilters)
@@ -140,6 +157,16 @@ class RecipeSearchViewModel(
 				pantryIngredients = updatedPantry
 				lastSavedPantry = updatedPantry
 			}
+			if (excludedChanged) {
+				val updatedExcludedIngredients = updateUserExcludedIngredients(
+					ExcludedIngredientsDelta(
+						add = excludedIngredients - lastSavedExcludedIngredients,
+						remove = lastSavedExcludedIngredients - excludedIngredients,
+					),
+				)
+				excludedIngredients = updatedExcludedIngredients
+				lastSavedExcludedIngredients = updatedExcludedIngredients
+			}
 			doSearch()
 		}
 	}
@@ -152,8 +179,23 @@ class RecipeSearchViewModel(
 		pantryIngredients = ingredients
 	}
 
+	fun onIngredientSelectionChange(pantry: Set<String>, excluded: Set<String>) {
+		pantryIngredients = pantry
+		excludedIngredients = excluded
+	}
+
 	fun searchNow() {
 		viewModelScope.launch { doSearch() }
+	}
+
+	private suspend fun reloadSessionState(sessionKey: String?) {
+		val saved = getSearchFilters()
+		activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
+		pantryIngredients = if (sessionKey != null) getUserPantry() else emptySet()
+		excludedIngredients = if (sessionKey != null) getUserExcludedIngredients() else emptySet()
+		lastSearchedFilters = activeFilters
+		lastSavedPantry = pantryIngredients
+		lastSavedExcludedIngredients = excludedIngredients
 	}
 
 	private suspend fun doSearch() {

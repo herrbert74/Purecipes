@@ -1,5 +1,6 @@
 package app.purecipes.backend.feature.settings
 
+import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.PantryDelta
@@ -94,6 +95,34 @@ class SettingsRepository(
 		return getPantry(userId)
 	}
 
+	fun getExcludedIngredients(userId: Long): Set<String> {
+		return dataSource.connection.use { conn ->
+			loadExcludedIngredients(conn, userId)
+		}
+	}
+
+	fun updateExcludedIngredients(userId: Long, delta: ExcludedIngredientsDelta): Set<String> {
+		val normalizedAdd = normalizeIngredients(delta.add)
+		val normalizedRemove = normalizeIngredients(delta.remove)
+		dataSource.connection.use { conn ->
+			val originalAutoCommit = conn.autoCommit
+			conn.autoCommit = false
+			var committed = false
+			try {
+				insertExcludedIngredients(conn, userId, normalizedAdd)
+				deleteExcludedIngredients(conn, userId, normalizedRemove)
+				conn.commit()
+				committed = true
+			} finally {
+				if (!committed) {
+					conn.rollback()
+				}
+				conn.autoCommit = originalAutoCommit
+			}
+		}
+		return getExcludedIngredients(userId)
+	}
+
 	private fun loadSearchFilters(conn: Connection, userId: Long): SearchFilters {
 		return conn.prepareStatement(GET_SEARCH_FILTERS_SQL).use { ps ->
 			ps.setLong(FIRST_PARAMETER_INDEX, userId)
@@ -109,6 +138,22 @@ class SettingsRepository(
 
 	private fun loadPantry(conn: Connection, userId: Long): Set<String> {
 		return conn.prepareStatement(GET_PANTRY_SQL).use { ps ->
+			ps.setLong(FIRST_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs ->
+				buildSet {
+					while (rs.next()) {
+						val ingredient = rs.getString("ingredient")?.trim().orEmpty()
+						if (ingredient.isNotEmpty()) {
+							add(ingredient)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private fun loadExcludedIngredients(conn: Connection, userId: Long): Set<String> {
+		return conn.prepareStatement(GET_EXCLUDED_INGREDIENTS_SQL).use { ps ->
 			ps.setLong(FIRST_PARAMETER_INDEX, userId)
 			ps.executeQuery().use { rs ->
 				buildSet {
@@ -159,6 +204,39 @@ class SettingsRepository(
 	private fun deletePantryIngredients(conn: Connection, userId: Long, ingredients: Set<String>) {
 		if (ingredients.isEmpty()) return
 		conn.prepareStatement(DELETE_PANTRY_INGREDIENT_SQL).use { ps ->
+			ingredients.forEach { ingredient ->
+				ps.setLong(FIRST_PARAMETER_INDEX, userId)
+				ps.setString(SECOND_PARAMETER_INDEX, ingredient)
+				ps.addBatch()
+			}
+			ps.executeBatch()
+		}
+	}
+
+	private fun insertExcludedIngredients(conn: Connection, userId: Long, ingredients: Set<String>) {
+		if (ingredients.isEmpty()) return
+		conn.prepareStatement(INSERT_EXCLUDED_INGREDIENT_SQL).use { ps ->
+			ingredients.forEach { ingredient ->
+				insertExcludedIngredient(ps, userId, ingredient)
+			}
+		}
+	}
+
+	private fun insertExcludedIngredient(ps: java.sql.PreparedStatement, userId: Long, ingredient: String) {
+		ps.setLong(FIRST_PARAMETER_INDEX, userId)
+		ps.setString(SECOND_PARAMETER_INDEX, ingredient)
+		try {
+			ps.executeUpdate()
+		} catch (exception: SQLException) {
+			if (!isDuplicateKeyViolation(exception)) {
+				throw exception
+			}
+		}
+	}
+
+	private fun deleteExcludedIngredients(conn: Connection, userId: Long, ingredients: Set<String>) {
+		if (ingredients.isEmpty()) return
+		conn.prepareStatement(DELETE_EXCLUDED_INGREDIENT_SQL).use { ps ->
 			ingredients.forEach { ingredient ->
 				ps.setLong(FIRST_PARAMETER_INDEX, userId)
 				ps.setString(SECOND_PARAMETER_INDEX, ingredient)
@@ -323,6 +401,24 @@ class SettingsRepository(
 
 		const val DELETE_PANTRY_INGREDIENT_SQL = """
 			DELETE FROM user_pantry
+			WHERE user_id = ?
+				AND ingredient = ?
+		"""
+
+		const val GET_EXCLUDED_INGREDIENTS_SQL = """
+			SELECT ingredient
+			FROM user_excluded_ingredients
+			WHERE user_id = ?
+			ORDER BY ingredient
+		"""
+
+		const val INSERT_EXCLUDED_INGREDIENT_SQL = """
+			INSERT INTO user_excluded_ingredients (user_id, ingredient)
+			VALUES (?, ?)
+		"""
+
+		const val DELETE_EXCLUDED_INGREDIENT_SQL = """
+			DELETE FROM user_excluded_ingredients
 			WHERE user_id = ?
 				AND ingredient = ?
 		"""
