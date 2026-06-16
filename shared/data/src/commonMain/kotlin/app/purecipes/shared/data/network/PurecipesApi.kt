@@ -8,6 +8,7 @@ import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
+import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
@@ -139,4 +140,11 @@ interface PurecipesApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@PATCH("settings/pantry")
 	suspend fun updateUserPantry(@Body delta: PantryDelta): Set<String>
+
+	@GET("settings/excluded-ingredients")
+	suspend fun getUserExcludedIngredients(): Set<String>
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@PATCH("settings/excluded-ingredients")
+	suspend fun updateUserExcludedIngredients(@Body delta: ExcludedIngredientsDelta): Set<String>
 }

@@ -220,6 +220,147 @@ class SettingsSessionIntegrationTest {
 		)
 	}
 
+	@Test
+	fun `excluded ingredients settings are isolated by authenticated session`() = testApplication {
+		val dbName = "excluded_ingredients_settings_isolation_${System.nanoTime()}"
+		val dataSource = JdbcDataSource().apply {
+			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+			user = "sa"
+			password = ""
+		}
+		seedRecipeTables(dataSource)
+		val db = Db.fromDataSource(dataSource)
+		seedAppUsers(db)
+		val firstSession = FakeSessionService.createSession(accessToken = "session-token-1")
+		val secondSession = FakeSessionService.createSession(
+			accessToken = "session-token-2",
+			id = "2",
+			email = "user-two@example.com",
+			displayName = "User Two",
+			familyName = "Two",
+		)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(firstSession, secondSession),
+			createMode = FakeSessionService.CreateMode.GENERATE_AND_STORE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		val initialFirstExcluded = client.get("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+		}
+		initialFirstExcluded.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(initialFirstExcluded.bodyAsText()) shouldBe Json.parseToJsonElement("[]")
+
+		val saveFirstExcluded = client.patch("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["Peanut", "Shellfish"],
+						"remove": []
+					}
+				""".trimIndent(),
+			)
+		}
+		saveFirstExcluded.status shouldBe HttpStatusCode.OK
+
+		val firstExcludedResponse = client.get("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+		}
+		firstExcludedResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(firstExcludedResponse.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
+				["Peanut","Shellfish"]
+			""".trimIndent(),
+		)
+
+		val secondExcludedResponse = client.get("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${secondSession.accessToken}")
+		}
+		secondExcludedResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(secondExcludedResponse.bodyAsText()) shouldBe Json.parseToJsonElement("[]")
+
+		val updateFirstExcluded = client.patch("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["Dairy"],
+						"remove": ["Peanut"]
+					}
+				""".trimIndent(),
+			)
+		}
+		updateFirstExcluded.status shouldBe HttpStatusCode.OK
+
+		val updatedFirstExcludedResponse = client.get("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${firstSession.accessToken}")
+		}
+		updatedFirstExcludedResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(updatedFirstExcludedResponse.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
+				["Dairy","Shellfish"]
+			""".trimIndent(),
+		)
+	}
+
+	@Test
+	fun `excluded ingredients settings ignore blank values`() = testApplication {
+		val dbName = "excluded_ingredients_blank_values_${System.nanoTime()}"
+		val dataSource = JdbcDataSource().apply {
+			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+			user = "sa"
+			password = ""
+		}
+		seedRecipeTables(dataSource)
+		val db = Db.fromDataSource(dataSource)
+		seedAppUsers(db)
+		val session = FakeSessionService.createSession(accessToken = "session-token-1")
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(session),
+			createMode = FakeSessionService.CreateMode.GENERATE_AND_STORE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		val saveExcluded = client.patch("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["  Garlic  ", "", "   "],
+						"remove": []
+					}
+				""".trimIndent(),
+			)
+		}
+		saveExcluded.status shouldBe HttpStatusCode.OK
+
+		val excludedResponse = client.get("/settings/excluded-ingredients") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+		}
+		excludedResponse.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(excludedResponse.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
+				["Garlic"]
+			""".trimIndent(),
+		)
+	}
+
 	private fun seedRecipeTables(dataSource: DataSource) {
 		dataSource.connection.use { connection ->
 			connection.createStatement().use { statement ->

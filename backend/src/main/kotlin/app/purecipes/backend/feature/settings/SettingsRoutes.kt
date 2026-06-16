@@ -4,6 +4,7 @@ import app.purecipes.backend.ErrorResponse
 import app.purecipes.backend.auth.SessionService
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.requireAuthenticatedUserId
+import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
 import app.purecipes.shared.domain.model.SearchFilters
@@ -73,6 +74,19 @@ fun Route.settingsRoutes(
 			val repo = SettingsRepository(dbProvider().dataSource)
 			call.respond(repo.updatePantry(userId, delta))
 		}
+
+		get("/excluded-ingredients") {
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@get
+			val repo = SettingsRepository(dbProvider().dataSource)
+			call.respond(repo.getExcludedIngredients(userId))
+		}
+
+		patch("/excluded-ingredients") {
+			val userId = call.requireAuthenticatedUserId(sessionService) ?: return@patch
+			val delta = call.receiveExcludedIngredientsDeltaOrRespond() ?: return@patch
+			val repo = SettingsRepository(dbProvider().dataSource)
+			call.respond(repo.updateExcludedIngredients(userId, delta))
+		}
 	}
 }
 
@@ -115,6 +129,21 @@ private suspend fun ApplicationCall.receivePantryDeltaOrRespond(): PantryDelta? 
 			ErrorResponse(
 				message = "Invalid request",
 				detail = "Request body must contain a pantry delta",
+			),
+		)
+		null
+	}
+}
+
+private suspend fun ApplicationCall.receiveExcludedIngredientsDeltaOrRespond(): ExcludedIngredientsDelta? {
+	return try {
+		receive<ExcludedIngredientsDelta>()
+	} catch (_: ContentConvertException) {
+		respond(
+			HttpStatusCode.BadRequest,
+			ErrorResponse(
+				message = "Invalid request",
+				detail = "Request body must contain an excluded ingredients delta",
 			),
 		)
 		null
