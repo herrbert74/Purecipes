@@ -6,6 +6,7 @@ import app.purecipes.backend.feature.recipe.countRecipesByKeyword
 import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
 import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
+import app.purecipes.backend.feature.recipe.recipeContainsExcludedIngredient
 import app.purecipes.shared.domain.model.CookingTimeRange
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -78,7 +79,11 @@ class SearchRecipeRepository(
 		val (items, totalMatches) = dataSource.connection.use { conn ->
 			val availableIngredients =
 				if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
-			if (availableIngredients.isEmpty()) {
+			val excludedIngredients =
+				if (userId != null) loadExcludedIngredientsForUser(conn, userId) else emptyList()
+			val requiresIngredientPostFilter =
+				availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty()
+			if (!requiresIngredientPostFilter) {
 				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
 				val page = querySearchWithFiltersRecipes(
 					conn = conn,
@@ -96,16 +101,25 @@ class SearchRecipeRepository(
 					params = params,
 					executeQuery = recipeRepository::executeQuery,
 				).filter { summary ->
-					isRecipeCoveredByAvailableIngredients(
-						recipeId = summary.id,
-						availableIngredients = availableIngredients,
-						loadIngredientGroups = { recipeId ->
-							recipeRepository.loadIngredientGroupsForRecipe(
-								conn,
-								recipeId
-							)
-						},
-					)
+					val loadIngredientGroups = { recipeId: Int ->
+						recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
+					}
+					if (recipeContainsExcludedIngredient(
+							recipeId = summary.id,
+							excludedIngredients = excludedIngredients,
+							loadIngredientGroups = loadIngredientGroups,
+						)
+					) {
+						false
+					} else if (availableIngredients.isNotEmpty()) {
+						isRecipeCoveredByAvailableIngredients(
+							recipeId = summary.id,
+							availableIngredients = availableIngredients,
+							loadIngredientGroups = loadIngredientGroups,
+						)
+					} else {
+						true
+					}
 				}
 				filtered.drop(offset).take(normalizedPageSize) to filtered.size
 			}
@@ -143,6 +157,22 @@ class SearchRecipeRepository(
 
 private fun loadAvailableIngredientsForUser(conn: Connection, userId: Long): List<String> {
 	return conn.prepareStatement(RecipeRepositorySql.GET_USER_PANTRY_SQL).use { ps ->
+		ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+		ps.executeQuery().use { rs ->
+			buildList {
+				while (rs.next()) {
+					val ingredient = rs.getString("ingredient")?.trim().orEmpty()
+					if (ingredient.isNotEmpty()) {
+						add(ingredient)
+					}
+				}
+			}.distinct()
+		}
+	}
+}
+
+private fun loadExcludedIngredientsForUser(conn: Connection, userId: Long): List<String> {
+	return conn.prepareStatement(RecipeRepositorySql.GET_USER_EXCLUDED_INGREDIENTS_SQL).use { ps ->
 		ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
 		ps.executeQuery().use { rs ->
 			buildList {

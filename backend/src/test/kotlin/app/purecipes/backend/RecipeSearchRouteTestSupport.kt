@@ -1,0 +1,156 @@
+package app.purecipes.backend
+
+import app.purecipes.backend.db.Db
+import io.kotest.matchers.shouldBe
+import io.ktor.client.request.header
+import io.ktor.client.request.patch
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.server.testing.ApplicationTestBuilder
+
+internal suspend fun ApplicationTestBuilder.createRecipeForSearchRouteTest(
+	accessToken: String,
+	title: String,
+	ingredients: List<String>,
+) {
+	val ingredientsJson = ingredients.joinToString(separator = ",") { "\"$it\"" }
+	val response = client.post("/recipes") {
+		header(HttpHeaders.Authorization, "Bearer $accessToken")
+		contentType(ContentType.Application.Json)
+		setBody(
+			"""
+				{
+					"title": "$title",
+					"description": "Recipe for $title",
+					"ingredientGroups": [
+						{
+							"ingredients": [$ingredientsJson]
+						}
+					],
+					"steps": ["Step 1"]
+				}
+			""".trimIndent(),
+		)
+	}
+	response.status shouldBe HttpStatusCode.Created
+}
+
+internal suspend fun ApplicationTestBuilder.seedRecipeCatalogForSearchRouteTest(accessToken: String) {
+	createRecipeForSearchRouteTest(
+		accessToken = accessToken,
+		title = "Chicken Tomato Stew",
+		ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+	)
+	createRecipeForSearchRouteTest(
+		accessToken = accessToken,
+		title = "Chicken Rice Bowl",
+		ingredients = listOf("Chicken breast", "Rice", "Salt"),
+	)
+	createRecipeForSearchRouteTest(
+		accessToken = accessToken,
+		title = "Tomato Basil Soup",
+		ingredients = listOf("Tomato", "Basil", "Garlic"),
+	)
+	createRecipeForSearchRouteTest(
+		accessToken = accessToken,
+		title = "Garlic Rice",
+		ingredients = listOf("Garlic", "Rice", "Butter"),
+	)
+	createRecipeForSearchRouteTest(
+		accessToken = accessToken,
+		title = "Veggie Omelette",
+		ingredients = listOf("Eggs", "Tomato", "Onion"),
+	)
+}
+
+internal suspend fun ApplicationTestBuilder.searchWithFiltersForSearchRouteTest(
+	requestBody: String,
+	accessToken: String? = null,
+): String {
+	val response = client.post("/recipes/search") {
+		if (accessToken != null) {
+			header(HttpHeaders.Authorization, "Bearer $accessToken")
+		}
+		contentType(ContentType.Application.Json)
+		setBody(requestBody)
+	}
+	response.status shouldBe HttpStatusCode.OK
+	return response.bodyAsText()
+}
+
+internal suspend fun ApplicationTestBuilder.updatePantryForSearchRouteTest(
+	accessToken: String,
+	add: List<String>,
+) {
+	val addJson = add.joinToString(separator = ",") { "\"$it\"" }
+	val response = client.patch("/settings/pantry") {
+		header(HttpHeaders.Authorization, "Bearer $accessToken")
+		contentType(ContentType.Application.Json)
+		setBody(
+			"""
+				{
+					"add": [$addJson],
+					"remove": []
+				}
+			""".trimIndent(),
+		)
+	}
+	response.status shouldBe HttpStatusCode.OK
+}
+
+internal suspend fun ApplicationTestBuilder.updateExcludedIngredientsForSearchRouteTest(
+	accessToken: String,
+	add: List<String>,
+) {
+	val addJson = add.joinToString(separator = ",") { "\"$it\"" }
+	val response = client.patch("/settings/excluded-ingredients") {
+		header(HttpHeaders.Authorization, "Bearer $accessToken")
+		contentType(ContentType.Application.Json)
+		setBody(
+			"""
+				{
+					"add": [$addJson],
+					"remove": []
+				}
+			""".trimIndent(),
+		)
+	}
+	response.status shouldBe HttpStatusCode.OK
+}
+
+internal fun createRecipeSearchRouteTestDb(): Db = createInMemoryDb("recipe_search")
+
+internal fun seedAppUsersForSearchRouteTest(db: Db) {
+	db.dataSource.connection.use { connection ->
+		connection.createStatement().use { statement ->
+			statement.execute(
+				"""
+					INSERT INTO app_users (
+						id,
+						provider,
+						external_user_id,
+						email,
+						display_name,
+						first_name,
+						family_name,
+						profile_image_url
+					) VALUES (
+						1,
+						'GOOGLE',
+						'user-one',
+						'user-one@example.com',
+						'User One',
+						'User',
+						'One',
+						NULL
+					)
+				""".trimIndent(),
+			)
+		}
+	}
+}

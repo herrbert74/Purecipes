@@ -561,3 +561,22 @@ internal fun isRecipeCoveredByAvailableIngredients(
 		}
 	}
 }
+
+internal fun recipeContainsExcludedIngredient(
+	recipeId: Int,
+	excludedIngredients: List<String>,
+	loadIngredientGroups: (Int) -> List<IngredientGroup>,
+): Boolean {
+	if (excludedIngredients.isEmpty()) {
+		return false
+	}
+
+	return loadIngredientGroups(recipeId).any { group ->
+		group.ingredients.any { ingredientLine ->
+			IngredientVocabulary.matchesAnyIngredient(
+				ingredientLine = ingredientLine,
+				ingredientNames = excludedIngredients,
+			)
+		}
+	}
+}

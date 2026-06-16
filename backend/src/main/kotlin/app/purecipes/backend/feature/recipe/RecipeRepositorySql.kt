@@ -174,6 +174,13 @@ internal object RecipeRepositorySql {
 		ORDER BY ingredient
 	"""
 
+	const val GET_USER_EXCLUDED_INGREDIENTS_SQL = """
+		SELECT ingredient
+		FROM user_excluded_ingredients
+		WHERE user_id = ?
+		ORDER BY ingredient
+	"""
+
 	val IMPERIAL_UNIT_REGEX = Regex(
 		pattern =
 			"(?<!\\p{L})(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|" +
