@@ -3,8 +3,8 @@ package app.purecipes.feature.main.ui
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
@@ -39,7 +39,7 @@ internal data class MainTab(
 internal val mainTabs = listOf(
 	MainTab(
 		destination = SearchDestination(),
-		label = "Search",
+		label = "Home",
 	),
 	MainTab(
 		destination = FavoritesDestination(),
@@ -63,7 +63,7 @@ internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = when (desti
 
 internal val MainTab.icon: ImageVector
 	get() = when (destination) {
-		is SearchDestination -> Icons.Filled.Search
+		is SearchDestination -> Icons.Filled.Home
 		is FavoritesDestination -> Icons.Filled.Favorite
 		CreateDestination -> Icons.Filled.Add
 		AccountDestination -> Icons.Filled.Person
