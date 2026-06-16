@@ -15,9 +15,11 @@ import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurem
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG
@@ -25,6 +27,9 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_PANTRY_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
 import app.purecipes.feature.search.ui.filter.filterRecipeClearAllTag
 import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
@@ -35,6 +40,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
@@ -284,12 +290,65 @@ class RecipeSearchScreenTest {
 		onAllNodesWithText("Select all").assertCountEquals(2)
 		onAllNodesWithText("Clear all").assertCountEquals(0)
 	}
+
+	@Test
+	fun whenSignedInPantryTabShowsIngredientLegendAndExclusionIntro() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_INGREDIENT_LEGEND_PANTRY_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInIngredientChipCyclesThroughPantryAndExcludedStates() = runRecompositionTrackingUiTest {
+		val viewModel = recipeSearchViewModelForTest()
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithText("Poultry & Eggs").performClick()
+		waitForIdle()
+		onNodeWithText("Chicken").performClick()
+		waitForIdle()
+		runOnIdle {
+			assertEquals(setOf("Chicken"), viewModel.pantryIngredients)
+			assertEquals(emptySet<String>(), viewModel.excludedIngredients)
+		}
+		onNodeWithText("Chicken").performClick()
+		waitForIdle()
+		runOnIdle {
+			assertEquals(emptySet<String>(), viewModel.pantryIngredients)
+			assertEquals(setOf("Chicken"), viewModel.excludedIngredients)
+		}
+	}
 }
 
 private fun recipeSearchViewModelForTest(
 	searchRepository: FakeRecipeSearchRepository = FakeRecipeSearchRepository(),
 	filterRepository: FakeRecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
 	pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
+	excludedIngredientsRepository: FakeUserExcludedIngredientsRepository = FakeUserExcludedIngredientsRepository(),
 	settingsRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
 	initialShowFilterSheet: Boolean = false,
 ): RecipeSearchViewModel = RecipeSearchViewModel(
@@ -301,6 +360,8 @@ private fun recipeSearchViewModelForTest(
 	saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 	getUserPantry = GetUserPantryUseCase(pantryRepository),
 	updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+	getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
+	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 	searchReadiness = SearchReadinessCoordinator(),
 	initialShowFilterSheet = initialShowFilterSheet,
 	sessionKey = null,

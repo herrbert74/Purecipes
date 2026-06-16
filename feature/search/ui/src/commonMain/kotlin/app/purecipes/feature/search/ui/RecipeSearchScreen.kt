@@ -41,16 +41,21 @@ fun RecipeSearchScreen(
 		)
 	},
 ) {
+	LaunchedEffect(sessionKey) {
+		viewModel.onSessionKeyChanged(sessionKey)
+	}
+
 	if (viewModel.isFilterSheetVisible) {
 		val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 		FilterBottomSheet(
 			filters = viewModel.activeFilters,
 			isSignedIn = isSignedIn,
 			pantryIngredients = viewModel.pantryIngredients.toImmutableSet(),
+			excludedIngredients = viewModel.excludedIngredients.toImmutableSet(),
 			sheetState = sheetState,
 			onDismiss = viewModel::onFilterSheetDismiss,
 			onFiltersChange = viewModel::onFiltersChange,
-			onPantryIngredientsChange = viewModel::onPantryIngredientsChange,
+			onIngredientSelectionChange = viewModel::onIngredientSelectionChange,
 			onRequestLogIn = {
 				viewModel.onFilterSheetDismiss()
 				onRequestLogInForFilters()

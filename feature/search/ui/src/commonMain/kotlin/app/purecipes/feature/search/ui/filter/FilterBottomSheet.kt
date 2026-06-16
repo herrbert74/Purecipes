@@ -77,10 +77,11 @@ internal fun FilterBottomSheet(
 	filters: SearchFilters,
 	isSignedIn: Boolean,
 	pantryIngredients: ImmutableSet<String>,
+	excludedIngredients: ImmutableSet<String>,
 	sheetState: SheetState,
 	onDismiss: () -> Unit,
 	onFiltersChange: (SearchFilters) -> Unit,
-	onPantryIngredientsChange: (Set<String>) -> Unit,
+	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
 	onRequestLogIn: () -> Unit,
 ) {
 	ModalBottomSheet(
@@ -91,8 +92,9 @@ internal fun FilterBottomSheet(
 			filters = filters,
 			isSignedIn = isSignedIn,
 			pantryIngredients = pantryIngredients,
+			excludedIngredients = excludedIngredients,
 			onFiltersChange = onFiltersChange,
-			onPantryIngredientsChange = onPantryIngredientsChange,
+			onIngredientSelectionChange = onIngredientSelectionChange,
 			onRequestLogIn = onRequestLogIn,
 		)
 	}
@@ -103,8 +105,9 @@ private fun FilterBottomSheetContent(
 	filters: SearchFilters,
 	isSignedIn: Boolean,
 	pantryIngredients: ImmutableSet<String>,
+	excludedIngredients: ImmutableSet<String>,
 	onFiltersChange: (SearchFilters) -> Unit,
-	onPantryIngredientsChange: (Set<String>) -> Unit,
+	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
 	onRequestLogIn: () -> Unit,
 ) {
 	if (!isSignedIn) {
@@ -149,7 +152,8 @@ private fun FilterBottomSheetContent(
 					when (selectedTab) {
 						FilterTab.Pantry -> PantryFilterTabContent(
 							pantryIngredients = pantryIngredients,
-							onPantryIngredientsChange = onPantryIngredientsChange,
+							excludedIngredients = excludedIngredients,
+							onIngredientSelectionChange = onIngredientSelectionChange,
 						)
 
 						FilterTab.RecipeFilters -> RecipeFiltersTabContent(
@@ -166,13 +170,15 @@ private fun FilterBottomSheetContent(
 @Composable
 private fun PantryFilterTabContent(
 	pantryIngredients: ImmutableSet<String>,
-	onPantryIngredientsChange: (Set<String>) -> Unit,
+	excludedIngredients: ImmutableSet<String>,
+	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
 ) {
 	FilterScrollableColumn {
 		item {
 			Text(
-				text = "We will show only the recipes that have no missing ingredients " +
-					"from your pantry, unless there are no complete matches.",
+				text = "Tap an ingredient to mark it as in your pantry. Tap again to exclude it from " +
+					"search results. Tap a third time to clear the selection. Red chips exclude recipes " +
+					"that contain that ingredient.",
 				style = PurecipesTheme.typography.bodyMedium,
 				modifier = Modifier
 					.testTag(FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG)
@@ -184,9 +190,18 @@ private fun PantryFilterTabContent(
 			)
 		}
 		item {
+			IngredientFilterLegend(
+				modifier = Modifier.padding(
+					top = PurecipesTheme.space.s,
+					bottom = PurecipesTheme.space.xs,
+				),
+			)
+		}
+		item {
 			IngredientFilterSection(
-				availableIngredients = pantryIngredients,
-				onSelectionChange = onPantryIngredientsChange,
+				pantryIngredients = pantryIngredients,
+				excludedIngredients = excludedIngredients,
+				onSelectionChange = onIngredientSelectionChange,
 			)
 		}
 	}
@@ -475,8 +490,9 @@ private fun FilterBottomSheetPreviewContent(
 				filters = SearchFilters.default(),
 				isSignedIn = isSignedIn,
 				pantryIngredients = persistentSetOf(),
+				excludedIngredients = persistentSetOf(),
 				onFiltersChange = {},
-				onPantryIngredientsChange = {},
+				onIngredientSelectionChange = { _, _ -> },
 				onRequestLogIn = {},
 			)
 		}
