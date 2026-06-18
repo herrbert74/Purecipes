@@ -1,6 +1,8 @@
 package app.purecipes.backend
 
 import app.purecipes.backend.db.Db
+import app.purecipes.shared.domain.model.IngredientRequirement
+import app.purecipes.shared.domain.model.RecipeIngredient
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
@@ -13,12 +15,20 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 
+internal fun recipeIngredientsForRouteTest(vararg texts: String): List<RecipeIngredient> =
+	texts.map { text -> RecipeIngredient(text = text) }
+
+internal fun optionalRecipeIngredientForRouteTest(text: String): RecipeIngredient =
+	RecipeIngredient(text = text, requirement = IngredientRequirement.OPTIONAL)
+
 internal suspend fun ApplicationTestBuilder.createRecipeForSearchRouteTest(
 	accessToken: String,
 	title: String,
-	ingredients: List<String>,
+	ingredients: List<RecipeIngredient>,
 ) {
-	val ingredientsJson = ingredients.joinToString(separator = ",") { "\"$it\"" }
+	val ingredientsJson = ingredients.joinToString(separator = ",") { ingredient ->
+		"""{"text":"${ingredient.text}","requirement":"${ingredient.requirement.name}"}"""
+	}
 	val response = client.post("/recipes") {
 		header(HttpHeaders.Authorization, "Bearer $accessToken")
 		contentType(ContentType.Application.Json)
@@ -44,27 +54,27 @@ internal suspend fun ApplicationTestBuilder.seedRecipeCatalogForSearchRouteTest(
 	createRecipeForSearchRouteTest(
 		accessToken = accessToken,
 		title = "Chicken Tomato Stew",
-		ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+		ingredients = recipeIngredientsForRouteTest("Chicken breast", "Tomato", "Salt"),
 	)
 	createRecipeForSearchRouteTest(
 		accessToken = accessToken,
 		title = "Chicken Rice Bowl",
-		ingredients = listOf("Chicken breast", "Rice", "Salt"),
+		ingredients = recipeIngredientsForRouteTest("Chicken breast", "Rice", "Salt"),
 	)
 	createRecipeForSearchRouteTest(
 		accessToken = accessToken,
 		title = "Tomato Basil Soup",
-		ingredients = listOf("Tomato", "Basil", "Garlic"),
+		ingredients = recipeIngredientsForRouteTest("Tomato", "Basil", "Garlic"),
 	)
 	createRecipeForSearchRouteTest(
 		accessToken = accessToken,
 		title = "Garlic Rice",
-		ingredients = listOf("Garlic", "Rice", "Butter"),
+		ingredients = recipeIngredientsForRouteTest("Garlic", "Rice", "Butter"),
 	)
 	createRecipeForSearchRouteTest(
 		accessToken = accessToken,
 		title = "Veggie Omelette",
-		ingredients = listOf("Eggs", "Tomato", "Onion"),
+		ingredients = recipeIngredientsForRouteTest("Eggs", "Tomato", "Onion"),
 	)
 }
 

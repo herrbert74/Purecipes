@@ -27,6 +27,7 @@ import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import org.junit.Rule
 import org.junit.Test
@@ -63,7 +64,7 @@ class RecipeDetailsScreenTest {
 								ingredientGroups = listOf(
 									IngredientGroup(
 										name = "Ingredients",
-										ingredients = listOf("6 carrots", "2 tbsp olive oil"),
+										ingredients = recipeIngredients("6 carrots", "2 tbsp olive oil"),
 									),
 								),
 								steps = listOf("Trim the carrots", "Roast until tender"),

@@ -38,8 +38,8 @@ internal fun insertRecipeWithIngredients(
 
 		connection.prepareStatement(
 			"""
-			INSERT INTO ingredients (ingredient_group_id, ingredient, order_index)
-			VALUES (?, ?, ?)
+			INSERT INTO ingredients (ingredient_group_id, ingredient, order_index, requirement)
+			VALUES (?, ?, ?, 'REQUIRED')
 			""".trimIndent(),
 		).use { statement ->
 			ingredients.forEachIndexed { index, ingredient ->

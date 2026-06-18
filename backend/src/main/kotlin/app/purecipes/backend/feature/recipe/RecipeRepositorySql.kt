@@ -119,7 +119,7 @@ internal object RecipeRepositorySql {
 	"""
 
 	const val INGREDIENT_GROUPS_SQL = """
-		SELECT g.id AS group_id, g.name AS group_name, i.ingredient AS ingredient
+		SELECT g.id AS group_id, g.name AS group_name, i.ingredient AS ingredient, i.requirement AS requirement
 		FROM ingredient_groups g
 		LEFT JOIN ingredients i ON i.ingredient_group_id = g.id
 		WHERE g.recipe_id = ?
@@ -158,8 +158,8 @@ internal object RecipeRepositorySql {
 	"""
 
 	const val CREATE_INGREDIENT_SQL = """
-		INSERT INTO ingredients (ingredient_group_id, ingredient, order_index)
-		VALUES (?, ?, ?)
+		INSERT INTO ingredients (ingredient_group_id, ingredient, order_index, requirement)
+		VALUES (?, ?, ?, ?)
 	"""
 
 	const val CREATE_INSTRUCTION_STEP_SQL = """

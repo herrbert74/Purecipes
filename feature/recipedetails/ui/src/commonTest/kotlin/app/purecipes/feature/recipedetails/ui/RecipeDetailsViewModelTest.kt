@@ -30,6 +30,7 @@ import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -56,7 +57,7 @@ class RecipeDetailsViewModelTest {
 		val recipe = fakeRecipeDetails(
 			ingredientGroups = listOf(
 				IngredientGroup(
-					ingredients = listOf("2 cups flour"),
+					ingredients = recipeIngredients("2 cups flour"),
 				),
 			),
 			measurementSystem = MeasurementSystem.IMPERIAL,
@@ -85,7 +86,7 @@ class RecipeDetailsViewModelTest {
 		)
 
 		advanceUntilIdle()
-		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single() shouldBe "2 cups flour"
+		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single()?.text shouldBe "2 cups flour"
 
 		measurementRepository.saveMeasurementPreferences(
 			MeasurementPreferences(
@@ -96,7 +97,7 @@ class RecipeDetailsViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.isRecipeConverted shouldBe true
-		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single().orEmpty() shouldContain "mL"
+		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single()?.text.orEmpty() shouldContain "mL"
 	}
 
 	@Test

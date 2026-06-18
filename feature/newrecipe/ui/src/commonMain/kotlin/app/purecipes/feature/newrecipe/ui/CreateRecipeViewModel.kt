@@ -12,7 +12,9 @@ import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import app.purecipes.shared.domain.ingredient.IngredientLineParser
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.IngredientRequirement
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
@@ -170,7 +172,9 @@ class CreateRecipeViewModel(
 		titleInput = recipe.title
 		descriptionInput = recipe.description
 		imageUrlInput = recipe.imageUrl.orEmpty()
-		ingredientsInput = recipe.ingredientGroups.flatMap { it.ingredients }.joinToString(separator = "\n")
+		ingredientsInput = recipe.ingredientGroups
+			.flatMap { it.ingredients }
+			.joinToString(separator = "\n", transform = IngredientLineParser::toEditableLine)
 		stepInputs.clear()
 		stepInputs.addAll(recipe.steps.ifEmpty { listOf("") })
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
@@ -224,7 +228,12 @@ class CreateRecipeViewModel(
 					title = titleInput,
 					description = descriptionInput,
 					imageUrl = imageUrlInput,
-					ingredients = ingredientsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList(),
+					ingredients = ingredientsInput
+						.lineSequence()
+						.map(String::trim)
+						.filter(String::isNotEmpty)
+						.map(IngredientLineParser::parse)
+						.toList(),
 					steps = stepInputs.map(String::trim).filter(String::isNotEmpty),
 					totalTime = totalTimeInput.trim().takeIf { it.isNotEmpty() }?.toIntOrNull(),
 					yields = yieldsInput,
@@ -257,7 +266,14 @@ class CreateRecipeViewModel(
 	private fun scheduleNutritionEstimate() {
 		nutritionEstimateJob?.cancel()
 		nutritionEstimateJob = viewModelScope.launch {
-			val ingredients = ingredientsInput.lineSequence().map(String::trim).filter(String::isNotEmpty).toList()
+			val ingredients = ingredientsInput
+				.lineSequence()
+				.map(String::trim)
+				.filter(String::isNotEmpty)
+				.map(IngredientLineParser::parse)
+				.filter { it.requirement != IngredientRequirement.OPTIONAL }
+				.map { it.text }
+				.toList()
 			if (ingredients.isEmpty()) {
 				nutritionEstimate = null
 				isNutritionEstimateLoading = false

@@ -2,7 +2,7 @@
 
 @file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 @file:DependsOn("org.postgresql:postgresql:42.7.11")
-@file:Import("RecipeIngredientNormalization.kt")
+@file:Import("../ScrapedIngredientLines.kt")
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -31,7 +31,7 @@ data class NormalizeConfig(
 	val dbPassword: String?,
 )
 
-private val expectedNormalizationRulesChecksum = "generic-units-v4"
+private val expectedScrapedIngredientRulesChecksum = "generic-units-v5"
 
 private val gluedQuantitySampleRegex = Regex("""\d+(?:\.\d+)?[A-Za-z]""")
 
@@ -59,7 +59,7 @@ fun printUsageAndExit(message: String? = null): Nothing {
 	System.err.println(
 		"""
 	Usage:
-		kotlin scripts/scraping/normalize_existing_ingredients.main.kts [options]
+		kotlin scripts/scraping/oneoff/normalize_existing_ingredients.main.kts [options]
 
 	Options:
 		--json-dir <path>           Recipe JSON root (repeatable). Updates all *.json files recursively.
@@ -208,12 +208,12 @@ private fun toIngredientUpdate(
 	}
 }
 
-fun verifyNormalizationRules() {
-	require(NORMALIZATION_RULES_CHECKSUM == expectedNormalizationRulesChecksum) {
+fun verifyScrapedIngredientRules() {
+	require(SCRAPED_INGREDIENT_RULES_CHECKSUM == expectedScrapedIngredientRulesChecksum) {
 		"""
-		Stale normalization rules loaded ($NORMALIZATION_RULES_CHECKSUM != $expectedNormalizationRulesChecksum).
-		Kotlin script caching can keep an old copy of RecipeIngredientNormalization.kt.
-		Run: scripts/scraping/normalize_existing_ingredients.sh (clears cache first)
+		Stale scraped-ingredient rules loaded ($SCRAPED_INGREDIENT_RULES_CHECKSUM != $expectedScrapedIngredientRulesChecksum).
+		Kotlin script caching can keep an old copy of ScrapedIngredientLines.kt.
+		Run: scripts/scraping/oneoff/normalize_existing_ingredients.sh (clears cache first)
 		Or delete: ~/Library/Caches/main.kts.compiled.cache/
 		""".trimIndent()
 	}
@@ -227,8 +227,8 @@ fun verifyNormalizationRules() {
 		require(actual == expected) {
 			"""
 			Normalization self-test failed for '$input' (got '$actual', expected '$expected').
-			Kotlin script caching can keep an old copy of RecipeIngredientNormalization.kt.
-			Run: scripts/scraping/normalize_existing_ingredients.sh (clears cache first)
+			Kotlin script caching can keep an old copy of ScrapedIngredientLines.kt.
+			Run: scripts/scraping/oneoff/normalize_existing_ingredients.sh (clears cache first)
 			Or delete: ~/Library/Caches/main.kts.compiled.cache/
 			""".trimIndent()
 		}
@@ -591,7 +591,7 @@ fun applyJsonUpdates(config: NormalizeConfig) {
 }
 
 fun main() {
-	verifyNormalizationRules()
+	verifyScrapedIngredientRules()
 	val config = parseOptions(args)
 	if (config.dryRun) {
 		println("Dry run enabled; no files or database rows will be modified")

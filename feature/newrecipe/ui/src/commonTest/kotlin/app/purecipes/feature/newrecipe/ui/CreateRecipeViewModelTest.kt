@@ -11,6 +11,7 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
+import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
@@ -153,7 +154,7 @@ private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(
 	imageUrl = null,
 	ingredientGroups = listOf(
 		IngredientGroup(
-			ingredients = listOf("200 g pasta", "2 tomatoes"),
+			ingredients = recipeIngredients("200 g pasta", "2 tomatoes"),
 		),
 	),
 	steps = listOf("Boil the pasta", "Finish with the tomatoes"),

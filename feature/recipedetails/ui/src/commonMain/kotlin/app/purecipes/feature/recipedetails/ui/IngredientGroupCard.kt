@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.IngredientRequirement
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -30,9 +31,25 @@ internal fun IngredientGroupCard(group: IngredientGroup) {
 			}
 
 			group.ingredients.forEach { ingredient ->
+				val isOptional = ingredient.requirement == IngredientRequirement.OPTIONAL
 				Text(
-					text = "- $ingredient",
-					style = PurecipesTheme.typography.bodyLarge,
+					text = buildString {
+						append("- ")
+						append(ingredient.text)
+						if (isOptional) {
+							append(" (optional)")
+						}
+					},
+					style = if (isOptional) {
+						PurecipesTheme.typography.bodyMedium
+					} else {
+						PurecipesTheme.typography.bodyLarge
+					},
+					color = if (isOptional) {
+						PurecipesTheme.colorScheme.onSurfaceVariant
+					} else {
+						PurecipesTheme.colorScheme.onSurface
+					},
 				)
 			}
 		}

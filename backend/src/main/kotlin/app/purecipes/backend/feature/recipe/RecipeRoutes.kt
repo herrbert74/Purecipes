@@ -219,8 +219,8 @@ private fun validateRecipeWriteRequest(request: RecipeWriteRequest): String? {
 			request.steps.map(String::trim).none(String::isNotEmpty)
 		},
 		"Ingredient groups contain no ingredients".takeIf {
-			request.ingredientGroups.any { group ->
-				group.ingredients.map(String::trim).none(String::isNotEmpty)
+			request.ingredientGroups.all { group ->
+				group.ingredients.all { ingredient -> ingredient.text.isBlank() }
 			}
 		},
 		"Total time must be zero or greater".takeIf {

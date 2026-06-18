@@ -1,6 +1,7 @@
 package app.purecipes.backend.feature.recipe
 
 import app.purecipes.shared.domain.model.MeasurementSystem
+import app.purecipes.shared.domain.model.RecipeIngredient
 
 internal data class RecipeRecord(
 	val id: Int,
@@ -22,5 +23,5 @@ internal data class RecipeRecord(
 
 internal data class IngredientGroupAccumulator(
 	val name: String?,
-	val ingredients: MutableList<String> = mutableListOf(),
+	val ingredients: MutableList<RecipeIngredient> = mutableListOf(),
 )

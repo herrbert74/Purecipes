@@ -1,12 +1,14 @@
 #!/usr/bin/env kotlin
 @file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 @file:DependsOn("org.postgresql:postgresql:42.7.11")
-@file:Import("RecipeIngredientNormalization.kt")
+@file:Import("ScrapedIngredientLines.kt")
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -63,7 +65,7 @@ val json = Json {
 
 data class RecipeData(
 	val title: String,
-	val ingredientGroups: List<Pair<String?, List<String>>>,
+	val ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>,
 	val instructionList: List<String>,
 	val instructions: String,
 	val totalTime: Int?,
@@ -83,13 +85,20 @@ data class RecipeData(
 		val ingredientGroupsArray = kotlinx.serialization.json.buildJsonArray {
 			ingredientGroups.forEach { (groupName, items) ->
 				add(
-					kotlinx.serialization.json.buildJsonObject {
+					buildJsonObject {
 						put("name", JsonPrimitive(groupName ?: ""))
 						put(
 							"ingredients",
 							kotlinx.serialization.json.buildJsonArray {
-								items.forEach { add(JsonPrimitive(it)) }
-							}
+								items.forEach { ingredient ->
+									add(
+										buildJsonObject {
+											put("text", JsonPrimitive(ingredient.text))
+											put("requirement", JsonPrimitive(ingredient.requirement))
+										},
+									)
+								}
+							},
 						)
 					}
 				)
@@ -99,14 +108,14 @@ data class RecipeData(
 		val instructionListArray = kotlinx.serialization.json.buildJsonArray {
 			instructionList.forEach { add(JsonPrimitive(it)) }
 		}
-		val nutrientsObject = kotlinx.serialization.json.buildJsonObject {
+		val nutrientsObject = buildJsonObject {
 			nutrients.forEach { (k, v) -> put(k, if (v == null) JsonPrimitive("") else JsonPrimitive(v)) }
 		}
-		val linksObject = kotlinx.serialization.json.buildJsonObject {
+		val linksObject = buildJsonObject {
 			links.forEach { (k, v) -> put(k, if (v == null) JsonPrimitive("") else JsonPrimitive(v)) }
 		}
 
-		return kotlinx.serialization.json.buildJsonObject {
+		return buildJsonObject {
 			put("title", JsonPrimitive(title))
 			put("ingredient_groups", ingredientGroupsArray)
 			put("instruction_list", instructionListArray)
@@ -668,6 +677,27 @@ fun clampIngredientForDatabase(ingredient: String, sourceUrl: String): String {
 	return ingredient.take(MAX_INGREDIENT_LENGTH)
 }
 
+fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngredient? =
+	when (ingredientEl) {
+		is JsonPrimitive -> ingredientEl.contentOrNull?.trim()?.takeIf(String::isNotBlank)?.let {
+			ProcessedScrapedIngredient(text = it)
+		}
+		is JsonObject -> {
+			val text = ingredientEl["text"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
+			if (text.isBlank()) {
+				null
+			} else {
+				val requirement = ingredientEl["requirement"]?.jsonPrimitive?.contentOrNull
+					?.trim()
+					?.uppercase(Locale.ROOT)
+					?.takeIf { it.isNotBlank() }
+					?: "REQUIRED"
+				ProcessedScrapedIngredient(text = text, requirement = requirement)
+			}
+		}
+		else -> null
+	}
+
 fun parseRecipe(rawJson: String): RecipeData? {
 	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }
 		.getOrNull() ?: return null
@@ -680,7 +710,7 @@ fun parseRecipe(rawJson: String): RecipeData? {
 				is JsonObject -> {
 					val name = groupEl["name"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
 					val items = groupEl["ingredients"]?.jsonArray
-						?.mapNotNull { it.jsonPrimitive.contentOrNull?.trim() }
+						?.mapNotNull(::parseStoredIngredientJson)
 						?: emptyList()
 					if (items.isEmpty()) null else (name to items)
 				}
@@ -688,7 +718,7 @@ fun parseRecipe(rawJson: String): RecipeData? {
 				is kotlinx.serialization.json.JsonArray -> {
 					val name = groupEl.getOrNull(0)?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
 					val items = groupEl.getOrNull(1)?.jsonArray
-						?.mapNotNull { it.jsonPrimitive.contentOrNull?.trim() }
+						?.mapNotNull(::parseStoredIngredientJson)
 						?: emptyList()
 					if (items.isEmpty()) null else (name to items)
 				}
@@ -696,7 +726,7 @@ fun parseRecipe(rawJson: String): RecipeData? {
 				else -> null
 			}
 		}
-		?.flatMap { (name, items) -> normalizeIngredientGroups(name, items) }
+		?.flatMap { (name, items) -> processScrapedIngredientGroups(name, items) }
 		?.filter { (_, items) -> items.isNotEmpty() }
 		?: emptyList()
 
@@ -776,8 +806,11 @@ fun ensureSchema(connection: Connection) {
 		id SERIAL PRIMARY KEY,
 		ingredient_group_id INTEGER NOT NULL REFERENCES ingredient_groups(id) ON DELETE CASCADE,
 		ingredient VARCHAR(255),
-		order_index INTEGER NOT NULL
+		order_index INTEGER NOT NULL,
+		requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED'
 	);
+
+	ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED';
 
 	CREATE TABLE IF NOT EXISTS instruction_steps (
 		id SERIAL PRIMARY KEY,
@@ -925,7 +958,7 @@ private val scrapedNutrientKeyAliases = mapOf(
 	"sodium" to listOf("sodium", "sodiumContent"),
 )
 
-fun parseNutrientJsonValue(element: kotlinx.serialization.json.JsonElement): String? =
+fun parseNutrientJsonValue(element: JsonElement): String? =
 	when (element) {
 		is JsonPrimitive -> when {
 			element.isString -> element.content.trim().takeIf { it.isNotBlank() }
@@ -1097,13 +1130,13 @@ private fun mapCategoryToColumns(category: String?): ScrapedCategoryColumns {
 	)
 }
 
-fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<String>>>): String? {
+fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>): String? {
 	var imperialHits = 0
 	var metricHits = 0
 	ingredientGroups.asSequence()
 		.flatMap { (_, ingredients) -> ingredients.asSequence() }
 		.forEach { ingredient ->
-			val normalized = ingredient.lowercase()
+			val normalized = ingredient.text.lowercase()
 			if (imperialUnitRegex.containsMatchIn(normalized)) {
 				imperialHits += 1
 			}
@@ -1181,7 +1214,8 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 	}
 
 	val insertGroupSql = "INSERT INTO ingredient_groups (recipe_id, name, order_index) VALUES (?, ?, ?) RETURNING id"
-	val insertIngredientSql = "INSERT INTO ingredients (ingredient_group_id, ingredient, order_index) VALUES (?, ?, ?)"
+	val insertIngredientSql =
+		"INSERT INTO ingredients (ingredient_group_id, ingredient, order_index, requirement) VALUES (?, ?, ?, ?)"
 
 	recipe.ingredientGroups.forEachIndexed { groupIndex, (groupName, items) ->
 		val groupId = connection.prepareStatement(insertGroupSql).use { ps ->
@@ -1197,8 +1231,9 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 		connection.prepareStatement(insertIngredientSql).use { ps ->
 			items.forEachIndexed { itemIndex, ingredient ->
 				ps.setInt(1, groupId)
-				ps.setString(2, clampIngredientForDatabase(ingredient, recipe.sourceUrl))
+				ps.setString(2, clampIngredientForDatabase(ingredient.text, recipe.sourceUrl))
 				ps.setInt(3, itemIndex)
+				ps.setString(4, ingredient.requirement)
 				ps.addBatch()
 			}
 			ps.executeBatch()

@@ -261,6 +261,9 @@ internal fun CreateRecipeForm(
 					.fillMaxWidth()
 					.testTag(INGREDIENTS_FIELD_TAG),
 				label = { Text(text = "Ingredients") },
+				supportingText = {
+					Text(text = "Prefix a line with optional: to mark it as not required for pantry search.")
+				},
 				minLines = 4,
 			)
 			NutritionSummaryCard(

@@ -11,7 +11,6 @@ internal object IngredientVocabulary {
 		"in the box",
 		"from your cupboard",
 		"shopping list",
-		"optional",
 		"serve with",
 		"to garnish",
 	)

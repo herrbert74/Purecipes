@@ -238,7 +238,8 @@ class FavoritesPostgresIntegrationTest {
 							id INTEGER PRIMARY KEY,
 							ingredient_group_id INTEGER NOT NULL,
 							ingredient VARCHAR(255),
-							order_index INTEGER NOT NULL
+							order_index INTEGER NOT NULL,
+							requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED'
 						)
 					""".trimIndent(),
 				)

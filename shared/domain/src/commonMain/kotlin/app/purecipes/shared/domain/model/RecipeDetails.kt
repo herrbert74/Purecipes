@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IngredientGroup(
 	val name: String? = null,
-	val ingredients: List<String> = emptyList(),
+	val ingredients: List<RecipeIngredient> = emptyList(),
 )
 
 @Serializable

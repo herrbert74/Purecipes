@@ -13,8 +13,8 @@ class IngredientVocabularyTest {
 	}
 
 	@Test
-	fun `marks optional prefix lines as ignorable`() {
-		IngredientVocabulary.isIgnorableIngredientLine("optional parsley, to garnish") shouldBe true
+	fun `optional ingredient lines are not treated as ignorable`() {
+		IngredientVocabulary.isIgnorableIngredientLine("optional parsley, to garnish") shouldBe false
 	}
 
 	@Test

@@ -30,6 +30,7 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -194,11 +195,18 @@ private val previewRecipeDetails = RecipeDetails(
 	ingredientGroups = listOf(
 		IngredientGroup(
 			name = "Pasta",
-			ingredients = listOf("400 g spaghetti", "Salt"),
+			ingredients = listOf(
+				RecipeIngredient(text = "400 g spaghetti"),
+				RecipeIngredient(text = "Salt"),
+			),
 		),
 		IngredientGroup(
 			name = "Sauce",
-			ingredients = listOf("2 tomatoes", "1 garlic clove", "Olive oil"),
+			ingredients = listOf(
+				RecipeIngredient(text = "2 tomatoes"),
+				RecipeIngredient(text = "1 garlic clove"),
+				RecipeIngredient(text = "Olive oil"),
+			),
 		),
 	),
 	steps = listOf(

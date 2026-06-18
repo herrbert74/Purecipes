@@ -1,6 +1,7 @@
 package app.purecipes.backend
 
 import app.purecipes.backend.fake.FakeSessionService
+import app.purecipes.shared.domain.model.RecipeIngredient
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -181,7 +182,7 @@ class RecipeSearchRouteTest {
 			createRecipeForSearchRouteTest(
 				accessToken = sessionService.session.accessToken,
 				title = "Keyword Match $index",
-				ingredients = listOf("Tomato", "Salt"),
+				ingredients = recipeIngredientsForRouteTest("Tomato", "Salt"),
 			)
 		}
 
@@ -292,7 +293,7 @@ class RecipeSearchRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Chicken Tomato Broth",
-			ingredients = listOf("Chicken breast", "Tomato", "Salt", "Water", "Vegetable Oil"),
+			ingredients = recipeIngredientsForRouteTest("Chicken breast", "Tomato", "Salt", "Water", "Vegetable Oil"),
 		)
 		updatePantryForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -333,7 +334,7 @@ class RecipeSearchRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Cilantro Rice",
-			ingredients = listOf("Rice", "Cilantro"),
+			ingredients = recipeIngredientsForRouteTest("Rice", "Cilantro"),
 		)
 		updatePantryForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -374,7 +375,7 @@ class RecipeSearchRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Egg Fried Rice",
-			ingredients = listOf("Egg", "Pea", "Rice"),
+			ingredients = recipeIngredientsForRouteTest("Egg", "Pea", "Rice"),
 		)
 		updatePantryForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -415,7 +416,7 @@ class RecipeSearchRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Tomato Soup",
-			ingredients = listOf("Tomato", "Basil"),
+			ingredients = recipeIngredientsForRouteTest("Tomato", "Basil"),
 		)
 		updatePantryForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -464,7 +465,7 @@ class RecipeSearchRouteTest {
 				createRecipeForSearchRouteTest(
 					accessToken = sessionService.session.accessToken,
 					title = "Non match $index",
-					ingredients = listOf("Rice", "Butter"),
+					ingredients = recipeIngredientsForRouteTest("Rice", "Butter"),
 				)
 			}
 
@@ -472,7 +473,7 @@ class RecipeSearchRouteTest {
 				createRecipeForSearchRouteTest(
 					accessToken = sessionService.session.accessToken,
 					title = "Match $index",
-					ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+					ingredients = recipeIngredientsForRouteTest("Chicken breast", "Tomato", "Salt"),
 				)
 			}
 			updatePantryForSearchRouteTest(
@@ -496,5 +497,94 @@ class RecipeSearchRouteTest {
 			responseBody.contains("Match 0") shouldBe true
 			responseBody.contains("Match 3") shouldBe true
 		}
+
+	@Test
+	fun `persisted pantry ignores optional ingredients`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "Chicken With Optional Garnish",
+			ingredients = listOf(
+				RecipeIngredient(text = "Chicken breast"),
+				RecipeIngredient(text = "Rice"),
+				optionalRecipeIngredientForRouteTest("Parsley, to garnish"),
+			),
+		)
+		updatePantryForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Chicken", "Rice"),
+		)
+
+		val responseBody = searchWithFiltersForSearchRouteTest(
+			"""
+				{
+					"query": "",
+					"filters": {}
+				}
+			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
+		)
+
+		responseBody.contains("Chicken With Optional Garnish") shouldBe true
+	}
+
+	@Test
+	fun `persisted excluded ingredients still match optional ingredients`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "Rice With Optional Peanut Garnish",
+			ingredients = listOf(
+				RecipeIngredient(text = "Rice"),
+				optionalRecipeIngredientForRouteTest("Crushed peanuts, to garnish"),
+			),
+		)
+		updateExcludedIngredientsForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Peanut"),
+		)
+
+		val responseBody = searchWithFiltersForSearchRouteTest(
+			"""
+				{
+					"query": "",
+					"filters": {}
+				}
+			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
+		)
+
+		responseBody.contains("Rice With Optional Peanut Garnish") shouldBe false
+	}
 
 }

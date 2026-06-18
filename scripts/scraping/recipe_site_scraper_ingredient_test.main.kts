@@ -1,8 +1,6 @@
 #!/usr/bin/env kotlin
 
-@file:Import("RecipeIngredientNormalization.kt")
-
-// Recompiled when normalization rules change (v2).
+@file:Import("ScrapedIngredientLines.kt")
 
 data class IngredientTestCase(
 	val description: String,
@@ -30,7 +28,7 @@ fun assertSplitEquals(description: String, expected: List<String>, actual: List<
 
 fun runSanitizeTests(cases: List<IngredientTestCase>) {
 	cases.forEach { case ->
-		val actual = sanitizeIngredientLine(case.input)
+		val actual = sanitizeIngredientLine(case.input)?.text
 		assertEquals(case.description, case.expected, actual)
 	}
 }
@@ -45,7 +43,7 @@ fun runNormalizeIngredientTextTests(cases: List<IngredientTestCase>) {
 fun runSplitTests(cases: List<SplitTestCase>) {
 	cases.forEach { case ->
 		val actual = splitIngredientLine(case.input)
-			.mapNotNull { sanitizeIngredientLine(it) }
+			.mapNotNull { sanitizeIngredientLine(it)?.text }
 		assertSplitEquals(case.description, case.expected, actual)
 	}
 }
@@ -195,7 +193,7 @@ fun main() {
 	runSplitTests(splitCases)
 	println(
 		"All ${sanitizeCases.size + normalizeTextCases.size + splitCases.size} " +
-			"ingredient normalization tests passed.",
+			"scraped ingredient line tests passed.",
 	)
 }
 

@@ -112,7 +112,7 @@ class RecipeSearchExcludedIngredientsRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Cilantro Rice",
-			ingredients = listOf("Rice", "Cilantro"),
+			ingredients = recipeIngredientsForRouteTest("Rice", "Cilantro"),
 		)
 		updateExcludedIngredientsForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -153,7 +153,7 @@ class RecipeSearchExcludedIngredientsRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Egg Fried Rice",
-			ingredients = listOf("Egg", "Pea", "Rice"),
+			ingredients = recipeIngredientsForRouteTest("Egg", "Pea", "Rice"),
 		)
 		updateExcludedIngredientsForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -194,7 +194,7 @@ class RecipeSearchExcludedIngredientsRouteTest {
 		createRecipeForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
 			title = "Tomato Soup",
-			ingredients = listOf("Tomato", "Basil"),
+			ingredients = recipeIngredientsForRouteTest("Tomato", "Basil"),
 		)
 		updateExcludedIngredientsForSearchRouteTest(
 			accessToken = sessionService.session.accessToken,
@@ -286,7 +286,7 @@ class RecipeSearchExcludedIngredientsRouteTest {
 				createRecipeForSearchRouteTest(
 					accessToken = sessionService.session.accessToken,
 					title = "Garlic dish $index",
-					ingredients = listOf("Garlic", "Butter"),
+					ingredients = recipeIngredientsForRouteTest("Garlic", "Butter"),
 				)
 			}
 
@@ -294,7 +294,7 @@ class RecipeSearchExcludedIngredientsRouteTest {
 				createRecipeForSearchRouteTest(
 					accessToken = sessionService.session.accessToken,
 					title = "Safe dish $index",
-					ingredients = listOf("Chicken breast", "Tomato", "Salt"),
+					ingredients = recipeIngredientsForRouteTest("Chicken breast", "Tomato", "Salt"),
 				)
 			}
 			updateExcludedIngredientsForSearchRouteTest(
