@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.CenteredMessageContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -178,7 +179,10 @@ private val previewCookingRecipe = RecipeDetails(
 	ingredientGroups = listOf(
 		IngredientGroup(
 			name = "Sauce",
-			ingredients = listOf("2 tomatoes", "1 garlic clove"),
+			ingredients = listOf(
+				RecipeIngredient(text = "2 tomatoes"),
+				RecipeIngredient(text = "1 garlic clove"),
+			),
 		),
 	),
 	steps = listOf(

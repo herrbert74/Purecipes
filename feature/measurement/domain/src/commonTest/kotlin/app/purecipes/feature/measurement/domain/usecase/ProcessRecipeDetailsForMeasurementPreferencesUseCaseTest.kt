@@ -5,6 +5,7 @@ import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
+import app.purecipes.shared.domain.model.RecipeIngredient
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
@@ -20,7 +21,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 			description = "Imperial recipe",
 			ingredientGroups = listOf(
 				IngredientGroup(
-					ingredients = listOf("2 cups flour"),
+					ingredients = listOf(RecipeIngredient(text = "2 cups flour")),
 				),
 			),
 			steps = listOf("Bake at 350F"),
@@ -34,7 +35,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 		val result = useCase(recipe, preferences)
 
 		result.isConverted shouldBe true
-		result.recipe.ingredientGroups.single().ingredients.single() shouldContain "mL"
+		result.recipe.ingredientGroups.single().ingredients.single().text shouldContain "mL"
 		result.recipe.steps.single() shouldContain "C"
 	}
 
@@ -47,7 +48,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 			description = "Imperial recipe without metadata",
 			ingredientGroups = listOf(
 				IngredientGroup(
-					ingredients = listOf("3 lb bread flour"),
+					ingredients = listOf(RecipeIngredient(text = "3 lb bread flour")),
 				),
 			),
 			steps = emptyList(),
@@ -61,7 +62,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 		val result = useCase(recipe, preferences)
 
 		result.isConverted shouldBe true
-		result.recipe.ingredientGroups.single().ingredients.single() shouldContain "kg"
+		result.recipe.ingredientGroups.single().ingredients.single().text shouldContain "kg"
 	}
 
 	@Test
@@ -73,7 +74,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 			description = "Mixed measurement recipe",
 			ingredientGroups = listOf(
 				IngredientGroup(
-					ingredients = listOf("8 cups (1.9L) stock"),
+					ingredients = listOf(RecipeIngredient(text = "8 cups (1.9L) stock")),
 				),
 			),
 			steps = listOf("Bake at 350F"),
@@ -89,7 +90,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCaseTest {
 		result.isConverted shouldBe false
 		result.shouldShowMismatchNotification shouldBe false
 		result.recipe.measurementSystem shouldBe MeasurementSystem.MIXED
-		result.recipe.ingredientGroups.single().ingredients.single() shouldBe "8 cups (1.9L) stock"
+		result.recipe.ingredientGroups.single().ingredients.single().text shouldBe "8 cups (1.9L) stock"
 		result.recipe.steps.single() shouldBe "Bake at 350F"
 	}
 }

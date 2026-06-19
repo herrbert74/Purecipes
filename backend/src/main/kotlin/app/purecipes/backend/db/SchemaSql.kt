@@ -163,8 +163,18 @@ internal const val INGREDIENTS_TABLE_SQL = """
 		id SERIAL PRIMARY KEY,
 		ingredient_group_id INTEGER NOT NULL REFERENCES ingredient_groups(id) ON DELETE CASCADE,
 		ingredient VARCHAR(255),
-		order_index INTEGER NOT NULL
+		order_index INTEGER NOT NULL,
+		requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED',
+		alternative_group_key INTEGER
 	)
+"""
+
+internal const val INGREDIENTS_ADD_REQUIREMENT_SQL = """
+	ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED'
+"""
+
+internal const val INGREDIENTS_ADD_ALTERNATIVE_GROUP_KEY_SQL = """
+	ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS alternative_group_key INTEGER
 """
 
 internal const val INSTRUCTION_STEPS_TABLE_SQL = """

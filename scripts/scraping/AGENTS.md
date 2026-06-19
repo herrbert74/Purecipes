@@ -2,6 +2,8 @@
 
 Guidelines for maintaining [`recipe_site_scraper.main.kts`](recipe_site_scraper.main.kts).
 
+For a map of every file in this folder (main scraper vs `oneoff/` backfills vs `ScrapedIngredientLines.kt`), see [`README.md`](README.md#overview-what-lives-here).
+
 ## Rule: Recipe Scraper Schema Synchronization
 
 The backend database schema (`backend/src/main/kotlin/com/purecipes/db/SchemaSql.kt`) is the authoritative deployment source. However, schema changes can originate from either:
@@ -114,7 +116,9 @@ This is irreversible unless you have a backup or the JSON files under the scrape
 
 For scraper script changes:
 - **Detekt compliance**: Run `./gradlew detektAll` to verify linting rules pass
-- **Ingredient normalization tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
-- **Existing ingredient backfill**: Run `./scripts/scraping/normalize_existing_ingredients.sh` (clears Kotlin script cache) to update scraped DB rows and/or saved JSON archives
+- **Scraped ingredient line tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
+- **Ingredient text backfill (existing DB/JSON)**: `./scripts/scraping/oneoff/normalize_existing_ingredients.sh` — after normalization rule changes or legacy data; see [README](README.md#re-normalize-ingredient-text-normalize_existing_ingredients)
+- **Optional-flag backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts` — after optional-detection rule changes or legacy data; see [README](README.md#backfill-optional-ingredient-flags-backfill_ingredient_requirements)
+- **Alternative-group backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts` — after OR/alternative rule changes or legacy data; see [README](README.md#backfill-alternative-ingredient-groups-backfill_ingredient_alternatives)
 - **Functional testing**: Test changes against actual recipe websites (or use `--mode json` with previously saved files for offline testing)
 - **Schema alignment**: After backend schema changes, verify scraper schema and insertion logic still work end-to-end

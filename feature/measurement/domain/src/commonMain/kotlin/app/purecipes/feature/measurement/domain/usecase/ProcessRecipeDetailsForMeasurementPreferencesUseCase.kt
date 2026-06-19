@@ -2,6 +2,7 @@ package app.purecipes.feature.measurement.domain.usecase
 
 import app.purecipes.feature.measurement.domain.model.ProcessedRecipeDetails
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.IngredientRequirement
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
@@ -61,8 +62,9 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 		var metricHits = 0
 		ingredientGroups.asSequence()
 			.flatMap { it.ingredients.asSequence() }
+			.filter { it.requirement != IngredientRequirement.OPTIONAL }
 			.forEach { ingredient ->
-				ingredientConversionRegex.findAll(ingredient).forEach { match ->
+				ingredientConversionRegex.findAll(ingredient.text).forEach { match ->
 					val unitInfo = unitInfoFor(match.groups[SECOND_CAPTURE_GROUP]?.value ?: return@forEach)
 						?: return@forEach
 					when (unitInfo.system) {
@@ -86,7 +88,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 				IngredientGroup(
 					name = group.name,
 					ingredients = group.ingredients.map { ingredient ->
-						convertIngredientLine(ingredient, preferredSystem)
+						ingredient.copy(text = convertIngredientLine(ingredient.text, preferredSystem))
 					},
 				)
 			},

@@ -1,8 +1,6 @@
 #!/usr/bin/env kotlin
 
-@file:Import("RecipeIngredientNormalization.kt")
-
-// Recompiled when normalization rules change (v2).
+@file:Import("ScrapedIngredientLines.kt")
 
 data class IngredientTestCase(
 	val description: String,
@@ -30,7 +28,7 @@ fun assertSplitEquals(description: String, expected: List<String>, actual: List<
 
 fun runSanitizeTests(cases: List<IngredientTestCase>) {
 	cases.forEach { case ->
-		val actual = sanitizeIngredientLine(case.input)
+		val actual = sanitizeIngredientLine(case.input)?.text
 		assertEquals(case.description, case.expected, actual)
 	}
 }
@@ -45,7 +43,7 @@ fun runNormalizeIngredientTextTests(cases: List<IngredientTestCase>) {
 fun runSplitTests(cases: List<SplitTestCase>) {
 	cases.forEach { case ->
 		val actual = splitIngredientLine(case.input)
-			.mapNotNull { sanitizeIngredientLine(it) }
+			.mapNotNull { sanitizeIngredientLine(it)?.text }
 		assertSplitEquals(case.description, case.expected, actual)
 	}
 }
@@ -163,6 +161,36 @@ val sanitizeCases = listOf(
 	),
 )
 
+data class AlternativeTestCase(
+	val description: String,
+	val input: String,
+	val expected: List<String>,
+)
+
+fun runAlternativeTests(cases: List<AlternativeTestCase>) {
+	cases.forEach { case ->
+		val actual = sanitizeIngredientLine(case.input)
+			?.let(::expandProcessedAlternatives)
+			?.map { ingredient -> ingredient.text }
+		if (actual != case.expected) {
+			error("FAIL [${case.description}]: expected ${case.expected}, got $actual")
+		}
+	}
+}
+
+val alternativeCases = listOf(
+	AlternativeTestCase(
+		description = "parses parsley or tarragon",
+		input = "parsley or tarragon",
+		expected = listOf("parsley", "tarragon"),
+	),
+	AlternativeTestCase(
+		description = "parses shared quantity prefix for alternatives",
+		input = "2 tbsp parsley or fresh tarragon",
+		expected = listOf("2 tbsp parsley", "2 tbsp fresh tarragon"),
+	),
+)
+
 val normalizeTextCases = listOf(
 	IngredientTestCase(
 		description = "adds space between grams and quantity",
@@ -193,9 +221,10 @@ fun main() {
 	runSanitizeTests(sanitizeCases)
 	runNormalizeIngredientTextTests(normalizeTextCases)
 	runSplitTests(splitCases)
+	runAlternativeTests(alternativeCases)
 	println(
-		"All ${sanitizeCases.size + normalizeTextCases.size + splitCases.size} " +
-			"ingredient normalization tests passed.",
+		"All ${sanitizeCases.size + normalizeTextCases.size + splitCases.size + alternativeCases.size} " +
+			"scraped ingredient line tests passed.",
 	)
 }
 

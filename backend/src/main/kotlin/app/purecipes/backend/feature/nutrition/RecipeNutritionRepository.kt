@@ -58,6 +58,8 @@ private object IngredientContributionBindIndex {
 internal data class RecipeIngredientRow(
 	val ingredientId: Int,
 	val rawText: String,
+	val requirement: String = "REQUIRED",
+	val alternativeGroupKey: Int? = null,
 )
 
 internal class RecipeNutritionRepository(
@@ -67,7 +69,7 @@ internal class RecipeNutritionRepository(
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
 				"""
-				SELECT i.id, i.ingredient
+				SELECT i.id, i.ingredient, i.requirement, i.alternative_group_key
 				FROM ingredients i
 				JOIN ingredient_groups ig ON ig.id = i.ingredient_group_id
 				WHERE ig.recipe_id = ?
@@ -85,6 +87,8 @@ internal class RecipeNutritionRepository(
 									RecipeIngredientRow(
 										ingredientId = resultSet.getInt("id"),
 										rawText = rawText,
+										requirement = resultSet.getString("requirement") ?: "REQUIRED",
+										alternativeGroupKey = resultSet.getObject("alternative_group_key") as? Int,
 									),
 								)
 							}

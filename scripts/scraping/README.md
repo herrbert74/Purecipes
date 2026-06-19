@@ -1,8 +1,107 @@
 # Recipe website scraping
 
-[`recipe_site_scraper.main.kts`](recipe_site_scraper.main.kts) implements [Feature 001](../../docs/features/001_recipe-website-scraping.md).
+Kotlin scripts for importing recipes from external websites into the Purecipes PostgreSQL database. Implements [Feature 001](../../docs/features/001_recipe-website-scraping.md).
 
-## Manual workflow: build a URL list
+Agent maintenance rules (schema sync, site patterns, validation) live in [`AGENTS.md`](AGENTS.md).
+
+---
+
+## Overview: what lives here
+
+```
+scripts/scraping/
+├── ScrapedIngredientLines.kt          # shared library (not runnable)
+├── recipe_site_scraper.main.kts       # primary scraper (ongoing)
+├── recipe_site_scraper_ingredient_test.main.kts
+└── oneoff/
+    ├── normalize_existing_ingredients.main.kts   # text backfill (legacy / rule changes)
+    ├── normalize_existing_ingredients.sh         # wrapper for the above
+    ├── backfill_ingredient_requirements.main.kts # optional-flag backfill
+    └── backfill_ingredient_alternatives.main.kts # OR-group backfill (legacy / rule changes)
+```
+
+| File | Role | When to use | Examples |
+|------|------|-------------|----------|
+| [`ScrapedIngredientLines.kt`](ScrapedIngredientLines.kt) | **Shared library** — turn raw scraped ingredient strings into structured import rows (text cleanup, sanitization, optional/requirement detection, OR groups) | Not run directly. Imported by every `.main.kts` script below. | `60g Gruyère` → `60 g Gruyère`; `For the sauce:` → dropped; `parsley or tarragon` → two `ALTERNATIVE` rows |
+| [`recipe_site_scraper.main.kts`](recipe_site_scraper.main.kts) | **Primary scraper** — discover URLs, scrape sites, write JSON, import into Postgres | Normal day-to-day imports and re-imports. | `--mode web` + URL list; `--mode json` re-import from `{output}/recipes/` |
+| [`recipe_site_scraper_ingredient_test.main.kts`](recipe_site_scraper_ingredient_test.main.kts) | **Offline tests** for `ScrapedIngredientLines.kt` | After changing scraped-ingredient rules; before bulk imports or one-off backfills. | Asserts cases in that file (spacing, fractions, alternatives, splits) |
+| [`oneoff/normalize_existing_ingredients.main.kts`](oneoff/normalize_existing_ingredients.main.kts) | **One-off backfill** — re-apply *text* cleanup on existing DB rows and/or saved JSON | Legacy data **or** after normalization rule changes (see below). | `2tbsp paste` → `2 tbsp paste`; `0.666… cup flour` → `2/3 cup flour` |
+| [`oneoff/normalize_existing_ingredients.sh`](oneoff/normalize_existing_ingredients.sh) | Shell wrapper that clears the Kotlin script cache, then runs the script above | Same as above; avoids stale cached library code on macOS. | `./scripts/scraping/oneoff/normalize_existing_ingredients.sh --db-name purecipes --dry-run true` |
+| [`oneoff/backfill_ingredient_requirements.main.kts`](oneoff/backfill_ingredient_requirements.main.kts) | **One-off backfill** — set `ingredients.requirement` on existing DB rows | Legacy data **or** after optional-detection rule changes. | `optional: parsley, to garnish` → `OPTIONAL`; `(optional)` / `to serve` suffixes |
+| [`oneoff/backfill_ingredient_alternatives.main.kts`](oneoff/backfill_ingredient_alternatives.main.kts) | **One-off backfill** — split combined `or` lines into `ALTERNATIVE` rows | Legacy data **or** after alternative/OR rule changes. | `parsley or tarragon` → two rows + `alternative_group_key`; `2 tbsp parsley or fresh tarragon` → shared quantity on both |
+
+### `ScrapedIngredientLines.kt`
+
+This is the **single source of scraped-ingredient processing** for imports. It is `@file:Import`‑ed by:
+
+- `recipe_site_scraper.main.kts`
+- `recipe_site_scraper_ingredient_test.main.kts`
+- `oneoff/normalize_existing_ingredients.main.kts`
+- `oneoff/backfill_ingredient_requirements.main.kts`
+- `oneoff/backfill_ingredient_alternatives.main.kts`
+
+**Naming:** the old name `RecipeIngredientNormalization.kt` suggested text formatting only. The library also filters headings/equipment, splits concatenated lines, detects optional ingredients, and splits OR alternatives. `ScrapedIngredientLines` reflects that scope: raw **lines** from a scrape → `ProcessedScrapedIngredient` rows (display `text` + `requirement` + optional `alternative_group_key`).
+
+App/backend code uses [`IngredientLineParser`](../../shared/domain/src/commonMain/kotlin/app/purecipes/shared/domain/ingredient/IngredientLineParser.kt) in `shared/domain` for user recipes and API semantics. Keep scraper-specific heuristics here; keep shared domain rules in `shared/domain`.
+
+It handles, among other things:
+
+- Splitting and sanitizing raw ingredient lines (headings, equipment, concatenated lines)
+- Spacing between quantities and units (`60g` → `60 g`)
+- Restoring cooking fractions (`0.333… cup` → `1/3 cup`)
+- Detecting optional ingredients (`optional: …`, `(optional)`, garnish/serve suffixes) and emitting `requirement`
+- Splitting OR alternatives (`parsley or tarragon`) into multiple `ALTERNATIVE` rows
+
+**New imports:** the main scraper runs this library on every recipe during web/json import. You do **not** need a separate backfill pass for freshly scraped data.
+
+### Ingredient processing examples
+
+Representative inputs and outcomes (from [`recipe_site_scraper_ingredient_test.main.kts`](recipe_site_scraper_ingredient_test.main.kts) and [`IngredientLineParserTest`](../../shared/domain/src/commonTest/kotlin/app/purecipes/shared/domain/ingredient/IngredientLineParserTest.kt)). On import, sanitized lines become DB rows with `requirement` and optionally `alternative_group_key`.
+
+| Use case | Raw input | Result |
+|----------|-----------|--------|
+| Quantity + unit spacing | `60g Gruyère`, `2tbsp Chipotle Paste`, `500ml water` | `60 g Gruyère`, `2 tbsp Chipotle Paste`, `500 ml water` |
+| Everyday unit words | `12Rasher bacon`, `1Knob butter`, `3Sprig thyme` | `12 Rasher …`, `1 Knob …`, `3 Sprig …` |
+| Punctuation after quantity | `250g, peeled and diced onions` | `250 g, peeled and diced onions` |
+| Multiple measurements in one line | `60g butter and 30g sugar` | `60 g butter and 30 g sugar` |
+| Float → cooking fraction | `0.666666668653488 cup all-purpose flour` | `2/3 cup all-purpose flour` |
+| Mixed number fraction | `1.5 cup chopped nuts` | `1 1/2 cup chopped nuts` |
+| Imperial decimal fraction | `0.75 teaspoon ground mace` | `3/4 teaspoon ground mace` |
+| Non-standard decimal (unchanged) | `1.7 cups water` | `1.7 cups water` (left as-is) |
+| Glued quantity + name (unchanged) | `250gonions, diced` | `250gonions, diced` (no false split) |
+| Heading / group label | `For the sauce:` | Dropped (not stored as ingredient) |
+| Equipment line | `Large mixing bowl` | Dropped |
+| Concatenated ingredients | `flour60g butter2tbsp` | Split into `flour`, `60 g butter`, `2 tbsp` |
+| Optional prefix | `optional: parsley, to garnish` | `OPTIONAL`, text without prefix |
+| Optional parenthetical | `1 tbsp honey (optional)` | `OPTIONAL`, `(optional)` removed from display text |
+| Optional serve suffix | `olive oil, plus extra to serve` | `OPTIONAL` |
+| Required (default) | `2 chicken thighs` | `REQUIRED` |
+| OR alternatives (simple) | `parsley or tarragon` | Two `ALTERNATIVE` rows: `parsley`, `tarragon` |
+| OR + shared quantity | `2 tbsp parsley or fresh tarragon` | `2 tbsp parsley`, `2 tbsp fresh tarragon` |
+| OR + shared “of” + suffix | `small bunch of parsley or tarragon (about 30g)` | `small bunch of parsley (about 30g)`, `small bunch of tarragon (about 30g)` |
+
+Real-world OR example: [BBC Good Food — chicken with fennel](https://www.bbc.co.uk/food/recipes/chicken_with_fennel_81483) (`parsley or tarragon` style lines).
+
+### Ongoing workflow vs one-off scripts
+
+| Concern | Handled by | Notes | Examples |
+|---------|------------|--------|----------|
+| Scrape + import recipes | `recipe_site_scraper.main.kts` | Default path for all new data. | Web scrape → JSON + Postgres |
+| Ingredient text cleanup on import | `ScrapedIngredientLines.kt` (via main scraper) | Always applied at import time. | `60g` → `60 g` on every new row |
+| Optional/required flags on import | Same library + main scraper DB insert | New rows get `requirement` automatically. | `optional: …` → `OPTIONAL` |
+| OR groups on import | Same library + main scraper DB insert | New rows get `ALTERNATIVE` + `alternative_group_key`. | `parsley or tarragon` → two linked rows |
+| Fix *old* or *out-of-date* ingredient text | `oneoff/normalize_existing_ingredients.main.kts` | Re-run when **normalization rules** change, not only for ancient imports. | After improving fraction or unit spacing logic |
+| Fix *old* or *out-of-date* optional flags | `oneoff/backfill_ingredient_requirements.main.kts` | DB only; does not touch JSON files. | After new garnish/`(optional)` detection rules |
+| Fix *old* or *out-of-date* OR groups | `oneoff/backfill_ingredient_alternatives.main.kts` | DB only; splits combined `or` lines. | After first deploy of alternative-ingredient support |
+| Verify scraped-ingredient rules | `recipe_site_scraper_ingredient_test.main.kts` | No database or network. | Run before bulk backfill or re-import |
+
+**One-off scripts are not only for “historical” data.** Use them whenever **existing** DB rows (or saved scrape JSON, for normalize) were produced under **older** `ScrapedIngredientLines` rules — for example after you ship better alternative parsing, optional detection, or unit/fraction normalization. Workflow: update rules and tests → dry-run backfill → apply → recalculate nutrition → run enrichment. Fresh scrapes after the rule change do not need backfill.
+
+---
+
+## Main scraper (`recipe_site_scraper.main.kts`)
+
+### Manual workflow: build a URL list
 
 1. Open [simplescraper.io/extracturls](https://simplescraper.io/extracturls).
 2. Enter a recipe site home or category page (for example `https://www.allrecipes.com/recipes`).
@@ -12,20 +111,22 @@
 
 You can also let the script discover URLs via the SimpleScraper API (`--simplescraper-api-key` or `SIMPLESCRAPER_API_KEY`) instead of maintaining a file.
 
-## What the script does
+### What the script does
 
 1. Discover URLs (SimpleScraper API) or read URLs from a local file.
 2. Filter URLs to recipe-detail paths (site-specific regex in `knownWebsites`).
 3. Scrape recipe data with `recipe-scrapers` (Python, invoked from Kotlin).
-4. Save JSON under the output folder as `{DB_ID}-{slug}.json`.
-5. Insert into local PostgreSQL.
+4. Process ingredient lines via `ScrapedIngredientLines.kt`.
+5. Save JSON under the output folder as `{DB_ID}-{slug}.json`.
+6. Insert into local PostgreSQL.
+7. Optionally run `./gradlew calculateRecipeNutrition` for imported recipe IDs.
 
 **Modes:**
 
 - `--mode web` (default): discover or read URLs, scrape, save JSON, insert into DB.
 - `--mode json`: import existing JSON from `{output_dir}/recipes/` without network calls.
 
-## Supported websites
+### Supported websites
 
 | Site | Notes |
 |------|--------|
@@ -40,7 +141,7 @@ Each site has a URL regex in `knownWebsites`. Override with `--recipe-url-patter
 
 Category/listing URLs are filtered out; use recipe-detail URLs only.
 
-## Configuration
+### Configuration
 
 Batch:
 
@@ -62,7 +163,7 @@ SimpleScraper (web mode without `--urls-file`):
 - `--simplescraper-api-key` or `SIMPLESCRAPER_API_KEY`
 - `--simplescraper-timeout` (default `30`)
 
-## Dependencies
+### Dependencies
 
 ```bash
 python3 -m pip install recipe-scrapers
@@ -77,33 +178,7 @@ Also required:
 
 Run from the repo root or any subdirectory (the script locates `settings.gradle.kts`).
 
-## Ingredient normalization tests
-
-Ingredient parsing and sanitization (including inserting a space between quantities and units like `60g` → `60 g`) lives in [`RecipeIngredientNormalization.kt`](RecipeIngredientNormalization.kt). Run the offline test script from the repo root:
-
-```bash
-kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts
-```
-
-Add cases to `recipe_site_scraper_ingredient_test.main.kts` when fixing new ingredient formatting edge cases.
-
-## Normalize existing ingredients
-
-To fix ingredient text already stored in PostgreSQL and/or saved scrape JSON files (without re-scraping, nutrition, or enrichment):
-
-```bash
-./scripts/scraping/normalize_existing_ingredients.sh \
-  --json-dir ~/documents/output/recipes \
-  --db-name purecipes \
-  --dry-run true \
-  --verbose true
-```
-
-The shell wrapper clears the Kotlin script cache first. If you run `kotlin scripts/scraping/normalize_existing_ingredients.main.kts` directly, stale cached rules may cause zero updates; delete `~/Library/Caches/main.kts.compiled.cache/` when that happens.
-
-Remove `--dry-run true` to apply changes. Repeat `--json-dir` for multiple output folders. Database flags are optional; omit them to update JSON only.
-
-## Examples
+### Examples
 
 Web mode — scrape and import:
 
@@ -146,8 +221,71 @@ kotlin scripts/scraping/recipe_site_scraper.main.kts allrecipes ~/documents/outp
   --max-urls 50
 ```
 
+---
+
+## Scraped ingredient line tests
+
+Run offline tests after editing [`ScrapedIngredientLines.kt`](ScrapedIngredientLines.kt):
+
+```bash
+kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts
+```
+
+Add cases to `recipe_site_scraper_ingredient_test.main.kts` when fixing new ingredient formatting edge cases.
+
+---
+
+## One-off maintenance scripts
+
+Use scripts under [`oneoff/`](oneoff/) when **existing** database rows or saved JSON need to catch up with logic the main scraper already applies to **new** imports — including after you **change** normalization, optional, or alternative rules in `ScrapedIngredientLines.kt`. Always dry-run first, then apply, then recalculate nutrition and run enrichment (backfills do not do those steps).
+
+See [Ongoing workflow vs one-off scripts](#ongoing-workflow-vs-one-off-scripts) for which script matches which rule change.
+
+### Re-normalize ingredient text (`normalize_existing_ingredients`)
+
+Fixes quantity/unit spacing and fraction formatting in place. Can target PostgreSQL, saved scrape JSON, or both. Re-run when spacing or fraction rules improve (not only for pre-feature data).
+
+```bash
+./scripts/scraping/oneoff/normalize_existing_ingredients.sh \
+  --json-dir ~/documents/output/recipes \
+  --db-name purecipes \
+  --dry-run true \
+  --verbose true
+```
+
+The shell wrapper clears the Kotlin script cache first. If you run `kotlin scripts/scraping/oneoff/normalize_existing_ingredients.main.kts` directly, stale cached rules may cause zero updates; delete `~/Library/Caches/main.kts.compiled.cache/` when that happens.
+
+Remove `--dry-run true` to apply changes. Repeat `--json-dir` for multiple output folders. Database flags are optional; omit them to update JSON only.
+
+Does **not** recalculate nutrition or run enrichment.
+
+### Backfill optional ingredient flags (`backfill_ingredient_requirements`)
+
+Database-only. Re-parses `ingredients.ingredient` text and updates `ingredients.requirement` (and cleaned display text). Use after optional-ingredient schema deploy **or** when optional-detection heuristics change (prefix, `(optional)`, garnish/serve suffixes).
+
+```bash
+kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts \
+  --db-name purecipes \
+  --dry-run true \
+  --verbose true
+```
+
+### Backfill alternative ingredient groups (`backfill_ingredient_alternatives`)
+
+Database-only. Splits combined `parsley or tarragon` lines into multiple `ALTERNATIVE` rows sharing an `alternative_group_key`. Use after alternative-ingredient schema deploy **or** when OR parsing rules change (shared quantity, parenthetical suffixes, etc.).
+
+```bash
+kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts \
+  --db-name purecipes \
+  --dry-run true \
+  --verbose true
+```
+
+---
+
 ## Troubleshooting
 
 - Use LF line endings in URL list files.
 - Check firewall/VPN if fetches fail.
 - Run with invalid args to print full usage from the script.
+- Ingredient rule changes not showing up: run the ingredient test script, then clear the Kotlin script cache (see normalize shell wrapper) before one-off backfills.

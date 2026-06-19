@@ -1,15 +1,19 @@
 package app.purecipes.backend.feature.recipe
 
 import app.purecipes.backend.feature.search.IngredientVocabulary
+import app.purecipes.shared.domain.ingredient.ingredientSlots
+import app.purecipes.shared.domain.ingredient.slotIsOptional
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.DifficultyLevel
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.IngredientRequirement
 import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.RecipeWriteRequest
 import app.purecipes.shared.domain.model.cuisineFromRawValue
@@ -222,7 +226,7 @@ class RecipeRepository(
 				val group = groupsById.getOrPut(groupId) {
 					IngredientGroupAccumulator(name = rs.getNullableString("group_name"))
 				}
-				rs.getNullableString("ingredient")?.let(group.ingredients::add)
+				readRecipeIngredient(rs)?.let(group.ingredients::add)
 			}
 
 			groupsById.values.map { accumulator ->
@@ -232,6 +236,18 @@ class RecipeRepository(
 				)
 			}
 		}
+	}
+
+	private fun readRecipeIngredient(rs: ResultSet): RecipeIngredient? {
+		val ingredientText = rs.getNullableString("ingredient") ?: return null
+		val requirement = rs.getNullableString("requirement")
+			?.let { value -> runCatching { IngredientRequirement.valueOf(value) }.getOrNull() }
+			?: IngredientRequirement.REQUIRED
+		return RecipeIngredient(
+			text = ingredientText,
+			requirement = requirement,
+			alternativeGroupKey = rs.getObject("alternative_group_key") as? Int,
+		)
 	}
 
 	private fun loadStepsForRecipe(
@@ -314,7 +330,11 @@ class RecipeRepository(
 
 	private fun writeIngredients(conn: java.sql.Connection, recipeId: Int, ingredientGroups: List<IngredientGroup>) {
 		ingredientGroups.forEachIndexed { groupIndex, group ->
-			val ingredients = group.ingredients.map(String::trim).filter(String::isNotEmpty)
+			val ingredients = group.ingredients.mapNotNull { ingredient ->
+				ingredient.text.trim().takeIf(String::isNotEmpty)?.let { text ->
+					ingredient.copy(text = text)
+				}
+			}
 			if (ingredients.isEmpty()) {
 				return@forEachIndexed
 			}
@@ -324,8 +344,15 @@ class RecipeRepository(
 			conn.prepareStatement(RecipeRepositorySql.CREATE_INGREDIENT_SQL).use { ps ->
 				ingredients.forEachIndexed { ingredientIndex, ingredient ->
 					ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, groupId)
-					ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, ingredient)
+					ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, ingredient.text)
 					ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, ingredientIndex)
+					ps.setString(RecipeRepositorySql.FOURTH_PARAMETER_INDEX, ingredient.requirement.name)
+					val alternativeGroupKey = ingredient.alternativeGroupKey
+					if (alternativeGroupKey == null) {
+						ps.setNull(RecipeRepositorySql.FIFTH_PARAMETER_INDEX, java.sql.Types.INTEGER)
+					} else {
+						ps.setInt(RecipeRepositorySql.FIFTH_PARAMETER_INDEX, alternativeGroupKey)
+					}
 					ps.addBatch()
 				}
 				ps.executeBatch()
@@ -445,7 +472,7 @@ class RecipeRepository(
 		ingredientGroups.asSequence()
 			.flatMap { it.ingredients.asSequence() }
 			.forEach { ingredient ->
-				val normalized = ingredient.lowercase()
+				val normalized = ingredient.text.lowercase()
 				if (RecipeRepositorySql.IMPERIAL_UNIT_REGEX.containsMatchIn(normalized)) {
 					imperialHits += 1
 				}
@@ -553,11 +580,8 @@ internal fun isRecipeCoveredByAvailableIngredients(
 	loadIngredientGroups: (Int) -> List<IngredientGroup>,
 ): Boolean {
 	return loadIngredientGroups(recipeId).all { group ->
-		group.ingredients.all { ingredient ->
-			IngredientVocabulary.isCoveredByAvailableIngredients(
-				ingredientLine = ingredient,
-				availableIngredients = availableIngredients,
-			)
+		ingredientSlots(group.ingredients).all { slot ->
+			isIngredientSlotCoveredByPantry(slot, availableIngredients)
 		}
 	}
 }
@@ -572,9 +596,61 @@ internal fun recipeContainsExcludedIngredient(
 	}
 
 	return loadIngredientGroups(recipeId).any { group ->
-		group.ingredients.any { ingredientLine ->
+		ingredientSlots(group.ingredients).any { slot ->
+			isIngredientSlotExcluded(slot, excludedIngredients)
+		}
+	}
+}
+
+internal fun isIngredientSlotCoveredByPantry(
+	slot: List<RecipeIngredient>,
+	availableIngredients: List<String>,
+): Boolean {
+	if (slotIsOptional(slot)) {
+		return true
+	}
+	val requiredMembers = slot.filter { ingredient -> ingredient.requirement != IngredientRequirement.OPTIONAL }
+	if (requiredMembers.isEmpty()) {
+		return true
+	}
+	return if (requiredMembers.any { ingredient -> ingredient.requirement == IngredientRequirement.ALTERNATIVE }) {
+		requiredMembers.any { ingredient ->
+			IngredientVocabulary.isCoveredByAvailableIngredients(
+				ingredientLine = ingredient.text,
+				availableIngredients = availableIngredients,
+			)
+		}
+	} else {
+		requiredMembers.all { ingredient ->
+			IngredientVocabulary.isCoveredByAvailableIngredients(
+				ingredientLine = ingredient.text,
+				availableIngredients = availableIngredients,
+			)
+		}
+	}
+}
+
+internal fun isIngredientSlotExcluded(
+	slot: List<RecipeIngredient>,
+	excludedIngredients: List<String>,
+): Boolean {
+	if (excludedIngredients.isEmpty()) {
+		return false
+	}
+	val alternativeMembers = slot.filter { ingredient ->
+		ingredient.requirement == IngredientRequirement.ALTERNATIVE
+	}
+	return if (alternativeMembers.size > 1) {
+		alternativeMembers.all { ingredient ->
 			IngredientVocabulary.matchesAnyIngredient(
-				ingredientLine = ingredientLine,
+				ingredientLine = ingredient.text,
+				ingredientNames = excludedIngredients,
+			)
+		}
+	} else {
+		slot.any { ingredient ->
+			IngredientVocabulary.matchesAnyIngredient(
+				ingredientLine = ingredient.text,
 				ingredientNames = excludedIngredients,
 			)
 		}

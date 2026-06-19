@@ -62,6 +62,8 @@ class Db private constructor(
 					statement.execute(NUTRITION_FOOD_MEASURES_TABLE_SQL)
 					statement.execute(INGREDIENT_GROUPS_TABLE_SQL)
 					statement.execute(INGREDIENTS_TABLE_SQL)
+					statement.execute(INGREDIENTS_ADD_REQUIREMENT_SQL)
+					statement.execute(INGREDIENTS_ADD_ALTERNATIVE_GROUP_KEY_SQL)
 					statement.execute(INGREDIENT_MEASUREMENTS_TABLE_SQL)
 					statement.execute(INSTRUCTION_STEPS_TABLE_SQL)
 					statement.execute(FAVORITES_TABLE_SQL)

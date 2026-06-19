@@ -13,7 +13,7 @@ fun fakeRecipeDetails(
 	ingredientGroups: List<IngredientGroup> = listOf(
 		IngredientGroup(
 			name = "Sauce",
-			ingredients = listOf("2 tomatoes", "1 garlic clove"),
+			ingredients = recipeIngredients("2 tomatoes", "1 garlic clove"),
 		),
 	),
 	steps: List<String> = listOf("Boil pasta", "Make sauce", "Serve"),

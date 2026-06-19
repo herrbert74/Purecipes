@@ -9,6 +9,7 @@ import app.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.RecipeIngredient
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.get
@@ -35,7 +36,10 @@ class CreatedRecipeAccessorTest {
 			SaveCreatedRecipeRequest(
 				title = "Tomato Pasta",
 				description = "Quick weeknight dinner.",
-				ingredients = listOf("200 g pasta", "2 tomatoes"),
+				ingredients = listOf(
+					RecipeIngredient(text = "200 g pasta"),
+					RecipeIngredient(text = "2 tomatoes"),
+				),
 				steps = listOf("Boil the pasta", "Finish with the tomatoes"),
 				totalTime = 20,
 				yields = "2 servings",

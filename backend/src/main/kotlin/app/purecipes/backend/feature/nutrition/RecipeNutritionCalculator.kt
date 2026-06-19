@@ -20,8 +20,19 @@ internal class RecipeNutritionCalculator(
 	private val lookupIndex: NutritionLookupIndex,
 ) {
 	fun calculate(ingredients: List<RecipeIngredientRow>): RecipeNutritionCalculationResult {
+		val seenAlternativeKeys = mutableSetOf<Int>()
 		val ingredientResults = ingredients.map { ingredient ->
-			calculateIngredient(ingredient)
+			if (countsTowardNutritionTotals(ingredient, seenAlternativeKeys)) {
+				calculateIngredient(ingredient)
+			} else {
+				val parsed = IngredientLineParser.parse(ingredient.rawText)
+				IngredientNutritionCalculationResult(
+					ingredientId = ingredient.ingredientId,
+					parsed = parsed,
+					foodMatch = null,
+					grams = null,
+				)
+			}
 		}
 
 		val countableResults = ingredientResults.filter { result ->
@@ -112,6 +123,18 @@ internal class RecipeNutritionCalculator(
 			foodMatch = foodMatch,
 			grams = grams,
 		)
+	}
+
+	private fun countsTowardNutritionTotals(
+		ingredient: RecipeIngredientRow,
+		seenAlternativeKeys: MutableSet<Int>,
+	): Boolean = when (ingredient.requirement) {
+		"OPTIONAL" -> false
+		"ALTERNATIVE" -> {
+			val groupKey = ingredient.alternativeGroupKey ?: return true
+			seenAlternativeKeys.add(groupKey)
+		}
+		else -> true
 	}
 
 	private fun addNullable(

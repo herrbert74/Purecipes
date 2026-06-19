@@ -5,7 +5,60 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val NORMALIZATION_RULES_CHECKSUM = "generic-units-v4"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "generic-units-v6"
+
+data class ProcessedScrapedIngredient(
+	val text: String,
+	val requirement: String = "REQUIRED",
+	val alternativeGroupKey: Int? = null,
+)
+
+private val optionalPrefixRegex = Regex(
+	pattern = """^optional[:\s,-]+(.+)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val optionalParentheticalRegex = Regex(
+	pattern = """\(\s*optional\s*\)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val toGarnishOrServeSuffixRegex = Regex(
+	pattern = """[,;]?\s*(to garnish|to serve|for garnish|for serving)\s*$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val plusExtraToServeSuffixRegex = Regex(
+	pattern = """\bplus extra\b.*\bto serve\s*$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+fun parseIngredientRequirement(raw: String): ProcessedScrapedIngredient {
+	var text = raw.trim().removePrefix("-").removePrefix("*").trim()
+	var requirement = "REQUIRED"
+
+	optionalPrefixRegex.matchEntire(text)?.let { match ->
+		val stripped = match.groupValues[1].trim()
+		if (stripped.isNotBlank()) {
+			text = stripped
+			requirement = "OPTIONAL"
+		}
+	}
+
+	if (requirement == "REQUIRED" && optionalParentheticalRegex.containsMatchIn(text)) {
+		text = optionalParentheticalRegex.replace(text, "").trim().trimEnd(',', ';')
+		requirement = "OPTIONAL"
+	}
+
+	if (
+		requirement == "REQUIRED" &&
+		(
+			toGarnishOrServeSuffixRegex.containsMatchIn(text) ||
+				plusExtraToServeSuffixRegex.containsMatchIn(text)
+			)
+	) {
+		requirement = "OPTIONAL"
+	}
+
+	return ProcessedScrapedIngredient(text = text, requirement = requirement)
+}
 
 private val commonCookingFractionTexts = listOf(
 	"1/2",
@@ -66,9 +119,7 @@ val ingredientHeadingPrefixFilters = listOf(
 	"in the box",
 	"from your cupboard",
 	"shopping list",
-	"optional",
 	"serve with",
-	"to garnish",
 )
 
 val ingredientHeadingExactFilters = setOf(
@@ -211,7 +262,7 @@ val ingredientToolKeywords = listOf(
 	"whisk",
 )
 
-fun sanitizeIngredientLine(raw: String): String? {
+fun sanitizeIngredientLine(raw: String): ProcessedScrapedIngredient? {
 	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
 	if (normalizedWhitespace.isBlank()) {
 		return null
@@ -220,8 +271,7 @@ fun sanitizeIngredientLine(raw: String): String? {
 	val lower = normalizedWhitespace.lowercase(Locale.ROOT)
 	val hasDigit = lower.any(Char::isDigit)
 	val isHeadingLike =
-		lower.endsWith(':') ||
-			ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
+		isIngredientGroupHeading(raw) ||
 			ingredientHeadingExactFilters.contains(lower) ||
 			lower.contains("recipe follows")
 	val isEquipmentLike = !hasDigit && ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
@@ -229,7 +279,8 @@ fun sanitizeIngredientLine(raw: String): String? {
 	return if (isHeadingLike || isEquipmentLike) {
 		null
 	} else {
-		normalizeIngredientText(normalizedWhitespace)
+		val normalizedText = normalizeIngredientText(normalizedWhitespace)
+		parseIngredientRequirement(normalizedText)
 	}
 }
 
@@ -240,7 +291,9 @@ fun isIngredientGroupHeading(raw: String): Boolean {
 	}
 
 	val lower = normalizedWhitespace.lowercase(Locale.ROOT)
-	return lower.endsWith(':') ||
+	return lower == "optional" ||
+		lower.startsWith("optional:") ||
+		lower.endsWith(':') ||
 		ingredientHeadingPrefixFilters.any { lower.startsWith(it) } ||
 		ingredientHeadingExactFilters.contains(lower) ||
 		lower.contains("recipe follows")
@@ -263,41 +316,197 @@ fun normalizeIngredientGroupName(raw: String): String? {
 	return withoutPrefix.ifBlank { null }
 }
 
-fun appendSanitizedIngredientLines(currentItems: MutableList<String>, rawItem: String) {
+private const val ALTERNATIVE_SEPARATOR = " or "
+private const val ALTERNATIVE_SEPARATOR_LENGTH = 4
+
+private val alternativeQuantityPrefixRegex = Regex(
+	pattern = """^((?:\d+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+)(?:\s+\w+)?(?:\s+of)?\s+)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val alternativeOfPrefixRegex = Regex(
+	pattern = """^(.*\bof)\s+""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val trailingParentheticalSuffixRegex = Regex(
+	pattern = """\s*\([^)]+\)\s*$""",
+)
+
+private fun splitAlternativeParts(text: String): List<String> {
+	if (!containsAlternativeSeparator(text)) {
+		return listOf(text)
+	}
+
+	val parts = mutableListOf<String>()
+	var depth = 0
+	var start = 0
+	var index = 0
+	while (index < text.length) {
+		when (text[index]) {
+			'(' -> depth++
+			')' -> if (depth > 0) {
+				depth--
+			}
+		}
+		if (
+			depth == 0 &&
+				text.regionMatches(
+					index,
+					ALTERNATIVE_SEPARATOR,
+					0,
+					ALTERNATIVE_SEPARATOR_LENGTH,
+					ignoreCase = true,
+				)
+		) {
+			parts += text.substring(start, index).trim()
+			index += ALTERNATIVE_SEPARATOR_LENGTH
+			start = index
+			continue
+		}
+		index++
+	}
+	parts += text.substring(start).trim()
+	return parts.filter { part -> part.isNotBlank() }
+}
+
+private fun containsAlternativeSeparator(text: String): Boolean {
+	var depth = 0
+	var index = 0
+	while (index < text.length) {
+		when (text[index]) {
+			'(' -> depth++
+			')' -> if (depth > 0) {
+				depth--
+			}
+		}
+		if (
+			depth == 0 &&
+				text.regionMatches(
+					index,
+					ALTERNATIVE_SEPARATOR,
+					0,
+					ALTERNATIVE_SEPARATOR_LENGTH,
+					ignoreCase = true,
+				)
+		) {
+			return true
+		}
+		index++
+	}
+	return false
+}
+
+private fun expandAlternativePart(firstAlternative: String, part: String): String {
+	val trimmed = part.trim()
+	if (trimmed.firstOrNull()?.isDigit() == true) {
+		return trimmed
+	}
+
+	val quantityPrefix = alternativeQuantityPrefixRegex.find(firstAlternative)?.value
+	if (quantityPrefix != null) {
+		return quantityPrefix + trimmed
+	}
+
+	val ofPrefix = alternativeOfPrefixRegex.find(firstAlternative)?.groupValues?.get(1)
+	return if (ofPrefix != null) {
+		"$ofPrefix $trimmed"
+	} else {
+		trimmed
+	}
+}
+
+private fun expandAlternativeParts(parts: List<String>): List<String> {
+	if (parts.size <= 1) {
+		return parts
+	}
+	val firstAlternative = parts.first()
+	val expanded = parts.mapIndexed { partIndex, part ->
+		if (partIndex == 0) {
+			part.trim()
+		} else {
+			expandAlternativePart(firstAlternative, part)
+		}
+	}
+	val sharedSuffix = trailingParentheticalSuffixRegex.find(parts.last())?.value
+	if (sharedSuffix != null && !firstAlternative.contains('(')) {
+		return expanded.mapIndexed { partIndex, text ->
+			if (partIndex == 0) {
+				text + sharedSuffix
+			} else {
+				text
+			}
+		}
+	}
+	return expanded
+}
+
+fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient> {
+	if (sanitized.requirement == "OPTIONAL") {
+		return listOf(sanitized)
+	}
+	val alternativeTexts = expandAlternativeParts(splitAlternativeParts(sanitized.text))
+	if (alternativeTexts.size <= 1) {
+		return listOf(sanitized)
+	}
+	return alternativeTexts.map { text ->
+		ProcessedScrapedIngredient(text = text, requirement = "ALTERNATIVE")
+	}
+}
+
+fun appendSanitizedIngredientLines(
+	currentItems: MutableList<ProcessedScrapedIngredient>,
+	rawItem: String,
+	nextAlternativeGroupKey: () -> Int,
+) {
 	splitIngredientLine(rawItem).forEach { line ->
 		sanitizeIngredientLine(line)?.let { sanitizedItem ->
-			currentItems += sanitizedItem
+			val expandedItems = expandProcessedAlternatives(sanitizedItem)
+			val alternativeCount = expandedItems.count { item -> item.requirement == "ALTERNATIVE" }
+			if (alternativeCount > 1) {
+				val groupKey = nextAlternativeGroupKey()
+				currentItems.addAll(
+					expandedItems.map { item ->
+						if (item.requirement == "ALTERNATIVE") {
+							item.copy(alternativeGroupKey = groupKey)
+						} else {
+							item
+						}
+					},
+				)
+			} else {
+				currentItems.addAll(expandedItems)
+			}
 		}
 	}
 }
 
-fun normalizeIngredientGroups(
+fun processScrapedIngredientGroups(
 	groupName: String?,
 	rawItems: List<String>,
-): List<Pair<String?, List<String>>> {
+): List<Pair<String?, List<ProcessedScrapedIngredient>>> {
 	if (rawItems.isEmpty()) {
 		return emptyList()
 	}
 
-	val normalizedGroups = mutableListOf<Pair<String?, List<String>>>()
+	val processedGroups = mutableListOf<Pair<String?, List<ProcessedScrapedIngredient>>>()
 	var currentGroupName = groupName
-	var currentItems = mutableListOf<String>()
+	var currentItems = mutableListOf<ProcessedScrapedIngredient>()
+	var nextAlternativeGroupKey = 1
 
 	rawItems.forEach { rawItem ->
 		if (isIngredientGroupHeading(rawItem)) {
 			if (currentItems.isNotEmpty()) {
-				normalizedGroups += (currentGroupName to currentItems.toList())
+				processedGroups += (currentGroupName to currentItems.toList())
 			}
 			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
 			currentItems = mutableListOf()
 		} else {
-			appendSanitizedIngredientLines(currentItems, rawItem)
+			appendSanitizedIngredientLines(currentItems, rawItem) { nextAlternativeGroupKey++ }
 		}
 	}
 
 	if (currentItems.isNotEmpty()) {
-		normalizedGroups += (currentGroupName to currentItems.toList())
+		processedGroups += (currentGroupName to currentItems.toList())
 	}
 
-	return normalizedGroups
+	return processedGroups
 }

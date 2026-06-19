@@ -1,5 +1,21 @@
 # Purecipes Backend
 
+## Gradle tasks: `run`, `build`, and `shadowJar`
+
+| Task | Starts the server? | Typical use |
+|------|-------------------|-------------|
+| `:backend:run` | Yes | **Local development** — compile if needed, then run `MainKt` |
+| `:backend:build` | No | **CI / pre-merge** — compile, run tests, assemble outputs |
+| `:backend:shadowJar` | No | **Deployment** — one fat JAR with dependencies bundled |
+
+**Prefer `:backend:run` locally.** It uses Gradle’s runtime classpath, picks up env vars at startup, and is the simplest way to run against Postgres on your machine.
+
+**Use `shadowJar` for servers** (staging, production, or when you want `java -jar …`). Output: `backend/build/libs/backend-<version>.jar` (no classifier). Google/Firebase IDs from Gradle properties are embedded at **build** time via `generateBackendRuntimeConfig`; database URL and credentials still come from **environment** when the jar runs. Rebuild the jar after changing those Gradle properties.
+
+**Use `build`** when you want “compile + test + package” without starting the server. It is broader than `shadowJar` alone.
+
+On every startup (`run` or `java -jar`), `Db.create()` runs `ensureSchema()` — additive `ALTER TABLE … IF NOT EXISTS` migrations. There is no separate migration command; starting the backend upgrades the schema.
+
 ## Run
 
 Set environment variables (defaults shown):
@@ -30,7 +46,7 @@ The Firebase project ID can also come from Gradle properties, using the same loo
 - `PURECIPES_FIREBASE_PROJECT_ID`
 - environment variable `PURECIPES_FIREBASE_PROJECT_ID`
 
-When you launch the packaged backend via the shadow jar, Gradle properties are embedded into the jar at build time through a generated resource. If you change the client ID property, rebuild the jar before restarting the backend.
+When you launch the packaged backend via the shadow jar, Gradle properties are embedded into the jar at build time through a generated resource. If you change the client ID property, rebuild the jar before restarting the backend. See [Gradle tasks](#gradle-tasks-run-build-and-shadowjar) above for when to use `run` vs `shadowJar`.
 
 When running the mobile and Wasm app against the local backend, start it on port `9090` so it matches the current debug client configuration:
 
