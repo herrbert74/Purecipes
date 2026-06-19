@@ -117,7 +117,8 @@ This is irreversible unless you have a backup or the JSON files under the scrape
 For scraper script changes:
 - **Detekt compliance**: Run `./gradlew detektAll` to verify linting rules pass
 - **Scraped ingredient line tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
-- **Ingredient text backfill (legacy data)**: `./scripts/scraping/oneoff/normalize_existing_ingredients.sh` — see [README](README.md#re-normalize-ingredient-text-normalize_existing_ingredients)
-- **Optional-flag backfill (legacy DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts` — see [README](README.md#backfill-optional-ingredient-flags-backfill_ingredient_requirements)
+- **Ingredient text backfill (existing DB/JSON)**: `./scripts/scraping/oneoff/normalize_existing_ingredients.sh` — after normalization rule changes or legacy data; see [README](README.md#re-normalize-ingredient-text-normalize_existing_ingredients)
+- **Optional-flag backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts` — after optional-detection rule changes or legacy data; see [README](README.md#backfill-optional-ingredient-flags-backfill_ingredient_requirements)
+- **Alternative-group backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts` — after OR/alternative rule changes or legacy data; see [README](README.md#backfill-alternative-ingredient-groups-backfill_ingredient_alternatives)
 - **Functional testing**: Test changes against actual recipe websites (or use `--mode json` with previously saved files for offline testing)
 - **Schema alignment**: After backend schema changes, verify scraper schema and insertion logic still work end-to-end

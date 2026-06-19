@@ -18,6 +18,15 @@ import io.ktor.server.testing.ApplicationTestBuilder
 internal fun recipeIngredientsForRouteTest(vararg texts: String): List<RecipeIngredient> =
 	texts.map { text -> RecipeIngredient(text = text) }
 
+internal fun alternativeRecipeIngredientsForRouteTest(vararg texts: String): List<RecipeIngredient> =
+	texts.map { text ->
+		RecipeIngredient(
+			text = text,
+			requirement = IngredientRequirement.ALTERNATIVE,
+			alternativeGroupKey = 1,
+		)
+	}
+
 internal fun optionalRecipeIngredientForRouteTest(text: String): RecipeIngredient =
 	RecipeIngredient(text = text, requirement = IngredientRequirement.OPTIONAL)
 
@@ -27,7 +36,13 @@ internal suspend fun ApplicationTestBuilder.createRecipeForSearchRouteTest(
 	ingredients: List<RecipeIngredient>,
 ) {
 	val ingredientsJson = ingredients.joinToString(separator = ",") { ingredient ->
-		"""{"text":"${ingredient.text}","requirement":"${ingredient.requirement.name}"}"""
+		buildString {
+			append("""{"text":"${ingredient.text}","requirement":"${ingredient.requirement.name}"""")
+			ingredient.alternativeGroupKey?.let { groupKey ->
+				append(""","alternativeGroupKey":$groupKey""")
+			}
+			append("}")
+		}
 	}
 	val response = client.post("/recipes") {
 		header(HttpHeaders.Authorization, "Bearer $accessToken")

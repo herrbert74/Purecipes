@@ -9,8 +9,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import app.purecipes.shared.domain.ingredient.ingredientSlots
+import app.purecipes.shared.domain.ingredient.slotDisplayText
+import app.purecipes.shared.domain.ingredient.slotIsOptional
 import app.purecipes.shared.domain.model.IngredientGroup
-import app.purecipes.shared.domain.model.IngredientRequirement
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -30,12 +32,12 @@ internal fun IngredientGroupCard(group: IngredientGroup) {
 				)
 			}
 
-			group.ingredients.forEach { ingredient ->
-				val isOptional = ingredient.requirement == IngredientRequirement.OPTIONAL
+			ingredientSlots(group.ingredients).forEach { slot ->
+				val isOptional = slotIsOptional(slot)
 				Text(
 					text = buildString {
 						append("- ")
-						append(ingredient.text)
+						append(slotDisplayText(slot))
 						if (isOptional) {
 							append(" (optional)")
 						}

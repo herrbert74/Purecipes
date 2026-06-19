@@ -95,6 +95,9 @@ data class RecipeData(
 										buildJsonObject {
 											put("text", JsonPrimitive(ingredient.text))
 											put("requirement", JsonPrimitive(ingredient.requirement))
+											ingredient.alternativeGroupKey?.let { groupKey ->
+												put("alternativeGroupKey", JsonPrimitive(groupKey))
+											}
 										},
 									)
 								}
@@ -692,7 +695,13 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 					?.uppercase(Locale.ROOT)
 					?.takeIf { it.isNotBlank() }
 					?: "REQUIRED"
-				ProcessedScrapedIngredient(text = text, requirement = requirement)
+				val alternativeGroupKey = ingredientEl["alternativeGroupKey"]?.jsonPrimitive?.contentOrNull
+					?.toIntOrNull()
+				ProcessedScrapedIngredient(
+					text = text,
+					requirement = requirement,
+					alternativeGroupKey = alternativeGroupKey,
+				)
 			}
 		}
 		else -> null
@@ -807,10 +816,12 @@ fun ensureSchema(connection: Connection) {
 		ingredient_group_id INTEGER NOT NULL REFERENCES ingredient_groups(id) ON DELETE CASCADE,
 		ingredient VARCHAR(255),
 		order_index INTEGER NOT NULL,
-		requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED'
+		requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED',
+		alternative_group_key INTEGER
 	);
 
 	ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS requirement VARCHAR(20) NOT NULL DEFAULT 'REQUIRED';
+	ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS alternative_group_key INTEGER;
 
 	CREATE TABLE IF NOT EXISTS instruction_steps (
 		id SERIAL PRIMARY KEY,
@@ -1215,7 +1226,15 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 
 	val insertGroupSql = "INSERT INTO ingredient_groups (recipe_id, name, order_index) VALUES (?, ?, ?) RETURNING id"
 	val insertIngredientSql =
-		"INSERT INTO ingredients (ingredient_group_id, ingredient, order_index, requirement) VALUES (?, ?, ?, ?)"
+		"""
+		INSERT INTO ingredients (
+			ingredient_group_id,
+			ingredient,
+			order_index,
+			requirement,
+			alternative_group_key
+		) VALUES (?, ?, ?, ?, ?)
+		""".trimIndent()
 
 	recipe.ingredientGroups.forEachIndexed { groupIndex, (groupName, items) ->
 		val groupId = connection.prepareStatement(insertGroupSql).use { ps ->
@@ -1234,6 +1253,11 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 				ps.setString(2, clampIngredientForDatabase(ingredient.text, recipe.sourceUrl))
 				ps.setInt(3, itemIndex)
 				ps.setString(4, ingredient.requirement)
+				if (ingredient.alternativeGroupKey == null) {
+					ps.setNull(5, java.sql.Types.INTEGER)
+				} else {
+					ps.setInt(5, ingredient.alternativeGroupKey)
+				}
 				ps.addBatch()
 			}
 			ps.executeBatch()

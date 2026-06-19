@@ -1,6 +1,8 @@
 package app.purecipes.backend.feature.recipe
 
 import app.purecipes.backend.feature.search.IngredientVocabulary
+import app.purecipes.shared.domain.ingredient.ingredientSlots
+import app.purecipes.shared.domain.ingredient.slotIsOptional
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.Cuisine
@@ -244,6 +246,7 @@ class RecipeRepository(
 		return RecipeIngredient(
 			text = ingredientText,
 			requirement = requirement,
+			alternativeGroupKey = rs.getObject("alternative_group_key") as? Int,
 		)
 	}
 
@@ -344,6 +347,12 @@ class RecipeRepository(
 					ps.setString(RecipeRepositorySql.SECOND_PARAMETER_INDEX, ingredient.text)
 					ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, ingredientIndex)
 					ps.setString(RecipeRepositorySql.FOURTH_PARAMETER_INDEX, ingredient.requirement.name)
+					val alternativeGroupKey = ingredient.alternativeGroupKey
+					if (alternativeGroupKey == null) {
+						ps.setNull(RecipeRepositorySql.FIFTH_PARAMETER_INDEX, java.sql.Types.INTEGER)
+					} else {
+						ps.setInt(RecipeRepositorySql.FIFTH_PARAMETER_INDEX, alternativeGroupKey)
+					}
 					ps.addBatch()
 				}
 				ps.executeBatch()
@@ -571,12 +580,8 @@ internal fun isRecipeCoveredByAvailableIngredients(
 	loadIngredientGroups: (Int) -> List<IngredientGroup>,
 ): Boolean {
 	return loadIngredientGroups(recipeId).all { group ->
-		group.ingredients.all { ingredient ->
-			ingredient.requirement == IngredientRequirement.OPTIONAL ||
-				IngredientVocabulary.isCoveredByAvailableIngredients(
-					ingredientLine = ingredient.text,
-					availableIngredients = availableIngredients,
-				)
+		ingredientSlots(group.ingredients).all { slot ->
+			isIngredientSlotCoveredByPantry(slot, availableIngredients)
 		}
 	}
 }
@@ -591,7 +596,59 @@ internal fun recipeContainsExcludedIngredient(
 	}
 
 	return loadIngredientGroups(recipeId).any { group ->
-		group.ingredients.any { ingredient ->
+		ingredientSlots(group.ingredients).any { slot ->
+			isIngredientSlotExcluded(slot, excludedIngredients)
+		}
+	}
+}
+
+internal fun isIngredientSlotCoveredByPantry(
+	slot: List<RecipeIngredient>,
+	availableIngredients: List<String>,
+): Boolean {
+	if (slotIsOptional(slot)) {
+		return true
+	}
+	val requiredMembers = slot.filter { ingredient -> ingredient.requirement != IngredientRequirement.OPTIONAL }
+	if (requiredMembers.isEmpty()) {
+		return true
+	}
+	return if (requiredMembers.any { ingredient -> ingredient.requirement == IngredientRequirement.ALTERNATIVE }) {
+		requiredMembers.any { ingredient ->
+			IngredientVocabulary.isCoveredByAvailableIngredients(
+				ingredientLine = ingredient.text,
+				availableIngredients = availableIngredients,
+			)
+		}
+	} else {
+		requiredMembers.all { ingredient ->
+			IngredientVocabulary.isCoveredByAvailableIngredients(
+				ingredientLine = ingredient.text,
+				availableIngredients = availableIngredients,
+			)
+		}
+	}
+}
+
+internal fun isIngredientSlotExcluded(
+	slot: List<RecipeIngredient>,
+	excludedIngredients: List<String>,
+): Boolean {
+	if (excludedIngredients.isEmpty()) {
+		return false
+	}
+	val alternativeMembers = slot.filter { ingredient ->
+		ingredient.requirement == IngredientRequirement.ALTERNATIVE
+	}
+	return if (alternativeMembers.size > 1) {
+		alternativeMembers.all { ingredient ->
+			IngredientVocabulary.matchesAnyIngredient(
+				ingredientLine = ingredient.text,
+				ingredientNames = excludedIngredients,
+			)
+		}
+	} else {
+		slot.any { ingredient ->
 			IngredientVocabulary.matchesAnyIngredient(
 				ingredientLine = ingredient.text,
 				ingredientNames = excludedIngredients,

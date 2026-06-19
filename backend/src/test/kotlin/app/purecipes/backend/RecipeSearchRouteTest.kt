@@ -587,4 +587,48 @@ class RecipeSearchRouteTest {
 		responseBody.contains("Rice With Optional Peanut Garnish") shouldBe false
 	}
 
+	@Test
+	fun `persisted pantry matches any alternative ingredient in a group`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "Chicken With Herb Choice",
+			ingredients = listOf(
+				RecipeIngredient(text = "Chicken breast"),
+				RecipeIngredient(text = "Rice"),
+			) + alternativeRecipeIngredientsForRouteTest("Parsley", "Tarragon"),
+		)
+		updatePantryForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			add = listOf("Chicken", "Rice", "Tarragon"),
+		)
+
+		val responseBody = searchWithFiltersForSearchRouteTest(
+			"""
+				{
+					"query": "",
+					"filters": {}
+				}
+			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
+		)
+
+		responseBody.contains("Chicken With Herb Choice") shouldBe true
+	}
+
 }

@@ -7,19 +7,20 @@ primary goal of the app to make it easier for users to follow recipe instruction
 
 ### ☁️ Backend
 
-Build it:
+**Local development** (preferred):
 
+```bash
+PURECIPES_BACKEND_PORT=9090 ./gradlew :backend:run
 ```
+
+**Deployable jar** (staging/production, or if you prefer `java -jar` locally):
+
+```bash
 ./gradlew :backend:shadowJar --no-daemon
-```
-
-Run it locally:
-
-```
 PURECIPES_BACKEND_PORT=9090 java -jar backend/build/libs/backend.jar
 ```
 
-For a physical Android device over USB, also run `adb reverse tcp:9090 tcp:9090`. For Wi‑Fi devices (or a fixed LAN IP), add `purecipes.debugBackendHost=<your-machine-ip>` to `local.properties` and rebuild the debug app. See [backend/README.md](backend/README.md).
+See [backend/README.md](backend/README.md) for `run` vs `build` vs `shadowJar`, environment variables, and debug client hosts.
 
 Deep linking and share URLs: [docs/deep-linking-website-setup.md](docs/deep-linking-website-setup.md) (website `/.well-known` files and local `adb` testing).
 

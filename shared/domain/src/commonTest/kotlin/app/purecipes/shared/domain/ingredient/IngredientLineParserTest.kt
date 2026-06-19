@@ -9,33 +9,107 @@ class IngredientLineParserTest {
 
 	@Test
 	fun `parses optional prefix`() {
-		IngredientLineParser.parse("optional: parsley, to garnish") shouldBe RecipeIngredient(
-			text = "parsley, to garnish",
-			requirement = IngredientRequirement.OPTIONAL,
+		IngredientLineParser.parseLine("optional: parsley, to garnish") shouldBe listOf(
+			RecipeIngredient(
+				text = "parsley, to garnish",
+				requirement = IngredientRequirement.OPTIONAL,
+			),
 		)
 	}
 
 	@Test
 	fun `parses optional parenthetical`() {
-		IngredientLineParser.parse("1 tbsp honey (optional)") shouldBe RecipeIngredient(
-			text = "1 tbsp honey",
-			requirement = IngredientRequirement.OPTIONAL,
+		IngredientLineParser.parseLine("1 tbsp honey (optional)") shouldBe listOf(
+			RecipeIngredient(
+				text = "1 tbsp honey",
+				requirement = IngredientRequirement.OPTIONAL,
+			),
 		)
 	}
 
 	@Test
 	fun `parses to serve suffix as optional`() {
-		IngredientLineParser.parse("olive oil, plus extra to serve") shouldBe RecipeIngredient(
-			text = "olive oil, plus extra to serve",
-			requirement = IngredientRequirement.OPTIONAL,
+		IngredientLineParser.parseLine("olive oil, plus extra to serve") shouldBe listOf(
+			RecipeIngredient(
+				text = "olive oil, plus extra to serve",
+				requirement = IngredientRequirement.OPTIONAL,
+			),
 		)
 	}
 
 	@Test
 	fun `required ingredient stays required`() {
-		IngredientLineParser.parse("2 chicken thighs") shouldBe RecipeIngredient(
-			text = "2 chicken thighs",
-			requirement = IngredientRequirement.REQUIRED,
+		IngredientLineParser.parseLine("2 chicken thighs") shouldBe listOf(
+			RecipeIngredient(
+				text = "2 chicken thighs",
+				requirement = IngredientRequirement.REQUIRED,
+			),
+		)
+	}
+
+	@Test
+	fun `parses alternative ingredients on one line`() {
+		IngredientLineParser.parseLine("parsley or tarragon") shouldBe listOf(
+			RecipeIngredient(text = "parsley", requirement = IngredientRequirement.ALTERNATIVE),
+			RecipeIngredient(text = "tarragon", requirement = IngredientRequirement.ALTERNATIVE),
+		)
+	}
+
+	@Test
+	fun `parses alternative ingredients with shared quantity prefix`() {
+		IngredientLineParser.parseLine("2 tbsp parsley or fresh tarragon") shouldBe listOf(
+			RecipeIngredient(text = "2 tbsp parsley", requirement = IngredientRequirement.ALTERNATIVE),
+			RecipeIngredient(text = "2 tbsp fresh tarragon", requirement = IngredientRequirement.ALTERNATIVE),
+		)
+	}
+
+	@Test
+	fun `parses alternative ingredients with shared of prefix`() {
+		IngredientLineParser.parseLine("small bunch of parsley or tarragon (about 30g)") shouldBe listOf(
+			RecipeIngredient(
+				text = "small bunch of parsley (about 30g)",
+				requirement = IngredientRequirement.ALTERNATIVE,
+			),
+			RecipeIngredient(
+				text = "small bunch of tarragon (about 30g)",
+				requirement = IngredientRequirement.ALTERNATIVE,
+			),
+		)
+	}
+
+	@Test
+	fun `parseLines assigns alternative group keys per line`() {
+		IngredientLineParser.parseLines(
+			listOf(
+				"parsley or tarragon",
+				"2 chicken thighs",
+				"basil or mint",
+			),
+		) shouldBe listOf(
+			RecipeIngredient(
+				text = "parsley",
+				requirement = IngredientRequirement.ALTERNATIVE,
+				alternativeGroupKey = 1,
+			),
+			RecipeIngredient(
+				text = "tarragon",
+				requirement = IngredientRequirement.ALTERNATIVE,
+				alternativeGroupKey = 1,
+			),
+			RecipeIngredient(
+				text = "2 chicken thighs",
+				requirement = IngredientRequirement.REQUIRED,
+			),
+			RecipeIngredient(
+				text = "basil",
+				requirement = IngredientRequirement.ALTERNATIVE,
+				alternativeGroupKey = 2,
+			),
+			RecipeIngredient(
+				text = "mint",
+				requirement = IngredientRequirement.ALTERNATIVE,
+				alternativeGroupKey = 2,
+			),
 		)
 	}
 
@@ -47,5 +121,27 @@ class IngredientLineParserTest {
 				requirement = IngredientRequirement.OPTIONAL,
 			),
 		) shouldBe "optional: parsley"
+	}
+
+	@Test
+	fun `toEditableLines joins alternative ingredients`() {
+		IngredientLineParser.toEditableLines(
+			listOf(
+				RecipeIngredient(
+					text = "parsley",
+					requirement = IngredientRequirement.ALTERNATIVE,
+					alternativeGroupKey = 1,
+				),
+				RecipeIngredient(
+					text = "tarragon",
+					requirement = IngredientRequirement.ALTERNATIVE,
+					alternativeGroupKey = 1,
+				),
+				RecipeIngredient(text = "salt"),
+			),
+		) shouldBe listOf(
+			"parsley or tarragon",
+			"salt",
+		)
 	}
 }

@@ -18,6 +18,8 @@ internal class RecipeNutritionEstimator(
 			RecipeIngredientRow(
 				ingredientId = index,
 				rawText = rawText,
+				requirement = "REQUIRED",
+				alternativeGroupKey = null,
 			)
 		}
 		val calculation = RecipeNutritionCalculator(lookupRepository.loadIndex()).calculate(ingredientRows)

@@ -12,6 +12,7 @@ import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 
@@ -19,6 +20,7 @@ import kotlinx.serialization.json.put
 data class RecipeIngredient(
 	val text: String,
 	val requirement: IngredientRequirement = IngredientRequirement.REQUIRED,
+	val alternativeGroupKey: Int? = null,
 )
 
 object RecipeIngredientSerializer : KSerializer<RecipeIngredient> {
@@ -26,6 +28,7 @@ object RecipeIngredientSerializer : KSerializer<RecipeIngredient> {
 	override val descriptor: SerialDescriptor = buildClassSerialDescriptor("RecipeIngredient") {
 		element<String>("text")
 		element<String>("requirement")
+		element<Int>("alternativeGroupKey")
 	}
 
 	override fun deserialize(decoder: Decoder): RecipeIngredient {
@@ -38,7 +41,12 @@ object RecipeIngredientSerializer : KSerializer<RecipeIngredient> {
 				val requirement = element["requirement"]?.jsonPrimitive?.content
 					?.let { value -> runCatching { IngredientRequirement.valueOf(value) }.getOrNull() }
 					?: IngredientRequirement.REQUIRED
-				RecipeIngredient(text = text, requirement = requirement)
+				val alternativeGroupKey = element["alternativeGroupKey"]?.jsonPrimitive?.intOrNull
+				RecipeIngredient(
+					text = text,
+					requirement = requirement,
+					alternativeGroupKey = alternativeGroupKey,
+				)
 			}
 			else -> error("Unsupported ingredient JSON element")
 		}
@@ -51,6 +59,9 @@ object RecipeIngredientSerializer : KSerializer<RecipeIngredient> {
 			buildJsonObject {
 				put("text", value.text)
 				put("requirement", value.requirement.name)
+				value.alternativeGroupKey?.let { groupKey ->
+					put("alternativeGroupKey", groupKey)
+				}
 			},
 		)
 	}
