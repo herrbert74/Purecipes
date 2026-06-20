@@ -4,6 +4,29 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-06-20
+
+### Added
+
+- Exclude ingredients from search: mark ingredients as excluded in the Pantry filter tab and hide recipes that use them.
+- Optional and alternative ingredients on recipes, shown in recipe details, step-by-step cooking, and when creating or editing recipes.
+- Three new ingredients in the catalogue.
+
+### Changed
+
+- Search filters are split into Pantry and Recipe filters tabs for easier navigation.
+- Pantry and recipe filter bulk actions are clearer, with select and clear actions inside each expanded section.
+- Ingredient groups in filters are reordered for quicker browsing.
+- Search tab uses an updated bottom bar icon.
+
+### Fixed
+
+- Recipe details no longer get stuck loading.
+- Measurement units update correctly across the app when you change your preferences.
+- Ingredient amounts and units display more consistently in recipe details and cooking steps.
+- Search hint text truncates cleanly on smaller screens.
+- Medium-sized titles use consistent text styling.
+
 ## [0.3.1] - 2026-06-08
 
 ### Fixed
