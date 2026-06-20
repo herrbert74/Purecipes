@@ -6,7 +6,7 @@ Changelog drafting is **local only** (your AI assistant + GitHub MCP). CI only *
 
 1. Identify `previous_tag` (e.g. `0.1.0`) and new `version` (e.g. `0.2.0`).
 2. Use the **GitHub MCP server** to list merged pull requests on `main` since that tag (e.g. `search_pull_requests`, `list_commits` on the compare range).
-3. Follow [`.github/prompts/android-release-changelog.md`](../../.github/prompts/android-release-changelog.md) and draft a section in root [`CHANGELOG.md`](../../CHANGELOG.md):
+3. Follow [`.agents/skills/android-release-changelog/SKILL.md`](../skills/android-release-changelog/SKILL.md) and draft a section in root [`CHANGELOG.md`](../../CHANGELOG.md):
 
    ```markdown
    ## [0.2.0] - YYYY-MM-DD

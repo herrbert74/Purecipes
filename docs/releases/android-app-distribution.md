@@ -34,7 +34,7 @@ Optional: GitHub Environment **android-release** with required reviewers on the 
 Never tag before the changelog PR is merged.
 
 1. Ensure `main` CI is green.
-2. **Locally (AI assistant + GitHub MCP):** list merged PRs since the previous tag; draft and review `## [version]` in [CHANGELOG.md](../../CHANGELOG.md) (see [prompt](../../.github/prompts/android-release-changelog.md)).
+2. **Locally (AI assistant + GitHub MCP):** list merged PRs since the previous tag; draft and review `## [version]` in [CHANGELOG.md](../../CHANGELOG.md) (see [skill](../../.agents/skills/android-release-changelog/SKILL.md)).
 3. **Locally:** bump `versionName` and increment `versionCode` in [gradle/libs.versions.toml](../../gradle/libs.versions.toml) (release APKs use these values):
 
    ```bash

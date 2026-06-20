@@ -17,7 +17,7 @@ Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.
 ## Prepare a release (local, no CI)
 
 1. Ensure `main` CI is green.
-2. With your AI assistant and the **GitHub MCP server**, gather merged PRs since the previous tag. Draft a new `## [version]` section in [`CHANGELOG.md`](../../CHANGELOG.md) using [`.github/prompts/android-release-changelog.md`](../../.github/prompts/android-release-changelog.md). Edit until accurate.
+2. With your AI assistant and the **GitHub MCP server**, gather merged PRs since the previous tag. Draft a new `## [version]` section in [`CHANGELOG.md`](../../CHANGELOG.md) using [`.agents/skills/android-release-changelog/SKILL.md`](../../.agents/skills/android-release-changelog/SKILL.md). Edit until accurate.
 3. Bump `versionName` and increment `versionCode` in [`gradle/libs.versions.toml`](../../gradle/libs.versions.toml) (release builds read both from this file):
 
    ```bash
