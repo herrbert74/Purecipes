@@ -3,8 +3,12 @@ package app.purecipes.shared.data.notification
 import app.purecipes.shared.domain.notification.NotificationData
 import app.purecipes.shared.domain.notification.NotificationManager
 import com.diamondedge.logging.logging
-import com.mmk.kmpnotifier.notification.NotifierManager
+import com.mmk.kmpnotifier.KMPNotifier
+import com.mmk.kmpnotifier.local.localNotifier
 import com.mmk.kmpnotifier.notification.PayloadData
+import com.mmk.kmpnotifier.push.PushListener
+import com.mmk.kmpnotifier.push.firebase.addPushListener
+import com.mmk.kmpnotifier.push.firebase.firebasePushNotifier
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -21,7 +25,7 @@ class KmpNotificationManager : NotificationManager {
 	val logging = logging()
 
 	override suspend fun initialize() {
-		NotifierManager.addListener(object : NotifierManager.Listener {
+		KMPNotifier.addPushListener(object : PushListener {
 
 			override fun onNewToken(token: String) {
 				logging.d { token }
@@ -33,7 +37,7 @@ class KmpNotificationManager : NotificationManager {
 			}
 
 		})
-		val existingToken = NotifierManager.getPushNotifier().getToken()
+		val existingToken = KMPNotifier.firebasePushNotifier.getToken()
 		if (existingToken != null) {
 			logging.d { "Existing FCM token: $existingToken" }
 			_token.value = existingToken
@@ -42,15 +46,15 @@ class KmpNotificationManager : NotificationManager {
 
 	override suspend fun requestPermission(): Boolean = true
 	override suspend fun subscribeToTopic(topic: String) {
-		NotifierManager.getPushNotifier().subscribeToTopic(topic)
+		KMPNotifier.firebasePushNotifier.subscribeToTopic(topic)
 	}
 
 	override suspend fun unsubscribeFromTopic(topic: String) {
-		NotifierManager.getPushNotifier().unSubscribeFromTopic(topic)
+		KMPNotifier.firebasePushNotifier.unSubscribeFromTopic(topic)
 	}
 
 	override fun sendLocalNotification(notification: NotificationData) {
-		NotifierManager.getLocalNotifier().notify(
+		KMPNotifier.localNotifier.notify(
 			title = notification.title,
 			body = notification.body,
 			payloadData = notification.data
