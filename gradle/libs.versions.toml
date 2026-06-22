@@ -274,7 +274,7 @@ kmpauth-firebaseFacebook = { module = "io.github.mirzemehdi:kmpauth-firebase-fac
 kmpauth-facebook = { module = "io.github.mirzemehdi:kmpauth-facebook", version.ref = "kmpauth" }
 kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauth" }
 kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauth" }
-kmpnotifier = { group = "io.github.mirzemehdi", name = "kmpnotifier", version.ref = "kmpnotifier" }
+kmpnotifier-push-firebase = { group = "io.github.mirzemehdi", name = "kmpnotifier-push-firebase", version.ref = "kmpnotifier" }
 
 #kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotest-assertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }

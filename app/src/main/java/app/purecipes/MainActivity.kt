@@ -19,8 +19,8 @@ import app.purecipes.feature.sharing.data.runtime.SharingAndroidRuntime
 import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
 import com.mmk.kmpauth.core.KMPAuth
 import com.mmk.kmpauth.facebook.handleFacebookActivityResult
+import com.mmk.kmpnotifier.KMPNotifier
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
-import com.mmk.kmpnotifier.notification.NotifierManager
 import dev.zacsweers.metro.createGraph
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 		osSplashBridge.install(splashScreen)
 
 		super.onCreate(savedInstanceState)
-		NotifierManager.onCreateOrOnNewIntent(intent)
+		KMPNotifier.onCreateOrOnNewIntent(intent)
 		enableEdgeToEdge()
 		startGraphLoadIfNeeded()
 		requestNotificationPermissionIfNeeded()
@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
 	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
 		setIntent(intent)
-		NotifierManager.onCreateOrOnNewIntent(intent)
+		KMPNotifier.onCreateOrOnNewIntent(intent)
 		deliverDeepLinkFromIntent(intent)
 	}
 

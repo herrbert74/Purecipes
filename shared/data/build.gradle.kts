@@ -19,7 +19,7 @@ kotlin {
 			dependencies {
 				implementation(project(":base:kotlin"))
 				api(project(":shared:domain"))
-				implementation(libs.kmpnotifier)
+				implementation(libs.kmpnotifier.push.firebase)
 				implementation(libs.kotlinResult.result)
 				implementation(libs.kotlinRetry)
 				implementation(libs.kotlinx.collectionsImmutable)
