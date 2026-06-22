@@ -10,6 +10,7 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.GoogleSignInRequest
+import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
 import app.purecipes.shared.domain.model.RecipeDetails
@@ -147,4 +148,7 @@ interface PurecipesApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@PATCH("settings/excluded-ingredients")
 	suspend fun updateUserExcludedIngredients(@Body delta: ExcludedIngredientsDelta): Set<String>
+
+	@GET("ingredients/match")
+	suspend fun matchIngredient(@Query("name") name: String): IngredientMatchResponse
 }

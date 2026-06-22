@@ -10,6 +10,7 @@ import app.purecipes.backend.feature.deeplink.deepLinkRoutes
 import app.purecipes.backend.feature.favorites.cookbookRoutes
 import app.purecipes.backend.feature.favorites.cookbookShareRoutes
 import app.purecipes.backend.feature.favorites.favoriteRoutes
+import app.purecipes.backend.feature.ingredient.ingredientRoutes
 import app.purecipes.backend.feature.recipe.recipeImageRoutes
 import app.purecipes.backend.feature.recipe.recipeRoutes
 import app.purecipes.backend.feature.settings.settingsRoutes
@@ -96,6 +97,7 @@ fun Application.module(
 		cookbookShareRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)
 		recipeRoutes(sessionService) { db }
+		ingredientRoutes(sessionService) { db }
 		settingsRoutes(sessionService) { db }
 		extraRoutes()
 	}
