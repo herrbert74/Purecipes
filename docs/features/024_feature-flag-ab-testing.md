@@ -1,6 +1,8 @@
-# Feature Flag & A/B Testing
+# Feature 024: Feature Flag & A/B Testing
 
 ## Status: <span style="color:orange;">🟠 DRAFT</span>
+
+Scheduled for **Phase 4** (post launch); not planned for alpha or beta.
 
 ## Feature Overview
 Comprehensive feature flag and A/B testing system to safely roll out features, experiment with different implementations, and optimize user experience through data-driven decisions.
@@ -164,7 +166,7 @@ interface ExperimentManager {
 - **Risk Reduction**: Safer feature rollouts
 
 ## Current Status: DRAFT
-Reason: Important for safe feature deployment but not critical for Phase 1 launch. Should be implemented in Phase 2 to support growth and optimization efforts.
+Reason: Important for safe feature deployment but not critical at the current product stage. Deferred to post-launch (Feature 024) in favour of higher-impact user-facing work.
 
 ## Decision Framework
 ### Use Firebase When:

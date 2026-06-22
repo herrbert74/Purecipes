@@ -33,6 +33,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Recipe website scraping (001)
 - Basic recipe search (005)
 - **Advanced recipe search with chip/tag filtering (012)**
+- **Custom pantry ingredients (013)**
 - Search bar and filters
 - Search results and history
 - Real-time search suggestions
@@ -70,7 +71,7 @@ Features are numbered sequentially: `XXX_feature-name.md`
 - Privacy-compliant data collection
 
 ### Experimentation & Optimization
-- **Feature Flag & A/B Testing (013)**
+- **Feature Flag & A/B Testing (024)**
 - **Baseline profiles and benchmarking (017)**
 - Remote configuration management
 - Safe feature rollouts
