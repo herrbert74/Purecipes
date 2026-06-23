@@ -67,6 +67,7 @@ internal const val FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG = "filterBottomSheetPantry
 internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG = "filterBottomSheetRecipeFiltersTab"
 internal const val FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG = "filterBottomSheetPantryIntro"
 internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG = "filterBottomSheetRecipeFiltersIntro"
+internal const val FILTER_BOTTOM_SHEET_SCROLL_TAG = "filterBottomSheetScroll"
 
 private enum class FilterTab {
 	Pantry,
@@ -363,7 +364,9 @@ private fun FilterScrollableColumn(
 	val scrollState = rememberLazyListState()
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
-			modifier = Modifier.fillMaxSize(),
+			modifier = Modifier
+				.fillMaxSize()
+				.testTag(FILTER_BOTTOM_SHEET_SCROLL_TAG),
 			state = scrollState,
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
 			content = content,

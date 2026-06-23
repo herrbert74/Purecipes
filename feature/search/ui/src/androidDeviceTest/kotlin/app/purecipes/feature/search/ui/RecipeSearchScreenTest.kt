@@ -3,11 +3,13 @@ package app.purecipes.feature.search.ui
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
@@ -28,6 +30,7 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_INTRO_T
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SCROLL_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT_TITLE_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG
@@ -363,8 +366,14 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
 		waitForIdle()
-		onNodeWithText("Your ingredients").performClick()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_SCROLL_TAG)
+			.performScrollToNode(hasText("Your ingredients"))
 		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_SCROLL_TAG)
+			.performScrollToNode(hasText("Add ingredient"))
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(FILTER_ADD_INGREDIENT_BUTTON_TAG).fetchSemanticsNodes().isNotEmpty()
+		}
 		onNodeWithTag(FILTER_ADD_INGREDIENT_BUTTON_TAG).assertIsDisplayed()
 	}
 
@@ -386,7 +395,8 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		runOnIdle { viewModel.onAddIngredient("gochujang") }
 		waitForIdle()
-		onNodeWithText("gochujang").assertIsDisplayed()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_SCROLL_TAG)
+			.performScrollToNode(hasText("gochujang"))
 		onNodeWithText("gochujang").performClick()
 		waitForIdle()
 		onNodeWithText("gochujang").performClick()
@@ -394,7 +404,7 @@ class RecipeSearchScreenTest {
 		onNodeWithText("gochujang").assertIsDisplayed()
 		onNodeWithTag(customIngredientRemoveTag("gochujang")).performClick()
 		waitForIdle()
-		onNodeWithText("gochujang").assertDoesNotExist()
+		onAllNodesWithText("gochujang").assertCountEquals(0)
 		runOnIdle {
 			assertEquals(emptySet<String>(), viewModel.customPantryIngredients)
 			assertEquals(emptySet<String>(), viewModel.pantryIngredients)

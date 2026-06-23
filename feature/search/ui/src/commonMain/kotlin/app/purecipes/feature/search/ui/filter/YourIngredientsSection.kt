@@ -32,6 +32,7 @@ import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 
 internal const val FILTER_ADD_INGREDIENT_BUTTON_TAG = "filterAddIngredientButton"
+internal const val FILTER_YOUR_INGREDIENTS_SECTION_TAG = "filterYourIngredientsSection"
 internal const val ADD_INGREDIENT_DIALOG_TAG = "addIngredientDialog"
 internal const val ADD_INGREDIENT_NAME_FIELD_TAG = "addIngredientNameField"
 internal const val ADD_INGREDIENT_CONFIRM_BUTTON_TAG = "addIngredientConfirmButton"
@@ -54,7 +55,7 @@ internal fun YourIngredientsSection(
 	var collapsed by rememberSaveable { mutableStateOf(false) }
 	var showAddDialog by rememberSaveable { mutableStateOf(false) }
 
-	Column(modifier = modifier) {
+	Column(modifier = modifier.testTag(FILTER_YOUR_INGREDIENTS_SECTION_TAG)) {
 		FilterSectionHeader(
 			title = "Your ingredients",
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
