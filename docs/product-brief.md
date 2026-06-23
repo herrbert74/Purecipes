@@ -117,7 +117,7 @@ Traditional recipe apps present information in a one-size-fits-all manner, creat
 ### Phase 2: More Core Features (Features 011-016) + Iteration -- *alpha*
 - Feature 011: Basic monetisation with ads and RevenueCat
 - Feature 012: Advanced recipe search with chip/tag filtering
-- Feature 013: Feature flag & A/B testing
+- Feature 013: Custom pantry ingredients
 - Feature 014: Calorie calculator and nutrition tracking
 - Feature 015: Recipe sharing and deep linking
 - Feature 016: Launching animation
@@ -141,11 +141,12 @@ Traditional recipe apps present information in a one-size-fits-all manner, creat
 - Open beta on Android and iOS
 - **Public Launch** at the end of beta
 
-### Phase 4: Growth & Ecosystem (Features 020-023) -- *post launch*
+### Phase 4: Growth & Ecosystem (Features 020-024) -- *post launch*
 - Feature 020: AI-assisted translations
 - Feature 021: AI recipe creation from image
 - Feature 022: Image creation from recipe
 - Feature 023: Smart kitchen integration
+- Feature 024: Feature flag & A/B testing
 - Freemium model rollout and conversion tuning
 - Community recipe sharing
 - Nutritional information display

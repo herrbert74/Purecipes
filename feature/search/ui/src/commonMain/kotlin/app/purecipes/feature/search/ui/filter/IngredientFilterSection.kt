@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,12 +30,6 @@ internal const val FILTER_PANTRY_BULK_CLEAR_ALL_TAG = "filterPantryBulkClearAll"
 internal const val FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG = "filterIngredientLegendNeutral"
 internal const val FILTER_INGREDIENT_LEGEND_PANTRY_TAG = "filterIngredientLegendPantry"
 internal const val FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG = "filterIngredientLegendExcluded"
-
-private enum class IngredientChipState {
-	NEUTRAL,
-	SELECTED,
-	EXCLUDED,
-}
 
 @Composable
 internal fun IngredientFilterLegend(modifier: Modifier = Modifier) {
@@ -208,34 +200,5 @@ private fun IngredientGroupChips(
 				}
 			}
 		}
-	}
-}
-
-@Composable
-private fun IngredientTriStateChip(
-	item: String,
-	state: IngredientChipState,
-	onToggle: () -> Unit,
-) {
-	when (state) {
-		IngredientChipState.NEUTRAL -> FilterChip(
-			selected = false,
-			onClick = onToggle,
-			label = { Text(item) },
-		)
-		IngredientChipState.SELECTED -> FilterChip(
-			selected = true,
-			onClick = onToggle,
-			label = { Text(item) },
-		)
-		IngredientChipState.EXCLUDED -> FilterChip(
-			selected = true,
-			onClick = onToggle,
-			label = { Text(item) },
-			colors = FilterChipDefaults.filterChipColors(
-				selectedContainerColor = PurecipesTheme.colorScheme.errorContainer,
-				selectedLabelColor = PurecipesTheme.colorScheme.onErrorContainer,
-			),
-		)
 	}
 }

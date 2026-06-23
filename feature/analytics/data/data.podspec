@@ -10,8 +10,6 @@ Pod::Spec.new do |spec|
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '26.0'
     spec.dependency 'FirebaseAnalytics'
-    spec.dependency 'FirebaseCrashlytics'
-    spec.dependency 'Mixpanel-swift'
     spec.dependency 'Usercentrics'
     spec.dependency 'UsercentricsUI'
     if !Dir.exist?('build/cocoapods/framework/data.framework') || Dir.empty?('build/cocoapods/framework/data.framework')

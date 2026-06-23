@@ -6,6 +6,7 @@ import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.optionalAuthenticatedUserId
 import app.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import app.purecipes.backend.feature.favorites.CookbookRepository
+import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.search.SearchRecipeRepository
 import app.purecipes.shared.domain.model.RecipeWriteRequest
 import app.purecipes.shared.domain.model.SearchRequest
@@ -27,6 +28,7 @@ private const val DEFAULT_RESULT_COUNT_LIMIT = 20
 fun Route.recipeRoutes(
 	sessionService: SessionService,
 	dbProvider: () -> Db,
+	ingredientMatchCorpusCache: IngredientMatchCorpusCache,
 ) {
 	route("/recipes") {
 		get("/mine") {
@@ -54,6 +56,7 @@ fun Route.recipeRoutes(
 
 			val repo = RecipeRepository(dbProvider().dataSource)
 			call.respond(HttpStatusCode.Created, repo.createRecipe(userId, request))
+			ingredientMatchCorpusCache.invalidate()
 		}
 
 		get("/search") {
@@ -177,6 +180,7 @@ fun Route.recipeRoutes(
 			}
 
 			call.respond(recipe)
+			ingredientMatchCorpusCache.invalidate()
 		}
 	}
 }

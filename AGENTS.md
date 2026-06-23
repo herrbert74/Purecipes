@@ -50,7 +50,7 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
 
 ## iOS CocoaPods (Gradle)
 
-Modules that use the Kotlin CocoaPods integration (`feature:analytics:data`, `feature:auth:ui`) apply `gradle/purecipes-ios-cocoapods.gradle.kts`.
+Modules that use the Kotlin CocoaPods integration (`feature:analytics:data`) apply `gradle/purecipes-ios-cocoapods.gradle.kts`.
 
 * **Linux CI and Android-only Gradle runs** do not declare the `cocoapods { }` Kotlin block (macOS hosts only), so CocoaPods is never part of the configuration there.
 * **macOS** always declares that block so local iOS compilation and Xcode flows resolve `cocoapods.*` imports. Pod install, cinterop, and related tasks run when the requested Gradle tasks look like iOS, CocoaPods, Xcode integration, Kotlin IDE import (`prepareKotlinIdeaImport` / `podImport`), or a full tree build (for example task names containing `ios`, `pod`, `xcode`, or `embedAndSign`, or a top-level `build` / `:…:build`), or during Android Studio/IntelliJ **Gradle sync** (`idea.sync.active`) so the IDE can generate KMP cinterop metadata (for example `kotlinTransformedCInteropMetadataLibraries`). The iOS app Xcode project invokes `:umbrella:embedAndSignAppleFrameworkForXcode`, which matches that rule. Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.

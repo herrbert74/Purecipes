@@ -46,6 +46,7 @@ import app.purecipes.shared.domain.model.CookingTimeRange
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.DifficultyLevel
+import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.NutritionFilter
 import app.purecipes.shared.domain.model.SearchFilters
@@ -66,6 +67,7 @@ internal const val FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG = "filterBottomSheetPantry
 internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG = "filterBottomSheetRecipeFiltersTab"
 internal const val FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG = "filterBottomSheetPantryIntro"
 internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG = "filterBottomSheetRecipeFiltersIntro"
+internal const val FILTER_BOTTOM_SHEET_SCROLL_TAG = "filterBottomSheetScroll"
 
 private enum class FilterTab {
 	Pantry,
@@ -78,10 +80,18 @@ internal fun FilterBottomSheet(
 	isSignedIn: Boolean,
 	pantryIngredients: ImmutableSet<String>,
 	excludedIngredients: ImmutableSet<String>,
+	customPantryIngredients: ImmutableSet<String>,
+	ingredientMatchPreview: IngredientMatchResponse?,
+	isIngredientMatchLoading: Boolean,
 	sheetState: SheetState,
 	onDismiss: () -> Unit,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
+	onCustomIngredientToggle: (String) -> Unit,
+	onRemoveCustomIngredient: (String) -> Unit,
+	onAddIngredientQueryChange: (String) -> Unit,
+	onAddIngredient: (String) -> Unit,
+	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
 ) {
 	ModalBottomSheet(
@@ -93,8 +103,16 @@ internal fun FilterBottomSheet(
 			isSignedIn = isSignedIn,
 			pantryIngredients = pantryIngredients,
 			excludedIngredients = excludedIngredients,
+			customPantryIngredients = customPantryIngredients,
+			ingredientMatchPreview = ingredientMatchPreview,
+			isIngredientMatchLoading = isIngredientMatchLoading,
 			onFiltersChange = onFiltersChange,
 			onIngredientSelectionChange = onIngredientSelectionChange,
+			onCustomIngredientToggle = onCustomIngredientToggle,
+			onRemoveCustomIngredient = onRemoveCustomIngredient,
+			onAddIngredientQueryChange = onAddIngredientQueryChange,
+			onAddIngredient = onAddIngredient,
+			onClearIngredientMatchPreview = onClearIngredientMatchPreview,
 			onRequestLogIn = onRequestLogIn,
 		)
 	}
@@ -106,8 +124,16 @@ private fun FilterBottomSheetContent(
 	isSignedIn: Boolean,
 	pantryIngredients: ImmutableSet<String>,
 	excludedIngredients: ImmutableSet<String>,
+	customPantryIngredients: ImmutableSet<String>,
+	ingredientMatchPreview: IngredientMatchResponse?,
+	isIngredientMatchLoading: Boolean,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
+	onCustomIngredientToggle: (String) -> Unit,
+	onRemoveCustomIngredient: (String) -> Unit,
+	onAddIngredientQueryChange: (String) -> Unit,
+	onAddIngredient: (String) -> Unit,
+	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
 ) {
 	if (!isSignedIn) {
@@ -153,7 +179,15 @@ private fun FilterBottomSheetContent(
 						FilterTab.Pantry -> PantryFilterTabContent(
 							pantryIngredients = pantryIngredients,
 							excludedIngredients = excludedIngredients,
+							customPantryIngredients = customPantryIngredients,
+							ingredientMatchPreview = ingredientMatchPreview,
+							isIngredientMatchLoading = isIngredientMatchLoading,
 							onIngredientSelectionChange = onIngredientSelectionChange,
+							onCustomIngredientToggle = onCustomIngredientToggle,
+							onRemoveCustomIngredient = onRemoveCustomIngredient,
+							onAddIngredientQueryChange = onAddIngredientQueryChange,
+							onAddIngredient = onAddIngredient,
+							onClearIngredientMatchPreview = onClearIngredientMatchPreview,
 						)
 
 						FilterTab.RecipeFilters -> RecipeFiltersTabContent(
@@ -171,7 +205,15 @@ private fun FilterBottomSheetContent(
 private fun PantryFilterTabContent(
 	pantryIngredients: ImmutableSet<String>,
 	excludedIngredients: ImmutableSet<String>,
+	customPantryIngredients: ImmutableSet<String>,
+	ingredientMatchPreview: IngredientMatchResponse?,
+	isIngredientMatchLoading: Boolean,
 	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
+	onCustomIngredientToggle: (String) -> Unit,
+	onRemoveCustomIngredient: (String) -> Unit,
+	onAddIngredientQueryChange: (String) -> Unit,
+	onAddIngredient: (String) -> Unit,
+	onClearIngredientMatchPreview: () -> Unit,
 ) {
 	FilterScrollableColumn {
 		item {
@@ -202,6 +244,20 @@ private fun PantryFilterTabContent(
 				pantryIngredients = pantryIngredients,
 				excludedIngredients = excludedIngredients,
 				onSelectionChange = onIngredientSelectionChange,
+			)
+		}
+		item {
+			YourIngredientsSection(
+				customPantryIngredients = customPantryIngredients,
+				pantryIngredients = pantryIngredients,
+				excludedIngredients = excludedIngredients,
+				ingredientMatchPreview = ingredientMatchPreview,
+				isIngredientMatchLoading = isIngredientMatchLoading,
+				onCustomIngredientToggle = onCustomIngredientToggle,
+				onRemoveCustomIngredient = onRemoveCustomIngredient,
+				onAddIngredientQueryChange = onAddIngredientQueryChange,
+				onAddIngredient = onAddIngredient,
+				onClearIngredientMatchPreview = onClearIngredientMatchPreview,
 			)
 		}
 	}
@@ -308,7 +364,9 @@ private fun FilterScrollableColumn(
 	val scrollState = rememberLazyListState()
 	Box(modifier = Modifier.fillMaxSize()) {
 		LazyColumn(
-			modifier = Modifier.fillMaxSize(),
+			modifier = Modifier
+				.fillMaxSize()
+				.testTag(FILTER_BOTTOM_SHEET_SCROLL_TAG),
 			state = scrollState,
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.xxl),
 			content = content,
@@ -491,8 +549,16 @@ private fun FilterBottomSheetPreviewContent(
 				isSignedIn = isSignedIn,
 				pantryIngredients = persistentSetOf(),
 				excludedIngredients = persistentSetOf(),
+				customPantryIngredients = persistentSetOf(),
+				ingredientMatchPreview = null,
+				isIngredientMatchLoading = false,
 				onFiltersChange = {},
 				onIngredientSelectionChange = { _, _ -> },
+				onCustomIngredientToggle = {},
+				onRemoveCustomIngredient = {},
+				onAddIngredientQueryChange = {},
+				onAddIngredient = {},
+				onClearIngredientMatchPreview = {},
 				onRequestLogIn = {},
 			)
 		}

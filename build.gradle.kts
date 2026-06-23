@@ -43,3 +43,7 @@ rootProject.plugins.withType<WasmYarnPlugin> {
 rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.binaryen.BinaryenPlugin> {
 	rootProject.the<org.jetbrains.kotlin.gradle.targets.wasm.binaryen.BinaryenEnvSpec>().download.set(false)
 }
+
+tasks.register("prepareKotlinIdeaImport") {
+	dependsOn(":feature:analytics:data:prepareKotlinIdeaImport")
+}

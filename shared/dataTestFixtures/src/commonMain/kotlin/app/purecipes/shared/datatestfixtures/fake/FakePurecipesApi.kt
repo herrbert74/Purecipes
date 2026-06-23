@@ -12,6 +12,7 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.GoogleSignInRequest
+import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.PantryDelta
@@ -53,6 +54,9 @@ class FakePurecipesApi(
 
 	var searchWithFiltersCalls: Int = 0
 		private set
+
+	var ingredientMatchResponse: IngredientMatchResponse = IngredientMatchResponse(query = "")
+	val ingredientMatchCalls = mutableListOf<String>()
 
 	val addedFavoriteIds = mutableListOf<Int>()
 	val removedFavoriteIds = mutableListOf<Int>()
@@ -288,6 +292,11 @@ class FakePurecipesApi(
 	override suspend fun updateUserExcludedIngredients(delta: ExcludedIngredientsDelta): Set<String> {
 		userExcludedIngredients = (userExcludedIngredients + delta.add) - delta.remove
 		return userExcludedIngredients
+	}
+
+	override suspend fun matchIngredient(name: String): IngredientMatchResponse {
+		ingredientMatchCalls += name
+		return ingredientMatchResponse.copy(query = name)
 	}
 
 	fun storeRecipe(recipe: RecipeDetails) {
