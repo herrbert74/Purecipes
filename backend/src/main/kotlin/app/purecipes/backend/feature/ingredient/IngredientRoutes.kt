@@ -2,7 +2,6 @@ package app.purecipes.backend.feature.ingredient
 
 import app.purecipes.backend.ErrorResponse
 import app.purecipes.backend.auth.SessionService
-import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
@@ -12,7 +11,7 @@ import io.ktor.server.routing.route
 
 fun Route.ingredientRoutes(
 	sessionService: SessionService,
-	dbProvider: () -> Db,
+	ingredientMatchCorpusCache: IngredientMatchCorpusCache,
 ) {
 	route("/ingredients") {
 		get("/match") {
@@ -30,7 +29,7 @@ fun Route.ingredientRoutes(
 
 			call.requireAuthenticatedUserId(sessionService) ?: return@get
 
-			val repository = IngredientMatchRepository(dbProvider().dataSource)
+			val repository = IngredientMatchRepository(ingredientMatchCorpusCache)
 			call.respond(repository.matchIngredient(name))
 		}
 	}

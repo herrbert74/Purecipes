@@ -10,6 +10,7 @@ import app.purecipes.backend.feature.deeplink.deepLinkRoutes
 import app.purecipes.backend.feature.favorites.cookbookRoutes
 import app.purecipes.backend.feature.favorites.cookbookShareRoutes
 import app.purecipes.backend.feature.favorites.favoriteRoutes
+import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.ingredient.ingredientRoutes
 import app.purecipes.backend.feature.recipe.recipeImageRoutes
 import app.purecipes.backend.feature.recipe.recipeRoutes
@@ -50,6 +51,7 @@ fun Application.module(
 	firebaseIdTokenVerifier: FirebaseIdTokenVerifier = FirebaseTokenInfoIdTokenVerifier(),
 	sessionService: SessionService = JdbcSessionService(db.dataSource),
 	recipeImageStorage: RecipeImageStorage = RecipeImageStorage(),
+	ingredientMatchCorpusCache: IngredientMatchCorpusCache? = null,
 ) {
 	install(CallLogging)
 	install(CORS) {
@@ -84,6 +86,7 @@ fun Application.module(
 		}
 	}
 	sessionService.ensureSchema()
+	val corpusCache = ingredientMatchCorpusCache ?: IngredientMatchCorpusCache(db.dataSource)
 
 	routing {
 		staticFiles("/uploads/recipes", recipeImageStorage.directory().toFile())
@@ -96,8 +99,8 @@ fun Application.module(
 		cookbookRoutes(sessionService) { db }
 		cookbookShareRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)
-		recipeRoutes(sessionService) { db }
-		ingredientRoutes(sessionService) { db }
+		recipeRoutes(sessionService, { db }, corpusCache)
+		ingredientRoutes(sessionService, corpusCache)
 		settingsRoutes(sessionService) { db }
 		extraRoutes()
 	}

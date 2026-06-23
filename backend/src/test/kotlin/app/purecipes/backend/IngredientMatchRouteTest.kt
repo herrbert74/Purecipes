@@ -1,6 +1,7 @@
 package app.purecipes.backend
 
 import app.purecipes.backend.fake.FakeSessionService
+import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.ingredient.IngredientMatchRepository
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -104,7 +105,7 @@ class IngredientMatchRepositoryTest {
 			dataSource = db.dataSource,
 			ingredients = listOf("2 tbsp tarragon"),
 		)
-		val repository = IngredientMatchRepository(db.dataSource)
+		val repository = IngredientMatchRepository(IngredientMatchCorpusCache(db.dataSource))
 
 		val response = repository.matchIngredient("taragon")
 
@@ -129,7 +130,7 @@ class IngredientMatchRepositoryTest {
 			dataSource = db.dataSource,
 			ingredients = listOf("3 tbsp bourbon"),
 		)
-		val repository = IngredientMatchRepository(db.dataSource)
+		val repository = IngredientMatchRepository(IngredientMatchCorpusCache(db.dataSource))
 
 		repository.matchIngredient("amaranth").exactMatches.single().let { match ->
 			match.ingredient shouldBe "Amaranth"
@@ -148,7 +149,7 @@ class IngredientMatchRepositoryTest {
 	@Test
 	fun `repository returns empty matches for blank query`() {
 		val db = createInMemoryDb("ingredient_match_repository")
-		val repository = IngredientMatchRepository(db.dataSource)
+		val repository = IngredientMatchRepository(IngredientMatchCorpusCache(db.dataSource))
 
 		val response = repository.matchIngredient("   ")
 

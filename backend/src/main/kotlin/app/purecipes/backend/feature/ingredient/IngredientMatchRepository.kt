@@ -7,10 +7,9 @@ import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchCount
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.LikelyIngredientMatch
-import javax.sql.DataSource
 
 class IngredientMatchRepository(
-	private val dataSource: DataSource,
+	private val corpusCache: IngredientMatchCorpusCache,
 ) {
 
 	fun matchIngredient(name: String): IngredientMatchResponse {
@@ -19,8 +18,9 @@ class IngredientMatchRepository(
 			return IngredientMatchResponse(query = query)
 		}
 
-		val recipeIngredients = loadRecipeIngredientLines()
-		val vocabulary = buildIngredientVocabulary(recipeIngredients)
+		val corpus = corpusCache.getCorpus()
+		val recipeIngredients = corpus.recipeIngredients
+		val vocabulary = corpus.vocabulary
 		val classified = IngredientLookup.classifyIngredientMatches(query, vocabulary)
 		val exactRecipeIds = recipeIdsMatchingQuery(query, recipeIngredients)
 
@@ -49,43 +49,6 @@ class IngredientMatchRepository(
 			exactMatches = exactMatches,
 			likelyMatches = likelyMatches,
 		)
-	}
-
-	private fun loadRecipeIngredientLines(): Map<Int, List<String>> =
-		dataSource.connection.use { connection ->
-			connection.prepareStatement(IngredientMatchRepositorySql.RECIPE_INGREDIENT_LINES_SQL).use { statement ->
-				statement.executeQuery().use { resultSet ->
-					buildMap {
-						while (resultSet.next()) {
-							val recipeId = resultSet.getInt("recipe_id")
-							val ingredient = resultSet.getString("ingredient").orEmpty().trim()
-							if (ingredient.isNotEmpty()) {
-								getOrPut(recipeId) { mutableListOf() }.add(ingredient)
-							}
-						}
-					}.mapValues { (_, ingredients) -> ingredients.toList() }
-				}
-			}
-		}
-
-	private fun buildIngredientVocabulary(recipeIngredients: Map<Int, List<String>>): Set<String> {
-		val vocabulary = LinkedHashSet(IngredientCatalogue.allItems)
-		recipeIngredients.values.flatten().forEach { ingredientLine ->
-			if (IngredientVocabulary.isIgnorableIngredientLine(ingredientLine)) {
-				return@forEach
-			}
-
-			val trimmedLine = ingredientLine.trim()
-			IngredientCatalogue.allItems.forEach { catalogueItem ->
-				if (IngredientVocabulary.matchesAnyIngredient(trimmedLine, listOf(catalogueItem))) {
-					vocabulary.add(catalogueItem)
-				}
-			}
-			IngredientLineTokenExtractor.extractTokens(trimmedLine).forEach { token ->
-				vocabulary.add(token)
-			}
-		}
-		return vocabulary
 	}
 
 	private fun buildExactMatches(
