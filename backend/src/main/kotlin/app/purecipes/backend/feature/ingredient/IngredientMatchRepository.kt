@@ -1,6 +1,7 @@
 package app.purecipes.backend.feature.ingredient
 
 import app.purecipes.backend.feature.search.IngredientVocabulary
+import app.purecipes.shared.domain.ingredient.ClassifiedIngredientMatches
 import app.purecipes.shared.domain.ingredient.IngredientLookup
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchCount
@@ -23,12 +24,12 @@ class IngredientMatchRepository(
 		val classified = IngredientLookup.classifyIngredientMatches(query, vocabulary)
 		val exactRecipeIds = recipeIdsMatchingQuery(query, recipeIngredients)
 
-		val exactMatches = classified.exactMatches.map { match ->
-			IngredientMatchCount(
-				ingredient = match.ingredient,
-				recipeCount = recipeIdsMatchingIngredient(match.ingredient, recipeIngredients).size,
-			)
-		}
+		val exactMatches = buildExactMatches(
+			query = query,
+			classified = classified,
+			exactRecipeIds = exactRecipeIds,
+			recipeIngredients = recipeIngredients,
+		)
 
 		val likelyMatches = classified.likelyMatches.mapNotNull { match ->
 			val recipeIds = recipeIdsMatchingIngredient(match.ingredient, recipeIngredients) - exactRecipeIds
@@ -75,15 +76,62 @@ class IngredientMatchRepository(
 			}
 
 			val trimmedLine = ingredientLine.trim()
-			val matchesCatalogue = IngredientCatalogue.allItems.any { catalogueItem ->
-				IngredientVocabulary.matchesAnyIngredient(trimmedLine, listOf(catalogueItem))
+			IngredientCatalogue.allItems.forEach { catalogueItem ->
+				if (IngredientVocabulary.matchesAnyIngredient(trimmedLine, listOf(catalogueItem))) {
+					vocabulary.add(catalogueItem)
+				}
 			}
-			if (!matchesCatalogue) {
-				vocabulary.add(trimmedLine)
+			IngredientLineTokenExtractor.extractTokens(trimmedLine).forEach { token ->
+				vocabulary.add(token)
 			}
 		}
 		return vocabulary
 	}
+
+	private fun buildExactMatches(
+		query: String,
+		classified: ClassifiedIngredientMatches,
+		exactRecipeIds: Set<Int>,
+		recipeIngredients: Map<Int, List<String>>,
+	): List<IngredientMatchCount> {
+		if (exactRecipeIds.isEmpty()) {
+			return classified.exactMatches.mapNotNull { match ->
+				val recipeCount = recipeIdsMatchingIngredient(match.ingredient, recipeIngredients).size
+				if (recipeCount == 0) {
+					null
+				} else {
+					IngredientMatchCount(
+						ingredient = match.ingredient,
+						recipeCount = recipeCount,
+					)
+				}
+			}
+		}
+
+		val catalogueName = IngredientLookup.resolveCatalogueIngredient(query, IngredientCatalogue.allItems)
+		val bestClassifiedMatch = classified.exactMatches
+			.maxByOrNull { match ->
+				recipeIdsMatchingIngredient(match.ingredient, recipeIngredients).size
+			}
+			?.ingredient
+		val displayName = catalogueName ?: bestClassifiedMatch ?: titleCaseQuery(query)
+
+		return listOf(
+			IngredientMatchCount(
+				ingredient = displayName,
+				recipeCount = exactRecipeIds.size,
+			),
+		)
+	}
+
+	private fun titleCaseQuery(query: String): String =
+		query.trim().replaceFirstChar { character ->
+			if (character.isLowerCase()) {
+				character.titlecase()
+			} else {
+				character.toString()
+			}
+		}
 
 	private fun recipeIdsMatchingIngredient(
 		ingredient: String,

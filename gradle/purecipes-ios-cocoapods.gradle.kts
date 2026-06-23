@@ -4,7 +4,14 @@ val isMacOsHost = osName.contains("Mac", ignoreCase = true) || osName.contains("
 val requestedTaskNames = gradle.startParameter.taskNames
 
 val isKotlinGradleImportSync =
-	System.getProperty("idea.sync.active") == "true"
+	System.getProperty("idea.sync.active") == "true" ||
+		System.getProperty("idea.invoked.from.idea") == "true" ||
+		System.getProperty("android.injected.invoked.from.ide") == "true" ||
+		requestedTaskNames.any { taskName ->
+			taskName.contains("IdeaImport", ignoreCase = true) ||
+				taskName.contains("prepareKotlinIdeaImport", ignoreCase = true) ||
+				taskName.contains("podImport", ignoreCase = true)
+		}
 
 val disableIosPodsExplicit =
 	findProperty("purecipes.disableIosPods") == "true" ||
@@ -29,7 +36,11 @@ fun taskNamesSuggestIosOrFullTreeWork(): Boolean {
 val shouldRunPodBuildTasks =
 	isMacOsHost &&
 		!disableIosPodsExplicit &&
-		(taskNamesSuggestIosOrFullTreeWork() || isKotlinGradleImportSync)
+		(
+			requestedTaskNames.isEmpty() ||
+				taskNamesSuggestIosOrFullTreeWork() ||
+				isKotlinGradleImportSync
+			)
 
 val shouldApplyCocoapodsKotlin = isMacOsHost
 

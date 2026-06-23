@@ -6,74 +6,18 @@ plugins {
 	id("org.jetbrains.kotlin.native.cocoapods")
 }
 
+extra["purecipesCocoapodsBuildSettingsPlatforms"] =
+	listOf("ios", "iosSimulator", "iossimulator", "iphoneos", "iphonesimulator")
+extra["purecipesCocoapodsBuildSettingsModules"] =
+	listOf(
+		"FirebaseAnalytics",
+		"Usercentrics",
+		"UsercentricsUI",
+	)
 apply(from = rootProject.file("gradle/purecipes-ios-cocoapods.gradle.kts"))
+apply(from = rootProject.file("gradle/purecipes-ios-cocoapods-build-settings.gradle.kts"))
 val shouldApplyCocoapodsKotlin = extra["purecipesShouldApplyCocoapodsKotlin"] as Boolean
 val shouldRunPodBuildTasks = extra["purecipesShouldRunPodBuildTasks"] as Boolean
-
-val cocoapodsBuildSettingsDir = layout.buildDirectory.dir("cocoapods/buildSettings").get().asFile
-cocoapodsBuildSettingsDir.mkdirs()
-val cocoapodsFallbackBuildDir = layout.buildDirectory.get().asFile.absolutePath
-val cocoapodsFallbackSettings =
-	"""
-		BUILD_DIR=$cocoapodsFallbackBuildDir
-		CONFIGURATION_BUILD_DIR=$cocoapodsFallbackBuildDir
-		TARGET_BUILD_DIR=$cocoapodsFallbackBuildDir
-		CONFIGURATION=Debug
-		PLATFORM_NAME=iphonesimulator
-		EFFECTIVE_PLATFORM_NAME=-iphonesimulator
-		PODS_TARGET_SRCROOT=${project.projectDir.absolutePath}
-		SDKROOT=iphonesimulator
-	""".trimIndent() + "\n"
-val cocoapodsBuildSettingsPlatforms = listOf("ios", "iosSimulator", "iossimulator", "iphoneos", "iphonesimulator")
-val cocoapodsBuildSettingsModules =
-	listOf(
-		"FirebaseAnalytics",
-		"FirebaseCrashlytics",
-		"Mixpanel-swift",
-		"Usercentrics",
-		"UsercentricsUI",
-	)
-cocoapodsBuildSettingsPlatforms.forEach { platform ->
-	cocoapodsBuildSettingsModules.forEach { moduleName ->
-		val buildSettingsFile = cocoapodsBuildSettingsDir.resolve("build-settings-$platform-$moduleName.properties")
-		if (!buildSettingsFile.exists()) {
-			buildSettingsFile.writeText(cocoapodsFallbackSettings)
-		} else {
-			val settings = buildSettingsFile.readText()
-			if (!settings.contains("BUILD_DIR=") || !settings.contains("CONFIGURATION=")) {
-				buildSettingsFile.writeText(cocoapodsFallbackSettings)
-			}
-		}
-	}
-}
-
-val cocoapodsDefsDir = layout.buildDirectory.dir("cocoapods/defs").get().asFile
-cocoapodsDefsDir.mkdirs()
-val cocoapodsDefsModules =
-	listOf(
-		"FirebaseAnalytics",
-		"FirebaseCrashlytics",
-		"Mixpanel",
-		"Usercentrics",
-		"UsercentricsUI",
-	)
-cocoapodsDefsModules.forEach { moduleName ->
-	val defFile = cocoapodsDefsDir.resolve("$moduleName.def")
-	if (!defFile.exists()) {
-		defFile.createNewFile()
-	}
-}
-
-tasks.configureEach {
-	val isPodOrInteropTask =
-		name.contains("pod", ignoreCase = true) ||
-			name.contains("cinterop", ignoreCase = true) ||
-			name.contains("xcode", ignoreCase = true) ||
-			name.startsWith("generateDef")
-	if (isPodOrInteropTask) {
-		enabled = shouldRunPodBuildTasks
-	}
-}
 
 kotlin {
 	if (shouldApplyCocoapodsKotlin) {
@@ -84,10 +28,6 @@ kotlin {
 			ios.deploymentTarget = "26.0"
 			podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
 			pod("FirebaseAnalytics")
-			pod("FirebaseCrashlytics")
-			pod("Mixpanel-swift") {
-				moduleName = "Mixpanel"
-			}
 			pod("Usercentrics")
 			pod("UsercentricsUI")
 		}

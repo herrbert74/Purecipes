@@ -115,6 +115,37 @@ class IngredientMatchRepositoryTest {
 	}
 
 	@Test
+	fun `repository matches non catalogue ingredient tokens`() {
+		val db = createInMemoryDb("ingredient_match_repository_tokens")
+		insertRecipeIngredientsForIngredientMatchTest(
+			dataSource = db.dataSource,
+			ingredients = listOf("1 cup amaranth flour"),
+		)
+		insertRecipeIngredientsForIngredientMatchTest(
+			dataSource = db.dataSource,
+			ingredients = listOf("2 habanero peppers, seeded"),
+		)
+		insertRecipeIngredientsForIngredientMatchTest(
+			dataSource = db.dataSource,
+			ingredients = listOf("3 tbsp bourbon"),
+		)
+		val repository = IngredientMatchRepository(db.dataSource)
+
+		repository.matchIngredient("amaranth").exactMatches.single().let { match ->
+			match.ingredient shouldBe "Amaranth"
+			match.recipeCount shouldBe 1
+		}
+		repository.matchIngredient("habanero").exactMatches.single().let { match ->
+			match.ingredient shouldBe "Habanero"
+			match.recipeCount shouldBe 1
+		}
+		repository.matchIngredient("bourbon").exactMatches.single().let { match ->
+			match.ingredient shouldBe "Bourbon"
+			match.recipeCount shouldBe 1
+		}
+	}
+
+	@Test
 	fun `repository returns empty matches for blank query`() {
 		val db = createInMemoryDb("ingredient_match_repository")
 		val repository = IngredientMatchRepository(db.dataSource)

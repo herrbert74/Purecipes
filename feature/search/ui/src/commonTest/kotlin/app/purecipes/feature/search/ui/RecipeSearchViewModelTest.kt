@@ -10,14 +10,18 @@ import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
+import app.purecipes.feature.search.domain.usecase.MatchIngredientInRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.IngredientMatchCount
+import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
@@ -28,6 +32,7 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 
@@ -232,6 +237,7 @@ class RecipeSearchViewModelTest {
 			updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(
 				FakeUserExcludedIngredientsRepository(),
 			),
+			matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 			searchReadiness = SearchReadinessCoordinator(),
 			initialShowFilterSheet = true,
 			sessionKey = null,
@@ -375,6 +381,72 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `onAddIngredient adds custom ingredient to pantry`() = runViewModelTest {
+		val viewModel = makeViewModel()
+		advanceUntilIdle()
+
+		viewModel.onAddIngredient("gochujang")
+
+		viewModel.customPantryIngredients shouldBe setOf("gochujang")
+		viewModel.pantryIngredients shouldBe setOf("gochujang")
+		viewModel.excludedIngredients shouldBe emptySet()
+	}
+
+	@Test
+	fun `onCustomIngredientToggle switches between pantry and excluded`() = runViewModelTest {
+		val viewModel = makeViewModel()
+		advanceUntilIdle()
+
+		viewModel.onAddIngredient("gochujang")
+		viewModel.onCustomIngredientToggle("gochujang")
+
+		viewModel.customPantryIngredients shouldBe setOf("gochujang")
+		viewModel.pantryIngredients shouldBe emptySet()
+		viewModel.excludedIngredients shouldBe setOf("gochujang")
+
+		viewModel.onCustomIngredientToggle("gochujang")
+
+		viewModel.pantryIngredients shouldBe setOf("gochujang")
+		viewModel.excludedIngredients shouldBe emptySet()
+	}
+
+	@Test
+	fun `onRemoveCustomIngredient removes custom ingredient from pantry and list`() = runViewModelTest {
+		val viewModel = makeViewModel()
+		advanceUntilIdle()
+
+		viewModel.onAddIngredient("gochujang")
+		viewModel.onRemoveCustomIngredient("gochujang")
+
+		viewModel.customPantryIngredients shouldBe emptySet()
+		viewModel.pantryIngredients shouldBe emptySet()
+		viewModel.excludedIngredients shouldBe emptySet()
+	}
+
+	@Test
+	fun `onAddIngredientQueryChange loads ingredient match preview after debounce`() = runViewModelTest {
+		val ingredientMatchRepository = FakeIngredientMatchRepository(
+			response = Ok(
+				IngredientMatchResponse(
+					query = "tarragon",
+					exactMatches = listOf(IngredientMatchCount(ingredient = "Tarragon", recipeCount = 2)),
+				),
+			),
+		)
+		val viewModel = makeViewModel(ingredientMatchRepository = ingredientMatchRepository)
+
+		viewModel.onAddIngredientQueryChange("tarragon")
+		advanceTimeBy(299)
+		viewModel.ingredientMatchPreview shouldBe null
+		advanceTimeBy(1)
+		advanceUntilIdle()
+
+		ingredientMatchRepository.matchedNames shouldBe listOf("tarragon")
+		viewModel.ingredientMatchPreview?.exactMatches?.single()?.ingredient shouldBe "Tarragon"
+		viewModel.isIngredientMatchLoading shouldBe false
+	}
+
+	@Test
 	fun `onSessionKeyChanged does nothing when session key is unchanged`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val viewModel = makeViewModel(searchRepository = searchRepository)
@@ -393,6 +465,7 @@ class RecipeSearchViewModelTest {
 		pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
 		excludedIngredientsRepository: FakeUserExcludedIngredientsRepository =
 			FakeUserExcludedIngredientsRepository(),
+		ingredientMatchRepository: FakeIngredientMatchRepository = FakeIngredientMatchRepository(),
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
@@ -405,6 +478,7 @@ class RecipeSearchViewModelTest {
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 		getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
+		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = searchReadiness,
 		initialShowFilterSheet = false,
 		sessionKey = null,

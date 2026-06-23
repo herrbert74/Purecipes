@@ -52,10 +52,18 @@ fun RecipeSearchScreen(
 			isSignedIn = isSignedIn,
 			pantryIngredients = viewModel.pantryIngredients.toImmutableSet(),
 			excludedIngredients = viewModel.excludedIngredients.toImmutableSet(),
+			customPantryIngredients = viewModel.customPantryIngredients.toImmutableSet(),
+			ingredientMatchPreview = viewModel.ingredientMatchPreview,
+			isIngredientMatchLoading = viewModel.isIngredientMatchLoading,
 			sheetState = sheetState,
 			onDismiss = viewModel::onFilterSheetDismiss,
 			onFiltersChange = viewModel::onFiltersChange,
 			onIngredientSelectionChange = viewModel::onIngredientSelectionChange,
+			onCustomIngredientToggle = viewModel::onCustomIngredientToggle,
+			onRemoveCustomIngredient = viewModel::onRemoveCustomIngredient,
+			onAddIngredientQueryChange = viewModel::onAddIngredientQueryChange,
+			onAddIngredient = viewModel::onAddIngredient,
+			onClearIngredientMatchPreview = viewModel::clearIngredientMatchPreview,
 			onRequestLogIn = {
 				viewModel.onFilterSheetDismiss()
 				onRequestLogInForFilters()

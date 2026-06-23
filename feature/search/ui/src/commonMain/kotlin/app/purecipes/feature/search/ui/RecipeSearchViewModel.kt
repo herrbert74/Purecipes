@@ -15,11 +15,14 @@ import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
+import app.purecipes.feature.search.domain.usecase.MatchIngredientInRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
+import app.purecipes.shared.domain.model.IngredientCatalogue
+import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.PantryDelta
@@ -36,10 +39,13 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val FIRST_PAGE_NUMBER = 1
 private const val PAGE_SIZE = 20
+private const val INGREDIENT_MATCH_DEBOUNCE_MS = 300L
 
 @AssistedInject
 class RecipeSearchViewModel(
@@ -53,6 +59,7 @@ class RecipeSearchViewModel(
 	private val updateUserPantry: UpdateUserPantryUseCase,
 	private val getUserExcludedIngredients: GetUserExcludedIngredientsUseCase,
 	private val updateUserExcludedIngredients: UpdateUserExcludedIngredientsUseCase,
+	private val matchIngredientInRecipes: MatchIngredientInRecipesUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
@@ -85,6 +92,16 @@ class RecipeSearchViewModel(
 	var excludedIngredients by mutableStateOf(emptySet<String>())
 		private set
 
+	var customPantryIngredients by mutableStateOf(emptySet<String>())
+		private set
+
+	var ingredientMatchPreview by mutableStateOf<IngredientMatchResponse?>(null)
+		private set
+
+	var isIngredientMatchLoading by mutableStateOf(false)
+		private set
+
+	private var ingredientMatchJob: Job? = null
 	private var lastSearchedFilters: SearchFilters = SearchFilters()
 	private var lastSavedPantry: Set<String> = emptySet()
 	private var lastSavedExcludedIngredients: Set<String> = emptySet()
@@ -184,15 +201,68 @@ class RecipeSearchViewModel(
 		excludedIngredients = excluded
 	}
 
+	fun onAddIngredientQueryChange(query: String) {
+		ingredientMatchJob?.cancel()
+		val trimmedQuery = query.trim()
+		if (trimmedQuery.isEmpty()) {
+			ingredientMatchPreview = null
+			isIngredientMatchLoading = false
+			return
+		}
+		ingredientMatchJob = viewModelScope.launch {
+			delay(INGREDIENT_MATCH_DEBOUNCE_MS)
+			isIngredientMatchLoading = true
+			ingredientMatchPreview = matchIngredientInRecipes(trimmedQuery).get()
+			isIngredientMatchLoading = false
+		}
+	}
+
+	fun onAddIngredient(name: String) {
+		val trimmedName = name.trim()
+		if (trimmedName.isEmpty()) return
+		customPantryIngredients = customPantryIngredients + trimmedName
+		pantryIngredients = pantryIngredients + trimmedName
+		excludedIngredients = excludedIngredients - trimmedName
+		clearIngredientMatchPreview()
+	}
+
+	fun onRemoveCustomIngredient(name: String) {
+		customPantryIngredients = customPantryIngredients - name
+		pantryIngredients = pantryIngredients - name
+		excludedIngredients = excludedIngredients - name
+	}
+
+	fun onCustomIngredientToggle(name: String) {
+		if (name in excludedIngredients) {
+			excludedIngredients = excludedIngredients - name
+			pantryIngredients = pantryIngredients + name
+		} else {
+			pantryIngredients = pantryIngredients - name
+			excludedIngredients = excludedIngredients + name
+		}
+	}
+
+	fun clearIngredientMatchPreview() {
+		ingredientMatchJob?.cancel()
+		ingredientMatchPreview = null
+		isIngredientMatchLoading = false
+	}
+
 	fun searchNow() {
 		viewModelScope.launch { doSearch() }
 	}
+
+	private fun customIngredientsFromSession(
+		pantry: Set<String>,
+		excluded: Set<String>,
+	): Set<String> = (pantry + excluded) - IngredientCatalogue.allItems
 
 	private suspend fun reloadSessionState(sessionKey: String?) {
 		val saved = getSearchFilters()
 		activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
 		pantryIngredients = if (sessionKey != null) getUserPantry() else emptySet()
 		excludedIngredients = if (sessionKey != null) getUserExcludedIngredients() else emptySet()
+		customPantryIngredients = customIngredientsFromSession(pantryIngredients, excludedIngredients)
 		lastSearchedFilters = activeFilters
 		lastSavedPantry = pantryIngredients
 		lastSavedExcludedIngredients = excludedIngredients
