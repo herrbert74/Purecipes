@@ -22,8 +22,14 @@ import GoogleSignIn
 import Mixpanel
 import UsercentricsUI
 
+#if canImport(Usercentrics)
+import Usercentrics
+#endif
+
 class AppDelegate: NSObject, UIApplicationDelegate {
     private var mixpanelInstance: MixpanelInstance?
+    private var configuredUsercentricsSettingsId: String?
+    private var consentUpdatedSubscription: Any?
 
     func application(
         _ application: UIApplication,
@@ -126,10 +132,80 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             }
         )
 
-        IosAnalyticsNativeBridge.shared.registerConsentHandlers { [weak self] in
-            self?.showConsentForm()
-        }
+        IosAnalyticsNativeBridge.shared.registerConsentHandlers(
+            showConsentForm: { [weak self] in
+                self?.showConsentForm()
+            },
+            refreshConsent: { [weak self] settingsId, onResult in
+                self?.refreshConsent(settingsId: settingsId) { state in
+                    _ = onResult(state)
+                }
+            },
+            startObserving: { [weak self] settingsId, onUpdate in
+                self?.startObservingConsent(settingsId: settingsId) { state in
+                    _ = onUpdate(state)
+                }
+            }
+        )
     }
+
+    private func configureUsercentricsIfNeeded(settingsId: String) {
+        #if canImport(Usercentrics)
+        guard configuredUsercentricsSettingsId != settingsId else {
+            return
+        }
+        let options = UsercentricsOptions(settingsId: settingsId)
+        options.loggerLevel = UsercentricsLoggerLevel.none
+        UsercentricsCore.configure(options: options)
+        configuredUsercentricsSettingsId = settingsId
+        #endif
+    }
+
+    private func refreshConsent(settingsId: String, onResult: @escaping (String) -> Void) {
+        #if canImport(Usercentrics)
+        configureUsercentricsIfNeeded(settingsId: settingsId)
+        UsercentricsCore.isReady(onSuccess: { [weak self] status in
+            onResult(self?.consentBridgeState(from: status) ?? "UNKNOWN")
+        }, onFailure: { _ in
+            onResult("UNKNOWN")
+        })
+        #else
+        onResult("UNKNOWN")
+        #endif
+    }
+
+    private func startObservingConsent(settingsId: String, onUpdate: @escaping (String) -> Void) {
+        #if canImport(Usercentrics)
+        configureUsercentricsIfNeeded(settingsId: settingsId)
+        consentUpdatedSubscription = UsercentricsEvent.shared.onConsentUpdated { [weak self] payload in
+            onUpdate(self?.consentBridgeState(from: payload) ?? "UNKNOWN")
+        }
+        #endif
+    }
+
+    #if canImport(Usercentrics)
+    private func consentBridgeState(from status: UsercentricsReadyStatus) -> String {
+        if status.shouldCollectConsent {
+            return "REQUIRED"
+        }
+        return consentBridgeState(from: status.consents)
+    }
+
+    private func consentBridgeState(from payload: UpdatedConsentPayload) -> String {
+        consentBridgeState(from: payload.consents)
+    }
+
+    private func consentBridgeState(from consents: [UsercentricsServiceConsent]) -> String {
+        let nonEssentialConsents = consents.filter { !$0.isEssential }
+        if nonEssentialConsents.isEmpty {
+            return "OBTAINED"
+        }
+        if nonEssentialConsents.contains(where: { $0.status }) {
+            return "OBTAINED"
+        }
+        return "DENIED"
+    }
+    #endif
 
     private func initializeMixpanel(token: String) {
         #if canImport(Mixpanel)

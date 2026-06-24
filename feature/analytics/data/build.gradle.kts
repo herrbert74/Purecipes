@@ -3,34 +3,16 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
 	id("convention.data")
 	id("convention.common-test")
-	id("org.jetbrains.kotlin.native.cocoapods")
 }
 
-extra["purecipesCocoapodsBuildSettingsPlatforms"] =
-	listOf("ios", "iosSimulator", "iossimulator", "iphoneos", "iphonesimulator")
-extra["purecipesCocoapodsBuildSettingsModules"] =
-	listOf(
-		"FirebaseAnalytics",
-		"Usercentrics",
-		"UsercentricsUI",
-	)
-apply(from = rootProject.file("gradle/purecipes-ios-cocoapods.gradle.kts"))
-apply(from = rootProject.file("gradle/purecipes-ios-cocoapods-build-settings.gradle.kts"))
-val shouldApplyCocoapodsKotlin = extra["purecipesShouldApplyCocoapodsKotlin"] as Boolean
-val shouldRunPodBuildTasks = extra["purecipesShouldRunPodBuildTasks"] as Boolean
-
 kotlin {
-	if (shouldApplyCocoapodsKotlin) {
-		cocoapods {
-			version = "1.0"
-			summary = "Purecipes analytics data"
-			homepage = "https://github.com/zsoltbertalan/Purecipes"
-			ios.deploymentTarget = "26.0"
-			podfile = project.file("../../../iosApp/PurecipesIOSApp/Podfile")
-			pod("FirebaseAnalytics")
-			pod("Usercentrics")
-			pod("UsercentricsUI")
-		}
+	swiftPMDependencies {
+		iosMinimumDeploymentTarget.set("26.0")
+		swiftPackage(
+			url = url("https://github.com/firebase/firebase-ios-sdk.git"),
+			version = exact("12.14.0"),
+			products = listOf(product("FirebaseAnalytics")),
+		)
 	}
 
 	android {

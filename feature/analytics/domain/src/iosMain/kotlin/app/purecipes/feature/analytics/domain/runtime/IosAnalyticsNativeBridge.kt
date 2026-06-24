@@ -6,6 +6,8 @@ object IosAnalyticsNativeBridge {
 	private var setMixpanelTrackingEnabledHandler: ((Boolean) -> Unit)? = null
 	private var setMixpanelUserIdHandler: ((String?) -> Unit)? = null
 	private var showConsentFormHandler: (() -> Unit)? = null
+	private var refreshConsentHandler: ((String, (String) -> Unit) -> Unit)? = null
+	private var startConsentObserverHandler: ((String, (String) -> Unit) -> Unit)? = null
 
 	fun registerMixpanelHandlers(
 		initialize: (String) -> Unit,
@@ -19,8 +21,14 @@ object IosAnalyticsNativeBridge {
 		setMixpanelUserIdHandler = setUserId
 	}
 
-	fun registerConsentHandlers(showConsentForm: () -> Unit) {
+	fun registerConsentHandlers(
+		showConsentForm: () -> Unit,
+		refreshConsent: (String, (String) -> Unit) -> Unit,
+		startObserving: (String, (String) -> Unit) -> Unit,
+	) {
 		showConsentFormHandler = showConsentForm
+		refreshConsentHandler = refreshConsent
+		startConsentObserverHandler = startObserving
 	}
 
 	fun initializeMixpanel(token: String) {
@@ -42,4 +50,21 @@ object IosAnalyticsNativeBridge {
 	fun showConsentForm() {
 		showConsentFormHandler?.invoke()
 	}
+
+	fun refreshConsent(settingsId: String, onResult: (String) -> Unit) {
+		refreshConsentHandler?.invoke(settingsId, onResult)
+			?: onResult(ConsentBridgeState.UNKNOWN.name)
+	}
+
+	fun startObservingConsent(settingsId: String, onUpdate: (String) -> Unit) {
+		startConsentObserverHandler?.invoke(settingsId, onUpdate)
+	}
+}
+
+enum class ConsentBridgeState {
+	NOT_REQUIRED,
+	UNKNOWN,
+	REQUIRED,
+	OBTAINED,
+	DENIED,
 }

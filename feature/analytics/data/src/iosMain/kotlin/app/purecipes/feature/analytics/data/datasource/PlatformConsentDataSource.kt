@@ -1,15 +1,9 @@
 package app.purecipes.feature.analytics.data.datasource
 
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.runtime.ConsentBridgeState
 import app.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
 import app.purecipes.shared.data.config.PurecipesConfig
-import cocoapods.Usercentrics.UsercentricsUpdatedConsentPayload
-import cocoapods.Usercentrics.UsercentricsUsercentricsEvent
-import cocoapods.Usercentrics.UsercentricsUsercentricsKt
-import cocoapods.Usercentrics.UsercentricsUsercentricsLoggerLevel
-import cocoapods.Usercentrics.UsercentricsUsercentricsOptions
-import cocoapods.Usercentrics.UsercentricsUsercentricsReadyStatus
-import cocoapods.Usercentrics.UsercentricsUsercentricsServiceConsent
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -23,8 +17,6 @@ actual class PlatformConsentDataSource actual constructor(
 ) : ConsentDataSource {
 
 	private val settingsId = purecipesConfig.usercentricsSettingsId().orEmpty()
-	private var isConfigured = false
-	private var consentUpdatedSubscription: Any? = null
 	private val mutableConsentState = MutableStateFlow(
 		if (settingsId.isBlank()) {
 			ConsentState.NOT_REQUIRED
@@ -33,6 +25,14 @@ actual class PlatformConsentDataSource actual constructor(
 		},
 	)
 
+	init {
+		if (settingsId.isNotBlank()) {
+			IosAnalyticsNativeBridge.startObservingConsent(settingsId) { bridgeState ->
+				mutableConsentState.value = bridgeState.toConsentState()
+			}
+		}
+	}
+
 	actual override val consentState: StateFlow<ConsentState> = mutableConsentState
 
 	actual override fun refreshConsent() {
@@ -40,15 +40,9 @@ actual class PlatformConsentDataSource actual constructor(
 			mutableConsentState.value = ConsentState.NOT_REQUIRED
 			return
 		}
-		configureIfNeeded()
-		UsercentricsUsercentricsKt.isReadyOnSuccess(
-			onSuccess = { status ->
-				mutableConsentState.value = status.toConsentState()
-			},
-			onFailure = {
-				mutableConsentState.value = ConsentState.UNKNOWN
-			},
-		)
+		IosAnalyticsNativeBridge.refreshConsent(settingsId) { bridgeState ->
+			mutableConsentState.value = bridgeState.toConsentState()
+		}
 	}
 
 	actual override fun showConsentForm() {
@@ -56,51 +50,16 @@ actual class PlatformConsentDataSource actual constructor(
 			mutableConsentState.value = ConsentState.NOT_REQUIRED
 			return
 		}
-		configureIfNeeded()
 		IosAnalyticsNativeBridge.showConsentForm()
 	}
-
-	private fun configureIfNeeded() {
-		if (isConfigured) {
-			return
-		}
-		val options = UsercentricsUsercentricsOptions(settingsId = settingsId)
-		options.loggerLevel = UsercentricsUsercentricsLoggerLevel.none
-		UsercentricsUsercentricsKt.configureOptions(options)
-		consentUpdatedSubscription = UsercentricsUsercentricsEvent.shared.onConsentUpdatedCallback(
-			callback = { payload ->
-				mutableConsentState.value = payload.toConsentState()
-			},
-		)
-		isConfigured = true
-	}
 }
 
-private fun UsercentricsUsercentricsReadyStatus?.toConsentState(): ConsentState {
-	if (this == null) {
-		return ConsentState.UNKNOWN
-	}
-	if (shouldCollectConsent) {
-		return ConsentState.REQUIRED
-	}
-	return consentStateFrom(consents)
-}
-
-private fun UsercentricsUpdatedConsentPayload?.toConsentState(): ConsentState {
-	if (this == null) {
-		return ConsentState.UNKNOWN
-	}
-	return consentStateFrom(consents)
-}
-
-private fun consentStateFrom(consents: Any?): ConsentState {
-	val serviceConsents = (consents as? List<*>)
-		.orEmpty()
-		.filterIsInstance<UsercentricsUsercentricsServiceConsent>()
-	val nonEssentialConsents = serviceConsents.filterNot { it.isEssential }
-	return when {
-		nonEssentialConsents.isEmpty() -> ConsentState.OBTAINED
-		nonEssentialConsents.any { it.status } -> ConsentState.OBTAINED
-		else -> ConsentState.DENIED
+private fun String.toConsentState(): ConsentState {
+	return when (runCatching { ConsentBridgeState.valueOf(this) }.getOrNull()) {
+		ConsentBridgeState.NOT_REQUIRED -> ConsentState.NOT_REQUIRED
+		ConsentBridgeState.REQUIRED -> ConsentState.REQUIRED
+		ConsentBridgeState.OBTAINED -> ConsentState.OBTAINED
+		ConsentBridgeState.DENIED -> ConsentState.DENIED
+		ConsentBridgeState.UNKNOWN, null -> ConsentState.UNKNOWN
 	}
 }

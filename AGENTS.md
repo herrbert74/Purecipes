@@ -48,13 +48,17 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
   * **shared/domain** - Contains domain classes shared between backend and apps.
 * **base** - Kotlin and Android base classes, reusable in any apps, but not extracted to separate library yet. 
 
-## iOS CocoaPods (Gradle)
+## iOS integration (Gradle + Xcode)
 
-Modules that use the Kotlin CocoaPods integration (`feature:analytics:data`) apply `gradle/purecipes-ios-cocoapods.gradle.kts`.
+`feature:analytics:data` imports **Firebase Analytics** via Kotlin **SwiftPM import** (`swiftPMDependencies {}` in its `build.gradle.kts`). **Usercentrics** is wired from Swift only (`IosAnalyticsNativeBridge` + CocoaPods in the iOS app); Kotlin no longer uses the CocoaPods Gradle plugin for analytics.
 
-* **Linux CI and Android-only Gradle runs** do not declare the `cocoapods { }` Kotlin block (macOS hosts only), so CocoaPods is never part of the configuration there.
-* **macOS** always declares that block so local iOS compilation and Xcode flows resolve `cocoapods.*` imports. Pod install, cinterop, and related tasks run when the requested Gradle tasks look like iOS, CocoaPods, Xcode integration, Kotlin IDE import (`prepareKotlinIdeaImport` / `podImport`), or a full tree build (for example task names containing `ios`, `pod`, `xcode`, or `embedAndSign`, or a top-level `build` / `:…:build`), or during Android Studio/IntelliJ **Gradle sync** (`idea.sync.active`) so the IDE can generate KMP cinterop metadata (for example `kotlinTransformedCInteropMetadataLibraries`). The iOS app Xcode project invokes `:umbrella:embedAndSignAppleFrameworkForXcode`, which matches that rule. Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.
-* **Opt out** if the pod toolchain breaks your machine: `-Ppurecipes.disableIosPods=true` or `-PenableIosPods=false` (legacy). That skips pod/cinterop execution even when iOS tasks are requested.
+The umbrella module uses **direct integration**: Xcode runs `:umbrella:embedAndSignAppleFrameworkForXcode` and links the generated local package `KotlinMultiplatformLinkedPackage` (from `integrateLinkagePackage`). Commit `.swiftpm-locks/` and `iosApp/PurecipesIOSApp/KotlinMultiplatformLinkedPackage/` when SwiftPM dependencies change.
+
+The iOS app still uses **CocoaPods** (`iosApp/PurecipesIOSApp/Podfile`) for Mixpanel, Usercentrics UI, Google Sign-In, Facebook, Firebase app SDKs, etc. Open **`PurecipesIOSApp.xcworkspace`** (not `.xcodeproj` alone). Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.
+
+* **Linux CI and Android-only Gradle runs** skip macOS-only iOS pod/cinterop work when no iOS/Xcode tasks are requested.
+* **macOS** runs SwiftPM fetch/linkage and `embedAndSign` when Gradle tasks look like iOS, Xcode, `embedAndSign`, or a full tree build, or during Android Studio/IntelliJ **Gradle sync** (`idea.sync.active`).
+* **Opt out** of legacy CocoaPods Gradle pod builds if the pod toolchain breaks your machine: `-Ppurecipes.disableIosPods=true` or `-PenableIosPods=false`.
 
 ## Rule: Naming
 
