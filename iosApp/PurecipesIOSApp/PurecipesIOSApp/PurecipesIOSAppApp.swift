@@ -12,10 +12,6 @@ import umbrella
 import FBSDKCoreKit
 #endif
 
-#if canImport(FirebaseCore)
-import FirebaseCore
-#endif
-
 #if canImport(GoogleSignIn)
 import GoogleSignIn
 #endif
@@ -35,11 +31,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        #if canImport(FirebaseCore)
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
-        }
-        #endif
+        IosFirebaseSetup.shared.configureIfNeeded()
 
         IosCrashlyticsSetup.shared.setup()
 

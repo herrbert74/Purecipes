@@ -14,6 +14,7 @@ let package = Package(
   ],
   dependencies: [
     .package(path: "subpackages/_feature_analytics_data"),
+    .package(path: "subpackages/_feature_auth_data"),
     .package(path: "subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_0")
   ],
   targets: [
@@ -21,6 +22,7 @@ let package = Package(
       name: "KotlinMultiplatformLinkedPackage",
       dependencies: [
         .product(name: "_feature_analytics_data", package: "_feature_analytics_data"),
+        .product(name: "_feature_auth_data", package: "_feature_auth_data"),
         .product(name: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_0", package: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_0")
       ]
     )

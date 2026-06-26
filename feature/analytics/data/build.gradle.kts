@@ -11,7 +11,10 @@ kotlin {
 		swiftPackage(
 			url = url("https://github.com/firebase/firebase-ios-sdk.git"),
 			version = exact("12.14.0"),
-			products = listOf(product("FirebaseAnalytics")),
+			products = listOf(
+				product("FirebaseAnalytics"),
+				product("FirebaseCrashlytics"),
+			),
 		)
 	}
 
