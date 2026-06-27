@@ -127,6 +127,10 @@ internal fun mainViewModelForDeviceTest(): MainViewModel = MainViewModel(
 	),
 	purecipesConfig = object : PurecipesConfig {
 		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
+
+		override fun versionName(): String = "0.0.0-test"
+
+		override fun versionCode(): Long = 0L
 	},
 	searchReadiness = SearchReadinessCoordinator(),
 	onDeliverPendingIncomingLink = {},

@@ -14,6 +14,10 @@ interface AndroidPurecipesConfigModule {
 		return object : PurecipesConfig {
 			override fun buildType() = purecipesBuildType(BuildConfig.BUILD_TYPE)
 
+			override fun versionName(): String = BuildConfig.VERSION_NAME
+
+			override fun versionCode(): Long = BuildConfig.VERSION_CODE.toLong()
+
 			override fun debugBackendHostOverride(): String? {
 				if (!BuildConfig.DEBUG) {
 					return null

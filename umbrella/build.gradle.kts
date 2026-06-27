@@ -86,6 +86,8 @@ buildkonfig {
 
 	defaultConfigs {
 		buildConfigField(STRING, "purecipesBuildType", currentPurecipesBuildType())
+		buildConfigField(STRING, "versionName", libs.versions.versionName.get())
+		buildConfigField(STRING, "versionCode", libs.versions.versionCode.get())
 		buildConfigField(STRING, "purecipesDebugBackendHost", purecipesDebugBackendHost())
 		buildConfigField(STRING, "purecipesGoogleWebClientId", googleWebClientId())
 		buildConfigField(STRING, "purecipesGaMeasurementId", gaMeasurementId())
