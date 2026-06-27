@@ -28,8 +28,10 @@ import io.kotest.matchers.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 
-private const val STEP_REORDER_DRAG_DISTANCE = -140f
 private const val STEP_REORDER_LONG_PRESS_MILLIS = 700L
+private const val STEP_REORDER_DRAG_STEPS = 12
+private const val STEP_REORDER_DRAG_STEP_DISTANCE = -50f
+private const val STEP_REORDER_DRAG_FRAME_DELAY_MILLIS = 16L
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
@@ -165,10 +167,15 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("First")
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Second")
+		waitForIdle()
+
 		onNodeWithTag("createRecipeReorderStepButton1").performScrollTo().performTouchInput {
 			down(center)
 			advanceEventTime(STEP_REORDER_LONG_PRESS_MILLIS)
-			moveBy(Offset(x = 0f, y = STEP_REORDER_DRAG_DISTANCE))
+			repeat(STEP_REORDER_DRAG_STEPS) {
+				moveBy(Offset(x = 0f, y = STEP_REORDER_DRAG_STEP_DISTANCE))
+				advanceEventTime(STEP_REORDER_DRAG_FRAME_DELAY_MILLIS)
+			}
 			up()
 		}
 		waitForIdle()
