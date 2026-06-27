@@ -3,6 +3,10 @@ package app.purecipes.shared.data.config
 interface PurecipesConfig {
 	fun buildType(): PurecipesBuildType
 
+	fun versionName(): String
+
+	fun versionCode(): Long
+
 	// Needed for Wi-Fi debugging on Android or any debugging on iOS/WASM
 	fun debugBackendHostOverride(): String? = null
 
