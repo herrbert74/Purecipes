@@ -25,6 +25,7 @@ ksp = "2.3.9"
 
 #other
 
+aboutLibraries = "15.0.2"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
 androidx-composeBom = "2026.06.00"
@@ -92,6 +93,9 @@ uri-kmp = "0.0.21"
 usercentrics = "2.27.1"
 
 [libraries]
+
+aboutLibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutLibraries-composeM3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 
 agp = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
 
@@ -383,6 +387,7 @@ usercentricsUi = { module = "com.usercentrics.sdk:usercentrics-ui", version.ref 
 
 [plugins]
 
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 androidApplication = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 appDistribution = { id = "com.google.firebase.appdistribution", version.ref = "appDistributionPlugin" }
 androidKotlinMultiPlatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
