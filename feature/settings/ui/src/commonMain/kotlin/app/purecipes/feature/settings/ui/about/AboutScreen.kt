@@ -43,6 +43,7 @@ internal const val ABOUT_OSS_ROW_TAG = "about_oss_row"
 @Composable
 fun AboutScreen(
 	onBack: () -> Unit,
+	onOpenLicenses: () -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: AboutViewModel = metroViewModel(),
 ) {
@@ -73,6 +74,7 @@ fun AboutScreen(
 					snackbarHostState.showSnackbar(COMING_SOON_MESSAGE)
 				}
 			},
+			onOpenLicenses = onOpenLicenses,
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(innerPadding)
@@ -85,6 +87,7 @@ fun AboutScreen(
 internal fun AboutScreenContent(
 	versionText: String,
 	onPlaceholderClick: () -> Unit,
+	onOpenLicenses: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Column(
@@ -131,7 +134,7 @@ internal fun AboutScreenContent(
 				AboutRow(
 					label = "Open Source Licenses",
 					showChevron = true,
-					onClick = onPlaceholderClick,
+					onClick = onOpenLicenses,
 					modifier = Modifier.testTag(ABOUT_OSS_ROW_TAG),
 				)
 			}
@@ -201,6 +204,7 @@ private fun AboutScreenLightPreview() {
 		AboutScreenContent(
 			versionText = "Version 0.4.0 (7)",
 			onPlaceholderClick = {},
+			onOpenLicenses = {},
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(PurecipesTheme.space.m),
@@ -220,6 +224,7 @@ private fun AboutScreenDarkPreview() {
 		AboutScreenContent(
 			versionText = "Version 0.4.0 (7)",
 			onPlaceholderClick = {},
+			onOpenLicenses = {},
 			modifier = Modifier
 				.fillMaxSize()
 				.padding(PurecipesTheme.space.m),

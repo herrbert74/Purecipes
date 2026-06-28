@@ -11,6 +11,7 @@ import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -24,6 +25,7 @@ class AboutScreenTest {
 			PurecipesTheme {
 				AboutScreen(
 					onBack = {},
+					onOpenLicenses = {},
 					viewModel = AboutViewModel(
 						purecipesConfig = fakePurecipesConfig(
 							versionName = "1.2.3",
@@ -44,6 +46,7 @@ class AboutScreenTest {
 			PurecipesTheme {
 				AboutScreen(
 					onBack = {},
+					onOpenLicenses = {},
 					viewModel = AboutViewModel(purecipesConfig = fakePurecipesConfig()),
 				)
 			}
@@ -53,6 +56,24 @@ class AboutScreenTest {
 		waitForIdle()
 
 		onNodeWithText("Coming soon").assertIsDisplayed()
+	}
+
+	@Test
+	fun openSourceLicensesRowInvokesOpenLicensesCallback() = runRecompositionTrackingUiTest {
+		var openedLicenses = false
+		setTrackedContent {
+			PurecipesTheme {
+				AboutScreenContent(
+					versionText = "Version 1.2.3 (42)",
+					onPlaceholderClick = {},
+					onOpenLicenses = { openedLicenses = true },
+				)
+			}
+		}
+
+		onNodeWithTag(ABOUT_OSS_ROW_TAG).performClick()
+
+		assertTrue(openedLicenses)
 	}
 
 	private fun fakePurecipesConfig(

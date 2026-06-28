@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.settings.ui.SettingsScreen
 import app.purecipes.feature.settings.ui.about.AboutScreen
+import app.purecipes.feature.settings.ui.about.LicensesScreen
 import app.purecipes.shared.ui.navigation.Navigator
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -24,6 +25,13 @@ fun EntryProviderScope<NavKey>.installSettingsFlow(
 	entry<AboutDestination> {
 		AboutScreen(
 			onBack = { navigator.back() },
+			onOpenLicenses = { navigator.push(LicensesDestination) },
+			modifier = Modifier.fillMaxSize(),
+		)
+	}
+	entry<LicensesDestination> {
+		LicensesScreen(
+			onBack = { navigator.back() },
 			modifier = Modifier.fillMaxSize(),
 		)
 	}
@@ -33,5 +41,6 @@ fun settingsNavigationSerializersModule(): SerializersModule = SerializersModule
 	polymorphic(baseClass = NavKey::class) {
 		subclass(AccountSettingsDestination.serializer())
 		subclass(AboutDestination.serializer())
+		subclass(LicensesDestination.serializer())
 	}
 }
