@@ -25,7 +25,7 @@ ksp = "2.3.9"
 
 #other
 
-aboutLibraries = "15.0.2"
+aboutLibraries = "15.0.3"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
 androidx-composeBom = "2026.06.00"
@@ -43,7 +43,7 @@ androidx-testEspresso = "3.7.0"
 #androidx-work = "2.10.2"
 #autoBind = "2.0.0"
 babestudios-base = "3.2.1"
-buildKonfig = "0.21.2"
+buildKonfig = "0.22.0"
 #compose-screenshotTesting = "0.0.1-alpha09"
 #chucker = "4.2.0"
 coil = "3.5.0"
@@ -67,30 +67,30 @@ jetBrains-compose = "1.11.1"
 jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
-jUnit5 = "6.1.0"
+jUnit5 = "6.1.1"
 kmpauth = "2.5.0-alpha01"
 kmpnotifier = "2.0.0"
 kotest = "6.2.1"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
-ktor = "3.5.0"
+ktor = "3.5.1"
 ktorfit = "2.7.5"
 metro = "1.2.1"
 mixpanelAndroid = "8.8.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
-mokkery = "3.4.1"
+mokkery = "3.4.2"
 multiplatform-settings = "1.3.0"
 okhttp = "5.4.0"
 #parcelize-darwin = "0.2.4"
 postgresql = "42.7.11"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
-shadow = "9.4.2"
+shadow = "9.4.3"
 #skie = "0.10.4"
 testcontainers = "2.0.5"
 tensorflow-java = "1.1.0"
 uri-kmp = "0.0.21"
-usercentrics = "2.27.1"
+usercentrics = "2.27.3"
 
 [libraries]
 
@@ -270,7 +270,7 @@ jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
 jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
 #jUnit5-jupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit5" }
-jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.0" }
+jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.1" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
 kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
