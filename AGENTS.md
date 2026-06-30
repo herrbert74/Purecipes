@@ -54,7 +54,7 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
 
 The umbrella module uses **direct integration**: Xcode runs `:umbrella:embedAndSignAppleFrameworkForXcode` and links the generated local package `KotlinMultiplatformLinkedPackage` (from `integrateLinkagePackage`). Commit `.swiftpm-locks/` and `iosApp/PurecipesIOSApp/KotlinMultiplatformLinkedPackage/` when SwiftPM dependencies change.
 
-The iOS app still uses **CocoaPods** (`iosApp/PurecipesIOSApp/Podfile`) for Mixpanel, Usercentrics UI, Google Sign-In, Facebook, Firebase app SDKs, etc. Open **`PurecipesIOSApp.xcworkspace`** (not `.xcodeproj` alone). Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.
+The iOS app still uses **CocoaPods** (`iosApp/PurecipesIOSApp/Podfile`) for Mixpanel, Usercentrics UI, Google Sign-In, etc. **Facebook** uses the **facebook-ios-sdk** Swift Package on the Xcode target (products `FacebookCore`, `FacebookLogin`). Open **`PurecipesIOSApp.xcworkspace`** (not `.xcodeproj` alone). Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.
 
 * **Linux CI and Android-only Gradle runs** skip macOS-only iOS pod/cinterop work when no iOS/Xcode tasks are requested.
 * **macOS** runs SwiftPM fetch/linkage and `embedAndSign` when Gradle tasks look like iOS, Xcode, `embedAndSign`, or a full tree build, or during Android Studio/IntelliJ **Gradle sync** (`idea.sync.active`).
