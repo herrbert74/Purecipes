@@ -14,6 +14,10 @@ interface IosPurecipesConfigModule {
 		return object : PurecipesConfig {
 			override fun buildType() = purecipesBuildType(BuildKonfig.purecipesBuildType)
 
+			override fun versionName(): String = BuildKonfig.versionName
+
+			override fun versionCode(): Long = BuildKonfig.versionCode.toLong()
+
 			override fun debugBackendHostOverride(): String? {
 				return BuildKonfig.purecipesDebugBackendHost.takeIf { it.isNotBlank() }
 			}

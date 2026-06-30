@@ -25,6 +25,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 @Composable
 fun SettingsScreen(
 	onBack: () -> Unit,
+	onOpenAbout: () -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: SettingsViewModel = metroViewModel(),
 ) {
@@ -69,6 +70,7 @@ fun SettingsScreen(
 				onPreferencesChange = viewModel::onNotificationPreferencesChange,
 				onSendTestNotification = viewModel::onSendTestNotification,
 			)
+			AboutSettingsPanel(onOpenAbout = onOpenAbout)
 		}
 	}
 }

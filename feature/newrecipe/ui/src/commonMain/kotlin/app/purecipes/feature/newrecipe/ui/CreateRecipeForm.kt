@@ -377,7 +377,7 @@ private fun StepInputSection(
 
 						if (currentIndex >= 0) {
 							dragOffsetY += dragAmountY
-							val currentRowHeight = rowHeights[currentIndex]
+							val currentRowHeight = rowHeights[currentIndex] ?: rowHeights.values.maxOrNull()
 
 							if (currentRowHeight != null) {
 								val moveDownThreshold = currentRowHeight / 2f

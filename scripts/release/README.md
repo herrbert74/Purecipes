@@ -11,7 +11,7 @@ Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.
 | Script | Role |
 |--------|------|
 | [`bump_android_version.main.kts`](bump_android_version.main.kts) | Set `versionName` / increment `versionCode` in `gradle/libs.versions.toml` |
-| [`open_android_release_pr.main.kts`](open_android_release_pr.main.kts) | Validate changelog, bump versions, commit, and push branch `release/v<version>-changelog` (open PR via GitHub MCP) |
+| [`open_android_release_pr.main.kts`](open_android_release_pr.main.kts) | Validate changelog, bump versions, regenerate open source license definitions, commit, and push branch `release/v<version>-changelog` (open PR via GitHub MCP) |
 | [`extract_release_notes.main.kts`](extract_release_notes.main.kts) | Extract a version section from `CHANGELOG.md` → `build/release-notes.txt` (CI on tag) |
 
 ## Prepare a release (local, no CI)
@@ -29,6 +29,8 @@ Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.
    ```bash
    kotlin scripts/release/open_android_release_pr.main.kts 0.2.0 0.1.0 true
    ```
+
+   This step also runs `:app:exportLibraryDefinitions` and `:feature:settings:ui:exportLibraryDefinitions`, so the open source license definitions shipped in the About screen are refreshed and committed with the version bump. No `aboutlibraries` Android-specific Gradle plugin is required.
 
    Then use GitHub MCP `create_pull_request` (see suggested body in `build/release-pr-body.md`).
 

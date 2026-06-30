@@ -34,14 +34,24 @@ kotlin scripts/release/bump_android_version.main.kts 0.2.0 true
 
 Pass `false` as the second argument to set `versionName` without bumping `versionCode`.
 
+## Regenerate open source license definitions
+
+The About screen ships committed `aboutlibraries.json` files instead of using the `com.mikepenz.aboutlibraries.plugin.android` plugin. Refresh them as part of release prep so new or updated dependencies show up:
+
+```bash
+./gradlew :app:exportLibraryDefinitions :feature:settings:ui:exportLibraryDefinitions
+```
+
+This updates `app/src/main/res/raw/aboutlibraries.json` (Android) and `feature/settings/ui/src/commonMain/composeResources/files/aboutlibraries.json` (iOS / WASM / JVM). [`open_android_release_pr.main.kts`](../../scripts/release/open_android_release_pr.main.kts) runs this automatically.
+
 ## Open the release PR with GitHub MCP
 
-Never commit release prep directly to `main`. The release PR must include **`CHANGELOG.md`** (new `## [version]` section) and **`gradle/libs.versions.toml`** (updated `versionName` / `versionCode`).
+Never commit release prep directly to `main`. The release PR must include **`CHANGELOG.md`** (new `## [version]` section), **`gradle/libs.versions.toml`** (updated `versionName` / `versionCode`), and the regenerated **`aboutlibraries.json`** license files.
 
 1. Sync with `main` (stash or commit unrelated work first).
 2. Bump versions (see above) if not already done.
 3. Create branch `release/v<version>-changelog` from `main` (GitHub MCP `create_branch`, or local `git checkout -b`).
-4. Push `CHANGELOG.md` and `gradle/libs.versions.toml` on that branch (GitHub MCP `push_files`, or local `git commit` + `git push`).
+4. Push `CHANGELOG.md`, `gradle/libs.versions.toml`, and the regenerated `aboutlibraries.json` files on that branch (GitHub MCP `push_files`, or local `git commit` + `git push`).
 5. Open a PR to `main` with GitHub MCP `create_pull_request`:
    - **Title:** `Release <version> changelog`
    - **Body:** version, previous tag, and review checklist (changelog wording, `versionCode` / `versionName`, merge before tagging).

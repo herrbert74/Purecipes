@@ -33,19 +33,11 @@ Optional: GitHub Environment **android-release** with required reviewers on the 
 
 Never tag before the changelog PR is merged.
 
-1. Ensure `main` CI is green.
-2. **Locally (AI assistant + GitHub MCP):** list merged PRs since the previous tag; draft and review `## [version]` in [CHANGELOG.md](../../CHANGELOG.md) (see [skill](../../.agents/skills/android-release-changelog/SKILL.md)).
-3. **Locally:** bump `versionName` and increment `versionCode` in [gradle/libs.versions.toml](../../gradle/libs.versions.toml) (release APKs use these values):
-
-   ```bash
-   kotlin scripts/release/bump_android_version.main.kts 0.2.0 true
-   ```
-
-4. **GitHub MCP:** push `CHANGELOG.md` and `gradle/libs.versions.toml` on branch `release/v<version>-changelog` and open a PR to `main` (`create_branch`, `push_files`, `create_pull_request`). Optional: [`open_android_release_pr.main.kts`](../../scripts/release/open_android_release_pr.main.kts) for local `git` push, then `create_pull_request`.
-5. Review and merge the PR.
-6. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` then `git push origin v0.2.0` (optional suffix, e.g. `v0.2.0-rc.1`).
-7. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds, uploads to Firebase.
-8. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing).
+1. **Prepare the release PR locally.** Follow [`scripts/release/README.md`](../../scripts/release/README.md) and [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md): draft the `## [version]` section in [CHANGELOG.md](../../CHANGELOG.md), bump `versionName` / `versionCode`, and regenerate the open source license definitions. The PR on branch `release/v<version>-changelog` includes `CHANGELOG.md`, `gradle/libs.versions.toml`, and the regenerated `aboutlibraries.json` files (`app/src/main/res/raw/` and `feature/settings/ui/src/commonMain/composeResources/files/`).
+2. Review and merge the PR.
+3. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` then `git push origin v0.2.0` (optional suffix, e.g. `v0.2.0-rc.1`).
+4. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds, uploads to Firebase.
+5. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing).
 
 ## Tag naming
 
@@ -54,11 +46,7 @@ Never tag before the changelog PR is merged.
 
 ## Local commands
 
-```bash
-kotlin scripts/release/bump_android_version.main.kts 0.2.0 true
-kotlin scripts/release/open_android_release_pr.main.kts 0.2.0 0.1.0 true
-kotlin scripts/release/extract_release_notes.main.kts 0.2.0
-```
+Release-prep commands (changelog, version bump, license export, release PR) live in [`scripts/release/README.md`](../../scripts/release/README.md). To build and upload a release APK manually:
 
 ```bash
 ./gradlew :app:assembleRelease :app:appDistributionUploadRelease \

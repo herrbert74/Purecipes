@@ -63,6 +63,21 @@ fun changelogSectionHasContent(notes: List<String>): Boolean {
 	}
 }
 
+val licenseDefinitionFiles = listOf(
+	"app/src/main/res/raw/aboutlibraries.json",
+	"feature/settings/ui/src/commonMain/composeResources/files/aboutlibraries.json",
+)
+
+fun exportLicenseDefinitions(repoRoot: File) {
+	println("Exporting open source license definitions")
+	runCommand(
+		repoRoot,
+		"./gradlew",
+		":app:exportLibraryDefinitions",
+		":feature:settings:ui:exportLibraryDefinitions",
+	)
+}
+
 fun bumpVersion(versionsFile: File, version: String, bumpCode: Boolean) {
 	val lines = versionsFile.readLines().toMutableList()
 	val versionCodePattern = Regex("""^versionCode = "(\d+)"""")
@@ -112,8 +127,16 @@ fun main(args: Array<String>) {
 
 	val branch = "release/v$version-changelog"
 	bumpVersion(versionsFile, version, bumpCode)
+	exportLicenseDefinitions(root)
 	runCommand(root, "git", "checkout", "-b", branch)
-	runCommand(root, "git", "add", "CHANGELOG.md", "gradle/libs.versions.toml")
+	runCommand(
+		root,
+		"git",
+		"add",
+		"CHANGELOG.md",
+		"gradle/libs.versions.toml",
+		*licenseDefinitionFiles.toTypedArray(),
+	)
 	if (runCommandCapture(root, "git", "diff", "--cached", "--name-only").isBlank()) {
 		error("Nothing to commit; CHANGELOG.md and gradle/libs.versions.toml are unchanged")
 	}

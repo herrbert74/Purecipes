@@ -6,9 +6,17 @@ plugins {
 	alias(libs.plugins.appDistribution)
 	alias(libs.plugins.googleServices)
 	alias(libs.plugins.crashlytics)
+	alias(libs.plugins.aboutLibraries)
 	alias(libs.plugins.ksp)
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("dev.zacsweers.metro")
+}
+
+aboutLibraries {
+	export {
+		outputFile = file("src/main/res/raw/aboutlibraries.json")
+		prettyPrint = true
+	}
 }
 
 android {
