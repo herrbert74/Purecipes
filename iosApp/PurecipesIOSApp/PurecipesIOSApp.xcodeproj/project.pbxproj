@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		11CD3C95D2152A605667BF7B /* Pods_PurecipesIOSApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */; };
 		BCCCFCB761629324C9932B83 /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */; };
+		C1D2E3F4A5B6789012345A04 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6789012345A02 /* FacebookCore */; };
+		D1E2F3A4B5C6789012345A05 /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = B1C2C3D4E5F6789012345A03 /* FacebookLogin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +37,8 @@
 			files = (
 				11CD3C95D2152A605667BF7B /* Pods_PurecipesIOSApp.framework in Frameworks */,
 				BCCCFCB761629324C9932B83 /* KotlinMultiplatformLinkedPackage in Frameworks */,
+				C1D2E3F4A5B6789012345A04 /* FacebookCore in Frameworks */,
+				D1E2F3A4B5C6789012345A05 /* FacebookLogin in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +106,8 @@
 			name = PurecipesIOSApp;
 			packageProductDependencies = (
 				51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */,
+				A1B2C3D4E5F6789012345A02 /* FacebookCore */,
+				B1C2C3D4E5F6789012345A03 /* FacebookLogin */,
 			);
 			productName = PurecipesIOSApp;
 			productReference = B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */;
@@ -141,6 +147,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */,
+				F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B3BF5EBB2F4E482900ADA5FD /* Products */;
@@ -389,8 +396,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.purecipes.PurecipesIOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PURECIPES_FACEBOOK_APP_ID = 1629558041650401;
-				PURECIPES_FACEBOOK_CLIENT_TOKEN = 9133a74d0556085945a4695c91c7d62a;
+				PURECIPES_FACEBOOK_APP_ID = 1740550936936015;
+				PURECIPES_FACEBOOK_CLIENT_TOKEN = 63dcd5737777e08bfe1bf256342b6a9f;
 				PURECIPES_FACEBOOK_DISPLAY_NAME = Purecipes;
 				PURECIPES_GOOGLE_IOS_CLIENT_ID = "922845075790-c274na6hroesrddmf7p3nusihvblg55f.apps.googleusercontent.com";
 				PURECIPES_GOOGLE_IOS_REVERSED_CLIENT_ID = "com.googleusercontent.apps.922845075790-c274na6hroesrddmf7p3nusihvblg55f";
@@ -425,8 +432,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.purecipes.PurecipesIOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PURECIPES_FACEBOOK_APP_ID = 1629558041650401;
-				PURECIPES_FACEBOOK_CLIENT_TOKEN = 9133a74d0556085945a4695c91c7d62a;
+				PURECIPES_FACEBOOK_APP_ID = 1740550936936015;
+				PURECIPES_FACEBOOK_CLIENT_TOKEN = 63dcd5737777e08bfe1bf256342b6a9f;
 				PURECIPES_FACEBOOK_DISPLAY_NAME = Purecipes;
 				PURECIPES_GOOGLE_IOS_CLIENT_ID = "922845075790-c274na6hroesrddmf7p3nusihvblg55f.apps.googleusercontent.com";
 				PURECIPES_GOOGLE_IOS_REVERSED_CLIENT_ID = "com.googleusercontent.apps.922845075790-c274na6hroesrddmf7p3nusihvblg55f";
@@ -464,6 +471,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 18.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCLocalSwiftPackageReference section */
 		A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -475,6 +493,16 @@
 		51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KotlinMultiplatformLinkedPackage;
+		};
+		A1B2C3D4E5F6789012345A02 /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+		B1C2C3D4E5F6789012345A03 /* FacebookLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookLogin;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

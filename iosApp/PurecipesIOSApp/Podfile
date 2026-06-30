@@ -4,8 +4,6 @@ use_frameworks!
 
 target 'PurecipesIOSApp' do
 	pod 'AppAuth'
-	pod 'FBSDKCoreKit', '18.0.3'
-	pod 'FBSDKLoginKit', '18.0.3'
 	pod 'GTMAppAuth'
 	pod 'GoogleSignIn'
 	pod 'Mixpanel-swift'

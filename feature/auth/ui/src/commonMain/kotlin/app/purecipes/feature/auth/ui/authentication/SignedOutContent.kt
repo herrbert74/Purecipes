@@ -26,6 +26,7 @@ internal fun SignedOutContent(
 	onEmailRegistrationClick: () -> Unit,
 	onSignInClick: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+	onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onManagePrivacySettings: () -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
@@ -33,6 +34,7 @@ internal fun SignedOutContent(
 		isGoogleConfigured: Boolean,
 		onEmailProviderClick: () -> Unit,
 		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit,
@@ -47,6 +49,7 @@ internal fun SignedOutContent(
 			isGoogleConfigured,
 			onEmailRegistrationClick,
 			onExternalProviderSignInResult,
+			onFacebookSignInResult,
 			onGoogleSignInResult,
 			onGoogleUnavailableClick,
 		)
@@ -87,14 +90,23 @@ private fun SignedOutContentLightPreview() {
 					onEmailRegistrationClick = {},
 					onSignInClick = {},
 					onExternalProviderSignInResult = { _, _ -> },
+					onFacebookSignInResult = { _, _, _, _ -> },
 					onGoogleSignInResult = { _, _, _, _ -> },
 					onManagePrivacySettings = {},
 					onGoogleUnavailableClick = {},
-					authenticationProviderButtons = { configured, onEmail, onExternal, onGoogle, onUnavailable ->
+					authenticationProviderButtons = {
+							configured,
+							onEmail,
+							onExternal,
+							onFacebook,
+							onGoogle,
+							onUnavailable,
+						->
 						AuthenticationProviderButtons(
 							isGoogleConfigured = configured,
 							onEmailProviderClick = onEmail,
 							onExternalProviderSignInResult = onExternal,
+							onFacebookSignInResult = onFacebook,
 							onGoogleSignInResult = onGoogle,
 							onGoogleUnavailableClick = onUnavailable,
 						)

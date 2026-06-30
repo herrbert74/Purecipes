@@ -4,6 +4,7 @@ import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import kotlinx.coroutines.flow.StateFlow
 
@@ -24,6 +25,8 @@ interface AuthenticationRepository {
 	suspend fun sendPasswordResetEmail(email: String): Outcome<Unit>
 
 	suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser>
+
+	suspend fun signInWithFacebook(profile: FacebookAuthenticationProfile): Outcome<AuthUser>
 
 	suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser>
 

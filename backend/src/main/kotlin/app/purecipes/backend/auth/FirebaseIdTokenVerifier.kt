@@ -207,7 +207,7 @@ private fun FirebaseTokenInfoResponse.toVerificationResult(
 			audiences = resolvedAudiences,
 			issuer = resolvedIssuer,
 		)
-		!isEmailVerified(jwtClaims) -> EMAIL_NOT_VERIFIED_MESSAGE
+		requiresVerifiedEmail(jwtClaims) && !isEmailVerified(jwtClaims) -> EMAIL_NOT_VERIFIED_MESSAGE
 		resolvedSubject == null -> "Sign-in could not be completed. Please try again."
 		resolvedEmail == null -> "Sign-in did not include an email address."
 		else -> null
@@ -256,6 +256,10 @@ private fun FirebaseTokenInfoResponse.isEmailVerified(jwtClaims: FirebaseJwtClai
 		return true
 	}
 	return emailVerified.equals("true", ignoreCase = true)
+}
+
+internal fun requiresVerifiedEmail(jwtClaims: FirebaseJwtClaims?): Boolean {
+	return jwtClaims?.signInProvider == "password"
 }
 
 private fun String.fallbackDisplayName(): String {

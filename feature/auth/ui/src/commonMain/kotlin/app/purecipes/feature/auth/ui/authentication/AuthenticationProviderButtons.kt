@@ -22,6 +22,7 @@ internal fun AuthenticationProviderButtons(
 	isGoogleConfigured: Boolean,
 	onEmailProviderClick: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+	onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 ) {
@@ -47,7 +48,7 @@ internal fun AuthenticationProviderButtons(
 			onResult = { result -> onExternalProviderSignInResult(AuthProvider.APPLE, result) },
 		)
 		FacebookAuthenticationButton(
-			onResult = { result -> onExternalProviderSignInResult(AuthProvider.FACEBOOK, result) },
+			onFacebookSignInResult = onFacebookSignInResult,
 		)
 	}
 }

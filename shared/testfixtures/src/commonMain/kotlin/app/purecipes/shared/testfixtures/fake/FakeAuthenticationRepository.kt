@@ -6,6 +6,7 @@ import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import com.github.michaelbull.result.Err
@@ -34,6 +35,17 @@ class FakeAuthenticationRepository(
 				displayName = profile.displayName,
 				profileImageUrl = profile.profileImageUrl,
 				provider = AuthProvider.GOOGLE,
+			),
+		)
+	},
+	private val signInWithFacebookHandler: suspend (FacebookAuthenticationProfile) -> Outcome<AuthUser> = { profile ->
+		Ok(
+			fakeAuthUser(
+				id = profile.idToken,
+				email = profile.email.orEmpty(),
+				displayName = profile.displayName,
+				profileImageUrl = profile.profileImageUrl,
+				provider = AuthProvider.FACEBOOK,
 			),
 		)
 	},
@@ -81,6 +93,10 @@ class FakeAuthenticationRepository(
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {
 		return signInWithGoogleHandler(profile).also(::updateAuthenticationState)
+	}
+
+	override suspend fun signInWithFacebook(profile: FacebookAuthenticationProfile): Outcome<AuthUser> {
+		return signInWithFacebookHandler(profile).also(::updateAuthenticationState)
 	}
 
 	override suspend fun signInWithExternalProvider(profile: ExternalAuthenticationProfile): Outcome<AuthUser> {

@@ -12,6 +12,7 @@ import app.purecipes.shared.data.util.runCatchingApi
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EmailSignInRequest
+import app.purecipes.shared.domain.model.FacebookSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import com.github.michaelbull.result.Err
@@ -53,6 +54,8 @@ interface AuthenticationDataSource {
 
 		suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession>
 
+		suspend fun signInWithFacebook(idToken: String): Outcome<AuthenticatedSession>
+
 		suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession>
 
 		suspend fun getCurrentSession(): Outcome<AuthenticatedSession>
@@ -69,6 +72,10 @@ class AuthenticationRemoteDataSource(
 
 	override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {
 		api.signInWithGoogle(GoogleSignInRequest(idToken = idToken.trim()))
+	}
+
+	override suspend fun signInWithFacebook(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {
+		api.signInWithFacebook(FacebookSignInRequest(idToken = idToken.trim()))
 	}
 
 	override suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {

@@ -9,6 +9,7 @@ import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
+import app.purecipes.shared.domain.model.FacebookSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -53,6 +54,10 @@ interface PurecipesApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@PUT("recipes/{id}")
 	suspend fun updateRecipe(@Path("id") recipeId: Int, @Body request: RecipeWriteRequest): RecipeDetails
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("auth/facebook")
+	suspend fun signInWithFacebook(@Body request: FacebookSignInRequest): AuthenticatedSession
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("auth/google")

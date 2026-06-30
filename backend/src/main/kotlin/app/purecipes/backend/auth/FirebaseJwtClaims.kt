@@ -15,6 +15,7 @@ internal data class FirebaseJwtClaims(
 	val issuer: String?,
 	val audiences: List<String>,
 	val emailVerified: Boolean?,
+	val signInProvider: String?,
 	val subject: String?,
 	val email: String?,
 	val name: String?,
@@ -36,6 +37,7 @@ internal fun decodeFirebaseJwtClaims(idToken: String): FirebaseJwtClaims? {
 			issuer = payloadObject.readStringField("iss"),
 			audiences = payloadObject.readAudienceValues(),
 			emailVerified = payloadObject.readBooleanField("email_verified"),
+			signInProvider = payloadObject.readFirebaseSignInProvider(),
 			subject = payloadObject.readStringField("sub"),
 			email = payloadObject.readStringField("email"),
 			name = payloadObject.readStringField("name"),
@@ -56,6 +58,12 @@ internal fun padBase64Url(value: String): String {
 		return value
 	}
 	return value + "=".repeat(BASE64_BLOCK_SIZE - remainder)
+}
+
+private fun JsonObject.readFirebaseSignInProvider(): String? {
+	return this["firebase"]
+		?.jsonObject
+		?.readStringField("sign_in_provider")
 }
 
 private fun JsonObject.readStringField(name: String): String? {

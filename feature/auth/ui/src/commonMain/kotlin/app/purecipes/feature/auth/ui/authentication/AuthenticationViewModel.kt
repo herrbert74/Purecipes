@@ -11,10 +11,12 @@ import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
+import app.purecipes.feature.auth.domain.usecase.SignInWithFacebookUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import com.github.michaelbull.result.getError
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
 class AuthenticationViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val signInWithExternalProvider: SignInWithExternalProviderUseCase,
+	private val signInWithFacebook: SignInWithFacebookUseCase,
 	private val signInWithGoogle: SignInWithGoogleUseCase,
 	private val deleteAccount: DeleteAccountUseCase,
 	private val signOut: SignOutUseCase,
@@ -82,6 +85,31 @@ class AuthenticationViewModel(
 			isBusy = true
 			val result = signInWithGoogle(
 				GoogleAuthenticationProfile(
+					idToken = idToken,
+					email = email,
+					displayName = displayName,
+					profileImageUrl = profileImageUrl,
+				),
+			)
+			message = result.getError()?.message
+			isBusy = false
+		}
+	}
+
+	fun onFacebookSignInResult(
+		idToken: String?,
+		email: String?,
+		displayName: String,
+		profileImageUrl: String?,
+	) {
+		if (idToken.isNullOrBlank()) {
+			message = "Facebook sign-in was cancelled."
+			return
+		}
+		viewModelScope.launch {
+			isBusy = true
+			val result = signInWithFacebook(
+				FacebookAuthenticationProfile(
 					idToken = idToken,
 					email = email,
 					displayName = displayName,
