@@ -1,19 +1,17 @@
 package app.purecipes.rules
 
-import io.gitlab.arturbosch.detekt.api.Config
-import io.gitlab.arturbosch.detekt.api.RuleSet
-import io.gitlab.arturbosch.detekt.api.RuleSetProvider
+import dev.detekt.api.RuleSet
+import dev.detekt.api.RuleSetId
+import dev.detekt.api.RuleSetProvider
 
 class PurecipesRuleSetProvider : RuleSetProvider {
-	override val ruleSetId: String = "purecipes"
+	override val ruleSetId: RuleSetId = RuleSetId("purecipes")
 
-	override fun instance(config: Config): RuleSet {
-		return RuleSet(
-			ruleSetId,
-			listOf(
-				NoSpaceIndentationRule(config),
-				MaxLineLengthTabs(config),
-			)
-		)
-	}
+	override fun instance(): RuleSet = RuleSet(
+		ruleSetId,
+		listOf(
+			{ config -> NoSpaceIndentationRule(config) },
+			{ config -> MaxLineLengthTabs(config) },
+		),
+	)
 }

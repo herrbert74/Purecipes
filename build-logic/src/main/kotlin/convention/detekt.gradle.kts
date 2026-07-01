@@ -1,9 +1,9 @@
 package convention
 
-import io.gitlab.arturbosch.detekt.Detekt
+import dev.detekt.gradle.Detekt
 
 plugins {
-	id("io.gitlab.arturbosch.detekt")
+	alias(libs.plugins.detekt)
 }
 
 /**
@@ -11,14 +11,15 @@ plugins {
  * It's enough to apply this script in the root project
  **/
 tasks.register<Detekt>("detektAll") {
+	description = ""
 	parallel = true
 	setSource(files(rootDir))
 	pluginClasspath.from(configurations.detektPlugins)
+	val rulesProject = rootProject.project(":rules")
+	pluginClasspath.from(rulesProject.tasks.named("jar").map { it.outputs.files })
+	dependsOn(rulesProject.tasks.named("jar"))
 	reports {
-		xml {
-			required = false
-		}
-		txt {
+		checkstyle {
 			required = false
 		}
 		sarif {
@@ -35,10 +36,10 @@ tasks.register<Detekt>("detektAll") {
 	exclude("**/resources/**")
 	exclude("**/build/**")
 	exclude("**/bin/**")
+	exclude("**/rules/**")
 }
 
 dependencies {
 	detektPlugins(libs.detekt.compose)
 	detektPlugins(libs.detekt.formatting)
-	detektPlugins(project(":rules"))
 }
