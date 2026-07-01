@@ -19,6 +19,12 @@
       "allowedVersions": "!/-[0-9]+\\.x-compat$/"
     },
     {
+      "description": "iOS Firebase SwiftPM version follows kmpnotifier-push-firebase; bump via firebaseIosSdk in libs.versions.toml when kmpnotifier updates",
+      "matchManagers": ["swift"],
+      "matchPackageNames": ["firebase-ios-sdk"],
+      "enabled": false
+    },
+    {
       "groupName": "All Minor & Patch Updates",
       "groupSlug": "all-minor-patch",
       "matchUpdateTypes": ["minor", "patch"],

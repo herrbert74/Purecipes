@@ -79,6 +79,7 @@ class AuthScreenTest {
 							_,
 							_,
 							_,
+							_,
 						->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = onEmailProviderClick)
 					},
@@ -155,7 +156,7 @@ class AuthScreenTest {
 						showConsentForm = ShowConsentFormUseCase(consentRepo),
 					),
 					initializeGoogleAuthenticationProvider = {},
-					authenticationProviderButtons = { _, _, _, _, _ ->
+					authenticationProviderButtons = { _, _, _, _, _, _ ->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = {})
 					},
 				)
