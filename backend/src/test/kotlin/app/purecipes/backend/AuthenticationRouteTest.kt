@@ -20,6 +20,63 @@ import kotlin.test.Test
 class AuthenticationRouteTest {
 
 	@Test
+	fun `blank facebook token yields 400`() = testApplication {
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Invalid("Should not be called"),
+				),
+			)
+		}
+
+		val response = client.post("/auth/facebook") {
+			contentType(ContentType.Application.Json)
+			setBody("""{"idToken":"   "}""")
+		}
+
+		response.status shouldBe HttpStatusCode.BadRequest
+		response.bodyAsText() shouldBe """{"message":"Invalid request","detail":"Facebook id token is required"}"""
+	}
+
+	@Test
+	fun `verified facebook token returns user`() = testApplication {
+		val sessionService = FakeSessionService()
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Success(
+						VerifiedGoogleUser(
+							id = "facebook-subject",
+							email = "taylor@example.com",
+							displayName = "Taylor Baker",
+							firstName = "Taylor",
+							familyName = "Baker",
+							profileImageUrl = "https://example.com/avatar.png",
+						),
+					),
+				),
+				sessionService = sessionService,
+			)
+		}
+
+		val response = client.post("/auth/facebook") {
+			contentType(ContentType.Application.Json)
+			setBody("""{"idToken":"verified-id-token"}""")
+		}
+
+		response.status shouldBe HttpStatusCode.OK
+		val expectedFacebookAuthResponse = listOf(
+			"""{"accessToken":"session-token-1","expiresAtEpochSeconds":4102444800,"user":{""",
+			""""id":"1","email":"taylor@example.com","displayName":"Taylor Baker",""",
+			""""firstName":"Taylor","familyName":"Baker",""",
+			""""profileImageUrl":"https://example.com/avatar.png","provider":"FACEBOOK"}}""",
+		).joinToString(separator = "")
+		response.bodyAsText() shouldBe expectedFacebookAuthResponse
+	}
+
+	@Test
 	fun `blank google token yields 400`() = testApplication {
 		application {
 			module(

@@ -8,6 +8,7 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
+import app.purecipes.feature.auth.domain.usecase.SignInWithFacebookUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
@@ -27,6 +28,7 @@ class AuthenticationViewModelTest {
 		val viewModel = AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithFacebook = SignInWithFacebookUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			deleteAccount = DeleteAccountUseCase(repository),
 			signOut = SignOutUseCase(repository),
@@ -46,6 +48,7 @@ class AuthenticationViewModelTest {
 		val viewModel = AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
 			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithFacebook = SignInWithFacebookUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			deleteAccount = DeleteAccountUseCase(repository),
 			signOut = SignOutUseCase(repository),
@@ -55,6 +58,26 @@ class AuthenticationViewModelTest {
 
 		viewModel.onGoogleSignInResult(idToken = null, email = null, displayName = "", profileImageUrl = null)
 		viewModel.message shouldBe "Google sign-in was cancelled."
+		(viewModel.authenticationState is AuthenticationState.SignedOut) shouldBe true
+	}
+
+	@Test
+	fun `blank facebook result shows cancellation message`() = runViewModelTest {
+		val repository = FakeAuthenticationRepository()
+		val consentRepository = FakeConsentRepository(ConsentState.OBTAINED)
+		val viewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
+			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithFacebook = SignInWithFacebookUseCase(repository),
+			signInWithGoogle = SignInWithGoogleUseCase(repository),
+			deleteAccount = DeleteAccountUseCase(repository),
+			signOut = SignOutUseCase(repository),
+			observeConsentState = ObserveConsentStateUseCase(consentRepository),
+			showConsentForm = ShowConsentFormUseCase(consentRepository),
+		)
+
+		viewModel.onFacebookSignInResult(idToken = null, email = null, displayName = "", profileImageUrl = null)
+		viewModel.message shouldBe "Facebook sign-in was cancelled."
 		(viewModel.authenticationState is AuthenticationState.SignedOut) shouldBe true
 	}
 }

@@ -3,6 +3,7 @@ package app.purecipes.backend.auth
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -39,11 +40,62 @@ class FirebaseJwtClaimsTest {
 	}
 
 	@Test
+	fun `decodeFirebaseJwtClaims reads firebase sign in provider`() {
+		val payloadJson =
+			"""{"firebase":{"sign_in_provider":"facebook.com"},"email_verified":false,"email":"user@example.com"}"""
+		val encodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(payloadJson.toByteArray())
+		val idToken = "header.$encodedPayload.signature"
+
+		val claims = decodeFirebaseJwtClaims(idToken)
+
+		assertNotNull(claims)
+		assertEquals("facebook.com", claims.signInProvider)
+		assertEquals(false, claims.emailVerified)
+	}
+
+	@Test
+	fun `requiresVerifiedEmail is true only for password sign in`() {
+		assertTrue(
+			requiresVerifiedEmail(
+				FirebaseJwtClaims(
+					issuer = null,
+					audiences = emptyList(),
+					emailVerified = false,
+					signInProvider = "password",
+					subject = null,
+					email = null,
+					name = null,
+					givenName = null,
+					familyName = null,
+					picture = null,
+				),
+			),
+		)
+		assertFalse(
+			requiresVerifiedEmail(
+				FirebaseJwtClaims(
+					issuer = null,
+					audiences = emptyList(),
+					emailVerified = false,
+					signInProvider = "facebook.com",
+					subject = null,
+					email = null,
+					name = null,
+					givenName = null,
+					familyName = null,
+					picture = null,
+				),
+			),
+		)
+	}
+
+	@Test
 	fun `matchesConfiguredFirebaseProject accepts issuer from decoded jwt claims`() {
 		val claims = FirebaseJwtClaims(
 			issuer = "https://securetoken.google.com/purecipes-50e5c",
 			audiences = listOf("922845075790"),
 			emailVerified = true,
+			signInProvider = "google.com",
 			subject = "firebase-uid",
 			email = "user@example.com",
 			name = null,

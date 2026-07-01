@@ -11,6 +11,7 @@ import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
+import app.purecipes.shared.domain.model.FacebookSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -114,6 +115,8 @@ class FakePurecipesApi(
 		storeRecipe(recipe)
 		return recipe
 	}
+
+	override suspend fun signInWithFacebook(request: FacebookSignInRequest): AuthenticatedSession = session
 
 	override suspend fun signInWithGoogle(request: GoogleSignInRequest): AuthenticatedSession = session
 

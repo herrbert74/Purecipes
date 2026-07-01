@@ -21,6 +21,7 @@ import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
+import app.purecipes.feature.auth.domain.usecase.SignInWithFacebookUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.feature.auth.ui.profile.DELETE_ACCOUNT_BUTTON_TAG
@@ -64,6 +65,7 @@ class AuthScreenTest {
 					viewModel = AuthenticationViewModel(
 						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
 						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithFacebook = SignInWithFacebookUseCase(authRepo),
 						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 						deleteAccount = DeleteAccountUseCase(authRepo),
 						signOut = SignOutUseCase(authRepo),
@@ -74,6 +76,7 @@ class AuthScreenTest {
 					authenticationProviderButtons = {
 							_,
 							onEmailProviderClick,
+							_,
 							_,
 							_,
 							_,
@@ -145,6 +148,7 @@ class AuthScreenTest {
 					viewModel = AuthenticationViewModel(
 						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
 						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithFacebook = SignInWithFacebookUseCase(authRepo),
 						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
 						deleteAccount = DeleteAccountUseCase(authRepo),
 						signOut = SignOutUseCase(authRepo),
@@ -152,7 +156,7 @@ class AuthScreenTest {
 						showConsentForm = ShowConsentFormUseCase(consentRepo),
 					),
 					initializeGoogleAuthenticationProvider = {},
-					authenticationProviderButtons = { _, _, _, _, _ ->
+					authenticationProviderButtons = { _, _, _, _, _, _ ->
 						FakeAuthenticationProviderButtons(onEmailProviderClick = {})
 					},
 				)

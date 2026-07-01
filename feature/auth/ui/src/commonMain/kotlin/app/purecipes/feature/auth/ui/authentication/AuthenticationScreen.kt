@@ -45,12 +45,14 @@ fun AuthenticationScreen(
 		isGoogleConfigured: Boolean,
 		onEmailProviderClick: () -> Unit,
 		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit = {
 			isGoogleConfigured,
 			onEmailProviderClick,
 			onExternalProviderSignInResult,
+			onFacebookSignInResult,
 			onGoogleSignInResult,
 			onGoogleUnavailableClick,
 		->
@@ -58,6 +60,7 @@ fun AuthenticationScreen(
 			isGoogleConfigured = isGoogleConfigured,
 			onEmailProviderClick = onEmailProviderClick,
 			onExternalProviderSignInResult = onExternalProviderSignInResult,
+			onFacebookSignInResult = onFacebookSignInResult,
 			onGoogleSignInResult = onGoogleSignInResult,
 			onGoogleUnavailableClick = onGoogleUnavailableClick,
 		)
@@ -104,6 +107,7 @@ fun AuthenticationScreen(
 						onEmailRegistrationClick = onNavigateToEmailRegistration,
 						onSignInClick = onNavigateToSignIn,
 						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
+						onFacebookSignInResult = viewModel::onFacebookSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onManagePrivacySettings = viewModel::onManagePrivacySettingsClick,
 						onGoogleUnavailableClick = viewModel::onGoogleUnavailableSelected,
@@ -154,14 +158,23 @@ private fun AuthenticationScreenErrorPreview() {
 					onEmailRegistrationClick = {},
 					onSignInClick = {},
 					onExternalProviderSignInResult = { _, _ -> },
+					onFacebookSignInResult = { _, _, _, _ -> },
 					onGoogleSignInResult = { _, _, _, _ -> },
 					onManagePrivacySettings = {},
 					onGoogleUnavailableClick = {},
-					authenticationProviderButtons = { configured, onEmail, onExternal, onGoogle, onUnavailable ->
+					authenticationProviderButtons = {
+							configured,
+							onEmail,
+							onExternal,
+							onFacebook,
+							onGoogle,
+							onUnavailable,
+						->
 						AuthenticationProviderButtons(
 							isGoogleConfigured = configured,
 							onEmailProviderClick = onEmail,
 							onExternalProviderSignInResult = onExternal,
+							onFacebookSignInResult = onFacebook,
 							onGoogleSignInResult = onGoogle,
 							onGoogleUnavailableClick = onUnavailable,
 						)

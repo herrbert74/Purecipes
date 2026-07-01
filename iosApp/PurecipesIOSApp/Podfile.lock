@@ -9,14 +9,6 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
-  - FBAEMKit (18.1.0):
-    - FBSDKCoreKit_Basics (= 18.1.0)
-  - FBSDKCoreKit (18.1.0):
-    - FBAEMKit (= 18.1.0)
-    - FBSDKCoreKit_Basics (= 18.1.0)
-  - FBSDKCoreKit_Basics (18.1.0)
-  - FBSDKLoginKit (18.1.0):
-    - FBSDKCoreKit (= 18.1.0)
   - GoogleSignIn (9.1.0):
     - AppAuth (~> 2.0)
     - AppCheckCore (~> 11.0)
@@ -50,8 +42,6 @@ PODS:
 
 DEPENDENCIES:
   - AppAuth
-  - FBSDKCoreKit (= 18.1.0)
-  - FBSDKLoginKit (= 18.1.0)
   - GoogleSignIn
   - GTMAppAuth
   - Mixpanel-swift
@@ -62,10 +52,6 @@ SPEC REPOS:
   trunk:
     - AppAuth
     - AppCheckCore
-    - FBAEMKit
-    - FBSDKCoreKit
-    - FBSDKCoreKit_Basics
-    - FBSDKLoginKit
     - GoogleSignIn
     - GoogleUtilities
     - GTMAppAuth
@@ -80,10 +66,6 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
-  FBAEMKit: 64088ff0380f50e4a56e2ee07d984f7f1aef7595
-  FBSDKCoreKit: 8390ea3a8fac186f444275f31d7512e760b47cba
-  FBSDKCoreKit_Basics: 3a0005c78b355388bf2df5c6dbe6381b77ea4be3
-  FBSDKLoginKit: d8e2711a3a03b0026703735c8d28a2b5a0e1f4fd
   GoogleSignIn: fcee2257188d5eda57a5e2b6a715550ffff9206d
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
@@ -95,6 +77,6 @@ SPEC CHECKSUMS:
   Usercentrics: 093b435b1e1c8deae1564d3d30a4d565e260f488
   UsercentricsUI: 70423bc65f51ed6f4cac3a6d20ebbee6e4e832aa
 
-PODFILE CHECKSUM: c156019ee983febec03888dbb8551e495a7ba248
+PODFILE CHECKSUM: be557fc1c5a8e147fdc5e7694df73cc926100435
 
 COCOAPODS: 1.16.2

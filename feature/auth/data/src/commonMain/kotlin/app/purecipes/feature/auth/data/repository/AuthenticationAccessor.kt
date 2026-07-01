@@ -6,6 +6,7 @@ import app.purecipes.feature.auth.data.datasource.AuthenticationDataSource
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.toAuthUser
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
@@ -55,6 +56,12 @@ class AuthenticationAccessor(
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> =
 		remoteDataSource.signInWithGoogle(profile.idToken)
+			.andThen { session ->
+				localDataSource.signInWithBackendSession(session)
+			}
+
+	override suspend fun signInWithFacebook(profile: FacebookAuthenticationProfile): Outcome<AuthUser> =
+		remoteDataSource.signInWithFacebook(profile.idToken)
 			.andThen { session ->
 				localDataSource.signInWithBackendSession(session)
 			}

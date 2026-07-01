@@ -7,6 +7,7 @@ import app.purecipes.feature.auth.data.datasource.AuthenticationStore
 import app.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDataSource
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
+import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
@@ -106,6 +107,46 @@ class AuthenticationAccessorTest {
 	}
 
 	@Test
+	fun `facebook sign in uses backend verified user`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val accessor = AuthenticationAccessor(
+			localDataSource = InMemoryAuthenticationLocalDataSource(AuthenticationStore(), sessionTokenStore),
+			remoteDataSource = FakeAuthenticationRemoteDataSource(
+				result = Ok(
+					AuthenticatedSession(
+						accessToken = "session-token",
+						expiresAtEpochSeconds = 4_000_000_000,
+						user = AuthenticatedBackendUser(
+							id = "43",
+							email = "taylor@example.com",
+							displayName = "Taylor Baker",
+							firstName = "Taylor",
+							familyName = "Baker",
+							profileImageUrl = "https://example.com/avatar.png",
+							provider = "FACEBOOK",
+						),
+					),
+				),
+			),
+		)
+
+		val user = accessor.signInWithFacebook(
+			FacebookAuthenticationProfile(
+				idToken = "verified-id-token",
+				email = "taylor@example.com",
+				displayName = "Ignored Client Name",
+				profileImageUrl = "https://example.com/ignored-avatar.png",
+			),
+		).get()
+
+		user?.provider shouldBe AuthProvider.FACEBOOK
+		user?.id shouldBe "43"
+		user?.displayName shouldBe "Taylor Baker"
+		user?.profileImageUrl shouldBe "https://example.com/avatar.png"
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+	}
+
+	@Test
 	fun `google sign in returns backend verification error`() = runTest {
 		val accessor = AuthenticationAccessor(
 			localDataSource = InMemoryAuthenticationLocalDataSource(AuthenticationStore(), FakeSessionTokenStore()),
@@ -146,6 +187,8 @@ class AuthenticationAccessorTest {
 	) : AuthenticationDataSource.Remote {
 
 		override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = result
+
+		override suspend fun signInWithFacebook(idToken: String): Outcome<AuthenticatedSession> = result
 
 		override suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession> = result
 

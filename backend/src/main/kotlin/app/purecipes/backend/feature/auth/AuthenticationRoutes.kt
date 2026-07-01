@@ -5,6 +5,7 @@ import app.purecipes.backend.auth.FirebaseIdTokenVerifier
 import app.purecipes.backend.auth.GoogleIdTokenVerificationResult
 import app.purecipes.backend.auth.SessionService
 import app.purecipes.shared.domain.model.EmailSignInRequest
+import app.purecipes.shared.domain.model.FacebookSignInRequest
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.ContentConvertException
@@ -50,6 +51,61 @@ fun Route.authenticationRoutes(
 				is GoogleIdTokenVerificationResult.Success -> call.respond(
 					sessionService.createSession(
 						provider = "EMAIL",
+						externalUserId = result.user.id,
+						email = result.user.email,
+						displayName = result.user.displayName,
+						firstName = result.user.firstName,
+						familyName = result.user.familyName,
+						profileImageUrl = result.user.profileImageUrl,
+					),
+				)
+				is GoogleIdTokenVerificationResult.Invalid -> call.respond(
+					HttpStatusCode.Unauthorized,
+					ErrorResponse(
+						message = "Unauthorized",
+						detail = result.detail,
+					)
+				)
+				is GoogleIdTokenVerificationResult.ConfigurationError -> call.respond(
+					HttpStatusCode.InternalServerError,
+					ErrorResponse(
+						message = "Authentication unavailable",
+						detail = result.detail,
+					)
+				)
+			}
+		}
+
+		post("/facebook") {
+			val request = try {
+				call.receive<FacebookSignInRequest>()
+			} catch (_: ContentConvertException) {
+				call.respond(
+					HttpStatusCode.BadRequest,
+					ErrorResponse(
+						message = "Invalid request",
+						detail = "Request body must contain a Facebook id token",
+					)
+				)
+				return@post
+			}
+
+			val idToken = request.idToken.trim()
+			if (idToken.isBlank()) {
+				call.respond(
+					HttpStatusCode.BadRequest,
+					ErrorResponse(
+						message = "Invalid request",
+						detail = "Facebook id token is required",
+					)
+				)
+				return@post
+			}
+
+			when (val result = firebaseIdTokenVerifier.verify(idToken)) {
+				is GoogleIdTokenVerificationResult.Success -> call.respond(
+					sessionService.createSession(
+						provider = "FACEBOOK",
 						externalUserId = result.user.id,
 						email = result.user.email,
 						displayName = result.user.displayName,

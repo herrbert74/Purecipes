@@ -6,15 +6,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 
 @Composable
 internal actual fun FacebookAuthenticationButton(
-	onResult: (Result<ExternalAuthenticationProfile?>) -> Unit,
+	onFacebookSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
 ) {
 	OutlinedButton(
-		onClick = { onResult(Result.failure(IllegalStateException("Facebook sign-in is not supported on JVM."))) },
+		onClick = { onFacebookSignInResult(null, null, "", null) },
 		modifier = Modifier
 			.fillMaxWidth()
 			.height(PurecipesButtonDefaults.providerButtonHeight),

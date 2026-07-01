@@ -6,15 +6,14 @@
 Implement secure, seamless authentication across all platforms using KMPAuth for consistent user experience. Support Google and Facebook authentication on all platforms, with Apple Sign-In specifically for iOS.
 
 ## Current Implementation Snapshot
-- Authentication currently lives in the account tab, not in onboarding yet.
-- The shared auth feature is split into domain, data, and ui modules following the project feature layering rules.
-- Email authentication is implemented locally in memory so the flow is testable before backend and Firebase setup exists.
-- Email registration requires first name and family name, and the UI uses those values as the display name.
-- Logged-in users see a profile image, display name, email address, provider, and a sign-out action.
-- Google uses KMPAuth where the platform setup is available.
-- Apple and Facebook are visible in the UI on all platforms, but they currently show a deferred-setup message until the Firebase-backed provider configuration is added.
-- iOS Google is also shown in the UI, but it stays unavailable until the native Google Sign-In dependency is wired into the iOS app.
-- There is no separate profile-name field at this stage. The app uses first name plus family name for email accounts, or the provider display name for Google accounts.
+- Authentication lives in the account tab.
+- The shared auth feature is split into domain, data, and ui modules.
+- **Email** and **Google** sign-in exchange a Firebase ID token with the backend and receive a bearer session.
+- **Facebook** uses the same backend exchange (`POST /auth/facebook`) after KMPAuth + Firebase sign-in. See [Facebook login setup](../auth/facebook-login-setup.md) for Development-mode limits, adding testers, and Meta review requirements.
+- **Apple** sign-in updates local auth state only (no backend session yet).
+- Logged-in users see profile info, provider, and sign-out on the Account screen.
+
+For Google client ID setup, Firebase checklist, and legacy staged-flow notes, see the sections below (some are outdated relative to the snapshot above).
 
 ## Google Sign-In Setup Summary
 

@@ -5,17 +5,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.firebase.facebook.FacebookButtonUiContainerFirebase
 import com.mmk.kmpauth.uihelper.facebook.FacebookSignInButton
+import kotlinx.coroutines.launch
 
 @Composable
 internal actual fun FacebookAuthenticationButton(
-	onResult: (Result<ExternalAuthenticationProfile?>) -> Unit,
+	onFacebookSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
 ) {
 	if (LocalInspectionMode.current) {
 		OutlinedButton(
@@ -29,10 +29,29 @@ internal actual fun FacebookAuthenticationButton(
 		}
 		return
 	}
+	val coroutineScope = rememberCoroutineScope()
 	FacebookButtonUiContainerFirebase(
 		linkAccount = false,
 		onResult = { result ->
-			onResult(result.map { it?.toExternalAuthenticationProfile(AuthProvider.FACEBOOK) })
+			val failure = result.exceptionOrNull()
+			if (failure != null) {
+				onFacebookSignInResult(null, null, "", null)
+				return@FacebookButtonUiContainerFirebase
+			}
+			val firebaseUser = result.getOrNull()
+			if (firebaseUser == null) {
+				onFacebookSignInResult(null, null, "", null)
+				return@FacebookButtonUiContainerFirebase
+			}
+			coroutineScope.launch {
+				val profile = firebaseUser.toFacebookAuthenticationProfile()
+				onFacebookSignInResult(
+					profile?.idToken,
+					profile?.email,
+					profile?.displayName.orEmpty(),
+					profile?.profileImageUrl,
+				)
+			}
 		},
 	) {
 		FacebookSignInButton(
