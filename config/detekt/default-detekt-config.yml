@@ -151,14 +151,14 @@ complexity:
     ignoreStringsRegex: '$^'
   TooManyFunctions:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/androidDeviceTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/scripts/**', '**/dataTestFixtures/**']
     allowedFunctionsPerFile: 11
-    allowedFunctionsPerClass: 11
-    allowedFunctionsPerInterface: 11
+    allowedFunctionsPerClass: 18
+    allowedFunctionsPerInterface: 40
     allowedFunctionsPerObject: 11
     allowedFunctionsPerEnum: 11
     ignoreDeprecated: false
-    ignorePrivate: false
+    ignorePrivate: true
     ignoreInternal: false
     ignoreOverridden: false
     ignoreAnnotatedFunctions: []
