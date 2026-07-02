@@ -86,10 +86,11 @@ private fun Failure.withUserAuthMessage(): Failure {
 		return this
 	}
 	val normalizedMessage = message.normalizeAuthMessage()
-	if (normalizedMessage == message) {
-		return this
+	return if (normalizedMessage == message) {
+		this
+	} else {
+		Failure.ServerError(normalizedMessage)
 	}
-	return Failure.ServerError(normalizedMessage)
 }
 
 private fun String.normalizeAuthMessage(): String {

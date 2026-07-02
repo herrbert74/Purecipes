@@ -51,14 +51,16 @@ class FirebaseTokenInfoIdTokenVerifier(
 		}
 
 		val tokenInfo = fetchTokenInfo(idToken)
-			?: return GoogleIdTokenVerificationResult.Invalid("Firebase token verification failed")
-
 		val jwtClaims = decodeFirebaseJwtClaims(idToken)
-		return tokenInfo.toVerificationResult(
-			jwtClaims = jwtClaims,
-			configuredProjectId = configuredProjectId,
-			configuredProjectNumber = expectedProjectNumber?.trim()?.takeIf { it.isNotBlank() },
-		)
+		return if (tokenInfo == null) {
+			GoogleIdTokenVerificationResult.Invalid("Firebase token verification failed")
+		} else {
+			tokenInfo.toVerificationResult(
+				jwtClaims = jwtClaims,
+				configuredProjectId = configuredProjectId,
+				configuredProjectNumber = expectedProjectNumber?.trim()?.takeIf { it.isNotBlank() },
+			)
+		}
 	}
 
 	private suspend fun fetchTokenInfo(idToken: String): FirebaseTokenInfoResponse? {
@@ -235,18 +237,22 @@ private fun projectMismatchDetail(
 	audiences: List<String>,
 	issuer: String?,
 ): String {
-	if (issuerProjectId != null) {
-		return "Firebase token is for project '$issuerProjectId', but this backend expects " +
-			"'$configuredProjectId'. Set PURECIPES_FIREBASE_PROJECT_ID to '$issuerProjectId' " +
-			"(the Firebase project ID, not a web client ID or domain)."
+	return when {
+		issuerProjectId != null ->
+			"Firebase token is for project '$issuerProjectId', but this backend expects " +
+				"'$configuredProjectId'. Set PURECIPES_FIREBASE_PROJECT_ID to '$issuerProjectId' " +
+				"(the Firebase project ID, not a web client ID or domain)."
+
+		audiences.any { it.contains(".apps.googleusercontent.com") } ->
+			"This looks like a Google OAuth token, not a Firebase Auth token. " +
+				"Use email sign-in after verifying your email."
+
+		else -> {
+			val audienceSummary = audiences.takeIf { it.isNotEmpty() }?.joinToString() ?: "unknown"
+			"Firebase token is not issued for project '$configuredProjectId' " +
+				"(issuer: ${issuer.asOptionalField() ?: "unknown"}, audience: $audienceSummary)."
+		}
 	}
-	if (audiences.any { it.contains(".apps.googleusercontent.com") }) {
-		return "This looks like a Google OAuth token, not a Firebase Auth token. " +
-			"Use email sign-in after verifying your email."
-	}
-	val audienceSummary = audiences.takeIf { it.isNotEmpty() }?.joinToString() ?: "unknown"
-	return "Firebase token is not issued for project '$configuredProjectId' " +
-		"(issuer: ${issuer.asOptionalField() ?: "unknown"}, audience: $audienceSummary)."
 }
 
 private fun String?.asOptionalField(): String? = this?.trim()?.takeIf { it.isNotBlank() }

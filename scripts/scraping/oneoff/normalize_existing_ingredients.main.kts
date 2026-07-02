@@ -156,13 +156,11 @@ private fun parseFlagArguments(args: Array<String>): Map<String, List<String>> {
 }
 
 fun buildJdbcUrl(config: NormalizeConfig): String? {
-	if (!config.dbDsn.isNullOrBlank()) {
-		return config.dbDsn
+	return when {
+		!config.dbDsn.isNullOrBlank() -> config.dbDsn
+		config.dbName.isNullOrBlank() -> null
+		else -> "jdbc:postgresql://${config.dbHost}:${config.dbPort}/${config.dbName}"
 	}
-	if (config.dbName.isNullOrBlank()) {
-		return null
-	}
-	return "jdbc:postgresql://${config.dbHost}:${config.dbPort}/${config.dbName}"
 }
 
 fun openConnection(config: NormalizeConfig): Connection {

@@ -38,8 +38,10 @@ class AndroidOsSplashBridge {
 		val animatedDrawable = AnimatedVectorDrawableCompat.create(
 			iconView.context,
 			R.drawable.ic_launcher_splash_animated,
-		) ?: return null
-		iconView.setImageDrawable(animatedDrawable)
+		)
+		if (animatedDrawable != null) {
+			iconView.setImageDrawable(animatedDrawable)
+		}
 		return animatedDrawable
 	}
 

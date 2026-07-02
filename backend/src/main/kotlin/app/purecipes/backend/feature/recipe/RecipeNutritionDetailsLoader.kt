@@ -88,9 +88,8 @@ internal object RecipeNutritionDetailsLoader {
 				}
 				resultSet.toRecipeNutritionRow()
 			}
-		} ?: return null
-
-		if (recipeRow.calories == null) {
+		}
+		if (recipeRow == null || recipeRow.calories == null) {
 			return null
 		}
 

@@ -67,9 +67,10 @@ object PurecipesLinkParser {
 			return null
 		}
 		val pathStart = url.indexOf('/', hostIndex + PurecipesLinkUrls.WEB_HOST.length)
-		if (pathStart < 0) {
-			return emptyList()
+		return if (pathStart < 0) {
+			emptyList()
+		} else {
+			url.substring(pathStart).trim('/').split('/').filter { it.isNotEmpty() }
 		}
-		return url.substring(pathStart).trim('/').split('/').filter { it.isNotEmpty() }
 	}
 }

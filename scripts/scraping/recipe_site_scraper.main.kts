@@ -598,8 +598,11 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 }
 
 fun extractRecipeLinksFromCollectionPage(pageUrl: String, timeoutSeconds: Long): List<String> {
-	val pageData = fetchPageWithValidation(pageUrl, timeoutSeconds) ?: return emptyList()
-	val baseHost = pageData.base.host?.removePrefix("www.") ?: return emptyList()
+	val pageData = fetchPageWithValidation(pageUrl, timeoutSeconds)
+	val baseHost = pageData?.base?.host?.removePrefix("www.")
+	if (pageData == null || baseHost == null) {
+		return emptyList()
+	}
 	val hrefRegex = Regex("""href\s*=\s*"([^\"]+)"""", RegexOption.IGNORE_CASE)
 	val siteConfig = knownWebsites.values.find { URI(it.url).host?.removePrefix("www.") == baseHost }
 	val linkPattern = siteConfig?.recipePattern ?: Regex("/recipe/", RegexOption.IGNORE_CASE)
@@ -636,16 +639,14 @@ fun extractRecipeLinksFromCollectionPage(pageUrl: String, timeoutSeconds: Long):
 private data class PageData(val base: URI, val body: String)
 
 private fun fetchPageWithValidation(pageUrl: String, timeoutSeconds: Long): PageData? {
-	val (base, request) = resolvePageUri(pageUrl, timeoutSeconds) ?: return null
-
+	val pageUri = resolvePageUri(pageUrl, timeoutSeconds) ?: return null
 	val response = try {
-		HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+		HttpClient.newHttpClient().send(pageUri.second, HttpResponse.BodyHandlers.ofString())
 	} catch (_: Exception) {
-		return null
+		null
 	}
-
-	return if (response.statusCode() in 200..299) {
-		PageData(base, response.body())
+	return if (response != null && response.statusCode() in 200..299) {
+		PageData(pageUri.first, response.body())
 	} else {
 		null
 	}
@@ -708,8 +709,10 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 	}
 
 fun parseRecipe(rawJson: String): RecipeData? {
-	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }
-		.getOrNull() ?: return null
+	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }.getOrNull()
+	if (root == null) {
+		return null
+	}
 
 	val title = root["title"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
 
@@ -758,24 +761,27 @@ fun parseRecipe(rawJson: String): RecipeData? {
 		instructionList.joinToString("\n").trim()
 	}
 
-	if (title.isBlank() || ingredientGroups.isEmpty()) return null
-	return RecipeData(
-		title = title,
-		ingredientGroups = ingredientGroups,
-		instructionList = instructionList,
-		instructions = instructionsText,
-		totalTime = parseInt(root["total_time"]?.jsonPrimitive?.contentOrNull),
-		prepTime = parseInt(root["prep_time"]?.jsonPrimitive?.contentOrNull),
-		cookTime = parseInt(root["cook_time"]?.jsonPrimitive?.contentOrNull),
-		yields = root["yields"]?.jsonPrimitive?.contentOrNull,
-		image = root["image"]?.jsonPrimitive?.contentOrNull,
-		nutrients = nutrients,
-		language = root["language"]?.jsonPrimitive?.contentOrNull ?: "en",
-		cuisine = root["cuisine"]?.jsonPrimitive?.contentOrNull,
-		category = root["category"]?.jsonPrimitive?.contentOrNull,
-		links = links,
-		sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty()
-	)
+	return if (title.isBlank() || ingredientGroups.isEmpty()) {
+		null
+	} else {
+		RecipeData(
+			title = title,
+			ingredientGroups = ingredientGroups,
+			instructionList = instructionList,
+			instructions = instructionsText,
+			totalTime = parseInt(root["total_time"]?.jsonPrimitive?.contentOrNull),
+			prepTime = parseInt(root["prep_time"]?.jsonPrimitive?.contentOrNull),
+			cookTime = parseInt(root["cook_time"]?.jsonPrimitive?.contentOrNull),
+			yields = root["yields"]?.jsonPrimitive?.contentOrNull,
+			image = root["image"]?.jsonPrimitive?.contentOrNull,
+			nutrients = nutrients,
+			language = root["language"]?.jsonPrimitive?.contentOrNull ?: "en",
+			cuisine = root["cuisine"]?.jsonPrimitive?.contentOrNull,
+			category = root["category"]?.jsonPrimitive?.contentOrNull,
+			links = links,
+			sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty()
+		)
+	}
 }
 
 fun ensureSchema(connection: Connection) {
@@ -955,8 +961,8 @@ fun isDuplicate(connection: Connection, sourceUrl: String): Boolean {
 
 fun parseNumber(value: String?): Double? {
 	if (value.isNullOrBlank()) return null
-	val match = Regex("""-?\d+(?:\.\d+)?""").find(value) ?: return null
-	return match.value.toDoubleOrNull()
+	val match = Regex("""-?\d+(?:\.\d+)?""").find(value)
+	return match?.value?.toDoubleOrNull()
 }
 
 private val scrapedNutrientKeyAliases = mapOf(
@@ -1349,14 +1355,13 @@ fun calculateNutritionForRecipes(config: Config, recipeIds: List<Int>) {
 	}
 
 	val repoRoot = findRepoRoot()
-	if (repoRoot == null) {
-		println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
-		return
-	}
-
-	val gradlew = repoRoot.resolve("gradlew").toFile()
-	if (!gradlew.exists()) {
-		println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+	val gradlew = repoRoot?.resolve("gradlew")?.toFile()
+	if (repoRoot == null || gradlew == null || !gradlew.exists()) {
+		if (repoRoot == null) {
+			println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
+		} else {
+			println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+		}
 		return
 	}
 
@@ -1495,9 +1500,18 @@ private enum class ImportOutcome {
 }
 
 private fun processRecipeFile(connection: Connection, file: File): Pair<ImportOutcome, Int?> {
-	val recipe = safeParseRecipeFile(file) ?: return ImportOutcome.ERROR to null
-	val recipeId = saveRecipe(connection, recipe) ?: return ImportOutcome.DUPLICATE to null
-	return ImportOutcome.SUCCESS to recipeId
+	val recipe = safeParseRecipeFile(file)
+	return when {
+		recipe == null -> ImportOutcome.ERROR to null
+		else -> {
+			val recipeId = saveRecipe(connection, recipe)
+			if (recipeId == null) {
+				ImportOutcome.DUPLICATE to null
+			} else {
+				ImportOutcome.SUCCESS to recipeId
+			}
+		}
+	}
 }
 
 private fun safeParseRecipeFile(file: File): RecipeData? {

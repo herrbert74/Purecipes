@@ -15,13 +15,14 @@ object IngredientLookup {
 			return null
 		}
 
-		catalogueItems.firstOrNull { catalogueItem ->
+		val exactMatch = catalogueItems.firstOrNull { catalogueItem ->
 			IngredientNameMatching.normalizeIngredientName(catalogueItem) == normalizedQuery
-		}?.let { return it }
-
-		val queryVariants = IngredientNameMatching.ingredientVariants(query)
-		return catalogueItems.firstOrNull { catalogueItem ->
-			IngredientNameMatching.ingredientVariants(catalogueItem).any { it in queryVariants }
+		}
+		return exactMatch ?: run {
+			val queryVariants = IngredientNameMatching.ingredientVariants(query)
+			catalogueItems.firstOrNull { catalogueItem ->
+				IngredientNameMatching.ingredientVariants(catalogueItem).any { it in queryVariants }
+			}
 		}
 	}
 

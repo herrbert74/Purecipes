@@ -301,13 +301,17 @@ class SettingsRepository(
 			return null
 		}
 
-		val preferredSystemRaw = rs.getString("preferred_system") ?: return null
-		val formatHandlingRaw = rs.getString("format_handling") ?: RecipeFormatHandling.KEEP_AS_IS.name
-		return MeasurementPreferences(
-			preferredSystem = MeasurementSystem.valueOf(preferredSystemRaw),
-			formatHandling = RecipeFormatHandling.valueOf(formatHandlingRaw),
-			detectedCountryCode = rs.getString("detected_country_code"),
-		)
+		val preferredSystemRaw = rs.getString("preferred_system")
+		return if (preferredSystemRaw == null) {
+			null
+		} else {
+			val formatHandlingRaw = rs.getString("format_handling") ?: RecipeFormatHandling.KEEP_AS_IS.name
+			MeasurementPreferences(
+				preferredSystem = MeasurementSystem.valueOf(preferredSystemRaw),
+				formatHandling = RecipeFormatHandling.valueOf(formatHandlingRaw),
+				detectedCountryCode = rs.getString("detected_country_code"),
+			)
+		}
 	}
 
 	private fun decodeSeenRecipeIds(rs: ResultSet): Set<Int> {

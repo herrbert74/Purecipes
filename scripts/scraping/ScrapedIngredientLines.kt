@@ -78,25 +78,23 @@ fun formatQuantityAsFraction(value: Double): String? {
 	val whole = floor(value).toInt()
 	val remainder = value - whole
 
-	if (remainder < FRACTION_MATCH_TOLERANCE) {
-		return whole.toString()
-	}
-	if (WHOLE_NUMBER_ONE - remainder < FRACTION_MATCH_TOLERANCE) {
-		return (whole + WHOLE_NUMBER_ONE).toString()
-	}
-
-	val matchedFraction = commonCookingFractionTexts.firstOrNull { fractionText ->
-		val parts = fractionText.split('/')
-		val numerator = parts.first().toInt()
-		val denominator = parts.last().toInt()
-		abs(remainder - numerator.toDouble() / denominator) < FRACTION_MATCH_TOLERANCE
-	}
-
-	return matchedFraction?.let { fraction ->
-		if (whole > 0) {
-			"$whole $fraction"
-		} else {
-			fraction
+	return when {
+		remainder < FRACTION_MATCH_TOLERANCE -> whole.toString()
+		WHOLE_NUMBER_ONE - remainder < FRACTION_MATCH_TOLERANCE -> (whole + WHOLE_NUMBER_ONE).toString()
+		else -> {
+			val matchedFraction = commonCookingFractionTexts.firstOrNull { fractionText ->
+				val parts = fractionText.split('/')
+				val numerator = parts.first().toInt()
+				val denominator = parts.last().toInt()
+				abs(remainder - numerator.toDouble() / denominator) < FRACTION_MATCH_TOLERANCE
+			}
+			matchedFraction?.let { fraction ->
+				if (whole > 0) {
+					"$whole $fraction"
+				} else {
+					fraction
+				}
+			}
 		}
 	}
 }
@@ -402,15 +400,16 @@ private fun expandAlternativePart(firstAlternative: String, part: String): Strin
 	}
 
 	val quantityPrefix = alternativeQuantityPrefixRegex.find(firstAlternative)?.value
-	if (quantityPrefix != null) {
-		return quantityPrefix + trimmed
-	}
-
-	val ofPrefix = alternativeOfPrefixRegex.find(firstAlternative)?.groupValues?.get(1)
-	return if (ofPrefix != null) {
-		"$ofPrefix $trimmed"
-	} else {
-		trimmed
+	return when {
+		quantityPrefix != null -> quantityPrefix + trimmed
+		else -> {
+			val ofPrefix = alternativeOfPrefixRegex.find(firstAlternative)?.groupValues?.get(1)
+			if (ofPrefix != null) {
+				"$ofPrefix $trimmed"
+			} else {
+				trimmed
+			}
+		}
 	}
 }
 
@@ -427,16 +426,17 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 		}
 	}
 	val sharedSuffix = trailingParentheticalSuffixRegex.find(parts.last())?.value
-	if (sharedSuffix != null && !firstAlternative.contains('(')) {
-		return expanded.mapIndexed { partIndex, text ->
+	return if (sharedSuffix != null && !firstAlternative.contains('(')) {
+		expanded.mapIndexed { partIndex, text ->
 			if (partIndex == 0) {
 				text + sharedSuffix
 			} else {
 				text
 			}
 		}
+	} else {
+		expanded
 	}
-	return expanded
 }
 
 fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient> {
@@ -444,11 +444,12 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 		return listOf(sanitized)
 	}
 	val alternativeTexts = expandAlternativeParts(splitAlternativeParts(sanitized.text))
-	if (alternativeTexts.size <= 1) {
-		return listOf(sanitized)
-	}
-	return alternativeTexts.map { text ->
-		ProcessedScrapedIngredient(text = text, requirement = "ALTERNATIVE")
+	return if (alternativeTexts.size <= 1) {
+		listOf(sanitized)
+	} else {
+		alternativeTexts.map { text ->
+			ProcessedScrapedIngredient(text = text, requirement = "ALTERNATIVE")
+		}
 	}
 }
 

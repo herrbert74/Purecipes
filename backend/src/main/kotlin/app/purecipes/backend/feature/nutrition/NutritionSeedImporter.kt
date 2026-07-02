@@ -24,18 +24,28 @@ internal class NutritionSeedImporter(
 	): NutritionSeedImportResult {
 		val parseResult = FdcFoodDataJsonParser.parse(fdcJsonFile)
 		val parsedFoods = parseResult.foods
-		if (parsedFoods.isEmpty()) {
-			return emptyResult(parseResult.dataset, seedCatalogueAliases)
-		}
-
-		if (dryRun) {
-			return dryRunImport(
+		return when {
+			parsedFoods.isEmpty() -> emptyResult(parseResult.dataset, seedCatalogueAliases)
+			dryRun -> dryRunImport(
 				dataset = parseResult.dataset,
 				parsedFoods = parsedFoods,
 				seedCatalogueAliases = seedCatalogueAliases,
 			)
+			else -> importParsedFoods(
+				dataset = parseResult.dataset,
+				parsedFoods = parsedFoods,
+				replaceExisting = replaceExisting,
+				seedCatalogueAliases = seedCatalogueAliases,
+			)
 		}
+	}
 
+	private fun importParsedFoods(
+		dataset: FdcFoodDataset,
+		parsedFoods: List<FdcFoundationFood>,
+		replaceExisting: Boolean,
+		seedCatalogueAliases: Boolean,
+	): NutritionSeedImportResult {
 		if (replaceExisting) {
 			repository.replaceSeedData()
 		}
@@ -53,7 +63,7 @@ internal class NutritionSeedImporter(
 			val foodId = repository.upsertFood(
 				food = food,
 				nutrients = nutrients,
-				sourceMetadata = parseResult.dataset.sourceMetadata,
+				sourceMetadata = dataset.sourceMetadata,
 			)
 			foodsImported++
 
@@ -83,7 +93,7 @@ internal class NutritionSeedImporter(
 		}
 
 		return NutritionSeedImportResult(
-			dataset = parseResult.dataset,
+			dataset = dataset,
 			foodsImported = foodsImported,
 			foodsSkipped = foodsSkipped,
 			measuresImported = measuresImported,

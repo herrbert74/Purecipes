@@ -34,23 +34,23 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 			)
 		}
 
-		if (preferences.formatHandling == RecipeFormatHandling.CONVERT_TO_PREFERRED) {
-			return ProcessedRecipeDetails(
+		return when (preferences.formatHandling) {
+			RecipeFormatHandling.CONVERT_TO_PREFERRED -> ProcessedRecipeDetails(
 				recipe = recipe.convertTo(preferredSystem),
 				originalMeasurementSystem = originalMeasurementSystem,
 				isConverted = true,
 				shouldShowMismatchNotification = false,
 			)
-		}
 
-		return ProcessedRecipeDetails(
-			recipe = recipe,
-			originalMeasurementSystem = originalMeasurementSystem,
-			isConverted = false,
-			shouldShowMismatchNotification =
-				preferences.formatHandling == RecipeFormatHandling.KEEP_AS_IS &&
-					recipe.id !in preferences.notificationSeenRecipeIds,
-		)
+			else -> ProcessedRecipeDetails(
+				recipe = recipe,
+				originalMeasurementSystem = originalMeasurementSystem,
+				isConverted = false,
+				shouldShowMismatchNotification =
+					preferences.formatHandling == RecipeFormatHandling.KEEP_AS_IS &&
+						recipe.id !in preferences.notificationSeenRecipeIds,
+			)
+		}
 	}
 
 	private fun RecipeDetails.effectiveMeasurementSystem(): MeasurementSystem? {
@@ -195,14 +195,16 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 
 	private fun formatImperialVolume(milliliters: Double): String {
 		val cups = milliliters / MILLILITERS_PER_CUP
-		if (cups >= MINIMUM_CUP_COUNT) {
-			return "${cups.roundToQuarter().formatImperialNumber()} cup"
+		return when {
+			cups >= MINIMUM_CUP_COUNT ->
+				"${cups.roundToQuarter().formatImperialNumber()} cup"
+
+			milliliters / MILLILITERS_PER_TABLESPOON >= MINIMUM_TABLESPOON_COUNT ->
+				"${(milliliters / MILLILITERS_PER_TABLESPOON).roundToQuarter().formatImperialNumber()} tbsp"
+
+			else ->
+				"${(milliliters / MILLILITERS_PER_TEASPOON).roundToQuarter().formatImperialNumber()} tsp"
 		}
-		val tablespoons = milliliters / MILLILITERS_PER_TABLESPOON
-		if (tablespoons >= MINIMUM_TABLESPOON_COUNT) {
-			return "${tablespoons.roundToQuarter().formatImperialNumber()} tbsp"
-		}
-		return "${(milliliters / MILLILITERS_PER_TEASPOON).roundToQuarter().formatImperialNumber()} tsp"
 	}
 
 	private fun parseMeasurementValue(rawValue: String): Double? {

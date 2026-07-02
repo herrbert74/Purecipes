@@ -21,19 +21,20 @@ class SignInWithExternalProviderUseCase(
 			)
 		}
 		val email = profile.email?.trim().orEmpty()
-		if (email.isBlank()) {
-			return Err(
+		return if (email.isBlank()) {
+			Err(
 				Failure.ServerError("${profile.provider.providerDisplayName()} sign-in did not return an email address")
 			)
+		} else {
+			repository.signInWithExternalProvider(
+				profile.copy(
+					id = profile.id.trim(),
+					email = email,
+					displayName = profile.displayName?.trim(),
+					profileImageUrl = profile.profileImageUrl?.trim()?.takeIf { it.isNotBlank() },
+				),
+			)
 		}
-		return repository.signInWithExternalProvider(
-			profile.copy(
-				id = profile.id.trim(),
-				email = email,
-				displayName = profile.displayName?.trim(),
-				profileImageUrl = profile.profileImageUrl?.trim()?.takeIf { it.isNotBlank() },
-			),
-		)
 	}
 }
 

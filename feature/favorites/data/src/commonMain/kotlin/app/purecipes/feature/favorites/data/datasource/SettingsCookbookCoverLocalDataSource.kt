@@ -40,7 +40,8 @@ class SettingsCookbookCoverLocalDataSource(
 		if (pool.isEmpty()) {
 			return existing?.imageUrl
 		}
-		if (existing == null || nowMillis >= existing.nextRotationEpochMillis) {
+		val needsRotation = existing == null || nowMillis >= existing.nextRotationEpochMillis
+		return if (needsRotation) {
 			val picked = pool[random.nextInt(pool.size)]
 			val span = random.nextLong(MIN_ROTATION_MILLIS, MAX_ROTATION_MILLIS + 1)
 			map[cookbookId] = CookbookCoverEntry(
@@ -48,9 +49,10 @@ class SettingsCookbookCoverLocalDataSource(
 				nextRotationEpochMillis = nowMillis + span,
 			)
 			writeMap(map)
-			return picked
+			picked
+		} else {
+			existing.imageUrl
 		}
-		return existing.imageUrl
 	}
 
 	private fun readMap(): MutableMap<Int, CookbookCoverEntry> {

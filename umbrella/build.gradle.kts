@@ -63,13 +63,13 @@ private fun Project.purecipesDebugBackendHost(): String {
 		?.let { return it }
 
 	val localPropertiesFile = rootProject.file("local.properties")
-	if (!localPropertiesFile.exists()) {
-		return ""
+	return if (!localPropertiesFile.exists()) {
+		""
+	} else {
+		val properties = Properties()
+		localPropertiesFile.inputStream().use { properties.load(it) }
+		properties.getProperty("purecipes.debugBackendHost").orEmpty()
 	}
-
-	val properties = Properties()
-	localPropertiesFile.inputStream().use { properties.load(it) }
-	return properties.getProperty("purecipes.debugBackendHost").orEmpty()
 }
 
 private fun Project.androidBuildTypeFromTasks(): String? {

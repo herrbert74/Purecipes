@@ -67,16 +67,17 @@ internal object IngredientAlternativeParsing {
 			}
 		}
 		val sharedSuffix = trailingParentheticalSuffixRegex.find(parts.last())?.value
-		if (sharedSuffix != null && !firstAlternative.contains('(')) {
-			return expanded.mapIndexed { partIndex, text ->
+		return if (sharedSuffix != null && !firstAlternative.contains('(')) {
+			expanded.mapIndexed { partIndex, text ->
 				if (partIndex == 0) {
 					text + sharedSuffix
 				} else {
 					text
 				}
 			}
+		} else {
+			expanded
 		}
-		return expanded
 	}
 
 	private fun containsAlternativeSeparator(text: String): Boolean {
@@ -113,15 +114,16 @@ internal object IngredientAlternativeParsing {
 		}
 
 		val quantityPrefix = quantityPrefixRegex.find(firstAlternative)?.value
-		if (quantityPrefix != null) {
-			return quantityPrefix + trimmed
-		}
-
-		val ofPrefix = ofPrefixRegex.find(firstAlternative)?.groupValues?.get(1)
-		return if (ofPrefix != null) {
-			"$ofPrefix $trimmed"
-		} else {
-			trimmed
+		return when {
+			quantityPrefix != null -> quantityPrefix + trimmed
+			else -> {
+				val ofPrefix = ofPrefixRegex.find(firstAlternative)?.groupValues?.get(1)
+				if (ofPrefix != null) {
+					"$ofPrefix $trimmed"
+				} else {
+					trimmed
+				}
+			}
 		}
 	}
 }

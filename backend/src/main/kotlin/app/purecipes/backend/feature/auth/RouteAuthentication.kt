@@ -10,17 +10,24 @@ import io.ktor.server.response.respond
 
 internal suspend fun ApplicationCall.requireAuthenticatedUserId(sessionService: SessionService): Long? {
 	val accessToken = bearerToken()
-		?: return respondUnauthorized("Missing bearer token").let { null }
+	if (accessToken == null) {
+		respondUnauthorized("Missing bearer token")
+		return null
+	}
 	val session = sessionService.getSession(accessToken)
-		?: return respondUnauthorized("Session is invalid or expired").let { null }
-	return session.user.id.toLongOrNull()
-		?: respondUnauthorized("Session user is invalid").let { null }
+	val userId = session?.user?.id?.toLongOrNull()
+	if (session == null) {
+		respondUnauthorized("Session is invalid or expired")
+	} else if (userId == null) {
+		respondUnauthorized("Session user is invalid")
+	}
+	return userId
 }
 
 internal fun ApplicationCall.optionalAuthenticatedUserId(sessionService: SessionService): Long? {
 	val accessToken = bearerToken() ?: return null
-	val session = sessionService.getSession(accessToken) ?: return null
-	return session.user.id.toLongOrNull()
+	val session = sessionService.getSession(accessToken)
+	return session?.user?.id?.toLongOrNull()
 }
 
 internal suspend fun ApplicationCall.respondUnauthorized(detail: String) {

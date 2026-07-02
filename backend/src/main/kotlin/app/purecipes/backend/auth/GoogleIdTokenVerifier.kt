@@ -55,9 +55,11 @@ class GoogleTokenInfoGoogleIdTokenVerifier(
 		}
 
 		val tokenInfo = fetchTokenInfo(idToken)
-			?: return GoogleIdTokenVerificationResult.Invalid("Google token verification failed")
-
-		return tokenInfo.toVerificationResult(configuredAudience)
+		return if (tokenInfo == null) {
+			GoogleIdTokenVerificationResult.Invalid("Google token verification failed")
+		} else {
+			tokenInfo.toVerificationResult(configuredAudience)
+		}
 	}
 
 	private suspend fun fetchTokenInfo(idToken: String): GoogleTokenInfoResponse? {
