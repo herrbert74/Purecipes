@@ -199,29 +199,77 @@ private fun updateRecipe(
 	calorieRange: CalorieRange?,
 	dietaryPreferences: Set<DietaryPreference>?,
 ) {
-	val setClauses = mutableListOf<String>()
-	if (cuisine != null) setClauses.add("cuisine = ?")
-	if (mealType != null) setClauses.add("meal_type = ?")
-	if (difficulty != null) setClauses.add("difficulty = ?")
-	if (cookingMethod != null) setClauses.add("cooking_method = ?")
-	if (calorieRange != null) setClauses.add("calorie_range = ?")
-	if (dietaryPreferences != null) setClauses.add("dietary_preferences = ?")
+	val fieldUpdates = buildRecipeFieldUpdates(
+		conn = conn,
+		cuisine = cuisine,
+		mealType = mealType,
+		difficulty = difficulty,
+		cookingMethod = cookingMethod,
+		calorieRange = calorieRange,
+		dietaryPreferences = dietaryPreferences,
+	)
+	if (fieldUpdates.isEmpty()) return
 
-	if (setClauses.isEmpty()) return
-
-	val sql = "UPDATE recipes SET ${setClauses.joinToString(", ")} WHERE id = ?"
+	val sql = "UPDATE recipes SET ${fieldUpdates.joinToString { it.setClause }} WHERE id = ?"
 	conn.prepareStatement(sql).use { ps ->
-		var idx = 1
-		if (cuisine != null) ps.setString(idx++, cuisine.name)
-		if (mealType != null) ps.setString(idx++, mealType.name)
-		if (difficulty != null) ps.setString(idx++, difficulty.name)
-		if (cookingMethod != null) ps.setString(idx++, cookingMethod.name)
-		if (calorieRange != null) ps.setString(idx++, calorieRange.name)
-		if (dietaryPreferences != null) {
-			val arr = conn.createArrayOf("text", dietaryPreferences.map { it.name }.toTypedArray())
-			ps.setArray(idx++, arr)
-		}
-		ps.setInt(idx, id)
+		var parameterIndex = 1
+		fieldUpdates.forEach { update -> parameterIndex = update.bind(ps, parameterIndex) }
+		ps.setInt(parameterIndex, id)
 		ps.executeUpdate()
 	}
+}
+
+private data class RecipeFieldUpdate(
+	val setClause: String,
+	val bind: (java.sql.PreparedStatement, Int) -> Int,
+)
+
+private fun buildRecipeFieldUpdates(
+	conn: Connection,
+	cuisine: Cuisine?,
+	mealType: MealType?,
+	difficulty: DifficultyLevel?,
+	cookingMethod: CookingMethod?,
+	calorieRange: CalorieRange?,
+	dietaryPreferences: Set<DietaryPreference>?,
+): List<RecipeFieldUpdate> {
+	return listOfNotNull(
+		cuisine?.let {
+			RecipeFieldUpdate("cuisine = ?") { ps, idx ->
+				ps.setString(idx, it.name)
+				idx + 1
+			}
+		},
+		mealType?.let {
+			RecipeFieldUpdate("meal_type = ?") { ps, idx ->
+				ps.setString(idx, it.name)
+				idx + 1
+			}
+		},
+		difficulty?.let {
+			RecipeFieldUpdate("difficulty = ?") { ps, idx ->
+				ps.setString(idx, it.name)
+				idx + 1
+			}
+		},
+		cookingMethod?.let {
+			RecipeFieldUpdate("cooking_method = ?") { ps, idx ->
+				ps.setString(idx, it.name)
+				idx + 1
+			}
+		},
+		calorieRange?.let {
+			RecipeFieldUpdate("calorie_range = ?") { ps, idx ->
+				ps.setString(idx, it.name)
+				idx + 1
+			}
+		},
+		dietaryPreferences?.let { preferences ->
+			RecipeFieldUpdate("dietary_preferences = ?") { ps, idx ->
+				val array = conn.createArrayOf("text", preferences.map(DietaryPreference::name).toTypedArray())
+				ps.setArray(idx, array)
+				idx + 1
+			}
+		},
+	)
 }

@@ -18,44 +18,77 @@ internal fun addEnrichmentFilterConditions(
 	conditions: MutableList<String>,
 	params: MutableList<Any>,
 ) {
-	if (filters.mealTypes.isNotEmpty() && filters.mealTypes.size < MealType.entries.size) {
-		val placeholders = filters.mealTypes.joinToString(",") { "?" }
-		conditions.add("r.meal_type IN ($placeholders)")
-		filters.mealTypes.forEach { params.add(it.name) }
-	}
+	addEnumColumnFilter(
+		selected = filters.mealTypes,
+		allValues = MealType.entries,
+		column = "r.meal_type",
+		params = params,
+		conditions = conditions,
+		valueSelector = MealType::name,
+	)
+	addEnumColumnFilter(
+		selected = filters.difficultyLevels,
+		allValues = DifficultyLevel.entries,
+		column = "r.difficulty",
+		params = params,
+		conditions = conditions,
+		valueSelector = DifficultyLevel::name,
+	)
+	addEnumColumnFilter(
+		selected = filters.cookingMethods,
+		allValues = CookingMethod.entries,
+		column = "r.cooking_method",
+		params = params,
+		conditions = conditions,
+		valueSelector = CookingMethod::name,
+	)
+	addEnumColumnFilter(
+		selected = filters.calorieRanges,
+		allValues = CalorieRange.entries,
+		column = "r.calorie_range",
+		params = params,
+		conditions = conditions,
+		valueSelector = CalorieRange::name,
+	)
+	addDietaryPreferenceFilters(filters, conditions, params)
+	addNutritionFilters(filters, conditions)
+}
 
-	if (filters.difficultyLevels.isNotEmpty() && filters.difficultyLevels.size < DifficultyLevel.entries.size) {
-		val placeholders = filters.difficultyLevels.joinToString(",") { "?" }
-		conditions.add("r.difficulty IN ($placeholders)")
-		filters.difficultyLevels.forEach { params.add(it.name) }
+private fun <T> addEnumColumnFilter(
+	selected: Set<T>,
+	allValues: List<T>,
+	column: String,
+	params: MutableList<Any>,
+	conditions: MutableList<String>,
+	valueSelector: (T) -> String,
+) {
+	if (selected.isEmpty() || selected.size >= allValues.size) {
+		return
 	}
+	val placeholders = selected.joinToString(",") { "?" }
+	conditions.add("$column IN ($placeholders)")
+	selected.forEach { value -> params.add(valueSelector(value)) }
+}
 
-	if (filters.cookingMethods.isNotEmpty() && filters.cookingMethods.size < CookingMethod.entries.size) {
-		val placeholders = filters.cookingMethods.joinToString(",") { "?" }
-		conditions.add("r.cooking_method IN ($placeholders)")
-		filters.cookingMethods.forEach { params.add(it.name) }
+private fun addDietaryPreferenceFilters(
+	filters: SearchFilters,
+	conditions: MutableList<String>,
+	params: MutableList<Any>,
+) {
+	if (filters.dietaryPreferences.isEmpty()) {
+		return
 	}
+	val parts = filters.dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
+	conditions.add("(${parts.joinToString(" OR ")})")
+	filters.dietaryPreferences.forEach { params.add(it.name) }
+}
 
-	if (filters.calorieRanges.isNotEmpty() && filters.calorieRanges.size < CalorieRange.entries.size) {
-		val placeholders = filters.calorieRanges.joinToString(",") { "?" }
-		conditions.add("r.calorie_range IN ($placeholders)")
-		filters.calorieRanges.forEach { params.add(it.name) }
-	}
-
-	if (filters.dietaryPreferences.isNotEmpty()) {
-		val parts = filters.dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
-		conditions.add("(${parts.joinToString(" OR ")})")
-		filters.dietaryPreferences.forEach { params.add(it.name) }
-	}
-
+private fun addNutritionFilters(
+	filters: SearchFilters,
+	conditions: MutableList<String>,
+) {
 	filters.nutritionFilters.forEach { filter ->
-		val condition = when (filter) {
-			NutritionFilter.LOW_CARB -> "n.carbohydrates < $LOW_CARB_THRESHOLD"
-			NutritionFilter.HIGH_PROTEIN -> "n.protein > $HIGH_PROTEIN_THRESHOLD"
-			NutritionFilter.LOW_SODIUM -> "n.sodium < $LOW_SODIUM_THRESHOLD"
-			NutritionFilter.LOW_FAT -> "n.fat < $LOW_FAT_THRESHOLD"
-			NutritionFilter.HIGH_FIBER -> "n.fiber > $HIGH_FIBER_THRESHOLD"
-		}
+		val condition = nutritionFilterCondition(filter)
 		conditions.add(
 			"""
 			EXISTS (
@@ -66,3 +99,12 @@ internal fun addEnrichmentFilterConditions(
 		)
 	}
 }
+
+private fun nutritionFilterCondition(filter: NutritionFilter): String =
+	when (filter) {
+		NutritionFilter.LOW_CARB -> "n.carbohydrates < $LOW_CARB_THRESHOLD"
+		NutritionFilter.HIGH_PROTEIN -> "n.protein > $HIGH_PROTEIN_THRESHOLD"
+		NutritionFilter.LOW_SODIUM -> "n.sodium < $LOW_SODIUM_THRESHOLD"
+		NutritionFilter.LOW_FAT -> "n.fat < $LOW_FAT_THRESHOLD"
+		NutritionFilter.HIGH_FIBER -> "n.fiber > $HIGH_FIBER_THRESHOLD"
+	}
