@@ -78,7 +78,7 @@ class MaxLineLengthTabsSpec {
 		fun `should report no errors when maxLineLength is set to 200`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "200",
+					MAX_LINE_LENGTH to 200,
 				)
 			)
 
@@ -116,79 +116,16 @@ class MaxLineLengthTabsSpec {
 		}
 	}
 
+
 	@Nested
 	inner class `a kt file with long but suppressed lines` {
 
-		private val code = """
-                class MaxLineLengthSuppressed {
-                    companion object {
-                        @Suppress("MaxLineLengthTabs")
-                        val LOREM_IPSUM = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
-                
-                        @Suppress("MaxLineLengthTabs")
-                        val A_VERY_LONG_MULTI_LINE = $TQ
-                            This is anotehr very very very very very very very very, very long multiline String that will break the MaxLineLength"
-                        $TQ.trimIndent()
-                    }
-                
-                    @Suppress("MaxLineLengthTabs")
-                    val loremIpsumField = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
-                
-                    @Suppress("MaxLineLengthTabs")
-                    val longMultiLineField = $TQ
-                            This is anotehr very very very very very very very very
-                            very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very
-                            very long multiline String that will break the MaxLineLength
-                        $TQ.trimIndent()
-                
-                    @Suppress("MaxLineLengthTabs")
-                    val longMultiLineFieldWithLineBreaks =
-                        $TQ
-                            This is anotehr very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very
-                            very long multiline String with Line Break that will break the MaxLineLength
-                        $TQ.trimIndent()
-                
-                    fun main() {
-                        val thisIsAVeryLongValName = "This is a very, very long String that will break the MaxLineLength"
-                
-                        if (thisIsAVeryLongValName.length > "This is not quite as long of a String".length) {
-                            println("It's indeed a very long String")
-                        }
-                
-                        @Suppress("MaxLineLengthTabs")
-                        val hello = anIncrediblyLongAndComplexMethodNameThatProbablyShouldBeMuchShorterButForTheSakeOfTheTestItsNot()
-                        val loremIpsum = getLoremIpsum()
-                
-                        println(hello)
-                        println(loremIpsum)
-                
-                    }
-                
-                    fun anIncrediblyLongAndComplexMethodNameThatProbablyShouldBeMuchShorterButForTheSakeOfTheTestItsNot(): String {
-                        return "Hello"
-                    }
-                
-                    @Suppress("MaxLineLengthTabs")
-                    fun getLoremIpsum() = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
-                }
-                
-                @Suppress("MaxLineLengthTabs")
-                class AClassWithSuperLongNameItIsSooooLongThatIHaveTroubleThinkingAboutAVeryLongNameManThisIsReallyHardToFillAllTheNecessaryCharacters
-                
-                @Suppress("MaxLineLengthTabs")
-                class AClassWithReallyLongCommentsInside {
-                    /*
-                     a really long line that is inside a normal comment ------------------------------------------------------------------------------------------------>
-                     */
-                
-                    /**
-                     a really long line that is inside a KDoc comment   ------------------------------------------------------------------------------------------------>
-                     */
-                }
-            """.trimIndent()
-
 		@Test
 		fun `should not report as lines are suppressed`() {
+			val code = """
+				@Suppress("MaxLineLengthTabs")
+				val longLine = "${"x".repeat(150)}"
+			""".trimIndent()
 			val rule = MaxLineLengthTabs()
 
 			val findings = rule.lint(code)
@@ -212,7 +149,7 @@ class MaxLineLengthTabsSpec {
 		fun `should not report the package statement and import statements by default`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -224,9 +161,9 @@ class MaxLineLengthTabsSpec {
 		fun `should report the package statement and import statements if they're enabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "false",
-					EXCLUDE_IMPORT_STATEMENTS to "false",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to false,
+					EXCLUDE_IMPORT_STATEMENTS to false,
 				)
 			)
 
@@ -238,9 +175,9 @@ class MaxLineLengthTabsSpec {
 		fun `should not report anything if both package and import statements are disabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "true",
-					EXCLUDE_IMPORT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to true,
+					EXCLUDE_IMPORT_STATEMENTS to true,
 				)
 			)
 
@@ -287,7 +224,7 @@ class MaxLineLengthTabsSpec {
 		fun `should report the package statement, import statements, line and comments by default`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -299,10 +236,10 @@ class MaxLineLengthTabsSpec {
 		fun `should report the package statement, import statements, line and comments if they're enabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "false",
-					EXCLUDE_IMPORT_STATEMENTS to "false",
-					EXCLUDE_COMMENT_STATEMENTS to "false",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to false,
+					EXCLUDE_IMPORT_STATEMENTS to false,
+					EXCLUDE_COMMENT_STATEMENTS to false,
 				)
 			)
 
@@ -314,8 +251,8 @@ class MaxLineLengthTabsSpec {
 		fun `should not report comments if they're disabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_COMMENT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_COMMENT_STATEMENTS to true,
 				)
 			)
 
@@ -341,7 +278,7 @@ class MaxLineLengthTabsSpec {
 		fun `should only the function line by default`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -353,9 +290,9 @@ class MaxLineLengthTabsSpec {
 		fun `should report the package statement, import statements and line if they're not excluded`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "false",
-					EXCLUDE_IMPORT_STATEMENTS to "false",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to false,
+					EXCLUDE_IMPORT_STATEMENTS to false,
 				)
 			)
 
@@ -367,9 +304,9 @@ class MaxLineLengthTabsSpec {
 		fun `should report only method if both package and import statements are disabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "true",
-					EXCLUDE_IMPORT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to true,
+					EXCLUDE_IMPORT_STATEMENTS to true,
 				)
 			)
 
@@ -381,9 +318,9 @@ class MaxLineLengthTabsSpec {
 		fun `should report correct line and column for function with excessive length`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "true",
-					EXCLUDE_IMPORT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to true,
+					EXCLUDE_IMPORT_STATEMENTS to true,
 				)
 			)
 
@@ -399,8 +336,8 @@ class MaxLineLengthTabsSpec {
 	fun `report the correct lines on raw strings with backslash on it - issue #5314`() {
 		val rule = MaxLineLengthTabs(
 			TestConfig(
-				MAX_LINE_LENGTH to "30",
-				"excludeRawStrings" to "false",
+				MAX_LINE_LENGTH to 30,
+				EXCLUDE_RAW_STRINGS to false,
 			)
 		)
 
@@ -420,8 +357,8 @@ class MaxLineLengthTabsSpec {
 	fun `report the correct lines on raw strings with backslash on it 2 - issue #5314`() {
 		val rule = MaxLineLengthTabs(
 			TestConfig(
-				MAX_LINE_LENGTH to "30",
-				"excludeRawStrings" to "false",
+				MAX_LINE_LENGTH to 30,
+				EXCLUDE_RAW_STRINGS to false,
 			)
 		)
 
@@ -438,7 +375,7 @@ class MaxLineLengthTabsSpec {
 	fun `report the correct lines on interpolated strings - issue #5314`() {
 		val rule = MaxLineLengthTabs(
 			TestConfig(
-				MAX_LINE_LENGTH to "65",
+				MAX_LINE_LENGTH to 65,
 			)
 		)
 
@@ -485,7 +422,7 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -502,7 +439,7 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -521,7 +458,7 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -548,7 +485,7 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -570,7 +507,7 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -590,7 +527,7 @@ class MaxLineLengthTabsSpec {
 				}"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "80",
+					MAX_LINE_LENGTH to 80,
 				)
 			)
 
@@ -608,7 +545,7 @@ class MaxLineLengthTabsSpec {
 				"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "80",
+					MAX_LINE_LENGTH to 80,
 				)
 			)
 
@@ -626,7 +563,7 @@ class MaxLineLengthTabsSpec {
 					"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
@@ -644,7 +581,7 @@ class MaxLineLengthTabsSpec {
 			"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "70",
+					MAX_LINE_LENGTH to 70,
 				)
 			)
 
