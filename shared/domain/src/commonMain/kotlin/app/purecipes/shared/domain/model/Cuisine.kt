@@ -53,11 +53,13 @@ enum class Cuisine(
 fun cuisineFromRawValue(value: String?): Cuisine? {
 	if (value == null) return null
 	val normalizedValue = value.trim().normalizeCuisineToken()
-	if (normalizedValue.isEmpty()) return null
-
-	return Cuisine.entries.firstOrNull { cuisine ->
-		cuisine.name.normalizeCuisineToken() == normalizedValue ||
-			cuisine.displayName.normalizeCuisineToken() == normalizedValue
+	return if (normalizedValue.isEmpty()) {
+		null
+	} else {
+		Cuisine.entries.firstOrNull { cuisine ->
+			cuisine.name.normalizeCuisineToken() == normalizedValue ||
+				cuisine.displayName.normalizeCuisineToken() == normalizedValue
+		}
 	}
 }
 

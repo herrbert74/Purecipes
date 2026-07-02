@@ -45,26 +45,29 @@ internal object IngredientLineParser {
 			)
 		}
 
-		val match = quantityUnitNamePattern.find(rawText) ?: return ParsedIngredientLine(
-			rawText = rawText,
-			quantity = null,
-			unit = null,
-			parsedName = rawText,
-			isMeasurable = false,
-		)
+		val match = quantityUnitNamePattern.find(rawText)
+		return if (match == null) {
+			ParsedIngredientLine(
+				rawText = rawText,
+				quantity = null,
+				unit = null,
+				parsedName = rawText,
+				isMeasurable = false,
+			)
+		} else {
+			val quantity = parseQuantity(match.groups["qty"]?.value.orEmpty())
+			val unit = normalizeUnit(match.groups["unit"]?.value)
+			val parsedName = match.groups["name"]?.value?.trim().orEmpty().ifBlank { rawText }
+			val isMeasurable = quantity != null && unit != null && unit in knownUnits
 
-		val quantity = parseQuantity(match.groups["qty"]?.value.orEmpty())
-		val unit = normalizeUnit(match.groups["unit"]?.value)
-		val parsedName = match.groups["name"]?.value?.trim().orEmpty().ifBlank { rawText }
-		val isMeasurable = quantity != null && unit != null && unit in knownUnits
-
-		return ParsedIngredientLine(
-			rawText = rawText,
-			quantity = quantity,
-			unit = unit,
-			parsedName = parsedName,
-			isMeasurable = isMeasurable,
-		)
+			ParsedIngredientLine(
+				rawText = rawText,
+				quantity = quantity,
+				unit = unit,
+				parsedName = parsedName,
+				isMeasurable = isMeasurable,
+			)
+		}
 	}
 
 	private fun parseQuantity(rawQuantity: String): BigDecimal? {
@@ -72,21 +75,21 @@ internal object IngredientLineParser {
 		if (trimmed.isEmpty()) {
 			return null
 		}
-		if (!trimmed.contains('/')) {
-			return trimmed.toBigDecimalOrNull()
-		}
-
-		val parts = trimmed.split('/').map { it.trim() }
-		val numerator = parts.getOrNull(0)?.toBigDecimalOrNull()
-		val denominator = parts.getOrNull(1)?.toBigDecimalOrNull()
-		val hasValidFraction = parts.size == 2 &&
-			numerator != null &&
-			denominator != null &&
-			denominator.compareTo(BigDecimal.ZERO) != 0
-		return if (hasValidFraction) {
-			numerator!!.divide(denominator!!, QUANTITY_SCALE, RoundingMode.HALF_UP)
+		return if (!trimmed.contains('/')) {
+			trimmed.toBigDecimalOrNull()
 		} else {
-			null
+			val parts = trimmed.split('/').map { it.trim() }
+			val numerator = parts.getOrNull(0)?.toBigDecimalOrNull()
+			val denominator = parts.getOrNull(1)?.toBigDecimalOrNull()
+			val hasValidFraction = parts.size == 2 &&
+				numerator != null &&
+				denominator != null &&
+				denominator.compareTo(BigDecimal.ZERO) != 0
+			if (hasValidFraction) {
+				numerator!!.divide(denominator!!, QUANTITY_SCALE, RoundingMode.HALF_UP)
+			} else {
+				null
+			}
 		}
 	}
 

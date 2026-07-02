@@ -13,14 +13,23 @@ tasks.register("jvmTest") {
 }
 
 dependencies {
+	// Workaround for detekt-test requesting unpublished detekt-api-test-fixtures: https://github.com/detekt/detekt/issues/9409
+	components {
+		withModule("dev.detekt:detekt-test") {
+			withVariant("runtimeElements") {
+				withDependencies {
+					removeAll { it.group == "dev.detekt" && it.name == "detekt-api" }
+					add("dev.detekt:detekt-api:${id.version}")
+				}
+			}
+		}
+	}
 	compileOnly(libs.detekt.api)
+	implementation(libs.detekt.psi.utils)
 	testImplementation(libs.detekt.test)
-	testImplementation(libs.detekt.testUtils)
 	testImplementation(libs.kotest.assertionsCore)
-	testImplementation(libs.jUnit)
 	testImplementation(libs.assertj)
 	testImplementation(libs.jUnit5.jupiterApi)
-	testImplementation(libs.jUnit5.jupiterEngine)
 	testRuntimeOnly(libs.jUnit5.jupiterEngine)
 	testRuntimeOnly(libs.jUnit5.platformLauncher)
 }

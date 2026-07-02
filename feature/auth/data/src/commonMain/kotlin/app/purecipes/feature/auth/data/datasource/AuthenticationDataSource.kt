@@ -235,12 +235,11 @@ class InMemoryAuthenticationLocalDataSource(
 	override suspend fun signInWithEmail(email: String, password: String): Outcome<String> {
 		val normalizedEmail = email.normalizedEmail()
 		val account = store.accountsByEmail[normalizedEmail]
-			?: return Err(Failure.ServerError("No account was found for this email"))
-		if (account.password != password) {
-			return Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
+		return when {
+			account == null -> Err(Failure.ServerError("No account was found for this email"))
+			account.password != password -> Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
+			else -> Ok("mock-firebase-id-token-for-$normalizedEmail")
 		}
-		// Mock Firebase ID token
-		return Ok("mock-firebase-id-token-for-$normalizedEmail")
 	}
 
 	override suspend fun registerWithEmail(

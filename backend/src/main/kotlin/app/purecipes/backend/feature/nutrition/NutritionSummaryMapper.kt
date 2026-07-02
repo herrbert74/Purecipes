@@ -40,20 +40,20 @@ internal fun RecipeNutritionCalculationResult.toNutritionSummary(): NutritionSum
 	}
 
 	val totals = totals
-	if (totals != null) {
-		return totals.toNutritionSummary()
+	return if (totals != null) {
+		totals.toNutritionSummary()
+	} else {
+		val matchedCount = countableResults.count { result ->
+			result.foodMatch != null && result.grams != null
+		}
+		NutritionSummary(
+			matchedIngredientCount = matchedCount,
+			totalIngredientCount = countableResults.size,
+			calculationSource = NutritionCalculationSource.CALCULATED,
+			confidence = if (matchedCount > 0) NutritionConfidence.PARTIAL else null,
+			isComplete = false,
+		)
 	}
-
-	val matchedCount = countableResults.count { result ->
-		result.foodMatch != null && result.grams != null
-	}
-	return NutritionSummary(
-		matchedIngredientCount = matchedCount,
-		totalIngredientCount = countableResults.size,
-		calculationSource = NutritionCalculationSource.CALCULATED,
-		confidence = if (matchedCount > 0) NutritionConfidence.PARTIAL else null,
-		isComplete = false,
-	)
 }
 
 private fun BigDecimal?.toDoubleOrNull(): Double? = this?.toDouble()

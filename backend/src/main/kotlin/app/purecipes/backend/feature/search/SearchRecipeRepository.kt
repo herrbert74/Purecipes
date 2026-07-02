@@ -7,8 +7,6 @@ import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
 import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.recipeContainsExcludedIngredient
-import app.purecipes.shared.domain.model.CookingTimeRange
-import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchRequest
 import app.purecipes.shared.domain.model.SearchResultsPage
@@ -48,7 +46,23 @@ class SearchRecipeRepository(
 		val normalizedPageNumber = request.pageNumber.coerceAtLeast(1)
 		val normalizedPageSize = request.pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
 		val offset = (normalizedPageNumber - 1) * normalizedPageSize
-		val filters = request.filters
+		val (whereClause, params) = buildSearchWhereClause(request)
+
+		val (items, totalMatches) = dataSource.connection.use { conn ->
+			searchWithFiltersOnConnection(
+				conn = conn,
+				whereClause = whereClause,
+				params = params,
+				limit = normalizedPageSize,
+				offset = offset,
+				userId = userId,
+			)
+		}
+
+		return SearchResultsPage(items, normalizedPageNumber, normalizedPageSize, totalMatches)
+	}
+
+	private fun buildSearchWhereClause(request: SearchRequest): Pair<String, List<Any>> {
 		val conditions = mutableListOf<String>()
 		val params = mutableListOf<Any>()
 		if (request.query.isNotBlank()) {
@@ -57,75 +71,79 @@ class SearchRecipeRepository(
 			params.add(like)
 			params.add(like)
 		}
-		if (filters.cuisines.isNotEmpty() && filters.cuisines.size < Cuisine.entries.size) {
-			val placeholders = filters.cuisines.joinToString(",") { "?" }
-			conditions.add("r.cuisine IN ($placeholders)")
-			filters.cuisines.forEach { params.add(it.displayName) }
-		}
-		if (filters.cookingTimeRanges.isNotEmpty() && filters.cookingTimeRanges.size < CookingTimeRange.entries.size) {
-			val timeParts = filters.cookingTimeRanges.map { range ->
-				when (range) {
-					CookingTimeRange.UNDER_15 -> "r.total_time <= 15"
-					CookingTimeRange.UNDER_30 -> "r.total_time <= 30"
-					CookingTimeRange.UNDER_60 -> "r.total_time <= 60"
-					CookingTimeRange.OVER_60 -> "r.total_time > 60"
-				}
-			}
-			conditions.add("(${timeParts.joinToString(" OR ")})")
-		}
-		addEnrichmentFilterConditions(filters, conditions, params)
+		addCuisineFilterConditions(request.filters, conditions, params)
+		addCookingTimeFilterConditions(request.filters, conditions)
+		addEnrichmentFilterConditions(request.filters, conditions, params)
 		val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
+		return whereClause to params
+	}
 
-		val (items, totalMatches) = dataSource.connection.use { conn ->
-			val availableIngredients =
-				if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
-			val excludedIngredients =
-				if (userId != null) loadExcludedIngredientsForUser(conn, userId) else emptyList()
-			val requiresIngredientPostFilter =
-				availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty()
-			if (!requiresIngredientPostFilter) {
-				val total = countSearchWithFiltersRecipes(conn, whereClause, params)
-				val page = querySearchWithFiltersRecipes(
+	private fun searchWithFiltersOnConnection(
+		conn: Connection,
+		whereClause: String,
+		params: List<Any>,
+		limit: Int,
+		offset: Int,
+		userId: Long?,
+	): Pair<List<RecipeSummary>, Int> {
+		val availableIngredients =
+			if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
+		val excludedIngredients =
+			if (userId != null) loadExcludedIngredientsForUser(conn, userId) else emptyList()
+		val requiresIngredientPostFilter =
+			availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty()
+		return if (!requiresIngredientPostFilter) {
+			val total = countSearchWithFiltersRecipes(conn, whereClause, params)
+			val page = querySearchWithFiltersRecipes(
+				conn = conn,
+				whereClause = whereClause,
+				params = params,
+				limit = limit,
+				offset = offset,
+				executeQuery = recipeRepository::executeQuery,
+			)
+			page to total
+		} else {
+			val filtered = querySearchWithFiltersRecipes(
+				conn = conn,
+				whereClause = whereClause,
+				params = params,
+				executeQuery = recipeRepository::executeQuery,
+			).filter { summary ->
+				matchesIngredientFilters(
 					conn = conn,
-					whereClause = whereClause,
-					params = params,
-					limit = normalizedPageSize,
-					offset = offset,
-					executeQuery = recipeRepository::executeQuery,
+					summary = summary,
+					availableIngredients = availableIngredients,
+					excludedIngredients = excludedIngredients,
 				)
-				page to total
-			} else {
-				val filtered = querySearchWithFiltersRecipes(
-					conn = conn,
-					whereClause = whereClause,
-					params = params,
-					executeQuery = recipeRepository::executeQuery,
-				).filter { summary ->
-					val loadIngredientGroups = { recipeId: Int ->
-						recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
-					}
-					if (recipeContainsExcludedIngredient(
-							recipeId = summary.id,
-							excludedIngredients = excludedIngredients,
-							loadIngredientGroups = loadIngredientGroups,
-						)
-					) {
-						false
-					} else if (availableIngredients.isNotEmpty()) {
-						isRecipeCoveredByAvailableIngredients(
-							recipeId = summary.id,
-							availableIngredients = availableIngredients,
-							loadIngredientGroups = loadIngredientGroups,
-						)
-					} else {
-						true
-					}
-				}
-				filtered.drop(offset).take(normalizedPageSize) to filtered.size
 			}
+			filtered.drop(offset).take(limit) to filtered.size
 		}
+	}
 
-		return SearchResultsPage(items, normalizedPageNumber, normalizedPageSize, totalMatches)
+	private fun matchesIngredientFilters(
+		conn: Connection,
+		summary: RecipeSummary,
+		availableIngredients: List<String>,
+		excludedIngredients: List<String>,
+	): Boolean {
+		val loadIngredientGroups = { recipeId: Int ->
+			recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
+		}
+		if (recipeContainsExcludedIngredient(
+				recipeId = summary.id,
+				excludedIngredients = excludedIngredients,
+				loadIngredientGroups = loadIngredientGroups,
+			)
+		) {
+			return false
+		}
+		return availableIngredients.isEmpty() ||
+			isRecipeCoveredByAvailableIngredients(
+				recipeId = summary.id,
+				availableIngredients = availableIngredients,
+				loadIngredientGroups = loadIngredientGroups,
+			)
 	}
 
 	private fun searchByKeyword(searchInput: KeywordSearchInput): List<RecipeSummary> {

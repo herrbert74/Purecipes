@@ -101,15 +101,19 @@ class MainViewModel(
 
 		override fun back(): Boolean {
 			val stack = activeStack
-			if (stack.size > 1) {
-				stack.removeAt(stack.lastIndex)
-				return true
+			return when {
+				stack.size > 1 -> {
+					stack.removeAt(stack.lastIndex)
+					true
+				}
+
+				selectedTab.stackId != MainTabStackId.Search -> {
+					selectTab(MainTabStackId.Search)
+					true
+				}
+
+				else -> false
 			}
-			if (selectedTab.stackId != MainTabStackId.Search) {
-				selectTab(MainTabStackId.Search)
-				return true
-			}
-			return false
 		}
 	}
 

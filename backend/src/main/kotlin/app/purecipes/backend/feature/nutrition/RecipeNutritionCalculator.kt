@@ -103,26 +103,26 @@ internal class RecipeNutritionCalculator(
 		val foodMatch = lookupIndex.findFood(parsed.parsedName)
 		val quantity = parsed.quantity
 		val unit = parsed.unit
-		if (foodMatch == null || quantity == null || unit == null) {
-			return IngredientNutritionCalculationResult(
+		return if (foodMatch == null || quantity == null || unit == null) {
+			IngredientNutritionCalculationResult(
 				ingredientId = ingredient.ingredientId,
 				parsed = parsed,
 				foodMatch = foodMatch,
 				grams = null,
 			)
+		} else {
+			val grams = IngredientGramWeightResolver.resolveGrams(
+				quantity = quantity,
+				unit = unit,
+				foodMeasures = lookupIndex.measuresForFood(foodMatch.foodId),
+			)
+			IngredientNutritionCalculationResult(
+				ingredientId = ingredient.ingredientId,
+				parsed = parsed,
+				foodMatch = foodMatch,
+				grams = grams,
+			)
 		}
-
-		val grams = IngredientGramWeightResolver.resolveGrams(
-			quantity = quantity,
-			unit = unit,
-			foodMeasures = lookupIndex.measuresForFood(foodMatch.foodId),
-		)
-		return IngredientNutritionCalculationResult(
-			ingredientId = ingredient.ingredientId,
-			parsed = parsed,
-			foodMatch = foodMatch,
-			grams = grams,
-		)
 	}
 
 	private fun countsTowardNutritionTotals(

@@ -25,13 +25,13 @@ internal object ServingsParser {
 
 		val match = SERVING_COUNT_REGEX.find(trimmed) ?: LEADING_COUNT_REGEX.find(trimmed)
 		val count = match?.groupValues?.getOrNull(1)?.toDoubleOrNull()
-		if (count == null || count <= 0.0) {
-			return null
+		return if (count == null || count <= 0.0) {
+			null
+		} else {
+			ParsedServings(
+				count = count,
+				description = trimmed,
+			)
 		}
-
-		return ParsedServings(
-			count = count,
-			description = trimmed,
-		)
 	}
 }

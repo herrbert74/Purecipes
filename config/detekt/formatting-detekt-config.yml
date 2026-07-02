@@ -1,4 +1,4 @@
-formatting:
+ktlint:
   active: true
   android: false
   autoCorrect: true
@@ -158,7 +158,7 @@ formatting:
     active: true
     autoCorrect: true
   NoUnusedImports:
-    active: false
+    active: true
     autoCorrect: true
   NoWildcardImports:
     active: true

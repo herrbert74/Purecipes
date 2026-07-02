@@ -37,15 +37,18 @@ class CookbookShareRepository(
 	}
 
 	private fun importShareOnConnection(conn: Connection, userId: Long, token: String): ImportShareResult {
-		val share = loadShareIfValid(conn, token) ?: return ImportShareResult.ShareNotFound
-		if (share.createdByUserId == userId) {
-			return ImportShareResult.CannotImportOwnCookbook
-		}
-		val existingImport = findImportedCookbookId(conn, userId, token)
-		return if (existingImport != null) {
-			importedResultForExisting(conn, userId, existingImport)
-		} else {
-			importNewCookbookFromShare(conn, userId, token, share)
+		val share = loadShareIfValid(conn, token)
+		return when {
+			share == null -> ImportShareResult.ShareNotFound
+			share.createdByUserId == userId -> ImportShareResult.CannotImportOwnCookbook
+			else -> {
+				val existingImport = findImportedCookbookId(conn, userId, token)
+				if (existingImport != null) {
+					importedResultForExisting(conn, userId, existingImport)
+				} else {
+					importNewCookbookFromShare(conn, userId, token, share)
+				}
+			}
 		}
 	}
 
@@ -79,30 +82,34 @@ class CookbookShareRepository(
 		token: String,
 		share: ShareRow,
 	): ImportShareResult {
-		val sourceName = loadCookbookName(conn, share.cookbookId) ?: return ImportShareResult.ShareNotFound
+		val sourceName = loadCookbookName(conn, share.cookbookId)
+		if (sourceName == null) {
+			return ImportShareResult.ShareNotFound
+		}
 		val recipeIds = loadShareableRecipeIds(conn, share.cookbookId)
 		val importName = resolveImportCookbookName(conn, userId, sourceName)
 		val createResult = cookbookRepository.createCookbook(userId, importName)
-		if (createResult !is CookbookRepository.CreateCookbookResult.Created) {
-			return ImportShareResult.ImportFailed
+		return if (createResult !is CookbookRepository.CreateCookbookResult.Created) {
+			ImportShareResult.ImportFailed
+		} else {
+			val counts = importRecipesIntoCookbook(userId, createResult.cookbook.id, recipeIds)
+			conn.prepareStatement(INSERT_IMPORT_SQL).use { ps ->
+				ps.setLong(JDBC_USER_ID, userId)
+				ps.setString(JDBC_SHARE_TOKEN, token)
+				ps.setInt(JDBC_IMPORTED_COOKBOOK_ID, createResult.cookbook.id)
+				ps.executeUpdate()
+			}
+			loadCookbookSummaryForUser(conn, userId, createResult.cookbook.id)?.let { summary ->
+				ImportShareResult.Imported(
+					CookbookImportResult(
+						cookbook = summary,
+						recipesImported = counts.imported,
+						recipesSkipped = counts.skipped,
+						alreadyImported = false,
+					),
+				)
+			} ?: ImportShareResult.ImportFailed
 		}
-		val counts = importRecipesIntoCookbook(userId, createResult.cookbook.id, recipeIds)
-		conn.prepareStatement(INSERT_IMPORT_SQL).use { ps ->
-			ps.setLong(JDBC_USER_ID, userId)
-			ps.setString(JDBC_SHARE_TOKEN, token)
-			ps.setInt(JDBC_IMPORTED_COOKBOOK_ID, createResult.cookbook.id)
-			ps.executeUpdate()
-		}
-		return loadCookbookSummaryForUser(conn, userId, createResult.cookbook.id)?.let { summary ->
-			ImportShareResult.Imported(
-				CookbookImportResult(
-					cookbook = summary,
-					recipesImported = counts.imported,
-					recipesSkipped = counts.skipped,
-					alreadyImported = false,
-				),
-			)
-		} ?: ImportShareResult.ImportFailed
 	}
 
 	private fun importRecipesIntoCookbook(
@@ -138,15 +145,16 @@ class CookbookShareRepository(
 		if (!existsCookbookByNormalizedName(conn, userId, baseName)) {
 			return baseName
 		}
+		var candidate: String? = null
 		var suffix = 2
-		while (suffix <= MAX_IMPORT_NAME_SUFFIX_ATTEMPTS) {
-			val candidate = "$baseName ($suffix)"
-			if (!existsCookbookByNormalizedName(conn, userId, candidate)) {
-				return candidate
+		while (suffix <= MAX_IMPORT_NAME_SUFFIX_ATTEMPTS && candidate == null) {
+			val nextCandidate = "$baseName ($suffix)"
+			if (!existsCookbookByNormalizedName(conn, userId, nextCandidate)) {
+				candidate = nextCandidate
 			}
 			suffix += 1
 		}
-		return "$baseName (${System.currentTimeMillis()})"
+		return candidate ?: "$baseName (${System.currentTimeMillis()})"
 	}
 
 	private fun existsCookbookByNormalizedName(conn: Connection, userId: Long, name: String): Boolean {

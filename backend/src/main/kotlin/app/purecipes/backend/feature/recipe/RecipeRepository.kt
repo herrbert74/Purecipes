@@ -610,10 +610,9 @@ internal fun isIngredientSlotCoveredByPantry(
 		return true
 	}
 	val requiredMembers = slot.filter { ingredient -> ingredient.requirement != IngredientRequirement.OPTIONAL }
-	if (requiredMembers.isEmpty()) {
-		return true
-	}
-	return if (requiredMembers.any { ingredient -> ingredient.requirement == IngredientRequirement.ALTERNATIVE }) {
+	return if (requiredMembers.isEmpty()) {
+		true
+	} else if (requiredMembers.any { ingredient -> ingredient.requirement == IngredientRequirement.ALTERNATIVE }) {
 		requiredMembers.any { ingredient ->
 			IngredientVocabulary.isCoveredByAvailableIngredients(
 				ingredientLine = ingredient.text,

@@ -181,35 +181,34 @@ class RecipeDetailsViewModel(
 	}
 
 	fun createCookbookAndAdd(name: String, onDone: (String?) -> Unit) {
-		val recipe = recipeDetails ?: return onDone(null)
+		val recipe = recipeDetails
 		val trimmed = name.trim()
-		if (trimmed.isEmpty()) {
-			onDone(null)
-			return
-		}
-		if (sheetCookbooks.any { it.name.trim().equals(trimmed, ignoreCase = true) }) {
-			val duplicateMessage = "Cookbook already exists"
-			cookbookActionError = duplicateMessage
-			onDone(duplicateMessage)
-			return
-		}
-		viewModelScope.launch {
-			isCookbookActionInFlight = true
-			cookbookActionError = null
-			val createOutcome = createCookbook(trimmed)
-			val created = createOutcome.get()
-			if (created == null) {
+		when {
+			recipe == null || trimmed.isEmpty() -> onDone(null)
+			sheetCookbooks.any { it.name.trim().equals(trimmed, ignoreCase = true) } -> {
+				val duplicateMessage = "Cookbook already exists"
+				cookbookActionError = duplicateMessage
+				onDone(duplicateMessage)
+			}
+
+			else -> viewModelScope.launch {
+				isCookbookActionInFlight = true
+				cookbookActionError = null
+				val createOutcome = createCookbook(trimmed)
+				val created = createOutcome.get()
+				if (created == null) {
+					isCookbookActionInFlight = false
+					onDone(createOutcome.getError()?.message)
+					return@launch
+				}
+				val addOutcome = addRecipeToCookbook(created.id, recipe.id)
+				val err = addOutcome.getError()?.message
+				if (err == null) {
+					refreshCookbookMembership()
+				}
 				isCookbookActionInFlight = false
-				onDone(createOutcome.getError()?.message)
-				return@launch
+				onDone(err)
 			}
-			val addOutcome = addRecipeToCookbook(created.id, recipe.id)
-			val err = addOutcome.getError()?.message
-			if (err == null) {
-				refreshCookbookMembership()
-			}
-			isCookbookActionInFlight = false
-			onDone(err)
 		}
 	}
 

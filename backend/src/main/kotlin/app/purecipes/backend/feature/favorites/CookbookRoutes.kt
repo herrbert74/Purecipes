@@ -78,21 +78,21 @@ private suspend fun ApplicationCall.respondCookbookCreate(
 				detail = validationError,
 			),
 		)
-		return
-	}
-	val repo = CookbookRepository(dbProvider().dataSource)
-	when (val result = repo.createCookbook(userId, request.name.trim())) {
-		is CookbookRepository.CreateCookbookResult.Created ->
-			respond(HttpStatusCode.Created, result.cookbook)
+	} else {
+		val repo = CookbookRepository(dbProvider().dataSource)
+		when (val result = repo.createCookbook(userId, request.name.trim())) {
+			is CookbookRepository.CreateCookbookResult.Created ->
+				respond(HttpStatusCode.Created, result.cookbook)
 
-		CookbookRepository.CreateCookbookResult.DuplicateName ->
-			respond(
-				HttpStatusCode.Conflict,
-				ErrorResponse(
-					message = "Cookbook already exists",
-					detail = "Use a different cookbook name",
-				),
-			)
+			CookbookRepository.CreateCookbookResult.DuplicateName ->
+				respond(
+					HttpStatusCode.Conflict,
+					ErrorResponse(
+						message = "Cookbook already exists",
+						detail = "Use a different cookbook name",
+					),
+				)
+		}
 	}
 }
 
@@ -121,9 +121,9 @@ private suspend fun ApplicationCall.respondCookbookDelete(
 				detail = "No cookbook found for id: $cookbookId",
 			),
 		)
-		return
+	} else {
+		respond(HttpStatusCode.NoContent)
 	}
-	respond(HttpStatusCode.NoContent)
 }
 
 private suspend fun ApplicationCall.respondCookbookRecipes(
@@ -155,9 +155,9 @@ private suspend fun ApplicationCall.respondCookbookRecipes(
 				detail = "No cookbook found for id: $cookbookId",
 			),
 		)
-		return
+	} else {
+		respond(page)
 	}
-	respond(page)
 }
 
 private suspend fun ApplicationCall.respondCookbookRecipePut(
@@ -237,9 +237,9 @@ private suspend fun ApplicationCall.respondCookbookRecipeDelete(
 				detail = "Cookbook or recipe membership was not found",
 			),
 		)
-		return
+	} else {
+		respond(HttpStatusCode.NoContent)
 	}
-	respond(HttpStatusCode.NoContent)
 }
 
 private suspend fun ApplicationCall.receiveCookbookCreateRequestOrRespond(): CookbookCreateRequest? {

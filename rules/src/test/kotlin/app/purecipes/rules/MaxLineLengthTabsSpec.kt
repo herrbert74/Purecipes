@@ -2,14 +2,12 @@
 
 package app.purecipes.rules
 
-import io.github.detekt.test.utils.compileContentForTest
-import io.gitlab.arturbosch.detekt.api.SourceLocation
-import io.gitlab.arturbosch.detekt.test.TestConfig
-import io.gitlab.arturbosch.detekt.test.assertThat
-import io.gitlab.arturbosch.detekt.test.compileAndLint
+import dev.detekt.api.SourceLocation
+import dev.detekt.test.TestConfig
+import dev.detekt.test.lint
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.assertj.core.api.Assertions.assertThat as doAssert
 
 private const val MAX_LINE_LENGTH = "maxLineLength"
 private const val EXCLUDE_PACKAGE_STATEMENTS = "excludePackageStatements"
@@ -22,8 +20,7 @@ class MaxLineLengthTabsSpec {
 	@Nested
 	inner class `a kt file with some long lines` {
 
-		private val file = compileContentForTest(
-			"""
+		private val code = """
                 class MaxLineLength {
                     companion object {
                         val LOREM_IPSUM = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
@@ -76,26 +73,25 @@ class MaxLineLengthTabsSpec {
                     fun getLoremIpsum() = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
                 }
             """.trimIndent()
-		)
 
 		@Test
 		fun `should report no errors when maxLineLength is set to 200`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "200",
+					MAX_LINE_LENGTH to 200,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).isEmpty()
+			val findings = rule.lint(code)
+			assertThat(findings).isEmpty()
 		}
 
 		@Test
 		fun `should report all errors with default maxLineLength`() {
 			val rule = MaxLineLengthTabs()
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(3)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(3)
 		}
 
 		@Test
@@ -106,99 +102,34 @@ class MaxLineLengthTabsSpec {
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(7)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(7)
 		}
 
 		@Test
 		fun `should report meaningful signature for all violations`() {
 			val rule = MaxLineLengthTabs()
 
-			rule.visitKtFile(file)
-			val locations = rule.findings.map { it.signature.substringAfterLast('$') }
-			doAssert(locations).allSatisfy { doAssert(it).isNotBlank() }
+			val findings = rule.lint(code)
+			val locations = findings.map { it.entity.signature.substringAfterLast('$') }
+			assertThat(locations).allSatisfy { assertThat(it).isNotBlank() }
 		}
 	}
+
 
 	@Nested
 	inner class `a kt file with long but suppressed lines` {
 
-		private val file = compileContentForTest(
-			"""
-                class MaxLineLengthSuppressed {
-                    companion object {
-                        @Suppress("MaxLineLengthTabs")
-                        val LOREM_IPSUM = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
-                
-                        @Suppress("MaxLineLengthTabs")
-                        val A_VERY_LONG_MULTI_LINE = $TQ
-                            This is anotehr very very very very very very very very, very long multiline String that will break the MaxLineLength"
-                        $TQ.trimIndent()
-                    }
-                
-                    @Suppress("MaxLineLengthTabs")
-                    val loremIpsumField = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
-                
-                    @Suppress("MaxLineLengthTabs")
-                    val longMultiLineField = $TQ
-                            This is anotehr very very very very very very very very
-                            very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very
-                            very long multiline String that will break the MaxLineLength
-                        $TQ.trimIndent()
-                
-                    @Suppress("MaxLineLengthTabs")
-                    val longMultiLineFieldWithLineBreaks =
-                        $TQ
-                            This is anotehr very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very
-                            very long multiline String with Line Break that will break the MaxLineLength
-                        $TQ.trimIndent()
-                
-                    fun main() {
-                        val thisIsAVeryLongValName = "This is a very, very long String that will break the MaxLineLength"
-                
-                        if (thisIsAVeryLongValName.length > "This is not quite as long of a String".length) {
-                            println("It's indeed a very long String")
-                        }
-                
-                        @Suppress("MaxLineLengthTabs")
-                        val hello = anIncrediblyLongAndComplexMethodNameThatProbablyShouldBeMuchShorterButForTheSakeOfTheTestItsNot()
-                        val loremIpsum = getLoremIpsum()
-                
-                        println(hello)
-                        println(loremIpsum)
-                
-                    }
-                
-                    fun anIncrediblyLongAndComplexMethodNameThatProbablyShouldBeMuchShorterButForTheSakeOfTheTestItsNot(): String {
-                        return "Hello"
-                    }
-                
-                    @Suppress("MaxLineLengthTabs")
-                    fun getLoremIpsum() = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
-                }
-                
-                @Suppress("MaxLineLengthTabs")
-                class AClassWithSuperLongNameItIsSooooLongThatIHaveTroubleThinkingAboutAVeryLongNameManThisIsReallyHardToFillAllTheNecessaryCharacters
-                
-                @Suppress("MaxLineLengthTabs")
-                class AClassWithReallyLongCommentsInside {
-                    /*
-                     a really long line that is inside a normal comment ------------------------------------------------------------------------------------------------>
-                     */
-                
-                    /**
-                     a really long line that is inside a KDoc comment   ------------------------------------------------------------------------------------------------>
-                     */
-                }
-            """.trimIndent()
-		)
-
 		@Test
 		fun `should not report as lines are suppressed`() {
+			val code = """
+				@Suppress("MaxLineLengthTabs")
+				val longLine = "${"x".repeat(150)}"
+			""".trimIndent()
 			val rule = MaxLineLengthTabs()
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).isEmpty()
+			val findings = rule.lint(code)
+			assertThat(findings).isEmpty()
 		}
 	}
 
@@ -214,54 +145,51 @@ class MaxLineLengthTabsSpec {
             }
         """.trimIndent()
 
-		private val file = compileContentForTest(code)
-
 		@Test
 		fun `should not report the package statement and import statements by default`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).isEmpty()
+			val findings = rule.lint(code)
+			assertThat(findings).isEmpty()
 		}
 
 		@Test
 		fun `should report the package statement and import statements if they're enabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "false",
-					EXCLUDE_IMPORT_STATEMENTS to "false",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to false,
+					EXCLUDE_IMPORT_STATEMENTS to false,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(2)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(2)
 		}
 
 		@Test
 		fun `should not report anything if both package and import statements are disabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "true",
-					EXCLUDE_IMPORT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to true,
+					EXCLUDE_IMPORT_STATEMENTS to true,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).isEmpty()
+			val findings = rule.lint(code)
+			assertThat(findings).isEmpty()
 		}
 	}
 
 	@Nested
 	inner class `a kt file with a long package name, long import statements, a long line and long comments` {
 
-		private val file = compileContentForTest(
-			"""
+		private val code = """
                 class MaxLineLengthWithLongComments {
                     // Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
                     /* Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. */
@@ -291,46 +219,45 @@ class MaxLineLengthTabsSpec {
                     fun getLoremIpsum() = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua."
                 }
             """.trimIndent()
-		)
 
 		@Test
 		fun `should report the package statement, import statements, line and comments by default`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(8)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(8)
 		}
 
 		@Test
 		fun `should report the package statement, import statements, line and comments if they're enabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "false",
-					EXCLUDE_IMPORT_STATEMENTS to "false",
-					EXCLUDE_COMMENT_STATEMENTS to "false",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to false,
+					EXCLUDE_IMPORT_STATEMENTS to false,
+					EXCLUDE_COMMENT_STATEMENTS to false,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(8)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(8)
 		}
 
 		@Test
 		fun `should not report comments if they're disabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_COMMENT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_COMMENT_STATEMENTS to true,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(5)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(5)
 		}
 	}
 
@@ -347,63 +274,61 @@ class MaxLineLengthTabsSpec {
             }
         """.trimIndent()
 
-		private val file = compileContentForTest(code)
-
 		@Test
 		fun `should only the function line by default`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(1)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(1)
 		}
 
 		@Test
 		fun `should report the package statement, import statements and line if they're not excluded`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "false",
-					EXCLUDE_IMPORT_STATEMENTS to "false",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to false,
+					EXCLUDE_IMPORT_STATEMENTS to false,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(3)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(3)
 		}
 
 		@Test
 		fun `should report only method if both package and import statements are disabled`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "true",
-					EXCLUDE_IMPORT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to true,
+					EXCLUDE_IMPORT_STATEMENTS to true,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(1)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(1)
 		}
 
 		@Test
 		fun `should report correct line and column for function with excessive length`() {
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
-					EXCLUDE_PACKAGE_STATEMENTS to "true",
-					EXCLUDE_IMPORT_STATEMENTS to "true",
+					MAX_LINE_LENGTH to 60,
+					EXCLUDE_PACKAGE_STATEMENTS to true,
+					EXCLUDE_IMPORT_STATEMENTS to true,
 				)
 			)
 
-			rule.visitKtFile(file)
-			assertThat(rule.findings).hasSize(1)
-			assertThat(rule.findings)
-				.hasStartSourceLocations(SourceLocation(6, 1))
-				.hasEndSourceLocation(6, 109)
+			val findings = rule.lint(code)
+			assertThat(findings).hasSize(1)
+			val finding = findings.single()
+			assertThat(finding.entity.location.source).isEqualTo(SourceLocation(6, 1))
+			assertThat(finding.entity.location.endSource).isEqualTo(SourceLocation(6, 109))
 		}
 	}
 
@@ -411,60 +336,50 @@ class MaxLineLengthTabsSpec {
 	fun `report the correct lines on raw strings with backslash on it - issue #5314`() {
 		val rule = MaxLineLengthTabs(
 			TestConfig(
-				MAX_LINE_LENGTH to "30",
-				"excludeRawStrings" to "false",
+				MAX_LINE_LENGTH to 30,
+				EXCLUDE_RAW_STRINGS to false,
 			)
 		)
 
-		rule.visitKtFile(
-			compileContentForTest(
-				"""
+		val findings = rule.lint("""
                     // some other content
                     val x = Regex($TQ
                         Text (.*?)\(in parens\) this is too long to be valid.
                         The regex/raw string continues down another line      .
                     $TQ.trimIndent())
                     // that is the right length
-                """.trimIndent()
-			)
-		)
-		assertThat(rule.findings).hasSize(2)
-		assertThat(rule.findings).hasTextLocations(40 to 97, 98 to 157)
+                """.trimIndent())
+		assertThat(findings).hasSize(2)
+		assertThat(findings.map { it.entity.location.text.start to it.entity.location.text.end }).containsExactlyInAnyOrder(40 to 97, 98 to 157)
 	}
 
 	@Test
 	fun `report the correct lines on raw strings with backslash on it 2 - issue #5314`() {
 		val rule = MaxLineLengthTabs(
 			TestConfig(
-				MAX_LINE_LENGTH to "30",
-				"excludeRawStrings" to "false",
+				MAX_LINE_LENGTH to 30,
+				EXCLUDE_RAW_STRINGS to false,
 			)
 		)
 
-		rule.visitKtFile(
-			compileContentForTest(
-				"""
+		val findings = rule.lint("""
                     // some other content
                     val x = "Foo".matches($TQ...too long\(parens\) and some more$TQ.toRegex())
                     // that is the right length
-                """.trimIndent()
-			)
-		)
-		assertThat(rule.findings).hasSize(1)
-		assertThat(rule.findings).hasTextLocations(22 to 96)
+                """.trimIndent())
+		assertThat(findings).hasSize(1)
+		assertThat(findings.map { it.entity.location.text.start to it.entity.location.text.end }).containsExactlyInAnyOrder(22 to 96)
 	}
 
 	@Test
 	fun `report the correct lines on interpolated strings - issue #5314`() {
 		val rule = MaxLineLengthTabs(
 			TestConfig(
-				MAX_LINE_LENGTH to "65",
+				MAX_LINE_LENGTH to 65,
 			)
 		)
 
-		rule.visitKtFile(
-			compileContentForTest(
-				"""
+		val code = """
                     interface TaskContainer {
                         fun register(name: String, block: Number.() -> Unit = {})
                     }
@@ -484,13 +399,13 @@ class MaxLineLengthTabsSpec {
                         }
                     }
                 """.trimIndent()
+		val findings = rule.lint(code)
+		assertThat(findings.map { code.substring(it.entity.location.text.start, it.entity.location.text.end) })
+			.containsExactlyInAnyOrder(
+				"    project.tasks.register(\"veryVeryVeryVeryVeryVeryLongName\${part}WithSuffix1\")",
+				"    project.tasks.register(\"veryVeryVeryVeryVeryVeryLongName\${part}WithSuffix2\") {",
+				"        .register(\"veryVeryVeryVeryVeryVeryLongName\${part}WithSuffix3\") {",
 			)
-		)
-		assertThat(rule.findings).hasTextLocations(
-			"    project.tasks.register(\"veryVeryVeryVeryVeryVeryLongName\${part}WithSuffix1\")",
-			"    project.tasks.register(\"veryVeryVeryVeryVeryVeryLongName\${part}WithSuffix2\") {",
-			"        .register(\"veryVeryVeryVeryVeryVeryLongName\${part}WithSuffix3\") {",
-		)
 	}
 
 	@Nested
@@ -507,11 +422,11 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			assertThat(rule.compileAndLint(code)).isEmpty()
+			assertThat(rule.lint(code)).isEmpty()
 		}
 
 		@Test
@@ -524,11 +439,11 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			assertThat(rule.compileAndLint(code)).isEmpty()
+			assertThat(rule.lint(code)).isEmpty()
 		}
 
 		@Test
@@ -543,11 +458,11 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			assertThat(rule.compileAndLint(code)).hasSize(3)
+			assertThat(rule.lint(code)).hasSize(3)
 		}
 	}
 
@@ -570,11 +485,11 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			assertThat(rule.compileAndLint(code)).hasSize(1)
+			assertThat(rule.lint(code)).hasSize(1)
 		}
 
 		@Test
@@ -592,11 +507,11 @@ class MaxLineLengthTabsSpec {
             """.trimIndent()
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			assertThat(rule.compileAndLint(code)).hasSize(3)
+			assertThat(rule.lint(code)).hasSize(3)
 		}
 	}
 
@@ -609,15 +524,14 @@ class MaxLineLengthTabsSpec {
 					fun shortMethod() {
 						val thisLineHasTabsAndShouldBeReportedBecauseItsVeryLongWhenTabsAreConvertedToSpaces = "test"
 					}
-				}
-			""".trimIndent()
+				}"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "80",
+					MAX_LINE_LENGTH to 80,
 				)
 			)
 
-			val findings = rule.compileAndLint(code)
+			val findings = rule.lint(code)
 			assertThat(findings).hasSize(1)
 		}
 
@@ -628,14 +542,14 @@ class MaxLineLengthTabsSpec {
 						val shortLine = "test"
 					}
 				}
-				""".trimIndent()
+				"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "80",
+					MAX_LINE_LENGTH to 80,
 				)
 			)
 
-			val findings = rule.compileAndLint(code)
+			val findings = rule.lint(code)
 			assertThat(findings).isEmpty()
 		}
 
@@ -646,14 +560,14 @@ class MaxLineLengthTabsSpec {
 								val thisLineHasManyTabsAndShouldBeReported = "test"
 							}
 						}
-					""".trimIndent()
+					"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "60",
+					MAX_LINE_LENGTH to 60,
 				)
 			)
 
-			val findings = rule.compileAndLint(code)
+			val findings = rule.lint(code)
 			assertThat(findings).hasSize(1)
 		}
 
@@ -664,14 +578,14 @@ class MaxLineLengthTabsSpec {
 						val mixedTabsAndSpacesLineThatIsQuiteLongAndShouldDefinitelyBeReported = "test"
 					}
 				}
-			""".trimIndent()
+			"""
 			val rule = MaxLineLengthTabs(
 				TestConfig(
-					MAX_LINE_LENGTH to "70",
+					MAX_LINE_LENGTH to 70,
 				)
 			)
 
-			val findings = rule.compileAndLint(code)
+			val findings = rule.lint(code)
 			assertThat(findings).hasSize(1)
 		}
 	}

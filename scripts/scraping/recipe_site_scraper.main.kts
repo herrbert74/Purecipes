@@ -7,6 +7,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
@@ -81,60 +82,73 @@ data class RecipeData(
 	val sourceUrl: String
 ) {
 
-	fun toJsonObject(): JsonObject {
-		val ingredientGroupsArray = kotlinx.serialization.json.buildJsonArray {
-			ingredientGroups.forEach { (groupName, items) ->
-				add(
-					buildJsonObject {
-						put("name", JsonPrimitive(groupName ?: ""))
-						put(
-							"ingredients",
-							kotlinx.serialization.json.buildJsonArray {
-								items.forEach { ingredient ->
-									add(
-										buildJsonObject {
-											put("text", JsonPrimitive(ingredient.text))
-											put("requirement", JsonPrimitive(ingredient.requirement))
-											ingredient.alternativeGroupKey?.let { groupKey ->
-												put("alternativeGroupKey", JsonPrimitive(groupKey))
-											}
-										},
-									)
-								}
-							},
-						)
+	fun toJsonObject(): JsonObject = buildRecipeJsonObject(this)
+}
+
+private fun buildIngredientGroupsJson(
+	ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>,
+): JsonArray = kotlinx.serialization.json.buildJsonArray {
+	ingredientGroups.forEach { (groupName, items) ->
+		add(
+			buildJsonObject {
+				put("name", JsonPrimitive(groupName ?: ""))
+				put("ingredients", buildIngredientItemsJson(items))
+			},
+		)
+	}
+}
+
+private fun buildIngredientItemsJson(items: List<ProcessedScrapedIngredient>): JsonArray =
+	kotlinx.serialization.json.buildJsonArray {
+		items.forEach { ingredient ->
+			add(
+				buildJsonObject {
+					put("text", JsonPrimitive(ingredient.text))
+					put("requirement", JsonPrimitive(ingredient.requirement))
+					ingredient.alternativeGroupKey?.let { groupKey ->
+						put("alternativeGroupKey", JsonPrimitive(groupKey))
 					}
-				)
-			}
+				},
+			)
 		}
+	}
 
-		val instructionListArray = kotlinx.serialization.json.buildJsonArray {
-			instructionList.forEach { add(JsonPrimitive(it)) }
-		}
-		val nutrientsObject = buildJsonObject {
-			nutrients.forEach { (k, v) -> put(k, if (v == null) JsonPrimitive("") else JsonPrimitive(v)) }
-		}
-		val linksObject = buildJsonObject {
-			links.forEach { (k, v) -> put(k, if (v == null) JsonPrimitive("") else JsonPrimitive(v)) }
-		}
+private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
+	val ingredientGroupsArray = buildIngredientGroupsJson(recipe.ingredientGroups)
+	val instructionListArray = kotlinx.serialization.json.buildJsonArray {
+		recipe.instructionList.forEach { add(JsonPrimitive(it)) }
+	}
+	val nutrientsObject = buildJsonObject {
+		recipe.nutrients.forEach { (k, v) -> put(k, if (v == null) JsonPrimitive("") else JsonPrimitive(v)) }
+	}
+	val linksObject = buildJsonObject {
+		recipe.links.forEach { (k, v) -> put(k, if (v == null) JsonPrimitive("") else JsonPrimitive(v)) }
+	}
 
-		return buildJsonObject {
-			put("title", JsonPrimitive(title))
-			put("ingredient_groups", ingredientGroupsArray)
-			put("instruction_list", instructionListArray)
-			put("instructions", JsonPrimitive(instructions))
-			if (totalTime == null) put("total_time", JsonPrimitive("")) else put("total_time", JsonPrimitive(totalTime))
-			if (prepTime == null) put("prep_time", JsonPrimitive("")) else put("prep_time", JsonPrimitive(prepTime))
-			if (cookTime == null) put("cook_time", JsonPrimitive("")) else put("cook_time", JsonPrimitive(cookTime))
-			put("yields", JsonPrimitive(yields ?: ""))
-			put("image", JsonPrimitive(image ?: ""))
-			put("nutrients", nutrientsObject)
-			put("language", JsonPrimitive(language ?: "en"))
-			put("cuisine", JsonPrimitive(cuisine ?: ""))
-			put("category", JsonPrimitive(category ?: ""))
-			put("links", linksObject)
-			put("source_url", JsonPrimitive(sourceUrl))
-		}
+	return buildJsonObject {
+		put("title", JsonPrimitive(recipe.title))
+		put("ingredient_groups", ingredientGroupsArray)
+		put("instruction_list", instructionListArray)
+		put("instructions", JsonPrimitive(recipe.instructions))
+		putNullableInt("total_time", recipe.totalTime)
+		putNullableInt("prep_time", recipe.prepTime)
+		putNullableInt("cook_time", recipe.cookTime)
+		put("yields", JsonPrimitive(recipe.yields ?: ""))
+		put("image", JsonPrimitive(recipe.image ?: ""))
+		put("nutrients", nutrientsObject)
+		put("language", JsonPrimitive(recipe.language ?: "en"))
+		put("cuisine", JsonPrimitive(recipe.cuisine ?: ""))
+		put("category", JsonPrimitive(recipe.category ?: ""))
+		put("links", linksObject)
+		put("source_url", JsonPrimitive(recipe.sourceUrl))
+	}
+}
+
+private fun JsonObjectBuilder.putNullableInt(key: String, value: Int?) {
+	if (value == null) {
+		put(key, JsonPrimitive(""))
+	} else {
+		put(key, JsonPrimitive(value))
 	}
 }
 
@@ -224,11 +238,14 @@ private val allowedOptions = setOf(
 
 fun parseOptions(scriptArgs: Array<String>): Config {
 	if (scriptArgs.size < 2) printUsageAndExit("Missing required arguments: <website> <output_dir>")
+	return buildConfig(
+		website = scriptArgs[0],
+		outputDir = scriptArgs[1],
+		options = parseFlagArguments(scriptArgs.drop(2).toTypedArray()),
+	)
+}
 
-	val website = scriptArgs[0]
-	val outputDir = scriptArgs[1]
-	val options = parseFlagArguments(scriptArgs.drop(2).toTypedArray())
-
+private fun buildConfig(website: String, outputDir: String, options: Map<String, String>): Config {
 	val mode = validateMode(options)
 	val regex = parseRecipeUrlPattern(options)
 	val maxUrls = options["--max-urls"]?.toIntOrExit("--max-urls must be an integer") ?: 50
@@ -598,8 +615,11 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 }
 
 fun extractRecipeLinksFromCollectionPage(pageUrl: String, timeoutSeconds: Long): List<String> {
-	val pageData = fetchPageWithValidation(pageUrl, timeoutSeconds) ?: return emptyList()
-	val baseHost = pageData.base.host?.removePrefix("www.") ?: return emptyList()
+	val pageData = fetchPageWithValidation(pageUrl, timeoutSeconds)
+	val baseHost = pageData?.base?.host?.removePrefix("www.")
+	if (pageData == null || baseHost == null) {
+		return emptyList()
+	}
 	val hrefRegex = Regex("""href\s*=\s*"([^\"]+)"""", RegexOption.IGNORE_CASE)
 	val siteConfig = knownWebsites.values.find { URI(it.url).host?.removePrefix("www.") == baseHost }
 	val linkPattern = siteConfig?.recipePattern ?: Regex("/recipe/", RegexOption.IGNORE_CASE)
@@ -636,16 +656,14 @@ fun extractRecipeLinksFromCollectionPage(pageUrl: String, timeoutSeconds: Long):
 private data class PageData(val base: URI, val body: String)
 
 private fun fetchPageWithValidation(pageUrl: String, timeoutSeconds: Long): PageData? {
-	val (base, request) = resolvePageUri(pageUrl, timeoutSeconds) ?: return null
-
+	val pageUri = resolvePageUri(pageUrl, timeoutSeconds) ?: return null
 	val response = try {
-		HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+		HttpClient.newHttpClient().send(pageUri.second, HttpResponse.BodyHandlers.ofString())
 	} catch (_: Exception) {
-		return null
+		null
 	}
-
-	return if (response.statusCode() in 200..299) {
-		PageData(base, response.body())
+	return if (response != null && response.statusCode() in 200..299) {
+		PageData(pageUri.first, response.body())
 	} else {
 		null
 	}
@@ -708,74 +726,95 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 	}
 
 fun parseRecipe(rawJson: String): RecipeData? {
-	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }
-		.getOrNull() ?: return null
-
+	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }.getOrNull() ?: return null
 	val title = root["title"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
-
-	val ingredientGroups = root["ingredient_groups"]?.jsonArray
-		?.mapNotNull { groupEl ->
-			when (groupEl) {
-				is JsonObject -> {
-					val name = groupEl["name"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
-					val items = groupEl["ingredients"]?.jsonArray
-						?.mapNotNull(::parseStoredIngredientJson)
-						?: emptyList()
-					if (items.isEmpty()) null else (name to items)
-				}
-
-				is kotlinx.serialization.json.JsonArray -> {
-					val name = groupEl.getOrNull(0)?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
-					val items = groupEl.getOrNull(1)?.jsonArray
-						?.mapNotNull(::parseStoredIngredientJson)
-						?: emptyList()
-					if (items.isEmpty()) null else (name to items)
-				}
-
-				else -> null
-			}
-		}
-		?.flatMap { (name, items) -> processScrapedIngredientGroups(name, items) }
-		?.filter { (_, items) -> items.isNotEmpty() }
-		?: emptyList()
-
-	val instructionList = root["instruction_list"]?.jsonArray
-		?.mapNotNull { it.jsonPrimitive.contentOrNull?.trim() }
-		?.filter { it.isNotBlank() }
-		?: emptyList()
-
-	val nutrientsObject = root["nutrients"]?.jsonObject ?: JsonObject(emptyMap())
-	val nutrients = normalizeScrapedNutrients(
-		nutrientsObject.mapNotNull { (key, value) ->
-			parseNutrientJsonValue(value)?.let { key to it }
-		}.toMap(),
-	)
-
-	val linksObject = root["links"]?.jsonObject ?: JsonObject(emptyMap())
-	val links = linksObject.mapValues { (_, v) -> v.jsonPrimitive.contentOrNull }
-
+	val ingredientGroups = parseIngredientGroupsFromRoot(root)
+	val instructionList = parseInstructionListFromRoot(root)
+	val nutrients = parseNutrientsFromRoot(root)
+	val links = parseLinksFromRoot(root)
 	val instructionsText = root["instructions"]?.jsonPrimitive?.contentOrNull.orEmpty().ifBlank {
 		instructionList.joinToString("\n").trim()
 	}
 
-	if (title.isBlank() || ingredientGroups.isEmpty()) return null
-	return RecipeData(
-		title = title,
-		ingredientGroups = ingredientGroups,
-		instructionList = instructionList,
-		instructions = instructionsText,
-		totalTime = parseInt(root["total_time"]?.jsonPrimitive?.contentOrNull),
-		prepTime = parseInt(root["prep_time"]?.jsonPrimitive?.contentOrNull),
-		cookTime = parseInt(root["cook_time"]?.jsonPrimitive?.contentOrNull),
-		yields = root["yields"]?.jsonPrimitive?.contentOrNull,
-		image = root["image"]?.jsonPrimitive?.contentOrNull,
-		nutrients = nutrients,
-		language = root["language"]?.jsonPrimitive?.contentOrNull ?: "en",
-		cuisine = root["cuisine"]?.jsonPrimitive?.contentOrNull,
-		category = root["category"]?.jsonPrimitive?.contentOrNull,
-		links = links,
-		sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty()
+	return if (title.isBlank() || ingredientGroups.isEmpty()) {
+		null
+	} else {
+		RecipeData(
+			title = title,
+			ingredientGroups = ingredientGroups,
+			instructionList = instructionList,
+			instructions = instructionsText,
+			totalTime = parseInt(root["total_time"]?.jsonPrimitive?.contentOrNull),
+			prepTime = parseInt(root["prep_time"]?.jsonPrimitive?.contentOrNull),
+			cookTime = parseInt(root["cook_time"]?.jsonPrimitive?.contentOrNull),
+			yields = root["yields"]?.jsonPrimitive?.contentOrNull,
+			image = root["image"]?.jsonPrimitive?.contentOrNull,
+			nutrients = nutrients,
+			language = root["language"]?.jsonPrimitive?.contentOrNull ?: "en",
+			cuisine = root["cuisine"]?.jsonPrimitive?.contentOrNull,
+			category = root["category"]?.jsonPrimitive?.contentOrNull,
+			links = links,
+			sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty()
+		)
+	}
+}
+
+private fun parseIngredientGroupsFromRoot(
+	root: JsonObject,
+): List<Pair<String?, List<ProcessedScrapedIngredient>>> =
+	root["ingredient_groups"]?.jsonArray
+		?.mapNotNull(::parseStoredIngredientGroupJson)
+		?.flatMap { (name, items) -> processScrapedIngredientGroups(name, items) }
+		?.filter { (_, items) -> items.isNotEmpty() }
+		?: emptyList()
+
+private fun parseStoredIngredientGroupJson(
+	groupEl: JsonElement,
+): Pair<String?, List<ProcessedScrapedIngredient>>? =
+	when (groupEl) {
+		is JsonObject -> parseIngredientGroupObject(groupEl)
+		is kotlinx.serialization.json.JsonArray -> parseIngredientGroupArray(groupEl)
+		else -> null
+	}
+
+private fun parseIngredientGroupObject(
+	groupObject: JsonObject,
+): Pair<String?, List<ProcessedScrapedIngredient>>? {
+	val name = groupObject["name"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
+	val items = groupObject["ingredients"]?.jsonArray
+		?.mapNotNull(::parseStoredIngredientJson)
+		?: emptyList()
+	return if (items.isEmpty()) null else (name to items)
+}
+
+private fun parseIngredientGroupArray(
+	groupArray: kotlinx.serialization.json.JsonArray,
+): Pair<String?, List<ProcessedScrapedIngredient>>? {
+	val name = groupArray.getOrNull(0)?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
+	val items = groupArray.getOrNull(1)?.jsonArray
+		?.mapNotNull(::parseStoredIngredientJson)
+		?: emptyList()
+	return if (items.isEmpty()) null else (name to items)
+}
+
+private fun parseInstructionListFromRoot(root: JsonObject): List<String> =
+	root["instruction_list"]?.jsonArray
+		?.mapNotNull { it.jsonPrimitive.contentOrNull?.trim() }
+		?.filter { it.isNotBlank() }
+		?: emptyList()
+
+private fun parseNutrientsFromRoot(root: JsonObject): Map<String, String?> {
+	val nutrientsObject = root["nutrients"]?.jsonObject ?: JsonObject(emptyMap())
+	return normalizeScrapedNutrients(
+		nutrientsObject.mapNotNull { (key, value) ->
+			parseNutrientJsonValue(value)?.let { key to it }
+		}.toMap(),
 	)
+}
+
+private fun parseLinksFromRoot(root: JsonObject): Map<String, String?> {
+	val linksObject = root["links"]?.jsonObject ?: JsonObject(emptyMap())
+	return linksObject.mapValues { (_, value) -> value.jsonPrimitive.contentOrNull }
 }
 
 fun ensureSchema(connection: Connection) {
@@ -955,8 +994,8 @@ fun isDuplicate(connection: Connection, sourceUrl: String): Boolean {
 
 fun parseNumber(value: String?): Double? {
 	if (value.isNullOrBlank()) return null
-	val match = Regex("""-?\d+(?:\.\d+)?""").find(value) ?: return null
-	return match.value.toDoubleOrNull()
+	val match = Regex("""-?\d+(?:\.\d+)?""").find(value)
+	return match?.value?.toDoubleOrNull()
 }
 
 private val scrapedNutrientKeyAliases = mapOf(
@@ -1170,60 +1209,79 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 	if (categoryColumns.unmatchedLabels.isNotEmpty()) {
 		println("Unmapped category labels for ${recipe.sourceUrl}: ${categoryColumns.unmatchedLabels.joinToString()}")
 	}
-	val recipeId = connection.prepareStatement(
-		"""
-		INSERT INTO recipes (
-			title,
-			instructions,
-			total_time,
-			prep_time,
-			cook_time,
-			yields,
-			image_url,
-			language,
-			cuisine,
-			meal_type,
-			difficulty,
-			cooking_method,
-			dietary_preferences,
-			tags,
-			source_url,
-			measurement_system
-		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		RETURNING id
-		""".trimIndent()
-	).use { ps ->
-		ps.setString(1, recipe.title)
-		ps.setString(2, recipe.instructions)
-		ps.setObject(3, recipe.totalTime)
-		ps.setObject(4, recipe.prepTime)
-		ps.setObject(5, recipe.cookTime)
-		ps.setString(6, recipe.yields)
-		ps.setString(7, recipe.image)
-		ps.setString(8, recipe.language ?: "en")
-		ps.setString(9, recipe.cuisine)
-		ps.setString(10, categoryColumns.mealType)
-		ps.setString(11, categoryColumns.difficulty)
-		ps.setString(12, categoryColumns.cookingMethod)
-		if (categoryColumns.dietaryPreferences.isEmpty()) {
-			ps.setNull(13, java.sql.Types.ARRAY)
-		} else {
-			ps.setArray(13, connection.createArrayOf("text", categoryColumns.dietaryPreferences.toTypedArray()))
-		}
-		if (categoryColumns.tags.isEmpty()) {
-			ps.setNull(14, java.sql.Types.ARRAY)
-		} else {
-			ps.setArray(14, connection.createArrayOf("text", categoryColumns.tags.toTypedArray()))
-		}
-		ps.setString(15, recipe.sourceUrl)
-		ps.setString(16, measurementSystem)
-		ps.executeQuery().use { rs ->
-			rs.next()
-			rs.getInt(1)
-		}
-	}
+	val recipeId = insertRecipeRecord(connection, recipe, categoryColumns, measurementSystem)
+	saveRecipeIngredientGroups(connection, recipe, recipeId)
+	saveRecipeInstructions(connection, recipe, recipeId)
+	saveScrapedRecipeNutrition(connection, recipe, recipeId)
+	connection.commit()
+	return recipeId
+}
 
+private fun insertRecipeRecord(
+	connection: Connection,
+	recipe: RecipeData,
+	categoryColumns: ScrapedCategoryColumns,
+	measurementSystem: String?,
+): Int = connection.prepareStatement(
+	"""
+	INSERT INTO recipes (
+		title,
+		instructions,
+		total_time,
+		prep_time,
+		cook_time,
+		yields,
+		image_url,
+		language,
+		cuisine,
+		meal_type,
+		difficulty,
+		cooking_method,
+		dietary_preferences,
+		tags,
+		source_url,
+		measurement_system
+	)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	RETURNING id
+	""".trimIndent(),
+).use { ps ->
+	ps.setString(1, recipe.title)
+	ps.setString(2, recipe.instructions)
+	ps.setObject(3, recipe.totalTime)
+	ps.setObject(4, recipe.prepTime)
+	ps.setObject(5, recipe.cookTime)
+	ps.setString(6, recipe.yields)
+	ps.setString(7, recipe.image)
+	ps.setString(8, recipe.language ?: "en")
+	ps.setString(9, recipe.cuisine)
+	ps.setString(10, categoryColumns.mealType)
+	ps.setString(11, categoryColumns.difficulty)
+	ps.setString(12, categoryColumns.cookingMethod)
+	setTextArrayOrNull(ps, connection, 13, categoryColumns.dietaryPreferences)
+	setTextArrayOrNull(ps, connection, 14, categoryColumns.tags)
+	ps.setString(15, recipe.sourceUrl)
+	ps.setString(16, measurementSystem)
+	ps.executeQuery().use { rs ->
+		rs.next()
+		rs.getInt(1)
+	}
+}
+
+private fun setTextArrayOrNull(
+	ps: java.sql.PreparedStatement,
+	connection: Connection,
+	index: Int,
+	values: List<String>,
+) {
+	if (values.isEmpty()) {
+		ps.setNull(index, java.sql.Types.ARRAY)
+	} else {
+		ps.setArray(index, connection.createArrayOf("text", values.toTypedArray()))
+	}
+}
+
+private fun saveRecipeIngredientGroups(connection: Connection, recipe: RecipeData, recipeId: Int) {
 	val insertGroupSql = "INSERT INTO ingredient_groups (recipe_id, name, order_index) VALUES (?, ?, ?) RETURNING id"
 	val insertIngredientSql =
 		"""
@@ -1263,63 +1321,66 @@ fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
 			ps.executeBatch()
 		}
 	}
+}
 
-	if (recipe.instructionList.isNotEmpty()) {
-		connection.prepareStatement(
-			"INSERT INTO instruction_steps (recipe_id, step, order_index) VALUES (?, ?, ?)"
-		).use { ps ->
-			recipe.instructionList.forEachIndexed { index, step ->
-				ps.setInt(1, recipeId)
-				ps.setString(2, step)
-				ps.setInt(3, index)
-				ps.addBatch()
-			}
-			ps.executeBatch()
-		}
+private fun saveRecipeInstructions(connection: Connection, recipe: RecipeData, recipeId: Int) {
+	if (recipe.instructionList.isEmpty()) {
+		return
 	}
-
-	if (recipe.hasScrapedNutrition()) {
-		val nutrients = recipe.nutrients
-		connection.prepareStatement(
-			"""
-			INSERT INTO nutrition (
-				recipe_id,
-				calories,
-				protein,
-				carbohydrates,
-				fat,
-				fiber,
-				sugar,
-				sodium,
-				calculation_source
-			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-			ON CONFLICT (recipe_id) DO UPDATE SET
-				calories = EXCLUDED.calories,
-				protein = EXCLUDED.protein,
-				carbohydrates = EXCLUDED.carbohydrates,
-				fat = EXCLUDED.fat,
-				fiber = EXCLUDED.fiber,
-				sugar = EXCLUDED.sugar,
-				sodium = EXCLUDED.sodium,
-				calculation_source = EXCLUDED.calculation_source
-			""".trimIndent(),
-		).use { ps ->
+	connection.prepareStatement(
+		"INSERT INTO instruction_steps (recipe_id, step, order_index) VALUES (?, ?, ?)"
+	).use { ps ->
+		recipe.instructionList.forEachIndexed { index, step ->
 			ps.setInt(1, recipeId)
-			ps.setObject(2, parseNumber(nutrients["calories"]))
-			ps.setObject(3, parseNumber(nutrients["protein"]))
-			ps.setObject(4, parseNumber(nutrients["carbohydrates"]))
-			ps.setObject(5, parseNumber(nutrients["fat"]))
-			ps.setObject(6, parseNumber(nutrients["fiber"]))
-			ps.setObject(7, parseNumber(nutrients["sugar"]))
-			ps.setObject(8, parseNumber(nutrients["sodium"]))
-			ps.setString(9, "scraped")
-			ps.executeUpdate()
+			ps.setString(2, step)
+			ps.setInt(3, index)
+			ps.addBatch()
 		}
+		ps.executeBatch()
 	}
+}
 
-	connection.commit()
-	return recipeId
+private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeData, recipeId: Int) {
+	if (!recipe.hasScrapedNutrition()) {
+		return
+	}
+	val nutrients = recipe.nutrients
+	connection.prepareStatement(
+		"""
+		INSERT INTO nutrition (
+			recipe_id,
+			calories,
+			protein,
+			carbohydrates,
+			fat,
+			fiber,
+			sugar,
+			sodium,
+			calculation_source
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (recipe_id) DO UPDATE SET
+			calories = EXCLUDED.calories,
+			protein = EXCLUDED.protein,
+			carbohydrates = EXCLUDED.carbohydrates,
+			fat = EXCLUDED.fat,
+			fiber = EXCLUDED.fiber,
+			sugar = EXCLUDED.sugar,
+			sodium = EXCLUDED.sodium,
+			calculation_source = EXCLUDED.calculation_source
+		""".trimIndent(),
+	).use { ps ->
+		ps.setInt(1, recipeId)
+		ps.setObject(2, parseNumber(nutrients["calories"]))
+		ps.setObject(3, parseNumber(nutrients["protein"]))
+		ps.setObject(4, parseNumber(nutrients["carbohydrates"]))
+		ps.setObject(5, parseNumber(nutrients["fat"]))
+		ps.setObject(6, parseNumber(nutrients["fiber"]))
+		ps.setObject(7, parseNumber(nutrients["sugar"]))
+		ps.setObject(8, parseNumber(nutrients["sodium"]))
+		ps.setString(9, "scraped")
+		ps.executeUpdate()
+	}
 }
 
 private fun RecipeData.hasScrapedNutrition(): Boolean =
@@ -1349,14 +1410,13 @@ fun calculateNutritionForRecipes(config: Config, recipeIds: List<Int>) {
 	}
 
 	val repoRoot = findRepoRoot()
-	if (repoRoot == null) {
-		println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
-		return
-	}
-
-	val gradlew = repoRoot.resolve("gradlew").toFile()
-	if (!gradlew.exists()) {
-		println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+	val gradlew = repoRoot?.resolve("gradlew")?.toFile()
+	if (repoRoot == null || gradlew == null || !gradlew.exists()) {
+		if (repoRoot == null) {
+			println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
+		} else {
+			println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+		}
 		return
 	}
 
@@ -1495,9 +1555,18 @@ private enum class ImportOutcome {
 }
 
 private fun processRecipeFile(connection: Connection, file: File): Pair<ImportOutcome, Int?> {
-	val recipe = safeParseRecipeFile(file) ?: return ImportOutcome.ERROR to null
-	val recipeId = saveRecipe(connection, recipe) ?: return ImportOutcome.DUPLICATE to null
-	return ImportOutcome.SUCCESS to recipeId
+	val recipe = safeParseRecipeFile(file)
+	return when {
+		recipe == null -> ImportOutcome.ERROR to null
+		else -> {
+			val recipeId = saveRecipe(connection, recipe)
+			if (recipeId == null) {
+				ImportOutcome.DUPLICATE to null
+			} else {
+				ImportOutcome.SUCCESS to recipeId
+			}
+		}
+	}
 }
 
 private fun safeParseRecipeFile(file: File): RecipeData? {

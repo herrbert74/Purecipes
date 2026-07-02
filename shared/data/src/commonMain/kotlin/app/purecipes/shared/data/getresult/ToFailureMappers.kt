@@ -44,8 +44,8 @@ private suspend fun HttpResponse.errorMessage(): String {
 		json.decodeFromString(ApiErrorBody.serializer(), errorText)
 	}.getOrNull()
 
-	if (errorBody != null) {
-		return if (status.value >= InternalServerError.value) {
+	return if (errorBody != null) {
+		if (status.value >= InternalServerError.value) {
 			errorBody.message?.takeIf { message -> message.isNotBlank() }
 				?: DEFAULT_SERVER_ERROR_MESSAGE
 		} else {
@@ -54,9 +54,7 @@ private suspend fun HttpResponse.errorMessage(): String {
 				?: errorBody.error?.takeIf { error -> error.isNotBlank() }
 				?: errorText
 		}
-	}
-
-	return if (status.value >= InternalServerError.value) {
+	} else if (status.value >= InternalServerError.value) {
 		DEFAULT_SERVER_ERROR_MESSAGE
 	} else {
 		errorText

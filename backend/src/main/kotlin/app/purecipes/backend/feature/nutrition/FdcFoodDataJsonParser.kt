@@ -28,41 +28,44 @@ internal object FdcFoodDataJsonParser {
 		val foodObject = jsonObjectOrNull() ?: return null
 		val fdcId = foodObject.longValue("fdcId")
 		val description = foodObject.stringValue("description")?.takeIf { it.isNotBlank() }
-		if (fdcId == null || description == null) {
-			return null
+		return if (fdcId == null || description == null) {
+			null
+		} else {
+			val nutrients = foodObject["foodNutrients"]?.jsonArray?.mapNotNull { it.toNutrientAmountOrNull() }.orEmpty()
+			val portions = foodObject["foodPortions"]?.jsonArray?.mapNotNull { it.toFoodPortionOrNull() }.orEmpty()
+			FdcFoundationFood(
+				sourceName = sourceName,
+				fdcId = fdcId,
+				description = description,
+				nutrients = nutrients,
+				portions = portions,
+			)
 		}
-		val nutrients = foodObject["foodNutrients"]?.jsonArray?.mapNotNull { it.toNutrientAmountOrNull() }.orEmpty()
-		val portions = foodObject["foodPortions"]?.jsonArray?.mapNotNull { it.toFoodPortionOrNull() }.orEmpty()
-		return FdcFoundationFood(
-			sourceName = sourceName,
-			fdcId = fdcId,
-			description = description,
-			nutrients = nutrients,
-			portions = portions,
-		)
 	}
 
 	private fun JsonElement.toNutrientAmountOrNull(): FdcNutrientAmount? {
 		val nutrientObject = jsonObjectOrNull() ?: return null
 		val nutrientId = nutrientObject["nutrient"]?.jsonObjectOrNull()?.intValue("id")
 		val amount = nutrientObject.decimalValue("amount")
-		if (nutrientId == null || amount == null) {
-			return null
+		return if (nutrientId == null || amount == null) {
+			null
+		} else {
+			FdcNutrientAmount(nutrientId = nutrientId, amount = amount)
 		}
-		return FdcNutrientAmount(nutrientId = nutrientId, amount = amount)
 	}
 
 	private fun JsonElement.toFoodPortionOrNull(): FdcFoodPortion? {
 		val portionObject = jsonObjectOrNull() ?: return null
 		val measureName = portionObject["measureUnit"]?.jsonObjectOrNull()?.stringValue("name")
 		val gramsPerMeasure = portionObject.decimalValue("gramWeight")
-		if (measureName == null || gramsPerMeasure == null) {
-			return null
+		return if (measureName == null || gramsPerMeasure == null) {
+			null
+		} else {
+			FdcFoodPortion(
+				measureName = NutritionMeasureNames.normalize(measureName),
+				gramsPerMeasure = gramsPerMeasure,
+			)
 		}
-		return FdcFoodPortion(
-			measureName = NutritionMeasureNames.normalize(measureName),
-			gramsPerMeasure = gramsPerMeasure,
-		)
 	}
 
 	private fun JsonElement.jsonObjectOrNull(): JsonObject? =
