@@ -132,14 +132,14 @@ val ingredientHeadingExactFilters = setOf(
 	"toppings",
 )
 
-val ingredientQuantityPattern = """(?:\d+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+)"""
+private const val INGREDIENT_QUANTITY_PATTERN = """(?:\d+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+)"""
 
-val ingredientUnitTokenPattern = """[A-Za-z][A-Za-z'-]*"""
+private const val INGREDIENT_UNIT_TOKEN_PATTERN = """[A-Za-z][A-Za-z'-]*"""
 
-val quantityUnitBoundaryPattern = """(?=[\s,.;]|\z)"""
+private const val QUANTITY_UNIT_BOUNDARY_PATTERN = """(?=[\s,.;]|\z)"""
 
 val ingredientQuantityWithUnitPattern =
-	"""$ingredientQuantityPattern$ingredientUnitTokenPattern$quantityUnitBoundaryPattern"""
+	"""$INGREDIENT_QUANTITY_PATTERN$INGREDIENT_UNIT_TOKEN_PATTERN$QUANTITY_UNIT_BOUNDARY_PATTERN"""
 
 val concatenatedIngredientSplitRegex = Regex(
 	pattern = """(?<=[\p{L})])(?=$ingredientQuantityWithUnitPattern)""",
@@ -148,8 +148,8 @@ val concatenatedIngredientSplitRegex = Regex(
 
 val quantityWithoutSpaceBeforeUnitRegex = Regex(
 	pattern =
-		"""(?<![\p{L}\d.])(?<qty>$ingredientQuantityPattern)""" +
-			"""(?<unit>$ingredientUnitTokenPattern)$quantityUnitBoundaryPattern""",
+		"""(?<![\p{L}\d.])(?<qty>$INGREDIENT_QUANTITY_PATTERN)""" +
+			"""(?<unit>$INGREDIENT_UNIT_TOKEN_PATTERN)$QUANTITY_UNIT_BOUNDARY_PATTERN""",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 
