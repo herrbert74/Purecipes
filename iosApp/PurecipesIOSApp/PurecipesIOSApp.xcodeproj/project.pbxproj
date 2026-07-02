@@ -7,24 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11CD3C95D2152A605667BF7B /* Pods_PurecipesIOSApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */; };
+		1231900A872268EA538D1B1C /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C0CE4ADC6976485BAB17898C /* GoogleSignIn */; };
+		13DDDCE651ECC0E47EE4DEB4 /* Usercentrics in Frameworks */ = {isa = PBXBuildFile; productRef = 8ACD4077E5416A05E3EE7A27 /* Usercentrics */; };
+		A0761A06B27D99AF03EDE904 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = D516662A00304CA0143C8447 /* Mixpanel */; };
+		AF64C489AC9632B6B0BDCDC7 /* UsercentricsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8B899F62C6ED245F84128657 /* UsercentricsUI */; };
 		BCCCFCB761629324C9932B83 /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */; };
 		C1D2E3F4A5B6789012345A04 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6789012345A02 /* FacebookCore */; };
 		D1E2F3A4B5C6789012345A05 /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = B1C2C3D4E5F6789012345A03 /* FacebookLogin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6224F0887EB97F09B6E64F82 /* Pods-PurecipesIOSApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurecipesIOSApp.release.xcconfig"; path = "Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp.release.xcconfig"; sourceTree = "<group>"; };
-		6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurecipesIOSApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9491EE9C8274F57B5BAF47BC /* Pods-PurecipesIOSApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurecipesIOSApp.debug.xcconfig"; path = "Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp.debug.xcconfig"; sourceTree = "<group>"; };
 		B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurecipesIOSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B3BF5EBC2F4E482900ADA5FD /* PurecipesIOSApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = PurecipesIOSApp;
 			sourceTree = "<group>";
 		};
@@ -35,41 +33,24 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11CD3C95D2152A605667BF7B /* Pods_PurecipesIOSApp.framework in Frameworks */,
 				BCCCFCB761629324C9932B83 /* KotlinMultiplatformLinkedPackage in Frameworks */,
 				C1D2E3F4A5B6789012345A04 /* FacebookCore in Frameworks */,
 				D1E2F3A4B5C6789012345A05 /* FacebookLogin in Frameworks */,
+				1231900A872268EA538D1B1C /* GoogleSignIn in Frameworks */,
+				A0761A06B27D99AF03EDE904 /* Mixpanel in Frameworks */,
+				13DDDCE651ECC0E47EE4DEB4 /* Usercentrics in Frameworks */,
+				AF64C489AC9632B6B0BDCDC7 /* UsercentricsUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		17E85204FA1AC5A0DBD03743 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				6D77CF17ACC5B273B831AFFD /* Pods_PurecipesIOSApp.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		19CE3EB573419368CA66B0AE /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				9491EE9C8274F57B5BAF47BC /* Pods-PurecipesIOSApp.debug.xcconfig */,
-				6224F0887EB97F09B6E64F82 /* Pods-PurecipesIOSApp.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		B3BF5EB12F4E482900ADA5FD = {
 			isa = PBXGroup;
 			children = (
 				B3BF5EBC2F4E482900ADA5FD /* PurecipesIOSApp */,
 				B3BF5EBB2F4E482900ADA5FD /* Products */,
-				19CE3EB573419368CA66B0AE /* Pods */,
-				17E85204FA1AC5A0DBD03743 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -88,13 +69,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B3BF5EC52F4E482B00ADA5FD /* Build configuration list for PBXNativeTarget "PurecipesIOSApp" */;
 			buildPhases = (
-				222285ED8498638C0CC27298 /* [CP] Check Pods Manifest.lock */,
+				E5F6A7B8C9D0123456789A03 /* Fetch Usercentrics XCFrameworks */,
 				B3BF5ED62F4E54C300ADA5FD /* ShellScript */,
 				B3BF5EB62F4E482900ADA5FD /* Sources */,
 				B3BF5EB72F4E482900ADA5FD /* Frameworks */,
 				B3BF5EB82F4E482900ADA5FD /* Resources */,
-				04561D3DD6CD103C485DB92B /* [CP] Embed Pods Frameworks */,
-				2DC99769D6F8F37ABDDE9C61 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -108,6 +87,10 @@
 				51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */,
 				A1B2C3D4E5F6789012345A02 /* FacebookCore */,
 				B1C2C3D4E5F6789012345A03 /* FacebookLogin */,
+				C0CE4ADC6976485BAB17898C /* GoogleSignIn */,
+				D516662A00304CA0143C8447 /* Mixpanel */,
+				8ACD4077E5416A05E3EE7A27 /* Usercentrics */,
+				8B899F62C6ED245F84128657 /* UsercentricsUI */,
 			);
 			productName = PurecipesIOSApp;
 			productReference = B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */;
@@ -146,8 +129,12 @@
 			mainGroup = B3BF5EB12F4E482900ADA5FD;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */,
 				F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+				A9C63FA9BC6BE0B9B64D1406 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				5A99350683F31775B3596324 /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
+				C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "usercentrics-spm-sdk" */,
+				D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "usercentrics-spm-ui" */,
+				A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B3BF5EBB2F4E482900ADA5FD /* Products */;
@@ -170,24 +157,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		04561D3DD6CD103C485DB92B /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		222285ED8498638C0CC27298 /* [CP] Check Pods Manifest.lock */ = {
+		E5F6A7B8C9D0123456789A03 /* Fetch Usercentrics XCFrameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -195,35 +165,16 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "Fetch Usercentrics XCFrameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PurecipesIOSApp-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/usercentrics-xcframeworks.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2DC99769D6F8F37ABDDE9C61 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PurecipesIOSApp/Pods-PurecipesIOSApp-resources.sh\"\n";
+			shellScript = "\"$SRCROOT/../../scripts/ios/fetch-usercentrics-xcframeworks.sh\"\ntouch \"$DERIVED_FILE_DIR/usercentrics-xcframeworks.stamp\"\n";
 			showEnvVarsInLog = 0;
 		};
 		B3BF5ED62F4E54C300ADA5FD /* ShellScript */ = {
@@ -378,7 +329,6 @@
 		};
 		B3BF5EC62F4E482B00ADA5FD /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9491EE9C8274F57B5BAF47BC /* Pods-PurecipesIOSApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Debug";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -414,7 +364,6 @@
 		};
 		B3BF5EC72F4E482B00ADA5FD /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6224F0887EB97F09B6E64F82 /* Pods-PurecipesIOSApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -471,7 +420,38 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = KotlinMultiplatformLinkedPackage;
+		};
+		C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "usercentrics-spm-sdk" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/usercentrics-spm-sdk;
+		};
+		D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "usercentrics-spm-ui" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/usercentrics-spm-ui;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
+		5A99350683F31775B3596324 /* XCRemoteSwiftPackageReference "mixpanel-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mixpanel/mixpanel-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.1.0;
+			};
+		};
+		A9C63FA9BC6BE0B9B64D1406 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
 		F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
@@ -482,17 +462,18 @@
 		};
 /* End XCRemoteSwiftPackageReference section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = KotlinMultiplatformLinkedPackage;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
 		51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KotlinMultiplatformLinkedPackage;
+		};
+		8ACD4077E5416A05E3EE7A27 /* Usercentrics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Usercentrics;
+		};
+		8B899F62C6ED245F84128657 /* UsercentricsUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UsercentricsUI;
 		};
 		A1B2C3D4E5F6789012345A02 /* FacebookCore */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -503,6 +484,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
 			productName = FacebookLogin;
+		};
+		C0CE4ADC6976485BAB17898C /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A9C63FA9BC6BE0B9B64D1406 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		D516662A00304CA0143C8447 /* Mixpanel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A99350683F31775B3596324 /* XCRemoteSwiftPackageReference "mixpanel-swift" */;
+			productName = Mixpanel;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
