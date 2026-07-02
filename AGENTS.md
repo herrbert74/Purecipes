@@ -50,15 +50,14 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
 
 ## iOS integration (Gradle + Xcode)
 
-`feature:analytics:data` imports **Firebase Analytics** via Kotlin **SwiftPM import** (`swiftPMDependencies {}` in its `build.gradle.kts`). **Usercentrics** is wired from Swift only (`IosAnalyticsNativeBridge` + CocoaPods in the iOS app); Kotlin no longer uses the CocoaPods Gradle plugin for analytics.
+`feature:analytics:data` imports **Firebase Analytics** via Kotlin **SwiftPM import** (`swiftPMDependencies {}` in its `build.gradle.kts`). **Usercentrics**, **Mixpanel**, and **Google Sign-In** are wired from Swift only (`IosAnalyticsNativeBridge` + Swift packages on the iOS app target); Kotlin no longer uses the CocoaPods Gradle plugin for analytics.
 
 The umbrella module uses **direct integration**: Xcode runs `:umbrella:embedAndSignAppleFrameworkForXcode` and links the generated local package `KotlinMultiplatformLinkedPackage` (from `integrateLinkagePackage`). Commit `.swiftpm-locks/` and `iosApp/PurecipesIOSApp/KotlinMultiplatformLinkedPackage/` when SwiftPM dependencies change.
 
-The iOS app still uses **CocoaPods** (`iosApp/PurecipesIOSApp/Podfile`) for Mixpanel, Usercentrics UI, Google Sign-In, etc. **Facebook** uses the **facebook-ios-sdk** Swift Package on the Xcode target (products `FacebookCore`, `FacebookLogin`). Open **`PurecipesIOSApp.xcworkspace`** (not `.xcodeproj` alone). Run `pod install` under `iosApp/PurecipesIOSApp/` before the first iOS compile.
+The iOS app uses **Swift Package Manager** for native SDKs: `GoogleSignIn`, `Mixpanel`, `Usercentrics`/`UsercentricsUI`, and `facebook-ios-sdk` (products **FacebookCore** and **FacebookLogin**). Usercentrics ships as local SPM wrappers under `iosApp/PurecipesIOSApp/LocalPackages/` (Bitbucket binary downloads are fetched by `scripts/ios/fetch-usercentrics-xcframeworks.sh` during the Xcode build). Open **`PurecipesIOSApp.xcodeproj`** directly (no CocoaPods workspace).
 
-* **Linux CI and Android-only Gradle runs** skip macOS-only iOS pod/cinterop work when no iOS/Xcode tasks are requested.
+* **Linux CI and Android-only Gradle runs** skip macOS-only iOS SwiftPM fetch/linkage work when no iOS/Xcode tasks are requested.
 * **macOS** runs SwiftPM fetch/linkage and `embedAndSign` when Gradle tasks look like iOS, Xcode, `embedAndSign`, or a full tree build, or during Android Studio/IntelliJ **Gradle sync** (`idea.sync.active`).
-* **Opt out** of legacy CocoaPods Gradle pod builds if the pod toolchain breaks your machine: `-Ppurecipes.disableIosPods=true` or `-PenableIosPods=false`.
 
 ## Rule: Naming
 
