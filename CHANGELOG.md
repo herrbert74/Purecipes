@@ -9,9 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Add your own ingredients in Pantry filters: type any ingredient name, see catalogue matches and typo suggestions, and use it when searching for recipes.
-- Sign in with Facebook.
+- Sign in with Facebook. Only works for test users added to the approved list on Facebook developer portal until business account is approved.
 - About screen in Settings with the app version number.
-- Open source licenses list, reachable from About.
+- Open source licences list, reachable from About.
 
 ### Changed
 
