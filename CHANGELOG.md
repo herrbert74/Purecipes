@@ -4,6 +4,19 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-07-03
+
+### Added
+
+- Add your own ingredients in Pantry filters: type any ingredient name, see catalogue matches and typo suggestions, and use it when searching for recipes.
+- Sign in with Facebook.
+- About screen in Settings with the app version number.
+- Open source licenses list, reachable from About.
+
+### Changed
+
+- Debug and staging builds use a differently coloured app icon so you can tell them apart from the standard release build.
+
 ## [0.4.0] - 2026-06-20
 
 ### Added
