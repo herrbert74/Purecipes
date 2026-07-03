@@ -3937,7 +3937,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-core-android",
-            "artifactVersion": "15.0.2",
+            "artifactVersion": "15.0.3",
             "name": "AboutLibraries Compose UI Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -3960,7 +3960,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-m3-android",
-            "artifactVersion": "15.0.2",
+            "artifactVersion": "15.0.3",
             "name": "AboutLibraries Compose Material 3 Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -3983,7 +3983,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-core-android",
-            "artifactVersion": "15.0.2",
+            "artifactVersion": "15.0.3",
             "name": "AboutLibraries Core Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4119,7 +4119,7 @@
         },
         {
             "uniqueId": "com.usercentrics.sdk:usercentrics-android",
-            "artifactVersion": "2.27.1",
+            "artifactVersion": "2.27.3",
             "name": "usercentrics",
             "description": "Usercentrics Core SDK",
             "website": "https://github.com/usercentrics/android-sample-app",
@@ -4142,7 +4142,7 @@
         },
         {
             "uniqueId": "com.usercentrics.sdk:usercentrics-ui",
-            "artifactVersion": "2.27.1",
+            "artifactVersion": "2.27.3",
             "name": "usercentrics-ui",
             "description": "Consent Management Platform - UI Library",
             "website": "https://github.com/usercentrics/android-sample-app",
@@ -4551,7 +4551,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-content-negotiation-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-client-content-negotiation",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4573,7 +4573,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-core-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-client-core",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4595,7 +4595,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-logging-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-client-logging",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4617,7 +4617,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-okhttp-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-client-okhttp",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4639,7 +4639,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-events-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-events",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4661,7 +4661,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-http-cio-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-http-cio",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4683,7 +4683,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-http-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-http",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4705,7 +4705,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-io-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-io",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4727,7 +4727,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-network-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-network",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4749,7 +4749,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-serialization-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-serialization",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4771,7 +4771,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-serialization-kotlinx-json-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-serialization-kotlinx-json",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4793,7 +4793,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-serialization-kotlinx-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-serialization-kotlinx",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4815,7 +4815,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-sse-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-sse",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4837,7 +4837,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-utils-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-utils",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4859,7 +4859,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-websocket-serialization-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-websocket-serialization",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -4881,7 +4881,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-websockets-jvm",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.5.1",
             "name": "ktor-websockets",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
