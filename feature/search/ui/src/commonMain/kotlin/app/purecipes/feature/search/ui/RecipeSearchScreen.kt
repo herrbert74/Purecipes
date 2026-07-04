@@ -53,11 +53,13 @@ fun RecipeSearchScreen(
 			pantryIngredients = viewModel.pantryIngredients.toImmutableSet(),
 			excludedIngredients = viewModel.excludedIngredients.toImmutableSet(),
 			customPantryIngredients = viewModel.customPantryIngredients.toImmutableSet(),
+			keyIngredients = viewModel.keyIngredients.toImmutableSet(),
 			ingredientMatchPreview = viewModel.ingredientMatchPreview,
 			isIngredientMatchLoading = viewModel.isIngredientMatchLoading,
 			sheetState = sheetState,
 			onDismiss = viewModel::onFilterSheetDismiss,
 			onFiltersChange = viewModel::onFiltersChange,
+			onKeyIngredientsChange = viewModel::onKeyIngredientsChange,
 			onIngredientSelectionChange = viewModel::onIngredientSelectionChange,
 			onCustomIngredientToggle = viewModel::onCustomIngredientToggle,
 			onRemoveCustomIngredient = viewModel::onRemoveCustomIngredient,
@@ -87,7 +89,7 @@ fun RecipeSearchScreen(
 		RecipeSearchHeader(
 			isSearchBarActive = viewModel.isSearchBarActive,
 			searchQuery = viewModel.searchQuery,
-			hasActiveFilters = !viewModel.activeFilters.isEmpty,
+			hasActiveFilters = !viewModel.activeFilters.isEmpty || viewModel.keyIngredients.isNotEmpty(),
 			onFilterClick = viewModel::onFilterButtonClick,
 			onExpandSearch = { viewModel.onSearchBarExpandedChange(true) },
 			onCloseSearch = {

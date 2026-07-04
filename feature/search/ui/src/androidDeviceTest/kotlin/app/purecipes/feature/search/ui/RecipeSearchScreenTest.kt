@@ -35,10 +35,14 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_PANTRY_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_INTRO_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_SECTION_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
 import app.purecipes.feature.search.ui.filter.customIngredientRemoveTag
 import app.purecipes.feature.search.ui.filter.filterRecipeClearAllTag
 import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
+import app.purecipes.feature.search.ui.filter.keyIngredientChipTag
+import app.purecipes.feature.search.ui.filter.keyIngredientPantryQuickPickTag
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
@@ -410,6 +414,74 @@ class RecipeSearchScreenTest {
 			assertEquals(emptySet<String>(), viewModel.pantryIngredients)
 		}
 	}
+
+	@Test
+	fun whenSignedInRecipeFiltersTabShowsKeyIngredientsSection() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_KEY_INGREDIENTS_SECTION_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_KEY_INGREDIENTS_INTRO_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenSignedInPantryQuickPickAddsKeyIngredient() = runRecompositionTrackingUiTest {
+		val pantryRepository = FakeUserPantryRepository(pantry = setOf("Chicken", "Rice"))
+		val viewModel = recipeSearchViewModelForTest(pantryRepository = pantryRepository)
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					sessionKey = "signed-in",
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(keyIngredientPantryQuickPickTag("Chicken")).performClick()
+		waitForIdle()
+		runOnIdle {
+			assertEquals(setOf("Chicken"), viewModel.keyIngredients)
+		}
+		onNodeWithTag(keyIngredientChipTag("Chicken")).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenKeyIngredientsSelectedFilterButtonShowsActiveState() = runRecompositionTrackingUiTest {
+		val viewModel = recipeSearchViewModelForTest()
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		runOnIdle { viewModel.onKeyIngredientsChange(setOf("Tomato")) }
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertIsDisplayed()
+	}
+
 }
 
 private fun recipeSearchViewModelForTest(

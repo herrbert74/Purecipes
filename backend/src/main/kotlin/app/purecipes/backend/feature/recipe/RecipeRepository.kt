@@ -602,6 +602,24 @@ internal fun recipeContainsExcludedIngredient(
 	}
 }
 
+internal fun recipeContainsAllKeyIngredients(
+	recipeId: Int,
+	keyIngredients: List<String>,
+	loadIngredientGroups: (Int) -> List<IngredientGroup>,
+): Boolean {
+	if (keyIngredients.isEmpty()) {
+		return true
+	}
+
+	return keyIngredients.all { keyIngredient ->
+		loadIngredientGroups(recipeId).any { group ->
+			ingredientSlots(group.ingredients).any { slot ->
+				isIngredientSlotMatchingKeyIngredient(slot, listOf(keyIngredient))
+			}
+		}
+	}
+}
+
 internal fun isIngredientSlotCoveredByPantry(
 	slot: List<RecipeIngredient>,
 	availableIngredients: List<String>,
@@ -652,6 +670,34 @@ internal fun isIngredientSlotExcluded(
 				ingredientLine = ingredient.text,
 				ingredientNames = excludedIngredients,
 			)
+		}
+	}
+}
+
+internal fun isIngredientSlotMatchingKeyIngredient(
+	slot: List<RecipeIngredient>,
+	keyIngredients: List<String>,
+): Boolean {
+	if (keyIngredients.isEmpty() || slotIsOptional(slot)) {
+		return false
+	}
+	val alternativeMembers = slot.filter { ingredient ->
+		ingredient.requirement == IngredientRequirement.ALTERNATIVE
+	}
+	return if (alternativeMembers.size > 1) {
+		alternativeMembers.any { ingredient ->
+			IngredientVocabulary.matchesAnyIngredient(
+				ingredientLine = ingredient.text,
+				ingredientNames = keyIngredients,
+			)
+		}
+	} else {
+		slot.any { ingredient ->
+			ingredient.requirement != IngredientRequirement.OPTIONAL &&
+				IngredientVocabulary.matchesAnyIngredient(
+					ingredientLine = ingredient.text,
+					ingredientNames = keyIngredients,
+				)
 		}
 	}
 }

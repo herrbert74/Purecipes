@@ -14,9 +14,10 @@ class SearchRecipesUseCase(
 	suspend operator fun invoke(
 		query: String,
 		filters: SearchFilters = SearchFilters(),
+		keyIngredients: Set<String> = emptySet(),
 		pageNumber: Int = 1,
 		pageSize: Int = 20,
 	): SearchOutcome<SearchResultsPage> {
-		return repository.search(query, filters, pageNumber, pageSize)
+		return repository.search(query, filters, keyIngredients, pageNumber, pageSize)
 	}
 }

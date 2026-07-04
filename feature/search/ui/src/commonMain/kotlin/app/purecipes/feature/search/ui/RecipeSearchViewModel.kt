@@ -95,6 +95,9 @@ class RecipeSearchViewModel(
 	var customPantryIngredients by mutableStateOf(emptySet<String>())
 		private set
 
+	var keyIngredients by mutableStateOf(emptySet<String>())
+		private set
+
 	var ingredientMatchPreview by mutableStateOf<IngredientMatchResponse?>(null)
 		private set
 
@@ -103,6 +106,7 @@ class RecipeSearchViewModel(
 
 	private var ingredientMatchJob: Job? = null
 	private var lastSearchedFilters: SearchFilters = SearchFilters()
+	private var lastSearchedKeyIngredients: Set<String> = emptySet()
 	private var lastSavedPantry: Set<String> = emptySet()
 	private var lastSavedExcludedIngredients: Set<String> = emptySet()
 	private var loadedSessionKey: String? = null
@@ -156,13 +160,18 @@ class RecipeSearchViewModel(
 	fun onFilterSheetDismiss() {
 		isFilterSheetVisible = false
 		val filtersChanged = activeFilters != lastSearchedFilters
+		val keyIngredientsChanged = keyIngredients != lastSearchedKeyIngredients
 		val pantryChanged = pantryIngredients != lastSavedPantry
 		val excludedChanged = excludedIngredients != lastSavedExcludedIngredients
-		if (!filtersChanged && !pantryChanged && !excludedChanged) return
+		val hasChanges = filtersChanged || keyIngredientsChanged || pantryChanged || excludedChanged
+		if (!hasChanges) return
 		viewModelScope.launch {
 			if (filtersChanged) {
 				saveSearchFilters(activeFilters)
 				lastSearchedFilters = activeFilters
+			}
+			if (keyIngredientsChanged) {
+				lastSearchedKeyIngredients = keyIngredients
 			}
 			if (pantryChanged) {
 				val updatedPantry = updateUserPantry(
@@ -190,6 +199,10 @@ class RecipeSearchViewModel(
 
 	fun onFiltersChange(filters: SearchFilters) {
 		activeFilters = filters
+	}
+
+	fun onKeyIngredientsChange(ingredients: Set<String>) {
+		keyIngredients = ingredients
 	}
 
 	fun onPantryIngredientsChange(ingredients: Set<String>) {
@@ -279,7 +292,13 @@ class RecipeSearchViewModel(
 
 	private suspend fun loadPageOfResults(pageNumber: Int) {
 		val preferences = getMeasurementPreferences()
-		val outcome = searchRecipes(searchQuery, activeFilters, pageNumber, PAGE_SIZE)
+		val outcome = searchRecipes(
+			searchQuery,
+			activeFilters,
+			keyIngredients = keyIngredients,
+			pageNumber = pageNumber,
+			pageSize = PAGE_SIZE,
+		)
 		val paginatedResult = outcome.get()
 		if (paginatedResult != null) {
 			if (pageNumber == FIRST_PAGE_NUMBER) {

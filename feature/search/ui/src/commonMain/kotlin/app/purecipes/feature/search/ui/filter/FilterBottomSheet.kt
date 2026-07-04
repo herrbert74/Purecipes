@@ -81,11 +81,13 @@ internal fun FilterBottomSheet(
 	pantryIngredients: ImmutableSet<String>,
 	excludedIngredients: ImmutableSet<String>,
 	customPantryIngredients: ImmutableSet<String>,
+	keyIngredients: ImmutableSet<String>,
 	ingredientMatchPreview: IngredientMatchResponse?,
 	isIngredientMatchLoading: Boolean,
 	sheetState: SheetState,
 	onDismiss: () -> Unit,
 	onFiltersChange: (SearchFilters) -> Unit,
+	onKeyIngredientsChange: (Set<String>) -> Unit,
 	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
 	onCustomIngredientToggle: (String) -> Unit,
 	onRemoveCustomIngredient: (String) -> Unit,
@@ -104,9 +106,11 @@ internal fun FilterBottomSheet(
 			pantryIngredients = pantryIngredients,
 			excludedIngredients = excludedIngredients,
 			customPantryIngredients = customPantryIngredients,
+			keyIngredients = keyIngredients,
 			ingredientMatchPreview = ingredientMatchPreview,
 			isIngredientMatchLoading = isIngredientMatchLoading,
 			onFiltersChange = onFiltersChange,
+			onKeyIngredientsChange = onKeyIngredientsChange,
 			onIngredientSelectionChange = onIngredientSelectionChange,
 			onCustomIngredientToggle = onCustomIngredientToggle,
 			onRemoveCustomIngredient = onRemoveCustomIngredient,
@@ -125,9 +129,11 @@ private fun FilterBottomSheetContent(
 	pantryIngredients: ImmutableSet<String>,
 	excludedIngredients: ImmutableSet<String>,
 	customPantryIngredients: ImmutableSet<String>,
+	keyIngredients: ImmutableSet<String>,
 	ingredientMatchPreview: IngredientMatchResponse?,
 	isIngredientMatchLoading: Boolean,
 	onFiltersChange: (SearchFilters) -> Unit,
+	onKeyIngredientsChange: (Set<String>) -> Unit,
 	onIngredientSelectionChange: (pantryIngredients: Set<String>, excludedIngredients: Set<String>) -> Unit,
 	onCustomIngredientToggle: (String) -> Unit,
 	onRemoveCustomIngredient: (String) -> Unit,
@@ -192,7 +198,10 @@ private fun FilterBottomSheetContent(
 
 						FilterTab.RecipeFilters -> RecipeFiltersTabContent(
 							filters = filters,
+							keyIngredients = keyIngredients,
+							pantryIngredients = pantryIngredients,
 							onFiltersChange = onFiltersChange,
+							onKeyIngredientsChange = onKeyIngredientsChange,
 						)
 					}
 				}
@@ -266,9 +275,19 @@ private fun PantryFilterTabContent(
 @Composable
 private fun RecipeFiltersTabContent(
 	filters: SearchFilters,
+	keyIngredients: ImmutableSet<String>,
+	pantryIngredients: ImmutableSet<String>,
 	onFiltersChange: (SearchFilters) -> Unit,
+	onKeyIngredientsChange: (Set<String>) -> Unit,
 ) {
 	FilterScrollableColumn {
+		item {
+			KeyIngredientsSection(
+				keyIngredients = keyIngredients,
+				pantryIngredients = pantryIngredients,
+				onKeyIngredientsChange = onKeyIngredientsChange,
+			)
+		}
 		item {
 			Text(
 				text = "With the filters below you can get a more tailored result.",
@@ -547,12 +566,14 @@ private fun FilterBottomSheetPreviewContent(
 			FilterBottomSheetContent(
 				filters = SearchFilters.default(),
 				isSignedIn = isSignedIn,
-				pantryIngredients = persistentSetOf(),
+				pantryIngredients = persistentSetOf("Chicken", "Rice"),
 				excludedIngredients = persistentSetOf(),
 				customPantryIngredients = persistentSetOf(),
+				keyIngredients = persistentSetOf("Tomato"),
 				ingredientMatchPreview = null,
 				isIngredientMatchLoading = false,
 				onFiltersChange = {},
+				onKeyIngredientsChange = {},
 				onIngredientSelectionChange = { _, _ -> },
 				onCustomIngredientToggle = {},
 				onRemoveCustomIngredient = {},

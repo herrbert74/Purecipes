@@ -33,9 +33,10 @@ class SearchRecipesUseCaseTest {
 		val repository = FakeRecipeSearchRepository(Ok(SearchResultsPage(emptyList(), 1, 20, 0)))
 		val useCase = SearchRecipesUseCase(repository)
 
-		useCase("pasta", filters, pageNumber = 3, pageSize = 10)
+		useCase("pasta", filters, keyIngredients = setOf("Tomato"), pageNumber = 3, pageSize = 10)
 
 		repository.lastFilters shouldBe filters
+		repository.lastKeyIngredients shouldBe setOf("Tomato")
 		repository.lastPageNumber shouldBe 3
 		repository.lastPageSize shouldBe 10
 	}
@@ -59,17 +60,20 @@ class SearchRecipesUseCaseTest {
 
 		var lastQuery: String? = null
 		var lastFilters: SearchFilters? = null
+		var lastKeyIngredients: Set<String>? = null
 		var lastPageNumber: Int? = null
 		var lastPageSize: Int? = null
 
 		override suspend fun search(
 			query: String,
 			filters: SearchFilters,
+			keyIngredients: Set<String>,
 			pageNumber: Int,
 			pageSize: Int,
 		): SearchOutcome<SearchResultsPage> {
 			lastQuery = query
 			lastFilters = filters
+			lastKeyIngredients = keyIngredients
 			lastPageNumber = pageNumber
 			lastPageSize = pageSize
 			return result

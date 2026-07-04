@@ -459,6 +459,51 @@ class RecipeSearchViewModelTest {
 		searchRepository.queries.size shouldBe searchCountAfterInit
 	}
 
+	@Test
+	fun `search sends key ingredients to repository`() = runViewModelTest {
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = searchRepository)
+
+		viewModel.onKeyIngredientsChange(setOf("Tomato", "Chicken"))
+		viewModel.searchNow()
+		advanceUntilIdle()
+
+		searchRepository.lastKeyIngredients shouldBe setOf("Tomato", "Chicken")
+	}
+
+	@Test
+	fun `filter sheet dismiss with key ingredients change re-runs search without saving filters`() = runViewModelTest {
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			filterRepository = filterRepository,
+		)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+		val savedFiltersBeforeDismiss = filterRepository.savedFilters
+
+		viewModel.onFilterButtonClick()
+		viewModel.onKeyIngredientsChange(setOf("Tomato"))
+		viewModel.onFilterSheetDismiss()
+		advanceUntilIdle()
+
+		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+		searchRepository.lastKeyIngredients shouldBe setOf("Tomato")
+		filterRepository.savedFilters shouldBe savedFiltersBeforeDismiss
+	}
+
+	@Test
+	fun `onKeyIngredientsChange clears all key ingredients`() = runViewModelTest {
+		val viewModel = makeViewModel()
+		advanceUntilIdle()
+
+		viewModel.onKeyIngredientsChange(setOf("Tomato", "Chicken"))
+		viewModel.onKeyIngredientsChange(emptySet())
+
+		viewModel.keyIngredients shouldBe emptySet()
+	}
+
 	private fun makeViewModel(
 		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
 		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),

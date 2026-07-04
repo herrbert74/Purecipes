@@ -46,8 +46,9 @@ class RecipeSearchAccessorTest {
 		val accessor = RecipeSearchAccessor(RecipeSearchRemoteDataSource(api))
 		val filters = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 
-		accessor.search("pasta", filters, pageNumber = 2, pageSize = 10)
+		accessor.search("pasta", filters, keyIngredients = setOf("Tomato"), pageNumber = 2, pageSize = 10)
 
 		api.searchWithFiltersCalls shouldBe 1
+		api.lastSearchRequest?.keyIngredients shouldBe setOf("Tomato")
 	}
 }
