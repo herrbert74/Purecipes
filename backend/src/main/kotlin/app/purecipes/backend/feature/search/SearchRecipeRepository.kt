@@ -6,6 +6,7 @@ import app.purecipes.backend.feature.recipe.countRecipesByKeyword
 import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
 import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
+import app.purecipes.backend.feature.recipe.recipeContainsAllKeyIngredients
 import app.purecipes.backend.feature.recipe.recipeContainsExcludedIngredient
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchRequest
@@ -56,6 +57,7 @@ class SearchRecipeRepository(
 				limit = normalizedPageSize,
 				offset = offset,
 				userId = userId,
+				keyIngredients = request.keyIngredients.map { it.trim() }.filter { it.isNotEmpty() }.distinct(),
 			)
 		}
 
@@ -85,13 +87,14 @@ class SearchRecipeRepository(
 		limit: Int,
 		offset: Int,
 		userId: Long?,
+		keyIngredients: List<String>,
 	): Pair<List<RecipeSummary>, Int> {
 		val availableIngredients =
 			if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
 		val excludedIngredients =
 			if (userId != null) loadExcludedIngredientsForUser(conn, userId) else emptyList()
 		val requiresIngredientPostFilter =
-			availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty()
+			availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty() || keyIngredients.isNotEmpty()
 		return if (!requiresIngredientPostFilter) {
 			val total = countSearchWithFiltersRecipes(conn, whereClause, params)
 			val page = querySearchWithFiltersRecipes(
@@ -115,6 +118,7 @@ class SearchRecipeRepository(
 					summary = summary,
 					availableIngredients = availableIngredients,
 					excludedIngredients = excludedIngredients,
+					keyIngredients = keyIngredients,
 				)
 			}
 			filtered.drop(offset).take(limit) to filtered.size
@@ -126,24 +130,28 @@ class SearchRecipeRepository(
 		summary: RecipeSummary,
 		availableIngredients: List<String>,
 		excludedIngredients: List<String>,
+		keyIngredients: List<String>,
 	): Boolean {
 		val loadIngredientGroups = { recipeId: Int ->
 			recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
 		}
-		if (recipeContainsExcludedIngredient(
-				recipeId = summary.id,
-				excludedIngredients = excludedIngredients,
-				loadIngredientGroups = loadIngredientGroups,
-			)
-		) {
-			return false
-		}
-		return availableIngredients.isEmpty() ||
+		val containsExcluded = recipeContainsExcludedIngredient(
+			recipeId = summary.id,
+			excludedIngredients = excludedIngredients,
+			loadIngredientGroups = loadIngredientGroups,
+		)
+		val containsAllKeyIngredients = recipeContainsAllKeyIngredients(
+			recipeId = summary.id,
+			keyIngredients = keyIngredients,
+			loadIngredientGroups = loadIngredientGroups,
+		)
+		val coveredByPantry = availableIngredients.isEmpty() ||
 			isRecipeCoveredByAvailableIngredients(
 				recipeId = summary.id,
 				availableIngredients = availableIngredients,
 				loadIngredientGroups = loadIngredientGroups,
 			)
+		return !containsExcluded && containsAllKeyIngredients && coveredByPantry
 	}
 
 	private fun searchByKeyword(searchInput: KeywordSearchInput): List<RecipeSummary> {

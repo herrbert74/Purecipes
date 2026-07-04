@@ -10,6 +10,7 @@ interface RecipeSearchDataSource {
 		suspend fun search(
 			query: String,
 			filters: SearchFilters,
+			keyIngredients: Set<String> = emptySet(),
 			pageNumber: Int = 1,
 			pageSize: Int = 20,
 		): SearchOutcome<SearchResultsPage>

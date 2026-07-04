@@ -56,6 +56,9 @@ class FakePurecipesApi(
 	var searchWithFiltersCalls: Int = 0
 		private set
 
+	var lastSearchRequest: SearchRequest? = null
+		private set
+
 	var ingredientMatchResponse: IngredientMatchResponse = IngredientMatchResponse(query = "")
 	val ingredientMatchCalls = mutableListOf<String>()
 
@@ -80,6 +83,7 @@ class FakePurecipesApi(
 
 	override suspend fun searchWithFilters(request: SearchRequest): SearchResultsPage {
 		searchWithFiltersCalls += 1
+		lastSearchRequest = request
 		val pageNumber = request.pageNumber.coerceAtLeast(1)
 		val pageSize = request.pageSize.coerceAtLeast(1)
 		val offset = (pageNumber - 1) * pageSize

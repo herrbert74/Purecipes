@@ -17,16 +17,19 @@ class FakeRecipeSearchRepository(
 
 	val queries = mutableListOf<String>()
 	var lastQuery: String? = null
+	var lastKeyIngredients: Set<String>? = null
 	var lastPageNumber: Int? = null
 	var lastPageSize: Int? = null
 
 	override suspend fun search(
 		query: String,
 		filters: SearchFilters,
+		keyIngredients: Set<String>,
 		pageNumber: Int,
 		pageSize: Int,
 	): SearchOutcome<SearchResultsPage> {
 		lastQuery = query
+		lastKeyIngredients = keyIngredients
 		lastPageNumber = pageNumber
 		lastPageSize = pageSize
 		queries += query

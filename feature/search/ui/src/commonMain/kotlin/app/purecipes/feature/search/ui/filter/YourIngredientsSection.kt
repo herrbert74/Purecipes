@@ -140,6 +140,7 @@ internal fun AddIngredientDialog(
 	isLoading: Boolean,
 	onQueryChange: (String) -> Unit,
 	onDismiss: () -> Unit,
+	confirmButtonLabel: String = "Add to pantry",
 	onAdd: (String) -> Unit,
 ) {
 	var query by rememberSaveable { mutableStateOf("") }
@@ -225,7 +226,7 @@ internal fun AddIngredientDialog(
 				enabled = trimmedQuery.isNotEmpty(),
 				modifier = Modifier.testTag(ADD_INGREDIENT_CONFIRM_BUTTON_TAG),
 			) {
-				Text(text = "Add to pantry")
+				Text(text = confirmButtonLabel)
 			}
 		},
 		dismissButton = {

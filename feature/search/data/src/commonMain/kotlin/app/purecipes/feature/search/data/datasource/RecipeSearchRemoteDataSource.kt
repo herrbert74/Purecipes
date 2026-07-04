@@ -19,6 +19,7 @@ class RecipeSearchRemoteDataSource(
 	override suspend fun search(
 		query: String,
 		filters: SearchFilters,
+		keyIngredients: Set<String>,
 		pageNumber: Int,
 		pageSize: Int,
 	): SearchOutcome<SearchResultsPage> {
@@ -27,6 +28,7 @@ class RecipeSearchRemoteDataSource(
 				SearchRequest(
 					query = query.trim(),
 					filters = filters,
+					keyIngredients = keyIngredients,
 					pageNumber = pageNumber,
 					pageSize = pageSize,
 				),

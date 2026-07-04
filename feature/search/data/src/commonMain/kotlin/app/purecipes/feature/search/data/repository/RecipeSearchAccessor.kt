@@ -18,8 +18,9 @@ class RecipeSearchAccessor(
 	override suspend fun search(
 		query: String,
 		filters: SearchFilters,
+		keyIngredients: Set<String>,
 		pageNumber: Int,
 		pageSize: Int,
 	): SearchOutcome<SearchResultsPage> =
-		remoteDataSource.search(query, filters, pageNumber, pageSize)
+		remoteDataSource.search(query, filters, keyIngredients, pageNumber, pageSize)
 }
