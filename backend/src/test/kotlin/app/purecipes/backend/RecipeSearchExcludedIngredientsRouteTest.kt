@@ -2,6 +2,8 @@ package app.purecipes.backend
 
 import app.purecipes.backend.fake.FakeSessionService
 import app.purecipes.shared.domain.model.RecipeIngredient
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -259,9 +261,12 @@ class RecipeSearchExcludedIngredientsRouteTest {
 			accessToken = sessionService.session.accessToken,
 		)
 
-		responseBody.contains("Chicken Tomato Stew") shouldBe false
-		responseBody.contains("Chicken Rice Bowl") shouldBe false
-		responseBody.contains("Tomato Basil Soup") shouldBe false
+		mainSearchItemTitles(responseBody) shouldBe emptyList()
+		mainSearchItemTitles(responseBody) shouldNotContain "Chicken Tomato Stew"
+		mainSearchItemTitles(responseBody) shouldNotContain "Tomato Basil Soup"
+		nearMissSearchItemTitles(responseBody) shouldContain "Chicken Rice Bowl"
+		nearMissSearchItemTitles(responseBody) shouldNotContain "Chicken Tomato Stew"
+		nearMissSearchItemTitles(responseBody) shouldNotContain "Tomato Basil Soup"
 	}
 
 	@Test
