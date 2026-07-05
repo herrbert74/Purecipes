@@ -63,6 +63,18 @@ class KotlinResultTest {
 	}
 
 	@Test
+	fun `runCatchingApi maps html json conversion exception to readable server error`() = runTest {
+		val html = """
+			<!DOCTYPE html><html><head><title>Web page blocked</title></head>
+			<body><h1>FortiGuard Intrusion prevention</h1></body></html>
+		""".trimIndent()
+
+		runCatchingApi<Int> {
+			throw JsonConvertException(html)
+		} shouldBe Err(Failure.ServerError("Web page blocked. FortiGuard Intrusion prevention"))
+	}
+
+	@Test
 	fun `http response handle maps error response to server error`() = runTest {
 		val client = HttpClient(
 			MockEngine {
@@ -110,6 +122,41 @@ class KotlinResultTest {
 			client.get("https://example.com/error").body<String>()
 		} catch (exception: io.ktor.client.plugins.ServerResponseException) {
 			exception.response.handle() shouldBe Failure.ServerError("Something went wrong. Please try again.")
+		} finally {
+			client.close()
+		}
+	}
+
+	@Test
+	fun `http response handle maps html error response to readable server error`() = runTest {
+		val client = HttpClient(
+			MockEngine {
+				respond(
+					content = """
+						<!DOCTYPE html>
+						<html>
+						<head><title>Web Filter Block override</title></head>
+						<body>
+						<h1>FortiGuard Intrusion prevention</h1>
+						<h3>Web page blocked</h3>
+						</body>
+						</html>
+					""".trimIndent(),
+					status = HttpStatusCode.Forbidden,
+					headers = headersOf(
+						HttpHeaders.ContentType,
+						ContentType.Text.Html.toString(),
+					),
+				)
+			},
+		)
+
+		try {
+			client.get("https://example.com/error").body<String>()
+		} catch (exception: io.ktor.client.plugins.ClientRequestException) {
+			exception.response.handle() shouldBe Failure.ServerError(
+				"Web Filter Block override. FortiGuard Intrusion prevention. Web page blocked",
+			)
 		} finally {
 			client.close()
 		}

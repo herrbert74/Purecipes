@@ -117,6 +117,7 @@ fun RecipeSearchScreen(
 			paginationState = viewModel.paginationState,
 			recipes = viewModel.recipes,
 			onRecipeSelect = onRecipeSelect,
+			onRetryClick = viewModel::searchNow,
 			modifier = Modifier.weight(1f),
 		)
 	}
