@@ -2,6 +2,7 @@ package app.purecipes.backend.feature.recipe
 
 import app.purecipes.backend.feature.search.IngredientVocabulary
 import app.purecipes.shared.domain.ingredient.ingredientSlots
+import app.purecipes.shared.domain.ingredient.singleMissingIngredientLabel
 import app.purecipes.shared.domain.ingredient.slotIsOptional
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
@@ -583,6 +584,16 @@ internal fun isRecipeCoveredByAvailableIngredients(
 		ingredientSlots(group.ingredients).all { slot ->
 			isIngredientSlotCoveredByPantry(slot, availableIngredients)
 		}
+	}
+}
+
+internal fun singleMissingPantryIngredientLabel(
+	recipeId: Int,
+	availableIngredients: List<String>,
+	loadIngredientGroups: (Int) -> List<IngredientGroup>,
+): String? {
+	return singleMissingIngredientLabel(loadIngredientGroups(recipeId)) { slot ->
+		isIngredientSlotCoveredByPantry(slot, availableIngredients)
 	}
 }
 

@@ -86,7 +86,7 @@ internal object IngredientLineParser {
 				denominator != null &&
 				denominator.compareTo(BigDecimal.ZERO) != 0
 			if (hasValidFraction) {
-				numerator!!.divide(denominator!!, QUANTITY_SCALE, RoundingMode.HALF_UP)
+				numerator.divide(denominator, QUANTITY_SCALE, RoundingMode.HALF_UP)
 			} else {
 				null
 			}

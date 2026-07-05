@@ -108,6 +108,28 @@ internal suspend fun ApplicationTestBuilder.searchWithFiltersForSearchRouteTest(
 	return response.bodyAsText()
 }
 
+internal fun mainSearchItemTitles(responseBody: String): List<String> =
+	searchResultSectionTitles(responseBody, sectionName = "items")
+
+internal fun nearMissSearchItemTitles(responseBody: String): List<String> =
+	searchResultSectionTitles(responseBody, sectionName = "nearMissRecipes")
+
+private fun searchResultSectionTitles(responseBody: String, sectionName: String): List<String> {
+	val sectionStart = responseBody.indexOf("\"$sectionName\"")
+	val arrayStart = if (sectionStart >= 0) responseBody.indexOf('[', sectionStart) else -1
+	val arrayEnd = if (arrayStart >= 0) responseBody.indexOf(']', arrayStart) else -1
+	val section = if (arrayStart >= 0 && arrayEnd >= 0) {
+		responseBody.substring(arrayStart, arrayEnd + 1)
+	} else {
+		""
+	}
+	return TITLE_FIELD_REGEX.findAll(section)
+		.map { match -> match.groupValues[1] }
+		.toList()
+}
+
+private val TITLE_FIELD_REGEX = Regex(""""title"\s*:\s*"([^"]+)"""")
+
 internal suspend fun ApplicationTestBuilder.updatePantryForSearchRouteTest(
 	accessToken: String,
 	add: List<String>,

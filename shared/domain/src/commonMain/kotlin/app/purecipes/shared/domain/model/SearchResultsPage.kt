@@ -8,4 +8,5 @@ data class SearchResultsPage(
 	val pageNumber: Int,
 	val pageSize: Int,
 	val totalMatches: Int,
+	val nearMissRecipes: List<NearMissRecipe> = emptyList(),
 )

@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
+import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -40,6 +41,7 @@ internal fun SearchResultsContent(
 	totalMatches: Int,
 	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
+	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
 	onRecipeSelect: (Int) -> Unit,
 	onRetryClick: () -> Unit = {},
 	modifier: Modifier = Modifier,
@@ -87,6 +89,14 @@ internal fun SearchResultsContent(
 					onClick = { onRecipeSelect(recipe.id) },
 				)
 			}
+			if (nearMissRecipes.isNotEmpty()) {
+				item {
+					NearMissSearchResults(
+						nearMissRecipes = nearMissRecipes,
+						onRecipeSelect = onRecipeSelect,
+					)
+				}
+			}
 		}
 	}
 }
@@ -132,6 +142,21 @@ private val previewRecipeE = RecipeSummary(
 	imageUrl = null,
 	totalTime = 50,
 	measurementSystem = MeasurementSystem.MIXED,
+)
+
+private val previewNearMissRecipes = persistentListOf(
+	NearMissRecipe(
+		recipe = previewRecipeA,
+		missingIngredient = "Basil",
+	),
+	NearMissRecipe(
+		recipe = previewRecipeC,
+		missingIngredient = "Basil",
+	),
+	NearMissRecipe(
+		recipe = previewRecipeB,
+		missingIngredient = "Balsamic vinegar",
+	),
 )
 
 private val previewRecipeList = persistentListOf(
@@ -189,6 +214,65 @@ private fun SearchResultsContentErrorPreview() {
 				totalMatches = 0,
 				paginationState = rememberPreviewPaginationState(persistentListOf()),
 				recipes = remember { mutableStateListOf() },
+				onRecipeSelect = {},
+				modifier = Modifier.fillMaxSize(),
+			)
+		}
+	}
+}
+
+@Preview(
+	name = "Search results empty with near misses",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SearchResultsContentNearMissPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Surface(
+			modifier = Modifier
+				.fillMaxWidth()
+				.heightIn(min = 480.dp),
+		) {
+			SearchResultsContent(
+				isSearching = false,
+				errorMessage = null,
+				totalMatches = 0,
+				paginationState = rememberPreviewPaginationState(persistentListOf()),
+				recipes = remember { mutableStateListOf() },
+				nearMissRecipes = previewNearMissRecipes,
+				onRecipeSelect = {},
+				modifier = Modifier.fillMaxSize(),
+			)
+		}
+	}
+}
+
+@Preview(
+	name = "Search results sparse with near misses",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun SearchResultsContentSparseWithNearMissPreview() {
+	PurecipesTheme(darkTheme = false) {
+		Surface(
+			modifier = Modifier
+				.fillMaxWidth()
+				.heightIn(min = 560.dp),
+		) {
+			val recipes = remember {
+				mutableStateListOf(previewRecipeA)
+			}
+			SearchResultsContent(
+				isSearching = false,
+				errorMessage = null,
+				totalMatches = 1,
+				paginationState = rememberPreviewPaginationState(persistentListOf(previewRecipeA)),
+				recipes = recipes,
+				nearMissRecipes = previewNearMissRecipes,
 				onRecipeSelect = {},
 				modifier = Modifier.fillMaxSize(),
 			)

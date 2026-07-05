@@ -2,6 +2,7 @@ package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.repository.SearchOutcome
+import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
@@ -13,6 +14,7 @@ import com.github.michaelbull.result.getError
 class FakeRecipeSearchRepository(
 	private val result: SearchOutcome<List<RecipeSummary>> = Ok(emptyList()),
 	private val totalMatches: Int? = null,
+	private val nearMissRecipes: List<NearMissRecipe> = emptyList(),
 ) : RecipeSearchRepository {
 
 	val queries = mutableListOf<String>()
@@ -44,6 +46,7 @@ class FakeRecipeSearchRepository(
 				pageNumber = pageNumber,
 				pageSize = pageSize,
 				totalMatches = totalMatches ?: items.size,
+				nearMissRecipes = nearMissRecipes,
 			),
 		)
 	}
