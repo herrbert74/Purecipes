@@ -2,6 +2,7 @@ package app.purecipes.backend
 
 import app.purecipes.backend.fake.FakeSessionService
 import app.purecipes.shared.domain.model.RecipeIngredient
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -117,9 +118,8 @@ class RecipeSearchRouteTest {
 			accessToken = sessionService.session.accessToken,
 		)
 
-		responseBody.contains("Chicken Tomato Stew") shouldBe true
-		responseBody.contains("Chicken Rice Bowl") shouldBe false
-		responseBody.contains("Tomato Basil Soup") shouldBe false
+		mainSearchItemTitles(responseBody) shouldBe listOf("Chicken Tomato Stew")
+		nearMissSearchItemTitles(responseBody) shouldContain "Chicken Rice Bowl"
 	}
 
 	@Test
@@ -229,8 +229,8 @@ class RecipeSearchRouteTest {
 			accessToken = sessionService.session.accessToken,
 		)
 
-		responseBody.contains("Chicken Tomato Stew") shouldBe true
-		responseBody.contains("Chicken Rice Bowl") shouldBe false
+		mainSearchItemTitles(responseBody) shouldBe listOf("Chicken Tomato Stew")
+		nearMissSearchItemTitles(responseBody) shouldContain "Chicken Rice Bowl"
 	}
 
 	@Test
@@ -267,9 +267,8 @@ class RecipeSearchRouteTest {
 			accessToken = sessionService.session.accessToken,
 		)
 
-		responseBody.contains("Chicken Tomato Stew") shouldBe true
-		responseBody.contains("Chicken Rice Bowl") shouldBe false
-		responseBody.contains("Tomato Basil Soup") shouldBe false
+		mainSearchItemTitles(responseBody) shouldBe listOf("Chicken Tomato Stew")
+		nearMissSearchItemTitles(responseBody) shouldContain "Chicken Rice Bowl"
 	}
 
 	@Test

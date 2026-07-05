@@ -23,6 +23,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 
 @Composable
@@ -116,6 +117,7 @@ fun RecipeSearchScreen(
 			totalMatches = viewModel.totalMatches,
 			paginationState = viewModel.paginationState,
 			recipes = viewModel.recipes,
+			nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
 			onRecipeSelect = onRecipeSelect,
 			onRetryClick = viewModel::searchNow,
 			modifier = Modifier.weight(1f),

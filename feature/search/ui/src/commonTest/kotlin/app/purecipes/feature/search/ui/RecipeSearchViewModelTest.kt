@@ -18,6 +18,7 @@ import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientMatchCount
 import app.purecipes.shared.domain.model.IngredientMatchResponse
+import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -115,6 +116,65 @@ class RecipeSearchViewModelTest {
 
 		viewModel.recipes.isEmpty() shouldBe true
 		viewModel.errorMessage shouldBe "Search failed"
+	}
+
+	@Test
+	fun `search populates near miss recipes when main results are empty`() = runViewModelTest {
+		val nearMiss = NearMissRecipe(
+			recipe = RecipeSummary(
+				id = 9,
+				title = "Almost Stew",
+				cuisine = Cuisine.ITALIAN,
+				imageUrl = null,
+				totalTime = 30,
+			),
+			missingIngredient = "Basil",
+		)
+		val repository = FakeRecipeSearchRepository(
+			result = Ok(emptyList()),
+			totalMatches = 0,
+			nearMissRecipes = listOf(nearMiss),
+		)
+		val viewModel = makeViewModel(searchRepository = repository)
+
+		advanceUntilIdle()
+
+		viewModel.totalMatches shouldBe 0
+		viewModel.recipes.isEmpty() shouldBe true
+		viewModel.nearMissRecipes.single() shouldBe nearMiss
+	}
+
+	@Test
+	fun `search populates near miss recipes when main results are sparse`() = runViewModelTest {
+		val mainResult = RecipeSummary(
+			id = 1,
+			title = "Chicken Tomato Stew",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 30,
+		)
+		val nearMiss = NearMissRecipe(
+			recipe = RecipeSummary(
+				id = 9,
+				title = "Almost Stew",
+				cuisine = Cuisine.ITALIAN,
+				imageUrl = null,
+				totalTime = 30,
+			),
+			missingIngredient = "Basil",
+		)
+		val repository = FakeRecipeSearchRepository(
+			result = Ok(listOf(mainResult)),
+			totalMatches = 1,
+			nearMissRecipes = listOf(nearMiss),
+		)
+		val viewModel = makeViewModel(searchRepository = repository)
+
+		advanceUntilIdle()
+
+		viewModel.totalMatches shouldBe 1
+		viewModel.recipes.single() shouldBe mainResult
+		viewModel.nearMissRecipes.single() shouldBe nearMiss
 	}
 
 	@Test

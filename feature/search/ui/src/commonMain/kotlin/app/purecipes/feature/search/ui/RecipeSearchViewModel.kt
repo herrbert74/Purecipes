@@ -25,6 +25,7 @@ import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
+import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.PantryDelta
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -115,6 +116,8 @@ class RecipeSearchViewModel(
 		private set
 
 	val recipes = mutableStateListOf<RecipeSummary>()
+
+	val nearMissRecipes = mutableStateListOf<NearMissRecipe>()
 
 	val paginationState: PaginationState<Int, RecipeSummary> = PaginationState(
 		initialPageKey = FIRST_PAGE_NUMBER,
@@ -285,6 +288,7 @@ class RecipeSearchViewModel(
 		isSearching = true
 		errorMessage = null
 		recipes.clear()
+		nearMissRecipes.clear()
 		totalMatches = 0
 		paginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 		loadPageOfResults(FIRST_PAGE_NUMBER)
@@ -303,7 +307,11 @@ class RecipeSearchViewModel(
 		if (paginatedResult != null) {
 			if (pageNumber == FIRST_PAGE_NUMBER) {
 				recipes.clear()
+				nearMissRecipes.clear()
 				totalMatches = paginatedResult.totalMatches
+				nearMissRecipes.addAll(
+					filterNearMissRecipes(paginatedResult.nearMissRecipes, preferences),
+				)
 			}
 			val filtered = filterRecipesForMeasurementPreferences(paginatedResult.items, preferences)
 			recipes.addAll(filtered)
@@ -335,6 +343,17 @@ class RecipeSearchViewModel(
 			isSearching = false
 			searchReadiness.reportReady()
 		}
+	}
+
+	private fun filterNearMissRecipes(
+		nearMissRecipes: List<NearMissRecipe>,
+		preferences: MeasurementPreferences,
+	): List<NearMissRecipe> {
+		val allowedRecipeIds = filterRecipesForMeasurementPreferences(
+			recipes = nearMissRecipes.map { nearMiss -> nearMiss.recipe },
+			preferences = preferences,
+		).map { recipe -> recipe.id }.toSet()
+		return nearMissRecipes.filter { nearMiss -> nearMiss.recipe.id in allowedRecipeIds }
 	}
 
 	private fun MeasurementPreferences.filterSummary(): String? {

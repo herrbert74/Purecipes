@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
@@ -44,6 +45,7 @@ import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
 import app.purecipes.feature.search.ui.filter.keyIngredientChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientPantryQuickPickTag
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -126,6 +128,97 @@ class RecipeSearchScreenTest {
 		}
 
 		onNodeWithText("Search failed").assertIsDisplayed()
+	}
+
+	@Test
+	fun searchScreenShowsNearMissRecipesWhenSearchIsEmpty() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository(
+			result = com.github.michaelbull.result.Ok(emptyList()),
+			totalMatches = 0,
+			nearMissRecipes = listOf(
+				NearMissRecipe(
+					recipe = RecipeSummary(
+						id = 9,
+						title = "Almost Stew",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 30,
+					),
+					missingIngredient = "Basil",
+				),
+			),
+		)
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+				)
+			}
+		}
+
+		onNodeWithText("0 recipes found").assertIsDisplayed()
+		onNodeWithText("Do you have Basil?").assertIsDisplayed()
+		onNodeWithText("Almost Stew").assertIsDisplayed()
+	}
+
+	@Test
+	fun searchScreenShowsNearMissRecipesWhenSearchReturnsFewResults() = runRecompositionTrackingUiTest {
+		val mainRecipes = listOf(
+			RecipeSummary(
+				id = 1,
+				title = "Chicken Tomato Stew",
+				cuisine = Cuisine.ITALIAN,
+				imageUrl = null,
+				totalTime = 30,
+			),
+			RecipeSummary(
+				id = 2,
+				title = "Simple Salad",
+				cuisine = Cuisine.FRENCH,
+				imageUrl = null,
+				totalTime = 10,
+			),
+			RecipeSummary(
+				id = 3,
+				title = "Garlic Bread",
+				cuisine = Cuisine.ITALIAN,
+				imageUrl = null,
+				totalTime = 20,
+			),
+		)
+		val searchRepository = FakeRecipeSearchRepository(
+			result = com.github.michaelbull.result.Ok(mainRecipes),
+			totalMatches = mainRecipes.size,
+			nearMissRecipes = listOf(
+				NearMissRecipe(
+					recipe = RecipeSummary(
+						id = 9,
+						title = "Almost Stew",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 35,
+					),
+					missingIngredient = "Basil",
+				),
+			),
+		)
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+				)
+			}
+		}
+
+		onNodeWithText("3 recipes found").assertIsDisplayed()
+		onNodeWithText("Chicken Tomato Stew").assertIsDisplayed()
+		onNodeWithText("Do you have Basil?").performScrollTo().assertIsDisplayed()
+		onNodeWithText("Almost Stew").assertIsDisplayed()
+		onNodeWithText(
+			"These are almost a match — you're only missing one ingredient.",
+		).performScrollTo().assertIsDisplayed()
 	}
 
 	@Test
