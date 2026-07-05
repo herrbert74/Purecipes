@@ -2,6 +2,7 @@ package app.purecipes.shared.data.util
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.shared.data.getresult.handle
+import app.purecipes.shared.data.getresult.toUserFacingRemoteErrorMessage
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.mapError
@@ -22,7 +23,11 @@ suspend inline fun <V> runCatchingApi(crossinline block: suspend () -> V) = try 
 } catch (exception: ResponseException) {
 	Err(exception.handle())
 	} catch (exception: JsonConvertException) {
-	Err(Failure.ServerError(exception.message ?: "Unexpected server response"))
+	Err(
+		Failure.ServerError(
+			(exception.message ?: "").toUserFacingRemoteErrorMessage(),
+		),
+	)
 }
 
 /**
@@ -37,7 +42,11 @@ suspend inline fun <T, V> T.runCatchingApi(crossinline block: suspend T.() -> V)
 } catch (exception: ResponseException) {
 	Err(exception.handle())
 	} catch (exception: JsonConvertException) {
-	Err(Failure.ServerError(exception.message ?: "Unexpected server response"))
+	Err(
+		Failure.ServerError(
+			(exception.message ?: "").toUserFacingRemoteErrorMessage(),
+		),
+	)
 }
 
 /**

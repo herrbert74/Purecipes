@@ -2,11 +2,15 @@ package app.purecipes.feature.search.ui.result
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -16,13 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeSummary
-import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -37,6 +41,7 @@ internal fun SearchResultsContent(
 	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
 	onRecipeSelect: (Int) -> Unit,
+	onRetryClick: () -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	when {
@@ -44,8 +49,22 @@ internal fun SearchResultsContent(
 			CircularProgressIndicator()
 		}
 
-		errorMessage != null -> Box(modifier = modifier.fillMaxWidth()) {
-			ErrorText(text = errorMessage)
+		errorMessage != null -> Box(
+			modifier = modifier.fillMaxSize(),
+			contentAlignment = Alignment.Center,
+		) {
+			Column(horizontalAlignment = Alignment.CenterHorizontally) {
+				Text(
+					text = errorMessage,
+					style = PurecipesTheme.typography.bodyLarge,
+					color = PurecipesTheme.colorScheme.error,
+					textAlign = TextAlign.Center,
+				)
+				Spacer(modifier = Modifier.height(PurecipesTheme.space.l))
+				Button(onClick = onRetryClick) {
+					Text(text = "Retry")
+				}
+			}
 		}
 
 		else -> PaginatedLazyColumn(

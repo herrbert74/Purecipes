@@ -52,12 +52,12 @@ private suspend fun HttpResponse.errorMessage(): String {
 			errorBody.detail?.takeIf { detail -> detail.isNotBlank() }
 				?: errorBody.message?.takeIf { message -> message.isNotBlank() }
 				?: errorBody.error?.takeIf { error -> error.isNotBlank() }
-				?: errorText
+				?: errorText.toUserFacingRemoteErrorMessage()
 		}
 	} else if (status.value >= InternalServerError.value) {
 		DEFAULT_SERVER_ERROR_MESSAGE
 	} else {
-		errorText
+		errorText.toUserFacingRemoteErrorMessage()
 	}
 }
 
@@ -67,5 +67,3 @@ private data class ApiErrorBody(
 	val error: String? = null,
 	val message: String? = null,
 )
-
-private const val DEFAULT_SERVER_ERROR_MESSAGE = "Something went wrong. Please try again."
