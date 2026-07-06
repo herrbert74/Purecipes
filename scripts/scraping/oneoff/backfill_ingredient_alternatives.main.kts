@@ -1,6 +1,6 @@
 #!/usr/bin/env kotlin
 
-@file:DependsOn("org.postgresql:postgresql:42.7.11")
+@file:DependsOn("org.postgresql:postgresql:42.7.12")
 @file:Import("../ScrapedIngredientLines.kt")
 
 import java.sql.Connection
