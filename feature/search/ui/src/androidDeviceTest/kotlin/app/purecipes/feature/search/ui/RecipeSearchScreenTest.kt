@@ -215,7 +215,7 @@ class RecipeSearchScreenTest {
 		onNodeWithText("3 recipes found").assertIsDisplayed()
 		onNodeWithText("Chicken Tomato Stew").assertIsDisplayed()
 		onNodeWithText("Do you have Basil?").performScrollTo().assertIsDisplayed()
-		onNodeWithText("Almost Stew").assertIsDisplayed()
+		onNodeWithText("Almost Stew").performScrollTo().assertIsDisplayed()
 		onNodeWithText(
 			"These are almost a match — you're only missing one ingredient.",
 		).performScrollTo().assertIsDisplayed()
