@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,11 +29,14 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+
+internal const val SEARCH_RESULTS_LIST_TAG = "searchResultsList"
 
 @Composable
 internal fun SearchResultsContent(
@@ -72,8 +76,10 @@ internal fun SearchResultsContent(
 		else -> PaginatedLazyColumn(
 			paginationState = paginationState,
 			requestInitialPageAutomatically = false,
-			modifier = modifier.fillMaxWidth(),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			modifier = modifier
+				.fillMaxWidth()
+				.testTag(SEARCH_RESULTS_LIST_TAG),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
 		) {
 			item {
@@ -84,7 +90,7 @@ internal fun SearchResultsContent(
 				)
 			}
 			items(recipes, key = { it.id }) { recipe ->
-				RecipeRow(
+				RecipeCard(
 					recipe = recipe,
 					onClick = { onRecipeSelect(recipe.id) },
 				)
