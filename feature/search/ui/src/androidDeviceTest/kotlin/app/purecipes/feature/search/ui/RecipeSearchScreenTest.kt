@@ -9,7 +9,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
@@ -44,6 +43,7 @@ import app.purecipes.feature.search.ui.filter.filterRecipeClearAllTag
 import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
 import app.purecipes.feature.search.ui.filter.keyIngredientChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientPantryQuickPickTag
+import app.purecipes.feature.search.ui.result.SEARCH_RESULTS_LIST_TAG
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -214,11 +214,19 @@ class RecipeSearchScreenTest {
 
 		onNodeWithText("3 recipes found").assertIsDisplayed()
 		onNodeWithText("Chicken Tomato Stew").assertIsDisplayed()
-		onNodeWithText("Do you have Basil?").performScrollTo().assertIsDisplayed()
-		onNodeWithText("Almost Stew").performScrollTo().assertIsDisplayed()
+		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
+			.performScrollToNode(hasText("Almost Stew"))
+		onNodeWithText("Almost Stew").assertIsDisplayed()
+		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
+			.performScrollToNode(hasText("Do you have Basil?"))
+		onNodeWithText("Do you have Basil?").assertIsDisplayed()
+		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
+			.performScrollToNode(
+				hasText("These are almost a match — you're only missing one ingredient."),
+			)
 		onNodeWithText(
 			"These are almost a match — you're only missing one ingredient.",
-		).performScrollTo().assertIsDisplayed()
+		).assertIsDisplayed()
 	}
 
 	@Test

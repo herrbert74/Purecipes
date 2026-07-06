@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +35,8 @@ import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+
+internal const val SEARCH_RESULTS_LIST_TAG = "searchResultsList"
 
 @Composable
 internal fun SearchResultsContent(
@@ -73,7 +76,9 @@ internal fun SearchResultsContent(
 		else -> PaginatedLazyColumn(
 			paginationState = paginationState,
 			requestInitialPageAutomatically = false,
-			modifier = modifier.fillMaxWidth(),
+			modifier = modifier
+				.fillMaxWidth()
+				.testTag(SEARCH_RESULTS_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
 		) {
