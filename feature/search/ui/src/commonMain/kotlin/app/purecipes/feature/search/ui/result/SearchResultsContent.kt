@@ -28,6 +28,7 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -73,7 +74,7 @@ internal fun SearchResultsContent(
 			paginationState = paginationState,
 			requestInitialPageAutomatically = false,
 			modifier = modifier.fillMaxWidth(),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
 		) {
 			item {
@@ -84,7 +85,7 @@ internal fun SearchResultsContent(
 				)
 			}
 			items(recipes, key = { it.id }) { recipe ->
-				RecipeRow(
+				RecipeCard(
 					recipe = recipe,
 					onClick = { onRecipeSelect(recipe.id) },
 				)

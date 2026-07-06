@@ -13,9 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+private const val FIXED_SCRIM_END_ALPHA = 0.99f
 
 private val lightScheme = lightColorScheme(
 	primary = primaryLight,
@@ -279,6 +282,8 @@ private val LocalPurecipesShapes = staticCompositionLocalOf<Shapes> {
 
 private val LocalPurecipesSpace = staticCompositionLocalOf { Space() }
 
+private val defaultFixedColors = getFixedColors()
+
 object PurecipesTheme {
 	val colorScheme: ColorScheme
 		@Composable
@@ -295,6 +300,18 @@ object PurecipesTheme {
 	val space: Space
 		@Composable
 		get() = LocalPurecipesSpace.current
+
+	val fixedColors: FixedColorScheme
+		@Composable
+		get() = LocalFixedColors.current
+
+	@Composable
+	fun fixedScrimBrush(): Brush = Brush.verticalGradient(
+		colors = listOf(
+			Color.Transparent,
+			fixedColors.inverseSurfaceFixed.copy(alpha = FIXED_SCRIM_END_ALPHA),
+		),
+	)
 
 	@Composable
 	operator fun invoke(
@@ -316,6 +333,7 @@ object PurecipesTheme {
 				LocalPurecipesTypography provides MaterialTheme.typography,
 				LocalPurecipesShapes provides MaterialTheme.shapes,
 				LocalPurecipesSpace provides Space(),
+				LocalFixedColors provides defaultFixedColors,
 			) {
 				content()
 			}

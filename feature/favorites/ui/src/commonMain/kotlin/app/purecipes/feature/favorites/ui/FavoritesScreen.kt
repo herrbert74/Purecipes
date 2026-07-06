@@ -55,6 +55,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.BodyText
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.TitleText
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -366,7 +367,7 @@ private fun CookbookDetailContent(
 			else -> PaginatedLazyColumn(
 				paginationState = paginationState,
 				modifier = Modifier.fillMaxSize(),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				contentPadding = PaddingValues(PurecipesTheme.space.m),
 			) {
 				item {
@@ -378,7 +379,7 @@ private fun CookbookDetailContent(
 				}
 				items(recipes.size, key = { recipes[it].id }) { index ->
 					val recipe = recipes[index]
-					FavoriteRecipeRow(
+					RecipeCard(
 						recipe = recipe,
 						onClick = { onRecipeSelect(recipe.id) },
 					)
@@ -418,7 +419,7 @@ internal fun SavedRecipesTabContent(
 		else -> PaginatedLazyColumn(
 			paginationState = paginationState,
 			modifier = modifier.fillMaxSize(),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(PurecipesTheme.space.m),
 		) {
 			item {
@@ -430,7 +431,7 @@ internal fun SavedRecipesTabContent(
 			}
 			items(recipes.size, key = { recipes[it].id }) { index ->
 				val recipe = recipes[index]
-				FavoriteRecipeRow(
+				RecipeCard(
 					recipe = recipe,
 					onClick = { onRecipeSelect(recipe.id) },
 				)
@@ -505,7 +506,7 @@ private fun CookbooksTabContent(
 			PaginatedLazyColumn(
 				paginationState = paginationState,
 				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				contentPadding = PaddingValues(
 					start = PurecipesTheme.space.m,
 					end = PurecipesTheme.space.m,
