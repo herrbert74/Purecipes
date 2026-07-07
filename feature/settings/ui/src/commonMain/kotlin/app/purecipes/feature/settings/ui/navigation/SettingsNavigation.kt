@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.settings.ui.SettingsScreen
 import app.purecipes.feature.settings.ui.about.AboutScreen
 import app.purecipes.feature.settings.ui.about.LicensesScreen
+import app.purecipes.feature.subscription.ui.navigation.PaywallDestination
 import app.purecipes.shared.ui.navigation.Navigator
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -18,6 +19,7 @@ fun EntryProviderScope<NavKey>.installSettingsFlow(
 	entry<AccountSettingsDestination> {
 		SettingsScreen(
 			onBack = { navigator.back() },
+			onOpenPaywall = { navigator.push(PaywallDestination) },
 			onOpenAbout = { navigator.push(AboutDestination) },
 			modifier = Modifier.fillMaxSize(),
 		)

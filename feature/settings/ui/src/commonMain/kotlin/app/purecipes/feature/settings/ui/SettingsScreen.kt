@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import app.purecipes.feature.subscription.ui.GoPremiumSettingsPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -25,6 +26,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 @Composable
 fun SettingsScreen(
 	onBack: () -> Unit,
+	onOpenPaywall: () -> Unit,
 	onOpenAbout: () -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: SettingsViewModel = metroViewModel(),
@@ -58,6 +60,7 @@ fun SettingsScreen(
 				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
+			GoPremiumSettingsPanel(onOpenPaywall = onOpenPaywall)
 			measurementPreferences?.let { preferences ->
 				MeasurementPreferencesSection(
 					preferences = preferences,

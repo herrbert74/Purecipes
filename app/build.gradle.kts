@@ -104,6 +104,7 @@ dependencies {
 	implementation(project(":feature:recipedetails:ui"))
 	implementation(project(":feature:search:ui"))
 	implementation(project(":feature:settings:ui"))
+	implementation(project(":feature:subscription:ui"))
 	implementation(project(":feature:favorites:data"))
 	implementation(project(":feature:newrecipe:data"))
 	implementation(project(":feature:recipedetails:data"))

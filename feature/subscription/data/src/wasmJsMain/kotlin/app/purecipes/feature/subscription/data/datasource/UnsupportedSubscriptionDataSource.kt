@@ -3,6 +3,7 @@ package app.purecipes.feature.subscription.data.datasource
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
+import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import com.github.michaelbull.result.Err
 import dev.zacsweers.metro.AppScope
@@ -21,6 +22,9 @@ class UnsupportedSubscriptionDataSource : SubscriptionDataSource {
 	override fun observeSubscriptionState(): Flow<SubscriptionState> = subscriptionState.asStateFlow()
 
 	override fun initialize(apiKey: String?) = Unit
+
+	override suspend fun getSubscriptionPlans(): Outcome<List<SubscriptionPlan>> =
+		Err(Failure.ServerError("Subscriptions are not supported on this platform"))
 
 	override suspend fun syncUserId(userId: String?) = Unit
 

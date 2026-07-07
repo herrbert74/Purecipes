@@ -52,6 +52,7 @@ import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.feature.subscription.domain.usecase.GetSubscriptionPlansUseCase
 import app.purecipes.feature.subscription.domain.usecase.InitializeSubscriptionsUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObserveSubscriptionStateUseCase
@@ -171,6 +172,8 @@ interface CommonAppGraph :
 	val importCookbookShareUseCase: ImportCookbookShareUseCase
 
 	val initializeSubscriptionsUseCase: InitializeSubscriptionsUseCase
+
+	val getSubscriptionPlansUseCase: GetSubscriptionPlansUseCase
 
 	val observePremiumStatusUseCase: ObservePremiumStatusUseCase
 

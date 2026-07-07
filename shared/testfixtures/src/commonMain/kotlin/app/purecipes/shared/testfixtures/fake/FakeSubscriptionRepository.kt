@@ -2,6 +2,7 @@ package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
+import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.repository.SubscriptionRepository
 import com.github.michaelbull.result.Ok
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class FakeSubscriptionRepository(
 	initialState: SubscriptionState = SubscriptionState.FREE,
+	private val subscriptionPlans: List<SubscriptionPlan> = emptyList(),
 ) : SubscriptionRepository {
 
 	private val subscriptionState = MutableStateFlow(initialState)
@@ -24,6 +26,8 @@ class FakeSubscriptionRepository(
 	override fun initialize() {
 		initializeCalled = true
 	}
+
+	override suspend fun getSubscriptionPlans(): Outcome<List<SubscriptionPlan>> = Ok(subscriptionPlans)
 
 	override suspend fun syncUserId(userId: String?) {
 		lastSyncedUserId = userId

@@ -48,6 +48,7 @@ kotlin {
 				api(project(":shared:data"))
 				api(project(":shared:domain"))
 				implementation(project(":feature:settings:ui"))
+				implementation(project(":feature:subscription:ui"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.serializationJson)
 			}

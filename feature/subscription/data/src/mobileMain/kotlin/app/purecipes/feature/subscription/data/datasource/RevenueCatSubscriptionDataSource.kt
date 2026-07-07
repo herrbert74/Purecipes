@@ -2,9 +2,11 @@ package app.purecipes.feature.subscription.data.datasource
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.subscription.data.mapper.subscriptionPackageIdentifier
+import app.purecipes.feature.subscription.data.mapper.toSubscriptionPlan
 import app.purecipes.feature.subscription.data.mapper.toSubscriptionState
-import app.purecipes.feature.subscription.domain.SubscriptionProducts
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
+import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
@@ -86,6 +88,18 @@ class RevenueCatSubscriptionDataSource : SubscriptionDataSource {
 		}
 	}
 
+	override suspend fun getSubscriptionPlans(): Outcome<List<SubscriptionPlan>> {
+		if (!Purchases.isConfigured) {
+			return Err(Failure.ServerError("Subscriptions are not configured"))
+		}
+		return try {
+			val offerings = Purchases.sharedInstance.awaitOfferings()
+			Ok(offerings.subscriptionPlans())
+		} catch (error: PurchasesException) {
+			Err(Failure.ServerError(error.error.message))
+		}
+	}
+
 	override suspend fun purchase(packageIdentifier: SubscriptionPackageIdentifier): Outcome<Unit> {
 		if (!Purchases.isConfigured) {
 			return Err(Failure.ServerError("Subscriptions are not configured"))
@@ -142,15 +156,19 @@ class RevenueCatSubscriptionDataSource : SubscriptionDataSource {
 		}
 	}
 
-	private fun Offerings.packageFor(packageIdentifier: SubscriptionPackageIdentifier): Package? {
-		val productId = when (packageIdentifier) {
-			SubscriptionPackageIdentifier.MONTHLY -> SubscriptionProducts.PREMIUM_MONTHLY
-			SubscriptionPackageIdentifier.ANNUAL -> SubscriptionProducts.PREMIUM_ANNUAL
+	private fun Offerings.subscriptionPlans(): List<SubscriptionPlan> {
+		val packages = current?.availablePackages.orEmpty().ifEmpty {
+			all.values.flatMap { offering -> offering.availablePackages }
 		}
-		return current?.availablePackages?.firstOrNull { revenueCatPackage ->
-			revenueCatPackage.storeProduct.id == productId
-		} ?: all.values
-			.flatMap { offering -> offering.availablePackages }
-			.firstOrNull { revenueCatPackage -> revenueCatPackage.storeProduct.id == productId }
+		return packages.mapNotNull { revenueCatPackage -> revenueCatPackage.toSubscriptionPlan() }
+	}
+
+	private fun Offerings.packageFor(packageIdentifier: SubscriptionPackageIdentifier): Package? {
+		val packages = current?.availablePackages.orEmpty().ifEmpty {
+			all.values.flatMap { offering -> offering.availablePackages }
+		}
+		return packages.firstOrNull { revenueCatPackage ->
+			revenueCatPackage.subscriptionPackageIdentifier() == packageIdentifier
+		}
 	}
 }

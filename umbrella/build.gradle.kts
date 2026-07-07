@@ -159,6 +159,7 @@ kotlin {
 				implementation(project(":feature:recipedetails:ui"))
 				implementation(project(":feature:search:ui"))
 				implementation(project(":feature:settings:ui"))
+				implementation(project(":feature:subscription:ui"))
 				api(project(":feature:favorites:domain"))
 				api(project(":feature:favorites:data"))
 				api(project(":feature:newrecipe:domain"))

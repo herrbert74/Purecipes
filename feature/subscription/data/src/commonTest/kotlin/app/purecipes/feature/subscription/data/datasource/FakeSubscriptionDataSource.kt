@@ -2,6 +2,7 @@ package app.purecipes.feature.subscription.data.datasource
 
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
+import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,8 @@ class FakeSubscriptionDataSource(
 		initializeCalls += 1
 		lastApiKey = apiKey
 	}
+
+	override suspend fun getSubscriptionPlans(): Outcome<List<SubscriptionPlan>> = Ok(emptyList())
 
 	override suspend fun syncUserId(userId: String?) {
 		lastSyncedUserId = userId
