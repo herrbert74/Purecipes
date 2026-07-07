@@ -84,6 +84,7 @@ multiplatform-settings = "1.3.0"
 okhttp = "5.4.0"
 #parcelize-darwin = "0.2.4"
 postgresql = "42.7.12"
+revenueCat = "3.0.5"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
 shadow = "9.4.3"
@@ -360,6 +361,8 @@ okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 
+revenuecat-purchasesKmpCore = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "revenueCat" }
+
 #parcelize-darwin-runtime = { module = "com.arkivanov.parcelize.darwin:runtime", version.ref = "parcelize-darwin" }
 
 #retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
@@ -368,8 +371,6 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 #retrofit2-converterKotlinxSerialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
 #retrofit2-converterSimpleXml = { module = "com.squareup.retrofit2:converter-simplexml", version.ref = "retrofit" }
 #retrofit2-converterMoshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
-
-#revenueCat = "com.revenuecat.purchases:purchases:6.9.8"
 
 #robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 

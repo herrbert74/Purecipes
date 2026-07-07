@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
 			launch {
 				graph.initializeNotificationsUseCase()
 			}
+			graph.initializeSubscriptionsUseCase()
 		}
 	}
 

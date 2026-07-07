@@ -43,6 +43,8 @@ kotlin {
 				api(project(":feature:measurement:domain"))
 				api(project(":feature:settings:data"))
 				api(project(":feature:settings:domain"))
+				api(project(":feature:subscription:data"))
+				api(project(":feature:subscription:domain"))
 				api(project(":shared:data"))
 				api(project(":shared:domain"))
 				implementation(project(":feature:settings:ui"))

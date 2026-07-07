@@ -37,6 +37,8 @@ interface WasmPurecipesConfigModule {
 			override fun usercentricsSettingsId(): String? {
 				return BuildKonfig.purecipesUsercentricsSettingsId.takeIf { it.isNotBlank() }
 			}
+
+			override fun revenueCatApiKey(): String? = null
 		}
 	}
 }

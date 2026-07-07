@@ -40,6 +40,10 @@ interface AndroidPurecipesConfigModule {
 			override fun usercentricsSettingsId(): String? {
 				return BuildConfig.PURECIPES_USERCENTRICS_SETTINGS_ID.takeIf { it.isNotBlank() }
 			}
+
+			override fun revenueCatApiKey(): String? {
+				return BuildConfig.PURECIPES_REVENUECAT_TEST_API_KEY.takeIf { it.isNotBlank() }
+			}
 		}
 	}
 }

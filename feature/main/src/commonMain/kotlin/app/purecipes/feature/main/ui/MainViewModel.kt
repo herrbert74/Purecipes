@@ -28,6 +28,7 @@ import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.ui.navigation.Navigator
 import app.purecipes.shared.ui.navigation.PostLoginAction
@@ -49,6 +50,7 @@ class MainViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val refreshConsent: RefreshConsentUseCase,
 	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	private val purecipesConfig: PurecipesConfig,
@@ -334,6 +336,9 @@ class MainViewModel(
 		}
 		previousSessionKey = sessionKey
 		setAnalyticsUserId(sessionKey)
+		viewModelScope.launch {
+			syncSubscriptionUserId(sessionKey)
+		}
 		onDeliverPendingIncomingLink()
 		incomingLinksCollectionJob?.cancel()
 		val isSignedIn = sessionKey != null

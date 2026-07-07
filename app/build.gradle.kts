@@ -35,6 +35,7 @@ android {
 		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_MIXPANEL_PROJECT_TOKEN", mixpanelProjectToken().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_REVENUECAT_TEST_API_KEY", revenueCatTestApiKey().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_DEBUG_BACKEND_HOST", "\"\"")
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -109,6 +110,7 @@ dependencies {
 	implementation(project(":feature:search:data"))
 	implementation(project(":feature:measurement:data"))
 	implementation(project(":feature:settings:data"))
+	implementation(project(":feature:subscription:data"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))
 	implementation(project.dependencies.platform(libs.firebaseBom))
@@ -195,6 +197,14 @@ private fun Project.usercentricsSettingsId(): String {
 	return providers.gradleProperty("purecipes.usercentricsSettingsId")
 		.orElse(providers.gradleProperty("PURECIPES_USERCENTRICS_SETTINGS_ID"))
 		.orElse(providers.environmentVariable("PURECIPES_USERCENTRICS_SETTINGS_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.revenueCatTestApiKey(): String {
+	return providers.gradleProperty("purecipes.revenueCatTestApiKey")
+		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_TEST_API_KEY"))
 		.orNull
 		.orEmpty()
 }

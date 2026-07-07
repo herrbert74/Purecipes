@@ -46,6 +46,14 @@ private fun Project.usercentricsSettingsId(): String {
 		.orEmpty()
 }
 
+private fun Project.revenueCatTestApiKey(): String {
+	return providers.gradleProperty("purecipes.revenueCatTestApiKey")
+		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orNull
+		.orEmpty()
+}
+
 private fun Project.currentPurecipesBuildType(): String {
 	val requestedBuildType = androidBuildTypeFromTasks()
 		?: providers.gradleProperty("purecipes.buildType").orNull
@@ -93,6 +101,7 @@ buildkonfig {
 		buildConfigField(STRING, "purecipesGaMeasurementId", gaMeasurementId())
 		buildConfigField(STRING, "purecipesMixpanelProjectToken", mixpanelProjectToken())
 		buildConfigField(STRING, "purecipesUsercentricsSettingsId", usercentricsSettingsId())
+		buildConfigField(STRING, "purecipesRevenueCatTestApiKey", revenueCatTestApiKey())
 	}
 }
 
@@ -125,6 +134,7 @@ kotlin {
 				export(project(":feature:newrecipe:domain"))
 				export(project(":feature:recipedetails:domain"))
 				export(project(":feature:search:domain"))
+				export(project(":feature:subscription:domain"))
 				export(project(":shared:domain"))
 				export(project(":shared:data"))
 			}
@@ -157,6 +167,8 @@ kotlin {
 				api(project(":feature:recipedetails:data"))
 				api(project(":feature:search:domain"))
 				api(project(":feature:search:data"))
+				api(project(":feature:subscription:data"))
+				api(project(":feature:subscription:domain"))
 				api(project(":feature:measurement:data"))
 				api(project(":feature:settings:data"))
 				api(project(":shared:data"))

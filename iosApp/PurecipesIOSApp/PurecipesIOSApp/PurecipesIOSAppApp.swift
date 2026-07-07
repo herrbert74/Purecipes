@@ -44,6 +44,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         IosNotifierInitializer.shared.initialize()
 
+        IosSubscriptionInitializer.shared.initialize()
+
         installAnalyticsBridges()
 
         return true

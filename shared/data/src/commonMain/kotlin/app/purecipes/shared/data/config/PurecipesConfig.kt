@@ -17,6 +17,8 @@ interface PurecipesConfig {
 	fun mixpanelProjectToken(): String? = null
 
 	fun usercentricsSettingsId(): String? = null
+
+	fun revenueCatApiKey(): String? = null
 }
 
 enum class PurecipesBuildType {

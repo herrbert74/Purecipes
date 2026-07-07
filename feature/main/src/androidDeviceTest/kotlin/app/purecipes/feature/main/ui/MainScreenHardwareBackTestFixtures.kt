@@ -47,6 +47,7 @@ import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.domain.model.Cuisine
@@ -61,6 +62,7 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
@@ -118,6 +120,7 @@ internal fun mainViewModelForDeviceTest(): MainViewModel = MainViewModel(
 	observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
 	refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
 	setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
+	syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(FakeSubscriptionRepository()),
 	observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
 	publishWebLaunchLink = PublishWebLaunchLinkUseCase(
 		object : WebLaunchLinkRepository {
