@@ -8,6 +8,8 @@ kotlin {
 		namespace = "app.purecipes.feature.ads.domain"
 	}
 
+	compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
+
 	sourceSets {
 		commonMain {
 			dependencies {

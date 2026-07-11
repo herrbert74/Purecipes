@@ -4,6 +4,7 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.ads.domain.PreCookInterstitialChance
 import app.purecipes.feature.ads.domain.repository.AdsRepository
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
+import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
@@ -64,6 +65,7 @@ import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
@@ -136,7 +138,13 @@ internal fun mainViewModelForDeviceTest(): MainViewModel {
 			emptyIncomingLinkRepositoryForDeviceTest(),
 		),
 		decidePreCookInterstitial = DecidePreCookInterstitialUseCase(
-			observePremiumStatus = ObservePremiumStatusUseCase(subscriptionRepository),
+			observeShouldShowAds = ObserveShouldShowAdsUseCase(
+				observePremiumStatus = ObservePremiumStatusUseCase(
+					subscriptionRepository,
+					FakeMonetisationDebugOverridesRepository(),
+				),
+				monetisationDebugOverrides = FakeMonetisationDebugOverridesRepository(),
+			),
 			preCookInterstitialChance = PreCookInterstitialChance { false },
 		),
 		showInterstitialAd = ShowInterstitialAdUseCase(
@@ -175,7 +183,10 @@ internal fun recipeSearchViewModelForDeviceTest(
 	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
 	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
-	observePremiumStatus = ObservePremiumStatusUseCase(FakeSubscriptionRepository()),
+	observePremiumStatus = ObservePremiumStatusUseCase(
+		FakeSubscriptionRepository(),
+		FakeMonetisationDebugOverridesRepository(),
+	),
 	initialShowFilterSheet = false,
 	sessionKey = null,
 )

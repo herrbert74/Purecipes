@@ -9,6 +9,14 @@ import app.purecipes.feature.measurement.domain.usecase.SyncMeasurementPreferenc
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
+import app.purecipes.feature.subscription.domain.model.AdsDisplayOverride
+import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
+import app.purecipes.feature.subscription.domain.model.PremiumStatusOverride
+import app.purecipes.feature.subscription.domain.usecase.ObserveMonetisationDebugOverridesUseCase
+import app.purecipes.feature.subscription.domain.usecase.SetAdsDisplayOverrideUseCase
+import app.purecipes.feature.subscription.domain.usecase.SetPremiumStatusOverrideUseCase
+import app.purecipes.shared.data.config.PurecipesBuildType
+import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
 import dev.zacsweers.metro.AppScope
@@ -29,11 +37,21 @@ class SettingsViewModel(
 	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
 	private val saveNotificationPreferences: SaveNotificationPreferencesUseCase,
 	private val sendTestNotification: SendTestNotificationUseCase,
+	observeMonetisationDebugOverrides: ObserveMonetisationDebugOverridesUseCase,
+	private val setPremiumStatusOverride: SetPremiumStatusOverrideUseCase,
+	private val setAdsDisplayOverride: SetAdsDisplayOverrideUseCase,
+	purecipesConfig: PurecipesConfig,
 ) : ViewModel() {
 
 	val measurementPreferences: Flow<MeasurementPreferences> = observeMeasurementPreferences()
 
 	val notificationPreferences: Flow<NotificationPreferences> = observeNotificationPreferences()
+
+	val showMonetisationDebugOverrides: Boolean =
+		purecipesConfig.buildType() != PurecipesBuildType.RELEASE
+
+	val monetisationDebugOverrides: Flow<MonetisationDebugOverrides> =
+		observeMonetisationDebugOverrides()
 
 	init {
 		viewModelScope.launch {
@@ -66,7 +84,16 @@ class SettingsViewModel(
 		)
 	}
 
+	fun onPremiumStatusOverrideChange(override: PremiumStatusOverride) {
+		setPremiumStatusOverride(override)
+	}
+
+	fun onAdsDisplayOverrideChange(override: AdsDisplayOverride) {
+		setAdsDisplayOverride(override)
+	}
+
 	private companion object {
+
 		const val TEST_NOTIFICATION_TITLE = "Testing 1 2 3"
 		const val TEST_NOTIFICATION_BODY = "Push notifications are working!"
 	}

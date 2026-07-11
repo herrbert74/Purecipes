@@ -8,6 +8,7 @@ import app.purecipes.feature.subscription.domain.usecase.GetSubscriptionPlansUse
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.PurchaseSubscriptionUseCase
 import app.purecipes.feature.subscription.domain.usecase.RestorePurchasesUseCase
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
 import io.kotest.matchers.shouldBe
@@ -32,7 +33,7 @@ class PaywallViewModelTest {
 		val repository = FakeSubscriptionRepository(subscriptionPlans = plans)
 		val viewModel = PaywallViewModel(
 			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository),
+			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
 			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
 			restorePurchases = RestorePurchasesUseCase(repository),
 		)
@@ -56,7 +57,7 @@ class PaywallViewModelTest {
 		)
 		val viewModel = PaywallViewModel(
 			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository),
+			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
 			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
 			restorePurchases = RestorePurchasesUseCase(repository),
 		)
@@ -71,7 +72,7 @@ class PaywallViewModelTest {
 		val repository = FakeSubscriptionRepository()
 		val viewModel = PaywallViewModel(
 			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository),
+			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
 			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
 			restorePurchases = RestorePurchasesUseCase(repository),
 		)

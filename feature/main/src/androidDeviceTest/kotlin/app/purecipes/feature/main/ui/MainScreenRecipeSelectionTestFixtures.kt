@@ -12,6 +12,7 @@ import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -110,10 +111,11 @@ private class RecipeSelectionTestViewModelFactory(
 
 	override val viewModelProviders: Map<KClass<out ViewModel>, () -> ViewModel> = mapOf(
 		BannerAdViewModel::class to {
+			val overrides = FakeMonetisationDebugOverridesRepository()
 			BannerAdViewModel(
 				observeShouldShowAds = ObserveShouldShowAdsUseCase(
-					ObservePremiumStatusUseCase(
-						FakeSubscriptionRepository(
+					observePremiumStatus = ObservePremiumStatusUseCase(
+						repository = FakeSubscriptionRepository(
 							SubscriptionState(
 								status = SubscriptionStatus.PREMIUM,
 								isActive = true,
@@ -121,7 +123,9 @@ private class RecipeSelectionTestViewModelFactory(
 								trialActive = false,
 							),
 						),
+						monetisationDebugOverrides = overrides,
 					),
+					monetisationDebugOverrides = overrides,
 				),
 				purecipesConfig = object : PurecipesConfig {
 					override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG

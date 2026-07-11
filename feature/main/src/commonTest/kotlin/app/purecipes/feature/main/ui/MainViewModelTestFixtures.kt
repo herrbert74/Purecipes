@@ -3,6 +3,7 @@ package app.purecipes.feature.main.ui
 import app.purecipes.feature.ads.domain.PreCookInterstitialChance
 import app.purecipes.feature.ads.domain.repository.AdsRepository
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
+import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
@@ -21,6 +22,7 @@ import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -55,7 +57,13 @@ internal fun mainViewModelForTest(
 			incomingLinkRepository,
 		),
 		decidePreCookInterstitial = DecidePreCookInterstitialUseCase(
-			observePremiumStatus = ObservePremiumStatusUseCase(subscriptionRepository),
+			observeShouldShowAds = ObserveShouldShowAdsUseCase(
+				observePremiumStatus = ObservePremiumStatusUseCase(
+					subscriptionRepository,
+					FakeMonetisationDebugOverridesRepository(),
+				),
+				monetisationDebugOverrides = FakeMonetisationDebugOverridesRepository(),
+			),
 			preCookInterstitialChance = preCookInterstitialChance,
 		),
 		showInterstitialAd = ShowInterstitialAdUseCase(adsRepository),

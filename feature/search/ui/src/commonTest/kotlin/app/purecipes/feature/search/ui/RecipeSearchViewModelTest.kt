@@ -27,6 +27,7 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -337,7 +338,10 @@ class RecipeSearchViewModelTest {
 			),
 			matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 			searchReadiness = SearchReadinessCoordinator(),
-			observePremiumStatus = ObservePremiumStatusUseCase(FakeSubscriptionRepository()),
+			observePremiumStatus = ObservePremiumStatusUseCase(
+				FakeSubscriptionRepository(),
+				FakeMonetisationDebugOverridesRepository(),
+			),
 			initialShowFilterSheet = true,
 			sessionKey = null,
 		)
@@ -646,7 +650,10 @@ class RecipeSearchViewModelTest {
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = searchReadiness,
-		observePremiumStatus = ObservePremiumStatusUseCase(subscriptionRepository),
+		observePremiumStatus = ObservePremiumStatusUseCase(
+			subscriptionRepository,
+			FakeMonetisationDebugOverridesRepository()
+		),
 		initialShowFilterSheet = false,
 		sessionKey = null,
 	)

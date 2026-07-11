@@ -57,6 +57,7 @@ internal fun KeyIngredientsSection(
 					collapsed = !collapsed
 				}
 			},
+			modifier = Modifier.testTag(filterSectionToggleTag("Key ingredients")),
 		)
 		AnimatedVisibility(
 			visible = !collapsed && !isLocked,

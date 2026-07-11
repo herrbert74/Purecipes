@@ -128,6 +128,12 @@ data class SubscriptionPlan(
 - RevenueCat webhook (`POST /webhooks/revenuecat`) updates `app_users.is_premium`
 - Search strips calorie/nutrition filters and key ingredients for free users
 
+#### Debug overrides (non-release builds)
+- Settings → **Monetisation debug** panel
+- Subscription override: Auto / Free / Premium
+- Ads override: Auto / On / Off
+- Combinations apply immediately for local QA without rebuilding
+
 #### Ad Implementation Strategy
 - **Non-Intrusive**: Inline banners in search/favorites lists; bottom banner on recipe details
 - **Contextual**: Food and cooking-related ads

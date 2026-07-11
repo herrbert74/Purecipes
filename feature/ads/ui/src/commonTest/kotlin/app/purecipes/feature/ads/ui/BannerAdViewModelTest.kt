@@ -7,6 +7,7 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import io.kotest.matchers.shouldBe
@@ -16,9 +17,14 @@ class BannerAdViewModelTest {
 
 	@Test
 	fun `shouldShowAds is true for free users`() = runUnconfinedViewModelTest {
+		val overrides = FakeMonetisationDebugOverridesRepository()
 		val viewModel = BannerAdViewModel(
 			observeShouldShowAds = ObserveShouldShowAdsUseCase(
-				ObservePremiumStatusUseCase(FakeSubscriptionRepository(SubscriptionState.FREE)),
+				observePremiumStatus = ObservePremiumStatusUseCase(
+					repository = FakeSubscriptionRepository(SubscriptionState.FREE),
+					monetisationDebugOverrides = overrides,
+				),
+				monetisationDebugOverrides = overrides,
 			),
 			purecipesConfig = testPurecipesConfig(),
 		)
@@ -29,10 +35,11 @@ class BannerAdViewModelTest {
 
 	@Test
 	fun `shouldShowAds is false for premium users`() = runUnconfinedViewModelTest {
+		val overrides = FakeMonetisationDebugOverridesRepository()
 		val viewModel = BannerAdViewModel(
 			observeShouldShowAds = ObserveShouldShowAdsUseCase(
-				ObservePremiumStatusUseCase(
-					FakeSubscriptionRepository(
+				observePremiumStatus = ObservePremiumStatusUseCase(
+					repository = FakeSubscriptionRepository(
 						SubscriptionState(
 							status = SubscriptionStatus.PREMIUM,
 							isActive = true,
@@ -40,7 +47,9 @@ class BannerAdViewModelTest {
 							trialActive = false,
 						),
 					),
+					monetisationDebugOverrides = overrides,
 				),
+				monetisationDebugOverrides = overrides,
 			),
 			purecipesConfig = testPurecipesConfig(bannerAdUnitId = "custom-banner"),
 		)

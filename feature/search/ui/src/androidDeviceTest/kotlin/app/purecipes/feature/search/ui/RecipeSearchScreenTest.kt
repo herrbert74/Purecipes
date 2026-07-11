@@ -54,6 +54,7 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -541,6 +542,31 @@ class RecipeSearchScreenTest {
 	}
 
 	@Test
+	fun whenFreeUserTapsLockedKeyIngredientsOpensPaywall() = runRecompositionTrackingUiTest {
+		var openedPaywall = false
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+					onOpenPaywall = { openedPaywall = true },
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(filterSectionToggleTag("Key ingredients")).performClick()
+		waitForIdle()
+		runOnIdle {
+			assertEquals(true, openedPaywall)
+		}
+	}
+
+	@Test
 	fun whenPremiumPantryQuickPickAddsKeyIngredient() = runRecompositionTrackingUiTest {
 		val pantryRepository = FakeUserPantryRepository(pantry = setOf("Chicken", "Rice"))
 		val viewModel = recipeSearchViewModelForTest(
@@ -627,6 +653,7 @@ private fun recipeSearchViewModelForTest(
 				SubscriptionState.FREE
 			},
 		),
+		FakeMonetisationDebugOverridesRepository(),
 	),
 	initialShowFilterSheet = initialShowFilterSheet,
 	sessionKey = null,
