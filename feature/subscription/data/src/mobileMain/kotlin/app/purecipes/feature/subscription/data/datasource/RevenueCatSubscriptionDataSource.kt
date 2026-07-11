@@ -79,12 +79,18 @@ class RevenueCatSubscriptionDataSource : SubscriptionDataSource {
 		if (!Purchases.isConfigured) {
 			return
 		}
-		if (userId.isNullOrBlank()) {
-			val customerInfo = Purchases.sharedInstance.awaitLogOut()
-			subscriptionState.value = customerInfo.toSubscriptionState()
-		} else {
-			val loginResult = Purchases.sharedInstance.awaitLogIn(userId)
-			subscriptionState.value = loginResult.customerInfo.toSubscriptionState()
+		try {
+			if (userId.isNullOrBlank()) {
+				if (Purchases.sharedInstance.isAnonymous) {
+					return
+				}
+				val customerInfo = Purchases.sharedInstance.awaitLogOut()
+				subscriptionState.value = customerInfo.toSubscriptionState()
+			} else {
+				val loginResult = Purchases.sharedInstance.awaitLogIn(userId)
+				subscriptionState.value = loginResult.customerInfo.toSubscriptionState()
+			}
+		} catch (_: PurchasesException) {
 		}
 	}
 

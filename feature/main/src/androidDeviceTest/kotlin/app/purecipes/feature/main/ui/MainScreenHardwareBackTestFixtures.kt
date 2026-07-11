@@ -1,6 +1,10 @@
 package app.purecipes.feature.main.ui
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.ads.domain.PreCookInterstitialChance
+import app.purecipes.feature.ads.domain.repository.AdsRepository
+import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
+import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
@@ -47,6 +51,7 @@ import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
@@ -116,28 +121,44 @@ internal fun hardwareBackTestEnvironment(): HardwareBackTestEnvironment {
 	)
 }
 
-internal fun mainViewModelForDeviceTest(): MainViewModel = MainViewModel(
-	observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
-	refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
-	setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
-	syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(FakeSubscriptionRepository()),
-	observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
-	publishWebLaunchLink = PublishWebLaunchLinkUseCase(
-		object : WebLaunchLinkRepository {
-			override fun readLaunchUrl(): String? = null
+internal fun mainViewModelForDeviceTest(): MainViewModel {
+	val subscriptionRepository = FakeSubscriptionRepository()
+	return MainViewModel(
+		observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
+		refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
+		setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
+		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
+		observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
+		publishWebLaunchLink = PublishWebLaunchLinkUseCase(
+			object : WebLaunchLinkRepository {
+				override fun readLaunchUrl(): String? = null
+			},
+			emptyIncomingLinkRepositoryForDeviceTest(),
+		),
+		decidePreCookInterstitial = DecidePreCookInterstitialUseCase(
+			observePremiumStatus = ObservePremiumStatusUseCase(subscriptionRepository),
+			preCookInterstitialChance = PreCookInterstitialChance { false },
+		),
+		showInterstitialAd = ShowInterstitialAdUseCase(
+			object : AdsRepository {
+				override fun initialize() = Unit
+
+				override fun showInterstitial(onDismissed: () -> Unit) {
+					onDismissed()
+				}
+			},
+		),
+		purecipesConfig = object : PurecipesConfig {
+			override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
+
+			override fun versionName(): String = "0.0.0-test"
+
+			override fun versionCode(): Long = 0L
 		},
-		emptyIncomingLinkRepositoryForDeviceTest(),
-	),
-	purecipesConfig = object : PurecipesConfig {
-		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
-
-		override fun versionName(): String = "0.0.0-test"
-
-		override fun versionCode(): Long = 0L
-	},
-	searchReadiness = SearchReadinessCoordinator(),
-	onDeliverPendingIncomingLink = {},
-).also { it.initializeTabBackStacksForTest() }
+		searchReadiness = SearchReadinessCoordinator(),
+		onDeliverPendingIncomingLink = {},
+	).also { it.initializeTabBackStacksForTest() }
+}
 
 internal fun recipeSearchViewModelForDeviceTest(
 	searchRepository: FakeRecipeSearchRepository = FakeRecipeSearchRepository(),

@@ -1,5 +1,9 @@
 package app.purecipes.app.graph
 
+import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
+import app.purecipes.feature.ads.domain.usecase.InitializeAdsUseCase
+import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
+import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.data.repository.AnalyticsDataModule
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
@@ -184,4 +188,12 @@ interface CommonAppGraph :
 	val restorePurchasesUseCase: RestorePurchasesUseCase
 
 	val syncSubscriptionUserIdUseCase: SyncSubscriptionUserIdUseCase
+
+	val initializeAdsUseCase: InitializeAdsUseCase
+
+	val observeShouldShowAdsUseCase: ObserveShouldShowAdsUseCase
+
+	val decidePreCookInterstitialUseCase: DecidePreCookInterstitialUseCase
+
+	val showInterstitialAdUseCase: ShowInterstitialAdUseCase
 }

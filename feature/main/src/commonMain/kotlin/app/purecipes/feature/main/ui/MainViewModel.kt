@@ -11,6 +11,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
+import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
+import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
@@ -53,6 +55,8 @@ class MainViewModel(
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
+	private val decidePreCookInterstitial: DecidePreCookInterstitialUseCase,
+	private val showInterstitialAd: ShowInterstitialAdUseCase,
 	private val purecipesConfig: PurecipesConfig,
 	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
@@ -254,7 +258,15 @@ class MainViewModel(
 	}
 
 	fun onStartCooking(recipeId: Int) {
-		navigator.push(RecipeCookingDestination(recipeId))
+		viewModelScope.launch {
+			if (decidePreCookInterstitial()) {
+				showInterstitialAd {
+					navigator.push(RecipeCookingDestination(recipeId))
+				}
+			} else {
+				navigator.push(RecipeCookingDestination(recipeId))
+			}
+		}
 	}
 
 	fun onOpenSettings() {

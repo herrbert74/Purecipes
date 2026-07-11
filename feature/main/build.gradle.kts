@@ -17,6 +17,9 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:ads:data"))
+				api(project(":feature:ads:domain"))
+				implementation(project(":feature:ads:ui"))
 				api(project(":feature:analytics:data"))
 				api(project(":feature:analytics:domain"))
 				implementation(project(":feature:analytics:ui"))
@@ -61,6 +64,7 @@ kotlin {
 		named("androidDeviceTest") {
 			dependencies {
 				implementation(libs.androidx.activityCompose)
+				implementation(libs.kotlinx.datetime)
 				implementation(project(":shared:testfixtures"))
 			}
 		}

@@ -126,6 +126,7 @@ kotlin {
 			binaries.framework {
 				baseName = "umbrella"
 				isStatic = true
+				export(project(":feature:ads:domain"))
 				export(project(":feature:analytics:domain"))
 				export(project(":feature:sharing:domain"))
 				export(project(":feature:main"))
@@ -144,6 +145,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:ads:domain"))
+				api(project(":feature:ads:data"))
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:analytics:data"))
 				api(project(":feature:sharing:domain"))
@@ -151,6 +154,7 @@ kotlin {
 				api(project(":feature:auth:domain"))
 				api(project(":feature:auth:data"))
 				api(project(":feature:main"))
+				implementation(project(":feature:ads:ui"))
 				implementation(project(":feature:analytics:ui"))
 				implementation(project(":feature:auth:ui"))
 				implementation(project(":feature:cooking:ui"))

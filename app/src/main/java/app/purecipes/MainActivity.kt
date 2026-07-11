@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import app.purecipes.feature.ads.data.runtime.AdsAndroidRuntime
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.main.ui.MainScreen
 import app.purecipes.feature.sharing.data.runtime.SharingAndroidRuntime
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
 				graph.initializeNotificationsUseCase()
 			}
 			graph.initializeSubscriptionsUseCase()
+			graph.initializeAdsUseCase()
 		}
 	}
 
@@ -106,11 +108,13 @@ class MainActivity : ComponentActivity() {
 	override fun onStart() {
 		super.onStart()
 		AnalyticsAndroidRuntime.onActivityStarted(this)
+		AdsAndroidRuntime.onActivityStarted(this)
 		SharingAndroidRuntime.onActivityStarted(this)
 	}
 
 	override fun onStop() {
 		AnalyticsAndroidRuntime.onActivityStopped(this)
+		AdsAndroidRuntime.onActivityStopped(this)
 		SharingAndroidRuntime.onActivityStopped(this)
 		super.onStop()
 	}

@@ -48,6 +48,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.purecipes.feature.ads.ui.BannerAdViewModel
+import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -76,6 +78,7 @@ fun FavoritesScreen(
 	sessionKey: String? = null,
 	initialCookbookShareToken: String? = null,
 	onRecipeSelect: (Int) -> Unit = {},
+	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: FavoritesViewModel =
 		assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
 			create(sessionKey = sessionKey)
@@ -152,6 +155,7 @@ fun FavoritesScreen(
 				onShare = viewModel::shareOpenCookbook,
 				modifier = Modifier.padding(innerPadding),
 				onRecipeSelect = onRecipeSelect,
+				bannerAdViewModel = bannerAdViewModel,
 			)
 			return@Scaffold
 		}
@@ -177,6 +181,7 @@ fun FavoritesScreen(
 					recipes = viewModel.savedRecipes,
 					totalMatches = viewModel.totalSavedMatches,
 					onRecipeSelect = onRecipeSelect,
+					bannerAdViewModel = bannerAdViewModel,
 					modifier = Modifier.weight(1f),
 				)
 
@@ -320,8 +325,9 @@ private fun CookbookDetailContent(
 	coverUrl: String?,
 	onBack: () -> Unit,
 	onShare: () -> Unit,
-	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit,
+	modifier: Modifier = Modifier,
+	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
 	Column(modifier = modifier.fillMaxSize()) {
 		Row(
@@ -379,10 +385,16 @@ private fun CookbookDetailContent(
 				}
 				items(recipes.size, key = { recipes[it].id }) { index ->
 					val recipe = recipes[index]
-					RecipeCard(
-						recipe = recipe,
-						onClick = { onRecipeSelect(recipe.id) },
-					)
+					InlineListBannerAdSlot(
+						contentIndex = index,
+						contentCount = recipes.size,
+						viewModel = bannerAdViewModel,
+					) {
+						RecipeCard(
+							recipe = recipe,
+							onClick = { onRecipeSelect(recipe.id) },
+						)
+					}
 				}
 			}
 		}
@@ -397,6 +409,7 @@ internal fun SavedRecipesTabContent(
 	totalMatches: Int,
 	onRecipeSelect: (Int) -> Unit,
 	modifier: Modifier = Modifier,
+	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
 	when {
 		errorMessage != null -> Box(
@@ -431,10 +444,16 @@ internal fun SavedRecipesTabContent(
 			}
 			items(recipes.size, key = { recipes[it].id }) { index ->
 				val recipe = recipes[index]
-				RecipeCard(
-					recipe = recipe,
-					onClick = { onRecipeSelect(recipe.id) },
-				)
+				InlineListBannerAdSlot(
+					contentIndex = index,
+					contentCount = recipes.size,
+					viewModel = bannerAdViewModel,
+				) {
+					RecipeCard(
+						recipe = recipe,
+						onClick = { onRecipeSelect(recipe.id) },
+					)
+				}
 			}
 		}
 	}

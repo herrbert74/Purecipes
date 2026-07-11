@@ -21,6 +21,7 @@ kotlin {
 				api(project(":feature:search:domain"))
 				api(project(":feature:measurement:domain"))
 				api(project(":shared:domain"))
+				implementation(project(":feature:ads:ui"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.jetbrains.androidXNavigation3Ui)

@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.search.ui.RecipeSearchScreen
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -23,6 +25,7 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 			onRecipeSelect = onRecipeSelect,
 			onRequestLogInForFilters = onRequestLogInForFilters,
 			sessionKey = sessionKey,
+			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
 		)
 	}
 }

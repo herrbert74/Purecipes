@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.search.ui.filter.FilterBottomSheet
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.Cuisine
@@ -35,6 +36,7 @@ fun RecipeSearchScreen(
 	onRequestLogInForFilters: () -> Unit = {},
 	closeScreen: () -> Unit = {},
 	sessionKey: String? = null,
+	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: RecipeSearchViewModel = assistedMetroViewModel<RecipeSearchViewModel, RecipeSearchViewModel.Factory> {
 		create(
 			initialShowFilterSheet = initialShowFilterSheet,
@@ -120,6 +122,7 @@ fun RecipeSearchScreen(
 			nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
 			onRecipeSelect = onRecipeSelect,
 			onRetryClick = viewModel::searchNow,
+			bannerAdViewModel = bannerAdViewModel,
 			modifier = Modifier.weight(1f),
 		)
 	}

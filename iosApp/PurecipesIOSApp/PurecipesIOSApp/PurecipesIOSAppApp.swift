@@ -46,6 +46,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         IosSubscriptionInitializer.shared.initialize()
 
+        IosAdsInitializer.shared.initialize()
+
         installAnalyticsBridges()
 
         return true

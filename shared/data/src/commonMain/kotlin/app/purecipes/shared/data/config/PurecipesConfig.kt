@@ -19,6 +19,12 @@ interface PurecipesConfig {
 	fun usercentricsSettingsId(): String? = null
 
 	fun revenueCatApiKey(): String? = null
+
+	fun adMobAppId(): String? = null
+
+	fun adMobBannerAdUnitId(): String? = null
+
+	fun adMobInterstitialAdUnitId(): String? = null
 }
 
 enum class PurecipesBuildType {

@@ -23,6 +23,7 @@ kotlin {
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:measurement:domain"))
 				api(project(":feature:sharing:domain"))
+				implementation(project(":feature:ads:ui"))
 				implementation(project(":feature:sharing:ui"))
 				api(project(":shared:domain"))
 				implementation(libs.coil.compose)

@@ -1,12 +1,20 @@
 package app.purecipes.feature.main.ui
 
 import androidx.lifecycle.ViewModel
+import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
+import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
 import app.purecipes.feature.search.ui.RecipeSearchViewModel
+import app.purecipes.feature.subscription.domain.model.SubscriptionState
+import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.data.config.PurecipesBuildType
+import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import com.github.michaelbull.result.Ok
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
@@ -100,5 +108,29 @@ private class RecipeSelectionTestViewModelFactory(
 			},
 		)
 
-	override val viewModelProviders: Map<KClass<out ViewModel>, () -> ViewModel> = emptyMap()
+	override val viewModelProviders: Map<KClass<out ViewModel>, () -> ViewModel> = mapOf(
+		BannerAdViewModel::class to {
+			BannerAdViewModel(
+				observeShouldShowAds = ObserveShouldShowAdsUseCase(
+					ObservePremiumStatusUseCase(
+						FakeSubscriptionRepository(
+							SubscriptionState(
+								status = SubscriptionStatus.PREMIUM,
+								isActive = true,
+								expirationInstant = null,
+								trialActive = false,
+							),
+						),
+					),
+				),
+				purecipesConfig = object : PurecipesConfig {
+					override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
+
+					override fun versionName(): String = "0.0.0-test"
+
+					override fun versionCode(): Long = 0L
+				},
+			)
+		},
+	)
 }
