@@ -9,6 +9,7 @@ UI_TEST_MODULES=(
 	feature/recipedetails/ui
 	feature/search/ui
 	feature/settings/ui
+	feature/subscription/ui
 )
 
 expected_test_count="$(
