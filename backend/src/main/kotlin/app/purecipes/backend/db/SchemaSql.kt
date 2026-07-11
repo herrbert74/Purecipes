@@ -10,10 +10,15 @@ internal const val APP_USERS_TABLE_SQL = """
 		first_name TEXT,
 		family_name TEXT,
 		profile_image_url TEXT,
+		is_premium BOOLEAN NOT NULL DEFAULT FALSE,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		UNIQUE(provider, external_user_id)
 	)
+"""
+
+internal const val APP_USERS_ADD_IS_PREMIUM_SQL = """
+	ALTER TABLE app_users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE
 """
 
 internal const val AUTH_SESSIONS_TABLE_SQL = """

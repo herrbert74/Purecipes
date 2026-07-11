@@ -17,6 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
+import app.purecipes.feature.subscription.ui.GoPremiumSettingsPanel
+import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -25,6 +28,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 @Composable
 fun SettingsScreen(
 	onBack: () -> Unit,
+	onOpenPaywall: () -> Unit,
 	onOpenAbout: () -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: SettingsViewModel = metroViewModel(),
@@ -33,6 +37,9 @@ fun SettingsScreen(
 		initial = NotificationPreferences(),
 	)
 	val measurementPreferences by viewModel.measurementPreferences.collectAsState(initial = null)
+	val monetisationDebugOverrides by viewModel.monetisationDebugOverrides.collectAsState(
+		initial = MonetisationDebugOverrides(),
+	)
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -58,6 +65,14 @@ fun SettingsScreen(
 				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
+			GoPremiumSettingsPanel(onOpenPaywall = onOpenPaywall)
+			if (viewModel.showMonetisationDebugOverrides) {
+				MonetisationDebugOverridesPanel(
+					overrides = monetisationDebugOverrides,
+					onPremiumStatusChange = viewModel::onPremiumStatusOverrideChange,
+					onAdsDisplayChange = viewModel::onAdsDisplayOverrideChange,
+				)
+			}
 			measurementPreferences?.let { preferences ->
 				MeasurementPreferencesSection(
 					preferences = preferences,

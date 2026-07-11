@@ -172,7 +172,8 @@ internal suspend fun ApplicationTestBuilder.updateExcludedIngredientsForSearchRo
 
 internal fun createRecipeSearchRouteTestDb(): Db = createInMemoryDb("recipe_search")
 
-internal fun seedAppUsersForSearchRouteTest(db: Db) {
+internal fun seedAppUsersForSearchRouteTest(db: Db, isPremium: Boolean = true) {
+	val premiumSql = if (isPremium) "TRUE" else "FALSE"
 	db.dataSource.connection.use { connection ->
 		connection.createStatement().use { statement ->
 			statement.execute(
@@ -185,7 +186,8 @@ internal fun seedAppUsersForSearchRouteTest(db: Db) {
 						display_name,
 						first_name,
 						family_name,
-						profile_image_url
+						profile_image_url,
+						is_premium
 					) VALUES (
 						1,
 						'GOOGLE',
@@ -194,10 +196,23 @@ internal fun seedAppUsersForSearchRouteTest(db: Db) {
 						'User One',
 						'User',
 						'One',
-						NULL
+						NULL,
+						$premiumSql
 					)
 				""".trimIndent(),
 			)
+		}
+	}
+}
+
+internal fun setRecipeCalorieRangeForSearchRouteTest(db: Db, title: String, calorieRange: String) {
+	db.dataSource.connection.use { connection ->
+		connection.prepareStatement(
+			"UPDATE recipes SET calorie_range = ? WHERE title = ?",
+		).use { statement ->
+			statement.setString(1, calorieRange)
+			statement.setString(2, title)
+			statement.executeUpdate()
 		}
 	}
 }

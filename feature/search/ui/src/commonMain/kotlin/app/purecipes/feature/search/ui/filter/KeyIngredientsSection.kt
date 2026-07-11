@@ -39,6 +39,8 @@ internal fun KeyIngredientsSection(
 	pantryIngredients: ImmutableSet<String>,
 	onKeyIngredientsChange: (Set<String>) -> Unit,
 	modifier: Modifier = Modifier,
+	isLocked: Boolean = false,
+	onLockedClick: () -> Unit = {},
 ) {
 	var collapsed by rememberSaveable { mutableStateOf(false) }
 	val pantryQuickPicks = pantryIngredients - keyIngredients
@@ -47,10 +49,18 @@ internal fun KeyIngredientsSection(
 		FilterSectionHeader(
 			title = "Key ingredients",
 			isCollapsed = collapsed,
-			onToggleCollapse = { collapsed = !collapsed },
+			isLocked = isLocked,
+			onToggleCollapse = {
+				if (isLocked) {
+					onLockedClick()
+				} else {
+					collapsed = !collapsed
+				}
+			},
+			modifier = Modifier.testTag(filterSectionToggleTag("Key ingredients")),
 		)
 		AnimatedVisibility(
-			visible = !collapsed,
+			visible = !collapsed && !isLocked,
 			enter = expandVertically(),
 			exit = shrinkVertically(),
 		) {

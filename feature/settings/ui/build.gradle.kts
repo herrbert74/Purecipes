@@ -27,6 +27,7 @@ kotlin {
 			dependencies {
 				api(project(":feature:measurement:domain"))
 				api(project(":feature:settings:domain"))
+				implementation(project(":feature:subscription:ui"))
 				implementation(project(":shared:data"))
 				implementation(libs.aboutLibraries.core)
 				implementation(libs.aboutLibraries.composeM3)

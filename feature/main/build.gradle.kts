@@ -17,6 +17,9 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:ads:data"))
+				api(project(":feature:ads:domain"))
+				implementation(project(":feature:ads:ui"))
 				api(project(":feature:analytics:data"))
 				api(project(":feature:analytics:domain"))
 				implementation(project(":feature:analytics:ui"))
@@ -43,9 +46,12 @@ kotlin {
 				api(project(":feature:measurement:domain"))
 				api(project(":feature:settings:data"))
 				api(project(":feature:settings:domain"))
+				api(project(":feature:subscription:data"))
+				api(project(":feature:subscription:domain"))
 				api(project(":shared:data"))
 				api(project(":shared:domain"))
 				implementation(project(":feature:settings:ui"))
+				implementation(project(":feature:subscription:ui"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.serializationJson)
 			}
@@ -58,6 +64,7 @@ kotlin {
 		named("androidDeviceTest") {
 			dependencies {
 				implementation(libs.androidx.activityCompose)
+				implementation(libs.kotlinx.datetime)
 				implementation(project(":shared:testfixtures"))
 			}
 		}

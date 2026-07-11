@@ -8,6 +8,7 @@ import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -160,7 +161,7 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `back removes only the top destination`() {
+	fun `back removes only the top destination`() = runUnconfinedViewModelTest {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
 		viewModel.onStartCooking(42)

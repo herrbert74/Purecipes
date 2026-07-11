@@ -35,7 +35,18 @@ android {
 		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_MIXPANEL_PROJECT_TOKEN", mixpanelProjectToken().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_REVENUECAT_TEST_API_KEY", revenueCatTestApiKey().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_ADMOB_APP_ID", admobAppId().asBuildConfigString())
+		buildConfigField("String", "PURECIPES_ADMOB_BANNER_AD_UNIT_ID", admobBannerAdUnitId().asBuildConfigString())
+		buildConfigField(
+			"String",
+			"PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID",
+			admobInterstitialAdUnitId().asBuildConfigString(),
+		)
 		buildConfigField("String", "PURECIPES_DEBUG_BACKEND_HOST", "\"\"")
+		manifestPlaceholders["admobAppId"] = admobAppId().ifBlank {
+			"ca-app-pub-3940256099942544~3347511713"
+		}
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
@@ -91,10 +102,12 @@ android {
 }
 
 dependencies {
+	implementation(project(":feature:ads:data"))
 	implementation(project(":feature:auth:data"))
 	implementation(project(":feature:analytics:data"))
 	implementation(project(":feature:sharing:data"))
 	implementation(project(":feature:main"))
+	implementation(project(":feature:ads:ui"))
 	implementation(project(":feature:analytics:ui"))
 	implementation(project(":feature:auth:ui"))
 	implementation(project(":feature:cooking:ui"))
@@ -103,12 +116,14 @@ dependencies {
 	implementation(project(":feature:recipedetails:ui"))
 	implementation(project(":feature:search:ui"))
 	implementation(project(":feature:settings:ui"))
+	implementation(project(":feature:subscription:ui"))
 	implementation(project(":feature:favorites:data"))
 	implementation(project(":feature:newrecipe:data"))
 	implementation(project(":feature:recipedetails:data"))
 	implementation(project(":feature:search:data"))
 	implementation(project(":feature:measurement:data"))
 	implementation(project(":feature:settings:data"))
+	implementation(project(":feature:subscription:data"))
 	implementation(project(":shared:data"))
 	implementation(project(":shared:ui"))
 	implementation(project.dependencies.platform(libs.firebaseBom))
@@ -123,12 +138,6 @@ dependencies {
 	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.metro.runtime)
-
-	androidTestImplementation(libs.androidx.testExtJUnit)
-	androidTestImplementation(libs.androidx.testRunner)
-	androidTestImplementation(project(":feature:search:ui"))
-	androidTestImplementation(libs.metro.runtime)
-	androidTestImplementation(libs.metrox.viewmodel)
 }
 
 private fun Project.releaseSigningStoreFile(): String {
@@ -195,6 +204,38 @@ private fun Project.usercentricsSettingsId(): String {
 	return providers.gradleProperty("purecipes.usercentricsSettingsId")
 		.orElse(providers.gradleProperty("PURECIPES_USERCENTRICS_SETTINGS_ID"))
 		.orElse(providers.environmentVariable("PURECIPES_USERCENTRICS_SETTINGS_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.revenueCatTestApiKey(): String {
+	return providers.gradleProperty("purecipes.revenueCatTestApiKey")
+		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.admobAppId(): String {
+	return providers.gradleProperty("purecipes.adMobAppId")
+		.orElse(providers.gradleProperty("PURECIPES_ADMOB_APP_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_ADMOB_APP_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.admobBannerAdUnitId(): String {
+	return providers.gradleProperty("purecipes.adMobBannerAdUnitId")
+		.orElse(providers.gradleProperty("PURECIPES_ADMOB_BANNER_AD_UNIT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_ADMOB_BANNER_AD_UNIT_ID"))
+		.orNull
+		.orEmpty()
+}
+
+private fun Project.admobInterstitialAdUnitId(): String {
+	return providers.gradleProperty("purecipes.adMobInterstitialAdUnitId")
+		.orElse(providers.gradleProperty("PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID"))
 		.orNull
 		.orEmpty()
 }

@@ -1,5 +1,9 @@
 package app.purecipes.app.graph
 
+import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
+import app.purecipes.feature.ads.domain.usecase.InitializeAdsUseCase
+import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
+import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.data.repository.AnalyticsDataModule
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
@@ -52,6 +56,13 @@ import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.feature.subscription.domain.usecase.GetSubscriptionPlansUseCase
+import app.purecipes.feature.subscription.domain.usecase.InitializeSubscriptionsUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObserveSubscriptionStateUseCase
+import app.purecipes.feature.subscription.domain.usecase.PurchaseSubscriptionUseCase
+import app.purecipes.feature.subscription.domain.usecase.RestorePurchasesUseCase
+import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
@@ -163,4 +174,26 @@ interface CommonAppGraph :
 	val shareCookbookUseCase: ShareCookbookUseCase
 
 	val importCookbookShareUseCase: ImportCookbookShareUseCase
+
+	val initializeSubscriptionsUseCase: InitializeSubscriptionsUseCase
+
+	val getSubscriptionPlansUseCase: GetSubscriptionPlansUseCase
+
+	val observePremiumStatusUseCase: ObservePremiumStatusUseCase
+
+	val observeSubscriptionStateUseCase: ObserveSubscriptionStateUseCase
+
+	val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
+
+	val restorePurchasesUseCase: RestorePurchasesUseCase
+
+	val syncSubscriptionUserIdUseCase: SyncSubscriptionUserIdUseCase
+
+	val initializeAdsUseCase: InitializeAdsUseCase
+
+	val observeShouldShowAdsUseCase: ObserveShouldShowAdsUseCase
+
+	val decidePreCookInterstitialUseCase: DecidePreCookInterstitialUseCase
+
+	val showInterstitialAdUseCase: ShowInterstitialAdUseCase
 }

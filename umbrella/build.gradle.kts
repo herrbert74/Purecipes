@@ -46,6 +46,14 @@ private fun Project.usercentricsSettingsId(): String {
 		.orEmpty()
 }
 
+private fun Project.revenueCatTestApiKey(): String {
+	return providers.gradleProperty("purecipes.revenueCatTestApiKey")
+		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_TEST_API_KEY"))
+		.orNull
+		.orEmpty()
+}
+
 private fun Project.currentPurecipesBuildType(): String {
 	val requestedBuildType = androidBuildTypeFromTasks()
 		?: providers.gradleProperty("purecipes.buildType").orNull
@@ -93,6 +101,7 @@ buildkonfig {
 		buildConfigField(STRING, "purecipesGaMeasurementId", gaMeasurementId())
 		buildConfigField(STRING, "purecipesMixpanelProjectToken", mixpanelProjectToken())
 		buildConfigField(STRING, "purecipesUsercentricsSettingsId", usercentricsSettingsId())
+		buildConfigField(STRING, "purecipesRevenueCatTestApiKey", revenueCatTestApiKey())
 	}
 }
 
@@ -117,6 +126,7 @@ kotlin {
 			binaries.framework {
 				baseName = "umbrella"
 				isStatic = true
+				export(project(":feature:ads:domain"))
 				export(project(":feature:analytics:domain"))
 				export(project(":feature:sharing:domain"))
 				export(project(":feature:main"))
@@ -125,6 +135,7 @@ kotlin {
 				export(project(":feature:newrecipe:domain"))
 				export(project(":feature:recipedetails:domain"))
 				export(project(":feature:search:domain"))
+				export(project(":feature:subscription:domain"))
 				export(project(":shared:domain"))
 				export(project(":shared:data"))
 			}
@@ -134,6 +145,8 @@ kotlin {
 	sourceSets {
 		commonMain {
 			dependencies {
+				api(project(":feature:ads:domain"))
+				api(project(":feature:ads:data"))
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:analytics:data"))
 				api(project(":feature:sharing:domain"))
@@ -141,6 +154,7 @@ kotlin {
 				api(project(":feature:auth:domain"))
 				api(project(":feature:auth:data"))
 				api(project(":feature:main"))
+				implementation(project(":feature:ads:ui"))
 				implementation(project(":feature:analytics:ui"))
 				implementation(project(":feature:auth:ui"))
 				implementation(project(":feature:cooking:ui"))
@@ -149,6 +163,7 @@ kotlin {
 				implementation(project(":feature:recipedetails:ui"))
 				implementation(project(":feature:search:ui"))
 				implementation(project(":feature:settings:ui"))
+				implementation(project(":feature:subscription:ui"))
 				api(project(":feature:favorites:domain"))
 				api(project(":feature:favorites:data"))
 				api(project(":feature:newrecipe:domain"))
@@ -157,6 +172,8 @@ kotlin {
 				api(project(":feature:recipedetails:data"))
 				api(project(":feature:search:domain"))
 				api(project(":feature:search:data"))
+				api(project(":feature:subscription:data"))
+				api(project(":feature:subscription:domain"))
 				api(project(":feature:measurement:data"))
 				api(project(":feature:settings:data"))
 				api(project(":shared:data"))

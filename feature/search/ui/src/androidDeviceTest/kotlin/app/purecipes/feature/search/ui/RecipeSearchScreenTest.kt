@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -35,7 +36,6 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_PANTRY_TAG
-import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_INTRO_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_SECTION_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
 import app.purecipes.feature.search.ui.filter.customIngredientRemoveTag
@@ -44,6 +44,9 @@ import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
 import app.purecipes.feature.search.ui.filter.keyIngredientChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientPantryQuickPickTag
 import app.purecipes.feature.search.ui.result.SEARCH_RESULTS_LIST_TAG
+import app.purecipes.feature.subscription.domain.model.SubscriptionState
+import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -51,8 +54,10 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -533,13 +538,41 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
 		waitForIdle()
 		onNodeWithTag(FILTER_KEY_INGREDIENTS_SECTION_TAG).assertIsDisplayed()
-		onNodeWithTag(FILTER_KEY_INGREDIENTS_INTRO_TAG).assertIsDisplayed()
+		onNodeWithContentDescription("Key ingredients is a premium filter").assertIsDisplayed()
 	}
 
 	@Test
-	fun whenSignedInPantryQuickPickAddsKeyIngredient() = runRecompositionTrackingUiTest {
+	fun whenFreeUserTapsLockedKeyIngredientsOpensPaywall() = runRecompositionTrackingUiTest {
+		var openedPaywall = false
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					viewModel = recipeSearchViewModelForTest(),
+					onOpenPaywall = { openedPaywall = true },
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(filterSectionToggleTag("Key ingredients")).performClick()
+		waitForIdle()
+		runOnIdle {
+			assertEquals(true, openedPaywall)
+		}
+	}
+
+	@Test
+	fun whenPremiumPantryQuickPickAddsKeyIngredient() = runRecompositionTrackingUiTest {
 		val pantryRepository = FakeUserPantryRepository(pantry = setOf("Chicken", "Rice"))
-		val viewModel = recipeSearchViewModelForTest(pantryRepository = pantryRepository)
+		val viewModel = recipeSearchViewModelForTest(
+			pantryRepository = pantryRepository,
+			isPremium = true,
+		)
 
 		setTrackedContent {
 			PurecipesTheme {
@@ -566,7 +599,7 @@ class RecipeSearchScreenTest {
 
 	@Test
 	fun whenKeyIngredientsSelectedFilterButtonShowsActiveState() = runRecompositionTrackingUiTest {
-		val viewModel = recipeSearchViewModelForTest()
+		val viewModel = recipeSearchViewModelForTest(isPremium = true)
 
 		setTrackedContent {
 			PurecipesTheme {
@@ -593,6 +626,7 @@ private fun recipeSearchViewModelForTest(
 	settingsRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
 	ingredientMatchRepository: FakeIngredientMatchRepository = FakeIngredientMatchRepository(),
 	initialShowFilterSheet: Boolean = false,
+	isPremium: Boolean = false,
 ): RecipeSearchViewModel = RecipeSearchViewModel(
 	filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 	getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
@@ -606,6 +640,21 @@ private fun recipeSearchViewModelForTest(
 	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 	searchReadiness = SearchReadinessCoordinator(),
+	observePremiumStatus = ObservePremiumStatusUseCase(
+		FakeSubscriptionRepository(
+			initialState = if (isPremium) {
+				SubscriptionState(
+					status = SubscriptionStatus.PREMIUM,
+					isActive = true,
+					expirationInstant = null,
+					trialActive = false,
+				)
+			} else {
+				SubscriptionState.FREE
+			},
+		),
+		FakeMonetisationDebugOverridesRepository(),
+	),
 	initialShowFilterSheet = initialShowFilterSheet,
 	sessionKey = null,
 )

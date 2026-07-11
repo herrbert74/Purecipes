@@ -1,0 +1,39 @@
+plugins {
+	id("convention.ui")
+	id("convention.common-test")
+	alias(libs.plugins.kotlin.serialization)
+}
+
+kotlin {
+	android {
+		namespace = "app.purecipes.feature.subscription.ui"
+		withDeviceTestBuilder {
+			sourceSetTreeName = "androidDeviceTest"
+		}.configure {
+			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+		}
+	}
+
+	sourceSets {
+		commonMain {
+			dependencies {
+				api(project(":feature:subscription:domain"))
+				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.kotlinx.collectionsImmutable)
+				implementation(libs.kotlinx.serializationJson)
+			}
+		}
+		commonTest {
+			dependencies {
+				implementation(project(":shared:testfixtures"))
+				implementation(libs.kotlinx.datetime)
+			}
+		}
+		named("androidDeviceTest") {
+			dependencies {
+				implementation(libs.dejavu)
+				implementation(project(":shared:ui"))
+			}
+		}
+	}
+}

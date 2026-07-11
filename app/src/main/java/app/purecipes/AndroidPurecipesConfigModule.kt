@@ -40,6 +40,22 @@ interface AndroidPurecipesConfigModule {
 			override fun usercentricsSettingsId(): String? {
 				return BuildConfig.PURECIPES_USERCENTRICS_SETTINGS_ID.takeIf { it.isNotBlank() }
 			}
+
+			override fun revenueCatApiKey(): String? {
+				return BuildConfig.PURECIPES_REVENUECAT_TEST_API_KEY.takeIf { it.isNotBlank() }
+			}
+
+			override fun adMobAppId(): String? {
+				return BuildConfig.PURECIPES_ADMOB_APP_ID.takeIf { it.isNotBlank() }
+			}
+
+			override fun adMobBannerAdUnitId(): String? {
+				return BuildConfig.PURECIPES_ADMOB_BANNER_AD_UNIT_ID.takeIf { it.isNotBlank() }
+			}
+
+			override fun adMobInterstitialAdUnitId(): String? {
+				return BuildConfig.PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID.takeIf { it.isNotBlank() }
+			}
 		}
 	}
 }

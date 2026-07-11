@@ -19,6 +19,7 @@ kotlin {
 			dependencies {
 				api(project(":feature:favorites:domain"))
 				api(project(":feature:sharing:domain"))
+				implementation(project(":feature:ads:ui"))
 				implementation(project(":feature:sharing:ui"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)

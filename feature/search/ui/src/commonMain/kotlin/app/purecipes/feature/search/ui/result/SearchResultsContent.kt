@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
@@ -25,6 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.feature.ads.ui.BannerAdViewModel
+import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
@@ -45,10 +46,11 @@ internal fun SearchResultsContent(
 	totalMatches: Int,
 	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
-	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
 	onRecipeSelect: (Int) -> Unit,
-	onRetryClick: () -> Unit = {},
 	modifier: Modifier = Modifier,
+	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
+	onRetryClick: () -> Unit = {},
+	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
 	when {
 		isSearching -> Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -89,11 +91,18 @@ internal fun SearchResultsContent(
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
-			items(recipes, key = { it.id }) { recipe ->
-				RecipeCard(
-					recipe = recipe,
-					onClick = { onRecipeSelect(recipe.id) },
-				)
+			items(recipes.size, key = { recipes[it].id }) { index ->
+				val recipe = recipes[index]
+				InlineListBannerAdSlot(
+					contentIndex = index,
+					contentCount = recipes.size,
+					viewModel = bannerAdViewModel,
+				) {
+					RecipeCard(
+						recipe = recipe,
+						onClick = { onRecipeSelect(recipe.id) },
+					)
+				}
 			}
 			if (nearMissRecipes.isNotEmpty()) {
 				item {

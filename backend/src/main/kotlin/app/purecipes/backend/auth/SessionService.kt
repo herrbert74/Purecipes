@@ -1,5 +1,6 @@
 package app.purecipes.backend.auth
 
+import app.purecipes.backend.db.APP_USERS_ADD_IS_PREMIUM_SQL
 import app.purecipes.backend.db.APP_USERS_TABLE_SQL
 import app.purecipes.backend.db.AUTH_SESSIONS_TABLE_SQL
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
@@ -43,6 +44,7 @@ class JdbcSessionService(
 		dataSource.connection.use { connection ->
 			connection.createStatement().use { statement ->
 				statement.execute(APP_USERS_TABLE_SQL)
+				statement.execute(APP_USERS_ADD_IS_PREMIUM_SQL)
 				statement.execute(AUTH_SESSIONS_TABLE_SQL)
 			}
 		}
@@ -215,6 +217,7 @@ class JdbcSessionService(
 	}
 
 	private companion object {
+
 		private const val DEFAULT_SESSION_DURATION_DAYS = 30L
 		private const val INDEX_FIRST = 1
 		private const val INDEX_SECOND = 2

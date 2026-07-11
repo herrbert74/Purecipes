@@ -7,6 +7,7 @@ import app.purecipes.feature.newrecipe.ui.navigation.createNavigationSerializers
 import app.purecipes.feature.recipedetails.ui.navigation.recipeDetailsNavigationSerializersModule
 import app.purecipes.feature.search.ui.navigation.searchNavigationSerializersModule
 import app.purecipes.feature.settings.ui.navigation.settingsNavigationSerializersModule
+import app.purecipes.feature.subscription.ui.navigation.subscriptionNavigationSerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 internal fun mainNavigationSerializersModule(): SerializersModule = SerializersModule {
@@ -17,4 +18,5 @@ internal fun mainNavigationSerializersModule(): SerializersModule = SerializersM
 	include(createNavigationSerializersModule())
 	include(authNavigationSerializersModule())
 	include(settingsNavigationSerializersModule())
+	include(subscriptionNavigationSerializersModule())
 }

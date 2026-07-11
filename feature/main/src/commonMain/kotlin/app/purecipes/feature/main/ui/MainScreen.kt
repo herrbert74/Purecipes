@@ -27,6 +27,8 @@ import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
 import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
+import app.purecipes.feature.subscription.ui.navigation.PaywallDestination
+import app.purecipes.feature.subscription.ui.navigation.installSubscriptionFlow
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -123,6 +125,7 @@ private fun MainScreenContent(
 									onRequestLogInForFilters = {
 										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 									},
+									onOpenPaywall = { viewModel.navigator.push(PaywallDestination) },
 								)
 								installRecipeDetailsFlow(
 									navigator = viewModel.navigator,
@@ -150,6 +153,9 @@ private fun MainScreenContent(
 									onRegistrationSuccess = viewModel::onRegistrationSuccess,
 								)
 								installSettingsFlow(
+									navigator = viewModel.navigator,
+								)
+								installSubscriptionFlow(
 									navigator = viewModel.navigator,
 								)
 							},
