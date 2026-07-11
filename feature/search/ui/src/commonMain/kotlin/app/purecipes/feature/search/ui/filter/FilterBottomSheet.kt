@@ -95,6 +95,8 @@ internal fun FilterBottomSheet(
 	onAddIngredient: (String) -> Unit,
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
+	isPremium: Boolean = false,
+	onOpenPaywall: () -> Unit = {},
 ) {
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
@@ -118,6 +120,8 @@ internal fun FilterBottomSheet(
 			onAddIngredient = onAddIngredient,
 			onClearIngredientMatchPreview = onClearIngredientMatchPreview,
 			onRequestLogIn = onRequestLogIn,
+			isPremium = isPremium,
+			onOpenPaywall = onOpenPaywall,
 		)
 	}
 }
@@ -141,6 +145,8 @@ private fun FilterBottomSheetContent(
 	onAddIngredient: (String) -> Unit,
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
+	isPremium: Boolean,
+	onOpenPaywall: () -> Unit,
 ) {
 	if (!isSignedIn) {
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
@@ -200,8 +206,10 @@ private fun FilterBottomSheetContent(
 							filters = filters,
 							keyIngredients = keyIngredients,
 							pantryIngredients = pantryIngredients,
+							isPremium = isPremium,
 							onFiltersChange = onFiltersChange,
 							onKeyIngredientsChange = onKeyIngredientsChange,
+							onOpenPaywall = onOpenPaywall,
 						)
 					}
 				}
@@ -277,8 +285,10 @@ private fun RecipeFiltersTabContent(
 	filters: SearchFilters,
 	keyIngredients: ImmutableSet<String>,
 	pantryIngredients: ImmutableSet<String>,
+	isPremium: Boolean,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onKeyIngredientsChange: (Set<String>) -> Unit,
+	onOpenPaywall: () -> Unit,
 ) {
 	FilterScrollableColumn {
 		item {
@@ -286,6 +296,8 @@ private fun RecipeFiltersTabContent(
 				keyIngredients = keyIngredients,
 				pantryIngredients = pantryIngredients,
 				onKeyIngredientsChange = onKeyIngredientsChange,
+				isLocked = !isPremium,
+				onLockedClick = onOpenPaywall,
 			)
 		}
 		item {
@@ -362,6 +374,8 @@ private fun RecipeFiltersTabContent(
 				selected = filters.calorieRanges.toImmutableSet(),
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
+				isLocked = !isPremium,
+				onLockedClick = onOpenPaywall,
 			)
 		}
 		item {
@@ -371,6 +385,8 @@ private fun RecipeFiltersTabContent(
 				selected = filters.nutritionFilters.toImmutableSet(),
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
+				isLocked = !isPremium,
+				onLockedClick = onOpenPaywall,
 			)
 		}
 	}
@@ -581,6 +597,8 @@ private fun FilterBottomSheetPreviewContent(
 				onAddIngredient = {},
 				onClearIngredientMatchPreview = {},
 				onRequestLogIn = {},
+				isPremium = true,
+				onOpenPaywall = {},
 			)
 		}
 	}

@@ -175,6 +175,7 @@ internal fun recipeSearchViewModelForDeviceTest(
 	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
 	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
+	observePremiumStatus = ObservePremiumStatusUseCase(FakeSubscriptionRepository()),
 	initialShowFilterSheet = false,
 	sessionKey = null,
 )

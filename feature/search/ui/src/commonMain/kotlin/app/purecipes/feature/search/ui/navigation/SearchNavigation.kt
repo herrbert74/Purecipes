@@ -16,6 +16,7 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 	sessionKey: String?,
 	onRecipeSelect: (Int) -> Unit,
 	onRequestLogInForFilters: () -> Unit,
+	onOpenPaywall: () -> Unit,
 ) {
 	entry<SearchDestination> { destination ->
 		RecipeSearchScreen(
@@ -24,6 +25,7 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 			modifier = Modifier.fillMaxSize(),
 			onRecipeSelect = onRecipeSelect,
 			onRequestLogInForFilters = onRequestLogInForFilters,
+			onOpenPaywall = onOpenPaywall,
 			sessionKey = sessionKey,
 			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
 		)

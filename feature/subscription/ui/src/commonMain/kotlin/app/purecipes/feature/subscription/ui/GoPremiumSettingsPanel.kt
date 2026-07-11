@@ -37,7 +37,7 @@ fun GoPremiumSettingsPanel(
 		) {
 			SectionHeader(
 				title = "Go Premium",
-				subtitle = "Cook ad-free and unlock advanced filters.",
+				subtitle = "Cook ad-free and unlock key ingredients plus nutrition filters.",
 			)
 			Row(
 				modifier = Modifier

@@ -34,6 +34,7 @@ fun RecipeSearchScreen(
 	isSignedIn: Boolean = true,
 	onRecipeSelect: (Int) -> Unit = {},
 	onRequestLogInForFilters: () -> Unit = {},
+	onOpenPaywall: () -> Unit = {},
 	closeScreen: () -> Unit = {},
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
@@ -46,6 +47,9 @@ fun RecipeSearchScreen(
 ) {
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
+	}
+	LaunchedEffect(Unit) {
+		viewModel.onSearchContentVisible()
 	}
 
 	if (viewModel.isFilterSheetVisible) {
@@ -72,6 +76,11 @@ fun RecipeSearchScreen(
 			onRequestLogIn = {
 				viewModel.onFilterSheetDismiss()
 				onRequestLogInForFilters()
+			},
+			isPremium = viewModel.isPremium,
+			onOpenPaywall = {
+				viewModel.onNavigateToPaywall()
+				onOpenPaywall()
 			},
 		)
 	}

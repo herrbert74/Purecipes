@@ -8,6 +8,7 @@ import app.purecipes.backend.feature.auth.requireAuthenticatedUserId
 import app.purecipes.backend.feature.favorites.CookbookRepository
 import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.search.SearchRecipeRepository
+import app.purecipes.backend.feature.subscription.UserPremiumRepository
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respond
@@ -71,14 +72,21 @@ internal suspend fun ApplicationCall.respondFilteredSearch(
 	sessionService: SessionService,
 	dbProvider: () -> Db,
 ) {
-	val searchRequest = receiveSearchRequestOrRespond() ?: return
-	val repo = SearchRecipeRepository(dbProvider().dataSource)
-	respond(
-		repo.searchWithFilters(
-			request = searchRequest,
-			userId = optionalAuthenticatedUserId(sessionService),
-		),
-	)
+	val request = receiveSearchRequestOrRespond() ?: return
+	val dataSource = dbProvider().dataSource
+	val userId = optionalAuthenticatedUserId(sessionService)
+	val isPremium = userId?.let { UserPremiumRepository(dataSource).isPremium(it) } ?: false
+	val effectiveRequest =
+		if (isPremium) {
+			request
+		} else {
+			request.copy(
+				filters = request.filters.withoutPremiumFilters(),
+				keyIngredients = emptySet(),
+			)
+		}
+	val repo = SearchRecipeRepository(dataSource)
+	respond(repo.searchWithFilters(effectiveRequest, userId))
 }
 
 internal suspend fun ApplicationCall.respondRecipeCookbooks(

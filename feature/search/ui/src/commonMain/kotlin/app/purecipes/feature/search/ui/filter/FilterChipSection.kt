@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,17 +48,26 @@ internal fun <T : Any> FilterChipSection(
 	itemLabel: (T) -> String,
 	onSelectionChange: (Set<T>) -> Unit,
 	modifier: Modifier = Modifier,
+	isLocked: Boolean = false,
+	onLockedClick: () -> Unit = {},
 ) {
 	var collapsed by rememberSaveable { mutableStateOf(true) }
 	Column(modifier = modifier) {
 		FilterSectionHeader(
 			title = title,
 			isCollapsed = collapsed,
-			onToggleCollapse = { collapsed = !collapsed },
+			isLocked = isLocked,
+			onToggleCollapse = {
+				if (isLocked) {
+					onLockedClick()
+				} else {
+					collapsed = !collapsed
+				}
+			},
 			modifier = Modifier.testTag(filterSectionToggleTag(title)),
 		)
 		AnimatedVisibility(
-			visible = !collapsed,
+			visible = !collapsed && !isLocked,
 			enter = expandVertically(),
 			exit = shrinkVertically(),
 		) {
@@ -101,6 +111,7 @@ internal fun FilterSectionHeader(
 	title: String,
 	modifier: Modifier = Modifier,
 	isCollapsed: Boolean = false,
+	isLocked: Boolean = false,
 	onToggleCollapse: (() -> Unit)? = null,
 ) {
 	val chevronRotation by animateFloatAsState(
@@ -125,7 +136,13 @@ internal fun FilterSectionHeader(
 			style = PurecipesTheme.typography.titleSmall,
 			modifier = Modifier.weight(1f),
 		)
-		if (onToggleCollapse != null) {
+		if (isLocked) {
+			Icon(
+				imageVector = Icons.Default.Lock,
+				contentDescription = "$title is a premium filter",
+				modifier = Modifier.padding(end = PurecipesTheme.space.xs),
+			)
+		} else if (onToggleCollapse != null) {
 			IconButton(onClick = onToggleCollapse) {
 				Icon(
 					imageVector = Icons.Default.ExpandMore,

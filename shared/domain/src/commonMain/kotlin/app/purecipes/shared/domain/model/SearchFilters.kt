@@ -24,6 +24,14 @@ data class SearchFilters(
 			calorieRanges.isEmpty() &&
 			nutritionFilters.isEmpty()
 
+	fun hasPremiumFilters(): Boolean =
+		calorieRanges.isNotEmpty() || nutritionFilters.isNotEmpty()
+
+	fun withoutPremiumFilters(): SearchFilters = copy(
+		calorieRanges = emptySet(),
+		nutritionFilters = emptySet(),
+	)
+
 	companion object {
 
 		fun default() = SearchFilters(

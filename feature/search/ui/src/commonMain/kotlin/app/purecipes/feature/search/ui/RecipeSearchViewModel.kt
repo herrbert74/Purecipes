@@ -20,6 +20,7 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchResponse
@@ -62,6 +63,7 @@ class RecipeSearchViewModel(
 	private val updateUserExcludedIngredients: UpdateUserExcludedIngredientsUseCase,
 	private val matchIngredientInRecipes: MatchIngredientInRecipesUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
+	observePremiumStatus: ObservePremiumStatusUseCase,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
 ) : ViewModel() {
@@ -76,6 +78,9 @@ class RecipeSearchViewModel(
 		private set
 
 	var isFilterSheetVisible by mutableStateOf(false)
+		private set
+
+	var isPremium by mutableStateOf(false)
 		private set
 
 	var errorMessage by mutableStateOf<String?>(null)
@@ -111,6 +116,7 @@ class RecipeSearchViewModel(
 	private var lastSavedPantry: Set<String> = emptySet()
 	private var lastSavedExcludedIngredients: Set<String> = emptySet()
 	private var loadedSessionKey: String? = null
+	private var shouldReopenFilterSheetAfterNavigation = false
 
 	var totalMatches by mutableIntStateOf(0)
 		private set
@@ -129,6 +135,20 @@ class RecipeSearchViewModel(
 	)
 
 	init {
+		viewModelScope.launch {
+			observePremiumStatus().collect { premium ->
+				isPremium = premium
+				if (!premium) {
+					if (activeFilters.hasPremiumFilters()) {
+						activeFilters = activeFilters.withoutPremiumFilters()
+					}
+					if (keyIngredients.isNotEmpty()) {
+						keyIngredients = emptySet()
+						lastSearchedKeyIngredients = emptySet()
+					}
+				}
+			}
+		}
 		viewModelScope.launch {
 			reloadSessionState(sessionKey)
 			loadedSessionKey = sessionKey
@@ -160,8 +180,33 @@ class RecipeSearchViewModel(
 		isFilterSheetVisible = true
 	}
 
+	fun onNavigateToPaywall() {
+		if (isFilterSheetVisible) {
+			shouldReopenFilterSheetAfterNavigation = true
+			isFilterSheetVisible = false
+		}
+	}
+
+	fun onSearchContentVisible() {
+		if (shouldReopenFilterSheetAfterNavigation) {
+			isFilterSheetVisible = true
+			shouldReopenFilterSheetAfterNavigation = false
+		}
+	}
+
 	fun onFilterSheetDismiss() {
+		if (shouldReopenFilterSheetAfterNavigation) {
+			return
+		}
 		isFilterSheetVisible = false
+		if (!isPremium) {
+			if (activeFilters.hasPremiumFilters()) {
+				activeFilters = activeFilters.withoutPremiumFilters()
+			}
+			if (keyIngredients.isNotEmpty()) {
+				keyIngredients = emptySet()
+			}
+		}
 		val filtersChanged = activeFilters != lastSearchedFilters
 		val keyIngredientsChanged = keyIngredients != lastSearchedKeyIngredients
 		val pantryChanged = pantryIngredients != lastSavedPantry
@@ -201,11 +246,11 @@ class RecipeSearchViewModel(
 	}
 
 	fun onFiltersChange(filters: SearchFilters) {
-		activeFilters = filters
+		activeFilters = if (isPremium) filters else filters.withoutPremiumFilters()
 	}
 
 	fun onKeyIngredientsChange(ingredients: Set<String>) {
-		keyIngredients = ingredients
+		keyIngredients = if (isPremium) ingredients else emptySet()
 	}
 
 	fun onPantryIngredientsChange(ingredients: Set<String>) {
@@ -275,7 +320,8 @@ class RecipeSearchViewModel(
 
 	private suspend fun reloadSessionState(sessionKey: String?) {
 		val saved = getSearchFilters()
-		activeFilters = if (saved.isEmpty) SearchFilters.default() else saved
+		val loadedFilters = if (saved.isEmpty) SearchFilters.default() else saved
+		activeFilters = if (isPremium) loadedFilters else loadedFilters.withoutPremiumFilters()
 		pantryIngredients = if (sessionKey != null) getUserPantry() else emptySet()
 		excludedIngredients = if (sessionKey != null) getUserExcludedIngredients() else emptySet()
 		customPantryIngredients = customIngredientsFromSession(pantryIngredients, excludedIngredients)
@@ -298,8 +344,8 @@ class RecipeSearchViewModel(
 		val preferences = getMeasurementPreferences()
 		val outcome = searchRecipes(
 			searchQuery,
-			activeFilters,
-			keyIngredients = keyIngredients,
+			filtersForSearch(),
+			keyIngredients = keyIngredientsForSearch(),
 			pageNumber = pageNumber,
 			pageSize = PAGE_SIZE,
 		)
@@ -344,6 +390,12 @@ class RecipeSearchViewModel(
 			searchReadiness.reportReady()
 		}
 	}
+
+	private fun filtersForSearch(): SearchFilters =
+		if (isPremium) activeFilters else activeFilters.withoutPremiumFilters()
+
+	private fun keyIngredientsForSearch(): Set<String> =
+		if (isPremium) keyIngredients else emptySet()
 
 	private fun filterNearMissRecipes(
 		nearMissRecipes: List<NearMissRecipe>,

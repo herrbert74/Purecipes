@@ -112,29 +112,32 @@ data class SubscriptionPlan(
 #### Freemium Tiers
 **Free Tier**
 - All basic cooking features
-- Recipe search and browsing
+- Recipe search and browsing (dietary, cuisine, meal type, time, difficulty, method)
+- Pantry matching and excluded ingredients
 - Step-by-step cooking instructions
-- Banner advertisements
-- Limited offline storage (5 recipes)
+- Banner ads in search, favorites, and recipe details
+- Occasional pre-cook interstitial ads
 
 **Premium Tier**
 - Ad-free experience
-- Unlimited offline storage
-- Advanced search filters
-- Priority customer support
+- Key ingredients filter
+- Calorie range and nutrition filters
 - Future premium features
 
+#### Backend enforcement
+- RevenueCat webhook (`POST /webhooks/revenuecat`) updates `app_users.is_premium`
+- Search strips calorie/nutrition filters and key ingredients for free users
+
 #### Ad Implementation Strategy
-- **Non-Intrusive**: Banner ads in natural break points
+- **Non-Intrusive**: Inline banners in search/favorites lists; bottom banner on recipe details
 - **Contextual**: Food and cooking-related ads
-- **Frequency Control**: Limit ad impressions per session
+- **Frequency Control**: Pre-cook interstitial at ~50% for free users
 - **User Respect**: No ads during active cooking sessions
 
 #### Subscription Pricing
 - **Monthly**: $4.99/month
 - **Annual**: $39.99/year (33% discount)
-- **Trial Period**: 7-day free trial
-- **Student Discount**: 50% off with verification
+- **Trial Period**: via store / RevenueCat offering configuration
 
 ### RevenueCat Configuration
 

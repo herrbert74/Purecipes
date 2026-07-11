@@ -15,6 +15,9 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.subscription.domain.model.SubscriptionState
+import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientMatchCount
 import app.purecipes.shared.domain.model.IngredientMatchResponse
@@ -26,6 +29,7 @@ import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
@@ -283,6 +287,40 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `navigating to paywall from filters reopens sheet when search becomes visible`() = runViewModelTest {
+		val viewModel = makeViewModel()
+		advanceUntilIdle()
+
+		viewModel.onFilterButtonClick()
+		viewModel.onNavigateToPaywall()
+
+		viewModel.isFilterSheetVisible shouldBe false
+
+		viewModel.onSearchContentVisible()
+
+		viewModel.isFilterSheetVisible shouldBe true
+	}
+
+	@Test
+	fun `filter sheet dismiss during paywall navigation does not apply filters`() = runViewModelTest {
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = searchRepository)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+
+		viewModel.onFilterButtonClick()
+		viewModel.onFiltersChange(SearchFilters(cuisines = setOf(Cuisine.ITALIAN)))
+		viewModel.onNavigateToPaywall()
+		viewModel.onFilterSheetDismiss()
+		advanceUntilIdle()
+
+		searchRepository.queries.size shouldBe searchCountAfterInit
+		viewModel.onSearchContentVisible()
+		viewModel.isFilterSheetVisible shouldBe true
+		viewModel.activeFilters shouldBe SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+	}
+
+	@Test
 	fun `init shows filter sheet when initialShowFilterSheet is true`() = runViewModelTest {
 		val viewModel = RecipeSearchViewModel(
 			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
@@ -299,6 +337,7 @@ class RecipeSearchViewModelTest {
 			),
 			matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 			searchReadiness = SearchReadinessCoordinator(),
+			observePremiumStatus = ObservePremiumStatusUseCase(FakeSubscriptionRepository()),
 			initialShowFilterSheet = true,
 			sessionKey = null,
 		)
@@ -522,7 +561,11 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `search sends key ingredients to repository`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = searchRepository)
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			subscriptionRepository = FakeSubscriptionRepository(initialState = premiumSubscriptionState()),
+		)
+		advanceUntilIdle()
 
 		viewModel.onKeyIngredientsChange(setOf("Tomato", "Chicken"))
 		viewModel.searchNow()
@@ -532,12 +575,27 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `free user search strips key ingredients`() = runViewModelTest {
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(searchRepository = searchRepository)
+		advanceUntilIdle()
+
+		viewModel.onKeyIngredientsChange(setOf("Tomato", "Chicken"))
+		viewModel.searchNow()
+		advanceUntilIdle()
+
+		viewModel.keyIngredients shouldBe emptySet()
+		searchRepository.lastKeyIngredients shouldBe emptySet()
+	}
+
+	@Test
 	fun `filter sheet dismiss with key ingredients change re-runs search without saving filters`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val filterRepository = FakeRecipeSearchFilterRepository()
 		val viewModel = makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
+			subscriptionRepository = FakeSubscriptionRepository(initialState = premiumSubscriptionState()),
 		)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
@@ -555,7 +613,9 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onKeyIngredientsChange clears all key ingredients`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = makeViewModel(
+			subscriptionRepository = FakeSubscriptionRepository(initialState = premiumSubscriptionState()),
+		)
 		advanceUntilIdle()
 
 		viewModel.onKeyIngredientsChange(setOf("Tomato", "Chicken"))
@@ -572,6 +632,7 @@ class RecipeSearchViewModelTest {
 			FakeUserExcludedIngredientsRepository(),
 		ingredientMatchRepository: FakeIngredientMatchRepository = FakeIngredientMatchRepository(),
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
+		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
@@ -585,7 +646,15 @@ class RecipeSearchViewModelTest {
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = searchReadiness,
+		observePremiumStatus = ObservePremiumStatusUseCase(subscriptionRepository),
 		initialShowFilterSheet = false,
 		sessionKey = null,
+	)
+
+	private fun premiumSubscriptionState(): SubscriptionState = SubscriptionState(
+		status = SubscriptionStatus.PREMIUM,
+		isActive = true,
+		expirationInstant = null,
+		trialActive = false,
 	)
 }

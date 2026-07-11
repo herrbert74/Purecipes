@@ -35,6 +35,7 @@ class RecipeSearchKeyIngredientsRouteTest {
 					"keyIngredients": ["Tomato", "Chicken"]
 				}
 			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
 		)
 
 		responseBody.contains("Chicken Tomato Stew") shouldBe true
@@ -44,7 +45,7 @@ class RecipeSearchKeyIngredientsRouteTest {
 	}
 
 	@Test
-	fun `key ingredients work for unauthenticated search`() = testApplication {
+	fun `unauthenticated search strips key ingredients`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		seedAppUsersForSearchRouteTest(db)
 		val sessionService = FakeSessionService(
@@ -75,7 +76,7 @@ class RecipeSearchKeyIngredientsRouteTest {
 
 		responseBody.contains("Tomato Basil Soup") shouldBe true
 		responseBody.contains("Garlic Rice") shouldBe true
-		responseBody.contains("Chicken Tomato Stew") shouldBe false
+		responseBody.contains("Chicken Tomato Stew") shouldBe true
 	}
 
 	@Test

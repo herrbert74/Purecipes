@@ -199,7 +199,7 @@ private fun PlansContent(
 			fontWeight = FontWeight.SemiBold,
 		)
 		Text(
-			text = "Remove ads and unlock nutrition, pantry, and other premium filters.",
+			text = "Remove ads and unlock key ingredients, nutrition, and calorie filters.",
 			style = PurecipesTheme.typography.bodyMedium,
 		)
 		plans.forEach { plan ->

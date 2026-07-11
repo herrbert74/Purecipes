@@ -22,6 +22,7 @@ kotlin {
 				api(project(":feature:measurement:domain"))
 				api(project(":shared:domain"))
 				implementation(project(":feature:ads:ui"))
+				implementation(project(":feature:subscription:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
@@ -32,11 +33,13 @@ kotlin {
 		commonTest {
 			dependencies {
 				implementation(project(":shared:testfixtures"))
+				implementation(libs.kotlinx.datetime)
 			}
 		}
 		named("androidDeviceTest") {
 			dependencies {
 				implementation(libs.dejavu)
+				implementation(libs.kotlinx.datetime)
 				implementation(project(":shared:testfixtures"))
 			}
 		}
