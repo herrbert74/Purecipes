@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
@@ -223,6 +224,12 @@ class RecipeDetailsViewModel(
 			recipeId = recipeId,
 			title = recipeDetails?.title,
 		)
+		trackEvent(
+			AnalyticsEvent.RecipeShared(
+				recipeId = recipeId,
+				origin = analyticsOrigin,
+			),
+		)
 	}
 
 	private fun refreshCookbookMembership() {
@@ -268,10 +275,19 @@ class RecipeDetailsViewModel(
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
-			if (recipeDetails != null) {
+			if (baseRecipeDetails != null) {
 				trackEvent(AnalyticsEvent.RecipeViewed(recipeId = recipeId, origin = analyticsOrigin))
 			}
-			errorMessage = outcome.getError()?.message
+			val error = outcome.getError()
+			if (error != null) {
+				trackEvent(
+					AnalyticsEvent.RecipeLoadFailed(
+						recipeId = recipeId,
+						errorKind = error.toAnalyticsErrorKind(),
+					),
+				)
+			}
+			errorMessage = error?.message
 			isLoading = false
 			refreshCookbookMembership()
 		}

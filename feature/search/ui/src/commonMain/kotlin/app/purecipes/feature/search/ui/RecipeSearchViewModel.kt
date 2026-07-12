@@ -375,6 +375,7 @@ class RecipeSearchViewModel(
 					AnalyticsEvent.SearchPerformed(
 						query = searchQuery,
 						resultCount = paginatedResult.totalMatches,
+						isEmptyResult = paginatedResult.totalMatches == 0,
 					),
 				)
 			}

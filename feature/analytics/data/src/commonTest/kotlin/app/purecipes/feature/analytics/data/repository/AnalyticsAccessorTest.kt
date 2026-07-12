@@ -97,7 +97,11 @@ class AnalyticsAccessorTest {
 		)
 
 		accessor.trackEvent(
-			AnalyticsEvent.CookingStarted(recipeId = 5, origin = AnalyticsOrigin.RECIPE_DETAILS),
+			AnalyticsEvent.CookingStarted(
+				recipeId = 5,
+				origin = AnalyticsOrigin.RECIPE_DETAILS,
+				stepCount = 3,
+			),
 		)
 
 		first.lastTrackedEventName shouldBe "cooking_started"
@@ -185,10 +189,18 @@ class AnalyticsAccessorTest {
 		consentRepository.updateConsentState(ConsentState.OBTAINED)
 
 		dataSource.lastTrackingEnabled shouldBe true
+		dataSource.lastTrackedEventName shouldBe "consent_changed"
+		dataSource.lastTrackedProperties shouldBe mapOf(
+			"state" to AnalyticsValue.TextValue("obtained"),
+		)
 
 		consentRepository.updateConsentState(ConsentState.DENIED)
 
 		dataSource.lastTrackingEnabled shouldBe false
+		dataSource.lastTrackedEventName shouldBe "consent_changed"
+		dataSource.lastTrackedProperties shouldBe mapOf(
+			"state" to AnalyticsValue.TextValue("denied"),
+		)
 	}
 
 	@Test

@@ -52,7 +52,12 @@ class AnalyticsAccessor internal constructor(
 			),
 		)
 		observationScope.launch {
+			var previousConsentState: ConsentState? = null
 			consentRepository.observeConsentState().collect { consentState ->
+				if (previousConsentState != null && previousConsentState != consentState) {
+					trackConsentChanged(consentState)
+				}
+				previousConsentState = consentState
 				applyTrackingEnabled(consentState)
 			}
 		}
@@ -83,6 +88,14 @@ class AnalyticsAccessor internal constructor(
 		analyticsDataSources.forEach {
 			it.setUserId(if (isEnabled) userId else null)
 		}
+	}
+
+	private fun trackConsentChanged(consentState: ConsentState) {
+		val event = AnalyticsEvent.ConsentChanged(state = consentState)
+		if (consentState.allowsAnalytics()) {
+			applyTrackingEnabled(consentState)
+		}
+		analyticsDataSources.forEach { it.trackEvent(event.eventName, event.properties) }
 	}
 
 	private fun applyTrackingEnabled(consentState: ConsentState) {

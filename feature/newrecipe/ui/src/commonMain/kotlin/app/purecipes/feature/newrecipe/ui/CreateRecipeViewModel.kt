@@ -224,20 +224,22 @@ class CreateRecipeViewModel(
 		val wasEditing = isEditing
 
 		viewModelScope.launch {
+			val ingredients = IngredientLineParser.parseLines(
+				ingredientsInput
+					.lineSequence()
+					.map(String::trim)
+					.filter(String::isNotEmpty)
+					.toList(),
+			)
+			val steps = stepInputs.map(String::trim).filter(String::isNotEmpty)
 			val outcome = saveCreatedRecipe(
 				SaveCreatedRecipeRequest(
 					recipeId = editingRecipeId,
 					title = titleInput,
 					description = descriptionInput,
 					imageUrl = imageUrlInput,
-					ingredients = IngredientLineParser.parseLines(
-						ingredientsInput
-							.lineSequence()
-							.map(String::trim)
-							.filter(String::isNotEmpty)
-							.toList(),
-					),
-					steps = stepInputs.map(String::trim).filter(String::isNotEmpty),
+					ingredients = ingredients,
+					steps = steps,
 					totalTime = totalTimeInput.trim().takeIf { it.isNotEmpty() }?.toIntOrNull(),
 					yields = yieldsInput,
 					cuisine = selectedCuisine,
@@ -252,6 +254,9 @@ class CreateRecipeViewModel(
 					AnalyticsEvent.RecipeSaved(
 						recipeId = savedRecipe.id,
 						isEditing = wasEditing,
+						hasPhoto = imageUrlInput.isNotBlank(),
+						ingredientCount = ingredients.size,
+						stepCount = steps.size,
 					),
 				)
 				successMessage = if (wasEditing) {
@@ -322,6 +327,7 @@ class CreateRecipeViewModel(
 	}
 
 	private companion object {
+
 		const val NUTRITION_ESTIMATE_DEBOUNCE_MS = 400L
 	}
 }

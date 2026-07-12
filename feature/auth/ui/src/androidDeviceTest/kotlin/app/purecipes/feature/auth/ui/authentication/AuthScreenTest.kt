@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -37,6 +38,7 @@ import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.domain.model.PASSWORD_TOO_SHORT_MESSAGE
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
@@ -71,6 +73,7 @@ class AuthScreenTest {
 						signOut = SignOutUseCase(authRepo),
 						observeConsentState = ObserveConsentStateUseCase(consentRepo),
 						showConsentForm = ShowConsentFormUseCase(consentRepo),
+						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = {
@@ -154,6 +157,7 @@ class AuthScreenTest {
 						signOut = SignOutUseCase(authRepo),
 						observeConsentState = ObserveConsentStateUseCase(consentRepo),
 						showConsentForm = ShowConsentFormUseCase(consentRepo),
+						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _, _ ->
@@ -173,6 +177,7 @@ class AuthScreenTest {
 					onRegistrationSuccess = {},
 					viewModel = RegistrationViewModel(
 						registerWithEmail = RegisterWithEmailUseCase(authRepo),
+						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 					),
 				)
 			}

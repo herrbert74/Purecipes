@@ -2,6 +2,9 @@ package app.purecipes.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.toAnalyticsMeasurementSystem
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
@@ -40,6 +43,7 @@ class SettingsViewModel(
 	observeMonetisationDebugOverrides: ObserveMonetisationDebugOverridesUseCase,
 	private val setPremiumStatusOverride: SetPremiumStatusOverrideUseCase,
 	private val setAdsDisplayOverride: SetAdsDisplayOverrideUseCase,
+	private val trackEvent: TrackEventUseCase,
 	purecipesConfig: PurecipesConfig,
 ) : ViewModel() {
 
@@ -62,6 +66,11 @@ class SettingsViewModel(
 	fun onMeasurementPreferencesChange(preferences: MeasurementPreferences) {
 		viewModelScope.launch {
 			saveMeasurementPreferences(preferences)
+			trackEvent(
+				AnalyticsEvent.MeasurementChanged(
+					system = preferences.preferredSystem.toAnalyticsMeasurementSystem(),
+				),
+			)
 		}
 	}
 

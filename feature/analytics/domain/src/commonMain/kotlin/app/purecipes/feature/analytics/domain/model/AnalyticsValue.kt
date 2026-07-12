@@ -11,3 +11,5 @@ sealed interface AnalyticsValue {
 internal fun Boolean.asAnalyticsValue(): AnalyticsValue = AnalyticsValue.BooleanValue(this)
 
 internal fun Int.asAnalyticsValue(): AnalyticsValue = AnalyticsValue.NumberValue(toLong())
+
+internal fun Long.asAnalyticsValue(): AnalyticsValue = AnalyticsValue.NumberValue(this)

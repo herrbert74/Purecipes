@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
@@ -26,6 +29,7 @@ class SignInViewModel(
 	private val signInWithEmail: SignInWithEmailUseCase,
 	private val resendEmailVerification: ResendEmailVerificationUseCase,
 	private val sendPasswordResetEmail: SendPasswordResetEmailUseCase,
+	private val trackEvent: TrackEventUseCase,
 	@Assisted initialEmail: String,
 	@Assisted showRegistrationSuccessMessage: Boolean,
 ) : ViewModel() {
@@ -74,6 +78,9 @@ class SignInViewModel(
 			isBusy = true
 			val result = signInWithEmail(email, password)
 			setSignInError(result.getError()?.message)
+			if (result.getError() == null) {
+				trackEvent(AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.EMAIL))
+			}
 			isBusy = false
 		}
 	}

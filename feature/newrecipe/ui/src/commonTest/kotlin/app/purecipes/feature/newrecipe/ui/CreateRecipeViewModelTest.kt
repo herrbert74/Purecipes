@@ -1,5 +1,6 @@
 package app.purecipes.feature.newrecipe.ui
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
@@ -49,8 +50,12 @@ class CreateRecipeViewModelTest {
 
 	@Test
 	fun `save adds a new recipe to the list`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeCreatedRecipeRepository()
-		val viewModel = createViewModel(repository = repository)
+		val viewModel = createViewModel(
+			repository = repository,
+			analyticsRepository = analyticsRepository,
+		)
 
 		advanceUntilIdle()
 		viewModel.onTitleChange("Tomato Pasta")
@@ -67,6 +72,13 @@ class CreateRecipeViewModelTest {
 		viewModel.recipes.single().title shouldBe "Tomato Pasta"
 		viewModel.successMessage shouldBe "Recipe uploaded."
 		viewModel.formErrorMessage shouldBe null
+		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.RecipeSaved(
+			recipeId = viewModel.recipes.single().id,
+			isEditing = false,
+			hasPhoto = false,
+			ingredientCount = 2,
+			stepCount = 2,
+		)
 	}
 
 	@Test
@@ -138,12 +150,13 @@ class CreateRecipeViewModelTest {
 	private fun createViewModel(
 		repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
 		estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
+		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	): CreateRecipeViewModel =
 		CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
 			estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
-			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			trackEvent = TrackEventUseCase(analyticsRepository),
 		)
 }
 

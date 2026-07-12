@@ -5,9 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -39,6 +42,7 @@ class AuthenticationViewModel(
 	private val signOut: SignOutUseCase,
 	observeConsentState: ObserveConsentStateUseCase,
 	private val showConsentForm: ShowConsentFormUseCase,
+	private val trackEvent: TrackEventUseCase,
 ) : ViewModel() {
 
 	val consentState: StateFlow<ConsentState> = observeConsentState()
@@ -92,6 +96,9 @@ class AuthenticationViewModel(
 				),
 			)
 			message = result.getError()?.message
+			if (result.getError() == null) {
+				trackEvent(AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.GOOGLE))
+			}
 			isBusy = false
 		}
 	}
@@ -117,6 +124,9 @@ class AuthenticationViewModel(
 				),
 			)
 			message = result.getError()?.message
+			if (result.getError() == null) {
+				trackEvent(AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.FACEBOOK))
+			}
 			isBusy = false
 		}
 	}
@@ -136,6 +146,9 @@ class AuthenticationViewModel(
 			isBusy = true
 			val signInResult = signInWithExternalProvider(profile)
 			message = signInResult.getError()?.message
+			if (signInResult.getError() == null) {
+				trackEvent(AnalyticsEvent.SignInCompleted(method = provider.toAnalyticsAuthMethod()))
+			}
 			isBusy = false
 		}
 	}
@@ -144,6 +157,7 @@ class AuthenticationViewModel(
 		viewModelScope.launch {
 			isBusy = true
 			signOut.invoke()
+			trackEvent(AnalyticsEvent.SignOut)
 			isBusy = false
 		}
 	}
@@ -164,5 +178,14 @@ private fun AuthProvider.providerDisplayName(): String {
 		AuthProvider.GOOGLE -> "Google"
 		AuthProvider.APPLE -> "Apple"
 		AuthProvider.FACEBOOK -> "Facebook"
+	}
+}
+
+private fun AuthProvider.toAnalyticsAuthMethod(): String {
+	return when (this) {
+		AuthProvider.EMAIL -> AnalyticsAuthMethod.EMAIL
+		AuthProvider.GOOGLE -> AnalyticsAuthMethod.GOOGLE
+		AuthProvider.APPLE -> AnalyticsAuthMethod.APPLE
+		AuthProvider.FACEBOOK -> AnalyticsAuthMethod.FACEBOOK
 	}
 }
