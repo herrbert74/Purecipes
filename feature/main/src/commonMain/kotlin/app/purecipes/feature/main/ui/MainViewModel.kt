@@ -13,8 +13,14 @@ import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
+import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
+import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
+import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -54,6 +60,7 @@ class MainViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val refreshConsent: RefreshConsentUseCase,
 	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	private val setGlobalProperties: SetGlobalPropertiesUseCase,
 	trackScreenView: TrackScreenViewUseCase,
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
@@ -135,6 +142,11 @@ class MainViewModel(
 			return
 		}
 		isStarted = true
+		setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue(AnalyticsActiveTab.SEARCH),
+			),
+		)
 		viewModelScope.launch {
 			refreshConsent()
 		}
@@ -233,7 +245,7 @@ class MainViewModel(
 	}
 
 	fun onRecipeSelected(recipeId: Int) {
-		openRecipeDetails(recipeId)
+		openRecipeDetails(recipeId = recipeId, origin = analyticsOriginForSelectedTab())
 	}
 
 	fun onDeepLink(link: PurecipesLink) {
@@ -245,17 +257,25 @@ class MainViewModel(
 
 	private fun navigateToRecipe(recipeId: Int) {
 		selectTab(MainTabStackId.Search)
-		openRecipeDetails(recipeId, stackFor(MainTabStackId.Search))
+		openRecipeDetails(
+			recipeId = recipeId,
+			stack = stackFor(MainTabStackId.Search),
+			origin = AnalyticsOrigin.DEEP_LINK,
+		)
 	}
 
-	private fun openRecipeDetails(recipeId: Int, stack: NavBackStack<NavKey> = activeStack) {
+	private fun openRecipeDetails(
+		recipeId: Int,
+		stack: NavBackStack<NavKey> = activeStack,
+		origin: AnalyticsOrigin,
+	) {
 		while (
 			stack.lastOrNull() is RecipeDetailsDestination ||
 			stack.lastOrNull() is RecipeCookingDestination
 		) {
 			stack.removeAt(stack.lastIndex)
 		}
-		stack += RecipeDetailsDestination(recipeId)
+		stack += RecipeDetailsDestination(recipeId = recipeId, origin = origin.value)
 	}
 
 	private fun navigateToCookbookShare(token: String) {
@@ -353,6 +373,17 @@ class MainViewModel(
 		}
 		previousSessionKey = sessionKey
 		setAnalyticsUserId(sessionKey)
+		setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.USER_STATE to AnalyticsValue.TextValue(
+					if (sessionKey != null) {
+						AnalyticsUserState.LOGGED_IN
+					} else {
+						AnalyticsUserState.ANONYMOUS
+					},
+				),
+			),
+		)
 		viewModelScope.launch {
 			syncSubscriptionUserId(sessionKey)
 		}
@@ -394,6 +425,18 @@ class MainViewModel(
 
 	private fun selectTab(stackId: MainTabStackId) {
 		selectedTab = mainTabs.first { it.stackId == stackId }
+		setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue(stackId.toAnalyticsActiveTab()),
+			),
+		)
+	}
+
+	private fun analyticsOriginForSelectedTab(): AnalyticsOrigin = when (selectedTab.stackId) {
+		MainTabStackId.Search -> AnalyticsOrigin.SEARCH
+		MainTabStackId.Favorites -> AnalyticsOrigin.FAVORITES
+		MainTabStackId.Create -> AnalyticsOrigin.CREATE_RECIPE
+		MainTabStackId.Account -> AnalyticsOrigin.ACCOUNT
 	}
 
 	private fun tabRootDestination(tab: MainTab): NavKey = tabRootForStack(tab.stackId)

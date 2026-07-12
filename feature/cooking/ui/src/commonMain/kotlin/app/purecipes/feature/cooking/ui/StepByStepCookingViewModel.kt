@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -94,7 +95,12 @@ class StepByStepCookingViewModel(
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
 			if (recipeDetails != null) {
-				trackEvent(AnalyticsEvent.CookingStarted(recipeId))
+				trackEvent(
+					AnalyticsEvent.CookingStarted(
+						recipeId = recipeId,
+						origin = AnalyticsOrigin.RECIPE_DETAILS,
+					),
+				)
 			}
 			errorMessage = outcome.getError()?.message
 			currentStepIndex = 0

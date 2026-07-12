@@ -9,5 +9,7 @@ interface AnalyticsRepository {
 
 	fun trackScreenView(screenName: String, properties: Map<String, AnalyticsValue>)
 
+	fun setGlobalProperties(properties: Map<String, AnalyticsValue>)
+
 	fun setUserId(userId: String?)
 }

@@ -2,8 +2,12 @@ package app.purecipes.feature.analytics.data.repository
 
 import app.purecipes.feature.analytics.data.datasource.AnalyticsDataSource
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.shared.data.config.PurecipesBuildType
+import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,7 +26,9 @@ class AnalyticsAccessorTest {
 			consentRepository = FakeConsentRepository(ConsentState.DENIED),
 		)
 
-		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 42))
+		accessor.trackEvent(
+			AnalyticsEvent.RecipeViewed(recipeId = 42, origin = AnalyticsOrigin.SEARCH),
+		)
 
 		dataSource.lastTrackedEventName shouldBe null
 	}
@@ -35,7 +41,9 @@ class AnalyticsAccessorTest {
 			consentRepository = FakeConsentRepository(ConsentState.UNKNOWN),
 		)
 
-		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
+		accessor.trackEvent(
+			AnalyticsEvent.RecipeViewed(recipeId = 1, origin = AnalyticsOrigin.SEARCH),
+		)
 
 		dataSource.lastTrackedEventName shouldBe null
 	}
@@ -48,7 +56,9 @@ class AnalyticsAccessorTest {
 			consentRepository = FakeConsentRepository(ConsentState.REQUIRED),
 		)
 
-		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
+		accessor.trackEvent(
+			AnalyticsEvent.RecipeViewed(recipeId = 1, origin = AnalyticsOrigin.SEARCH),
+		)
 
 		dataSource.lastTrackedEventName shouldBe null
 	}
@@ -61,12 +71,19 @@ class AnalyticsAccessorTest {
 			consentRepository = FakeConsentRepository(ConsentState.OBTAINED),
 		)
 
-		accessor.trackEvent(AnalyticsEvent.FavoriteChanged(recipeId = 7, isFavorite = true))
+		accessor.trackEvent(
+			AnalyticsEvent.FavoriteChanged(
+				recipeId = 7,
+				isFavorite = true,
+				origin = AnalyticsOrigin.RECIPE_DETAILS,
+			),
+		)
 
 		dataSource.lastTrackedEventName shouldBe "favorite_changed"
 		dataSource.lastTrackedProperties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7),
 			"is_favorite" to AnalyticsValue.BooleanValue(true),
+			"origin" to AnalyticsValue.TextValue("recipe_details"),
 		)
 	}
 
@@ -79,7 +96,9 @@ class AnalyticsAccessorTest {
 			consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
 		)
 
-		accessor.trackEvent(AnalyticsEvent.CookingStarted(recipeId = 5))
+		accessor.trackEvent(
+			AnalyticsEvent.CookingStarted(recipeId = 5, origin = AnalyticsOrigin.RECIPE_DETAILS),
+		)
 
 		first.lastTrackedEventName shouldBe "cooking_started"
 		second.lastTrackedEventName shouldBe "cooking_started"
@@ -94,7 +113,9 @@ class AnalyticsAccessorTest {
 		)
 		val enabledCallsAfterInit = dataSource.setTrackingEnabledCallCount
 
-		accessor.trackEvent(AnalyticsEvent.RecipeViewed(recipeId = 1))
+		accessor.trackEvent(
+			AnalyticsEvent.RecipeViewed(recipeId = 1, origin = AnalyticsOrigin.SEARCH),
+		)
 
 		dataSource.setTrackingEnabledCallCount shouldBe enabledCallsAfterInit
 		dataSource.lastTrackedEventName shouldBe "recipe_viewed"
@@ -171,6 +192,59 @@ class AnalyticsAccessorTest {
 	}
 
 	@Test
+	fun `init sets static global properties`() = runAnalyticsTest {
+		val dataSource = RecordingAnalyticsDataSource()
+		createAccessor(
+			analyticsDataSources = setOf(dataSource),
+			consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
+		)
+
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.ENVIRONMENT) shouldBe
+			AnalyticsValue.TextValue("debug")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.PLATFORM) shouldBe
+			AnalyticsValue.TextValue("desktop")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.APP_VERSION) shouldBe
+			AnalyticsValue.TextValue("1.2.3-test")
+	}
+
+	@Test
+	fun `setGlobalProperties merges into existing globals`() = runAnalyticsTest {
+		val dataSource = RecordingAnalyticsDataSource()
+		val accessor = createAccessor(
+			analyticsDataSources = setOf(dataSource),
+			consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
+		)
+
+		accessor.setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.USER_STATE to AnalyticsValue.TextValue("logged_in"),
+				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue("search"),
+			),
+		)
+
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.ENVIRONMENT) shouldBe
+			AnalyticsValue.TextValue("debug")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.USER_STATE) shouldBe
+			AnalyticsValue.TextValue("logged_in")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.ACTIVE_TAB) shouldBe
+			AnalyticsValue.TextValue("search")
+
+		accessor.setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue("favorites"),
+				AnalyticsGlobalProperty.CURRENT_SCREEN to AnalyticsValue.TextValue("favorites"),
+			),
+		)
+
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.USER_STATE) shouldBe
+			AnalyticsValue.TextValue("logged_in")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.ACTIVE_TAB) shouldBe
+			AnalyticsValue.TextValue("favorites")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.CURRENT_SCREEN) shouldBe
+			AnalyticsValue.TextValue("favorites")
+	}
+
+	@Test
 	fun `setUserId propagates user id when consent allows analytics`() = runAnalyticsTest {
 		val dataSource = RecordingAnalyticsDataSource()
 		val accessor = createAccessor(
@@ -212,6 +286,13 @@ class AnalyticsAccessorTest {
 			return AnalyticsAccessor(
 				analyticsDataSources = analyticsDataSources,
 				consentRepository = consentRepository,
+				purecipesConfig = object : PurecipesConfig {
+					override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
+
+					override fun versionName(): String = "1.2.3-test"
+
+					override fun versionCode(): Long = 123L
+				},
 				observationScope = observationScope,
 			)
 		}

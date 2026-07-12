@@ -2,6 +2,7 @@ package app.purecipes.feature.recipedetails.ui
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.FavoritesRepository
@@ -78,6 +79,7 @@ class RecipeDetailsViewModelTest {
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -115,6 +117,7 @@ class RecipeDetailsViewModelTest {
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -143,6 +146,7 @@ class RecipeDetailsViewModelTest {
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -172,6 +176,7 @@ class RecipeDetailsViewModelTest {
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -204,6 +209,7 @@ class RecipeDetailsViewModelTest {
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -260,6 +266,7 @@ class RecipeDetailsViewModelTest {
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),

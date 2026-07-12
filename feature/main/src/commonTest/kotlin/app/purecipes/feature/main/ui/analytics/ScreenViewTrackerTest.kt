@@ -1,5 +1,7 @@
 package app.purecipes.feature.main.ui.analytics
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.AnalyticsScreenName
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
@@ -30,11 +32,13 @@ class ScreenViewTrackerTest {
 		)
 		analyticsRepository.trackedScreenViews.map { it.properties["origin"] } shouldBe listOf(
 			null,
-			AnalyticsValue.TextValue(AnalyticsScreenName.SEARCH),
-			AnalyticsValue.TextValue(AnalyticsScreenName.RECIPE_DETAILS),
-			AnalyticsValue.TextValue(AnalyticsScreenName.COOKING),
-			AnalyticsValue.TextValue(AnalyticsScreenName.RECIPE_DETAILS),
+			AnalyticsValue.TextValue(AnalyticsOrigin.SEARCH.value),
+			AnalyticsValue.TextValue(AnalyticsOrigin.RECIPE_DETAILS.value),
+			AnalyticsValue.TextValue(AnalyticsOrigin.COOKING.value),
+			AnalyticsValue.TextValue(AnalyticsOrigin.RECIPE_DETAILS.value),
 		)
+		analyticsRepository.globalProperties[AnalyticsGlobalProperty.CURRENT_SCREEN] shouldBe
+			AnalyticsValue.TextValue(AnalyticsScreenName.SEARCH)
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
@@ -79,6 +80,8 @@ interface CommonAppGraph :
 	val refreshConsentUseCase: RefreshConsentUseCase
 
 	val setAnalyticsUserIdUseCase: SetAnalyticsUserIdUseCase
+
+	val setGlobalPropertiesUseCase: SetGlobalPropertiesUseCase
 
 	val showConsentFormUseCase: ShowConsentFormUseCase
 

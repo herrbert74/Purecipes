@@ -1,5 +1,6 @@
 package app.purecipes.feature.main.ui.analytics
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 
 internal class ScreenViewTracker(
@@ -12,7 +13,7 @@ internal class ScreenViewTracker(
 		if (screenName == lastScreenName) {
 			return
 		}
-		val origin = lastScreenName
+		val origin = lastScreenName?.let(AnalyticsOrigin::fromValue)
 		lastScreenName = screenName
 		trackScreenView(screenName = screenName, origin = origin)
 	}

@@ -8,6 +8,7 @@ import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -49,6 +50,7 @@ internal fun mainViewModelForTest(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
 		refreshConsent = RefreshConsentUseCase(consentRepository),
 		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
+		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
 		trackScreenView = TrackScreenViewUseCase(analyticsRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(incomingLinkRepository),

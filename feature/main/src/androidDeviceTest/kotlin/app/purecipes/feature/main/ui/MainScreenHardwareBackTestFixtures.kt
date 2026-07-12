@@ -6,9 +6,11 @@ import app.purecipes.feature.ads.domain.repository.AdsRepository
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -136,6 +138,7 @@ internal fun mainViewModelForDeviceTest(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
 		refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
 		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
+		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
 		trackScreenView = TrackScreenViewUseCase(analyticsRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
@@ -222,6 +225,7 @@ internal fun recipeDetailsViewModelForDeviceTest(
 	),
 	recipeId = recipeId,
 	sessionKey = sessionKey,
+	origin = AnalyticsOrigin.SEARCH.value,
 )
 
 internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesViewModel(

@@ -19,28 +19,45 @@ class AnalyticsEventTest {
 
 	@Test
 	fun `RecipeViewed has correct event name and properties`() {
-		val event = AnalyticsEvent.RecipeViewed(recipeId = 42)
+		val event = AnalyticsEvent.RecipeViewed(
+			recipeId = 42,
+			origin = AnalyticsOrigin.SEARCH,
+		)
 
 		event.eventName shouldBe "recipe_viewed"
-		event.properties shouldBe mapOf("recipe_id" to AnalyticsValue.NumberValue(42L))
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(42L),
+			"origin" to AnalyticsValue.TextValue("search"),
+		)
 	}
 
 	@Test
 	fun `CookingStarted has correct event name and properties`() {
-		val event = AnalyticsEvent.CookingStarted(recipeId = 7)
+		val event = AnalyticsEvent.CookingStarted(
+			recipeId = 7,
+			origin = AnalyticsOrigin.RECIPE_DETAILS,
+		)
 
 		event.eventName shouldBe "cooking_started"
-		event.properties shouldBe mapOf("recipe_id" to AnalyticsValue.NumberValue(7L))
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(7L),
+			"origin" to AnalyticsValue.TextValue("recipe_details"),
+		)
 	}
 
 	@Test
 	fun `FavoriteChanged has correct event name and properties`() {
-		val event = AnalyticsEvent.FavoriteChanged(recipeId = 3, isFavorite = false)
+		val event = AnalyticsEvent.FavoriteChanged(
+			recipeId = 3,
+			isFavorite = false,
+			origin = AnalyticsOrigin.RECIPE_DETAILS,
+		)
 
 		event.eventName shouldBe "favorite_changed"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(3L),
 			"is_favorite" to AnalyticsValue.BooleanValue(false),
+			"origin" to AnalyticsValue.TextValue("recipe_details"),
 		)
 	}
 

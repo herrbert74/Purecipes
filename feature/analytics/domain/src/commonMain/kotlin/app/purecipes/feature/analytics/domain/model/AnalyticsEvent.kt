@@ -1,6 +1,7 @@
 package app.purecipes.feature.analytics.domain.model
 
 sealed interface AnalyticsEvent {
+
 	val eventName: String
 
 	val properties: Map<String, AnalyticsValue>
@@ -9,6 +10,7 @@ sealed interface AnalyticsEvent {
 		val query: String,
 		val resultCount: Int,
 	) : AnalyticsEvent {
+
 		override val eventName = "search_performed"
 
 		override val properties = mapOf(
@@ -18,31 +20,44 @@ sealed interface AnalyticsEvent {
 		)
 	}
 
-	data class RecipeViewed(val recipeId: Int) : AnalyticsEvent {
+	data class RecipeViewed(
+		val recipeId: Int,
+		val origin: AnalyticsOrigin,
+	) : AnalyticsEvent {
+
 		override val eventName = "recipe_viewed"
 
 		override val properties = mapOf(
 			"recipe_id" to recipeId.asAnalyticsValue(),
+			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
 	}
 
-	data class CookingStarted(val recipeId: Int) : AnalyticsEvent {
+	data class CookingStarted(
+		val recipeId: Int,
+		val origin: AnalyticsOrigin,
+	) : AnalyticsEvent {
+
 		override val eventName = "cooking_started"
 
 		override val properties = mapOf(
 			"recipe_id" to recipeId.asAnalyticsValue(),
+			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
 	}
 
 	data class FavoriteChanged(
 		val recipeId: Int,
 		val isFavorite: Boolean,
+		val origin: AnalyticsOrigin,
 	) : AnalyticsEvent {
+
 		override val eventName = "favorite_changed"
 
 		override val properties = mapOf(
 			"recipe_id" to recipeId.asAnalyticsValue(),
 			"is_favorite" to isFavorite.asAnalyticsValue(),
+			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
 	}
 
@@ -50,6 +65,7 @@ sealed interface AnalyticsEvent {
 		val recipeId: Int,
 		val isEditing: Boolean,
 	) : AnalyticsEvent {
+
 		override val eventName = "recipe_saved"
 
 		override val properties = mapOf(
