@@ -4,7 +4,6 @@ import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.InitializeAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
-import app.purecipes.feature.analytics.data.repository.AnalyticsDataModule
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
@@ -68,7 +67,6 @@ import app.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 
 interface CommonAppGraph :
-	AnalyticsDataModule,
 	AuthenticationDataModule,
 	DataNetworkModule,
 	ViewModelGraph {

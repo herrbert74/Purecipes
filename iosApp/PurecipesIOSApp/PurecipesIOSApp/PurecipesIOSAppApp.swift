@@ -125,6 +125,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             },
             setUserId: { [weak self] userId in
                 self?.setMixpanelUserId(userId)
+            },
+            registerSuperProperties: { [weak self] propertiesJSON in
+                self?.registerMixpanelSuperProperties(propertiesJSON: propertiesJSON)
             }
         )
 
@@ -245,6 +248,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         } else {
             mixpanelInstance?.reset()
         }
+        #endif
+    }
+
+    private func registerMixpanelSuperProperties(propertiesJSON: String) {
+        #if canImport(Mixpanel)
+        guard let properties = mixpanelProperties(from: propertiesJSON) else {
+            return
+        }
+        mixpanelInstance?.registerSuperProperties(properties)
         #endif
     }
 

@@ -3,8 +3,13 @@ package app.purecipes.feature.analytics.data.datasource
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.runtime.IosAnalyticsNativeBridge
 import app.purecipes.shared.data.config.PurecipesConfig
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoSet
+import dev.zacsweers.metro.Inject
 
-internal actual class MixpanelAnalyticsDataSource actual constructor(
+@Inject
+@ContributesIntoSet(AppScope::class)
+actual class MixpanelAnalyticsDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
 ) : AnalyticsDataSource {
 
@@ -21,6 +26,25 @@ internal actual class MixpanelAnalyticsDataSource actual constructor(
 		}
 		initializeIfNeeded()
 		IosAnalyticsNativeBridge.trackMixpanelEvent(eventName, properties.toAnalyticsJson())
+	}
+
+	actual override fun trackScreenView(screenName: String, properties: Map<String, AnalyticsValue>) {
+		if (!isTrackingEnabled) {
+			return
+		}
+		if (token.isBlank()) {
+			return
+		}
+		initializeIfNeeded()
+		IosAnalyticsNativeBridge.trackMixpanelEvent(screenName, properties.toAnalyticsJson())
+	}
+
+	actual override fun setGlobalProperties(properties: Map<String, AnalyticsValue>) {
+		if (token.isBlank()) {
+			return
+		}
+		initializeIfNeeded()
+		IosAnalyticsNativeBridge.registerMixpanelSuperProperties(properties.toAnalyticsJson())
 	}
 
 	actual override fun setTrackingEnabled(isEnabled: Boolean) {
