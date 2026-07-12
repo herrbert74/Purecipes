@@ -84,9 +84,9 @@ Non-goals: adding new analytics vendors, server-side analytics, A/B testing (see
 ### R1: Debug/release separation
 
 - Support per-build-type Mixpanel tokens (`purecipes.mixpanelProjectToken.debug` / `.staging` / `.release` Gradle properties with fallback to the current single property) on all platforms (BuildConfig, BuildKonfig, wasm).
-- Create a separate Firebase project (or at minimum separate GA4 property) for non-release builds; ship distinct `google-services.json` per build type source set (the file layout already supports this — the debug file currently just duplicates release).
+- Use a separate Firebase project for non-release builds with distinct `google-services.json` per build type source set (done; debug no longer duplicates release).
 - Add an `environment` global property (`debug`/`staging`/`release`, from `PurecipesConfig.buildType()`) to every event so misrouted traffic remains filterable.
-- Disable Crashlytics collection in debug builds (`setCrashlyticsCollectionEnabled(false)` / plist equivalent), keeping it on for staging and release.
+- Keep Crashlytics collection enabled in debug (debug traffic goes to the separate Firebase project).
 
 ### R2: Abstraction hardening
 
@@ -157,7 +157,7 @@ Rules: no PII in properties (no emails, no free-text user content beyond the exi
 
 ## Implementation plan (serial steps, one commit each)
 
-1. **Build-type separation** — per-build-type Mixpanel tokens (Android BuildConfig, iOS/wasm BuildKonfig, umbrella Gradle), distinct `google-services.json` for debug, `environment` derivation from `PurecipesConfig`, disable Crashlytics collection in debug. Validation: `detektAll`, Android debug+release assemble.
+1. **Build-type separation** — per-build-type Mixpanel tokens (Android BuildConfig, iOS/wasm BuildKonfig, umbrella Gradle), distinct `google-services.json` for debug, `environment` derivation from `PurecipesConfig` (Crashlytics stays enabled in debug against the debug Firebase project). Validation: `detektAll`, Android debug+release assemble.
 2. **Abstraction hardening** — extend `AnalyticsDataSource` (screen views, global properties), Metro multibinding for data sources, reactive consent enablement in `AnalyticsAccessor`. Validation: `feature:analytics` unit tests (`jvmTest`), `detektAll`.
 3. **Screen view tracking** — destination→screen-name mapping, back-stack observation in `MainViewModel`/`MainScreen`, `ScreenViewed` event, disable automatic Activity reporting, unit tests for mapping and dedup behavior. Validation: main module tests + `connectedAndroidTest`.
 4. **Global properties** — global property provider, `user_state` + `active_tab` + `current_screen` updates, `origin` parameter on navigation-triggered events, update existing call sites and tests.
@@ -177,7 +177,7 @@ Each step follows the repo's serial-review rule: implement, validate, stop for r
 
 ## Risks and open questions
 
-- **Firebase project split**: creating a second Firebase project needs console access and new `google-services.json`/`GoogleService-Info.plist` provisioning for debug — decide project-per-environment vs. GA4-property-per-environment.
+- **Firebase project split**: debug Firebase project and Android `google-services.json` are in place; iOS `GoogleService-Info.plist` for debug may still need provisioning if iOS debug should leave the production project.
 - **Mixpanel free-tier limits**: separate debug project may be preferable to filtering by `environment` to protect quota.
 - **Event volume**: `cooking_step_viewed` can be high-frequency; consider sampling or only tracking first/last steps if volume becomes a cost issue.
 - **Wasm/desktop parity**: jvm data sources are no-ops today; decide whether desktop should remain untracked.

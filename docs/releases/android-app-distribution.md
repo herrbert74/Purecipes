@@ -24,6 +24,10 @@ Prepare releases locally with the GitHub MCP server: [`.agents/instructions/andr
 | `PURECIPES_SIGNING_KEY_ALIAS` | Key alias |
 | `PURECIPES_SIGNING_KEY_PASSWORD` | Key password |
 | `PURECIPES_GOOGLE_WEB_CLIENT_ID` | Google Sign-In web client ID (Gradle `BuildConfig`; same value as `client_type` 3 in `google-services.json`, not a secret but stored here for CI) |
+| `PURECIPES_MIXPANEL_PROJECT_TOKEN` | Mixpanel project token for release builds (Gradle `BuildConfig` via env fallback; use the release Mixpanel project) |
+| `PURECIPES_ADMOB_APP_ID` | Production AdMob app ID (`ca-app-pub-…~…`; Gradle `BuildConfig` + AndroidManifest placeholder) |
+| `PURECIPES_ADMOB_BANNER_AD_UNIT_ID` | Production AdMob banner ad unit ID (`ca-app-pub-…/…`) |
+| `PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID` | Production AdMob interstitial ad unit ID (`ca-app-pub-…/…`) |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | App Distribution upload |
 | `GRADLE_ENCRYPTION_KEY` | Optional Gradle build scan cache |
 

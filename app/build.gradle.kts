@@ -33,7 +33,6 @@ android {
 		versionName = libs.versions.versionName.get()
 		buildConfigField("String", "PURECIPES_GOOGLE_WEB_CLIENT_ID", googleWebClientId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
-		buildConfigField("String", "PURECIPES_MIXPANEL_PROJECT_TOKEN", mixpanelProjectToken().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_REVENUECAT_TEST_API_KEY", revenueCatTestApiKey().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_ADMOB_APP_ID", admobAppId().asBuildConfigString())
@@ -69,6 +68,11 @@ android {
 				"PURECIPES_DEBUG_BACKEND_HOST",
 				purecipesDebugBackendHost().asBuildConfigString(),
 			)
+			buildConfigField(
+				"String",
+				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
+				mixpanelProjectToken("debug").asBuildConfigString(),
+			)
 		}
 		release {
 			isMinifyEnabled = true
@@ -76,6 +80,11 @@ android {
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+			buildConfigField(
+				"String",
+				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
+				mixpanelProjectToken("release").asBuildConfigString(),
+			)
 			firebaseAppDistribution {
 				artifactType = "APK"
 				releaseNotesFile = rootProject.layout.buildDirectory.file("release-notes.txt").get().asFile.path
@@ -90,6 +99,11 @@ android {
 			applicationIdSuffix = ".staging"
 			signingConfig = signingConfigs.getByName("debug")
 			matchingFallbacks += listOf("release")
+			buildConfigField(
+				"String",
+				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
+				mixpanelProjectToken("staging").asBuildConfigString(),
+			)
 		}
 	}
 	kotlin {
@@ -192,8 +206,9 @@ private fun Project.gaMeasurementId(): String {
 		.orEmpty()
 }
 
-private fun Project.mixpanelProjectToken(): String {
-	return providers.gradleProperty("purecipes.mixpanelProjectToken")
+private fun Project.mixpanelProjectToken(buildType: String): String {
+	return providers.gradleProperty("purecipes.mixpanelProjectToken.$buildType")
+		.orElse(providers.gradleProperty("purecipes.mixpanelProjectToken"))
 		.orElse(providers.gradleProperty("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
 		.orElse(providers.environmentVariable("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
 		.orNull

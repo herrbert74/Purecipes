@@ -30,8 +30,9 @@ private fun Project.gaMeasurementId(): String {
 		.orEmpty()
 }
 
-private fun Project.mixpanelProjectToken(): String {
-	return providers.gradleProperty("purecipes.mixpanelProjectToken")
+private fun Project.mixpanelProjectToken(buildType: String = currentPurecipesBuildType()): String {
+	return providers.gradleProperty("purecipes.mixpanelProjectToken.$buildType")
+		.orElse(providers.gradleProperty("purecipes.mixpanelProjectToken"))
 		.orElse(providers.gradleProperty("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
 		.orElse(providers.environmentVariable("PURECIPES_MIXPANEL_PROJECT_TOKEN"))
 		.orNull

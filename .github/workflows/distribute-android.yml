@@ -76,9 +76,39 @@ jobs:
             exit 1
           fi
 
+      - name: Require Mixpanel project token for release build
+        env:
+          PURECIPES_MIXPANEL_PROJECT_TOKEN: ${{ secrets.PURECIPES_MIXPANEL_PROJECT_TOKEN }}
+        run: |
+          if [[ -z "${PURECIPES_MIXPANEL_PROJECT_TOKEN}" ]]; then
+            echo "::error::PURECIPES_MIXPANEL_PROJECT_TOKEN repository secret is required for release builds (Mixpanel)." >&2
+            exit 1
+          fi
+
+      - name: Require AdMob IDs for release build
+        env:
+          PURECIPES_ADMOB_APP_ID: ${{ secrets.PURECIPES_ADMOB_APP_ID }}
+          PURECIPES_ADMOB_BANNER_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_BANNER_AD_UNIT_ID }}
+          PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID }}
+        run: |
+          missing=0
+          for name in PURECIPES_ADMOB_APP_ID PURECIPES_ADMOB_BANNER_AD_UNIT_ID PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::${name} repository secret is required for release builds (production AdMob)." >&2
+              missing=1
+            fi
+          done
+          if [[ "${missing}" -ne 0 ]]; then
+            exit 1
+          fi
+
       - name: Build and distribute release APK
         env:
           PURECIPES_GOOGLE_WEB_CLIENT_ID: ${{ secrets.PURECIPES_GOOGLE_WEB_CLIENT_ID }}
+          PURECIPES_MIXPANEL_PROJECT_TOKEN: ${{ secrets.PURECIPES_MIXPANEL_PROJECT_TOKEN }}
+          PURECIPES_ADMOB_APP_ID: ${{ secrets.PURECIPES_ADMOB_APP_ID }}
+          PURECIPES_ADMOB_BANNER_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_BANNER_AD_UNIT_ID }}
+          PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID }}
           PURECIPES_SIGNING_STORE_PASSWORD: ${{ secrets.PURECIPES_SIGNING_STORE_PASSWORD }}
           PURECIPES_SIGNING_KEY_ALIAS: ${{ secrets.PURECIPES_SIGNING_KEY_ALIAS }}
           PURECIPES_SIGNING_KEY_PASSWORD: ${{ secrets.PURECIPES_SIGNING_KEY_PASSWORD }}

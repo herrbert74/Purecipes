@@ -90,11 +90,17 @@ The app reads analytics configuration from the platform-specific build config la
 * Android uses `BuildConfig` fields from `app/build.gradle.kts`.
 * iOS and Wasm use `BuildKonfig` values from `umbrella/build.gradle.kts`.
 * The same config keys are used across targets:
-  * `PURECIPES_GA_MEASUREMENT_ID` / `purecipesGaMeasurementId`
-  * `PURECIPES_MIXPANEL_PROJECT_TOKEN` / `purecipesMixpanelProjectToken`
-  * `PURECIPES_USERCENTRICS_SETTINGS_ID` / `purecipesUsercentricsSettingsId`
+  * `PURECIPES_GA_MEASUREMENT_ID` / `purecipes.gaMeasurementId`
+  * Mixpanel project token (per build type, with fallback):
+    * `purecipes.mixpanelProjectToken.debug` / `.staging` / `.release`
+    * fallback: `purecipes.mixpanelProjectToken` or `PURECIPES_MIXPANEL_PROJECT_TOKEN`
+  * `PURECIPES_USERCENTRICS_SETTINGS_ID` / `purecipes.usercentricsSettingsId`
 
 These values are loaded from either Gradle properties or environment variables.
+
+`PurecipesConfig.environment()` derives `debug` / `staging` / `release` from `buildType()` so later analytics work can attach it as a global property.
+
+Android uses per-build-type Firebase configs (`app/src/debug/google-services.json` and `app/src/release/google-services.json`).
 
 ## 👀 Others
 
