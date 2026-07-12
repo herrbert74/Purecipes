@@ -10,6 +10,7 @@ import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
@@ -86,13 +87,16 @@ internal data class HardwareBackTestEnvironment(
 	val searchViewModel: RecipeSearchViewModel,
 	val recipeDetailsViewModel: RecipeDetailsViewModel,
 	val favoritesViewModel: FavoritesViewModel,
+	val analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	val recipeId: Int = HARDWARE_BACK_TEST_RECIPE_ID,
 )
 
-internal fun hardwareBackTestEnvironment(): HardwareBackTestEnvironment {
+internal fun hardwareBackTestEnvironment(
+	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+): HardwareBackTestEnvironment {
 	val recipeId = HARDWARE_BACK_TEST_RECIPE_ID
 	return HardwareBackTestEnvironment(
-		mainViewModel = mainViewModelForDeviceTest(),
+		mainViewModel = mainViewModelForDeviceTest(analyticsRepository = analyticsRepository),
 		searchViewModel = recipeSearchViewModelForDeviceTest(
 			searchRepository = FakeRecipeSearchRepository(
 				result = Ok(
@@ -119,16 +123,20 @@ internal fun hardwareBackTestEnvironment(): HardwareBackTestEnvironment {
 			),
 		),
 		favoritesViewModel = favoritesViewModelForDeviceTest(),
+		analyticsRepository = analyticsRepository,
 		recipeId = recipeId,
 	)
 }
 
-internal fun mainViewModelForDeviceTest(): MainViewModel {
+internal fun mainViewModelForDeviceTest(
+	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+): MainViewModel {
 	val subscriptionRepository = FakeSubscriptionRepository()
 	return MainViewModel(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
 		refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
-		setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
+		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
+		trackScreenView = TrackScreenViewUseCase(analyticsRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
 		publishWebLaunchLink = PublishWebLaunchLinkUseCase(

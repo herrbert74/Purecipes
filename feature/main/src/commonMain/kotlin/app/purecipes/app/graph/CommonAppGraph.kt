@@ -9,6 +9,7 @@ import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.data.repository.AuthenticationDataModule
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -82,6 +83,8 @@ interface CommonAppGraph :
 	val showConsentFormUseCase: ShowConsentFormUseCase
 
 	val trackEventUseCase: TrackEventUseCase
+
+	val trackScreenViewUseCase: TrackScreenViewUseCase
 
 	val observeAuthenticationStateUseCase: ObserveAuthenticationStateUseCase
 

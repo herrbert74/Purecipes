@@ -101,6 +101,40 @@ class AnalyticsAccessorTest {
 	}
 
 	@Test
+	fun `trackScreenView skips dispatch when consent denies analytics`() = runAnalyticsTest {
+		val dataSource = RecordingAnalyticsDataSource()
+		val accessor = createAccessor(
+			analyticsDataSources = setOf(dataSource),
+			consentRepository = FakeConsentRepository(ConsentState.DENIED),
+		)
+
+		accessor.trackScreenView(
+			screenName = "search",
+			properties = mapOf("origin" to AnalyticsValue.TextValue("favorites")),
+		)
+
+		dataSource.lastScreenViewName shouldBe null
+	}
+
+	@Test
+	fun `trackScreenView dispatches to all data sources when consent allows analytics`() = runAnalyticsTest {
+		val first = RecordingAnalyticsDataSource()
+		val second = RecordingAnalyticsDataSource()
+		val accessor = createAccessor(
+			analyticsDataSources = setOf(first, second),
+			consentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
+		)
+		val properties = mapOf("origin" to AnalyticsValue.TextValue("search"))
+
+		accessor.trackScreenView(screenName = "recipe_details", properties = properties)
+
+		first.lastScreenViewName shouldBe "recipe_details"
+		first.lastScreenViewProperties shouldBe properties
+		second.lastScreenViewName shouldBe "recipe_details"
+		second.lastScreenViewProperties shouldBe properties
+	}
+
+	@Test
 	fun `init applies tracking enabled from current consent`() = runAnalyticsTest {
 		val deniedSource = RecordingAnalyticsDataSource()
 		createAccessor(

@@ -15,6 +15,7 @@ import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
@@ -22,6 +23,7 @@ import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.main.ui.analytics.ScreenViewTracker
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -52,6 +54,7 @@ class MainViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val refreshConsent: RefreshConsentUseCase,
 	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	trackScreenView: TrackScreenViewUseCase,
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
@@ -63,6 +66,8 @@ class MainViewModel(
 ) : ViewModel() {
 
 	val isContentReady: StateFlow<Boolean> = searchReadiness.isReady
+
+	internal val screenViewTracker = ScreenViewTracker(trackScreenView)
 
 	private val tabBackStacks = mutableMapOf<MainTabStackId, NavBackStack<NavKey>>()
 
@@ -246,7 +251,7 @@ class MainViewModel(
 	private fun openRecipeDetails(recipeId: Int, stack: NavBackStack<NavKey> = activeStack) {
 		while (
 			stack.lastOrNull() is RecipeDetailsDestination ||
-				stack.lastOrNull() is RecipeCookingDestination
+			stack.lastOrNull() is RecipeCookingDestination
 		) {
 			stack.removeAt(stack.lastIndex)
 		}
@@ -406,10 +411,12 @@ class MainViewModel(
 				is SearchDestination -> destination
 				else -> SearchDestination()
 			}
+
 			MainTabStackId.Favorites -> when (destination) {
 				is FavoritesDestination -> destination
 				else -> FavoritesDestination()
 			}
+
 			else -> destination
 		}
 

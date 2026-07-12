@@ -11,11 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
@@ -23,6 +21,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.analytics.domain.model.AnalyticsScreenName
 import app.purecipes.feature.favorites.ui.FavoritesScreen
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
@@ -31,65 +30,104 @@ import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.search.ui.navigation.SearchDestination
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class MainScreenHardwareBackTest {
+class MainScreenScreenViewTrackingTest {
 
 	@get:Rule
 	val composeRule = createAndroidComposeRule<ComponentActivity>()
 
 	@Test
-	fun hardwareBackFromRecipeDetailsReturnsToSearch() {
-		val environment = hardwareBackTestEnvironment()
+	fun navigatingAndReturningEmitsScreenViewsIncludingResurface() {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val environment = hardwareBackTestEnvironment(analyticsRepository = analyticsRepository)
 		setUpHarness(environment)
 
-		openRecipeDetails(environment)
-		pressHardwareBack()
+		composeRule.runOnIdle {
+			assertEquals(
+				listOf(AnalyticsScreenName.SEARCH),
+				analyticsRepository.trackedScreenViews.map { it.screenName },
+			)
+		}
 
-		assertSearchResultsCountDisplayed()
-		composeRule.onAllNodesWithText("Start cooking").assertCountEquals(0)
-	}
-
-	@Test
-	fun switchingTabsPreservesSearchTabDepth() {
-		val environment = hardwareBackTestEnvironment()
-		setUpHarness(environment)
-
-		openRecipeDetails(environment)
-		selectMainTab(environment, MainTabStackId.Favorites)
-		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
-		selectMainTab(environment, MainTabStackId.Search)
-
+		composeRule.runOnIdle {
+			environment.mainViewModel.onRecipeSelected(environment.recipeId)
+		}
+		composeRule.waitForIdle()
 		assertRecipeDetailsScreenDisplayed()
-	}
 
-	@Test
-	fun reTappingActiveSearchTabPopsToRoot() {
-		val environment = hardwareBackTestEnvironment()
-		setUpHarness(environment)
+		composeRule.runOnIdle {
+			assertEquals(
+				listOf(
+					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.RECIPE_DETAILS,
+				),
+				analyticsRepository.trackedScreenViews.map { it.screenName },
+			)
+		}
 
-		openRecipeDetails(environment)
-		selectMainTab(environment, MainTabStackId.Search)
-
-		assertSearchResultsCountDisplayed()
-		composeRule.onAllNodesWithText("Start cooking").assertCountEquals(0)
-	}
-
-	@Test
-	fun hardwareBackFromFavoritesRootReturnsToSearch() {
-		val environment = hardwareBackTestEnvironment()
-		setUpHarness(environment)
-
-		selectMainTab(environment, MainTabStackId.Favorites)
+		composeRule.runOnIdle {
+			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		}
+		composeRule.waitForIdle()
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
-		pressHardwareBack()
 
-		assertSearchResultsCountDisplayed()
+		composeRule.runOnIdle {
+			assertEquals(
+				listOf(
+					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.RECIPE_DETAILS,
+					AnalyticsScreenName.FAVORITES,
+				),
+				analyticsRepository.trackedScreenViews.map { it.screenName },
+			)
+		}
+
+		composeRule.runOnIdle {
+			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		}
+		composeRule.waitForIdle()
+		assertRecipeDetailsScreenDisplayed()
+
+		composeRule.runOnIdle {
+			assertEquals(
+				listOf(
+					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.RECIPE_DETAILS,
+					AnalyticsScreenName.FAVORITES,
+					AnalyticsScreenName.RECIPE_DETAILS,
+				),
+				analyticsRepository.trackedScreenViews.map { it.screenName },
+			)
+		}
+
+		composeRule.runOnIdle {
+			composeRule.activity.onBackPressedDispatcher.onBackPressed()
+		}
+		composeRule.waitForIdle()
+		composeRule.onNodeWithText("1 recipes found")
+			.performScrollTo()
+			.assertIsDisplayed()
+
+		composeRule.runOnIdle {
+			assertEquals(
+				listOf(
+					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.RECIPE_DETAILS,
+					AnalyticsScreenName.FAVORITES,
+					AnalyticsScreenName.RECIPE_DETAILS,
+					AnalyticsScreenName.SEARCH,
+				),
+				analyticsRepository.trackedScreenViews.map { it.screenName },
+			)
+		}
 	}
 
 	private fun setUpHarness(environment: HardwareBackTestEnvironment) {
@@ -167,7 +205,7 @@ class MainScreenHardwareBackTest {
 								entry<FavoritesDestination> {
 									FavoritesScreen(
 										modifier = Modifier.fillMaxSize(),
-										sessionKey = "hardware-back-test",
+										sessionKey = "screen-view-test",
 										onRecipeSelect = mainViewModel::onRecipeSelected,
 										viewModel = favoritesViewModel,
 									)
@@ -179,18 +217,6 @@ class MainScreenHardwareBackTest {
 			}
 		}
 		composeRule.waitForIdle()
-		assertSearchResultsCountDisplayed()
-	}
-
-	private fun openRecipeDetails(environment: HardwareBackTestEnvironment) {
-		composeRule.runOnIdle {
-			environment.mainViewModel.onRecipeSelected(environment.recipeId)
-		}
-		composeRule.waitForIdle()
-		assertRecipeDetailsScreenDisplayed()
-	}
-
-	private fun assertSearchResultsCountDisplayed() {
 		composeRule.onNodeWithText("1 recipes found")
 			.performScrollTo()
 			.assertIsDisplayed()
@@ -200,22 +226,5 @@ class MainScreenHardwareBackTest {
 		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION))
 		composeRule.onNodeWithText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION).assertIsDisplayed()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
-			.performScrollToNode(hasText("Start cooking"))
-		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
-	}
-
-	private fun selectMainTab(environment: HardwareBackTestEnvironment, stackId: MainTabStackId) {
-		composeRule.runOnIdle {
-			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == stackId })
-		}
-		composeRule.waitForIdle()
-	}
-
-	private fun pressHardwareBack() {
-		composeRule.runOnIdle {
-			composeRule.activity.onBackPressedDispatcher.onBackPressed()
-		}
-		composeRule.waitForIdle()
 	}
 }
