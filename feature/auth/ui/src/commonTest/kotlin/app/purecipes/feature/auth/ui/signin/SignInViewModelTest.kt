@@ -2,7 +2,11 @@ package app.purecipes.feature.auth.ui.signin
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
+import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -15,6 +19,7 @@ import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
@@ -50,12 +55,13 @@ class SignInViewModelTest {
 	@Test
 	fun `successful email sign in tracks sign in completed`() = runViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
+		val crashRepository = FakeCrashRepository()
 		val repository = FakeAuthenticationRepository(
 			signInWithEmailHandler = { _, _ ->
 				Ok(fakeAuthUser())
 			},
 		)
-		val viewModel = createViewModel(repository, analyticsRepository)
+		val viewModel = createViewModel(repository, analyticsRepository, crashRepository)
 
 		viewModel.onPasswordChange("secret")
 		viewModel.submitSignIn()
@@ -65,6 +71,30 @@ class SignInViewModelTest {
 		analyticsRepository.trackedEvents shouldBe listOf(
 			AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.EMAIL),
 		)
+		crashRepository.breadcrumbs shouldBe listOf(
+			CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.EMAIL),
+		)
+	}
+
+	@Test
+	fun `failed email sign in reports handled exception`() = runViewModelTest {
+		val crashRepository = FakeCrashRepository()
+		val repository = FakeAuthenticationRepository(
+			signInWithEmailHandler = { _, _ ->
+				Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
+			},
+		)
+		val viewModel = createViewModel(repository, crashRepository = crashRepository)
+
+		viewModel.onPasswordChange("secret")
+		viewModel.submitSignIn()
+
+		advanceUntilIdle()
+
+		crashRepository.breadcrumbs shouldBe listOf(
+			CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.EMAIL),
+		)
+		crashRepository.handledExceptions.map { it.message } shouldBe listOf(AnalyticsErrorKind.SERVER_ERROR)
 	}
 
 	@Test
@@ -166,6 +196,7 @@ class SignInViewModelTest {
 	private fun createViewModel(
 		repository: FakeAuthenticationRepository,
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		crashRepository: FakeCrashRepository = FakeCrashRepository(),
 		initialEmail: String = "taylor@example.com",
 		showRegistrationSuccessMessage: Boolean = false,
 	): SignInViewModel {
@@ -174,6 +205,8 @@ class SignInViewModelTest {
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
+			sendHandledException = SendHandledExceptionUseCase(crashRepository),
 			initialEmail = initialEmail,
 			showRegistrationSuccessMessage = showRegistrationSuccessMessage,
 		)

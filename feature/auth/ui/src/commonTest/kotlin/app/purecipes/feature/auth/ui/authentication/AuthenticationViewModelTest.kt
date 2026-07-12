@@ -3,7 +3,9 @@ package app.purecipes.feature.auth.ui.authentication
 import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
@@ -18,6 +20,7 @@ import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.testfixtures.runViewModelTest
 import io.kotest.matchers.shouldBe
@@ -116,6 +119,7 @@ class AuthenticationViewModelTest {
 	private fun createViewModel(
 		repository: FakeAuthenticationRepository = FakeAuthenticationRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		crashRepository: FakeCrashRepository = FakeCrashRepository(),
 	): AuthenticationViewModel {
 		val consentRepository = FakeConsentRepository(ConsentState.OBTAINED)
 		return AuthenticationViewModel(
@@ -128,6 +132,8 @@ class AuthenticationViewModelTest {
 			observeConsentState = ObserveConsentStateUseCase(consentRepository),
 			showConsentForm = ShowConsentFormUseCase(consentRepository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
+			sendHandledException = SendHandledExceptionUseCase(crashRepository),
 		)
 	}
 }

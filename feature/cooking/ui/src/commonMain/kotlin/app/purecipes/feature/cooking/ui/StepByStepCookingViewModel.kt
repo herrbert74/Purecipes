@@ -8,7 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -34,6 +38,8 @@ class StepByStepCookingViewModel(
 	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 	@Assisted private val recipeId: Int,
 ) : ViewModel() {
 
@@ -115,6 +121,7 @@ class StepByStepCookingViewModel(
 			val details = recipeDetails ?: baseRecipeDetails
 			if (details != null) {
 				cookingStartedMark = monotonicTimeSource.markNow()
+				logBreadcrumb(CrashBreadcrumb.cookingStarted(recipeId))
 				trackEvent(
 					AnalyticsEvent.CookingStarted(
 						recipeId = recipeId,
@@ -125,6 +132,7 @@ class StepByStepCookingViewModel(
 			}
 			val error = outcome.getError()
 			if (error != null) {
+				sendHandledException(error.asHandledException())
 				trackEvent(
 					AnalyticsEvent.RecipeLoadFailed(
 						recipeId = recipeId,
@@ -140,6 +148,7 @@ class StepByStepCookingViewModel(
 
 	private fun trackCookingStepViewed() {
 		val details = recipeDetails ?: baseRecipeDetails ?: return
+		logBreadcrumb(CrashBreadcrumb.cookingStepAdvanced(recipeId, currentStepIndex))
 		trackEvent(
 			AnalyticsEvent.CookingStepViewed(
 				recipeId = recipeId,

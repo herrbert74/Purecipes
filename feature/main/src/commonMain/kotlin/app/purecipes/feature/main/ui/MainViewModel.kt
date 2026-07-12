@@ -20,6 +20,8 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashCustomValueUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
@@ -60,6 +62,8 @@ class MainViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val refreshConsent: RefreshConsentUseCase,
 	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	private val setCrashUserId: SetCrashUserIdUseCase,
+	private val setCrashCustomValue: SetCrashCustomValueUseCase,
 	private val setGlobalProperties: SetGlobalPropertiesUseCase,
 	trackScreenView: TrackScreenViewUseCase,
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
@@ -142,11 +146,8 @@ class MainViewModel(
 			return
 		}
 		isStarted = true
-		setGlobalProperties(
-			mapOf(
-				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue(AnalyticsActiveTab.SEARCH),
-			),
-		)
+		setCrashCustomValue(AnalyticsGlobalProperty.ENVIRONMENT, purecipesConfig.environment())
+		setActiveTabContext(AnalyticsActiveTab.SEARCH)
 		viewModelScope.launch {
 			refreshConsent()
 		}
@@ -373,17 +374,18 @@ class MainViewModel(
 		}
 		previousSessionKey = sessionKey
 		setAnalyticsUserId(sessionKey)
+		setCrashUserId(sessionKey)
+		val userState = if (sessionKey != null) {
+			AnalyticsUserState.LOGGED_IN
+		} else {
+			AnalyticsUserState.ANONYMOUS
+		}
 		setGlobalProperties(
 			mapOf(
-				AnalyticsGlobalProperty.USER_STATE to AnalyticsValue.TextValue(
-					if (sessionKey != null) {
-						AnalyticsUserState.LOGGED_IN
-					} else {
-						AnalyticsUserState.ANONYMOUS
-					},
-				),
+				AnalyticsGlobalProperty.USER_STATE to AnalyticsValue.TextValue(userState),
 			),
 		)
+		setCrashCustomValue(AnalyticsGlobalProperty.USER_STATE, userState)
 		viewModelScope.launch {
 			syncSubscriptionUserId(sessionKey)
 		}
@@ -425,11 +427,16 @@ class MainViewModel(
 
 	private fun selectTab(stackId: MainTabStackId) {
 		selectedTab = mainTabs.first { it.stackId == stackId }
+		setActiveTabContext(stackId.toAnalyticsActiveTab())
+	}
+
+	private fun setActiveTabContext(activeTab: String) {
 		setGlobalProperties(
 			mapOf(
-				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue(stackId.toAnalyticsActiveTab()),
+				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue(activeTab),
 			),
 		)
+		setCrashCustomValue(AnalyticsGlobalProperty.ACTIVE_TAB, activeTab)
 	}
 
 	private fun analyticsOriginForSelectedTab(): AnalyticsOrigin = when (selectedTab.stackId) {

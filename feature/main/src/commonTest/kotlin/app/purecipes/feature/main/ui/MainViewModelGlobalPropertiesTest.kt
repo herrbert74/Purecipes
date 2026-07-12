@@ -10,6 +10,7 @@ import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import io.kotest.matchers.shouldBe
@@ -24,21 +25,31 @@ class MainViewModelGlobalPropertiesTest {
 	@Test
 	fun `start sets active tab and anonymous user state`() = runUnconfinedViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
-		mainViewModelForTest(analyticsRepository = analyticsRepository).start()
+		val crashRepository = FakeCrashRepository()
+		mainViewModelForTest(
+			analyticsRepository = analyticsRepository,
+			crashRepository = crashRepository,
+		).start()
 
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe
 			AnalyticsValue.TextValue(AnalyticsActiveTab.SEARCH)
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.USER_STATE] shouldBe
 			AnalyticsValue.TextValue(AnalyticsUserState.ANONYMOUS)
+		crashRepository.customValues[AnalyticsGlobalProperty.ENVIRONMENT] shouldBe "debug"
+		crashRepository.customValues[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe AnalyticsActiveTab.SEARCH
+		crashRepository.customValues[AnalyticsGlobalProperty.USER_STATE] shouldBe AnalyticsUserState.ANONYMOUS
+		crashRepository.lastUserId shouldBe null
 	}
 
 	@Test
 	fun `tab selection and sign in update global properties`() = runUnconfinedViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
+		val crashRepository = FakeCrashRepository()
 		val authenticationRepository = FakeAuthenticationRepository()
 		val viewModel = mainViewModelForTest(
 			authenticationRepository = authenticationRepository,
 			analyticsRepository = analyticsRepository,
+			crashRepository = crashRepository,
 		)
 		viewModel.start()
 
@@ -46,6 +57,7 @@ class MainViewModelGlobalPropertiesTest {
 
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe
 			AnalyticsValue.TextValue(AnalyticsActiveTab.FAVORITES)
+		crashRepository.customValues[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe AnalyticsActiveTab.FAVORITES
 
 		authenticationRepository.signInWithGoogle(
 			GoogleAuthenticationProfile(
@@ -58,6 +70,8 @@ class MainViewModelGlobalPropertiesTest {
 
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.USER_STATE] shouldBe
 			AnalyticsValue.TextValue(AnalyticsUserState.LOGGED_IN)
+		crashRepository.customValues[AnalyticsGlobalProperty.USER_STATE] shouldBe AnalyticsUserState.LOGGED_IN
+		crashRepository.lastUserId shouldBe sampleUser.id
 	}
 
 	@Test

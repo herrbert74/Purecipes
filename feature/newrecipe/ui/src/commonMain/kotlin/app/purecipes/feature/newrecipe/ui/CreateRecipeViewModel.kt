@@ -7,6 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
@@ -36,6 +40,8 @@ class CreateRecipeViewModel(
 	private val saveCreatedRecipe: SaveCreatedRecipeUseCase,
 	private val estimateRecipeNutrition: EstimateRecipeNutritionUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 ) : ViewModel() {
 
 	private var nutritionEstimateJob: Job? = null
@@ -232,6 +238,7 @@ class CreateRecipeViewModel(
 					.toList(),
 			)
 			val steps = stepInputs.map(String::trim).filter(String::isNotEmpty)
+			logBreadcrumb(CrashBreadcrumb.RECIPE_SAVE_ATTEMPTED)
 			val outcome = saveCreatedRecipe(
 				SaveCreatedRecipeRequest(
 					recipeId = editingRecipeId,
@@ -265,7 +272,10 @@ class CreateRecipeViewModel(
 					"Recipe uploaded."
 				}
 			} else {
-				formErrorMessage = outcome.getError()?.message
+				outcome.getError()?.let { error ->
+					sendHandledException(error.asHandledException())
+					formErrorMessage = error.message
+				}
 			}
 			isSaving = false
 		}

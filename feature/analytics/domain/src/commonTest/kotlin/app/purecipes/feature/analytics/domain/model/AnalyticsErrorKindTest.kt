@@ -17,6 +17,12 @@ class AnalyticsErrorKindTest {
 		Failure.NotModified.toAnalyticsErrorKind() shouldBe AnalyticsErrorKind.NOT_MODIFIED
 		Failure.UserNotLoggedIn.toAnalyticsErrorKind() shouldBe AnalyticsErrorKind.USER_NOT_LOGGED_IN
 	}
+
+	@Test
+	fun `maps failure types to handled exceptions with error kind message`() {
+		Failure.ServerError("boom").asHandledException().message shouldBe AnalyticsErrorKind.SERVER_ERROR
+		Failure.IoFailure.asHandledException().message shouldBe AnalyticsErrorKind.IO_FAILURE
+	}
 }
 
 class AnalyticsMeasurementSystemTest {

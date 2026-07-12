@@ -4,12 +4,16 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
@@ -66,10 +70,12 @@ class StepByStepCookingViewModelTest {
 	fun `loading recipe tracks cooking started`() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val analyticsRepository = FakeAnalyticsRepository()
+		val crashRepository = FakeCrashRepository()
 		createViewModel(
 			recipeId = recipe.id,
 			recipe = recipe,
 			analyticsRepository = analyticsRepository,
+			crashRepository = crashRepository,
 		)
 
 		advanceUntilIdle()
@@ -81,16 +87,19 @@ class StepByStepCookingViewModelTest {
 				stepCount = recipe.steps.size,
 			),
 		)
+		crashRepository.breadcrumbs shouldBe listOf(CrashBreadcrumb.cookingStarted(recipe.id))
 	}
 
 	@Test
 	fun `advancing steps tracks cooking step viewed and completed`() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val analyticsRepository = FakeAnalyticsRepository()
+		val crashRepository = FakeCrashRepository()
 		val viewModel = createViewModel(
 			recipeId = recipe.id,
 			recipe = recipe,
 			analyticsRepository = analyticsRepository,
+			crashRepository = crashRepository,
 		)
 
 		advanceUntilIdle()
@@ -103,6 +112,10 @@ class StepByStepCookingViewModelTest {
 				stepIndex = 1,
 				stepCount = recipe.steps.size,
 			),
+		)
+		crashRepository.breadcrumbs shouldBe listOf(
+			CrashBreadcrumb.cookingStarted(recipe.id),
+			CrashBreadcrumb.cookingStepAdvanced(recipe.id, 1),
 		)
 
 		repeat(recipe.steps.lastIndex - 1) {
@@ -138,6 +151,7 @@ class StepByStepCookingViewModelTest {
 		recipe: RecipeDetails = fakeRecipeDetails(id = recipeId),
 		recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(Ok(recipe)),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		crashRepository: FakeCrashRepository = FakeCrashRepository(),
 	): StepByStepCookingViewModel {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		return StepByStepCookingViewModel(
@@ -145,6 +159,8 @@ class StepByStepCookingViewModelTest {
 			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
+			sendHandledException = SendHandledExceptionUseCase(crashRepository),
 			recipeId = recipeId,
 		)
 	}

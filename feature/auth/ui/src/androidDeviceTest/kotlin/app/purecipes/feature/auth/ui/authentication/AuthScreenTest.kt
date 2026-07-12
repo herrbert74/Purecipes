@@ -14,7 +14,9 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
@@ -41,6 +43,7 @@ import app.purecipes.shared.domain.model.PASSWORD_TOO_SHORT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
@@ -74,6 +77,8 @@ class AuthScreenTest {
 						observeConsentState = ObserveConsentStateUseCase(consentRepo),
 						showConsentForm = ShowConsentFormUseCase(consentRepo),
 						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = {
@@ -158,6 +163,8 @@ class AuthScreenTest {
 						observeConsentState = ObserveConsentStateUseCase(consentRepo),
 						showConsentForm = ShowConsentFormUseCase(consentRepo),
 						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 					),
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _, _ ->

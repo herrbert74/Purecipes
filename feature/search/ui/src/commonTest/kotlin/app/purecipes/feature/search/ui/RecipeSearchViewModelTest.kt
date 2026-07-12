@@ -2,6 +2,8 @@ package app.purecipes.feature.search.ui
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -26,6 +28,7 @@ import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -338,6 +341,8 @@ class RecipeSearchViewModelTest {
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 			searchRecipes = SearchRecipesUseCase(FakeRecipeSearchRepository(Ok(emptyList()))),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			getSearchFilters = GetSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 			saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 			getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
@@ -653,6 +658,8 @@ class RecipeSearchViewModelTest {
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
+		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 		getUserPantry = GetUserPantryUseCase(pantryRepository),

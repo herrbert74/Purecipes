@@ -25,3 +25,5 @@ fun Failure.toAnalyticsErrorKind(): String {
 		is Failure.UserNotLoggedIn -> AnalyticsErrorKind.USER_NOT_LOGGED_IN
 	}
 }
+
+fun Failure.asHandledException(): Exception = Exception(toAnalyticsErrorKind())

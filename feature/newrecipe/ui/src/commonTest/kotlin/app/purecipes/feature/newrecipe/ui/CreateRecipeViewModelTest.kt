@@ -1,6 +1,8 @@
 package app.purecipes.feature.newrecipe.ui
 
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
@@ -10,6 +12,7 @@ import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
@@ -151,12 +154,15 @@ class CreateRecipeViewModelTest {
 		repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
 		estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		crashRepository: FakeCrashRepository = FakeCrashRepository(),
 	): CreateRecipeViewModel =
 		CreateRecipeViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
 			estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
+			sendHandledException = SendHandledExceptionUseCase(crashRepository),
 		)
 }
 
