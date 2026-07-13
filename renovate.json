@@ -7,7 +7,6 @@
   "ignoreDeps": [
     "org.hamcrest:hamcrest",
     "org.hamcrest:hamcrest-core",
-    "io.nlopez.compose.rules:detekt",
     "firebase/firebase-ios-sdk"
   ],
   "packageRules": [
