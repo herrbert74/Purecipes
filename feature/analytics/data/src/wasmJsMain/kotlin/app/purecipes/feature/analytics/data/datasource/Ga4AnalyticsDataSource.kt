@@ -2,8 +2,16 @@ package app.purecipes.feature.analytics.data.datasource
 
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.shared.data.config.PurecipesConfig
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoSet
+import dev.zacsweers.metro.Inject
 
-internal actual class Ga4AnalyticsDataSource actual constructor(
+private const val SCREEN_VIEW_EVENT_NAME = "screen_view"
+private const val SCREEN_NAME_PROPERTY = "screen_name"
+
+@Inject
+@ContributesIntoSet(AppScope::class)
+actual class Ga4AnalyticsDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
 ) : AnalyticsDataSource {
 
@@ -19,6 +27,22 @@ internal actual class Ga4AnalyticsDataSource actual constructor(
 			return
 		}
 		ga4TrackEvent(eventName, properties.toAnalyticsJson())
+	}
+
+	actual override fun trackScreenView(screenName: String, properties: Map<String, AnalyticsValue>) {
+		if (!isTrackingEnabled || measurementId.isBlank()) {
+			return
+		}
+		val params = properties.toMutableMap()
+		params[SCREEN_NAME_PROPERTY] = AnalyticsValue.TextValue(screenName)
+		ga4TrackEvent(SCREEN_VIEW_EVENT_NAME, params.toAnalyticsJson())
+	}
+
+	actual override fun setGlobalProperties(properties: Map<String, AnalyticsValue>) {
+		if (measurementId.isBlank()) {
+			return
+		}
+		ga4SetGlobalProperties(properties.toAnalyticsJson())
 	}
 
 	actual override fun setTrackingEnabled(isEnabled: Boolean) {
@@ -64,6 +88,18 @@ private external fun ga4EnsureInitialized(measurementId: String)
 """
 )
 private external fun ga4TrackEvent(eventName: String, propertiesJson: String)
+
+@JsFun(
+	"""
+	(propertiesJson) => {
+		if (!globalThis.gtag) {
+			return;
+		}
+		globalThis.gtag('set', propertiesJson ? JSON.parse(propertiesJson) : {});
+	}
+"""
+)
+private external fun ga4SetGlobalProperties(propertiesJson: String)
 
 @JsFun(
 	"""

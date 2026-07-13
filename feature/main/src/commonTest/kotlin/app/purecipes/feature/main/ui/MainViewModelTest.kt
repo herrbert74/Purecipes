@@ -1,6 +1,7 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
@@ -111,7 +112,10 @@ class MainViewModelTest {
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(99))
+		viewModel.peekBackStack() shouldBe listOf(
+			SearchDestination(),
+			RecipeDetailsDestination(99, origin = AnalyticsOrigin.DEEP_LINK.value),
+		)
 	}
 
 	@Test

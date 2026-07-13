@@ -7,6 +7,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
+import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
@@ -47,6 +53,8 @@ class RecipeDetailsViewModel(
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 	private val getRecipeCookbooks: GetRecipeCookbooksUseCase,
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
@@ -54,7 +62,11 @@ class RecipeDetailsViewModel(
 	private val shareRecipe: ShareRecipeUseCase,
 	@Assisted private val recipeId: Int,
 	@Assisted private val sessionKey: String?,
+	@Assisted private val origin: String,
 ) : ViewModel() {
+
+	private val analyticsOrigin: AnalyticsOrigin =
+		AnalyticsOrigin.fromValue(origin) ?: AnalyticsOrigin.SEARCH
 
 	var isLoading by mutableStateOf(true)
 		private set
@@ -147,6 +159,7 @@ class RecipeDetailsViewModel(
 					AnalyticsEvent.FavoriteChanged(
 						recipeId = currentRecipe.id,
 						isFavorite = !currentRecipe.isFavorite,
+						origin = AnalyticsOrigin.RECIPE_DETAILS,
 					),
 				)
 				refreshCookbookMembership()
@@ -217,6 +230,12 @@ class RecipeDetailsViewModel(
 			recipeId = recipeId,
 			title = recipeDetails?.title,
 		)
+		trackEvent(
+			AnalyticsEvent.RecipeShared(
+				recipeId = recipeId,
+				origin = analyticsOrigin,
+			),
+		)
 	}
 
 	private fun refreshCookbookMembership() {
@@ -262,10 +281,21 @@ class RecipeDetailsViewModel(
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
-			if (recipeDetails != null) {
-				trackEvent(AnalyticsEvent.RecipeViewed(recipeId))
+			if (baseRecipeDetails != null) {
+				logBreadcrumb(CrashBreadcrumb.recipeOpened(recipeId))
+				trackEvent(AnalyticsEvent.RecipeViewed(recipeId = recipeId, origin = analyticsOrigin))
 			}
-			errorMessage = outcome.getError()?.message
+			val error = outcome.getError()
+			if (error != null) {
+				sendHandledException(error.asHandledException())
+				trackEvent(
+					AnalyticsEvent.RecipeLoadFailed(
+						recipeId = recipeId,
+						errorKind = error.toAnalyticsErrorKind(),
+					),
+				)
+			}
+			errorMessage = error?.message
 			isLoading = false
 			refreshCookbookMembership()
 		}
@@ -276,6 +306,6 @@ class RecipeDetailsViewModel(
 	@ContributesIntoMap(AppScope::class)
 	interface Factory : ManualViewModelAssistedFactory {
 
-		fun create(recipeId: Int, sessionKey: String?): RecipeDetailsViewModel
+		fun create(recipeId: Int, sessionKey: String?, origin: String): RecipeDetailsViewModel
 	}
 }

@@ -12,10 +12,12 @@ import com.usercentrics.sdk.models.common.UsercentricsLoggerLevel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 @Inject
+@SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 actual class PlatformConsentDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
@@ -37,13 +39,11 @@ actual class PlatformConsentDataSource actual constructor(
 		initializeIfNeeded()
 		Usercentrics.isReady(
 			onSuccess = { status ->
-				mutableConsentState.value = if (status.shouldCollectConsent) {
-					ConsentState.REQUIRED
-				} else {
-					ConsentState.OBTAINED
-				}
 				if (status.shouldCollectConsent) {
+					mutableConsentState.value = ConsentState.REQUIRED
 					showConsentForm()
+				} else {
+					mutableConsentState.value = status.consents.toConsentState()
 				}
 			},
 			onFailure = {

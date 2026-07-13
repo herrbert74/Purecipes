@@ -90,11 +90,30 @@ The app reads analytics configuration from the platform-specific build config la
 * Android uses `BuildConfig` fields from `app/build.gradle.kts`.
 * iOS and Wasm use `BuildKonfig` values from `umbrella/build.gradle.kts`.
 * The same config keys are used across targets:
-  * `PURECIPES_GA_MEASUREMENT_ID` / `purecipesGaMeasurementId`
-  * `PURECIPES_MIXPANEL_PROJECT_TOKEN` / `purecipesMixpanelProjectToken`
-  * `PURECIPES_USERCENTRICS_SETTINGS_ID` / `purecipesUsercentricsSettingsId`
+  * `PURECIPES_GA_MEASUREMENT_ID` / `purecipes.gaMeasurementId`
+  * Mixpanel project token (per build type, with fallback):
+    * `purecipes.mixpanelProjectToken.debug` / `.staging` / `.release`
+    * fallback: `purecipes.mixpanelProjectToken` or `PURECIPES_MIXPANEL_PROJECT_TOKEN`
+  * Mixpanel uses the EU API endpoint (`https://api-eu.mixpanel.com`) as a hard-coded constant matching project residency
+  * RevenueCat public SDK API key (per build type, with fallback):
+    * `purecipes.revenueCatApiKey.debug` / `.staging` / `.release`
+    * fallback: `purecipes.revenueCatApiKey` or `PURECIPES_REVENUECAT_API_KEY`
+    * Android release must use a Google Play key (`goog_…`); iOS release must use an App Store key (`appl_…`); debug/staging typically use the Test Store key (`test_…`)
+  * Google Sign-In web client ID (per Android build type; debug must match `purecipes-debug`):
+    * `purecipes.googleWebClientId.debug` / `.staging` / `.release`
+    * non-debug fallback: `purecipes.googleWebClientId` or `PURECIPES_GOOGLE_WEB_CLIENT_ID`
+  * Backend Firebase project ID / number (per build type; used by `:backend` token verification):
+    * `purecipes.firebaseProjectId.debug` / `.staging` / `.release`
+    * `purecipes.firebaseProjectNumber.debug` / `.staging` / `.release`
+    * non-debug fallback: `purecipes.firebaseProjectId` / `PURECIPES_FIREBASE_PROJECT_ID` (and the matching project-number keys)
+    * defaults: debug → `purecipes-debug`; release/staging → `purecipes-50e5c`
+  * `PURECIPES_USERCENTRICS_SETTINGS_ID` / `purecipes.usercentricsSettingsId`
 
 These values are loaded from either Gradle properties or environment variables.
+
+`PurecipesConfig.environment()` derives `debug` / `staging` / `release` from `buildType()` so later analytics work can attach it as a global property.
+
+Android uses per-build-type Firebase configs (`app/src/debug/google-services.json` and `app/src/release/google-services.json`). Debug Google Sign-In also needs the debug keystore SHA-1 registered on the **purecipes-debug** Android app (see [docs/features/002_authentication.md](docs/features/002_authentication.md)).
 
 ## 👀 Others
 

@@ -9,11 +9,16 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
@@ -69,6 +74,9 @@ class SignInScreenTest {
 						signInWithEmail = SignInWithEmailUseCase(repository),
 						resendEmailVerification = ResendEmailVerificationUseCase(repository),
 						sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 						initialEmail = "",
 						showRegistrationSuccessMessage = false,
 					),

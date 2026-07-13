@@ -22,47 +22,11 @@
           }
         },
         {
-          "client_id": "922845075790-aiom7ev08u8uamcrlt9714kfmfumked7.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyA_hcTnzFB2feuvmPxU2u4WG7AZwdUMf6k"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "922845075790-aiom7ev08u8uamcrlt9714kfmfumked7.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "922845075790-c274na6hroesrddmf7p3nusihvblg55f.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.purecipes.PurecipesIOSApp"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:922845075790:android:8b1eb7f94a20f69c74a61f",
-        "android_client_info": {
-          "package_name": "app.purecipes.debug"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "922845075790-vf3sd9lop8vnl6s0453n1kklc3pmv4ro.apps.googleusercontent.com",
+          "client_id": "922845075790-p0k3jejvuh8ltkcp6tk37cpl9fqcdl0e.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "app.purecipes.debug",
-            "certificate_hash": "fa09900a9665489a9a6b70a5d9e73fd2165fca55"
+            "package_name": "app.purecipes",
+            "certificate_hash": "de11e7cc92cc8d88836f48f68edde0880bf7939f"
           }
         },
         {

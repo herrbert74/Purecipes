@@ -139,10 +139,20 @@ internal fun matchesConfiguredFirebaseProject(
 	configuredProjectNumber: String? = null,
 ): Boolean {
 	val issuerProjectId = firebaseIssuerProjectId(issuer)
+	val configuredProjectIds = parseCsvConfigValues(configuredProjectId)
+	val configuredProjectNumbers = parseCsvConfigValues(configuredProjectNumber)
 	val normalizedAudiences = audiences.map { it.trim() }.filter { it.isNotBlank() }
-	return issuerProjectId == configuredProjectId ||
-		normalizedAudiences.any { it == configuredProjectId } ||
-		(configuredProjectNumber != null && normalizedAudiences.any { it == configuredProjectNumber })
+	return (issuerProjectId != null && configuredProjectIds.contains(issuerProjectId)) ||
+		normalizedAudiences.any { configuredProjectIds.contains(it) } ||
+		normalizedAudiences.any { configuredProjectNumbers.contains(it) }
+}
+
+internal fun parseCsvConfigValues(value: String?): List<String> {
+	return value
+		?.split(',')
+		?.map { it.trim() }
+		?.filter { it.isNotBlank() }
+		.orEmpty()
 }
 
 private fun readBundledFirebaseProperty(key: String): String? {
@@ -209,6 +219,7 @@ private fun FirebaseTokenInfoResponse.toVerificationResult(
 			audiences = resolvedAudiences,
 			issuer = resolvedIssuer,
 		)
+
 		requiresVerifiedEmail(jwtClaims) && !isEmailVerified(jwtClaims) -> EMAIL_NOT_VERIFIED_MESSAGE
 		resolvedSubject == null -> "Sign-in could not be completed. Please try again."
 		resolvedEmail == null -> "Sign-in did not include an email address."

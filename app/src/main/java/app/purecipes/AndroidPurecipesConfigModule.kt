@@ -42,7 +42,7 @@ interface AndroidPurecipesConfigModule {
 			}
 
 			override fun revenueCatApiKey(): String? {
-				return BuildConfig.PURECIPES_REVENUECAT_TEST_API_KEY.takeIf { it.isNotBlank() }
+				return BuildConfig.PURECIPES_REVENUECAT_API_KEY.takeIf { it.isNotBlank() }
 			}
 
 			override fun adMobAppId(): String? {

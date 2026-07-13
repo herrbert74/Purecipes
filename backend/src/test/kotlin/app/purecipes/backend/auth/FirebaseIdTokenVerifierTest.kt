@@ -86,6 +86,18 @@ class FirebaseIdTokenVerifierTest {
 	}
 
 	@Test
+	fun `matchesConfiguredFirebaseProject accepts csv configured projects`() {
+		assertTrue(
+			matchesConfiguredFirebaseProject(
+				issuer = "https://securetoken.google.com/purecipes-debug",
+				audiences = listOf("740437012648"),
+				configuredProjectId = "purecipes-50e5c,purecipes-debug",
+				configuredProjectNumber = "922845075790,740437012648",
+			),
+		)
+	}
+
+	@Test
 	fun `matchesConfiguredFirebaseProject rejects mismatched issuer and audience`() {
 		assertFalse(
 			matchesConfiguredFirebaseProject(
@@ -96,6 +108,16 @@ class FirebaseIdTokenVerifierTest {
 				configuredProjectId = "purecipes-50e5c",
 			),
 		)
+	}
+
+	@Test
+	fun `parseCsvConfigValues splits and trims values`() {
+		assertEquals(
+			listOf("purecipes-50e5c", "purecipes-debug"),
+			parseCsvConfigValues(" purecipes-50e5c , purecipes-debug "),
+		)
+		assertEquals(emptyList(), parseCsvConfigValues("  , "))
+		assertEquals(emptyList(), parseCsvConfigValues(null))
 	}
 
 	@Test

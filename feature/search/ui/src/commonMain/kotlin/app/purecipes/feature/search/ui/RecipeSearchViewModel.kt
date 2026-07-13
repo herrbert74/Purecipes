@@ -8,6 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -55,6 +59,8 @@ class RecipeSearchViewModel(
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val searchRecipes: SearchRecipesUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 	private val getSearchFilters: GetSearchFiltersUseCase,
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
 	private val getUserPantry: GetUserPantryUseCase,
@@ -371,16 +377,22 @@ class RecipeSearchViewModel(
 				isLastPage = isLastPage,
 			)
 			if (pageNumber == FIRST_PAGE_NUMBER) {
+				logBreadcrumb(CrashBreadcrumb.SEARCH_PERFORMED)
 				trackEvent(
 					AnalyticsEvent.SearchPerformed(
 						query = searchQuery,
 						resultCount = paginatedResult.totalMatches,
+						isEmptyResult = paginatedResult.totalMatches == 0,
 					),
 				)
 			}
 		} else {
 			val error = outcome.getError()
 			if (error != null) {
+				if (pageNumber == FIRST_PAGE_NUMBER) {
+					logBreadcrumb(CrashBreadcrumb.SEARCH_PERFORMED)
+				}
+				sendHandledException(error.asHandledException())
 				paginationState.setError(IllegalStateException(error.message))
 				errorMessage = error.message
 			}

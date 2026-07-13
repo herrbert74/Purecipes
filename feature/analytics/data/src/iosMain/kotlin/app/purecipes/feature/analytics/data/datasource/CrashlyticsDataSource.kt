@@ -10,18 +10,18 @@ import dev.zacsweers.metro.Inject
 actual class CrashlyticsDataSource actual constructor() : CrashDataSource {
 
 	actual override fun logBreadcrumb(message: String) {
-		CrashlyticsKotlin.logMessage(message)
+		runCatching { CrashlyticsKotlin.logMessage(message) }.getOrNull()
 	}
 
 	actual override fun sendHandledException(throwable: Throwable) {
-		CrashlyticsKotlin.sendHandledException(throwable)
+		runCatching { CrashlyticsKotlin.sendHandledException(throwable) }.getOrNull()
 	}
 
 	actual override fun setCustomValue(key: String, value: String) {
-		CrashlyticsKotlin.setCustomValue(key, value)
+		runCatching { CrashlyticsKotlin.setCustomValue(key, value) }.getOrNull()
 	}
 
 	actual override fun setUserId(userId: String?) {
-		CrashlyticsKotlin.setUserId(userId.orEmpty())
+		runCatching { CrashlyticsKotlin.setUserId(userId.orEmpty()) }.getOrNull()
 	}
 }

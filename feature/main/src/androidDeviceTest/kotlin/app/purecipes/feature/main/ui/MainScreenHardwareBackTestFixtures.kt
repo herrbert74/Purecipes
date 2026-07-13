@@ -6,9 +6,15 @@ import app.purecipes.feature.ads.domain.repository.AdsRepository
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashCustomValueUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
@@ -62,6 +68,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
@@ -73,6 +80,7 @@ import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import app.purecipes.shared.testfixtures.fake.fakeTrackScreenViewUseCase
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.flow.emptyFlow
@@ -86,13 +94,16 @@ internal data class HardwareBackTestEnvironment(
 	val searchViewModel: RecipeSearchViewModel,
 	val recipeDetailsViewModel: RecipeDetailsViewModel,
 	val favoritesViewModel: FavoritesViewModel,
+	val analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	val recipeId: Int = HARDWARE_BACK_TEST_RECIPE_ID,
 )
 
-internal fun hardwareBackTestEnvironment(): HardwareBackTestEnvironment {
+internal fun hardwareBackTestEnvironment(
+	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+): HardwareBackTestEnvironment {
 	val recipeId = HARDWARE_BACK_TEST_RECIPE_ID
 	return HardwareBackTestEnvironment(
-		mainViewModel = mainViewModelForDeviceTest(),
+		mainViewModel = mainViewModelForDeviceTest(analyticsRepository = analyticsRepository),
 		searchViewModel = recipeSearchViewModelForDeviceTest(
 			searchRepository = FakeRecipeSearchRepository(
 				result = Ok(
@@ -119,16 +130,23 @@ internal fun hardwareBackTestEnvironment(): HardwareBackTestEnvironment {
 			),
 		),
 		favoritesViewModel = favoritesViewModelForDeviceTest(),
+		analyticsRepository = analyticsRepository,
 		recipeId = recipeId,
 	)
 }
 
-internal fun mainViewModelForDeviceTest(): MainViewModel {
+internal fun mainViewModelForDeviceTest(
+	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+): MainViewModel {
 	val subscriptionRepository = FakeSubscriptionRepository()
 	return MainViewModel(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
 		refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
-		setAnalyticsUserId = SetAnalyticsUserIdUseCase(FakeAnalyticsRepository()),
+		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
+		setCrashUserId = SetCrashUserIdUseCase(FakeCrashRepository()),
+		setCrashCustomValue = SetCrashCustomValueUseCase(FakeCrashRepository()),
+		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
+		trackScreenView = fakeTrackScreenViewUseCase(analyticsRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
 		publishWebLaunchLink = PublishWebLaunchLinkUseCase(
@@ -175,6 +193,8 @@ internal fun recipeSearchViewModelForDeviceTest(
 	getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 	searchRecipes = SearchRecipesUseCase(searchRepository),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 	getSearchFilters = GetSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 	saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 	getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
@@ -203,6 +223,8 @@ internal fun recipeDetailsViewModelForDeviceTest(
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 	getRecipeCookbooks = GetRecipeCookbooksUseCase(FakeCookbooksRepository()),
 	getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 	createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
@@ -214,6 +236,7 @@ internal fun recipeDetailsViewModelForDeviceTest(
 	),
 	recipeId = recipeId,
 	sessionKey = sessionKey,
+	origin = AnalyticsOrigin.SEARCH.value,
 )
 
 internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesViewModel(

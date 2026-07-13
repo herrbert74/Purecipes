@@ -8,6 +8,9 @@ import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashCustomValueUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -22,8 +25,10 @@ import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
+import app.purecipes.shared.testfixtures.fake.fakeTrackScreenViewUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -31,6 +36,7 @@ internal fun mainViewModelForTest(
 	authenticationRepository: FakeAuthenticationRepository = FakeAuthenticationRepository(),
 	incomingLinkRepository: IncomingLinkRepository = emptyIncomingLinkRepository(),
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+	crashRepository: FakeCrashRepository = FakeCrashRepository(),
 	consentRepository: FakeConsentRepository = FakeConsentRepository(ConsentState.NOT_REQUIRED),
 	subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
 	adsRepository: AdsRepository = object : AdsRepository {
@@ -48,6 +54,10 @@ internal fun mainViewModelForTest(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
 		refreshConsent = RefreshConsentUseCase(consentRepository),
 		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
+		setCrashUserId = SetCrashUserIdUseCase(crashRepository),
+		setCrashCustomValue = SetCrashCustomValueUseCase(crashRepository),
+		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
+		trackScreenView = fakeTrackScreenViewUseCase(analyticsRepository, crashRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(incomingLinkRepository),
 		publishWebLaunchLink = PublishWebLaunchLinkUseCase(

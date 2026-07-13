@@ -1,11 +1,14 @@
 package app.purecipes.shared.data.config
 
 interface PurecipesConfig {
+
 	fun buildType(): PurecipesBuildType
 
 	fun versionName(): String
 
 	fun versionCode(): Long
+
+	fun environment(): String = buildType().environmentName()
 
 	// Needed for Wi-Fi debugging on Android or any debugging on iOS/WASM
 	fun debugBackendHostOverride(): String? = null
@@ -31,6 +34,9 @@ enum class PurecipesBuildType {
 	DEBUG,
 	STAGING,
 	RELEASE,
+	;
+
+	fun environmentName(): String = name.lowercase()
 }
 
 fun purecipesBuildType(name: String): PurecipesBuildType {

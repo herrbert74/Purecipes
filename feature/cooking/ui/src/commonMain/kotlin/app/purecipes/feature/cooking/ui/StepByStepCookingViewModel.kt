@@ -7,6 +7,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
+import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -24,6 +30,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.time.TimeSource
 
 @AssistedInject
 class StepByStepCookingViewModel(
@@ -31,6 +38,8 @@ class StepByStepCookingViewModel(
 	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 	@Assisted private val recipeId: Int,
 ) : ViewModel() {
 
@@ -50,6 +59,12 @@ class StepByStepCookingViewModel(
 
 	private var measurementPreferences: MeasurementPreferences? = null
 
+	private val monotonicTimeSource = TimeSource.Monotonic
+
+	private var cookingStartedMark = monotonicTimeSource.markNow()
+
+	private var hasTrackedCookingCompleted = false
+
 	init {
 		viewModelScope.launch {
 			observeMeasurementPreferences().collectLatest { preferences ->
@@ -63,6 +78,7 @@ class StepByStepCookingViewModel(
 	fun previousStep() {
 		if (currentStepIndex > 0) {
 			currentStepIndex -= 1
+			trackCookingStepViewed()
 		}
 	}
 
@@ -70,12 +86,20 @@ class StepByStepCookingViewModel(
 		val details = recipeDetails ?: return
 		if (currentStepIndex < details.steps.lastIndex) {
 			currentStepIndex += 1
+			trackCookingStepViewed()
+			trackCookingCompletedIfNeeded()
 		}
 	}
 
 	fun setCurrentStep(stepIndex: Int) {
-		val lastIndex = recipeDetails?.steps?.lastIndex ?: return
-		currentStepIndex = stepIndex.coerceIn(0, lastIndex)
+		val details = recipeDetails ?: return
+		val newIndex = stepIndex.coerceIn(0, details.steps.lastIndex)
+		if (newIndex == currentStepIndex) {
+			return
+		}
+		currentStepIndex = newIndex
+		trackCookingStepViewed()
+		trackCookingCompletedIfNeeded()
 	}
 
 	private fun applyMeasurementPreferences() {
@@ -89,17 +113,63 @@ class StepByStepCookingViewModel(
 			isLoading = true
 			errorMessage = null
 			recipeDetails = null
+			hasTrackedCookingCompleted = false
 
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
-			if (recipeDetails != null) {
-				trackEvent(AnalyticsEvent.CookingStarted(recipeId))
+			val details = recipeDetails ?: baseRecipeDetails
+			if (details != null) {
+				cookingStartedMark = monotonicTimeSource.markNow()
+				logBreadcrumb(CrashBreadcrumb.cookingStarted(recipeId))
+				trackEvent(
+					AnalyticsEvent.CookingStarted(
+						recipeId = recipeId,
+						origin = AnalyticsOrigin.RECIPE_DETAILS,
+						stepCount = details.steps.size,
+					),
+				)
 			}
-			errorMessage = outcome.getError()?.message
+			val error = outcome.getError()
+			if (error != null) {
+				sendHandledException(error.asHandledException())
+				trackEvent(
+					AnalyticsEvent.RecipeLoadFailed(
+						recipeId = recipeId,
+						errorKind = error.toAnalyticsErrorKind(),
+					),
+				)
+			}
+			errorMessage = error?.message
 			currentStepIndex = 0
 			isLoading = false
 		}
+	}
+
+	private fun trackCookingStepViewed() {
+		val details = recipeDetails ?: baseRecipeDetails ?: return
+		logBreadcrumb(CrashBreadcrumb.cookingStepAdvanced(recipeId, currentStepIndex))
+		trackEvent(
+			AnalyticsEvent.CookingStepViewed(
+				recipeId = recipeId,
+				stepIndex = currentStepIndex,
+				stepCount = details.steps.size,
+			),
+		)
+	}
+
+	private fun trackCookingCompletedIfNeeded() {
+		val details = recipeDetails ?: baseRecipeDetails ?: return
+		if (hasTrackedCookingCompleted || currentStepIndex != details.steps.lastIndex) {
+			return
+		}
+		hasTrackedCookingCompleted = true
+		trackEvent(
+			AnalyticsEvent.CookingCompleted(
+				recipeId = recipeId,
+				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
+			),
+		)
 	}
 
 	@AssistedFactory

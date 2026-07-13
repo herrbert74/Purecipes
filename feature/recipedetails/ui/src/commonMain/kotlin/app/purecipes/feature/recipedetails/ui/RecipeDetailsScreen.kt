@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import app.purecipes.feature.ads.ui.BannerAd
 import app.purecipes.feature.ads.ui.BannerAdViewModel
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -38,11 +39,12 @@ fun RecipeDetailsScreen(
 	onStartCooking: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
+	origin: String = AnalyticsOrigin.SEARCH.value,
 	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: RecipeDetailsViewModel = assistedMetroViewModel<RecipeDetailsViewModel, RecipeDetailsViewModel.Factory>(
-		key = recipeId.toString(),
+		key = "$recipeId-$origin",
 	) {
-		create(recipeId = recipeId, sessionKey = sessionKey)
+		create(recipeId = recipeId, sessionKey = sessionKey, origin = origin)
 	},
 ) {
 	var showCookbookSheet by remember { mutableStateOf(false) }

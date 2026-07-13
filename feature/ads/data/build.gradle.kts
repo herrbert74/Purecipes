@@ -17,6 +17,7 @@ kotlin {
 		}
 		androidMain {
 			dependencies {
+				implementation(libs.androidx.workmanager)
 				implementation(libs.googlePlay.servicesAds)
 			}
 		}

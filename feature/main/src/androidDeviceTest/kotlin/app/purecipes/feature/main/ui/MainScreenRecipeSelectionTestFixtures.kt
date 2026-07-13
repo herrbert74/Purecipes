@@ -99,7 +99,11 @@ private class RecipeSelectionTestViewModelFactory(
 		mapOf(
 			RecipeDetailsViewModel.Factory::class to {
 				object : RecipeDetailsViewModel.Factory {
-					override fun create(recipeId: Int, sessionKey: String?): RecipeDetailsViewModel =
+					override fun create(
+						recipeId: Int,
+						sessionKey: String?,
+						origin: String,
+					): RecipeDetailsViewModel =
 						recipeDetailsViewModelForDeviceTest(
 							recipeId = recipeId,
 							recipeDetailsRepository = recipeDetailsRepository,

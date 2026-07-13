@@ -40,7 +40,7 @@ androidx-testExtJUnit = "1.3.0"
 #androidx-testRules = "1.6.1"
 androidx-testRunner = "1.7.0"
 androidx-testEspresso = "3.7.0"
-#androidx-work = "2.10.2"
+androidx-work = "2.11.2"
 #autoBind = "2.0.0"
 babestudios-base = "3.2.1"
 buildKonfig = "0.22.0"
@@ -179,7 +179,7 @@ androidx-splash = "androidx.core:core-splashscreen:1.2.0"
 #androidx-viewPager2 = "androidx.viewpager2:viewpager2:1.1.0"
 
 #androidx-window = "androidx.window:window:1.4.0"
-#androidx-workmanagerKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
+androidx-workmanager = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 #androidx-workmanagerTesting = { module = "androidx.work:work-testing", version.ref = "androidx-work" }
 
 androidx-testCore = { group = "androidx.test", name = "core", version.ref = "androidx-testCore" }

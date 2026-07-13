@@ -5,8 +5,13 @@ import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.shared.data.config.PurecipesConfig
 import com.google.firebase.analytics.FirebaseAnalytics
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoSet
+import dev.zacsweers.metro.Inject
 
-internal actual class Ga4AnalyticsDataSource actual constructor(
+@Inject
+@ContributesIntoSet(AppScope::class)
+actual class Ga4AnalyticsDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,
 ) : AnalyticsDataSource {
 
@@ -20,6 +25,16 @@ internal actual class Ga4AnalyticsDataSource actual constructor(
 
 	actual override fun trackEvent(eventName: String, properties: Map<String, AnalyticsValue>) {
 		firebaseAnalytics.logEvent(eventName, properties.toBundle())
+	}
+
+	actual override fun trackScreenView(screenName: String, properties: Map<String, AnalyticsValue>) {
+		val params = properties.toMutableMap()
+		params[FirebaseAnalytics.Param.SCREEN_NAME] = AnalyticsValue.TextValue(screenName)
+		firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, params.toBundle())
+	}
+
+	actual override fun setGlobalProperties(properties: Map<String, AnalyticsValue>) {
+		firebaseAnalytics.setDefaultEventParameters(properties.toBundle())
 	}
 
 	actual override fun setTrackingEnabled(isEnabled: Boolean) {

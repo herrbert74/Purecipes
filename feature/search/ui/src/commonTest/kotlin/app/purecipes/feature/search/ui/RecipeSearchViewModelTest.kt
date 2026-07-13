@@ -1,6 +1,9 @@
 package app.purecipes.feature.search.ui
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -25,6 +28,7 @@ import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -135,18 +139,27 @@ class RecipeSearchViewModelTest {
 			),
 			missingIngredient = "Basil",
 		)
+		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(emptyList()),
 			totalMatches = 0,
 			nearMissRecipes = listOf(nearMiss),
 		)
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = makeViewModel(
+			searchRepository = repository,
+			analyticsRepository = analyticsRepository,
+		)
 
 		advanceUntilIdle()
 
 		viewModel.totalMatches shouldBe 0
 		viewModel.recipes.isEmpty() shouldBe true
 		viewModel.nearMissRecipes.single() shouldBe nearMiss
+		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.SearchPerformed(
+			query = "",
+			resultCount = 0,
+			isEmptyResult = true,
+		)
 	}
 
 	@Test
@@ -328,6 +341,8 @@ class RecipeSearchViewModelTest {
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 			searchRecipes = SearchRecipesUseCase(FakeRecipeSearchRepository(Ok(emptyList()))),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			getSearchFilters = GetSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 			saveSearchFilters = SaveSearchFiltersUseCase(FakeRecipeSearchFilterRepository()),
 			getUserPantry = GetUserPantryUseCase(FakeUserPantryRepository()),
@@ -637,11 +652,14 @@ class RecipeSearchViewModelTest {
 		ingredientMatchRepository: FakeIngredientMatchRepository = FakeIngredientMatchRepository(),
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
+		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
-		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		trackEvent = TrackEventUseCase(analyticsRepository),
+		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 		getUserPantry = GetUserPantryUseCase(pantryRepository),

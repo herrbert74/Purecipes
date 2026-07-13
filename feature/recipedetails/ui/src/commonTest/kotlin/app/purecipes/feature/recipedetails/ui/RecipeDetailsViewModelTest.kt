@@ -2,6 +2,11 @@ package app.purecipes.feature.recipedetails.ui
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.FavoritesRepository
@@ -26,6 +31,7 @@ import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
@@ -77,7 +83,10 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -114,7 +123,10 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -131,6 +143,7 @@ class RecipeDetailsViewModelTest {
 
 	@Test
 	fun `details view model exposes repository error`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeRecipeDetailsRepository(Err(Failure.ServerError("Recipe failed")))
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val viewModel = RecipeDetailsViewModel(
@@ -141,8 +154,11 @@ class RecipeDetailsViewModelTest {
 			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
-			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -155,6 +171,48 @@ class RecipeDetailsViewModelTest {
 		viewModel.errorMessage shouldBe "Recipe failed"
 		viewModel.recipeDetails shouldBe null
 		viewModel.isLoading shouldBe false
+		analyticsRepository.trackedEvents shouldBe listOf(
+			AnalyticsEvent.RecipeLoadFailed(
+				recipeId = 42,
+				errorKind = AnalyticsErrorKind.SERVER_ERROR,
+			),
+		)
+	}
+
+	@Test
+	fun `share current recipe tracks recipe shared`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val recipe = fakeRecipeDetails()
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(Ok(recipe))),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+
+		advanceUntilIdle()
+		viewModel.shareCurrentRecipe()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeShared>() shouldBe listOf(
+			AnalyticsEvent.RecipeShared(
+				recipeId = recipe.id,
+				origin = AnalyticsOrigin.SEARCH,
+			),
+		)
 	}
 
 	@Test
@@ -171,7 +229,10 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -203,7 +264,10 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
@@ -259,7 +323,10 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 			sessionKey = "session",
+			origin = AnalyticsOrigin.SEARCH.value,
 			getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
