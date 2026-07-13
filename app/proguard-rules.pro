@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Room instantiates *_Impl via Class.newInstance(). R8 full mode keeps
+# RoomDatabase subclasses from room-runtime's consumer rules, but still
+# strips unused-looking no-arg constructors (WorkManager's WorkDatabase).
+-keepclassmembers class * extends androidx.room.RoomDatabase {
+    public <init>();
+}
