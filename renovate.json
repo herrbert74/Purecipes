@@ -7,7 +7,7 @@
   "ignoreDeps": [
     "org.hamcrest:hamcrest",
     "org.hamcrest:hamcrest-core",
-    "io.nlopez.compose.rules:detekt"
+    "firebase/firebase-ios-sdk"
   ],
   "packageRules": [
     {
@@ -19,17 +19,21 @@
       "allowedVersions": "!/-[0-9]+\\.x-compat$/"
     },
     {
-      "description": "iOS Firebase SwiftPM version follows kmpnotifier-push-firebase; bump via firebaseIosSdk in libs.versions.toml when kmpnotifier updates",
-      "matchManagers": ["swift"],
-      "matchPackageNames": ["firebase-ios-sdk"],
-      "enabled": false
-    },
-    {
       "groupName": "All Minor & Patch Updates",
       "groupSlug": "all-minor-patch",
       "matchUpdateTypes": ["minor", "patch"],
       "matchPackagePatterns": ["*"],
       "labels": ["renovate"]
+    },
+    {
+      "description": "iOS Firebase SwiftPM version follows kmpnotifier-push-firebase; bump via firebaseIosSdk in libs.versions.toml when kmpnotifier updates",
+      "matchManagers": ["swift"],
+      "matchPackageNames": [
+        "firebase/firebase-ios-sdk",
+        "firebase-ios-sdk",
+        "https://github.com/firebase/firebase-ios-sdk.git"
+      ],
+      "enabled": false
     }
   ]
 }
