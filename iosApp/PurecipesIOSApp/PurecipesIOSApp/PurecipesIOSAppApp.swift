@@ -114,8 +114,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
     private func installAnalyticsBridges() {
         IosAnalyticsNativeBridge.shared.registerMixpanelHandlers(
-            initialize: { [weak self] token in
-                self?.initializeMixpanel(token: token)
+            initialize: { [weak self] token, serverUrl in
+                self?.initializeMixpanel(token: token, serverUrl: serverUrl)
             },
             trackEvent: { [weak self] eventName, propertiesJSON in
                 self?.trackMixpanelEvent(eventName: eventName, propertiesJSON: propertiesJSON)
@@ -125,6 +125,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             },
             setUserId: { [weak self] userId in
                 self?.setMixpanelUserId(userId)
+            },
+            registerSuperProperties: { [weak self] propertiesJSON in
+                self?.registerMixpanelSuperProperties(propertiesJSON: propertiesJSON)
             }
         )
 
@@ -203,7 +206,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
     #endif
 
-    private func initializeMixpanel(token: String) {
+    private func initializeMixpanel(token: String, serverUrl: String) {
         #if canImport(Mixpanel)
         guard mixpanelInstance == nil else {
             return
@@ -217,8 +220,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             optOutTrackingByDefault: false,
             useUniqueDistinctId: false,
             superProperties: nil,
+            serverURL: serverUrl.isEmpty ? nil : serverUrl,
             useGzipCompression: false
         )
+        #if DEBUG
+        mixpanelInstance?.loggingEnabled = true
+        #endif
         #endif
     }
 
@@ -245,6 +252,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         } else {
             mixpanelInstance?.reset()
         }
+        #endif
+    }
+
+    private func registerMixpanelSuperProperties(propertiesJSON: String) {
+        #if canImport(Mixpanel)
+        guard let properties = mixpanelProperties(from: propertiesJSON) else {
+            return
+        }
+        mixpanelInstance?.registerSuperProperties(properties)
         #endif
     }
 

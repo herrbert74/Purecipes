@@ -10,15 +10,65 @@ private fun Project.googleWebClientId() = providers.gradleProperty("purecipes.go
 	.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
 	.orElse("")
 
-private fun Project.firebaseProjectId() = providers.gradleProperty("purecipes.firebaseProjectId")
-	.orElse(providers.gradleProperty("PURECIPES_FIREBASE_PROJECT_ID"))
-	.orElse(providers.environmentVariable("PURECIPES_FIREBASE_PROJECT_ID"))
-	.orElse("purecipes-50e5c")
+private fun Project.firebaseProjectId(buildType: String): String {
+	val buildTypeSpecific = providers.gradleProperty("purecipes.firebaseProjectId.$buildType")
+		.orNull
+		?.takeIf { it.isNotBlank() }
+	val legacy = if (buildType == "debug") {
+		null
+	} else {
+		providers.gradleProperty("purecipes.firebaseProjectId")
+			.orElse(providers.gradleProperty("PURECIPES_FIREBASE_PROJECT_ID"))
+			.orElse(providers.environmentVariable("PURECIPES_FIREBASE_PROJECT_ID"))
+			.orNull
+			?.takeIf { it.isNotBlank() }
+	}
+	return buildTypeSpecific ?: legacy ?: defaultFirebaseProjectId(buildType)
+}
 
-private fun Project.firebaseProjectNumber() = providers.gradleProperty("purecipes.firebaseProjectNumber")
-	.orElse(providers.gradleProperty("PURECIPES_FIREBASE_PROJECT_NUMBER"))
-	.orElse(providers.environmentVariable("PURECIPES_FIREBASE_PROJECT_NUMBER"))
-	.orElse("922845075790")
+private fun defaultFirebaseProjectId(buildType: String): String {
+	return when (buildType) {
+		"debug" -> "purecipes-debug"
+		else -> "purecipes-50e5c"
+	}
+}
+
+private fun Project.firebaseProjectNumber(buildType: String): String {
+	val buildTypeSpecific = providers.gradleProperty("purecipes.firebaseProjectNumber.$buildType")
+		.orNull
+		?.takeIf { it.isNotBlank() }
+	val legacy = if (buildType == "debug") {
+		null
+	} else {
+		providers.gradleProperty("purecipes.firebaseProjectNumber")
+			.orElse(providers.gradleProperty("PURECIPES_FIREBASE_PROJECT_NUMBER"))
+			.orElse(providers.environmentVariable("PURECIPES_FIREBASE_PROJECT_NUMBER"))
+			.orNull
+			?.takeIf { it.isNotBlank() }
+	}
+	return buildTypeSpecific ?: legacy ?: defaultFirebaseProjectNumber(buildType)
+}
+
+private fun defaultFirebaseProjectNumber(buildType: String): String {
+	return when (buildType) {
+		"debug" -> "740437012648"
+		else -> "922845075790"
+	}
+}
+
+private fun Project.localFirebaseProjectId(): String {
+	return listOf("debug", "release", "staging")
+		.map { firebaseProjectId(it) }
+		.distinct()
+		.joinToString(",")
+}
+
+private fun Project.localFirebaseProjectNumber(): String {
+	return listOf("debug", "release", "staging")
+		.map { firebaseProjectNumber(it) }
+		.distinct()
+		.joinToString(",")
+}
 
 val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resources/backend")
 
@@ -33,8 +83,8 @@ val generateBackendRuntimeConfig by tasks.registering(WriteProperties::class) {
 	destinationFile = outputFile.get()
 	encoding = "UTF-8"
 	property("purecipes.googleWebClientId", googleWebClientId())
-	property("purecipes.firebaseProjectId", firebaseProjectId())
-	property("purecipes.firebaseProjectNumber", firebaseProjectNumber())
+	property("purecipes.firebaseProjectId", firebaseProjectId("release"))
+	property("purecipes.firebaseProjectNumber", firebaseProjectNumber("release"))
 }
 
 kotlin {
@@ -78,9 +128,12 @@ application {
 		googleWebClientId().orNull
 			?.takeIf { it.isNotBlank() }
 			?.let { add("-Dpurecipes.googleWebClientId=$it") }
-		firebaseProjectId().orNull
-			?.takeIf { it.isNotBlank() }
+		localFirebaseProjectId()
+			.takeIf { it.isNotBlank() }
 			?.let { add("-Dpurecipes.firebaseProjectId=$it") }
+		localFirebaseProjectNumber()
+			.takeIf { it.isNotBlank() }
+			?.let { add("-Dpurecipes.firebaseProjectNumber=$it") }
 	}
 }
 

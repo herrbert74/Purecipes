@@ -25,6 +25,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.favorites.ui.FavoritesScreen
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.recipedetails.ui.RECIPE_DETAILS_CONTENT_TAG
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
@@ -102,6 +103,11 @@ class MainScreenHardwareBackTest {
 					mainViewModel.start()
 				}
 				val tabBackStack = mainViewModel.rememberActiveTabBackStack()
+				TrackActiveScreenViews(
+					selectedTab = mainViewModel.selectedTab,
+					backStack = tabBackStack,
+					screenViewTracker = mainViewModel.screenViewTracker,
+				)
 				NavigationBackHandler(
 					enabled = true,
 					backStackDepth = tabBackStack.size,

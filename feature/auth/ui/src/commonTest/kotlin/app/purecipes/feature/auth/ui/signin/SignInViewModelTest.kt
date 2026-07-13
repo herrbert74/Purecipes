@@ -1,6 +1,13 @@
 package app.purecipes.feature.auth.ui.signin
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
+import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
@@ -10,7 +17,9 @@ import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
@@ -41,6 +50,51 @@ class SignInViewModelTest {
 
 		ObserveAuthenticationStateUseCase(repository)().first()
 			.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+	}
+
+	@Test
+	fun `successful email sign in tracks sign in completed`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val crashRepository = FakeCrashRepository()
+		val repository = FakeAuthenticationRepository(
+			signInWithEmailHandler = { _, _ ->
+				Ok(fakeAuthUser())
+			},
+		)
+		val viewModel = createViewModel(repository, analyticsRepository, crashRepository)
+
+		viewModel.onPasswordChange("secret")
+		viewModel.submitSignIn()
+
+		advanceUntilIdle()
+
+		analyticsRepository.trackedEvents shouldBe listOf(
+			AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.EMAIL),
+		)
+		crashRepository.breadcrumbs shouldBe listOf(
+			CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.EMAIL),
+		)
+	}
+
+	@Test
+	fun `failed email sign in reports handled exception`() = runViewModelTest {
+		val crashRepository = FakeCrashRepository()
+		val repository = FakeAuthenticationRepository(
+			signInWithEmailHandler = { _, _ ->
+				Err(Failure.ServerError(INCORRECT_EMAIL_OR_PASSWORD_MESSAGE))
+			},
+		)
+		val viewModel = createViewModel(repository, crashRepository = crashRepository)
+
+		viewModel.onPasswordChange("secret")
+		viewModel.submitSignIn()
+
+		advanceUntilIdle()
+
+		crashRepository.breadcrumbs shouldBe listOf(
+			CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.EMAIL),
+		)
+		crashRepository.handledExceptions.map { it.message } shouldBe listOf(AnalyticsErrorKind.SERVER_ERROR)
 	}
 
 	@Test
@@ -83,12 +137,9 @@ class SignInViewModelTest {
 	@Test
 	fun `sign in with invalid email shows email field error`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository()
-		val viewModel = SignInViewModel(
-			signInWithEmail = SignInWithEmailUseCase(repository),
-			resendEmailVerification = ResendEmailVerificationUseCase(repository),
-			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+		val viewModel = createViewModel(
+			repository = repository,
 			initialEmail = "not-an-email",
-			showRegistrationSuccessMessage = false,
 		)
 
 		viewModel.onPasswordChange("secret")
@@ -102,12 +153,8 @@ class SignInViewModelTest {
 
 	@Test
 	fun `registration success shows info message`() = runViewModelTest {
-		val repository = FakeAuthenticationRepository()
-		val viewModel = SignInViewModel(
-			signInWithEmail = SignInWithEmailUseCase(repository),
-			resendEmailVerification = ResendEmailVerificationUseCase(repository),
-			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
-			initialEmail = "taylor@example.com",
+		val viewModel = createViewModel(
+			repository = FakeAuthenticationRepository(),
 			showRegistrationSuccessMessage = true,
 		)
 
@@ -133,13 +180,9 @@ class SignInViewModelTest {
 
 	@Test
 	fun `forgot password with blank email shows email field error`() = runViewModelTest {
-		val repository = FakeAuthenticationRepository()
-		val viewModel = SignInViewModel(
-			signInWithEmail = SignInWithEmailUseCase(repository),
-			resendEmailVerification = ResendEmailVerificationUseCase(repository),
-			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+		val viewModel = createViewModel(
+			repository = FakeAuthenticationRepository(),
 			initialEmail = "",
-			showRegistrationSuccessMessage = false,
 		)
 
 		viewModel.sendPasswordResetEmail()
@@ -150,13 +193,22 @@ class SignInViewModelTest {
 		viewModel.infoMessage shouldBe null
 	}
 
-	private fun createViewModel(repository: FakeAuthenticationRepository): SignInViewModel {
+	private fun createViewModel(
+		repository: FakeAuthenticationRepository,
+		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		crashRepository: FakeCrashRepository = FakeCrashRepository(),
+		initialEmail: String = "taylor@example.com",
+		showRegistrationSuccessMessage: Boolean = false,
+	): SignInViewModel {
 		return SignInViewModel(
 			signInWithEmail = SignInWithEmailUseCase(repository),
 			resendEmailVerification = ResendEmailVerificationUseCase(repository),
 			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
-			initialEmail = "taylor@example.com",
-			showRegistrationSuccessMessage = false,
+			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
+			sendHandledException = SendHandledExceptionUseCase(crashRepository),
+			initialEmail = initialEmail,
+			showRegistrationSuccessMessage = showRegistrationSuccessMessage,
 		)
 	}
 }

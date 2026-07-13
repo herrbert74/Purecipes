@@ -7,10 +7,12 @@ import app.purecipes.shared.data.config.PurecipesConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 @Inject
+@SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 actual class PlatformConsentDataSource actual constructor(
 	purecipesConfig: PurecipesConfig,

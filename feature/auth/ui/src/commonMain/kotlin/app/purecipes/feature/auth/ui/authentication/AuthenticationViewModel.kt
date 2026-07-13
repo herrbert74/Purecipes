@@ -5,9 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.ConsentState
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -39,6 +47,9 @@ class AuthenticationViewModel(
 	private val signOut: SignOutUseCase,
 	observeConsentState: ObserveConsentStateUseCase,
 	private val showConsentForm: ShowConsentFormUseCase,
+	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 ) : ViewModel() {
 
 	val consentState: StateFlow<ConsentState> = observeConsentState()
@@ -83,6 +94,7 @@ class AuthenticationViewModel(
 		}
 		viewModelScope.launch {
 			isBusy = true
+			logBreadcrumb(CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.GOOGLE))
 			val result = signInWithGoogle(
 				GoogleAuthenticationProfile(
 					idToken = idToken,
@@ -91,7 +103,7 @@ class AuthenticationViewModel(
 					profileImageUrl = profileImageUrl,
 				),
 			)
-			message = result.getError()?.message
+			reportSignInOutcome(result.getError(), AnalyticsAuthMethod.GOOGLE)
 			isBusy = false
 		}
 	}
@@ -108,6 +120,7 @@ class AuthenticationViewModel(
 		}
 		viewModelScope.launch {
 			isBusy = true
+			logBreadcrumb(CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.FACEBOOK))
 			val result = signInWithFacebook(
 				FacebookAuthenticationProfile(
 					idToken = idToken,
@@ -116,7 +129,7 @@ class AuthenticationViewModel(
 					profileImageUrl = profileImageUrl,
 				),
 			)
-			message = result.getError()?.message
+			reportSignInOutcome(result.getError(), AnalyticsAuthMethod.FACEBOOK)
 			isBusy = false
 		}
 	}
@@ -134,8 +147,10 @@ class AuthenticationViewModel(
 		}
 		viewModelScope.launch {
 			isBusy = true
+			val method = provider.toAnalyticsAuthMethod()
+			logBreadcrumb(CrashBreadcrumb.signInAttempted(method))
 			val signInResult = signInWithExternalProvider(profile)
-			message = signInResult.getError()?.message
+			reportSignInOutcome(signInResult.getError(), method)
 			isBusy = false
 		}
 	}
@@ -144,6 +159,7 @@ class AuthenticationViewModel(
 		viewModelScope.launch {
 			isBusy = true
 			signOut.invoke()
+			trackEvent(AnalyticsEvent.SignOut)
 			isBusy = false
 		}
 	}
@@ -151,8 +167,21 @@ class AuthenticationViewModel(
 	fun deleteAccount() {
 		viewModelScope.launch {
 			isBusy = true
-			message = deleteAccount.invoke().getError()?.message
+			val error = deleteAccount.invoke().getError()
+			message = error?.message
+			if (error != null) {
+				sendHandledException(error.asHandledException())
+			}
 			isBusy = false
+		}
+	}
+
+	private fun reportSignInOutcome(error: Failure?, method: String) {
+		message = error?.message
+		if (error == null) {
+			trackEvent(AnalyticsEvent.SignInCompleted(method = method))
+		} else {
+			sendHandledException(error.asHandledException())
 		}
 	}
 
@@ -164,5 +193,14 @@ private fun AuthProvider.providerDisplayName(): String {
 		AuthProvider.GOOGLE -> "Google"
 		AuthProvider.APPLE -> "Apple"
 		AuthProvider.FACEBOOK -> "Facebook"
+	}
+}
+
+private fun AuthProvider.toAnalyticsAuthMethod(): String {
+	return when (this) {
+		AuthProvider.EMAIL -> AnalyticsAuthMethod.EMAIL
+		AuthProvider.GOOGLE -> AnalyticsAuthMethod.GOOGLE
+		AuthProvider.APPLE -> AnalyticsAuthMethod.APPLE
+		AuthProvider.FACEBOOK -> AnalyticsAuthMethod.FACEBOOK
 	}
 }

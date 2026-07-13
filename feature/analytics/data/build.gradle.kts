@@ -35,6 +35,7 @@ kotlin {
 		commonTest {
 			dependencies {
 				implementation(project(":shared:testfixtures"))
+				implementation(libs.kotlinx.coroutinesTest)
 			}
 		}
 		androidMain {

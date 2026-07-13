@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
@@ -30,6 +31,13 @@ internal val MainTab.stackId: MainTabStackId
 
 internal val MainTabStackId.saveStateKey: String
 	get() = "main_tab_back_stack_$name"
+
+internal fun MainTabStackId.toAnalyticsActiveTab(): String = when (this) {
+	MainTabStackId.Search -> AnalyticsActiveTab.SEARCH
+	MainTabStackId.Favorites -> AnalyticsActiveTab.FAVORITES
+	MainTabStackId.Create -> AnalyticsActiveTab.CREATE
+	MainTabStackId.Account -> AnalyticsActiveTab.ACCOUNT
+}
 
 internal data class MainTab(
 	val destination: NavKey,

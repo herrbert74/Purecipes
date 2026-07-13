@@ -13,8 +13,17 @@ import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
+import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
+import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
+import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashCustomValueUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
@@ -22,6 +31,7 @@ import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.main.ui.analytics.ScreenViewTracker
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -52,6 +62,10 @@ class MainViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
 	private val refreshConsent: RefreshConsentUseCase,
 	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
+	private val setCrashUserId: SetCrashUserIdUseCase,
+	private val setCrashCustomValue: SetCrashCustomValueUseCase,
+	private val setGlobalProperties: SetGlobalPropertiesUseCase,
+	trackScreenView: TrackScreenViewUseCase,
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
@@ -63,6 +77,8 @@ class MainViewModel(
 ) : ViewModel() {
 
 	val isContentReady: StateFlow<Boolean> = searchReadiness.isReady
+
+	internal val screenViewTracker = ScreenViewTracker(trackScreenView)
 
 	private val tabBackStacks = mutableMapOf<MainTabStackId, NavBackStack<NavKey>>()
 
@@ -130,6 +146,8 @@ class MainViewModel(
 			return
 		}
 		isStarted = true
+		setCrashCustomValue(AnalyticsGlobalProperty.ENVIRONMENT, purecipesConfig.environment())
+		setActiveTabContext(AnalyticsActiveTab.SEARCH)
 		viewModelScope.launch {
 			refreshConsent()
 		}
@@ -228,7 +246,7 @@ class MainViewModel(
 	}
 
 	fun onRecipeSelected(recipeId: Int) {
-		openRecipeDetails(recipeId)
+		openRecipeDetails(recipeId = recipeId, origin = analyticsOriginForSelectedTab())
 	}
 
 	fun onDeepLink(link: PurecipesLink) {
@@ -240,17 +258,25 @@ class MainViewModel(
 
 	private fun navigateToRecipe(recipeId: Int) {
 		selectTab(MainTabStackId.Search)
-		openRecipeDetails(recipeId, stackFor(MainTabStackId.Search))
+		openRecipeDetails(
+			recipeId = recipeId,
+			stack = stackFor(MainTabStackId.Search),
+			origin = AnalyticsOrigin.DEEP_LINK,
+		)
 	}
 
-	private fun openRecipeDetails(recipeId: Int, stack: NavBackStack<NavKey> = activeStack) {
+	private fun openRecipeDetails(
+		recipeId: Int,
+		stack: NavBackStack<NavKey> = activeStack,
+		origin: AnalyticsOrigin,
+	) {
 		while (
 			stack.lastOrNull() is RecipeDetailsDestination ||
-				stack.lastOrNull() is RecipeCookingDestination
+			stack.lastOrNull() is RecipeCookingDestination
 		) {
 			stack.removeAt(stack.lastIndex)
 		}
-		stack += RecipeDetailsDestination(recipeId)
+		stack += RecipeDetailsDestination(recipeId = recipeId, origin = origin.value)
 	}
 
 	private fun navigateToCookbookShare(token: String) {
@@ -348,6 +374,18 @@ class MainViewModel(
 		}
 		previousSessionKey = sessionKey
 		setAnalyticsUserId(sessionKey)
+		setCrashUserId(sessionKey)
+		val userState = if (sessionKey != null) {
+			AnalyticsUserState.LOGGED_IN
+		} else {
+			AnalyticsUserState.ANONYMOUS
+		}
+		setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.USER_STATE to AnalyticsValue.TextValue(userState),
+			),
+		)
+		setCrashCustomValue(AnalyticsGlobalProperty.USER_STATE, userState)
 		viewModelScope.launch {
 			syncSubscriptionUserId(sessionKey)
 		}
@@ -389,6 +427,23 @@ class MainViewModel(
 
 	private fun selectTab(stackId: MainTabStackId) {
 		selectedTab = mainTabs.first { it.stackId == stackId }
+		setActiveTabContext(stackId.toAnalyticsActiveTab())
+	}
+
+	private fun setActiveTabContext(activeTab: String) {
+		setGlobalProperties(
+			mapOf(
+				AnalyticsGlobalProperty.ACTIVE_TAB to AnalyticsValue.TextValue(activeTab),
+			),
+		)
+		setCrashCustomValue(AnalyticsGlobalProperty.ACTIVE_TAB, activeTab)
+	}
+
+	private fun analyticsOriginForSelectedTab(): AnalyticsOrigin = when (selectedTab.stackId) {
+		MainTabStackId.Search -> AnalyticsOrigin.SEARCH
+		MainTabStackId.Favorites -> AnalyticsOrigin.FAVORITES
+		MainTabStackId.Create -> AnalyticsOrigin.CREATE_RECIPE
+		MainTabStackId.Account -> AnalyticsOrigin.ACCOUNT
 	}
 
 	private fun tabRootDestination(tab: MainTab): NavKey = tabRootForStack(tab.stackId)
@@ -406,10 +461,12 @@ class MainViewModel(
 				is SearchDestination -> destination
 				else -> SearchDestination()
 			}
+
 			MainTabStackId.Favorites -> when (destination) {
 				is FavoritesDestination -> destination
 				else -> FavoritesDestination()
 			}
+
 			else -> destination
 		}
 

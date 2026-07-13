@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -14,6 +16,7 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
@@ -86,5 +89,7 @@ private fun stepByStepCookingViewModelForTest(
 	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 	recipeId = recipeId,
 )

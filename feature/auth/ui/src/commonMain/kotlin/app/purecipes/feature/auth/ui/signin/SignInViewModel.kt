@@ -5,6 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.asHandledException
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
@@ -26,6 +33,9 @@ class SignInViewModel(
 	private val signInWithEmail: SignInWithEmailUseCase,
 	private val resendEmailVerification: ResendEmailVerificationUseCase,
 	private val sendPasswordResetEmail: SendPasswordResetEmailUseCase,
+	private val trackEvent: TrackEventUseCase,
+	private val logBreadcrumb: LogBreadcrumbUseCase,
+	private val sendHandledException: SendHandledExceptionUseCase,
 	@Assisted initialEmail: String,
 	@Assisted showRegistrationSuccessMessage: Boolean,
 ) : ViewModel() {
@@ -72,8 +82,15 @@ class SignInViewModel(
 		passwordError = null
 		viewModelScope.launch {
 			isBusy = true
+			logBreadcrumb(CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.EMAIL))
 			val result = signInWithEmail(email, password)
-			setSignInError(result.getError()?.message)
+			val error = result.getError()
+			setSignInError(error?.message)
+			if (error == null) {
+				trackEvent(AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.EMAIL))
+			} else {
+				sendHandledException(error.asHandledException())
+			}
 			isBusy = false
 		}
 	}

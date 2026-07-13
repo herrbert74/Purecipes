@@ -4,12 +4,13 @@ import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.InitializeAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
-import app.purecipes.feature.analytics.data.repository.AnalyticsDataModule
 import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
+import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.data.repository.AuthenticationDataModule
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -68,7 +69,6 @@ import app.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 
 interface CommonAppGraph :
-	AnalyticsDataModule,
 	AuthenticationDataModule,
 	DataNetworkModule,
 	ViewModelGraph {
@@ -81,9 +81,13 @@ interface CommonAppGraph :
 
 	val setAnalyticsUserIdUseCase: SetAnalyticsUserIdUseCase
 
+	val setGlobalPropertiesUseCase: SetGlobalPropertiesUseCase
+
 	val showConsentFormUseCase: ShowConsentFormUseCase
 
 	val trackEventUseCase: TrackEventUseCase
+
+	val trackScreenViewUseCase: TrackScreenViewUseCase
 
 	val observeAuthenticationStateUseCase: ObserveAuthenticationStateUseCase
 

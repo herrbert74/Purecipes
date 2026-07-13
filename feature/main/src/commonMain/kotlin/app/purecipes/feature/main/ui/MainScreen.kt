@@ -23,6 +23,7 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
 import app.purecipes.feature.favorites.ui.navigation.installFavoritesFlow
+import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
 import app.purecipes.feature.search.ui.navigation.installSearchFlow
@@ -75,6 +76,11 @@ private fun MainScreenContent(
 		val mainContent: @Composable () -> Unit = {
 			if (mainContentReady) {
 				val tabBackStack = viewModel.rememberActiveTabBackStack()
+				TrackActiveScreenViews(
+					selectedTab = viewModel.selectedTab,
+					backStack = tabBackStack,
+					screenViewTracker = viewModel.screenViewTracker,
+				)
 				val authenticationState = viewModel.authenticationState
 				val sessionKey = when (authenticationState) {
 					is AuthenticationState.SignedIn -> authenticationState.user.id

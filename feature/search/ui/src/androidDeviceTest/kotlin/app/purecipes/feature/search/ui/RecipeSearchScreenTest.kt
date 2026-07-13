@@ -13,6 +13,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
+import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -52,6 +54,7 @@ import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -632,6 +635,8 @@ private fun recipeSearchViewModelForTest(
 	getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
 	searchRecipes = SearchRecipesUseCase(searchRepository),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 	getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 	saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
 	getUserPantry = GetUserPantryUseCase(pantryRepository),

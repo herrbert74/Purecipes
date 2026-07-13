@@ -1,5 +1,6 @@
 package app.purecipes.feature.main.ui
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
@@ -122,7 +123,10 @@ class MainViewModelStartTest {
 		viewModel.start()
 		links.emit(PurecipesLink.Recipe(77))
 
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(77))
+		viewModel.peekBackStack() shouldBe listOf(
+			SearchDestination(),
+			RecipeDetailsDestination(77, origin = AnalyticsOrigin.DEEP_LINK.value),
+		)
 	}
 
 	@Test

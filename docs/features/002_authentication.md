@@ -19,31 +19,48 @@ For Google client ID setup, Firebase checklist, and legacy staged-flow notes, se
 
 ### What the app expects today
 - The current implementation reads `googleWebClientId()` from `PurecipesConfig`.
-- That value is now populated from one of these inputs, in this order:
-    1. Gradle property `purecipes.googleWebClientId`
-    2. Gradle property `PURECIPES_GOOGLE_WEB_CLIENT_ID`
-    3. Environment variable `PURECIPES_GOOGLE_WEB_CLIENT_ID`
-- The value is compiled into Android `BuildConfig` and umbrella `BuildKonfig`, then exposed to Android, iOS, and Wasm through the shared config interface.
+- On Android, that value is now build-type specific so debug builds use the **purecipes-debug** Firebase web client ID and release builds use **purecipes-50e5c**:
+    1. Gradle property `purecipes.googleWebClientId.<buildType>` (for example `.debug` / `.release`)
+    2. For non-debug builds only: `purecipes.googleWebClientId`, `PURECIPES_GOOGLE_WEB_CLIENT_ID`, or the env var of the same name
+    3. Built-in defaults matching `client_type` 3 in `app/src/<buildType>/google-services.json`
+- Debug ignores the legacy single `purecipes.googleWebClientId` on purpose: that value is the production web client and breaks Google Sign-In against `purecipes-debug`.
+- iOS and Wasm still read the shared umbrella BuildKonfig web client ID (production Firebase).
+
+### Debug Firebase checklist (Android)
+After switching debug analytics to `purecipes-debug`, Google Sign-In needs the debug project fully set up:
+
+1. Firebase Console → **purecipes-debug** → Authentication → enable the **Google** provider.
+2. Project settings → Android app `app.purecipes.debug` → add the debug keystore SHA-1 (`FA:09:90:0A:96:65:48:9A:9A:6B:70:A5:D9:E7:3F:D2:16:5F:CA:55`).
+3. Re-download `google-services.json` into `app/src/debug/google-services.json` (it should gain a `client_type` 1 Android OAuth client with that certificate hash).
+4. Rebuild the debug app so `BuildConfig.PURECIPES_GOOGLE_WEB_CLIENT_ID` matches the debug web client (`740437012648-…`).
+
+Local `:backend:run` trusts Firebase projects resolved for **debug**, **release**, and **staging** (defaults: `purecipes-debug` + `purecipes-50e5c`). Packaged/production backends embed the **release** project only; keep CI/production on `PURECIPES_FIREBASE_PROJECT_ID=purecipes-50e5c` (or `purecipes.firebaseProjectId.release`).
+
+### Recommended local configuration
+- Optional overrides in `~/.gradle/gradle.properties`:
+
+```properties
+purecipes.googleWebClientId.debug=740437012648-ujd18e6l3pn7co7nslloofr9fvqq08mm.apps.googleusercontent.com
+purecipes.googleWebClientId.release=922845075790-aiom7ev08u8uamcrlt9714kfmfumked7.apps.googleusercontent.com
+purecipes.firebaseProjectId.debug=purecipes-debug
+purecipes.firebaseProjectId.release=purecipes-50e5c
+purecipes.firebaseProjectNumber.debug=740437012648
+purecipes.firebaseProjectNumber.release=922845075790
+```
+
+- Release/CI can keep a single env/secret (used as the non-debug fallback):
+
+```bash
+export PURECIPES_GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+export PURECIPES_FIREBASE_PROJECT_ID=purecipes-50e5c
+export PURECIPES_FIREBASE_PROJECT_NUMBER=922845075790
+```
 
 ### What is secret and what is not
 - The Google web client ID is not a secret. It is safe to compile into the app.
 - A Google OAuth client secret must never be shipped in the app.
 - Firebase web `apiKey` is also not a secret. It identifies the Firebase app, but it does not grant privileged backend access by itself.
 - Private service credentials must stay on the backend or in CI secrets, not in the client app.
-
-### Recommended local configuration
-- Add the client ID to your user Gradle properties file or an uncommitted project override.
-- Example in `~/.gradle/gradle.properties`:
-
-```properties
-purecipes.googleWebClientId=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
-```
-
-- You can also export it as an environment variable:
-
-```bash
-export PURECIPES_GOOGLE_WEB_CLIENT_ID=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
-```
 
 ### Do you need Firebase for the current Google button?
 - Not necessarily for the current staged Android and Wasm Google flow. The current button only needs a valid Google web client ID.

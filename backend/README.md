@@ -22,7 +22,8 @@ Set environment variables (defaults shown):
 
 - `PURECIPES_BACKEND_PORT` (default: `8080`)
 - `PURECIPES_GOOGLE_WEB_CLIENT_ID` (required for Google sign-in verification)
-- `PURECIPES_FIREBASE_PROJECT_ID` (default: `purecipes-50e5c`, required for Firebase email sign-in token verification). Use the Firebase **project ID** from Project settings (for example `purecipes-50e5c`), not the Google web client ID and not an authorized domain.
+- `PURECIPES_FIREBASE_PROJECT_ID` — **release** Firebase project for packaged jars (default `purecipes-50e5c`). Prefer per-build-type Gradle properties locally; see below. Use the Firebase **project ID** from Project settings, not the Google web client ID and not an authorized domain.
+- Local `:backend:run` trusts the distinct union of debug + release + staging resolved project IDs/numbers (CSV passed to the verifier).
 - `PURECIPES_DB_URL` (default: `jdbc:postgresql://localhost:5432/purecipes`)
 - `PURECIPES_DB_USER` (default: `postgres`)
 - `PURECIPES_DB_PASSWORD` (default: `postgres`)
@@ -40,11 +41,16 @@ The Google web client ID can also come from Gradle properties, using the same lo
 - `PURECIPES_GOOGLE_WEB_CLIENT_ID`
 - environment variable `PURECIPES_GOOGLE_WEB_CLIENT_ID`
 
-The Firebase project ID can also come from Gradle properties, using the same lookup order:
+The Firebase project ID / number use the same per-build-type pattern as Mixpanel and Google Web Client IDs:
 
-- `purecipes.firebaseProjectId`
-- `PURECIPES_FIREBASE_PROJECT_ID`
-- environment variable `PURECIPES_FIREBASE_PROJECT_ID`
+- `purecipes.firebaseProjectId.debug` / `.staging` / `.release` (and the matching `purecipes.firebaseProjectNumber.*`)
+- Non-debug fallback: `purecipes.firebaseProjectId` / `PURECIPES_FIREBASE_PROJECT_ID` (Gradle property or env), same for project number
+- Defaults: debug → `purecipes-debug` / `740437012648`; release & staging → `purecipes-50e5c` / `922845075790`
+
+Debug ignores the legacy single `purecipes.firebaseProjectId` / `PURECIPES_FIREBASE_PROJECT_ID` so a production-only CI secret does not override local debug trust.
+
+- Packaged `shadowJar` embeds the **release** resolution only.
+- Local `:backend:run` trusts the distinct union of debug, release, and staging resolutions.
 
 When you launch the packaged backend via the shadow jar, Gradle properties are embedded into the jar at build time through a generated resource. If you change the client ID property, rebuild the jar before restarting the backend. See [Gradle tasks](#gradle-tasks-run-build-and-shadowjar) above for when to use `run` vs `shadowJar`.
 
