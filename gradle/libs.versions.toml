@@ -21,7 +21,7 @@ kotlin = "2.4.0"
 kotlinx-collections = "0.5.1"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
-ksp = "2.3.9"
+ksp = "2.3.10"
 
 #other
 
@@ -57,43 +57,43 @@ diamondedge-logging = "2.1.1"
 essenty = "2.5.0"
 h2 = "2.4.240"
 #facebook = "16.1.2"
-firebaseBom = "34.15.0"
+firebaseBom = "34.16.0"
 firebaseIosSdk = "12.14.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
 hikariCp = "7.1.0"
-jetbrains-androidXLifecycle = "2.10.0"
+jetbrains-androidXLifecycle = "2.11.0"
 jetBrains-compose = "1.11.1"
 jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
-jUnit5 = "6.1.1"
+jUnit5 = "6.1.2"
 kmpauth = "2.5.0-alpha01"
 kmpnotifier = "2.0.0"
-kotest = "6.2.1"
+kotest = "6.2.2"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.5.1"
 ktorfit = "2.7.5"
-metro = "1.3.0"
-mixpanelAndroid = "8.8.0"
+metro = "1.3.1"
+mixpanelAndroid = "8.9.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.4.2"
 multiplatform-settings = "1.3.0"
 okhttp = "5.4.0"
 #parcelize-darwin = "0.2.4"
-playServicesAds = "24.4.0"
-postgresql = "42.7.12"
-revenueCat = "3.0.5"
+playServicesAds = "24.9.0"
+postgresql = "42.7.13"
+revenueCat = "3.2.1"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
-shadow = "9.4.3"
+shadow = "9.5.1"
 #skie = "0.10.4"
 testcontainers = "2.0.5"
 tensorflow-java = "1.1.0"
 uri-kmp = "0.0.21"
-usercentrics = "2.27.3"
+usercentrics = "2.28.0"
 
 [libraries]
 
@@ -274,7 +274,7 @@ jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
 jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
 #jUnit5-jupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit5" }
-jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.1" }
+jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.2" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
 kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
