@@ -101,5 +101,9 @@ class AnalyticsAccessor internal constructor(
 	private fun applyTrackingEnabled(consentState: ConsentState) {
 		val isEnabled = consentState.allowsAnalytics()
 		analyticsDataSources.forEach { it.setTrackingEnabled(isEnabled) }
+		if (isEnabled && globalProperties.isNotEmpty()) {
+			val snapshot = globalProperties.toMap()
+			analyticsDataSources.forEach { it.setGlobalProperties(snapshot) }
+		}
 	}
 }

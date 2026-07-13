@@ -1,6 +1,7 @@
 package app.purecipes.shared.data.config
 
 interface PurecipesConfig {
+
 	fun buildType(): PurecipesBuildType
 
 	fun versionName(): String

@@ -94,6 +94,7 @@ The app reads analytics configuration from the platform-specific build config la
   * Mixpanel project token (per build type, with fallback):
     * `purecipes.mixpanelProjectToken.debug` / `.staging` / `.release`
     * fallback: `purecipes.mixpanelProjectToken` or `PURECIPES_MIXPANEL_PROJECT_TOKEN`
+  * Mixpanel uses the EU API endpoint (`https://api-eu.mixpanel.com`) as a hard-coded constant matching project residency
   * Google Sign-In web client ID (per Android build type; debug must match `purecipes-debug`):
     * `purecipes.googleWebClientId.debug` / `.staging` / `.release`
     * non-debug fallback: `purecipes.googleWebClientId` or `PURECIPES_GOOGLE_WEB_CLIENT_ID`

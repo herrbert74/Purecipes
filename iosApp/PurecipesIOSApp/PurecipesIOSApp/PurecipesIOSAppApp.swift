@@ -114,8 +114,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
     private func installAnalyticsBridges() {
         IosAnalyticsNativeBridge.shared.registerMixpanelHandlers(
-            initialize: { [weak self] token in
-                self?.initializeMixpanel(token: token)
+            initialize: { [weak self] token, serverUrl in
+                self?.initializeMixpanel(token: token, serverUrl: serverUrl)
             },
             trackEvent: { [weak self] eventName, propertiesJSON in
                 self?.trackMixpanelEvent(eventName: eventName, propertiesJSON: propertiesJSON)
@@ -206,7 +206,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
     #endif
 
-    private func initializeMixpanel(token: String) {
+    private func initializeMixpanel(token: String, serverUrl: String) {
         #if canImport(Mixpanel)
         guard mixpanelInstance == nil else {
             return
@@ -220,8 +220,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             optOutTrackingByDefault: false,
             useUniqueDistinctId: false,
             superProperties: nil,
+            serverURL: serverUrl.isEmpty ? nil : serverUrl,
             useGzipCompression: false
         )
+        #if DEBUG
+        mixpanelInstance?.loggingEnabled = true
+        #endif
         #endif
     }
 

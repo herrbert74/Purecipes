@@ -68,7 +68,7 @@ actual class MixpanelAnalyticsDataSource actual constructor(
 		if (isInitialized) {
 			return
 		}
-		IosAnalyticsNativeBridge.initializeMixpanel(token)
+		IosAnalyticsNativeBridge.initializeMixpanel(token, MIXPANEL_SERVER_URL)
 		isInitialized = true
 	}
 }

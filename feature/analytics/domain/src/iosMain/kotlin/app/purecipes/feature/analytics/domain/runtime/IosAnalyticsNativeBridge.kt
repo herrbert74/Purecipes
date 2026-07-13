@@ -2,7 +2,7 @@ package app.purecipes.feature.analytics.domain.runtime
 
 object IosAnalyticsNativeBridge {
 
-	private var initializeMixpanelHandler: ((String) -> Unit)? = null
+	private var initializeMixpanelHandler: ((String, String) -> Unit)? = null
 	private var trackMixpanelEventHandler: ((String, String) -> Unit)? = null
 	private var setMixpanelTrackingEnabledHandler: ((Boolean) -> Unit)? = null
 	private var setMixpanelUserIdHandler: ((String?) -> Unit)? = null
@@ -12,7 +12,7 @@ object IosAnalyticsNativeBridge {
 	private var startConsentObserverHandler: ((String, (String) -> Unit) -> Unit)? = null
 
 	fun registerMixpanelHandlers(
-		initialize: (String) -> Unit,
+		initialize: (String, String) -> Unit,
 		trackEvent: (String, String) -> Unit,
 		setTrackingEnabled: (Boolean) -> Unit,
 		setUserId: (String?) -> Unit,
@@ -35,8 +35,8 @@ object IosAnalyticsNativeBridge {
 		startConsentObserverHandler = startObserving
 	}
 
-	fun initializeMixpanel(token: String) {
-		initializeMixpanelHandler?.invoke(token)
+	fun initializeMixpanel(token: String, serverUrl: String) {
+		initializeMixpanelHandler?.invoke(token, serverUrl)
 	}
 
 	fun trackMixpanelEvent(eventName: String, propertiesJson: String) {

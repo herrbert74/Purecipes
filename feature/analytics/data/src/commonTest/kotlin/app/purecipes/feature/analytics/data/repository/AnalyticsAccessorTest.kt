@@ -9,6 +9,7 @@ import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -204,6 +205,30 @@ class AnalyticsAccessorTest {
 	}
 
 	@Test
+	fun `consent enablement re-applies global properties`() = runAnalyticsTest {
+		val dataSource = RecordingAnalyticsDataSource()
+		val consentRepository = FakeConsentRepository(ConsentState.DENIED)
+		createAccessor(
+			analyticsDataSources = setOf(dataSource),
+			consentRepository = consentRepository,
+		)
+
+		dataSource.setGlobalPropertiesCallCount shouldBe 1
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.ENVIRONMENT) shouldBe
+			AnalyticsValue.TextValue("debug")
+
+		consentRepository.updateConsentState(ConsentState.OBTAINED)
+
+		dataSource.setGlobalPropertiesCallCount shouldBeGreaterThan 1
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.ENVIRONMENT) shouldBe
+			AnalyticsValue.TextValue("debug")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.PLATFORM) shouldBe
+			AnalyticsValue.TextValue("desktop")
+		dataSource.lastGlobalProperties?.get(AnalyticsGlobalProperty.APP_VERSION) shouldBe
+			AnalyticsValue.TextValue("1.2.3-test")
+	}
+
+	@Test
 	fun `init sets static global properties`() = runAnalyticsTest {
 		val dataSource = RecordingAnalyticsDataSource()
 		createAccessor(
@@ -320,6 +345,7 @@ class AnalyticsAccessorTest {
 		var lastTrackingEnabled: Boolean? = null
 		var lastUserId: String? = null
 		var setTrackingEnabledCallCount = 0
+		var setGlobalPropertiesCallCount = 0
 
 		override fun trackEvent(eventName: String, properties: Map<String, AnalyticsValue>) {
 			lastTrackedEventName = eventName
@@ -332,6 +358,7 @@ class AnalyticsAccessorTest {
 		}
 
 		override fun setGlobalProperties(properties: Map<String, AnalyticsValue>) {
+			setGlobalPropertiesCallCount += 1
 			lastGlobalProperties = properties
 		}
 

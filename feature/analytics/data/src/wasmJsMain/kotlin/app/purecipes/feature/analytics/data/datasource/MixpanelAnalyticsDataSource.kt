@@ -16,7 +16,7 @@ actual class MixpanelAnalyticsDataSource actual constructor(
 	private var isTrackingEnabled = purecipesConfig.usercentricsSettingsId().isNullOrBlank()
 
 	init {
-		mixpanelEnsureInitialized(token)
+		mixpanelEnsureInitialized(token, MIXPANEL_SERVER_URL)
 		setTrackingEnabled(isTrackingEnabled)
 	}
 
@@ -67,7 +67,7 @@ actual class MixpanelAnalyticsDataSource actual constructor(
 
 @JsFun(
 	"""
-	(token) => {
+	(token, serverUrl) => {
 		if (!token || !globalThis.document || globalThis.__purecipesMixpanelInit) {
 			return;
 		}
@@ -119,12 +119,12 @@ actual class MixpanelAnalyticsDataSource actual constructor(
 				g.parentNode.insertBefore(e, g);
 			}
 		})(document, window.mixpanel || []);
-		globalThis.mixpanel.init(token, { persistence: 'localStorage', autocapture: false, track_pageview: false, opt_out_tracking_by_default: true });
+		globalThis.mixpanel.init(token, { persistence: 'localStorage', autocapture: false, track_pageview: false, opt_out_tracking_by_default: true, api_host: serverUrl });
 		globalThis.__purecipesMixpanelInit = true;
 	}
 """
 )
-private external fun mixpanelEnsureInitialized(token: String)
+private external fun mixpanelEnsureInitialized(token: String, serverUrl: String)
 
 @JsFun(
 	"""
