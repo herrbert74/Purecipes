@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "740437012648-mtjjebgmslrc0rk4cvot2d2mgeqkk1fv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.purecipes.debug",
+            "certificate_hash": "fa09900a9665489a9a6b70a5d9e73fd2165fca55"
+          }
+        },
+        {
           "client_id": "740437012648-ujd18e6l3pn7co7nslloofr9fvqq08mm.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -31,7 +31,6 @@ android {
 		targetSdk = libs.versions.targetSdkVersion.get().toInt()
 		versionCode = libs.versions.versionCode.get().toInt()
 		versionName = libs.versions.versionName.get()
-		buildConfigField("String", "PURECIPES_GOOGLE_WEB_CLIENT_ID", googleWebClientId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_REVENUECAT_TEST_API_KEY", revenueCatTestApiKey().asBuildConfigString())
@@ -65,6 +64,11 @@ android {
 			applicationIdSuffix = ".debug"
 			buildConfigField(
 				"String",
+				"PURECIPES_GOOGLE_WEB_CLIENT_ID",
+				googleWebClientId("debug").asBuildConfigString(),
+			)
+			buildConfigField(
+				"String",
 				"PURECIPES_DEBUG_BACKEND_HOST",
 				purecipesDebugBackendHost().asBuildConfigString(),
 			)
@@ -80,6 +84,11 @@ android {
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+			buildConfigField(
+				"String",
+				"PURECIPES_GOOGLE_WEB_CLIENT_ID",
+				googleWebClientId("release").asBuildConfigString(),
+			)
 			buildConfigField(
 				"String",
 				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
@@ -99,6 +108,11 @@ android {
 			applicationIdSuffix = ".staging"
 			signingConfig = signingConfigs.getByName("debug")
 			matchingFallbacks += listOf("release")
+			buildConfigField(
+				"String",
+				"PURECIPES_GOOGLE_WEB_CLIENT_ID",
+				googleWebClientId("staging").asBuildConfigString(),
+			)
 			buildConfigField(
 				"String",
 				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
@@ -190,12 +204,27 @@ private fun Project.releaseSigningKeyPassword(): String {
 		.orEmpty()
 }
 
-private fun Project.googleWebClientId(): String {
-	return providers.gradleProperty("purecipes.googleWebClientId")
-		.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
-		.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+private fun Project.googleWebClientId(buildType: String): String {
+	val buildTypeSpecific = providers.gradleProperty("purecipes.googleWebClientId.$buildType")
 		.orNull
-		.orEmpty()
+		?.takeIf { it.isNotBlank() }
+	val legacy = if (buildType == "debug") {
+		null
+	} else {
+		providers.gradleProperty("purecipes.googleWebClientId")
+			.orElse(providers.gradleProperty("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+			.orElse(providers.environmentVariable("PURECIPES_GOOGLE_WEB_CLIENT_ID"))
+			.orNull
+			?.takeIf { it.isNotBlank() }
+	}
+	return buildTypeSpecific ?: legacy ?: defaultGoogleWebClientId(buildType)
+}
+
+private fun defaultGoogleWebClientId(buildType: String): String {
+	return when (buildType) {
+		"debug" -> "740437012648-ujd18e6l3pn7co7nslloofr9fvqq08mm.apps.googleusercontent.com"
+		else -> "922845075790-aiom7ev08u8uamcrlt9714kfmfumked7.apps.googleusercontent.com"
+	}
 }
 
 private fun Project.gaMeasurementId(): String {
