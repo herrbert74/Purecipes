@@ -95,6 +95,10 @@ The app reads analytics configuration from the platform-specific build config la
     * `purecipes.mixpanelProjectToken.debug` / `.staging` / `.release`
     * fallback: `purecipes.mixpanelProjectToken` or `PURECIPES_MIXPANEL_PROJECT_TOKEN`
   * Mixpanel uses the EU API endpoint (`https://api-eu.mixpanel.com`) as a hard-coded constant matching project residency
+  * RevenueCat public SDK API key (per build type, with fallback):
+    * `purecipes.revenueCatApiKey.debug` / `.staging` / `.release`
+    * fallback: `purecipes.revenueCatApiKey` or `PURECIPES_REVENUECAT_API_KEY`
+    * Android release must use a Google Play key (`goog_…`); iOS release must use an App Store key (`appl_…`); debug/staging typically use the Test Store key (`test_…`)
   * Google Sign-In web client ID (per Android build type; debug must match `purecipes-debug`):
     * `purecipes.googleWebClientId.debug` / `.staging` / `.release`
     * non-debug fallback: `purecipes.googleWebClientId` or `PURECIPES_GOOGLE_WEB_CLIENT_ID`

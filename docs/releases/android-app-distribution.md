@@ -26,6 +26,7 @@ Prepare releases locally with the GitHub MCP server: [`.agents/instructions/andr
 | `PURECIPES_GOOGLE_WEB_CLIENT_ID` | Google Sign-In web client ID (Gradle `BuildConfig`; same value as `client_type` 3 in release `google-services.json`, not a secret but stored here for CI). Non-debug fallback only; debug uses `purecipes.googleWebClientId.debug` / built-in debug default. |
 | `PURECIPES_FIREBASE_PROJECT_ID` | Optional for distribute; backend release packaging uses this as the non-debug Firebase project fallback (default `purecipes-50e5c`). Local dual-build uses `purecipes.firebaseProjectId.debug` / `.release` instead. |
 | `PURECIPES_MIXPANEL_PROJECT_TOKEN` | Mixpanel project token for release builds (Gradle `BuildConfig` via env fallback; use the release Mixpanel project) |
+| `PURECIPES_REVENUECAT_API_KEY` | RevenueCat Google Play SDK key for release builds (`goog_…`; passed as `purecipes.revenueCatApiKey.release`) |
 | `PURECIPES_ADMOB_APP_ID` | Production AdMob app ID (`ca-app-pub-…~…`; Gradle `BuildConfig` + AndroidManifest placeholder) |
 | `PURECIPES_ADMOB_BANNER_AD_UNIT_ID` | Production AdMob banner ad unit ID (`ca-app-pub-…/…`) |
 | `PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID` | Production AdMob interstitial ad unit ID (`ca-app-pub-…/…`) |

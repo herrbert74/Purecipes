@@ -33,7 +33,6 @@ android {
 		versionName = libs.versions.versionName.get()
 		buildConfigField("String", "PURECIPES_GA_MEASUREMENT_ID", gaMeasurementId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
-		buildConfigField("String", "PURECIPES_REVENUECAT_TEST_API_KEY", revenueCatTestApiKey().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_ADMOB_APP_ID", admobAppId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_ADMOB_BANNER_AD_UNIT_ID", admobBannerAdUnitId().asBuildConfigString())
 		buildConfigField(
@@ -77,6 +76,11 @@ android {
 				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
 				mixpanelProjectToken("debug").asBuildConfigString(),
 			)
+			buildConfigField(
+				"String",
+				"PURECIPES_REVENUECAT_API_KEY",
+				revenueCatApiKey("debug").asBuildConfigString(),
+			)
 		}
 		release {
 			isMinifyEnabled = true
@@ -93,6 +97,11 @@ android {
 				"String",
 				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
 				mixpanelProjectToken("release").asBuildConfigString(),
+			)
+			buildConfigField(
+				"String",
+				"PURECIPES_REVENUECAT_API_KEY",
+				revenueCatApiKey("release").asBuildConfigString(),
 			)
 			firebaseAppDistribution {
 				artifactType = "APK"
@@ -117,6 +126,11 @@ android {
 				"String",
 				"PURECIPES_MIXPANEL_PROJECT_TOKEN",
 				mixpanelProjectToken("staging").asBuildConfigString(),
+			)
+			buildConfigField(
+				"String",
+				"PURECIPES_REVENUECAT_API_KEY",
+				revenueCatApiKey("staging").asBuildConfigString(),
 			)
 		}
 	}
@@ -252,10 +266,11 @@ private fun Project.usercentricsSettingsId(): String {
 		.orEmpty()
 }
 
-private fun Project.revenueCatTestApiKey(): String {
-	return providers.gradleProperty("purecipes.revenueCatTestApiKey")
-		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_TEST_API_KEY"))
-		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_TEST_API_KEY"))
+private fun Project.revenueCatApiKey(buildType: String): String {
+	return providers.gradleProperty("purecipes.revenueCatApiKey.$buildType")
+		.orElse(providers.gradleProperty("purecipes.revenueCatApiKey"))
+		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_API_KEY"))
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_API_KEY"))
 		.orNull
 		.orEmpty()
 }

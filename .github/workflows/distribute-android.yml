@@ -85,6 +85,19 @@ jobs:
             exit 1
           fi
 
+      - name: Require RevenueCat API key for release build
+        env:
+          PURECIPES_REVENUECAT_API_KEY: ${{ secrets.PURECIPES_REVENUECAT_API_KEY }}
+        run: |
+          if [[ -z "${PURECIPES_REVENUECAT_API_KEY}" ]]; then
+            echo "::error::PURECIPES_REVENUECAT_API_KEY repository secret is required for release builds (RevenueCat Google Play key)." >&2
+            exit 1
+          fi
+          if [[ "${PURECIPES_REVENUECAT_API_KEY}" != goog_* ]]; then
+            echo "::error::PURECIPES_REVENUECAT_API_KEY must be a Google Play SDK key (goog_…)." >&2
+            exit 1
+          fi
+
       - name: Require AdMob IDs for release build
         env:
           PURECIPES_ADMOB_APP_ID: ${{ secrets.PURECIPES_ADMOB_APP_ID }}
@@ -106,6 +119,7 @@ jobs:
         env:
           PURECIPES_GOOGLE_WEB_CLIENT_ID: ${{ secrets.PURECIPES_GOOGLE_WEB_CLIENT_ID }}
           PURECIPES_MIXPANEL_PROJECT_TOKEN: ${{ secrets.PURECIPES_MIXPANEL_PROJECT_TOKEN }}
+          PURECIPES_REVENUECAT_API_KEY: ${{ secrets.PURECIPES_REVENUECAT_API_KEY }}
           PURECIPES_ADMOB_APP_ID: ${{ secrets.PURECIPES_ADMOB_APP_ID }}
           PURECIPES_ADMOB_BANNER_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_BANNER_AD_UNIT_ID }}
           PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID }}
@@ -114,4 +128,5 @@ jobs:
           PURECIPES_SIGNING_KEY_PASSWORD: ${{ secrets.PURECIPES_SIGNING_KEY_PASSWORD }}
         run: |
           ./gradlew :app:assembleRelease :app:appDistributionUploadRelease \
-            -PfirebaseAppDistribution.serviceCredentialsFile="${GOOGLE_APPLICATION_CREDENTIALS}"
+            -PfirebaseAppDistribution.serviceCredentialsFile="${GOOGLE_APPLICATION_CREDENTIALS}" \
+            -Ppurecipes.revenueCatApiKey.release="${PURECIPES_REVENUECAT_API_KEY}"
