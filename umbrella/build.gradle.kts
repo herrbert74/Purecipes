@@ -47,10 +47,11 @@ private fun Project.usercentricsSettingsId(): String {
 		.orEmpty()
 }
 
-private fun Project.revenueCatTestApiKey(): String {
-	return providers.gradleProperty("purecipes.revenueCatTestApiKey")
-		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_TEST_API_KEY"))
-		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_TEST_API_KEY"))
+private fun Project.revenueCatApiKey(buildType: String = currentPurecipesBuildType()): String {
+	return providers.gradleProperty("purecipes.revenueCatApiKey.$buildType")
+		.orElse(providers.gradleProperty("purecipes.revenueCatApiKey"))
+		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_API_KEY"))
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_API_KEY"))
 		.orNull
 		.orEmpty()
 }
@@ -102,7 +103,7 @@ buildkonfig {
 		buildConfigField(STRING, "purecipesGaMeasurementId", gaMeasurementId())
 		buildConfigField(STRING, "purecipesMixpanelProjectToken", mixpanelProjectToken())
 		buildConfigField(STRING, "purecipesUsercentricsSettingsId", usercentricsSettingsId())
-		buildConfigField(STRING, "purecipesRevenueCatTestApiKey", revenueCatTestApiKey())
+		buildConfigField(STRING, "purecipesRevenueCatApiKey", revenueCatApiKey())
 	}
 }
 

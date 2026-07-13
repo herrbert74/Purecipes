@@ -39,7 +39,7 @@ interface IosPurecipesConfigModule {
 			}
 
 			override fun revenueCatApiKey(): String? {
-				return BuildKonfig.purecipesRevenueCatTestApiKey.takeIf { it.isNotBlank() }
+				return BuildKonfig.purecipesRevenueCatApiKey.takeIf { it.isNotBlank() }
 			}
 		}
 	}
