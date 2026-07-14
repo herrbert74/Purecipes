@@ -72,7 +72,7 @@ class MainViewModel(
 	private val decidePreCookInterstitial: DecidePreCookInterstitialUseCase,
 	private val showInterstitialAd: ShowInterstitialAdUseCase,
 	private val purecipesConfig: PurecipesConfig,
-	private val searchReadiness: SearchReadinessCoordinator,
+	searchReadiness: SearchReadinessCoordinator,
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
 ) : ViewModel() {
 
