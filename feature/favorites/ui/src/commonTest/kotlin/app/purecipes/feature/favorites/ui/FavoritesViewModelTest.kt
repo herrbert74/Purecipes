@@ -160,6 +160,52 @@ class FavoritesViewModelTest {
 	}
 
 	@Test
+	fun `signing in loads favorites and observes subsequent favorite events`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModel(
+			favoritesRepository = favoritesRepo,
+			sessionKey = null,
+		)
+
+		viewModel.onSessionKeyChanged("session")
+		viewModel.loadFavorites()
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(listOf(recipe), viewModel.savedRecipes.toList())
+
+		favoritesRepo.getFavoriteRecipesPageResult = Ok(
+			SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 0,
+			),
+		)
+		favoritesRepo.emitFavoriteEvent(FavoriteEvent.Removed(recipeId = recipe.id))
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(emptyList(), viewModel.savedRecipes.toList())
+		kotlin.test.assertEquals(0, viewModel.totalSavedMatches)
+	}
+
+	@Test
 	fun `create cookbook from name rejects duplicate name`() = runViewModelTest {
 		val existingCookbook = CookbookSummary(
 			id = 10,

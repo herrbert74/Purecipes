@@ -19,6 +19,7 @@ import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCas
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
+import app.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
@@ -27,6 +28,7 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
+import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -139,6 +141,40 @@ class RecipeDetailsViewModelTest {
 		viewModel.recipeDetails shouldBe recipe
 		viewModel.errorMessage shouldBe null
 		viewModel.isLoading shouldBe false
+	}
+
+	@Test
+	fun `signing in reloads session-specific recipe details`() = runViewModelTest {
+		val signedOutRecipe = fakeRecipeDetails()
+		val repository = MutableRecipeDetailsRepository(Ok(signedOutRecipe))
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = signedOutRecipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(repository),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+		advanceUntilIdle()
+		viewModel.recipeDetails?.isFavorite shouldBe false
+
+		repository.result = Ok(signedOutRecipe.copy(isFavorite = true))
+		viewModel.onSessionKeyChanged("session")
+		advanceUntilIdle()
+
+		viewModel.recipeDetails?.isFavorite shouldBe true
 	}
 
 	@Test
@@ -372,6 +408,13 @@ class RecipeDetailsViewModelTest {
 		override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> = Ok(Unit)
 
 		override fun observeFavoriteEvents() = emptyFlow<FavoriteEvent>()
+	}
+
+	private class MutableRecipeDetailsRepository(
+		var result: Outcome<RecipeDetails>,
+	) : RecipeDetailsRepository {
+
+		override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> = result
 	}
 
 }
