@@ -5,7 +5,7 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import com.revenuecat.purchases.kmp.models.CustomerInfo
 import com.revenuecat.purchases.kmp.models.PeriodType
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 internal fun CustomerInfo.toSubscriptionState(): SubscriptionState {
 	val entitlement = entitlements[SubscriptionEntitlements.PREMIUM]
@@ -30,5 +30,5 @@ internal fun CustomerInfo.toSubscriptionState(): SubscriptionState {
 	}
 }
 
-private fun kotlin.time.Instant.toKotlinxInstant(): Instant =
+private fun Instant.toKotlinxInstant(): Instant =
 	Instant.fromEpochMilliseconds(toEpochMilliseconds())

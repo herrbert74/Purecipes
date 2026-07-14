@@ -1,6 +1,6 @@
 package app.purecipes.feature.subscription.domain.model
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class SubscriptionState(
 	val status: SubscriptionStatus,

@@ -46,6 +46,8 @@ internal actual fun GoogleAuthenticationButton(
 	val coroutineScope = rememberCoroutineScope()
 	if (isConfigured) {
 		GoogleButtonUiContainerFirebase(
+			linkAccount = false,
+			filterByAuthorizedAccounts = false,
 			onResult = { result ->
 				val failure = result.exceptionOrNull()
 				if (failure != null) {
