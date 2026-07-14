@@ -29,6 +29,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Clock
@@ -55,17 +56,14 @@ class FavoritesViewModel(
 	private val importCookbookShare: ImportCookbookShareUseCase,
 	private val shareCookbook: ShareCookbookUseCase,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
-	@Assisted private val sessionKey: String?,
+	@Assisted sessionKey: String?,
 ) : ViewModel() {
 
+	private var activeSessionKey: String? = sessionKey
+	private var favoriteEventsJob: Job? = null
+
 	init {
-		if (sessionKey != null) {
-			viewModelScope.launch {
-				observeFavoriteEvents().collect {
-					loadFavorites()
-				}
-			}
-		}
+		startFavoriteEventsCollection()
 	}
 
 	var selectedTab by mutableStateOf(FavoritesTab.SavedRecipes)
@@ -154,6 +152,16 @@ class FavoritesViewModel(
 		sharedCookbookImportErrorMessage = null
 	}
 
+	fun onSessionKeyChanged(sessionKey: String?) {
+		if (sessionKey == activeSessionKey) {
+			return
+		}
+		activeSessionKey = sessionKey
+		favoriteEventsJob?.cancel()
+		favoriteEventsJob = null
+		startFavoriteEventsCollection()
+	}
+
 	fun openCookbookDetail(cookbookId: Int, name: String) {
 		viewingCookbookId = cookbookId
 		viewingCookbookName = name
@@ -174,7 +182,7 @@ class FavoritesViewModel(
 	}
 
 	fun loadFavorites() {
-		if (sessionKey == null) {
+		if (activeSessionKey == null) {
 			return
 		}
 		viewModelScope.launch {
@@ -205,8 +213,19 @@ class FavoritesViewModel(
 		loadCookbookDetailPage(FIRST_PAGE_NUMBER)
 	}
 
+	private fun startFavoriteEventsCollection() {
+		if (activeSessionKey == null) {
+			return
+		}
+		favoriteEventsJob = viewModelScope.launch {
+			observeFavoriteEvents().collect {
+				loadFavorites()
+			}
+		}
+	}
+
 	fun importSharedCookbook(shareToken: String) {
-		if (sessionKey == null) {
+		if (activeSessionKey == null) {
 			return
 		}
 		viewModelScope.launch {

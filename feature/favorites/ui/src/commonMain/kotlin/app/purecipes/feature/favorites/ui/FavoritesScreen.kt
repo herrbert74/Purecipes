@@ -88,6 +88,7 @@ fun FavoritesScreen(
 	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
 
 	LaunchedEffect(sessionKey) {
+		viewModel.onSessionKeyChanged(sessionKey)
 		if (sessionKey != null) {
 			viewModel.loadFavorites()
 		}
