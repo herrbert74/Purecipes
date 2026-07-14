@@ -61,9 +61,11 @@ class RecipeDetailsViewModel(
 	private val addRecipeToCookbook: AddRecipeToCookbookUseCase,
 	private val shareRecipe: ShareRecipeUseCase,
 	@Assisted private val recipeId: Int,
-	@Assisted private val sessionKey: String?,
+	@Assisted sessionKey: String?,
 	@Assisted private val origin: String,
 ) : ViewModel() {
+
+	private var activeSessionKey: String? = sessionKey
 
 	private val analyticsOrigin: AnalyticsOrigin =
 		AnalyticsOrigin.fromValue(origin) ?: AnalyticsOrigin.SEARCH
@@ -115,6 +117,20 @@ class RecipeDetailsViewModel(
 
 	fun retry() {
 		loadRecipe()
+	}
+
+	fun onSessionKeyChanged(sessionKey: String?) {
+		if (sessionKey == activeSessionKey) {
+			return
+		}
+		activeSessionKey = sessionKey
+		if (sessionKey == null) {
+			baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = false)
+			recipeDetails = recipeDetails?.copy(isFavorite = false)
+			recipeCookbooks.clear()
+		} else {
+			loadRecipe(shouldTrackAnalytics = false)
+		}
 	}
 
 	fun dismissMeasurementMismatchDialog() {
@@ -241,7 +257,7 @@ class RecipeDetailsViewModel(
 	private fun refreshCookbookMembership() {
 		viewModelScope.launch {
 			cookbookActionError = null
-			if (sessionKey == null) {
+			if (activeSessionKey == null) {
 				recipeCookbooks.clear()
 				return@launch
 			}
@@ -270,7 +286,7 @@ class RecipeDetailsViewModel(
 		}
 	}
 
-	private fun loadRecipe() {
+	private fun loadRecipe(shouldTrackAnalytics: Boolean = true) {
 		viewModelScope.launch {
 			isLoading = true
 			errorMessage = null
@@ -281,12 +297,12 @@ class RecipeDetailsViewModel(
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
-			if (baseRecipeDetails != null) {
+			if (baseRecipeDetails != null && shouldTrackAnalytics) {
 				logBreadcrumb(CrashBreadcrumb.recipeOpened(recipeId))
 				trackEvent(AnalyticsEvent.RecipeViewed(recipeId = recipeId, origin = analyticsOrigin))
 			}
 			val error = outcome.getError()
-			if (error != null) {
+			if (error != null && shouldTrackAnalytics) {
 				sendHandledException(error.asHandledException())
 				trackEvent(
 					AnalyticsEvent.RecipeLoadFailed(
