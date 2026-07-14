@@ -2,10 +2,14 @@ package app.purecipes.feature.search.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,6 +92,7 @@ fun RecipeSearchScreen(
 	Column(
 		modifier = modifier
 			.fillMaxSize()
+			.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top))
 			.padding(PurecipesTheme.space.m),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
@@ -169,6 +174,7 @@ private fun RecipeSearchScreenPreviewContent(
 		Column(
 			modifier = Modifier
 				.fillMaxSize()
+				.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top))
 				.padding(PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
