@@ -4,6 +4,26 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2026-07-17
+
+### Added
+
+- Mark pantry items as required ingredients so every search result contains them.
+- See recipes missing only one ingredient when no exact matches are found.
+- Subscribe to Premium for an ad-free experience; free users now see banner and interstitial ads.
+
+### Changed
+
+- Recipe cards are larger and use recipe images as backgrounds, with clearer titles and cuisine and measurement labels.
+- Release builds use the correct subscription configuration.
+
+### Fixed
+
+- Favourites update immediately after signing in.
+- Network blocks show a friendly error instead of a raw web page.
+- Removed unwanted space above screen headers.
+- Fixed a startup crash affecting release builds.
+
 ## [0.5.0] - 2026-07-03
 
 ### Added
