@@ -4,6 +4,28 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2026-07-17
+
+### Added
+
+- Mark pantry items as required ingredients so every search result contains them.
+- See recipes missing only one ingredient when no exact matches are found.
+- Free users now see banner and interstitial ads, and paywalls on some Recipe filters.
+  - Only the test paywalls are enabled. You can test buying a subscription successfully or unsuccessfully, but this won't remove the paywalls or ads.
+  - To remove the paywalls and ads, go to Account/Settings/Monetisation debug, and switch to Subscription/premium and Ads/Off.
+
+### Changed
+
+- Recipe cards are larger and use recipe images as backgrounds, with clearer titles and cuisine and measurement labels.
+- Analytics improvements: made Mixpanel working and added events for Google Analytics.
+- Improved Crashlytics by adding breadcrumbs to crash reports.
+
+### Fixed
+
+- Favourites update immediately after signing in.
+- Network blocks show a friendly error instead of a raw web page.
+- Removed unwanted space above screen headers.
+
 ## [0.5.0] - 2026-07-03
 
 ### Added
