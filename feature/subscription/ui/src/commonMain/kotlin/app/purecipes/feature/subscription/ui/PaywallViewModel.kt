@@ -42,6 +42,9 @@ class PaywallViewModel(
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
 
+	var successMessage by mutableStateOf<String?>(null)
+		private set
+
 	var isPurchasing by mutableStateOf(false)
 		private set
 
@@ -66,9 +69,13 @@ class PaywallViewModel(
 		viewModelScope.launch {
 			isPurchasing = true
 			errorMessage = null
+			successMessage = null
 			val outcome = purchaseSubscription(packageIdentifier)
-			outcome.getError()?.let { failure ->
+			val failure = outcome.getError()
+			if (failure != null) {
 				errorMessage = failure.message
+			} else {
+				successMessage = "Purchase completed."
 			}
 			isPurchasing = false
 		}
@@ -81,9 +88,13 @@ class PaywallViewModel(
 		viewModelScope.launch {
 			isRestoring = true
 			errorMessage = null
+			successMessage = null
 			val outcome = restorePurchases()
-			outcome.getError()?.let { failure ->
+			val failure = outcome.getError()
+			if (failure != null) {
 				errorMessage = failure.message
+			} else {
+				successMessage = "Purchases restored."
 			}
 			isRestoring = false
 		}

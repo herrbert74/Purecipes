@@ -23,6 +23,8 @@ interface PurecipesConfig {
 
 	fun revenueCatApiKey(): String? = null
 
+	fun showMonetisationDebugOverrides(): Boolean = buildType() != PurecipesBuildType.RELEASE
+
 	fun adMobAppId(): String? = null
 
 	fun adMobBannerAdUnitId(): String? = null

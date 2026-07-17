@@ -92,7 +92,7 @@ class RevenueCatWebhookRouteTest {
 						"event": {
 							"type": "EXPIRATION",
 							"app_user_id": "1",
-							"entitlement_ids": ["premium"]
+							"entitlement_ids": ["Purecipes Pro"]
 						}
 					}
 				""".trimIndent(),
@@ -131,7 +131,7 @@ class RevenueCatWebhookRouteTest {
 				"event": {
 					"type": "INITIAL_PURCHASE",
 					"app_user_id": "$appUserId",
-					"entitlement_ids": ["premium"]
+					"entitlement_ids": ["Purecipes Pro"]
 				}
 			}
 		""".trimIndent()

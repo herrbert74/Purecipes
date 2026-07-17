@@ -18,7 +18,6 @@ import app.purecipes.feature.subscription.domain.model.PremiumStatusOverride
 import app.purecipes.feature.subscription.domain.usecase.ObserveMonetisationDebugOverridesUseCase
 import app.purecipes.feature.subscription.domain.usecase.SetAdsDisplayOverrideUseCase
 import app.purecipes.feature.subscription.domain.usecase.SetPremiumStatusOverrideUseCase
-import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
@@ -51,8 +50,7 @@ class SettingsViewModel(
 
 	val notificationPreferences: Flow<NotificationPreferences> = observeNotificationPreferences()
 
-	val showMonetisationDebugOverrides: Boolean =
-		purecipesConfig.buildType() != PurecipesBuildType.RELEASE
+	val showMonetisationDebugOverrides: Boolean = purecipesConfig.showMonetisationDebugOverrides()
 
 	val monetisationDebugOverrides: Flow<MonetisationDebugOverrides> =
 		observeMonetisationDebugOverrides()

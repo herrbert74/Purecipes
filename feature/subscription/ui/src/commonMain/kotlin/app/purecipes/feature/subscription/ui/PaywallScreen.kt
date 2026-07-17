@@ -55,6 +55,11 @@ fun PaywallScreen(
 		snackbarHostState.showSnackbar(message)
 	}
 
+	LaunchedEffect(viewModel.successMessage) {
+		val message = viewModel.successMessage ?: return@LaunchedEffect
+		snackbarHostState.showSnackbar(message)
+	}
+
 	Scaffold(
 		modifier = modifier
 			.fillMaxSize()

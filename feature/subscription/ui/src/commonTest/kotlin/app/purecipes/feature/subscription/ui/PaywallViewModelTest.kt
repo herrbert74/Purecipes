@@ -82,5 +82,26 @@ class PaywallViewModelTest {
 		advanceUntilIdle()
 
 		repository.purchaseCalls shouldBe 1
+		viewModel.successMessage shouldBe "Purchase completed."
+		viewModel.errorMessage shouldBe null
+	}
+
+	@Test
+	fun `onRestorePurchases shows success feedback`() = runViewModelTest {
+		val repository = FakeSubscriptionRepository()
+		val viewModel = PaywallViewModel(
+			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
+			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
+			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
+			restorePurchases = RestorePurchasesUseCase(repository),
+		)
+
+		advanceUntilIdle()
+		viewModel.onRestorePurchases()
+		advanceUntilIdle()
+
+		repository.restoreCalls shouldBe 1
+		viewModel.successMessage shouldBe "Purchases restored."
+		viewModel.errorMessage shouldBe null
 	}
 }

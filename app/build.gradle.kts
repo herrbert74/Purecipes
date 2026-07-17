@@ -35,6 +35,7 @@ android {
 		buildConfigField("String", "PURECIPES_USERCENTRICS_SETTINGS_ID", usercentricsSettingsId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_ADMOB_APP_ID", admobAppId().asBuildConfigString())
 		buildConfigField("String", "PURECIPES_ADMOB_BANNER_AD_UNIT_ID", admobBannerAdUnitId().asBuildConfigString())
+		buildConfigField("Boolean", "PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES", "false")
 		buildConfigField(
 			"String",
 			"PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID",
@@ -81,9 +82,11 @@ android {
 				"PURECIPES_REVENUECAT_API_KEY",
 				revenueCatApiKey("debug").asBuildConfigString(),
 			)
+			buildConfigField("Boolean", "PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES", "true")
 		}
 		release {
 			isMinifyEnabled = true
+			isDebuggable = true
 			isShrinkResources = true
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
@@ -103,6 +106,7 @@ android {
 				"PURECIPES_REVENUECAT_API_KEY",
 				revenueCatApiKey("release").asBuildConfigString(),
 			)
+			buildConfigField("Boolean", "PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES", "true")
 			firebaseAppDistribution {
 				artifactType = "APK"
 				releaseNotesFile = rootProject.layout.buildDirectory.file("release-notes.txt").get().asFile.path
@@ -132,6 +136,7 @@ android {
 				"PURECIPES_REVENUECAT_API_KEY",
 				revenueCatApiKey("staging").asBuildConfigString(),
 			)
+			buildConfigField("Boolean", "PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES", "true")
 		}
 	}
 	kotlin {

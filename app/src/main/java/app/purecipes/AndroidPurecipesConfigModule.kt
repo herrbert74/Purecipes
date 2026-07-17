@@ -45,6 +45,10 @@ interface AndroidPurecipesConfigModule {
 				return BuildConfig.PURECIPES_REVENUECAT_API_KEY.takeIf { it.isNotBlank() }
 			}
 
+			override fun showMonetisationDebugOverrides(): Boolean {
+				return BuildConfig.PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES
+			}
+
 			override fun adMobAppId(): String? {
 				return BuildConfig.PURECIPES_ADMOB_APP_ID.takeIf { it.isNotBlank() }
 			}

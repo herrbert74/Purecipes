@@ -12,7 +12,7 @@ import io.ktor.server.routing.route
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-private const val PREMIUM_ENTITLEMENT_ID = "premium"
+private const val PREMIUM_ENTITLEMENT_ID = "Purecipes Pro"
 
 fun Route.revenueCatWebhookRoutes(
 	dbProvider: () -> Db,

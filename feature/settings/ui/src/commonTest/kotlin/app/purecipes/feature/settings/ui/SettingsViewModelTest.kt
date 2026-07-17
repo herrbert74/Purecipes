@@ -50,8 +50,17 @@ class SettingsViewModelTest {
 		)
 	}
 
+	@Test
+	fun `monetisation debug overrides visibility follows configuration`() = runViewModelTest {
+		createViewModel(showDebugOverrides = true)
+			.showMonetisationDebugOverrides shouldBe true
+		createViewModel(showDebugOverrides = false)
+			.showMonetisationDebugOverrides shouldBe false
+	}
+
 	private fun createViewModel(
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		showDebugOverrides: Boolean = true,
 	): SettingsViewModel {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		val notificationRepository = object : NotificationPreferencesRepository {
@@ -98,6 +107,8 @@ class SettingsViewModelTest {
 				override fun versionName(): String = "1.0.0"
 
 				override fun versionCode(): Long = 1L
+
+				override fun showMonetisationDebugOverrides(): Boolean = showDebugOverrides
 			},
 		)
 	}
