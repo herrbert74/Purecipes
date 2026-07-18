@@ -28,6 +28,7 @@ kotlin {
 				api(project(":feature:subscription:domain"))
 				implementation(libs.kotlinx.coroutinesCore)
 				implementation(libs.kotlinx.datetime)
+				implementation(libs.multiplatformSettings.noargs)
 			}
 		}
 		commonTest {
