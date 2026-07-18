@@ -4,6 +4,13 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.1] - 2026-07-18
+
+### Fixed
+
+- Monetisation debug settings now stay applied after you restart the app.
+- Required ingredients filter works again when Monetisation debug is set to premium.
+
 ## [0.6.0] - 2026-07-17
 
 ### Added
