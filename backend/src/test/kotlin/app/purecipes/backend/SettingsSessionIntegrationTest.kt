@@ -221,6 +221,64 @@ class SettingsSessionIntegrationTest {
 	}
 
 	@Test
+	fun `pantry settings tolerate re-adding an existing ingredient while removing another`() = testApplication {
+		val dbName = "pantry_settings_duplicate_add_${System.nanoTime()}"
+		val dataSource = JdbcDataSource().apply {
+			setURL("jdbc:h2:mem:$dbName;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE")
+			user = "sa"
+			password = ""
+		}
+		seedRecipeTables(dataSource)
+		val db = Db.fromDataSource(dataSource)
+		seedAppUsers(db)
+		val session = FakeSessionService.createSession(accessToken = "session-token-1")
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(session),
+			createMode = FakeSessionService.CreateMode.GENERATE_AND_STORE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		val seedPantry = client.patch("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["Chicken", "Chicken Thighs"],
+						"remove": []
+					}
+				""".trimIndent(),
+			)
+		}
+		seedPantry.status shouldBe HttpStatusCode.OK
+
+		val updatePantry = client.patch("/settings/pantry") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"add": ["Chicken Thighs"],
+						"remove": ["Chicken"]
+					}
+				""".trimIndent(),
+			)
+		}
+		updatePantry.status shouldBe HttpStatusCode.OK
+		Json.parseToJsonElement(updatePantry.bodyAsText()) shouldBe Json.parseToJsonElement(
+			"""
+				["Chicken Thighs"]
+			""".trimIndent(),
+		)
+	}
+
+	@Test
 	fun `excluded ingredients settings are isolated by authenticated session`() = testApplication {
 		val dbName = "excluded_ingredients_settings_isolation_${System.nanoTime()}"
 		val dataSource = JdbcDataSource().apply {

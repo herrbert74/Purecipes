@@ -6,5 +6,5 @@ interface UserPantryRepository {
 
 	suspend fun getPantry(): Set<String>
 
-	suspend fun updatePantry(delta: PantryDelta): Set<String>
+	suspend fun updatePantry(delta: PantryDelta): SearchOutcome<Set<String>>
 }

@@ -6,5 +6,5 @@ interface UserExcludedIngredientsRepository {
 
 	suspend fun getExcludedIngredients(): Set<String>
 
-	suspend fun updateExcludedIngredients(delta: ExcludedIngredientsDelta): Set<String>
+	suspend fun updateExcludedIngredients(delta: ExcludedIngredientsDelta): SearchOutcome<Set<String>>
 }

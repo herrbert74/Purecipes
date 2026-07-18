@@ -9,7 +9,6 @@ import app.purecipes.shared.domain.model.SearchFilters
 import kotlinx.serialization.json.Json
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.SQLException
 import javax.sql.DataSource
 
 class SettingsRepository(
@@ -176,27 +175,13 @@ class SettingsRepository(
 			.toSet()
 	}
 
-	private fun isDuplicateKeyViolation(exception: SQLException): Boolean {
-		return exception.sqlState == DUPLICATE_KEY_SQL_STATE
-	}
-
 	private fun insertPantryIngredients(conn: Connection, userId: Long, ingredients: Set<String>) {
 		if (ingredients.isEmpty()) return
 		conn.prepareStatement(INSERT_PANTRY_INGREDIENT_SQL).use { ps ->
 			ingredients.forEach { ingredient ->
-				insertPantryIngredient(ps, userId, ingredient)
-			}
-		}
-	}
-
-	private fun insertPantryIngredient(ps: java.sql.PreparedStatement, userId: Long, ingredient: String) {
-		ps.setLong(FIRST_PARAMETER_INDEX, userId)
-		ps.setString(SECOND_PARAMETER_INDEX, ingredient)
-		try {
-			ps.executeUpdate()
-		} catch (exception: SQLException) {
-			if (!isDuplicateKeyViolation(exception)) {
-				throw exception
+				ps.setLong(FIRST_PARAMETER_INDEX, userId)
+				ps.setString(SECOND_PARAMETER_INDEX, ingredient)
+				ps.executeUpdate()
 			}
 		}
 	}
@@ -217,19 +202,9 @@ class SettingsRepository(
 		if (ingredients.isEmpty()) return
 		conn.prepareStatement(INSERT_EXCLUDED_INGREDIENT_SQL).use { ps ->
 			ingredients.forEach { ingredient ->
-				insertExcludedIngredient(ps, userId, ingredient)
-			}
-		}
-	}
-
-	private fun insertExcludedIngredient(ps: java.sql.PreparedStatement, userId: Long, ingredient: String) {
-		ps.setLong(FIRST_PARAMETER_INDEX, userId)
-		ps.setString(SECOND_PARAMETER_INDEX, ingredient)
-		try {
-			ps.executeUpdate()
-		} catch (exception: SQLException) {
-			if (!isDuplicateKeyViolation(exception)) {
-				throw exception
+				ps.setLong(FIRST_PARAMETER_INDEX, userId)
+				ps.setString(SECOND_PARAMETER_INDEX, ingredient)
+				ps.executeUpdate()
 			}
 		}
 	}
@@ -328,7 +303,6 @@ class SettingsRepository(
 		const val SECOND_PARAMETER_INDEX = 2
 		const val THIRD_PARAMETER_INDEX = 3
 		const val FOURTH_PARAMETER_INDEX = 4
-		const val DUPLICATE_KEY_SQL_STATE = "23505"
 
 		const val GET_MEASUREMENT_PREFERENCES_SQL = """
 			SELECT preferred_system, format_handling, detected_country_code
@@ -401,6 +375,7 @@ class SettingsRepository(
 		const val INSERT_PANTRY_INGREDIENT_SQL = """
 			INSERT INTO user_pantry (user_id, ingredient)
 			VALUES (?, ?)
+			ON CONFLICT DO NOTHING
 		"""
 
 		const val DELETE_PANTRY_INGREDIENT_SQL = """
@@ -419,6 +394,7 @@ class SettingsRepository(
 		const val INSERT_EXCLUDED_INGREDIENT_SQL = """
 			INSERT INTO user_excluded_ingredients (user_id, ingredient)
 			VALUES (?, ?)
+			ON CONFLICT DO NOTHING
 		"""
 
 		const val DELETE_EXCLUDED_INGREDIENT_SQL = """

@@ -416,6 +416,31 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `onFilterSheetDismiss reverts pantry and shows error when pantry update fails`() = runViewModelTest {
+		val pantryRepository = FakeUserPantryRepository(
+			pantry = setOf("Chicken"),
+			updateFailure = Failure.ServerError("Something went wrong. Please try again."),
+		)
+		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
+		val viewModel = makeViewModel(
+			searchRepository = searchRepository,
+			pantryRepository = pantryRepository,
+			sessionKey = "user-1",
+		)
+		advanceUntilIdle()
+		val searchCountAfterInit = searchRepository.queries.size
+
+		viewModel.onIngredientSelectionChange(setOf("Chicken Thighs"), emptySet())
+		viewModel.onFilterSheetDismiss()
+		advanceUntilIdle()
+
+		viewModel.pantryIngredients shouldBe setOf("Chicken")
+		viewModel.errorMessage shouldBe "Something went wrong. Please try again."
+		pantryRepository.getPantry() shouldBe setOf("Chicken")
+		searchRepository.queries.size shouldBe searchCountAfterInit + 1
+	}
+
+	@Test
 	fun `onFilterSheetDismiss updates excluded ingredients and triggers search when excluded changed`() =
 		runViewModelTest {
 			val excludedRepository = FakeUserExcludedIngredientsRepository(setOf("Garlic"))
@@ -653,6 +678,7 @@ class RecipeSearchViewModelTest {
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		sessionKey: String? = null,
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
@@ -673,7 +699,7 @@ class RecipeSearchViewModelTest {
 			FakeMonetisationDebugOverridesRepository()
 		),
 		initialShowFilterSheet = false,
-		sessionKey = null,
+		sessionKey = sessionKey,
 	)
 
 	private fun premiumSubscriptionState(): SubscriptionState = SubscriptionState(
