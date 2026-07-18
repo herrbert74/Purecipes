@@ -96,7 +96,7 @@ class RecipeSearchPremiumGatingRouteTest {
 	}
 
 	@Test
-	fun `free user search strips key ingredients`() = testApplication {
+	fun `free user search applies key ingredients while temporary kill switch is on`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		seedAppUsersForSearchRouteTest(db, isPremium = false)
 		val sessionService = FakeSessionService(
@@ -127,9 +127,9 @@ class RecipeSearchPremiumGatingRouteTest {
 		)
 
 		mainSearchItemTitles(responseBody) shouldContain "Chicken Tomato Stew"
-		mainSearchItemTitles(responseBody) shouldContain "Chicken Rice Bowl"
-		mainSearchItemTitles(responseBody) shouldContain "Tomato Basil Soup"
-		mainSearchItemTitles(responseBody) shouldContain "Veggie Omelette"
+		mainSearchItemTitles(responseBody) shouldNotContain "Chicken Rice Bowl"
+		mainSearchItemTitles(responseBody) shouldNotContain "Tomato Basil Soup"
+		mainSearchItemTitles(responseBody) shouldNotContain "Veggie Omelette"
 	}
 
 	@Test
