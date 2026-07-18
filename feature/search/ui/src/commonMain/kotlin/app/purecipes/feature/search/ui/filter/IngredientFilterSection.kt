@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import app.purecipes.shared.domain.ingredient.IngredientNameMatching
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientCatalogueGroup
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -169,15 +168,14 @@ private fun IngredientGroupChips(
 					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 				) {
 					group.items.forEach { item ->
-						val aliasSiblings = IngredientNameMatching.catalogueAliasSiblings(
-							ingredientName = item,
-							catalogueItems = IngredientCatalogue.allItems,
-						)
+						val aliasSiblings = IngredientCatalogue.aliasSiblingsByItem[item].orEmpty()
 						val state = when {
 							item in excludedIngredients || aliasSiblings.any { it in excludedIngredients } ->
 								IngredientChipState.EXCLUDED
+
 							item in pantryIngredients || aliasSiblings.any { it in pantryIngredients } ->
 								IngredientChipState.SELECTED
+
 							else -> IngredientChipState.NEUTRAL
 						}
 						IngredientTriStateChip(
@@ -188,8 +186,10 @@ private fun IngredientGroupChips(
 								val (newPantry, newExcluded) = when (state) {
 									IngredientChipState.NEUTRAL ->
 										(pantryIngredients + item) to (excludedIngredients - relatedItems)
+
 									IngredientChipState.SELECTED ->
 										(pantryIngredients - relatedItems) to (excludedIngredients + relatedItems)
+
 									IngredientChipState.EXCLUDED ->
 										(pantryIngredients - relatedItems) to (excludedIngredients - relatedItems)
 								}

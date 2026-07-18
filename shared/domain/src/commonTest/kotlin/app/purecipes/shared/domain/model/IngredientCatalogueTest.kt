@@ -24,4 +24,11 @@ class IngredientCatalogueTest {
 			IngredientCatalogue.allItems shouldContain name
 		}
 	}
+
+	@Test
+	fun aliasSiblingsByItemCoversCatalogueAndLinksAliases() {
+		IngredientCatalogue.aliasSiblingsByItem.keys shouldBe IngredientCatalogue.allItems
+		IngredientCatalogue.aliasSiblingsByItem.getValue("Shrimp") shouldContain "Prawns"
+		IngredientCatalogue.aliasSiblingsByItem.getValue("Prawns") shouldContain "Shrimp"
+	}
 }

@@ -1,5 +1,7 @@
 package app.purecipes.shared.domain.model
 
+import app.purecipes.shared.domain.ingredient.IngredientNameMatching
+
 private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 	IngredientCatalogueGroup(
 		name = "Poultry & Eggs",
@@ -465,4 +467,8 @@ object IngredientCatalogue {
 	val groups: List<IngredientCatalogueGroup> = catalogueGroups
 
 	val allItems: Set<String> = groups.flatMap { it.items }.toSet()
+
+	val aliasSiblingsByItem: Map<String, Set<String>> by lazy {
+		IngredientNameMatching.catalogueAliasSiblingsIndex(allItems)
+	}
 }

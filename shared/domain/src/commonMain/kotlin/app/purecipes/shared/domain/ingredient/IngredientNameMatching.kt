@@ -34,6 +34,21 @@ object IngredientNameMatching {
 		}
 	}
 
+	fun catalogueAliasSiblingsIndex(
+		catalogueItems: Collection<String>,
+	): Map<String, Set<String>> {
+		val variantsByItem = catalogueItems.associateWith { ingredientName ->
+			ingredientVariants(ingredientName)
+		}
+		return catalogueItems.associateWith { ingredientName ->
+			val variants = variantsByItem.getValue(ingredientName)
+			catalogueItems.filterTo(mutableSetOf()) { catalogueItem ->
+				catalogueItem != ingredientName &&
+					variantsByItem.getValue(catalogueItem).any { it in variants }
+			}
+		}
+	}
+
 	fun matchesAnyIngredient(
 		ingredientLine: String,
 		ingredientNames: Collection<String>,
@@ -105,10 +120,10 @@ object IngredientNameMatching {
 		val phraseWords = normalizedPhrase.split(' ').filter(String::isNotBlank)
 		val prefixMatch = ingredientWords.size >= phraseWords.size && phraseWords.isNotEmpty() &&
 			ingredientWords.windowed(size = phraseWords.size, step = 1).any { window ->
-			window.zip(phraseWords).all { (ingredientWord, phraseWord) ->
-				ingredientWord.startsWith(phraseWord)
+				window.zip(phraseWords).all { (ingredientWord, phraseWord) ->
+					ingredientWord.startsWith(phraseWord)
+				}
 			}
-		}
 
 		return normalizedPhrase.isNotBlank() && (exactMatch || prefixMatch)
 	}
@@ -123,14 +138,19 @@ object IngredientNameMatching {
 		val singularLastWord = when {
 			lastWord.endsWith("ies") && lastWord.length > IES_SUFFIX_LENGTH ->
 				lastWord.dropLast(IES_SUFFIX_LENGTH) + "y"
+
 			lastWord.endsWith("ses") && lastWord.length > IES_SUFFIX_LENGTH ->
 				lastWord.dropLast(SES_DROP_LENGTH)
+
 			lastWord.endsWith("oes") && lastWord.length > IES_SUFFIX_LENGTH ->
 				lastWord.dropLast(IES_SUFFIX_LENGTH) + "o"
+
 			lastWord.endsWith("ves") && lastWord.length > IES_SUFFIX_LENGTH ->
 				lastWord.dropLast(IES_SUFFIX_LENGTH) + "f"
+
 			lastWord.endsWith("s") && !lastWord.endsWith("ss") && lastWord.length > S_SUFFIX_LENGTH ->
 				lastWord.dropLast(S_SUFFIX_LENGTH)
+
 			else -> lastWord
 		}
 
