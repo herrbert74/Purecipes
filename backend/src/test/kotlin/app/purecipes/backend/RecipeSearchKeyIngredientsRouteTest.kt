@@ -45,7 +45,7 @@ class RecipeSearchKeyIngredientsRouteTest {
 	}
 
 	@Test
-	fun `unauthenticated search strips key ingredients`() = testApplication {
+	fun `unauthenticated search applies key ingredients while temporary kill switch is on`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		seedAppUsersForSearchRouteTest(db)
 		val sessionService = FakeSessionService(
@@ -74,9 +74,10 @@ class RecipeSearchKeyIngredientsRouteTest {
 			""".trimIndent(),
 		)
 
-		responseBody.contains("Tomato Basil Soup") shouldBe true
 		responseBody.contains("Garlic Rice") shouldBe true
-		responseBody.contains("Chicken Tomato Stew") shouldBe true
+		responseBody.contains("Tomato Basil Soup") shouldBe true
+		responseBody.contains("Chicken Tomato Stew") shouldBe false
+		responseBody.contains("Veggie Omelette") shouldBe false
 	}
 
 	@Test

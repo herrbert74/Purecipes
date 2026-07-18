@@ -9,6 +9,7 @@ import app.purecipes.backend.feature.favorites.CookbookRepository
 import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.search.SearchRecipeRepository
 import app.purecipes.backend.feature.subscription.UserPremiumRepository
+import app.purecipes.shared.domain.model.canUseKeyIngredients
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respond
@@ -76,15 +77,16 @@ internal suspend fun ApplicationCall.respondFilteredSearch(
 	val dataSource = dbProvider().dataSource
 	val userId = optionalAuthenticatedUserId(sessionService)
 	val isPremium = userId?.let { UserPremiumRepository(dataSource).isPremium(it) } ?: false
-	val effectiveRequest =
-		if (isPremium) {
-			request
+	// Temporary: key ingredients stay ungated until RevenueCat/Google Play premium sync
+	// is in place (see TREAT_KEY_INGREDIENTS_AS_NON_PREMIUM). Other premium filters still gate.
+	val effectiveRequest = request.copy(
+		filters = if (isPremium) request.filters else request.filters.withoutPremiumFilters(),
+		keyIngredients = if (canUseKeyIngredients(isPremium)) {
+			request.keyIngredients
 		} else {
-			request.copy(
-				filters = request.filters.withoutPremiumFilters(),
-				keyIngredients = emptySet(),
-			)
-		}
+			emptySet()
+		},
+	)
 	val repo = SearchRecipeRepository(dataSource)
 	respond(repo.searchWithFilters(effectiveRequest, userId))
 }
