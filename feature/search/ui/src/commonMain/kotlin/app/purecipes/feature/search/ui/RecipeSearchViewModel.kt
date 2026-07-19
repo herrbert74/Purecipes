@@ -205,21 +205,36 @@ class RecipeSearchViewModel(
 			return
 		}
 		isFilterSheetVisible = false
-		if (!isPremium) {
-			if (activeFilters.hasPremiumFilters()) {
-				activeFilters = activeFilters.withoutPremiumFilters()
-			}
-			if (keyIngredients.isNotEmpty()) {
-				keyIngredients = emptySet()
-			}
+		stripPremiumFilterDraftIfNeeded()
+		persistFilterSheetChangesAndSearch()
+	}
+
+	private fun stripPremiumFilterDraftIfNeeded() {
+		if (isPremium) return
+		if (activeFilters.hasPremiumFilters()) {
+			activeFilters = activeFilters.withoutPremiumFilters()
 		}
+		if (keyIngredients.isNotEmpty()) {
+			keyIngredients = emptySet()
+		}
+	}
+
+	private fun persistFilterSheetChangesAndSearch() {
 		val filtersChanged = activeFilters != lastSearchedFilters
 		val keyIngredientsChanged = keyIngredients != lastSearchedKeyIngredients
 		val pantryChanged = pantryIngredients != lastSavedPantry
 		val excludedChanged = excludedIngredients != lastSavedExcludedIngredients
-		val hasChanges = filtersChanged || keyIngredientsChanged || pantryChanged || excludedChanged
-		if (!hasChanges) return
+		val hasFilterSheetChanges = listOf(
+			filtersChanged,
+			keyIngredientsChanged,
+			pantryChanged,
+			excludedChanged,
+		).any { changed -> changed }
+		if (!hasFilterSheetChanges) {
+			return
+		}
 		viewModelScope.launch {
+			var saveErrorMessage: String? = null
 			if (filtersChanged) {
 				saveSearchFilters(activeFilters)
 				lastSearchedFilters = activeFilters
@@ -228,26 +243,51 @@ class RecipeSearchViewModel(
 				lastSearchedKeyIngredients = keyIngredients
 			}
 			if (pantryChanged) {
-				val updatedPantry = updateUserPantry(
-					PantryDelta(
-						add = pantryIngredients - lastSavedPantry,
-						remove = lastSavedPantry - pantryIngredients,
-					),
-				)
-				pantryIngredients = updatedPantry
-				lastSavedPantry = updatedPantry
+				saveErrorMessage = persistPantryChanges() ?: saveErrorMessage
 			}
 			if (excludedChanged) {
-				val updatedExcludedIngredients = updateUserExcludedIngredients(
-					ExcludedIngredientsDelta(
-						add = excludedIngredients - lastSavedExcludedIngredients,
-						remove = lastSavedExcludedIngredients - excludedIngredients,
-					),
-				)
-				excludedIngredients = updatedExcludedIngredients
-				lastSavedExcludedIngredients = updatedExcludedIngredients
+				saveErrorMessage = persistExcludedIngredientChanges() ?: saveErrorMessage
 			}
 			doSearch()
+			if (saveErrorMessage != null) {
+				errorMessage = saveErrorMessage
+			}
+		}
+	}
+
+	private suspend fun persistPantryChanges(): String? {
+		val pantryOutcome = updateUserPantry(
+			PantryDelta(
+				add = pantryIngredients - lastSavedPantry,
+				remove = lastSavedPantry - pantryIngredients,
+			),
+		)
+		val updatedPantry = pantryOutcome.get()
+		return if (updatedPantry != null) {
+			pantryIngredients = updatedPantry
+			lastSavedPantry = updatedPantry
+			null
+		} else {
+			pantryIngredients = lastSavedPantry
+			pantryOutcome.getError()?.message
+		}
+	}
+
+	private suspend fun persistExcludedIngredientChanges(): String? {
+		val excludedOutcome = updateUserExcludedIngredients(
+			ExcludedIngredientsDelta(
+				add = excludedIngredients - lastSavedExcludedIngredients,
+				remove = lastSavedExcludedIngredients - excludedIngredients,
+			),
+		)
+		val updatedExcludedIngredients = excludedOutcome.get()
+		return if (updatedExcludedIngredients != null) {
+			excludedIngredients = updatedExcludedIngredients
+			lastSavedExcludedIngredients = updatedExcludedIngredients
+			null
+		} else {
+			excludedIngredients = lastSavedExcludedIngredients
+			excludedOutcome.getError()?.message
 		}
 	}
 

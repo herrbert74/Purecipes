@@ -39,7 +39,27 @@ class UserPantryAccessorTest {
 	}
 
 	@Test
-	fun `updatePantry falls back to local delta when remote fails`() = runTest {
+	fun `updatePantry returns remote pantry when remote succeeds`() = runTest {
+		val local = UserPantryInMemoryDataSource().apply { savePantry(setOf("Chicken")) }
+		val remote = FakeRemotePantryDataSource(
+			getResult = Ok(emptySet()),
+			updateResult = Ok(setOf("Tomato")),
+		)
+		val accessor = UserPantryAccessor(remote, local)
+
+		val result = accessor.updatePantry(
+			PantryDelta(
+				add = setOf("Tomato"),
+				remove = setOf("Chicken"),
+			),
+		)
+
+		result shouldBe Ok(setOf("Tomato"))
+		local.getPantry() shouldBe setOf("Tomato")
+	}
+
+	@Test
+	fun `updatePantry does not apply local delta when remote fails`() = runTest {
 		val local = UserPantryInMemoryDataSource().apply { savePantry(setOf("Chicken")) }
 		val remote = FakeRemotePantryDataSource(
 			getResult = Err(Failure.ServerError("Network error")),
@@ -54,8 +74,8 @@ class UserPantryAccessorTest {
 			),
 		)
 
-		result shouldBe setOf("Tomato")
-		local.getPantry() shouldBe setOf("Tomato")
+		result shouldBe Err(Failure.ServerError("Network error"))
+		local.getPantry() shouldBe setOf("Chicken")
 	}
 
 	private class FakeRemotePantryDataSource(

@@ -1,9 +1,11 @@
 package app.purecipes.feature.search.data.repository
 
 import app.purecipes.feature.search.data.datasource.UserPantryDataSource
+import app.purecipes.feature.search.domain.repository.SearchOutcome
 import app.purecipes.feature.search.domain.repository.UserPantryRepository
 import app.purecipes.shared.domain.model.PantryDelta
 import com.github.michaelbull.result.getOr
+import com.github.michaelbull.result.map
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -25,16 +27,9 @@ class UserPantryAccessor(
 		}
 	}
 
-	override suspend fun updatePantry(delta: PantryDelta): Set<String> {
-		val remotePantry = remoteDataSource.updatePantry(delta).getOr(null)
-		return if (remotePantry != null) {
+	override suspend fun updatePantry(delta: PantryDelta): SearchOutcome<Set<String>> =
+		remoteDataSource.updatePantry(delta).map { remotePantry ->
 			localDataSource.savePantry(remotePantry)
 			remotePantry
-		} else {
-			val current = localDataSource.getPantry()
-			val updated = (current + delta.add) - delta.remove
-			localDataSource.savePantry(updated)
-			updated
 		}
-	}
 }

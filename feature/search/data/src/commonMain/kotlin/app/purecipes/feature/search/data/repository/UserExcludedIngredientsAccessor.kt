@@ -1,9 +1,11 @@
 package app.purecipes.feature.search.data.repository
 
 import app.purecipes.feature.search.data.datasource.UserExcludedIngredientsDataSource
+import app.purecipes.feature.search.domain.repository.SearchOutcome
 import app.purecipes.feature.search.domain.repository.UserExcludedIngredientsRepository
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import com.github.michaelbull.result.getOr
+import com.github.michaelbull.result.map
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -25,16 +27,11 @@ class UserExcludedIngredientsAccessor(
 		}
 	}
 
-	override suspend fun updateExcludedIngredients(delta: ExcludedIngredientsDelta): Set<String> {
-		val remoteExcludedIngredients = remoteDataSource.updateExcludedIngredients(delta).getOr(null)
-		return if (remoteExcludedIngredients != null) {
+	override suspend fun updateExcludedIngredients(
+		delta: ExcludedIngredientsDelta,
+	): SearchOutcome<Set<String>> =
+		remoteDataSource.updateExcludedIngredients(delta).map { remoteExcludedIngredients ->
 			localDataSource.saveExcludedIngredients(remoteExcludedIngredients)
 			remoteExcludedIngredients
-		} else {
-			val current = localDataSource.getExcludedIngredients()
-			val updated = (current + delta.add) - delta.remove
-			localDataSource.saveExcludedIngredients(updated)
-			updated
 		}
-	}
 }

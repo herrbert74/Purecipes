@@ -2,6 +2,7 @@ package app.purecipes.feature.search.domain.usecase
 
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
+import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -20,6 +21,6 @@ class UpdateUserExcludedIngredientsUseCaseTest {
 			),
 		)
 
-		result shouldBe setOf("Peanut")
+		result shouldBe Ok(setOf("Peanut"))
 	}
 }
