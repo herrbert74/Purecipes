@@ -100,4 +100,18 @@ class IngredientNameMatchingTest {
 			catalogueItems = setOf("Aubergine", "Zucchini", "Tomato"),
 		) shouldBe emptySet()
 	}
+
+	@Test
+	fun `catalogueAliasSiblingsIndex matches per item lookup`() {
+		val catalogueItems = setOf("Prawns", "Shrimp", "Salmon", "Aubergine", "Zucchini", "Tomato")
+		val index = IngredientNameMatching.catalogueAliasSiblingsIndex(catalogueItems)
+
+		index.keys shouldBe catalogueItems
+		catalogueItems.forEach { ingredientName ->
+			index.getValue(ingredientName) shouldBe IngredientNameMatching.catalogueAliasSiblings(
+				ingredientName = ingredientName,
+				catalogueItems = catalogueItems,
+			)
+		}
+	}
 }
