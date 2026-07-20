@@ -69,7 +69,7 @@ kotlin {
 			}
 		}
 
-		val nonAndroidMain by creating {
+		val nonAndroidMain = create("nonAndroidMain") {
 			dependsOn(commonMain.get())
 		}
 
