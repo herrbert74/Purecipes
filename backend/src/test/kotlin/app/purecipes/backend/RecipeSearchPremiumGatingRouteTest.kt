@@ -9,7 +9,7 @@ import kotlin.test.Test
 class RecipeSearchPremiumGatingRouteTest {
 
 	@Test
-	fun `free user search strips calorie filters`() = testApplication {
+	fun `free user search applies calorie filters while temporary kill switch is on`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		seedAppUsersForSearchRouteTest(db, isPremium = false)
 		val sessionService = FakeSessionService(
@@ -52,7 +52,54 @@ class RecipeSearchPremiumGatingRouteTest {
 		)
 
 		mainSearchItemTitles(freeResponseBody) shouldContain "Low Calorie Salad"
-		mainSearchItemTitles(freeResponseBody) shouldContain "High Calorie Stew"
+		mainSearchItemTitles(freeResponseBody) shouldNotContain "High Calorie Stew"
+	}
+
+	@Test
+	fun `free user search applies nutrition filters while temporary kill switch is on`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db, isPremium = false)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "High Protein Bowl",
+			ingredients = recipeIngredientsForRouteTest("Chicken", "Egg"),
+		)
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "Low Protein Soup",
+			ingredients = recipeIngredientsForRouteTest("Carrot", "Onion"),
+		)
+		setRecipeNutritionForSearchRouteTest(db, title = "High Protein Bowl", protein = "30")
+		setRecipeNutritionForSearchRouteTest(db, title = "Low Protein Soup", protein = "10")
+
+		val freeResponseBody = searchWithFiltersForSearchRouteTest(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"nutritionFilters": ["HIGH_PROTEIN"]
+					}
+				}
+			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
+		)
+
+		mainSearchItemTitles(freeResponseBody) shouldContain "High Protein Bowl"
+		mainSearchItemTitles(freeResponseBody) shouldNotContain "Low Protein Soup"
 	}
 
 	@Test

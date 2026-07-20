@@ -444,11 +444,14 @@ class RecipeSearchViewModel(
 	}
 
 	private fun filtersForSearch(): SearchFilters =
+	// Temporary: client still gates on isPremium (Force Premium in settings). Backend does not
+	// strip premium filters while TREAT_PREMIUM_SEARCH_AS_NON_PREMIUM is true, until
+		// RevenueCat/Google Play premium sync updates app_users.is_premium.
 		if (isPremium) activeFilters else activeFilters.withoutPremiumFilters()
 
 	private fun keyIngredientsForSearch(): Set<String> =
 	// Temporary: client still gates on isPremium (Force Premium in settings). Backend does not
-	// strip keyIngredients while TREAT_KEY_INGREDIENTS_AS_NON_PREMIUM is true, until
+	// strip keyIngredients while TREAT_PREMIUM_SEARCH_AS_NON_PREMIUM is true, until
 		// RevenueCat/Google Play premium sync updates app_users.is_premium.
 		if (isPremium) keyIngredients else emptySet()
 
