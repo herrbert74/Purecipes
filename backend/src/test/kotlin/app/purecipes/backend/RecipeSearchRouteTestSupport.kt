@@ -216,3 +216,27 @@ internal fun setRecipeCalorieRangeForSearchRouteTest(db: Db, title: String, calo
 		}
 	}
 }
+
+internal fun setRecipeNutritionForSearchRouteTest(db: Db, title: String, protein: String) {
+	db.dataSource.connection.use { connection ->
+		val recipeId = connection.prepareStatement(
+			"SELECT id FROM recipes WHERE title = ?",
+		).use { statement ->
+			statement.setString(1, title)
+			statement.executeQuery().use { resultSet ->
+				resultSet.next()
+				resultSet.getInt("id")
+			}
+		}
+		connection.prepareStatement(
+			"""
+			INSERT INTO nutrition (recipe_id, calories, protein, calculation_source)
+			VALUES (?, 100, ?, 'scraped')
+			""".trimIndent(),
+		).use { statement ->
+			statement.setInt(1, recipeId)
+			statement.setBigDecimal(2, java.math.BigDecimal(protein))
+			statement.executeUpdate()
+		}
+	}
+}
