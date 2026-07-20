@@ -13,10 +13,10 @@ pluginManagement {
 
 plugins {
 	id("org.gradle.toolchains.foojay-resolver-convention") version ("1.0.0")
-	id("com.autonomousapps.build-health") version ("3.16.1")
-	id("org.jetbrains.kotlin.jvm") version ("2.4.0") apply false
-	id("com.android.application") version ("9.2.1") apply false
-	id("org.jetbrains.kotlin.android") version ("2.4.0") apply false
+	id("com.autonomousapps.build-health") version ("3.17.0")
+	id("org.jetbrains.kotlin.jvm") version ("2.4.10") apply false
+	id("com.android.application") version ("9.3.0") apply false
+	id("org.jetbrains.kotlin.android") version ("2.4.10") apply false
 }
 
 dependencyResolutionManagement {
