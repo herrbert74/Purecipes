@@ -41,7 +41,7 @@ kotlin {
 	// common to share sources between related targets.
 	// See: https://kotlinlang.org/docs/multiplatform-hierarchy.html
 	sourceSets {
-		val nonAndroidMain by creating {
+		val nonAndroidMain = create("nonAndroidMain") {
 			dependsOn(commonMain.get())
 		}
 

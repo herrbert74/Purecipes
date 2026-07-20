@@ -10,14 +10,14 @@ targetSdkVersion = "37"
 
 #platform
 
-androidGradlePlugin = "9.2.1"
+androidGradlePlugin = "9.3.0"
 appDistributionPlugin = "5.3.0"
 #androidGradlePlugin = "7.3.1" # For IntelliJ plugin runIde
 coroutines = "1.11.0"
 crashkios = "0.9.0"
 crashlyticsPlugin = "3.0.7"
 jdk = "21"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kotlinx-collections = "0.5.1"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
@@ -25,11 +25,11 @@ ksp = "2.3.10"
 
 #other
 
-aboutLibraries = "15.0.3"
+aboutLibraries = "15.0.4"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
 androidx-composeBom = "2026.06.01"
-androidx-composeMaterial3 = "1.5.0-alpha23" #For alpha releases only
+androidx-composeMaterial3 = "1.5.0-alpha24" #For alpha releases only
 androidx-composeUiAndroidTest = "1.11.4"
 androidx-lifecycle = "2.11.0"
 #androidx-navigation = "2.9.1"
@@ -52,7 +52,7 @@ googleServices = "4.5.0"
 dejavu = "0.3.1"
 dependencyAnalysis = "3.10.0"
 detekt = "2.0.0-alpha.5"
-detekt-compose = "0.6.2"
+detekt-compose = "0.6.3"
 diamondedge-logging = "2.1.1"
 essenty = "2.5.0"
 h2 = "2.4.240"
@@ -76,7 +76,7 @@ kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.5.1"
 ktorfit = "2.7.5"
-metro = "1.3.1"
+metro = "1.3.2"
 mixpanelAndroid = "8.9.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.4.2"
@@ -85,15 +85,15 @@ okhttp = "5.4.0"
 #parcelize-darwin = "0.2.4"
 playServicesAds = "25.4.0"
 postgresql = "42.7.13"
-revenueCat = "3.2.1"
+revenueCat = "3.3.0"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
-shadow = "9.5.1"
+shadow = "9.6.0"
 #skie = "0.10.4"
 testcontainers = "2.0.5"
-tensorflow-java = "1.1.0"
+tensorflow-java = "1.2.0"
 uri-kmp = "0.0.21"
-usercentrics = "2.28.0"
+usercentrics = "2.28.1"
 
 [libraries]
 
@@ -245,7 +245,7 @@ firebaseBom = { group = "com.google.firebase", name = "firebase-bom", version.re
 
 firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebaseAuth = { group = "com.google.firebase", name = "firebase-auth" }
-firebaseAuthKmp = { module = "dev.gitlive:firebase-auth", version = "2.4.0" }
+firebaseAuthKmp = { module = "dev.gitlive:firebase-auth", version = "2.5.0" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 #firebaseDatabase = { module = "com.google.firebase:firebase-database" }
 #firebaseConfig = { module = "com.google.firebase:firebase-config" }

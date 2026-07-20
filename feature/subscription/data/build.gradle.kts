@@ -14,7 +14,7 @@ kotlin {
 	}
 
 	sourceSets {
-		val mobileMain by creating {
+		val mobileMain = create("mobileMain") {
 			dependsOn(commonMain.get())
 			dependencies {
 				implementation(libs.revenuecat.purchasesKmpCore)
