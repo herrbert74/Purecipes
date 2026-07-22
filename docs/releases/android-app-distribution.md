@@ -1,6 +1,6 @@
 # Android releases (Firebase App Distribution)
 
-Release builds use the **release** variant (`app.purecipes`), [Firebase App Distribution](https://firebase.google.com/docs/app-distribution), and a reviewed root [CHANGELOG.md](../../CHANGELOG.md). The same pipeline applies to any version you ship to testers (including production builds while the product is in an alpha stage). Before the first Google Play release, Firebase distributions use RevenueCat Test Store with a debuggable APK and monetisation debug overrides. Before publishing to Google Play, replace the Test Store key with the Google Play key, restore the workflow key-prefix check, disable `isDebuggable`, and set `PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES` to `false` for release.
+Release builds use the **release** variant (`app.purecipes`), [Firebase App Distribution](https://firebase.google.com/docs/app-distribution), and a reviewed root [CHANGELOG.md](../../CHANGELOG.md). The same pipeline applies to any version you ship to testers (including production builds while the product is in an alpha stage). Release builds use the RevenueCat Google Play key, are not debuggable, and do not show monetisation debug overrides.
 
 Release scripts: [`scripts/release/README.md`](../../scripts/release/README.md).
 
@@ -26,7 +26,7 @@ Prepare releases locally with the GitHub MCP server: [`.agents/instructions/andr
 | `PURECIPES_GOOGLE_WEB_CLIENT_ID` | Google Sign-In web client ID (Gradle `BuildConfig`; same value as `client_type` 3 in release `google-services.json`, not a secret but stored here for CI). Non-debug fallback only; debug uses `purecipes.googleWebClientId.debug` / built-in debug default. |
 | `PURECIPES_FIREBASE_PROJECT_ID` | Optional for distribute; backend release packaging uses this as the non-debug Firebase project fallback (default `purecipes-50e5c`). Local dual-build uses `purecipes.firebaseProjectId.debug` / `.release` instead. |
 | `PURECIPES_MIXPANEL_PROJECT_TOKEN` | Mixpanel project token for release builds (Gradle `BuildConfig` via env fallback; use the release Mixpanel project) |
-| `PURECIPES_REVENUECAT_API_KEY` | RevenueCat Test Store SDK key for pre-Play Firebase release builds (`test_…`; passed as `purecipes.revenueCatApiKey.release`) |
+| `PURECIPES_REVENUECAT_API_KEY` | RevenueCat Google Play SDK key (`goog_…`; passed as `purecipes.revenueCatApiKey.release`) |
 | `PURECIPES_ADMOB_APP_ID` | Production AdMob app ID (`ca-app-pub-…~…`; Gradle `BuildConfig` + AndroidManifest placeholder) |
 | `PURECIPES_ADMOB_BANNER_AD_UNIT_ID` | Production AdMob banner ad unit ID (`ca-app-pub-…/…`) |
 | `PURECIPES_ADMOB_INTERSTITIAL_AD_UNIT_ID` | Production AdMob interstitial ad unit ID (`ca-app-pub-…/…`) |

@@ -18,7 +18,7 @@ import com.revenuecat.purchases.kmp.ktx.awaitLogIn
 import com.revenuecat.purchases.kmp.ktx.awaitLogOut
 import com.revenuecat.purchases.kmp.ktx.awaitOfferings
 import com.revenuecat.purchases.kmp.ktx.awaitPurchase
-import com.revenuecat.purchases.kmp.ktx.awaitRestore
+import com.revenuecat.purchases.kmp.ktx.awaitSyncPurchases
 import com.revenuecat.purchases.kmp.models.CustomerInfo
 import com.revenuecat.purchases.kmp.models.Offerings
 import com.revenuecat.purchases.kmp.models.Package
@@ -30,6 +30,7 @@ import com.revenuecat.purchases.kmp.models.StoreTransaction
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @Inject
+@SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class RevenueCatSubscriptionDataSource : SubscriptionDataSource {
 
@@ -139,7 +141,9 @@ class RevenueCatSubscriptionDataSource : SubscriptionDataSource {
 			return Err(Failure.ServerError("Subscriptions are not configured"))
 		}
 		return try {
-			val customerInfo = Purchases.sharedInstance.awaitRestore()
+			Purchases.sharedInstance.awaitSyncPurchases()
+			Purchases.sharedInstance.invalidateCustomerInfoCache()
+			val customerInfo = Purchases.sharedInstance.awaitCustomerInfo()
 			subscriptionState.value = customerInfo.toSubscriptionState()
 			Ok(Unit)
 		} catch (error: PurchasesException) {
