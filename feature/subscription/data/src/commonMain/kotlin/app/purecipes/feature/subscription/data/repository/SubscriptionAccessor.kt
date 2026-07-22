@@ -10,9 +10,11 @@ import app.purecipes.shared.data.config.PurecipesConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 
 @Inject
+@SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class SubscriptionAccessor(
 	private val subscriptionDataSource: SubscriptionDataSource,

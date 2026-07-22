@@ -85,16 +85,16 @@ jobs:
             exit 1
           fi
 
-      - name: Require RevenueCat Test Store API key for release build
+      - name: Require RevenueCat API key for release build
         env:
           PURECIPES_REVENUECAT_API_KEY: ${{ secrets.PURECIPES_REVENUECAT_API_KEY }}
         run: |
           if [[ -z "${PURECIPES_REVENUECAT_API_KEY}" ]]; then
-            echo "::error::PURECIPES_REVENUECAT_API_KEY repository secret is required for release builds (RevenueCat Test Store key)." >&2
+            echo "::error::PURECIPES_REVENUECAT_API_KEY repository secret is required for release builds (RevenueCat Google Play key)." >&2
             exit 1
           fi
-          if [[ "${PURECIPES_REVENUECAT_API_KEY}" != test_* ]]; then
-            echo "::error::PURECIPES_REVENUECAT_API_KEY must be a RevenueCat Test Store SDK key (test_…)." >&2
+          if [[ "${PURECIPES_REVENUECAT_API_KEY}" != goog_* ]]; then
+            echo "::error::PURECIPES_REVENUECAT_API_KEY must be a Google Play SDK key (goog_…)." >&2
             exit 1
           fi
 

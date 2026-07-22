@@ -86,7 +86,6 @@ android {
 		}
 		release {
 			isMinifyEnabled = true
-			isDebuggable = true
 			isShrinkResources = true
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
@@ -106,7 +105,6 @@ android {
 				"PURECIPES_REVENUECAT_API_KEY",
 				revenueCatApiKey("release").asBuildConfigString(),
 			)
-			buildConfigField("Boolean", "PURECIPES_SHOW_MONETISATION_DEBUG_OVERRIDES", "true")
 			firebaseAppDistribution {
 				artifactType = "APK"
 				releaseNotesFile = rootProject.layout.buildDirectory.file("release-notes.txt").get().asFile.path

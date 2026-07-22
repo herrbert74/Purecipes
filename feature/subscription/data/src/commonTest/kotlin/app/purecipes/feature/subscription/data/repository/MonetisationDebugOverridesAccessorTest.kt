@@ -4,6 +4,8 @@ import app.purecipes.feature.subscription.data.datasource.SettingsMonetisationDe
 import app.purecipes.feature.subscription.domain.model.AdsDisplayOverride
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
 import app.purecipes.feature.subscription.domain.model.PremiumStatusOverride
+import app.purecipes.shared.data.config.PurecipesBuildType
+import app.purecipes.shared.data.config.PurecipesConfig
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -37,10 +39,34 @@ class MonetisationDebugOverridesAccessorTest {
 		accessor.observe().first().adsDisplay shouldBe AdsDisplayOverride.FORCE_OFF
 	}
 
-	private fun accessor(): MonetisationDebugOverridesAccessor {
+	@Test
+	fun `release build ignores persisted overrides`() = runTest {
+		val preferencesKey = "monetisation.debug.overrides.accessor.test.${Random.nextInt()}"
+		val dataSource = SettingsMonetisationDebugOverridesDataSource(preferencesKey = preferencesKey)
+		dataSource.setPremiumStatusOverride(PremiumStatusOverride.FORCE_FREE)
+		val accessor = MonetisationDebugOverridesAccessor(
+			dataSource,
+			testPurecipesConfig(showDebugOverrides = false),
+		)
+
+		accessor.observe().first() shouldBe MonetisationDebugOverrides()
+	}
+
+	private fun accessor(showDebugOverrides: Boolean = true): MonetisationDebugOverridesAccessor {
 		val preferencesKey = "monetisation.debug.overrides.accessor.test.${Random.nextInt()}"
 		return MonetisationDebugOverridesAccessor(
 			SettingsMonetisationDebugOverridesDataSource(preferencesKey = preferencesKey),
+			testPurecipesConfig(showDebugOverrides),
 		)
+	}
+
+	private fun testPurecipesConfig(showDebugOverrides: Boolean): PurecipesConfig = object : PurecipesConfig {
+		override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
+
+		override fun versionName(): String = "0.0.0-test"
+
+		override fun versionCode(): Long = 0L
+
+		override fun showMonetisationDebugOverrides(): Boolean = showDebugOverrides
 	}
 }
