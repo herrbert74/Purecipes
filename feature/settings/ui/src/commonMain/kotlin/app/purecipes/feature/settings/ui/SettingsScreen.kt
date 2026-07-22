@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
 import app.purecipes.feature.subscription.ui.GoPremiumSettingsPanel
 import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
@@ -24,6 +25,9 @@ import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+
+private const val PRIVACY_POLICY_URL = "https://purecipes.app/privacy"
+private const val TERMS_OF_SERVICE_URL = "https://purecipes.app/terms"
 
 @Composable
 fun SettingsScreen(
@@ -40,6 +44,7 @@ fun SettingsScreen(
 	val monetisationDebugOverrides by viewModel.monetisationDebugOverrides.collectAsState(
 		initial = MonetisationDebugOverrides(),
 	)
+	val uriHandler = LocalUriHandler.current
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -86,6 +91,10 @@ fun SettingsScreen(
 				onSendTestNotification = viewModel::onSendTestNotification,
 			)
 			AboutSettingsPanel(onOpenAbout = onOpenAbout)
+			LegalSettingsPanel(
+				onOpenPrivacyPolicy = { uriHandler.openUri(PRIVACY_POLICY_URL) },
+				onOpenTermsOfService = { uriHandler.openUri(TERMS_OF_SERVICE_URL) },
+			)
 		}
 	}
 }
