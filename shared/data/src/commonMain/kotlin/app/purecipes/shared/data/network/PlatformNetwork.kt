@@ -4,7 +4,7 @@ import app.purecipes.shared.data.config.PurecipesBuildType
 
 internal const val DEBUG_BACKEND_PORT = 9090
 
-private const val STAGING_BACKEND_BASE_URL = "http://staging.purecipes.com/"
+private const val STAGING_BACKEND_BASE_URL = "https://staging.purecipes.app/"
 private const val RELEASE_BACKEND_BASE_URL = "https://purecipes.app/"
 
 fun backendBaseUrl(
