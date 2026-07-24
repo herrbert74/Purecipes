@@ -18,8 +18,6 @@ import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.main.ui.MainScreen
 import app.purecipes.feature.sharing.data.runtime.SharingAndroidRuntime
 import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
-import com.mmk.kmpauth.core.KMPAuth
-import com.mmk.kmpauth.facebook.handleFacebookActivityResult
 import com.mmk.kmpnotifier.KMPNotifier
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import dev.zacsweers.metro.createGraph
@@ -117,10 +115,5 @@ class MainActivity : ComponentActivity() {
 		AdsAndroidRuntime.onActivityStopped(this)
 		SharingAndroidRuntime.onActivityStopped(this)
 		super.onStop()
-	}
-
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		KMPAuth.handleFacebookActivityResult(requestCode, resultCode, data)
-		super.onActivityResult(requestCode, resultCode, data)
 	}
 }

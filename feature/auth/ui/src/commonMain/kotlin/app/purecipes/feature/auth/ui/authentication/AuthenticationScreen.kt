@@ -25,6 +25,7 @@ import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.InitializeGoogleAuthenticationProvider
 import app.purecipes.feature.auth.ui.profile.SignedInContent
 import app.purecipes.shared.ui.component.ErrorText
@@ -46,7 +47,7 @@ fun AuthenticationScreen(
 		onEmailProviderClick: () -> Unit,
 		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
-		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+		onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit = {
 			isGoogleConfigured,
@@ -159,7 +160,7 @@ private fun AuthenticationScreenErrorPreview() {
 					onSignInClick = {},
 					onExternalProviderSignInResult = { _, _ -> },
 					onFacebookSignInResult = { _, _, _, _ -> },
-					onGoogleSignInResult = { _, _, _, _ -> },
+					onGoogleSignInResult = {},
 					onManagePrivacySettings = {},
 					onGoogleUnavailableClick = {},
 					authenticationProviderButtons = {

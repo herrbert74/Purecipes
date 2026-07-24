@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.AppleAuthenticationButton
 import app.purecipes.feature.auth.ui.authentication.button.FacebookAuthenticationButton
 import app.purecipes.feature.auth.ui.authentication.button.GoogleAuthenticationButton
@@ -23,7 +24,7 @@ internal fun AuthenticationProviderButtons(
 	onEmailProviderClick: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
-	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 ) {
 	if (LocalInspectionMode.current) {

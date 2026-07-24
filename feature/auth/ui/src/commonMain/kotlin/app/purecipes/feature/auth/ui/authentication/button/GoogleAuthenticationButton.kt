@@ -1,6 +1,7 @@
 package app.purecipes.feature.auth.ui.authentication.button
 
 import androidx.compose.runtime.Composable
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 
 @Composable
 internal expect fun InitializeGoogleAuthenticationProvider(googleWebClientId: String?)
@@ -8,6 +9,6 @@ internal expect fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal expect fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onUnavailable: () -> Unit,
 )

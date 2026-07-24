@@ -178,7 +178,6 @@ dependencies {
 	implementation(libs.androidx.activityCompose)
 	implementation(libs.androidx.splash)
 	implementation(libs.androidx.vectordrawableAnimated)
-	implementation(libs.kmpauth.facebook)
 	implementation(libs.kmpnotifier.push.firebase)
 	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))

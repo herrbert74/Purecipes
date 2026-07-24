@@ -6,8 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
-import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
+import com.mmk.kmpauth.firebase.google.rememberFirebaseGoogleSignInState
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
@@ -25,40 +26,33 @@ internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal actual fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onUnavailable: () -> Unit,
 ) {
 	val coroutineScope = rememberCoroutineScope()
 	if (isConfigured) {
-		GoogleButtonUiContainerFirebase(
+		val googleSignIn = rememberFirebaseGoogleSignInState(
+			linkAccount = false,
+			filterByAuthorizedAccounts = false,
 			onResult = { result ->
-				val failure = result.exceptionOrNull()
-				if (failure != null) {
-					onGoogleSignInResult(null, null, "", null)
-					return@GoogleButtonUiContainerFirebase
-				}
-				val firebaseUser = result.getOrNull()
-				if (firebaseUser == null) {
-					onGoogleSignInResult(null, null, "", null)
-					return@GoogleButtonUiContainerFirebase
-				}
 				coroutineScope.launch {
-					val profile = firebaseUser.toGoogleAuthenticationProfile()
 					onGoogleSignInResult(
-						profile?.idToken,
-						profile?.email,
-						profile?.displayName.orEmpty(),
-						profile?.profileImageUrl,
+						result.fold(
+							onSuccess = { firebaseUser ->
+								Result.success(firebaseUser?.toGoogleAuthenticationProfile())
+							},
+							onFailure = { error -> Result.failure(error) },
+						),
 					)
 				}
 			},
-		) {
-			GoogleSignInButton(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(PurecipesButtonDefaults.providerButtonHeight),
-			) { this.onClick() }
-		}
+		)
+		GoogleSignInButton(
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(PurecipesButtonDefaults.providerButtonHeight),
+			onClick = { googleSignIn.launch() },
+		)
 	} else {
 		GoogleSignInButton(
 			modifier = Modifier
