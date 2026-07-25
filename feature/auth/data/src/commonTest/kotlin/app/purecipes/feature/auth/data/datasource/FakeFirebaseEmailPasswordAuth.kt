@@ -9,12 +9,19 @@ internal class FakeFirebaseEmailPasswordAuth(
 		EmailPasswordSignInResult()
 	},
 	private val sendPasswordResetHandler: suspend (String) -> Unit = {},
+	private val deleteCurrentUserHandler: suspend () -> Unit = {},
 ) : FirebaseEmailPasswordAuth {
 
 	var lastPasswordResetEmail: String? = null
 		private set
 
 	var lastRegisteredDisplayName: String? = null
+		private set
+
+	var deleteCurrentUserCallCount = 0
+		private set
+
+	var signOutCallCount = 0
 		private set
 
 	override suspend fun signInWithEmailAndPassword(email: String, password: String): EmailPasswordSignInResult {
@@ -37,7 +44,12 @@ internal class FakeFirebaseEmailPasswordAuth(
 		sendPasswordResetHandler(email)
 	}
 
-	override suspend fun deleteCurrentUser() = Unit
+	override suspend fun deleteCurrentUser() {
+		deleteCurrentUserCallCount++
+		deleteCurrentUserHandler()
+	}
 
-	override suspend fun signOut() = Unit
+	override suspend fun signOut() {
+		signOutCallCount++
+	}
 }

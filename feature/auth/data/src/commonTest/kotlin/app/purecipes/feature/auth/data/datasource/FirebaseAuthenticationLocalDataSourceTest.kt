@@ -2,6 +2,8 @@ package app.purecipes.feature.auth.data.datasource
 
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.shared.datatestfixtures.fake.FakeSessionTokenStore
+import app.purecipes.shared.domain.model.AuthenticatedBackendUser
+import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
 import com.github.michaelbull.result.getError
@@ -82,20 +84,68 @@ class FirebaseAuthenticationLocalDataSourceTest {
 	}
 
 	@Test
-	fun `delete account clears signed in state`() = runTest {
+	fun `delete authentication identity keeps the backend session for the following backend call`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val firebaseAuthService = FakeFirebaseEmailPasswordAuth()
+		val dataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = sessionTokenStore,
+			firebaseAuthService = firebaseAuthService,
+		)
+		dataSource.signInWithBackendSession(fakeAuthenticatedSession())
+
+		val result = dataSource.deleteAuthenticationIdentity()
+
+		result.getError() shouldBe null
+		firebaseAuthService.deleteCurrentUserCallCount shouldBe 1
+		dataSource.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+	}
+
+	@Test
+	fun `delete authentication identity reports firebase recent login failure`() = runTest {
+		val dataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = FakeSessionTokenStore(),
+			firebaseAuthService = FakeFirebaseEmailPasswordAuth(
+				deleteCurrentUserHandler = { error("This operation requires recent authentication") },
+			),
+		)
+		dataSource.signInWithBackendSession(fakeAuthenticatedSession())
+
+		val result = dataSource.deleteAuthenticationIdentity()
+
+		result.getError()?.message shouldBe "This operation requires recent authentication"
+		dataSource.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+	}
+
+	@Test
+	fun `sign out clears signed in state`() = runTest {
 		val sessionTokenStore = FakeSessionTokenStore()
 		val dataSource = FirebaseAuthenticationLocalDataSource(
 			store = AuthenticationStore(),
 			sessionTokenStore = sessionTokenStore,
 			firebaseAuthService = FakeFirebaseEmailPasswordAuth(),
 		)
-		val user = fakeAuthUser(id = "firebase-user")
-		dataSource.signInWithExternalProvider(user)
+		dataSource.signInWithExternalProvider(fakeAuthUser(id = "firebase-user"))
 
-		val result = dataSource.deleteAccount()
+		dataSource.signOut()
 
-		result.getError() shouldBe null
 		dataSource.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
 		sessionTokenStore.currentSession() shouldBe null
 	}
+
+	private fun fakeAuthenticatedSession() = AuthenticatedSession(
+		accessToken = "session-token",
+		expiresAtEpochSeconds = 4_000_000_000,
+		user = AuthenticatedBackendUser(
+			id = "42",
+			email = "taylor@example.com",
+			displayName = "Taylor Baker",
+			firstName = "Taylor",
+			familyName = "Baker",
+			profileImageUrl = null,
+			provider = "GOOGLE",
+		),
+	)
 }

@@ -223,3 +223,29 @@ tasks.register<JavaExec>("importNutritionSeed") {
 	}
 	args = extraArgs
 }
+
+tasks.register<JavaExec>("deleteAccount") {
+	group = "application"
+	description = "Deletes a user account for a verified email deletion request, dry run unless deleteAccount" +
+		".execute=true"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.DeleteAccountMainKt")
+	val userId = project.findProperty("deleteAccount.userId")?.toString().orEmpty()
+	val email = project.findProperty("deleteAccount.email")?.toString().orEmpty()
+	val provider = project.findProperty("deleteAccount.provider")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (userId.isNotBlank()) {
+			add("--user-id=$userId")
+		}
+		if (email.isNotBlank()) {
+			add("--email=$email")
+		}
+		if (provider.isNotBlank()) {
+			add("--provider=$provider")
+		}
+		if (project.findProperty("deleteAccount.execute")?.toString() == "true") {
+			add("--execute")
+		}
+	}
+	args = extraArgs
+}

@@ -5,6 +5,7 @@ import app.purecipes.backend.auth.GoogleIdTokenVerificationResult
 import app.purecipes.backend.fake.FakeSessionService
 import app.purecipes.shared.domain.model.VerifiedGoogleUser
 import io.kotest.matchers.shouldBe
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -242,6 +243,99 @@ class AuthenticationRouteTest {
 		}
 
 		sessionResponse.status shouldBe HttpStatusCode.Unauthorized
+	}
+
+	@Test
+	fun `delete account requires bearer token`() = testApplication {
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
+				),
+				sessionService = FakeSessionService(),
+			)
+		}
+
+		val response = client.delete("/auth/account")
+
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Missing bearer token"}"""
+	}
+
+	@Test
+	fun `delete account rejects expired session`() = testApplication {
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
+				),
+				sessionService = FakeSessionService(),
+			)
+		}
+
+		val response = client.delete("/auth/account") {
+			header(HttpHeaders.Authorization, "Bearer unknown-token")
+		}
+
+		response.status shouldBe HttpStatusCode.Unauthorized
+		response.bodyAsText() shouldBe """{"message":"Unauthorized","detail":"Session is invalid or expired"}"""
+	}
+
+	@Test
+	fun `delete account removes stored account`() = testApplication {
+		val db = createInMemoryDb("authentication_route")
+		val userId = db.insertAccount(email = "taylor@example.com", externalUserId = "google-subject")
+		val session = FakeSessionService.createSession(id = userId.toString(), email = "taylor@example.com")
+		val sessionService = FakeSessionService(initialSessions = listOf(session))
+		application {
+			module(
+				db = db,
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
+				),
+				sessionService = sessionService,
+			)
+		}
+
+		val response = client.delete("/auth/account") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+		}
+
+		response.status shouldBe HttpStatusCode.NoContent
+		db.countRows("SELECT COUNT(*) FROM app_users WHERE id = $userId") shouldBe 0
+	}
+
+	@Test
+	fun `delete account yields 404 when account is already deleted`() = testApplication {
+		val sessionService = FakeSessionService()
+		val session = sessionService.createSession(
+			provider = "GOOGLE",
+			externalUserId = "google-subject",
+			email = "taylor@example.com",
+			displayName = "Taylor Baker",
+			firstName = "Taylor",
+			familyName = "Baker",
+			profileImageUrl = null,
+		)
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Invalid("Not used"),
+				),
+				sessionService = sessionService,
+			)
+		}
+
+		val response = client.delete("/auth/account") {
+			header(HttpHeaders.Authorization, "Bearer ${session.accessToken}")
+		}
+
+		response.status shouldBe HttpStatusCode.NotFound
+		response.bodyAsText() shouldBe
+			"""{"message":"Account not found","detail":"No account found for the current session"}"""
 	}
 
 	private class FakeFirebaseIdTokenVerifier(

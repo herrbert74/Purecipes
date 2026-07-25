@@ -73,6 +73,9 @@ interface PurecipesApi {
 	@POST("auth/sign-out")
 	suspend fun signOut()
 
+	@DELETE("auth/account")
+	suspend fun deleteAccount()
+
 	@GET("favorites")
 	suspend fun getFavoriteRecipesPage(
 		@Query("pageNumber") pageNumber: Int = 1,

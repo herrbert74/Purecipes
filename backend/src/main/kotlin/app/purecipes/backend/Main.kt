@@ -97,7 +97,7 @@ fun Application.module(
 			call.respond(mapOf("status" to "ok"))
 		}
 		deepLinkRoutes()
-		authenticationRoutes(firebaseIdTokenVerifier, sessionService)
+		authenticationRoutes(firebaseIdTokenVerifier, sessionService) { db }
 		favoriteRoutes(sessionService) { db }
 		cookbookRoutes(sessionService) { db }
 		cookbookShareRoutes(sessionService) { db }

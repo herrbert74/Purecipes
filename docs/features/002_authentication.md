@@ -15,6 +15,32 @@ Implement secure, seamless authentication across all platforms using KMPAuth for
 
 For Google client ID setup, Firebase checklist, and legacy staged-flow notes, see the sections below (some are outdated relative to the snapshot above).
 
+## Account Deletion
+
+In-app deletion runs in this order so a partial failure stays retryable:
+
+1. The Firebase identity is deleted first. Firebase may reject this with a recent-login error, and nothing has changed yet at that point.
+2. The backend account is deleted with `DELETE /auth/account` while the bearer session is still valid. The backend runs one transaction that reassigns the user's recipes to the reserved system owner (provider `SYSTEM`, external id `orphaned-recipes`, display name `Purecipes`) and then deletes the `app_users` row, so foreign keys cascade through sessions, favourites, cookbooks, shares, pantry, search filters, excluded ingredients, and measurement preferences.
+3. Local auth and session state is cleared only after the backend call succeeds. If the backend call fails, the local session is kept so the user can retry; the already-deleted Firebase identity makes step 1 a no-op on retry.
+
+Retained recipes stay available to other users, but they are no longer associated with the deleted account.
+
+### Handling verified email deletion requests
+
+[`docs/legal/delete-account.html`](../legal/delete-account.html) tells users who cannot use the app to email a deletion request. After verifying that the requester controls the account email, run the admin tool from the repository root. It defaults to a dry run:
+
+```bash
+./gradlew :backend:deleteAccount -PdeleteAccount.email=user@example.com
+```
+
+The dry run prints the resolved account and how much data would be deleted or reassigned. If one email matches several providers, narrow it with `-PdeleteAccount.provider=EMAIL` or pick a specific account with `-PdeleteAccount.userId=123`. Add the execute flag to delete:
+
+```bash
+./gradlew :backend:deleteAccount -PdeleteAccount.userId=123 -PdeleteAccount.execute=true
+```
+
+The tool refuses to delete the reserved `Purecipes` recipe owner. The backend has no Firebase Admin credentials, so afterwards delete the Firebase Authentication user manually in the Firebase Console; the tool prints this reminder.
+
 ## Google Sign-In Setup Summary
 
 ### What the app expects today
