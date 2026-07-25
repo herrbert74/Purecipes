@@ -130,6 +130,8 @@ class FakePurecipesApi(
 
 	override suspend fun signOut() = Unit
 
+	override suspend fun deleteAccount() = Unit
+
 	override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int): SearchResultsPage {
 		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
 		val normalizedPageSize = pageSize.coerceAtLeast(1)

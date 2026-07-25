@@ -45,7 +45,7 @@ interface AuthenticationDataSource {
 
 		suspend fun signInWithExternalProvider(user: AuthUser): Outcome<AuthUser>
 
-		suspend fun deleteAccount(): Outcome<Unit>
+		suspend fun deleteAuthenticationIdentity(): Outcome<Unit>
 
 		suspend fun signOut()
 	}
@@ -59,6 +59,8 @@ interface AuthenticationDataSource {
 		suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession>
 
 		suspend fun getCurrentSession(): Outcome<AuthenticatedSession>
+
+		suspend fun deleteAccount(): Outcome<Unit>
 
 		suspend fun signOut()
 	}
@@ -84,6 +86,10 @@ class AuthenticationRemoteDataSource(
 
 	override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> = runCatchingApi {
 		api.getCurrentSession()
+	}
+
+	override suspend fun deleteAccount(): Outcome<Unit> = runCatchingApi {
+		api.deleteAccount()
 	}
 
 	override suspend fun signOut(): Unit = runCatchingApi {
@@ -198,14 +204,11 @@ class FirebaseAuthenticationLocalDataSource(
 		return Ok(resolvedUser)
 	}
 
-	override suspend fun deleteAccount(): Outcome<Unit> {
+	override suspend fun deleteAuthenticationIdentity(): Outcome<Unit> {
 		return runCatching {
 			firebaseAuthService.deleteCurrentUser()
 		}.fold(
-			onSuccess = {
-				clearSignedInState()
-				Ok(Unit)
-			},
+			onSuccess = { Ok(Unit) },
 			onFailure = { Err(Failure.ServerError(mapEmailPasswordAuthException(it))) },
 		)
 	}
@@ -293,13 +296,11 @@ class InMemoryAuthenticationLocalDataSource(
 		return Ok(resolvedUser)
 	}
 
-	override suspend fun deleteAccount(): Outcome<Unit> {
+	override suspend fun deleteAuthenticationIdentity(): Outcome<Unit> {
 		val signedInUser = (store.authenticationState.value as? AuthenticationState.SignedIn)?.user
 		if (signedInUser?.provider == AuthProvider.EMAIL) {
 			store.accountsByEmail.remove(signedInUser.email.normalizedEmail())
 		}
-		sessionTokenStore.clearSession()
-		store.authenticationState.value = AuthenticationState.SignedOut
 		return Ok(Unit)
 	}
 
