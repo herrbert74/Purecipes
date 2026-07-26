@@ -42,6 +42,7 @@ fun MarketingFrame(
 	screenshot: ImageBitmap,
 	outputSize: StoreOutputSize,
 	fontFamily: FontFamily,
+	theme: MarketingTheme,
 	modifier: Modifier = Modifier,
 ) {
 	when (outputSize) {
@@ -50,6 +51,7 @@ fun MarketingFrame(
 			subtitle = subtitle,
 			screenshot = screenshot,
 			fontFamily = fontFamily,
+			theme = theme,
 			modifier = modifier,
 		)
 
@@ -61,6 +63,7 @@ fun MarketingFrame(
 			subtitle = subtitle,
 			screenshot = screenshot,
 			fontFamily = fontFamily,
+			theme = theme,
 			modifier = modifier,
 		)
 	}
@@ -72,16 +75,13 @@ private fun PortraitMarketingFrame(
 	subtitle: String?,
 	screenshot: ImageBitmap,
 	fontFamily: FontFamily,
+	theme: MarketingTheme,
 	modifier: Modifier = Modifier,
 ) {
 	Box(
 		modifier = modifier
 			.fillMaxSize()
-			.background(
-				Brush.verticalGradient(
-					colors = listOf(BrandColors.backgroundTop, BrandColors.backgroundBottom),
-				),
-			)
+			.background(BrandColors.portraitBackground(theme))
 			.padding(horizontal = 48.dp, vertical = 56.dp),
 	) {
 		Column(
@@ -102,7 +102,7 @@ private fun PortraitMarketingFrame(
 				Spacer(modifier = Modifier.height(16.dp))
 				Text(
 					text = subtitle,
-					color = BrandColors.onPrimaryMuted,
+					color = BrandColors.subtitleColor(theme),
 					fontFamily = fontFamily,
 					fontWeight = FontWeight.Normal,
 					fontSize = 28.sp,
@@ -130,16 +130,13 @@ private fun FeatureGraphicFrame(
 	subtitle: String?,
 	screenshot: ImageBitmap,
 	fontFamily: FontFamily,
+	theme: MarketingTheme,
 	modifier: Modifier = Modifier,
 ) {
 	Row(
 		modifier = modifier
 			.fillMaxSize()
-			.background(
-				Brush.horizontalGradient(
-					colors = listOf(BrandColors.featureTop, BrandColors.featureBottom),
-				),
-			)
+			.background(BrandColors.featureBackground(theme))
 			.padding(horizontal = 48.dp, vertical = 36.dp),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.spacedBy(36.dp),
@@ -160,7 +157,7 @@ private fun FeatureGraphicFrame(
 				Spacer(modifier = Modifier.height(12.dp))
 				Text(
 					text = subtitle,
-					color = BrandColors.onPrimaryMuted,
+					color = BrandColors.subtitleColor(theme),
 					fontFamily = fontFamily,
 					fontWeight = FontWeight.Normal,
 					fontSize = 22.sp,

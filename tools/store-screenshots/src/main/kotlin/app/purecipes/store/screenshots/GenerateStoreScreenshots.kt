@@ -3,6 +3,8 @@ package app.purecipes.store.screenshots
 import java.io.File
 
 private const val DEFAULT_LOCALE = "en-US"
+private const val RAW_REFERENCE_DIR =
+	"app/src/screenshotTestDebug/reference/app/purecipes/marketing/MarketingScreenshotsKt"
 
 fun main(args: Array<String>) {
 	val options = parseArgs(args)
@@ -14,9 +16,12 @@ fun main(args: Array<String>) {
 	val outputRoot = options.outputDirectory
 	var renderedCount = 0
 	for (slide in MarketingSlides.all) {
-		val rawFile = File(options.projectRoot, slide.rawScreenshotRelativePath)
+		val rawFile = resolveRawScreenshot(options.projectRoot, slide.rawScreenshotNamePrefix)
 		val screenshot = StoreScreenshotRenderer.loadScreenshot(rawFile)
 		for (size in StoreOutputSize.entries) {
+			if (size == StoreOutputSize.FEATURE_GRAPHIC && slide != MarketingSlides.all.first()) {
+				continue
+			}
 			val outputFile = File(
 				outputRoot,
 				"${size.directoryName}/$DEFAULT_LOCALE/${slide.fileName}",
@@ -33,6 +38,27 @@ fun main(args: Array<String>) {
 		}
 	}
 	println("Generated $renderedCount store screenshots under ${outputRoot.absolutePath}")
+}
+
+internal fun resolveRawScreenshot(projectRoot: File, namePrefix: String): File {
+	val directory = File(projectRoot, RAW_REFERENCE_DIR)
+	require(directory.isDirectory) {
+		"Raw screenshot directory missing: ${directory.absolutePath}. " +
+			"Run ./gradlew :app:updateDebugScreenshotTest first."
+	}
+	val matches = directory.listFiles()
+		?.filter { file ->
+			file.isFile &&
+				file.extension.equals("png", ignoreCase = true) &&
+				file.name.startsWith(namePrefix)
+		}
+		.orEmpty()
+		.sortedBy { it.name }
+	require(matches.size == 1) {
+		"Expected exactly one raw screenshot starting with '$namePrefix' in ${directory.absolutePath}, " +
+			"found ${matches.size}: ${matches.map { it.name }}"
+	}
+	return matches.first()
 }
 
 private data class CliOptions(

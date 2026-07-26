@@ -40,6 +40,7 @@ object StoreScreenshotRenderer {
 				screenshot = screenshot,
 				outputSize = outputSize,
 				fontFamily = fontFamily,
+				theme = slide.theme,
 				modifier = Modifier.fillMaxSize(),
 			)
 		}.use { scene ->

@@ -186,6 +186,8 @@ dependencies {
 	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.metro.runtime)
+	screenshotTestImplementation(project(":feature:cooking:ui"))
+	screenshotTestImplementation(project(":feature:recipedetails:ui"))
 	screenshotTestImplementation(project(":feature:search:ui"))
 	screenshotTestImplementation(project(":shared:domain"))
 	screenshotTestImplementation(platform(libs.androidx.composeBom))

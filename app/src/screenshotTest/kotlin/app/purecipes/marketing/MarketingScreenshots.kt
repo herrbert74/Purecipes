@@ -2,6 +2,10 @@ package app.purecipes.marketing
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.feature.cooking.ui.StepByStepCookingScreenContent
+import app.purecipes.feature.cooking.ui.marketingCookingRecipe
+import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreenContent
+import app.purecipes.feature.recipedetails.ui.marketingRecipeDetails
 import app.purecipes.feature.search.ui.RecipeSearchScreenContent
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -29,6 +33,46 @@ private fun SearchMarketingScreenshot() {
 		searchQuery = "",
 		hasActiveFilters = false,
 		measurementLabel = null,
+		isSearching = false,
+		errorMessage = null,
+		totalMatches = 6,
+		recipes = marketingSearchRecipes,
+	)
+}
+
+@PreviewTest
+@Preview(name = "details", device = MARKETING_DEVICE, showBackground = true)
+@Composable
+private fun DetailsMarketingScreenshot() {
+	RecipeDetailsScreenContent(
+		darkTheme = false,
+		recipe = marketingRecipeDetails,
+		isRecipeConverted = true,
+		cookbookNames = persistentListOf("Weeknight", "Italian"),
+	)
+}
+
+@PreviewTest
+@Preview(name = "cooking", device = MARKETING_DEVICE, showBackground = true)
+@Composable
+private fun CookingMarketingScreenshot() {
+	StepByStepCookingScreenContent(
+		darkTheme = false,
+		recipe = marketingCookingRecipe,
+		currentStepIndex = 1,
+	)
+}
+
+@PreviewTest
+@Preview(name = "units", device = MARKETING_DEVICE, showBackground = true)
+@Composable
+private fun UnitsMarketingScreenshot() {
+	RecipeSearchScreenContent(
+		darkTheme = false,
+		isSearchExpanded = true,
+		searchQuery = "pasta",
+		hasActiveFilters = true,
+		measurementLabel = "Showing metric recipes only",
 		isSearching = false,
 		errorMessage = null,
 		totalMatches = 6,
