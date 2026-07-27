@@ -2,6 +2,8 @@
 
 Local pipeline for framed Google Play listing screenshots (`app.purecipes`).
 
+Agent workflow: [`.agents/skills/play-store-screenshots/SKILL.md`](../../.agents/skills/play-store-screenshots/SKILL.md).
+
 | Step | Command |
 |------|---------|
 | Capture raw UI | `./gradlew :app:updateDebugScreenshotTest` |
