@@ -16,6 +16,9 @@ kotlin {
 
 dependencies {
 	implementation(compose.desktop.currentOs)
+	implementation(libs.google.androidPublisherApi)
+	implementation(libs.google.apiClient)
+	implementation(libs.google.authOauth2Http)
 	implementation(libs.jetbrains.composeFoundation)
 	implementation(libs.jetbrains.composeMaterial3)
 	implementation(libs.jetbrains.composeRuntime)
@@ -37,12 +40,37 @@ tasks.register<JavaExec>("generateStoreScreenshots") {
 	group = "store listing"
 	description = "Render framed Play Store marketing screenshots into store-listing/"
 	classpath = sourceSets["main"].runtimeClasspath
-	mainClass.set(application.mainClass)
+	mainClass.set("app.purecipes.store.screenshots.GenerateStoreScreenshotsKt")
 	workingDir = rootProject.projectDir
 	args(
 		"--project-root",
 		rootProject.projectDir.absolutePath,
 		"--output",
 		rootProject.layout.projectDirectory.dir("store-listing").asFile.absolutePath,
+	)
+}
+
+tasks.register<JavaExec>("uploadStoreScreenshots") {
+	group = "store listing"
+	description = "Upload store-listing/ screenshots to Google Play via the Android Publisher API"
+	classpath = sourceSets["main"].runtimeClasspath
+	mainClass.set("app.purecipes.store.screenshots.UploadStoreScreenshotsKt")
+	workingDir = rootProject.projectDir
+	val credentials = providers.gradleProperty("purecipes.play.serviceAccountJson")
+		.orElse(providers.environmentVariable("GOOGLE_APPLICATION_CREDENTIALS"))
+	args(
+		buildList {
+			add("--project-root")
+			add(rootProject.projectDir.absolutePath)
+			add("--store-listing")
+			add(rootProject.layout.projectDirectory.dir("store-listing").asFile.absolutePath)
+			if (project.hasProperty("dryRun")) {
+				add("--dry-run")
+			}
+			credentials.orNull?.takeIf { it.isNotBlank() }?.let { path ->
+				add("--credentials")
+				add(path)
+			}
+		},
 	)
 }

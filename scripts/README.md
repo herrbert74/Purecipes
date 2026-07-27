@@ -9,3 +9,5 @@ Kotlin scripts and small shell helpers for local and CI workflows. Each area has
 | [`ios/`](ios/) | iOS-only helpers (Usercentrics xcframework fetch) | — |
 
 Agent guidelines: [`scraping/AGENTS.md`](scraping/AGENTS.md), [`release/AGENTS.md`](release/AGENTS.md).
+
+Play Store screenshots (generate + upload, credentials shared with Play MCP): [`../tools/store-screenshots/README.md`](../tools/store-screenshots/README.md).

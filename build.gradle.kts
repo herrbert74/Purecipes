@@ -49,3 +49,9 @@ tasks.register("generateStoreScreenshots") {
 	description = "Render framed Play Store marketing screenshots into store-listing/"
 	dependsOn(":tools:store-screenshots:generateStoreScreenshots")
 }
+
+tasks.register("uploadStoreScreenshots") {
+	group = "store listing"
+	description = "Upload store-listing/ screenshots to Google Play via the Android Publisher API"
+	dependsOn(":tools:store-screenshots:uploadStoreScreenshots")
+}

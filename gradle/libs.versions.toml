@@ -47,6 +47,9 @@ buildKonfig = "0.22.0"
 compose-screenshotTesting = "0.0.1-alpha15"
 #chucker = "4.2.0"
 coil = "3.5.0"
+googleAndroidPublisher = "v3-rev20260706-2.0.0"
+googleApiClient = "2.9.0"
+googleAuthLibrary = "1.49.0"
 googleServices = "4.5.0"
 #decompose = "3.5.0"
 dejavu = "0.3.1"
@@ -229,6 +232,10 @@ diamondedge-logging = { module = "com.diamondedge:logging", version.ref = "diamo
 #essenty-backHandler = { module = "com.arkivanov.essenty:back-handler", version.ref = "essenty" }
 #essenty-instanceKeeper = { module = "com.arkivanov.essenty:instance-keeper", version.ref = "essenty" }
 #essenty-stateKeeper = { module = "com.arkivanov.essenty:state-keeper", version.ref = "essenty" }
+
+google-androidPublisherApi = { module = "com.google.apis:google-api-services-androidpublisher", version.ref = "googleAndroidPublisher" }
+google-apiClient = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
+google-authOauth2Http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibrary" }
 
 #googlePlay-appUpdateKtx = "com.google.android.play:app-update-ktx:2.1.0"
 #googlePlay-servicesAnalytics = "com.google.android.gms:play-services-analytics:18.1.1"
