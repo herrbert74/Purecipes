@@ -17,7 +17,9 @@ Run in order:
 3. **Dry-run upload** — `./gradlew uploadStoreScreenshots -PdryRun`
 4. **Upload** — `./gradlew uploadStoreScreenshots` (only when the user asks to publish)
 
-Outputs: `store-listing/{phone|tablet-7|tablet-10|feature-graphic}/en-US/*.png`
+Default language is **en-GB**. Override with `-Planguage=en-US` (or `-Ppurecipes.play.language=…`) on generate and upload.
+
+Outputs: `store-listing/{phone|tablet-7|tablet-10|feature-graphic}/en-GB/*.png` (or the overridden language).
 
 Sizes: phone 1080×1920, 7" tablet 1200×1920, 10" tablet 1600×2560, feature graphic 1024×500 (feature graphic is generated from the first slide only).
 
@@ -50,15 +52,17 @@ Sizes: phone 1080×1920, 7" tablet 1200×1920, 10" tablet 1600×2560, feature gr
 - One clear user outcome per slide.
 - Headlines must read in a store thumbnail.
 - Feature graphic uses slide 01 only; phone/tablet get the full set.
-- Raw captures may use gradient placeholders when `imageUrl` is null; food photos are optional polish, not required for upload.
+- Raw captures may use local debug drawables via Coil `LocalAsyncImagePreviewHandler` (`MarketingCoilPreview` + `app/src/debug/res/drawable-nodpi/marketing_*.jpg`). Do not rely on network URLs in screenshot tests.
 
 ## Credentials
 
-Use the **Play Console** service account (same JSON as Cursor’s play-store MCP `GOOGLE_APPLICATION_CREDENTIALS`). Do not use the Firebase App Distribution key.
+Use the **Play Console** service account (same JSON as Cursor’s play-store MCP).
 
 Resolution order for upload: `--credentials`, then `-Ppurecipes.play.serviceAccountJson`, then `GOOGLE_APPLICATION_CREDENTIALS`.
 
 Never commit service account JSON or absolute machine paths into the repo or skill docs.
+
+If upload returns `The caller does not have permission`, invite the service account in Play Console with **Manage store presence** on `app.purecipes`, enable **Google Play Android Developer API**, and **save the invite twice** if permissions were just changed. Details: [`tools/store-screenshots/README.md`](../../../tools/store-screenshots/README.md).
 
 ## Checklist
 

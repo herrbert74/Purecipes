@@ -42,11 +42,18 @@ tasks.register<JavaExec>("generateStoreScreenshots") {
 	classpath = sourceSets["main"].runtimeClasspath
 	mainClass.set("app.purecipes.store.screenshots.GenerateStoreScreenshotsKt")
 	workingDir = rootProject.projectDir
+	val language = providers.gradleProperty("language")
+		.orElse(providers.gradleProperty("purecipes.play.language"))
+		.orElse("en-GB")
 	args(
-		"--project-root",
-		rootProject.projectDir.absolutePath,
-		"--output",
-		rootProject.layout.projectDirectory.dir("store-listing").asFile.absolutePath,
+		buildList {
+			add("--project-root")
+			add(rootProject.projectDir.absolutePath)
+			add("--output")
+			add(rootProject.layout.projectDirectory.dir("store-listing").asFile.absolutePath)
+			add("--language")
+			add(language.get())
+		},
 	)
 }
 
@@ -56,14 +63,20 @@ tasks.register<JavaExec>("uploadStoreScreenshots") {
 	classpath = sourceSets["main"].runtimeClasspath
 	mainClass.set("app.purecipes.store.screenshots.UploadStoreScreenshotsKt")
 	workingDir = rootProject.projectDir
+	mustRunAfter("generateStoreScreenshots")
 	val credentials = providers.gradleProperty("purecipes.play.serviceAccountJson")
 		.orElse(providers.environmentVariable("GOOGLE_APPLICATION_CREDENTIALS"))
+	val language = providers.gradleProperty("language")
+		.orElse(providers.gradleProperty("purecipes.play.language"))
+		.orElse("en-GB")
 	args(
 		buildList {
 			add("--project-root")
 			add(rootProject.projectDir.absolutePath)
 			add("--store-listing")
 			add(rootProject.layout.projectDirectory.dir("store-listing").asFile.absolutePath)
+			add("--language")
+			add(language.get())
 			if (project.hasProperty("dryRun")) {
 				add("--dry-run")
 			}

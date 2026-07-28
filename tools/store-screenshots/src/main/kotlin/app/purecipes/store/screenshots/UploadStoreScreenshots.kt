@@ -11,7 +11,7 @@ import java.io.File
 import java.io.FileInputStream
 
 private const val DEFAULT_PACKAGE_NAME = "app.purecipes"
-private const val DEFAULT_LANGUAGE = "en-US"
+private const val DEFAULT_LANGUAGE = "en-GB"
 private const val APPLICATION_NAME = "Purecipes Store Screenshots"
 
 fun main(args: Array<String>) {

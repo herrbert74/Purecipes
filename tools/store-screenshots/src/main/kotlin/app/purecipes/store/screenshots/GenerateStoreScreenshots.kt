@@ -2,7 +2,7 @@ package app.purecipes.store.screenshots
 
 import java.io.File
 
-private const val DEFAULT_LOCALE = "en-US"
+private const val DEFAULT_LANGUAGE = "en-GB"
 private const val RAW_REFERENCE_DIR =
 	"app/src/screenshotTestDebug/reference/app/purecipes/marketing/MarketingScreenshotsKt"
 
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
 			}
 			val outputFile = File(
 				outputRoot,
-				"${size.directoryName}/$DEFAULT_LOCALE/${slide.fileName}",
+				"${size.directoryName}/${options.language}/${slide.fileName}",
 			)
 			StoreScreenshotRenderer.render(
 				slide = slide,
@@ -64,11 +64,13 @@ internal fun resolveRawScreenshot(projectRoot: File, namePrefix: String): File {
 private data class CliOptions(
 	val projectRoot: File,
 	val outputDirectory: File,
+	val language: String,
 )
 
 private fun parseArgs(args: Array<String>): CliOptions {
 	var projectRoot = File(".").canonicalFile
 	var outputDirectory = File(projectRoot, "store-listing")
+	var language = DEFAULT_LANGUAGE
 	var index = 0
 	while (index < args.size) {
 		when (val arg = args[index]) {
@@ -82,10 +84,19 @@ private fun parseArgs(args: Array<String>): CliOptions {
 				index += 2
 			}
 
+			"--language" -> {
+				language = requireNext(args, index, arg)
+				index += 2
+			}
+
 			else -> error("Unknown argument: $arg")
 		}
 	}
-	return CliOptions(projectRoot = projectRoot, outputDirectory = outputDirectory)
+	return CliOptions(
+		projectRoot = projectRoot,
+		outputDirectory = outputDirectory,
+		language = language,
+	)
 }
 
 private fun requireNext(args: Array<String>, index: Int, flag: String): String {

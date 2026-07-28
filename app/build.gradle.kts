@@ -192,6 +192,8 @@ dependencies {
 	screenshotTestImplementation(project(":shared:domain"))
 	screenshotTestImplementation(platform(libs.androidx.composeBom))
 	screenshotTestImplementation(libs.androidx.composeUiTooling)
+	screenshotTestImplementation(libs.androidx.core)
+	screenshotTestImplementation(libs.coil.compose)
 	screenshotTestImplementation(libs.kotlinx.collectionsImmutable)
 	screenshotTestImplementation(libs.screenshot.validationApi)
 }

@@ -11,46 +11,39 @@ Agent workflow: [`.agents/skills/play-store-screenshots/SKILL.md`](../../.agents
 | Preview upload plan | `./gradlew uploadStoreScreenshots -PdryRun` |
 | Upload to Play | `./gradlew uploadStoreScreenshots` |
 
-Outputs land in `store-listing/` (`phone`, `tablet-7`, `tablet-10`, `feature-graphic`, locale `en-US`).
+Default listing language is **en-GB** (Play Console default). Override with `-Planguage=en-US` (or `-Ppurecipes.play.language=…`) on generate and upload.
 
-## Credentials (same as Play MCP)
+Outputs land in `store-listing/` (`phone`, `tablet-7`, `tablet-10`, `feature-graphic`, locale folder matching the language).
 
-`uploadStoreScreenshots` uses the **Google Play** Android Publisher API. It needs the **Play Console service account** JSON — the same one Cursor’s **play-store** MCP uses (`GOOGLE_APPLICATION_CREDENTIALS` in that MCP’s env).
+## Credentials
 
-### Do not confuse with Firebase
+`uploadStoreScreenshots` uses the Google Play Android Publisher API with the **Play Console** service account JSON (same as Cursor’s play-store MCP).
 
-| Credential | Used for |
-|------------|----------|
-| Play Console service account JSON | Play MCP, `uploadStoreScreenshots`, Play Console API |
-| Firebase App Distribution service account | Uploading APKs to Firebase App Distribution only |
+Resolution order:
 
-Both can be exposed as `GOOGLE_APPLICATION_CREDENTIALS` in different contexts. For screenshot upload, always use the **Play** key.
-
-### How the Gradle task finds credentials
-
-First match wins:
-
-1. `--credentials /path/to/play-sa.json` (if you run the main class directly)
+1. `--credentials /path/to/play-sa.json` (main class directly)
 2. Gradle `-Ppurecipes.play.serviceAccountJson=/path/to/play-sa.json`
 3. Environment variable `GOOGLE_APPLICATION_CREDENTIALS`
-
-Easiest local setup (matches MCP):
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/play-sa.json
-./gradlew uploadStoreScreenshots -PdryRun
-./gradlew uploadStoreScreenshots
-```
-
-Or one-shot without exporting:
 
 ```bash
 ./gradlew uploadStoreScreenshots \
   -Ppurecipes.play.serviceAccountJson=/path/to/play-sa.json
 ```
 
-The service account must be invited in Play Console (Users and permissions) with access to edit store listing / use the Google Play Android Developer API for `app.purecipes`.
+Never commit service account JSON or absolute machine paths into the repo.
+
+### Play Console permissions
+
+If upload returns `403 The caller does not have permission`:
+
+1. Enable **Google Play Android Developer API** on the Cloud project that owns the key.
+2. Link that project in Play Console → **Setup → API access**.
+3. Invite the service account (`client_email` in the JSON) under **Users and permissions**.
+4. Grant app access for **Purecipes** (`app.purecipes`) with at least **View app information** and **Manage store presence**.
+5. **Save twice** — Play Console often requires a second save after changing app permissions before the invite sticks. Wait a minute, then retry.
 
 ## Slide copy and themes
 
 Edit `src/main/kotlin/app/purecipes/store/screenshots/MarketingSlides.kt`. Raw captures are `@PreviewTest` composables in `app/src/screenshotTest/.../MarketingScreenshots.kt`.
+
+Food photos for those captures live in `app/src/debug/res/drawable-nodpi/marketing_*.jpg` and are wired through `MarketingCoilPreview` (Coil preview handler). They ship only with debug builds, not release.
