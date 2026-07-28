@@ -204,7 +204,11 @@ private val previewCookingRecipe = RecipeDetails(
 )
 @Composable
 private fun StepByStepCookingScreenLightPreview() {
-	StepByStepCookingScreenPreviewContent(darkTheme = false, currentStepIndex = 1)
+	StepByStepCookingScreenContent(
+		darkTheme = false,
+		recipe = previewCookingRecipe,
+		currentStepIndex = 1,
+	)
 }
 
 @Preview(
@@ -215,32 +219,9 @@ private fun StepByStepCookingScreenLightPreview() {
 )
 @Composable
 private fun StepByStepCookingScreenDarkPreview() {
-	StepByStepCookingScreenPreviewContent(darkTheme = true, currentStepIndex = 0)
-}
-
-@Composable
-private fun StepByStepCookingScreenPreviewContent(
-	darkTheme: Boolean,
-	currentStepIndex: Int,
-) {
-	PurecipesTheme(darkTheme = darkTheme) {
-		Scaffold(
-			modifier = Modifier.fillMaxSize(),
-			topBar = {
-				TopAppBar(
-					title = { Text(text = previewCookingRecipe.title) },
-					navigationIcon = {
-						BackNavigationButton(onBack = {})
-					},
-				)
-			},
-		) { innerPadding ->
-			StepByStepCookingScreen(
-				recipe = previewCookingRecipe,
-				currentStepIndex = currentStepIndex,
-				onStepChange = {},
-				modifier = Modifier.padding(innerPadding),
-			)
-		}
-	}
+	StepByStepCookingScreenContent(
+		darkTheme = true,
+		recipe = previewCookingRecipe,
+		currentStepIndex = 0,
+	)
 }

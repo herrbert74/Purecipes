@@ -29,6 +29,7 @@ kotlin {
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.kotlinx.collectionsImmutable)
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}
