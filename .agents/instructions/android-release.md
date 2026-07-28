@@ -60,4 +60,4 @@ Optional: [`open_android_release_pr.main.kts`](../../scripts/release/open_androi
 
 ## After merge
 
-Tag on `main` (e.g. `v0.2.0`) to run [`.github/workflows/distribute-android.yml`](../../.github/workflows/distribute-android.yml).
+Tag on `main` (e.g. `v0.2.0`) to run [`.github/workflows/distribute-android.yml`](../../.github/workflows/distribute-android.yml) (Firebase App Distribution + Google Play closed testing).

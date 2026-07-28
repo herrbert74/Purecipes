@@ -39,7 +39,7 @@ Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.
 
 ## CI
 
-Only **Distribute Android** runs in GitHub Actions (on tag `v*`): extract notes, build release APK, upload to Firebase App Distribution.
+**Distribute Android** runs in GitHub Actions on tag `v*`: extract notes, build release APK + AAB, upload APK to Firebase App Distribution, upload AAB to Google Play closed testing (`alpha`).
 
 ## Other local commands
 
