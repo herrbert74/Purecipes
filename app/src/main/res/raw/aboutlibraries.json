@@ -406,10 +406,10 @@
         },
         {
             "uniqueId": "androidx.compose.animation:animation-android",
-            "artifactVersion": "1.12.0-alpha03",
+            "artifactVersion": "1.12.0-beta01",
             "name": "Compose Animation",
             "description": "Compose animation library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0-alpha03",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0-beta01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -431,10 +431,10 @@
         },
         {
             "uniqueId": "androidx.compose.animation:animation-core-android",
-            "artifactVersion": "1.12.0-alpha03",
+            "artifactVersion": "1.12.0-beta01",
             "name": "Compose Animation Core",
             "description": "Animation engine and animation primitives that are the building blocks of the Compose animation library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0-alpha03",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0-beta01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -456,10 +456,10 @@
         },
         {
             "uniqueId": "androidx.compose.foundation:foundation-android",
-            "artifactVersion": "1.12.0-alpha03",
+            "artifactVersion": "1.12.0-beta01",
             "name": "Compose Foundation",
             "description": "Higher level abstractions of the Compose UI primitives. This library is design system agnostic, providing the high-level building blocks for both application and design-system developers",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0-alpha03",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0-beta01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -481,10 +481,10 @@
         },
         {
             "uniqueId": "androidx.compose.foundation:foundation-layout-android",
-            "artifactVersion": "1.12.0-alpha03",
+            "artifactVersion": "1.12.0-beta01",
             "name": "Compose Layouts",
             "description": "Compose layout implementations",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0-alpha03",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0-beta01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -506,10 +506,35 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-android",
-            "artifactVersion": "1.5.0-alpha23",
+            "artifactVersion": "1.5.0-alpha24",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha23",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha24",
+            "developers": [
+                {
+                    "name": "The Android Open Source Project"
+                }
+            ],
+            "organization": {
+                "name": "The Android Open Source Project"
+            },
+            "scm": {
+                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
+                "url": "https://cs.android.com/androidx/platform/frameworks/support"
+            },
+            "licenses": [
+                "Apache-2.0"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
+            "uniqueId": "androidx.compose.material3:material3-ripple-android",
+            "artifactVersion": "1.5.0-alpha24",
+            "name": "Compose Material3 Ripple",
+            "description": "Building block APIs to build ripples that follow a Material 3 specification.",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha24",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -606,10 +631,10 @@
         },
         {
             "uniqueId": "androidx.compose.material:material-ripple-android",
-            "artifactVersion": "1.12.0-alpha03",
+            "artifactVersion": "1.12.0-beta01",
             "name": "Compose Material Ripple",
             "description": "Material ripple used to build interactive components",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.12.0-alpha03",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.12.0-beta01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -831,10 +856,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-tooling-preview-android",
-            "artifactVersion": "1.12.0-alpha03",
+            "artifactVersion": "1.12.0-beta01",
             "name": "Compose UI Preview Tooling",
             "description": "Compose tooling library API. This library provides the API required to declare @Preview composables in user apps.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0-alpha03",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0-beta01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1558,18 +1583,21 @@
         },
         {
             "uniqueId": "androidx.fragment:fragment",
-            "artifactVersion": "1.1.0",
-            "name": "Support fragment",
+            "artifactVersion": "1.8.9",
+            "name": "fragment",
             "description": "The Support Library is a static library that you can add to your Android application in order to use APIs that are either not available for older platform versions or utility APIs that aren't a part of the framework APIs. Compatible on devices running API 14 or later.",
-            "website": "https://developer.android.com/jetpack/androidx",
+            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.8.9",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
                 }
             ],
+            "organization": {
+                "name": "The Android Open Source Project"
+            },
             "scm": {
                 "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
-                "url": "http://source.android.com"
+                "url": "https://cs.android.com/androidx/platform/frameworks/support"
             },
             "licenses": [
                 "Apache-2.0"
@@ -3116,29 +3144,6 @@
             ]
         },
         {
-            "uniqueId": "com.github.skydoves:compose-stability-runtime-android",
-            "artifactVersion": "0.10.0",
-            "name": "Compose Stability Analyzer Runtime",
-            "description": "A Compose Compiler plugin that analyzes composable functions and generates stability reports.",
-            "website": "https://github.com/skydoves/compose-stability-analyzer/",
-            "developers": [
-                {
-                    "name": "Jaewoong Eum"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:git://github.com/skydoves/compose-stability-analyzer.git",
-                "developerConnection": "scm:git:git://github.com/skydoves/compose-stability-analyzer.git",
-                "url": "https://github.com/skydoves/compose-stability-analyzer/"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
             "uniqueId": "com.google.accompanist:accompanist-drawablepainter",
             "artifactVersion": "0.37.3",
             "name": "Accompanist Drawable Painter library",
@@ -4302,7 +4307,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-core-android",
-            "artifactVersion": "15.0.3",
+            "artifactVersion": "15.0.4",
             "name": "AboutLibraries Compose UI Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4325,7 +4330,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-m3-android",
-            "artifactVersion": "15.0.3",
+            "artifactVersion": "15.0.4",
             "name": "AboutLibraries Compose Material 3 Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4348,7 +4353,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-core-android",
-            "artifactVersion": "15.0.3",
+            "artifactVersion": "15.0.4",
             "name": "AboutLibraries Core Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4417,7 +4422,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases",
-            "artifactVersion": "10.12.0",
+            "artifactVersion": "10.14.1",
             "name": "purchases-android",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-android",
@@ -4440,7 +4445,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-core-android",
-            "artifactVersion": "3.2.1",
+            "artifactVersion": "3.3.1",
             "name": "purchases-kmp-(core)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4463,7 +4468,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-mappings-android",
-            "artifactVersion": "3.2.1",
+            "artifactVersion": "3.3.1",
             "name": "purchases-kmp-(mappings)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4486,7 +4491,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-models-android",
-            "artifactVersion": "3.2.1",
+            "artifactVersion": "3.3.1",
             "name": "purchases-kmp-(models)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4576,7 +4581,7 @@
         },
         {
             "uniqueId": "com.usercentrics.sdk:usercentrics-android",
-            "artifactVersion": "2.28.0",
+            "artifactVersion": "2.28.2",
             "name": "usercentrics",
             "description": "Usercentrics Core SDK",
             "website": "https://github.com/usercentrics/android-sample-app",
@@ -4599,7 +4604,7 @@
         },
         {
             "uniqueId": "com.usercentrics.sdk:usercentrics-ui",
-            "artifactVersion": "2.28.0",
+            "artifactVersion": "2.28.2",
             "name": "usercentrics-ui",
             "description": "Consent Management Platform - UI Library",
             "website": "https://github.com/usercentrics/android-sample-app",
@@ -4668,7 +4673,7 @@
         },
         {
             "uniqueId": "dev.gitlive:firebase-app-android",
-            "artifactVersion": "2.4.0",
+            "artifactVersion": "2.5.0",
             "name": "firebase-kotlin-sdk",
             "description": "The Firebase Kotlin SDK is a Kotlin-first SDK for Firebase. It's API is similar to the Firebase Android SDK Kotlin Extensions but also supports multiplatform projects, enabling you to use Firebase directly from your common source targeting iOS, Android or JS.",
             "website": "https://github.com/GitLiveApp/firebase-kotlin-sdk",
@@ -4691,7 +4696,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-compose-jvm",
-            "artifactVersion": "1.3.1",
+            "artifactVersion": "1.3.2",
             "name": "Metrox ViewModel Compose",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -4714,7 +4719,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-jvm",
-            "artifactVersion": "1.3.1",
+            "artifactVersion": "1.3.2",
             "name": "Metrox ViewModel",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -4737,7 +4742,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:runtime-jvm",
-            "artifactVersion": "1.3.1",
+            "artifactVersion": "1.3.2",
             "name": "Metro Runtime",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -6198,7 +6203,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlin:kotlin-stdlib",
-            "artifactVersion": "2.4.0",
+            "artifactVersion": "2.4.10",
             "name": "Kotlin Stdlib",
             "description": "Kotlin Standard Library",
             "website": "https://kotlinlang.org/",
@@ -6222,7 +6227,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlin:kotlin-stdlib-common",
-            "artifactVersion": "2.4.0",
+            "artifactVersion": "2.4.10",
             "name": "Kotlin Stdlib Common",
             "description": "Kotlin Common Standard Library (legacy, use kotlin-stdlib instead)",
             "website": "https://kotlinlang.org/",
