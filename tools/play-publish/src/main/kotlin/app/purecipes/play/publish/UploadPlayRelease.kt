@@ -19,6 +19,7 @@ private const val DEFAULT_TRACK = "alpha"
 private const val DEFAULT_STATUS = "completed"
 private const val APPLICATION_NAME = "Purecipes Play Publish"
 private const val MAX_RELEASE_NOTES_LENGTH = 500
+private const val REQUEST_TIMEOUT_MILLIS = 300_000
 
 fun main(args: Array<String>) {
 	val options = parseUploadArgs(args)
@@ -114,11 +115,15 @@ private fun createPublisher(credentialsFile: File): AndroidPublisher {
 	}
 	val credentials = GoogleCredentials.fromStream(FileInputStream(credentialsFile))
 		.createScoped(listOf(AndroidPublisherScopes.ANDROIDPUBLISHER))
+	val credentialsAdapter = HttpCredentialsAdapter(credentials)
 	return AndroidPublisher.Builder(
 		NetHttpTransport(),
 		GsonFactory.getDefaultInstance(),
-		HttpCredentialsAdapter(credentials),
-	).setApplicationName(APPLICATION_NAME).build()
+	) { request ->
+		credentialsAdapter.initialize(request)
+		request.connectTimeout = REQUEST_TIMEOUT_MILLIS
+		request.readTimeout = REQUEST_TIMEOUT_MILLIS
+	}.setApplicationName(APPLICATION_NAME).build()
 }
 
 private fun truncateReleaseNotes(notes: String): String {
