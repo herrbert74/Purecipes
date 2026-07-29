@@ -4,6 +4,12 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.1] - 2026-07-29
+
+### Fixed
+
+- Google Play uploads are less likely to time out when publishing a release.
+
 ## [0.7.0] - 2026-07-28
 
 ### Added
