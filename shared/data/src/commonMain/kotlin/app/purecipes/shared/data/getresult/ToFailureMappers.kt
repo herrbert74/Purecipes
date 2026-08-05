@@ -1,6 +1,8 @@
 package app.purecipes.shared.data.getresult
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.shared.data.session.UnauthorizedSessionClearer
+import app.purecipes.shared.data.session.UnauthorizedSessionClearers
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
@@ -18,9 +20,11 @@ private val json = Json {
 /**
  * Handle only expected Exceptions, throw Errors and other Exceptions, like CancellationException
  */
-suspend fun Throwable.handle() = when (this) {
+suspend fun Throwable.handle(
+	unauthorizedSessionClearer: UnauthorizedSessionClearer = UnauthorizedSessionClearers.instance,
+) = when (this) {
 	is IOException -> Failure.IoFailure
-	is ResponseException -> response.handle()
+	is ResponseException -> response.handle(unauthorizedSessionClearer)
 	else -> throw this
 }
 
@@ -28,10 +32,31 @@ suspend fun Throwable.handle() = when (this) {
  * Handle all HTTP responses that are not successful.  This implementation mirrors
  * the old Retrofit version but works with Ktor's [HttpResponse].
  */
-suspend fun HttpResponse.handle(): Failure = when (status) {
+suspend fun HttpResponse.handle(
+	unauthorizedSessionClearer: UnauthorizedSessionClearer = UnauthorizedSessionClearers.instance,
+): Failure = when (status) {
 	HttpStatusCode.NotModified -> Failure.NotModified
-	HttpStatusCode.Unauthorized -> Failure.UserNotLoggedIn
+	HttpStatusCode.Unauthorized -> unauthorizedFailure(unauthorizedSessionClearer)
 	else -> Failure.ServerError(errorMessage())
+}
+
+private suspend fun HttpResponse.unauthorizedFailure(
+	unauthorizedSessionClearer: UnauthorizedSessionClearer,
+): Failure {
+	val message = errorMessage()
+	return if (message.isInvalidOrExpiredSessionDetail()) {
+		unauthorizedSessionClearer.clearUnauthorizedSession()
+		Failure.UserNotLoggedIn
+	} else {
+		Failure.ServerError(message)
+	}
+}
+
+internal fun String.isInvalidOrExpiredSessionDetail(): Boolean {
+	val normalized = trim().lowercase()
+	return normalized == SESSION_INVALID_OR_EXPIRED_DETAIL ||
+		normalized == MISSING_BEARER_TOKEN_DETAIL ||
+		normalized == SESSION_USER_INVALID_DETAIL
 }
 
 private suspend fun HttpResponse.errorMessage(): String {
@@ -68,3 +93,7 @@ private data class ApiErrorBody(
 	val error: String? = null,
 	val message: String? = null,
 )
+
+private const val SESSION_INVALID_OR_EXPIRED_DETAIL = "session is invalid or expired"
+private const val MISSING_BEARER_TOKEN_DETAIL = "missing bearer token"
+private const val SESSION_USER_INVALID_DETAIL = "session user is invalid"

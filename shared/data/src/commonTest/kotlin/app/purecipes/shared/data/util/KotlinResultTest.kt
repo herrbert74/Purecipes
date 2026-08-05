@@ -2,6 +2,7 @@ package app.purecipes.shared.data.util
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.shared.data.getresult.handle
+import app.purecipes.shared.data.session.UnauthorizedSessionClearer
 import com.github.michaelbull.result.Err
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -163,7 +164,9 @@ class KotlinResultTest {
 	}
 
 	@Test
-	fun `http response handle maps unauthorized response to user not logged in`() = runTest {
+	fun `http response handle maps session unauthorized response to user not logged in`() = runTest {
+		var clearCallCount = 0
+		val clearer = UnauthorizedSessionClearer { clearCallCount++ }
 		val client = HttpClient(
 			MockEngine {
 				respond(
@@ -180,7 +183,36 @@ class KotlinResultTest {
 		try {
 			client.get("https://example.com/error").body<String>()
 		} catch (exception: io.ktor.client.plugins.ClientRequestException) {
-			exception.response.handle() shouldBe Failure.UserNotLoggedIn
+			exception.response.handle(clearer) shouldBe Failure.UserNotLoggedIn
+			Failure.UserNotLoggedIn.message shouldBe "Your session expired. Please sign in again."
+			clearCallCount shouldBe 1
+		} finally {
+			client.close()
+		}
+	}
+
+	@Test
+	fun `http response handle maps auth provider unauthorized response to server error`() = runTest {
+		var clearCallCount = 0
+		val clearer = UnauthorizedSessionClearer { clearCallCount++ }
+		val client = HttpClient(
+			MockEngine {
+				respond(
+					content = """{"message":"Unauthorized","detail":"Google token verification failed"}""",
+					status = HttpStatusCode.Unauthorized,
+					headers = headersOf(
+						HttpHeaders.ContentType,
+						ContentType.Application.Json.toString(),
+					),
+				)
+			},
+		)
+
+		try {
+			client.get("https://example.com/error").body<String>()
+		} catch (exception: io.ktor.client.plugins.ClientRequestException) {
+			exception.response.handle(clearer) shouldBe Failure.ServerError("Google token verification failed")
+			clearCallCount shouldBe 0
 		} finally {
 			client.close()
 		}

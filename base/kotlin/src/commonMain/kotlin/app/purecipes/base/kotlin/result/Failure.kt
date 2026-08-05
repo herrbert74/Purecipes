@@ -8,6 +8,6 @@ sealed class Failure(open var message: String) {
 	data object UnknownHostFailure : Failure("Unknown host")
 	data object UnexpectedFailure : Failure("Unexpected exception")
 	data object NotModified : Failure("Not modified")
-	data object UserNotLoggedIn : Failure("User not logged in")
+	data object UserNotLoggedIn : Failure("Your session expired. Please sign in again.")
 
 }
