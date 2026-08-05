@@ -171,6 +171,22 @@ class MainViewModelStartTest {
 	}
 
 	@Test
+	fun `start clears signed in state when session validation signs out`() = runUnconfinedViewModelTest {
+		val authenticationRepository = FakeAuthenticationRepository(
+			initialState = AuthenticationState.SignedIn(sampleUser),
+			signOutOnValidateSession = true,
+		)
+		val viewModel = mainViewModelForTest(
+			authenticationRepository = authenticationRepository,
+		)
+
+		viewModel.start()
+
+		authenticationRepository.validateSessionCallCount shouldBe 1
+		viewModel.authenticationState shouldBe AuthenticationState.SignedOut
+	}
+
+	@Test
 	fun `start clears post login state on sign out`() = runUnconfinedViewModelTest {
 		val authenticationRepository = FakeAuthenticationRepository()
 		val viewModel = mainViewModelForTest(

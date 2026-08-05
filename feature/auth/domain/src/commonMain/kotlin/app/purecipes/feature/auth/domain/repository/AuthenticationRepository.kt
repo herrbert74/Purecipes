@@ -32,5 +32,7 @@ interface AuthenticationRepository {
 
 	suspend fun deleteAccount(): Outcome<Unit>
 
+	suspend fun validateSession()
+
 	suspend fun signOut()
 }

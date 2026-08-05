@@ -12,6 +12,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetCrashCustomValueUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
+import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
@@ -52,6 +53,7 @@ internal fun mainViewModelForTest(
 ): MainViewModel {
 	val viewModel = MainViewModel(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(authenticationRepository),
+		validateSession = ValidateSessionUseCase(authenticationRepository),
 		refreshConsent = RefreshConsentUseCase(consentRepository),
 		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
 		setCrashUserId = SetCrashUserIdUseCase(crashRepository),

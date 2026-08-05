@@ -2,6 +2,8 @@ package app.purecipes.shared.data.network
 
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.session.SessionTokenStore
+import app.purecipes.shared.data.session.UnauthorizedSessionClearer
+import app.purecipes.shared.data.session.UnauthorizedSessionClearers
 import com.diamondedge.logging.Logger
 import com.diamondedge.logging.logging
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -21,7 +23,11 @@ import kotlinx.serialization.json.Json
 interface DataNetworkModule {
 
 	@Provides
-	fun provideHttpClient(sessionTokenStore: SessionTokenStore): HttpClient {
+	fun provideHttpClient(
+		sessionTokenStore: SessionTokenStore,
+		unauthorizedSessionClearer: UnauthorizedSessionClearer,
+	): HttpClient {
+		UnauthorizedSessionClearers.install(unauthorizedSessionClearer)
 		return createPurecipesHttpClient(sessionTokenStore)
 	}
 
