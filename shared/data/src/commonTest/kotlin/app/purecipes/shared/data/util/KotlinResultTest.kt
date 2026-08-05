@@ -163,6 +163,30 @@ class KotlinResultTest {
 	}
 
 	@Test
+	fun `http response handle maps unauthorized response to user not logged in`() = runTest {
+		val client = HttpClient(
+			MockEngine {
+				respond(
+					content = """{"message":"Unauthorized","detail":"Session is invalid or expired"}""",
+					status = HttpStatusCode.Unauthorized,
+					headers = headersOf(
+						HttpHeaders.ContentType,
+						ContentType.Application.Json.toString(),
+					),
+				)
+			},
+		)
+
+		try {
+			client.get("https://example.com/error").body<String>()
+		} catch (exception: io.ktor.client.plugins.ClientRequestException) {
+			exception.response.handle() shouldBe Failure.UserNotLoggedIn
+		} finally {
+			client.close()
+		}
+	}
+
+	@Test
 	fun `http response handle maps not modified response`() = runTest {
 		val client = HttpClient(
 			MockEngine {

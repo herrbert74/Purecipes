@@ -30,6 +30,7 @@ suspend fun Throwable.handle() = when (this) {
  */
 suspend fun HttpResponse.handle(): Failure = when (status) {
 	HttpStatusCode.NotModified -> Failure.NotModified
+	HttpStatusCode.Unauthorized -> Failure.UserNotLoggedIn
 	else -> Failure.ServerError(errorMessage())
 }
 

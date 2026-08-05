@@ -250,6 +250,86 @@ class AuthenticationAccessorTest {
 		sessionTokenStore.currentSession() shouldBe null
 	}
 
+	@Test
+	fun `validateSession signs out when backend session is unauthorized`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = InMemoryAuthenticationLocalDataSource(
+			AuthenticationStore(),
+			sessionTokenStore,
+		)
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Err(Failure.UserNotLoggedIn),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+		sessionTokenStore.currentSession() shouldBe null
+	}
+
+	@Test
+	fun `validateSession keeps signed in state when backend session is valid`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = InMemoryAuthenticationLocalDataSource(
+			AuthenticationStore(),
+			sessionTokenStore,
+		)
+		val refreshedSession = fakeSession().copy(accessToken = "refreshed-session-token")
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Ok(refreshedSession),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "refreshed-session-token"
+	}
+
+	@Test
+	fun `validateSession keeps signed in state when validation fails with network error`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = InMemoryAuthenticationLocalDataSource(
+			AuthenticationStore(),
+			sessionTokenStore,
+		)
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Err(Failure.IoFailure),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+	}
+
+	@Test
+	fun `validateSession skips remote check when signed out`() = runTest {
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Err(Failure.UserNotLoggedIn),
+		)
+		val accessor = AuthenticationAccessor(
+			localDataSource = InMemoryAuthenticationLocalDataSource(
+				AuthenticationStore(),
+				FakeSessionTokenStore(),
+			),
+			remoteDataSource = remoteDataSource,
+		)
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 0
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+	}
+
 	private fun fakeSession(): AuthenticatedSession = AuthenticatedSession(
 		accessToken = "session-token",
 		expiresAtEpochSeconds = 4_000_000_000,
@@ -280,11 +360,15 @@ class AuthenticationAccessorTest {
 				),
 			),
 		),
+		private val getCurrentSessionResult: Outcome<AuthenticatedSession> = result,
 		private val deleteAccountResults: List<Outcome<Unit>> = listOf(Ok(Unit)),
 		private val onDeleteAccount: () -> Unit = {},
 	) : AuthenticationDataSource.Remote {
 
 		var deleteAccountCallCount = 0
+			private set
+
+		var getCurrentSessionCallCount = 0
 			private set
 
 		override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = result
@@ -293,7 +377,10 @@ class AuthenticationAccessorTest {
 
 		override suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession> = result
 
-		override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> = result
+		override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> {
+			getCurrentSessionCallCount++
+			return getCurrentSessionResult
+		}
 
 		override suspend fun deleteAccount(): Outcome<Unit> {
 			onDeleteAccount()

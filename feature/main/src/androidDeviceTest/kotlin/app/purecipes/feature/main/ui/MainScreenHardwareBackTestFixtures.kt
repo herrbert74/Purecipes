@@ -17,6 +17,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
+import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
@@ -141,6 +142,7 @@ internal fun mainViewModelForDeviceTest(
 	val subscriptionRepository = FakeSubscriptionRepository()
 	return MainViewModel(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
+		validateSession = ValidateSessionUseCase(FakeAuthenticationRepository()),
 		refreshConsent = RefreshConsentUseCase(FakeConsentRepository(ConsentState.NOT_REQUIRED)),
 		setAnalyticsUserId = SetAnalyticsUserIdUseCase(analyticsRepository),
 		setCrashUserId = SetCrashUserIdUseCase(FakeCrashRepository()),

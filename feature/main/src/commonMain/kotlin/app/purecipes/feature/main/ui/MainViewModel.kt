@@ -26,6 +26,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
+import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
@@ -60,6 +61,7 @@ import kotlinx.coroutines.launch
 @AssistedInject
 class MainViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
+	private val validateSession: ValidateSessionUseCase,
 	private val refreshConsent: RefreshConsentUseCase,
 	private val setAnalyticsUserId: SetAnalyticsUserIdUseCase,
 	private val setCrashUserId: SetCrashUserIdUseCase,
@@ -155,6 +157,7 @@ class MainViewModel(
 			publishWebLaunchLink()
 		}
 		viewModelScope.launch {
+			validateSession()
 			observeAuthenticationState().collect { state ->
 				authenticationState = state
 				handleAuthenticationStateTransition(state)
