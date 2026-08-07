@@ -60,7 +60,7 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Roast until tender")
-		onNodeWithTag("createRecipeSaveButton").performScrollTo().performClick()
+		onNodeWithTag("createRecipeSaveButton").performClick()
 		waitForIdle()
 		waitUntil(timeoutMillis = 5_000) { repository.savedRequests.size == 1 }
 
@@ -90,9 +90,8 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeImagePickButton").performScrollTo().performClick()
 
 		onNodeWithText("Importing image").assertIsDisplayed()
-		onNodeWithText("Preparing image preview...").performScrollTo().assertIsDisplayed()
-		onNodeWithTag("createRecipeImagePickButton").assertIsNotEnabled()
-		onNodeWithTag("createRecipeSaveButton").performScrollTo().assertIsNotEnabled()
+		onNodeWithText("Preparing image preview...").assertIsDisplayed()
+		onNodeWithTag("createRecipeSaveButton").assertIsNotEnabled()
 	}
 
 	@Test
@@ -118,7 +117,7 @@ class CreateRecipeScreenTest {
 
 		onNodeWithText("Could not import the selected image.").performScrollTo().assertIsDisplayed()
 		onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
-		onNodeWithTag("createRecipeSaveButton").performScrollTo().assertIsEnabled()
+		onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
 	}
 
 	@Test

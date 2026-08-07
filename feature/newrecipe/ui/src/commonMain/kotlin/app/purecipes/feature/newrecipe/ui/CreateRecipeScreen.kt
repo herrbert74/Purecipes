@@ -91,6 +91,7 @@ fun CreateRecipeScreen(
 			pickerErrorMessage = message
 		},
 	)
+	val showEditorChrome = !viewModel.isLoadingRecipe && viewModel.loadErrorMessage == null
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -111,6 +112,21 @@ fun CreateRecipeScreen(
 					}
 				},
 			)
+		},
+		bottomBar = {
+			if (showEditorChrome) {
+				CreateRecipeSaveBar(
+					isEditing = viewModel.isEditing,
+					isSaving = viewModel.isSaving,
+					isImportingImage = isImportingImage,
+					onSaveClick = viewModel::saveRecipe,
+					onClearClick = {
+						isImportingImage = false
+						pickerErrorMessage = null
+						viewModel.startNewRecipe()
+					},
+				)
+			}
 		},
 	) { innerPadding ->
 		when {
@@ -151,7 +167,6 @@ fun CreateRecipeScreen(
 						imagePickerErrorMessage = pickerErrorMessage,
 						imageUrlInput = viewModel.imageUrlInput,
 						ingredientsInput = viewModel.ingredientsInput,
-						isEditing = viewModel.isEditing,
 						isNutritionEstimateLoading = viewModel.isNutritionEstimateLoading,
 						isSaving = viewModel.isSaving,
 						nutritionEstimate = viewModel.nutritionEstimate,
@@ -173,12 +188,6 @@ fun CreateRecipeScreen(
 							}
 						},
 						onIngredientsChange = viewModel::onIngredientsChange,
-						onSaveClick = viewModel::saveRecipe,
-						onStartNewClick = {
-							isImportingImage = false
-							pickerErrorMessage = null
-							viewModel.startNewRecipe()
-						},
 						onAddStepClick = viewModel::addStep,
 						onMoveStep = viewModel::moveStep,
 						onRemoveStepClick = viewModel::removeStep,

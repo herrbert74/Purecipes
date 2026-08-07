@@ -14,9 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
@@ -54,7 +51,6 @@ import kotlin.math.roundToInt
 private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
 private const val DESCRIPTION_FIELD_TAG = "createRecipeDescriptionField"
 private const val INGREDIENTS_FIELD_TAG = "createRecipeIngredientsField"
-private const val SAVE_BUTTON_TAG = "createRecipeSaveButton"
 private const val STEP_ADD_BUTTON_TAG = "createRecipeAddStepButton"
 private const val STEP_FIELD_TAG_PREFIX = "createRecipeStepField"
 private const val STEP_REORDER_BUTTON_TAG_PREFIX = "createRecipeReorderStepButton"
@@ -77,7 +73,6 @@ internal fun CreateRecipeForm(
 	imagePickerErrorMessage: String?,
 	imageUrlInput: String,
 	ingredientsInput: String,
-	isEditing: Boolean,
 	isNutritionEstimateLoading: Boolean,
 	isSaving: Boolean,
 	nutritionEstimate: NutritionSummary?,
@@ -87,8 +82,6 @@ internal fun CreateRecipeForm(
 	onImageUrlChange: (String) -> Unit,
 	onPickImageClick: (() -> Unit)?,
 	onIngredientsChange: (String) -> Unit,
-	onSaveClick: () -> Unit,
-	onStartNewClick: () -> Unit,
 	onAddStepClick: () -> Unit,
 	onMoveStep: (Int, Int) -> Unit,
 	onRemoveStepClick: (Int) -> Unit,
@@ -102,148 +95,111 @@ internal fun CreateRecipeForm(
 	totalTimeInput: String,
 	yieldsInput: String,
 ) {
-	Card(
-		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
+	Column(
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		Column(
-			modifier = Modifier.padding(PurecipesTheme.space.m),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		CreateRecipeImageSection(
+			titleInput = titleInput,
+			imageUrlInput = imageUrlInput,
+			isImportingImage = isImportingImage,
+			isSaving = isSaving,
+			imagePickerErrorMessage = imagePickerErrorMessage,
+			onClearImageClick = onClearImageClick,
+			onImageUrlChange = onImageUrlChange,
+			onPickImageClick = onPickImageClick,
+		)
+
+		OutlinedTextField(
+			value = titleInput,
+			onValueChange = onTitleChange,
+			modifier = Modifier
+				.fillMaxWidth()
+				.testTag(TITLE_FIELD_TAG),
+			label = { Text(text = "Recipe title") },
+			singleLine = true,
+		)
+		OutlinedTextField(
+			value = descriptionInput,
+			onValueChange = onDescriptionChange,
+			modifier = Modifier
+				.fillMaxWidth()
+				.testTag(DESCRIPTION_FIELD_TAG),
+			label = { Text(text = "Description") },
+			minLines = 3,
+		)
+
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
-			Text(
-				text = if (isEditing) "Edit recipe" else "New recipe",
-				style = PurecipesTheme.typography.headlineSmall,
+			CuisinePicker(
+				selectedCuisine = selectedCuisine,
+				onCuisineChange = onCuisineChange,
+				modifier = Modifier
+					.weight(1f)
+					.testTag(CUISINE_FIELD_TAG),
 			)
+			OutlinedTextField(
+				value = totalTimeInput,
+				onValueChange = onTotalTimeChange,
+				modifier = Modifier
+					.weight(1f)
+					.testTag(TOTAL_TIME_FIELD_TAG),
+				label = { Text(text = "Total minutes") },
+				singleLine = true,
+			)
+		}
+
+		OutlinedTextField(
+			value = yieldsInput,
+			onValueChange = onYieldsChange,
+			modifier = Modifier
+				.fillMaxWidth()
+				.testTag(YIELDS_FIELD_TAG),
+			label = { Text(text = "Yields") },
+			singleLine = true,
+		)
+		OutlinedTextField(
+			value = ingredientsInput,
+			onValueChange = onIngredientsChange,
+			modifier = Modifier
+				.fillMaxWidth()
+				.testTag(INGREDIENTS_FIELD_TAG),
+			label = { Text(text = "Ingredients") },
+			supportingText = {
+				Text(
+					text = "Prefix a line with optional: for pantry search. " +
+						"Use or on one line for alternatives (parsley or tarragon).",
+				)
+			},
+			minLines = 4,
+		)
+		NutritionSummaryCard(
+			nutrition = nutritionEstimate,
+			isLoading = isNutritionEstimateLoading,
+		)
+		StepInputSection(
+			stepInputs = stepInputs,
+			onAddStepClick = onAddStepClick,
+			onMoveStep = onMoveStep,
+			onRemoveStepClick = onRemoveStepClick,
+			onStepChange = onStepChange,
+		)
+
+		formErrorMessage?.let {
 			Text(
-				text = """Write one ingredient per line and add cooking steps below. Recipes are uploaded to your
-					| account, and local image paths are uploaded as image files.
-				""".trimIndent(),
+				text = it,
 				style = PurecipesTheme.typography.bodyMedium,
-				color = PurecipesTheme.colorScheme.onSurfaceVariant,
+				color = PurecipesTheme.colorScheme.error,
 			)
+		}
 
-			OutlinedTextField(
-				value = titleInput,
-				onValueChange = onTitleChange,
-				modifier = Modifier
-					.fillMaxWidth()
-					.testTag(TITLE_FIELD_TAG),
-				label = { Text(text = "Recipe title") },
-				singleLine = true,
+		successMessage?.let {
+			Text(
+				text = it,
+				style = PurecipesTheme.typography.bodyMedium,
+				color = PurecipesTheme.colorScheme.primary,
 			)
-			OutlinedTextField(
-				value = descriptionInput,
-				onValueChange = onDescriptionChange,
-				modifier = Modifier
-					.fillMaxWidth()
-					.testTag(DESCRIPTION_FIELD_TAG),
-				label = { Text(text = "Description") },
-				minLines = 3,
-			)
-			CreateRecipeImageSection(
-				titleInput = titleInput,
-				imageUrlInput = imageUrlInput,
-				isImportingImage = isImportingImage,
-				isSaving = isSaving,
-				imagePickerErrorMessage = imagePickerErrorMessage,
-				onClearImageClick = onClearImageClick,
-				onImageUrlChange = onImageUrlChange,
-				onPickImageClick = onPickImageClick,
-			)
-
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-			) {
-				CuisinePicker(
-					selectedCuisine = selectedCuisine,
-					onCuisineChange = onCuisineChange,
-					modifier = Modifier
-						.weight(1f)
-						.testTag(CUISINE_FIELD_TAG),
-				)
-				OutlinedTextField(
-					value = totalTimeInput,
-					onValueChange = onTotalTimeChange,
-					modifier = Modifier
-						.weight(1f)
-						.testTag(TOTAL_TIME_FIELD_TAG),
-					label = { Text(text = "Total minutes") },
-					singleLine = true,
-				)
-			}
-
-			OutlinedTextField(
-				value = yieldsInput,
-				onValueChange = onYieldsChange,
-				modifier = Modifier
-					.fillMaxWidth()
-					.testTag(YIELDS_FIELD_TAG),
-				label = { Text(text = "Yields") },
-				singleLine = true,
-			)
-			OutlinedTextField(
-				value = ingredientsInput,
-				onValueChange = onIngredientsChange,
-				modifier = Modifier
-					.fillMaxWidth()
-					.testTag(INGREDIENTS_FIELD_TAG),
-				label = { Text(text = "Ingredients") },
-				supportingText = {
-					Text(
-						text = "Prefix a line with optional: for pantry search. " +
-							"Use or on one line for alternatives (parsley or tarragon).",
-					)
-				},
-				minLines = 4,
-			)
-			NutritionSummaryCard(
-				nutrition = nutritionEstimate,
-				isLoading = isNutritionEstimateLoading,
-			)
-			StepInputSection(
-				stepInputs = stepInputs,
-				onAddStepClick = onAddStepClick,
-				onMoveStep = onMoveStep,
-				onRemoveStepClick = onRemoveStepClick,
-				onStepChange = onStepChange,
-			)
-
-			formErrorMessage?.let {
-				Text(
-					text = it,
-					style = PurecipesTheme.typography.bodyMedium,
-					color = PurecipesTheme.colorScheme.error,
-				)
-			}
-
-			successMessage?.let {
-				Text(
-					text = it,
-					style = PurecipesTheme.typography.bodyMedium,
-					color = PurecipesTheme.colorScheme.primary,
-				)
-			}
-
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-			) {
-				Button(
-					onClick = onSaveClick,
-					enabled = !isSaving && !isImportingImage,
-					modifier = Modifier
-						.weight(1f)
-						.testTag(SAVE_BUTTON_TAG),
-				) {
-					Text(text = if (isEditing) "Update recipe" else "Upload recipe")
-				}
-				FilledTonalButton(
-					onClick = onStartNewClick,
-					modifier = Modifier.weight(1f),
-				) {
-					Text(text = if (isEditing) "Start new" else "Clear form")
-				}
-			}
 		}
 	}
 }
@@ -476,44 +432,41 @@ private fun CreateRecipeFormLightPreview() {
 					.padding(innerPadding)
 					.padding(PurecipesTheme.space.m),
 			) {
-			CreateRecipeForm(
-				selectedCuisine = Cuisine.ITALIAN,
-				descriptionInput = "A quick weeknight dinner with pantry staples.",
-				formErrorMessage = null,
-				isImportingImage = false,
-				imagePickerErrorMessage = null,
-				imageUrlInput = "",
-				ingredientsInput = "400 g spaghetti\n2 tomatoes\n1 garlic clove",
-				isEditing = false,
-				isNutritionEstimateLoading = false,
-				isSaving = false,
-				nutritionEstimate = null,
-				onClearImageClick = {},
-				onCuisineChange = {},
-				onDescriptionChange = {},
-				onImageUrlChange = {},
-				onPickImageClick = {},
-				onIngredientsChange = {},
-				onSaveClick = {},
-				onStartNewClick = {},
-				onAddStepClick = {},
-				onMoveStep = { _, _ -> },
-				onRemoveStepClick = {},
-				onStepChange = { _, _ -> },
-				onTitleChange = {},
-				onTotalTimeChange = {},
-				onYieldsChange = {},
-				stepInputs = StepInputsState(
-					items = listOf(
-						"Bring a large pot of salted water to a boil.",
-						"Cook the pasta until al dente.",
+				CreateRecipeForm(
+					selectedCuisine = Cuisine.ITALIAN,
+					descriptionInput = "A quick weeknight dinner with pantry staples.",
+					formErrorMessage = null,
+					isImportingImage = false,
+					imagePickerErrorMessage = null,
+					imageUrlInput = "",
+					ingredientsInput = "400 g spaghetti\n2 tomatoes\n1 garlic clove",
+					isNutritionEstimateLoading = false,
+					isSaving = false,
+					nutritionEstimate = null,
+					onClearImageClick = {},
+					onCuisineChange = {},
+					onDescriptionChange = {},
+					onImageUrlChange = {},
+					onPickImageClick = {},
+					onIngredientsChange = {},
+					onAddStepClick = {},
+					onMoveStep = { _, _ -> },
+					onRemoveStepClick = {},
+					onStepChange = { _, _ -> },
+					onTitleChange = {},
+					onTotalTimeChange = {},
+					onYieldsChange = {},
+					stepInputs = StepInputsState(
+						items = listOf(
+							"Bring a large pot of salted water to a boil.",
+							"Cook the pasta until al dente.",
+						),
 					),
-				),
-				successMessage = null,
-				titleInput = "Tomato Pasta",
-				totalTimeInput = "25",
-				yieldsInput = "2 servings",
-			)
+					successMessage = null,
+					titleInput = "Tomato Pasta",
+					totalTimeInput = "25",
+					yieldsInput = "2 servings",
+				)
 			}
 		}
 	}
