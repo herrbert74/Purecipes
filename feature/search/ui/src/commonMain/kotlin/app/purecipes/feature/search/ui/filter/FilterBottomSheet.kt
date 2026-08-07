@@ -209,6 +209,7 @@ private fun FilterBottomSheetContent(
 							isPremium = isPremium,
 							onFiltersChange = onFiltersChange,
 							onKeyIngredientsChange = onKeyIngredientsChange,
+							onGoToPantry = { selectedTab = FilterTab.Pantry },
 							onOpenPaywall = onOpenPaywall,
 						)
 					}
@@ -288,18 +289,10 @@ private fun RecipeFiltersTabContent(
 	isPremium: Boolean,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onKeyIngredientsChange: (Set<String>) -> Unit,
+	onGoToPantry: () -> Unit,
 	onOpenPaywall: () -> Unit,
 ) {
 	FilterScrollableColumn {
-		item {
-			KeyIngredientsSection(
-				keyIngredients = keyIngredients,
-				pantryIngredients = pantryIngredients,
-				onKeyIngredientsChange = onKeyIngredientsChange,
-				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
-			)
-		}
 		item {
 			Text(
 				text = "With the filters below you can get a more tailored result.",
@@ -311,6 +304,16 @@ private fun RecipeFiltersTabContent(
 						end = PurecipesTheme.space.m,
 						top = PurecipesTheme.space.s,
 					),
+			)
+		}
+		item {
+			KeyIngredientsSection(
+				keyIngredients = keyIngredients,
+				pantryIngredients = pantryIngredients,
+				onKeyIngredientsChange = onKeyIngredientsChange,
+				onGoToPantry = onGoToPantry,
+				isLocked = !isPremium,
+				onLockedClick = onOpenPaywall,
 			)
 		}
 		item {

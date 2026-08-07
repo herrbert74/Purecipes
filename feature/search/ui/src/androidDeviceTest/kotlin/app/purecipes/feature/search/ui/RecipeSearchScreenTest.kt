@@ -3,6 +3,7 @@ package app.purecipes.feature.search.ui
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -38,11 +39,15 @@ import app.purecipes.feature.search.ui.filter.FILTER_BOTTOM_SHEET_SIGN_IN_PROMPT
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_EXCLUDED_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_NEUTRAL_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_INGREDIENT_LEGEND_PANTRY_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_EMPTY_PANTRY_TAG
+import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_GO_TO_PANTRY_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_KEY_INGREDIENTS_SECTION_TAG
 import app.purecipes.feature.search.ui.filter.FILTER_PANTRY_BULK_SELECT_ALL_TAG
+import app.purecipes.feature.search.ui.filter.customIngredientChipTag
 import app.purecipes.feature.search.ui.filter.customIngredientRemoveTag
 import app.purecipes.feature.search.ui.filter.filterRecipeClearAllTag
 import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
+import app.purecipes.feature.search.ui.filter.ingredientTriStateChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientPantryQuickPickTag
 import app.purecipes.feature.search.ui.result.SEARCH_RESULTS_LIST_TAG
@@ -449,13 +454,13 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		onNodeWithText("Poultry & Eggs").performClick()
 		waitForIdle()
-		onNodeWithText("Chicken").performClick()
+		onNodeWithTag(ingredientTriStateChipTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
 			assertEquals(setOf("Chicken"), viewModel.pantryIngredients)
 			assertEquals(emptySet<String>(), viewModel.excludedIngredients)
 		}
-		onNodeWithText("Chicken").performClick()
+		onNodeWithTag(ingredientTriStateChipTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
 			assertEquals(emptySet<String>(), viewModel.pantryIngredients)
@@ -509,17 +514,18 @@ class RecipeSearchScreenTest {
 		runOnIdle { viewModel.onAddIngredient("gochujang") }
 		waitForIdle()
 		onNodeWithTag(FILTER_BOTTOM_SHEET_SCROLL_TAG)
-			.performScrollToNode(hasText("gochujang"))
-		onNodeWithText("gochujang").performClick()
+			.performScrollToNode(hasTestTag(customIngredientChipTag("gochujang")))
+		onNodeWithTag(customIngredientChipTag("gochujang")).performClick()
 		waitForIdle()
-		onNodeWithText("gochujang").performClick()
+		onNodeWithTag(customIngredientChipTag("gochujang")).performClick()
 		waitForIdle()
-		onNodeWithText("gochujang").assertIsDisplayed()
-		onNodeWithTag(customIngredientRemoveTag("gochujang")).performClick()
-		waitForIdle()
+		onNodeWithTag(customIngredientChipTag("gochujang")).assertIsDisplayed()
+		onNodeWithTag(customIngredientRemoveTag("gochujang"), useUnmergedTree = true).performClick()
+		waitUntil(timeoutMillis = 5_000) {
+			viewModel.customPantryIngredients.isEmpty()
+		}
 		onAllNodesWithText("gochujang").assertCountEquals(0)
 		runOnIdle {
-			assertEquals(emptySet<String>(), viewModel.customPantryIngredients)
 			assertEquals(emptySet<String>(), viewModel.pantryIngredients)
 		}
 	}
@@ -592,12 +598,41 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
 		waitForIdle()
+		onNodeWithTag(filterSectionToggleTag("Key ingredients")).performClick()
+		waitForIdle()
 		onNodeWithTag(keyIngredientPantryQuickPickTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
 			assertEquals(setOf("Chicken"), viewModel.keyIngredients)
 		}
 		onNodeWithTag(keyIngredientChipTag("Chicken")).assertIsDisplayed()
+	}
+
+	@Test
+	fun whenPremiumEmptyPantryShowsCalloutAndGoToPantrySwitchesTab() = runRecompositionTrackingUiTest {
+		val viewModel = recipeSearchViewModelForTest(isPremium = true)
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					isSignedIn = true,
+					sessionKey = "signed-in",
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(filterSectionToggleTag("Key ingredients")).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_KEY_INGREDIENTS_EMPTY_PANTRY_TAG).assertIsDisplayed()
+		onNodeWithTag(FILTER_KEY_INGREDIENTS_GO_TO_PANTRY_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG).assertIsDisplayed()
 	}
 
 	@Test

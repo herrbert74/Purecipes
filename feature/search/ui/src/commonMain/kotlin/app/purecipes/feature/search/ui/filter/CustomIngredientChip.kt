@@ -14,9 +14,13 @@ import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CUSTOM_INGREDIENT_REMOVE_BUTTON_TAG_PREFIX = "customIngredientRemove"
+internal const val CUSTOM_INGREDIENT_CHIP_TAG_PREFIX = "customIngredientChip"
 
 internal fun customIngredientRemoveTag(item: String): String =
 	"$CUSTOM_INGREDIENT_REMOVE_BUTTON_TAG_PREFIX:$item"
+
+internal fun customIngredientChipTag(item: String): String =
+	"$CUSTOM_INGREDIENT_CHIP_TAG_PREFIX:${item.filter(Char::isLetterOrDigit)}"
 
 @Composable
 internal fun CustomIngredientChip(
