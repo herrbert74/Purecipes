@@ -14,13 +14,18 @@ import kotlinx.serialization.modules.subclass
 fun EntryProviderScope<NavKey>.installFavoritesFlow(
 	sessionKey: String?,
 	onRecipeSelect: (Int) -> Unit,
+	onCreateRecipe: () -> Unit,
+	onEditCreatedRecipe: (Int) -> Unit,
 ) {
 	entry<FavoritesDestination> { destination ->
 		FavoritesScreen(
 			modifier = Modifier.fillMaxSize(),
 			sessionKey = sessionKey,
 			initialCookbookShareToken = destination.cookbookShareToken,
+			openMyRecipes = destination.openMyRecipes,
 			onRecipeSelect = onRecipeSelect,
+			onCreateRecipe = onCreateRecipe,
+			onEditCreatedRecipe = onEditCreatedRecipe,
 			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
 		)
 	}

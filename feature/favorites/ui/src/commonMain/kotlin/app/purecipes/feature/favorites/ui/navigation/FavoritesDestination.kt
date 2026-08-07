@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FavoritesDestination(
 	val cookbookShareToken: String? = null,
+	val openMyRecipes: Boolean = false,
 ) : NavKey

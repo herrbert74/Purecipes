@@ -43,10 +43,12 @@ class CreateRecipeScreenTest {
 	@Test
 	fun createRecipeScreenSavesAndDisplaysRecipe() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
+		var saved = false
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
+					onSaveSuccess = { saved = true },
 					viewModel = createRecipeViewModelForTest(repository = repository),
 				)
 			}
@@ -64,7 +66,7 @@ class CreateRecipeScreenTest {
 
 		onNodeWithText("Recipe uploaded.").performScrollTo().assertIsDisplayed()
 		repository.savedRequests.size shouldBe 1
-		onNodeWithTag("createRecipeSaveButton").assertTextContains("Update recipe")
+		saved shouldBe true
 	}
 
 	@Test

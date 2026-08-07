@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
+import app.purecipes.feature.newrecipe.ui.CreatedRecipesTabContent
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -77,7 +78,10 @@ fun FavoritesScreen(
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
 	initialCookbookShareToken: String? = null,
+	openMyRecipes: Boolean = false,
 	onRecipeSelect: (Int) -> Unit = {},
+	onCreateRecipe: () -> Unit = {},
+	onEditCreatedRecipe: (Int) -> Unit = {},
 	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: FavoritesViewModel =
 		assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
@@ -98,6 +102,12 @@ fun FavoritesScreen(
 		val shareToken = initialCookbookShareToken ?: return@LaunchedEffect
 		if (sessionKey != null) {
 			viewModel.importSharedCookbook(shareToken)
+		}
+	}
+
+	LaunchedEffect(openMyRecipes) {
+		if (openMyRecipes) {
+			viewModel.onTabSelected(FavoritesTab.MyRecipes)
 		}
 	}
 
@@ -173,6 +183,11 @@ fun FavoritesScreen(
 					onClick = { viewModel.onTabSelected(FavoritesTab.Cookbooks) },
 					text = { Text(text = "Cookbooks") },
 				)
+				Tab(
+					selected = viewModel.selectedTab == FavoritesTab.MyRecipes,
+					onClick = { viewModel.onTabSelected(FavoritesTab.MyRecipes) },
+					text = { Text(text = "My recipes") },
+				)
 			}
 
 			when (viewModel.selectedTab) {
@@ -200,6 +215,12 @@ fun FavoritesScreen(
 						pendingDeleteCookbook = cookbook
 					},
 					onCookbookClick = { id, name -> viewModel.openCookbookDetail(id, name) },
+					modifier = Modifier.weight(1f),
+				)
+
+				FavoritesTab.MyRecipes -> CreatedRecipesTabContent(
+					onCreateRecipe = onCreateRecipe,
+					onEditRecipe = onEditCreatedRecipe,
 					modifier = Modifier.weight(1f),
 				)
 			}

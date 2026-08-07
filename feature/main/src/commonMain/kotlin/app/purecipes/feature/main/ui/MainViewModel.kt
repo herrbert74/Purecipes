@@ -143,6 +143,12 @@ class MainViewModel(
 
 	internal val navigator: Navigator get() = navigatorImpl
 
+	internal val createRecipeTabNavigator = CreateRecipeTabNavigator(
+		stackFor = ::stackFor,
+		selectTab = ::selectTab,
+		replaceTabRoot = navigatorImpl::replaceTabRoot,
+	)
+
 	fun start() {
 		if (isStarted) {
 			return

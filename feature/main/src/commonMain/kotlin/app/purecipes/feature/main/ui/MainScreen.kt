@@ -152,9 +152,13 @@ private fun MainScreenContent(
 								installFavoritesFlow(
 									sessionKey = sessionKey,
 									onRecipeSelect = viewModel::onRecipeSelected,
+									onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,
+									onEditCreatedRecipe = viewModel.createRecipeTabNavigator::openEditor,
 								)
 								installCreateFlow(
+									navigator = viewModel.navigator,
 									canUploadRecipes = canManageFavorites,
+									onSaveSuccess = viewModel.createRecipeTabNavigator::onRecipeSaveSuccess,
 								)
 								installAuthFlow(
 									navigator = viewModel.navigator,
