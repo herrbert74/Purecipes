@@ -13,12 +13,14 @@ import kotlinx.serialization.modules.subclass
 fun EntryProviderScope<NavKey>.installCreateFlow(
 	navigator: Navigator,
 	canUploadRecipes: Boolean,
-	onSaveSuccess: () -> Unit,
+	onSaveSuccess: (String) -> Unit,
+	onRequestLogIn: () -> Unit,
 ) {
 	entry<CreateDestination> {
 		CreateRecipeScreen(
 			canUploadRecipes = canUploadRecipes,
 			onSaveSuccess = onSaveSuccess,
+			onRequestLogIn = onRequestLogIn,
 			modifier = Modifier.fillMaxSize(),
 		)
 	}
@@ -28,6 +30,7 @@ fun EntryProviderScope<NavKey>.installCreateFlow(
 			recipeId = destination.recipeId,
 			onBack = { navigator.back() },
 			onSaveSuccess = onSaveSuccess,
+			onRequestLogIn = onRequestLogIn,
 			modifier = Modifier.fillMaxSize(),
 		)
 	}

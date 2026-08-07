@@ -16,6 +16,7 @@ fun EntryProviderScope<NavKey>.installFavoritesFlow(
 	onRecipeSelect: (Int) -> Unit,
 	onCreateRecipe: () -> Unit,
 	onEditCreatedRecipe: (Int) -> Unit,
+	onRequestLogIn: () -> Unit,
 ) {
 	entry<FavoritesDestination> { destination ->
 		FavoritesScreen(
@@ -23,9 +24,11 @@ fun EntryProviderScope<NavKey>.installFavoritesFlow(
 			sessionKey = sessionKey,
 			initialCookbookShareToken = destination.cookbookShareToken,
 			openMyRecipes = destination.openMyRecipes,
+			recipeSaveMessage = destination.recipeSaveMessage,
 			onRecipeSelect = onRecipeSelect,
 			onCreateRecipe = onCreateRecipe,
 			onEditCreatedRecipe = onEditCreatedRecipe,
+			onRequestLogIn = onRequestLogIn,
 			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
 		)
 	}

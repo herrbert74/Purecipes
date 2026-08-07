@@ -27,10 +27,15 @@ internal class CreateRecipeTabNavigator(
 		selectTab(MainTabStackId.Create)
 	}
 
-	fun onRecipeSaveSuccess() {
+	fun onRecipeSaveSuccess(message: String) {
 		val createStack = stackFor(MainTabStackId.Create)
 		createStack.clear()
 		createStack += CreateDestination
-		replaceTabRoot(FavoritesDestination(openMyRecipes = true))
+		replaceTabRoot(
+			FavoritesDestination(
+				openMyRecipes = true,
+				recipeSaveMessage = message,
+			),
+		)
 	}
 }

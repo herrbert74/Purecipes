@@ -154,11 +154,19 @@ private fun MainScreenContent(
 									onRecipeSelect = viewModel::onRecipeSelected,
 									onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,
 									onEditCreatedRecipe = viewModel.createRecipeTabNavigator::openEditor,
+									onRequestLogIn = {
+										viewModel.requestLoginForPostLoginAction(
+											PostLoginAction.OpenFavoritesMyRecipes,
+										)
+									},
 								)
 								installCreateFlow(
 									navigator = viewModel.navigator,
 									canUploadRecipes = canManageFavorites,
 									onSaveSuccess = viewModel.createRecipeTabNavigator::onRecipeSaveSuccess,
+									onRequestLogIn = {
+										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenCreate)
+									},
 								)
 								installAuthFlow(
 									navigator = viewModel.navigator,

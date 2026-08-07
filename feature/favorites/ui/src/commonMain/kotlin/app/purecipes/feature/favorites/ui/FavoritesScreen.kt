@@ -29,6 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -79,9 +81,11 @@ fun FavoritesScreen(
 	sessionKey: String? = null,
 	initialCookbookShareToken: String? = null,
 	openMyRecipes: Boolean = false,
+	recipeSaveMessage: String? = null,
 	onRecipeSelect: (Int) -> Unit = {},
 	onCreateRecipe: () -> Unit = {},
 	onEditCreatedRecipe: (Int) -> Unit = {},
+	onRequestLogIn: () -> Unit = {},
 	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: FavoritesViewModel =
 		assistedMetroViewModel<FavoritesViewModel, FavoritesViewModel.Factory> {
@@ -90,6 +94,7 @@ fun FavoritesScreen(
 ) {
 	var showCreateCookbookDialog by remember { mutableStateOf(false) }
 	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
+	val snackbarHostState = remember { SnackbarHostState() }
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
@@ -111,6 +116,11 @@ fun FavoritesScreen(
 		}
 	}
 
+	LaunchedEffect(recipeSaveMessage) {
+		val message = recipeSaveMessage ?: return@LaunchedEffect
+		snackbarHostState.showSnackbar(message)
+	}
+
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
@@ -118,9 +128,13 @@ fun FavoritesScreen(
 				title = { Text(text = "Favorites", modifier = Modifier.testTag(FAVORITES_TITLE_TAG)) },
 			)
 		},
+		snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
 	) { innerPadding ->
 		if (sessionKey == null) {
-			FavoritesSignedOutContent(modifier = Modifier.padding(innerPadding))
+			FavoritesSignedOutContent(
+				onRequestLogIn = onRequestLogIn,
+				modifier = Modifier.padding(innerPadding),
+			)
 			return@Scaffold
 		}
 

@@ -36,7 +36,8 @@ fun CreateRecipeScreen(
 	modifier: Modifier = Modifier,
 	recipeId: Int? = null,
 	onBack: (() -> Unit)? = null,
-	onSaveSuccess: () -> Unit = {},
+	onSaveSuccess: (String) -> Unit = {},
+	onRequestLogIn: () -> Unit = {},
 	rememberImagePicker: RememberRecipeImagePicker = ::rememberRecipeImagePicker,
 	viewModel: CreateRecipeViewModel = metroViewModel(),
 ) {
@@ -54,7 +55,10 @@ fun CreateRecipeScreen(
 				)
 			},
 		) { innerPadding ->
-			UploadSignedOutContent(modifier = Modifier.padding(innerPadding))
+			UploadSignedOutContent(
+				onRequestLogIn = onRequestLogIn,
+				modifier = Modifier.padding(innerPadding),
+			)
 		}
 		return
 	}
@@ -71,7 +75,8 @@ fun CreateRecipeScreen(
 
 	LaunchedEffect(viewModel.saveCompletedEvent) {
 		if (viewModel.saveCompletedEvent > 0) {
-			currentOnSaveSuccess()
+			val message = viewModel.successMessage ?: return@LaunchedEffect
+			currentOnSaveSuccess(message)
 		}
 	}
 

@@ -417,6 +417,12 @@ class MainViewModel(
 			PostLoginNavigationTarget.OpenSearchWithFilters ->
 				navigator.replaceTabRoot(SearchDestination(openFiltersOnStart = true))
 
+			PostLoginNavigationTarget.OpenCreate ->
+				navigator.replaceTabRoot(CreateDestination)
+
+			PostLoginNavigationTarget.OpenFavoritesMyRecipes ->
+				navigator.replaceTabRoot(FavoritesDestination(openMyRecipes = true))
+
 			is PostLoginNavigationTarget.OpenFavoritesWithCookbookShare ->
 				navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = target.token))
 		}
