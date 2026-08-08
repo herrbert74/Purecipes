@@ -171,7 +171,7 @@ fun CreateRecipeScreen(
 						isImportingImage = isImportingImage,
 						imagePickerErrorMessage = pickerErrorMessage,
 						imageUrlInput = viewModel.imageUrlInput,
-						ingredientsInput = viewModel.ingredientsInput,
+						ingredientRows = IngredientRowsState(items = viewModel.ingredientsEditor.rows.toList()),
 						isNutritionEstimateLoading = viewModel.isNutritionEstimateLoading,
 						isSaving = viewModel.isSaving,
 						nutritionEstimate = viewModel.nutritionEstimate,
@@ -192,7 +192,28 @@ fun CreateRecipeScreen(
 								launcher.launch()
 							}
 						},
-						onIngredientsChange = viewModel::onIngredientsChange,
+						onIngredientRowChange = { index, row ->
+							viewModel.ingredientsEditor.onRowChange(index, row)
+							viewModel.onIngredientsEdited()
+						},
+						onAddIngredientClick = {
+							viewModel.ingredientsEditor.addRow()
+						},
+						onRemoveIngredientClick = { index ->
+							viewModel.ingredientsEditor.removeRow(index)
+							viewModel.onIngredientsEdited()
+						},
+						onAddIngredientAlternativeClick = { index ->
+							viewModel.ingredientsEditor.addAlternative(index)
+						},
+						onRemoveIngredientAlternativeClick = { rowIndex, alternativeIndex ->
+							viewModel.ingredientsEditor.removeAlternative(rowIndex, alternativeIndex)
+							viewModel.onIngredientsEdited()
+						},
+						onPasteIngredientLines = { text ->
+							viewModel.ingredientsEditor.pasteLines(text)
+							viewModel.onIngredientsEdited()
+						},
 						onAddStepClick = viewModel::addStep,
 						onMoveStep = viewModel::moveStep,
 						onRemoveStepClick = viewModel::removeStep,

@@ -50,7 +50,6 @@ import kotlin.math.roundToInt
 
 private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
 private const val DESCRIPTION_FIELD_TAG = "createRecipeDescriptionField"
-private const val INGREDIENTS_FIELD_TAG = "createRecipeIngredientsField"
 private const val STEP_ADD_BUTTON_TAG = "createRecipeAddStepButton"
 private const val STEP_FIELD_TAG_PREFIX = "createRecipeStepField"
 private const val STEP_REORDER_BUTTON_TAG_PREFIX = "createRecipeReorderStepButton"
@@ -72,7 +71,7 @@ internal fun CreateRecipeForm(
 	isImportingImage: Boolean,
 	imagePickerErrorMessage: String?,
 	imageUrlInput: String,
-	ingredientsInput: String,
+	ingredientRows: IngredientRowsState,
 	isNutritionEstimateLoading: Boolean,
 	isSaving: Boolean,
 	nutritionEstimate: NutritionSummary?,
@@ -81,7 +80,12 @@ internal fun CreateRecipeForm(
 	onDescriptionChange: (String) -> Unit,
 	onImageUrlChange: (String) -> Unit,
 	onPickImageClick: (() -> Unit)?,
-	onIngredientsChange: (String) -> Unit,
+	onIngredientRowChange: (Int, IngredientRowInput) -> Unit,
+	onAddIngredientClick: () -> Unit,
+	onRemoveIngredientClick: (Int) -> Unit,
+	onAddIngredientAlternativeClick: (Int) -> Unit,
+	onRemoveIngredientAlternativeClick: (Int, Int) -> Unit,
+	onPasteIngredientLines: (String) -> Unit,
 	onAddStepClick: () -> Unit,
 	onMoveStep: (Int, Int) -> Unit,
 	onRemoveStepClick: (Int) -> Unit,
@@ -159,20 +163,14 @@ internal fun CreateRecipeForm(
 			label = { Text(text = "Yields") },
 			singleLine = true,
 		)
-		OutlinedTextField(
-			value = ingredientsInput,
-			onValueChange = onIngredientsChange,
-			modifier = Modifier
-				.fillMaxWidth()
-				.testTag(INGREDIENTS_FIELD_TAG),
-			label = { Text(text = "Ingredients") },
-			supportingText = {
-				Text(
-					text = "Prefix a line with optional: for pantry search. " +
-						"Use or on one line for alternatives (parsley or tarragon).",
-				)
-			},
-			minLines = 4,
+		CreateRecipeIngredientsSection(
+			ingredientRows = ingredientRows,
+			onRowChange = onIngredientRowChange,
+			onAddRowClick = onAddIngredientClick,
+			onRemoveRowClick = onRemoveIngredientClick,
+			onAddAlternativeClick = onAddIngredientAlternativeClick,
+			onRemoveAlternativeClick = onRemoveIngredientAlternativeClick,
+			onPasteLines = onPasteIngredientLines,
 		)
 		NutritionSummaryCard(
 			nutrition = nutritionEstimate,
@@ -439,7 +437,23 @@ private fun CreateRecipeFormLightPreview() {
 					isImportingImage = false,
 					imagePickerErrorMessage = null,
 					imageUrlInput = "",
-					ingredientsInput = "400 g spaghetti\n2 tomatoes\n1 garlic clove",
+					ingredientRows = IngredientRowsState(
+						items = listOf(
+							IngredientRowInput(
+								primary = IngredientPartInput(
+									amount = "400",
+									unit = "g",
+									name = "spaghetti",
+								),
+							),
+							IngredientRowInput(
+								primary = IngredientPartInput(
+									amount = "2",
+									name = "tomatoes",
+								),
+							),
+						),
+					),
 					isNutritionEstimateLoading = false,
 					isSaving = false,
 					nutritionEstimate = null,
@@ -448,7 +462,12 @@ private fun CreateRecipeFormLightPreview() {
 					onDescriptionChange = {},
 					onImageUrlChange = {},
 					onPickImageClick = {},
-					onIngredientsChange = {},
+					onIngredientRowChange = { _, _ -> },
+					onAddIngredientClick = {},
+					onRemoveIngredientClick = {},
+					onAddIngredientAlternativeClick = {},
+					onRemoveIngredientAlternativeClick = { _, _ -> },
+					onPasteIngredientLines = {},
 					onAddStepClick = {},
 					onMoveStep = { _, _ -> },
 					onRemoveStepClick = {},

@@ -48,6 +48,8 @@ class CreateRecipeViewModel(
 	private var nutritionEstimateJob: Job? = null
 	private var loadRecipeJob: Job? = null
 
+	val ingredientsEditor = CreateRecipeIngredientsEditor()
+
 	var titleInput by mutableStateOf("")
 		private set
 
@@ -55,9 +57,6 @@ class CreateRecipeViewModel(
 		private set
 
 	var imageUrlInput by mutableStateOf("")
-		private set
-
-	var ingredientsInput by mutableStateOf("")
 		private set
 
 	var nutritionEstimate by mutableStateOf<NutritionSummary?>(null)
@@ -113,8 +112,7 @@ class CreateRecipeViewModel(
 		imageUrlInput = value
 	}
 
-	fun onIngredientsChange(value: String) {
-		ingredientsInput = value
+	fun onIngredientsEdited() {
 		scheduleNutritionEstimate()
 	}
 
@@ -199,7 +197,7 @@ class CreateRecipeViewModel(
 		titleInput = ""
 		descriptionInput = ""
 		imageUrlInput = ""
-		ingredientsInput = ""
+		ingredientsEditor.reset()
 		stepInputs.clear()
 		stepInputs.add("")
 		totalTimeInput = ""
@@ -227,13 +225,7 @@ class CreateRecipeViewModel(
 		val wasEditing = isEditing
 
 		viewModelScope.launch {
-			val ingredients = IngredientLineParser.parseLines(
-				ingredientsInput
-					.lineSequence()
-					.map(String::trim)
-					.filter(String::isNotEmpty)
-					.toList(),
-			)
+			val ingredients = IngredientLineParser.parseLines(ingredientsEditor.toLines())
 			val steps = stepInputs.map(String::trim).filter(String::isNotEmpty)
 			logBreadcrumb(CrashBreadcrumb.RECIPE_SAVE_ATTEMPTED)
 			val outcome = saveCreatedRecipe(
@@ -282,10 +274,11 @@ class CreateRecipeViewModel(
 		titleInput = recipe.title
 		descriptionInput = recipe.description
 		imageUrlInput = recipe.imageUrl.orEmpty()
-		ingredientsInput = recipe.ingredientGroups
-			.flatMap { it.ingredients }
-			.let(IngredientLineParser::toEditableLines)
-			.joinToString(separator = "\n")
+		ingredientsEditor.replaceFromEditableLines(
+			recipe.ingredientGroups
+				.flatMap { it.ingredients }
+				.let(IngredientLineParser::toEditableLines),
+		)
 		stepInputs.clear()
 		stepInputs.addAll(recipe.steps.ifEmpty { listOf("") })
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
@@ -300,13 +293,7 @@ class CreateRecipeViewModel(
 	private fun scheduleNutritionEstimate() {
 		nutritionEstimateJob?.cancel()
 		nutritionEstimateJob = viewModelScope.launch {
-			val ingredients = IngredientLineParser.parseLines(
-				ingredientsInput
-					.lineSequence()
-					.map(String::trim)
-					.filter(String::isNotEmpty)
-					.toList(),
-			)
+			val ingredients = IngredientLineParser.parseLines(ingredientsEditor.toLines())
 				.filter { it.requirement != IngredientRequirement.OPTIONAL }
 				.let(::nutritionIngredientTexts)
 			if (ingredients.isEmpty()) {

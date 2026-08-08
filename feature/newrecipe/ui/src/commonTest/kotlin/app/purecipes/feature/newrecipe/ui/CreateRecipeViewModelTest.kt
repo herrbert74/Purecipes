@@ -49,7 +49,7 @@ class CreateRecipeViewModelTest {
 
 		viewModel.onTitleChange("Tomato Pasta")
 		viewModel.onDescriptionChange("Quick weeknight dinner.")
-		viewModel.onIngredientsChange("200 g pasta\n2 tomatoes")
+		viewModel.ingredientsEditor.pasteLines("200 g pasta\n2 tomatoes")
 		viewModel.onStepChange(index = 0, value = "Boil the pasta")
 		viewModel.addStep()
 		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
@@ -81,6 +81,7 @@ class CreateRecipeViewModelTest {
 		viewModel.isEditing shouldBe true
 		viewModel.titleInput shouldBe "Tomato Pasta"
 		viewModel.stepInputs.toList() shouldBe listOf("Boil the pasta", "Finish with the tomatoes")
+		viewModel.ingredientsEditor.toLines() shouldBe listOf("200 g pasta", "2 tomatoes")
 	}
 
 	@Test
@@ -138,12 +139,35 @@ class CreateRecipeViewModelTest {
 		)
 		val viewModel = createViewModel(estimateRepository = estimateRepository)
 
-		viewModel.onIngredientsChange("1 cup sugar")
+		viewModel.ingredientsEditor.pasteLines("1 cup sugar")
+		viewModel.onIngredientsEdited()
 		advanceTimeBy(500)
 		advanceUntilIdle()
 
 		estimateRepository.lastIngredients shouldBe listOf("1 cup sugar")
 		viewModel.nutritionEstimate?.calories shouldBe 120.0
+	}
+
+	@Test
+	fun `optional toggle and alternative compose through the parser`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = createViewModel(repository = repository)
+
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(name = "parsley"),
+				isOptional = true,
+				alternatives = listOf(IngredientPartInput(name = "tarragon")),
+			),
+		)
+		viewModel.onTitleChange("Herb Side")
+		viewModel.onDescriptionChange("Fresh herbs.")
+		viewModel.onStepChange(index = 0, value = "Chop the herbs")
+		viewModel.saveRecipe()
+		advanceUntilIdle()
+
+		repository.savedRequests.single().ingredients.size shouldBe 2
 	}
 
 	private fun createViewModel(
