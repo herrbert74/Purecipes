@@ -1,6 +1,7 @@
 package app.purecipes.feature.newrecipe.ui
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -45,6 +46,9 @@ class CreateRecipeViewModel(
 ) : ViewModel() {
 
 	private var nutritionEstimateJob: Job? = null
+	private var loadRecipeJob: Job? = null
+
+	val ingredientsEditor = CreateRecipeIngredientsEditor()
 
 	var titleInput by mutableStateOf("")
 		private set
@@ -53,9 +57,6 @@ class CreateRecipeViewModel(
 		private set
 
 	var imageUrlInput by mutableStateOf("")
-		private set
-
-	var ingredientsInput by mutableStateOf("")
 		private set
 
 	var nutritionEstimate by mutableStateOf<NutritionSummary?>(null)
@@ -75,13 +76,13 @@ class CreateRecipeViewModel(
 	var selectedCuisine by mutableStateOf<Cuisine?>(null)
 		private set
 
-	var isLoading by mutableStateOf(true)
+	var isLoadingRecipe by mutableStateOf(false)
 		private set
 
 	var isSaving by mutableStateOf(false)
 		private set
 
-	var errorMessage by mutableStateOf<String?>(null)
+	var loadErrorMessage by mutableStateOf<String?>(null)
 		private set
 
 	var formErrorMessage by mutableStateOf<String?>(null)
@@ -93,14 +94,11 @@ class CreateRecipeViewModel(
 	var editingRecipeId by mutableStateOf<Int?>(null)
 		private set
 
-	val recipes = mutableStateListOf<RecipeDetails>()
+	var saveCompletedEvent by mutableIntStateOf(0)
+		private set
 
 	val isEditing: Boolean
 		get() = editingRecipeId != null
-
-	init {
-		loadRecipes()
-	}
 
 	fun onTitleChange(value: String) {
 		titleInput = value
@@ -114,8 +112,7 @@ class CreateRecipeViewModel(
 		imageUrlInput = value
 	}
 
-	fun onIngredientsChange(value: String) {
-		ingredientsInput = value
+	fun onIngredientsEdited() {
 		scheduleNutritionEstimate()
 	}
 
@@ -174,32 +171,33 @@ class CreateRecipeViewModel(
 		selectedCuisine = value
 	}
 
-	fun editRecipe(recipe: RecipeDetails) {
-		editingRecipeId = recipe.id
-		titleInput = recipe.title
-		descriptionInput = recipe.description
-		imageUrlInput = recipe.imageUrl.orEmpty()
-		ingredientsInput = recipe.ingredientGroups
-			.flatMap { it.ingredients }
-			.let(IngredientLineParser::toEditableLines)
-			.joinToString(separator = "\n")
-		stepInputs.clear()
-		stepInputs.addAll(recipe.steps.ifEmpty { listOf("") })
-		totalTimeInput = recipe.totalTime?.toString().orEmpty()
-		yieldsInput = recipe.yields.orEmpty()
-		selectedCuisine = recipe.cuisine
-		nutritionEstimate = recipe.nutrition?.recipeTotals
-		formErrorMessage = null
-		successMessage = null
-		scheduleNutritionEstimate()
+	fun loadRecipe(recipeId: Int) {
+		if (editingRecipeId == recipeId && !isLoadingRecipe) {
+			return
+		}
+		loadRecipeJob?.cancel()
+		loadRecipeJob = viewModelScope.launch {
+			isLoadingRecipe = true
+			loadErrorMessage = null
+			val outcome = getCreatedRecipes()
+			val recipe = outcome.get()?.firstOrNull { it.id == recipeId }
+			if (recipe != null) {
+				populateForm(recipe)
+			} else {
+				loadErrorMessage = outcome.getError()?.message
+					?: "Could not find that recipe."
+			}
+			isLoadingRecipe = false
+		}
 	}
 
 	fun startNewRecipe() {
+		loadRecipeJob?.cancel()
 		editingRecipeId = null
 		titleInput = ""
 		descriptionInput = ""
 		imageUrlInput = ""
-		ingredientsInput = ""
+		ingredientsEditor.reset()
 		stepInputs.clear()
 		stepInputs.add("")
 		totalTimeInput = ""
@@ -207,13 +205,11 @@ class CreateRecipeViewModel(
 		selectedCuisine = null
 		nutritionEstimate = null
 		isNutritionEstimateLoading = false
+		isLoadingRecipe = false
+		loadErrorMessage = null
 		formErrorMessage = null
 		successMessage = null
 		nutritionEstimateJob?.cancel()
-	}
-
-	fun retry() {
-		loadRecipes()
 	}
 
 	fun saveRecipe() {
@@ -226,17 +222,10 @@ class CreateRecipeViewModel(
 		isSaving = true
 		formErrorMessage = null
 		successMessage = null
-		errorMessage = null
 		val wasEditing = isEditing
 
 		viewModelScope.launch {
-			val ingredients = IngredientLineParser.parseLines(
-				ingredientsInput
-					.lineSequence()
-					.map(String::trim)
-					.filter(String::isNotEmpty)
-					.toList(),
-			)
+			val ingredients = IngredientLineParser.parseLines(ingredientsEditor.toLines())
 			val steps = stepInputs.map(String::trim).filter(String::isNotEmpty)
 			logBreadcrumb(CrashBreadcrumb.RECIPE_SAVE_ATTEMPTED)
 			val outcome = saveCreatedRecipe(
@@ -255,8 +244,6 @@ class CreateRecipeViewModel(
 
 			val savedRecipe = outcome.get()
 			if (savedRecipe != null) {
-				replaceRecipe(savedRecipe)
-				editRecipe(savedRecipe)
 				trackEvent(
 					AnalyticsEvent.RecipeSaved(
 						recipeId = savedRecipe.id,
@@ -271,6 +258,7 @@ class CreateRecipeViewModel(
 				} else {
 					"Recipe uploaded."
 				}
+				saveCompletedEvent += 1
 			} else {
 				outcome.getError()?.let { error ->
 					sendHandledException(error.asHandledException())
@@ -281,16 +269,31 @@ class CreateRecipeViewModel(
 		}
 	}
 
+	private fun populateForm(recipe: RecipeDetails) {
+		editingRecipeId = recipe.id
+		titleInput = recipe.title
+		descriptionInput = recipe.description
+		imageUrlInput = recipe.imageUrl.orEmpty()
+		ingredientsEditor.replaceFromEditableLines(
+			recipe.ingredientGroups
+				.flatMap { it.ingredients }
+				.let(IngredientLineParser::toEditableLines),
+		)
+		stepInputs.clear()
+		stepInputs.addAll(recipe.steps.ifEmpty { listOf("") })
+		totalTimeInput = recipe.totalTime?.toString().orEmpty()
+		yieldsInput = recipe.yields.orEmpty()
+		selectedCuisine = recipe.cuisine
+		nutritionEstimate = recipe.nutrition?.recipeTotals
+		formErrorMessage = null
+		successMessage = null
+		scheduleNutritionEstimate()
+	}
+
 	private fun scheduleNutritionEstimate() {
 		nutritionEstimateJob?.cancel()
 		nutritionEstimateJob = viewModelScope.launch {
-			val ingredients = IngredientLineParser.parseLines(
-				ingredientsInput
-					.lineSequence()
-					.map(String::trim)
-					.filter(String::isNotEmpty)
-					.toList(),
-			)
+			val ingredients = IngredientLineParser.parseLines(ingredientsEditor.toLines())
 				.filter { it.requirement != IngredientRequirement.OPTIONAL }
 				.let(::nutritionIngredientTexts)
 			if (ingredients.isEmpty()) {
@@ -304,23 +307,6 @@ class CreateRecipeViewModel(
 			nutritionEstimate = estimateRecipeNutrition(ingredients).get()
 			isNutritionEstimateLoading = false
 		}
-	}
-
-	private fun loadRecipes() {
-		viewModelScope.launch {
-			isLoading = true
-			errorMessage = null
-			val outcome = getCreatedRecipes()
-			recipes.clear()
-			recipes.addAll(outcome.get() ?: emptyList())
-			errorMessage = outcome.getError()?.message
-			isLoading = false
-		}
-	}
-
-	private fun replaceRecipe(recipe: RecipeDetails) {
-		recipes.removeAll { it.id == recipe.id }
-		recipes.add(index = 0, element = recipe)
 	}
 
 	private fun validate(): String? {

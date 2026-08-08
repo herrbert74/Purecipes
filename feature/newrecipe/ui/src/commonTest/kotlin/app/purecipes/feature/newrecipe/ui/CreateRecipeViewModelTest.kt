@@ -28,23 +28,10 @@ import kotlin.test.Test
 class CreateRecipeViewModelTest {
 
 	@Test
-	fun `loading recipes exposes the existing saved list`() = runViewModelTest {
-		val recipe = sampleCreatedRecipe()
-		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
-		val viewModel = createViewModel(repository = repository)
-
-		advanceUntilIdle()
-
-		viewModel.recipes.toList() shouldBe listOf(recipe)
-		viewModel.isLoading shouldBe false
-	}
-
-	@Test
 	fun `save validates required fields`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
 		val viewModel = createViewModel(repository = repository)
 
-		advanceUntilIdle()
 		viewModel.saveRecipe()
 
 		viewModel.formErrorMessage shouldBe "Add a recipe title."
@@ -52,7 +39,7 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
-	fun `save adds a new recipe to the list`() = runViewModelTest {
+	fun `save uploads a new recipe and signals completion`() = runViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeCreatedRecipeRepository()
 		val viewModel = createViewModel(
@@ -60,10 +47,9 @@ class CreateRecipeViewModelTest {
 			analyticsRepository = analyticsRepository,
 		)
 
-		advanceUntilIdle()
 		viewModel.onTitleChange("Tomato Pasta")
 		viewModel.onDescriptionChange("Quick weeknight dinner.")
-		viewModel.onIngredientsChange("200 g pasta\n2 tomatoes")
+		viewModel.ingredientsEditor.pasteLines("200 g pasta\n2 tomatoes")
 		viewModel.onStepChange(index = 0, value = "Boil the pasta")
 		viewModel.addStep()
 		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
@@ -71,34 +57,48 @@ class CreateRecipeViewModelTest {
 
 		advanceUntilIdle()
 
-		viewModel.recipes.size shouldBe 1
-		viewModel.recipes.single().title shouldBe "Tomato Pasta"
+		repository.savedRequests.size shouldBe 1
 		viewModel.successMessage shouldBe "Recipe uploaded."
+		viewModel.saveCompletedEvent shouldBe 1
 		viewModel.formErrorMessage shouldBe null
-		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.RecipeSaved(
-			recipeId = viewModel.recipes.single().id,
-			isEditing = false,
-			hasPhoto = false,
-			ingredientCount = 2,
-			stepCount = 2,
-		)
+		viewModel.isEditing shouldBe false
+		val trackedEvent = analyticsRepository.trackedEvents.single() as AnalyticsEvent.RecipeSaved
+		trackedEvent.isEditing shouldBe false
+		trackedEvent.hasPhoto shouldBe false
+		trackedEvent.ingredientCount shouldBe 2
+		trackedEvent.stepCount shouldBe 2
+	}
+
+	@Test
+	fun `loading a recipe populates the form for editing`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe()
+		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
+		val viewModel = createViewModel(repository = repository)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+
+		viewModel.isEditing shouldBe true
+		viewModel.titleInput shouldBe "Tomato Pasta"
+		viewModel.stepInputs.toList() shouldBe listOf("Boil the pasta", "Finish with the tomatoes")
+		viewModel.ingredientsEditor.toLines() shouldBe listOf("200 g pasta", "2 tomatoes")
 	}
 
 	@Test
 	fun `editing a recipe updates the existing item`() = runViewModelTest {
-		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleCreatedRecipe()))
+		val recipe = sampleCreatedRecipe()
+		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
 		val viewModel = createViewModel(repository = repository)
 
+		viewModel.loadRecipe(recipe.id)
 		advanceUntilIdle()
-		viewModel.editRecipe(viewModel.recipes.single())
 		viewModel.onTitleChange("Creamy Tomato Pasta")
 		viewModel.saveRecipe()
-
 		advanceUntilIdle()
 
-		viewModel.recipes.size shouldBe 1
-		viewModel.recipes.single().title shouldBe "Creamy Tomato Pasta"
-		viewModel.isEditing shouldBe true
+		repository.savedRequests.single().title shouldBe "Creamy Tomato Pasta"
+		viewModel.successMessage shouldBe "Recipe updated."
+		viewModel.saveCompletedEvent shouldBe 1
 	}
 
 	@Test
@@ -106,7 +106,6 @@ class CreateRecipeViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
 		val viewModel = createViewModel(repository = repository)
 
-		advanceUntilIdle()
 		viewModel.onStepChange(index = 0, value = "Boil the pasta")
 		viewModel.addStep()
 		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
@@ -119,11 +118,23 @@ class CreateRecipeViewModelTest {
 		val repository = FakeCreatedRecipeRepository()
 		val viewModel = createViewModel(repository = repository)
 
-		advanceUntilIdle()
 		viewModel.onStepChange(index = 0, value = "Boil the pasta")
 		viewModel.addStep()
 		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
 		viewModel.moveStepUp(index = 1)
+
+		viewModel.stepInputs.toList() shouldBe listOf("Finish with the tomatoes", "Boil the pasta")
+	}
+
+	@Test
+	fun `move step down reorders the list`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = createViewModel(repository = repository)
+
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.addStep()
+		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
+		viewModel.moveStepDown(index = 0)
 
 		viewModel.stepInputs.toList() shouldBe listOf("Finish with the tomatoes", "Boil the pasta")
 	}
@@ -141,13 +152,35 @@ class CreateRecipeViewModelTest {
 		)
 		val viewModel = createViewModel(estimateRepository = estimateRepository)
 
-		advanceUntilIdle()
-		viewModel.onIngredientsChange("1 cup sugar")
+		viewModel.ingredientsEditor.pasteLines("1 cup sugar")
+		viewModel.onIngredientsEdited()
 		advanceTimeBy(500)
 		advanceUntilIdle()
 
 		estimateRepository.lastIngredients shouldBe listOf("1 cup sugar")
 		viewModel.nutritionEstimate?.calories shouldBe 120.0
+	}
+
+	@Test
+	fun `optional toggle and alternative compose through the parser`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = createViewModel(repository = repository)
+
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(name = "parsley"),
+				isOptional = true,
+				alternatives = listOf(IngredientPartInput(name = "tarragon")),
+			),
+		)
+		viewModel.onTitleChange("Herb Side")
+		viewModel.onDescriptionChange("Fresh herbs.")
+		viewModel.onStepChange(index = 0, value = "Chop the herbs")
+		viewModel.saveRecipe()
+		advanceUntilIdle()
+
+		repository.savedRequests.single().ingredients.size shouldBe 2
 	}
 
 	private fun createViewModel(

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -15,13 +16,21 @@ import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
-internal fun FavoritesSignedOutContent(modifier: Modifier = Modifier) {
+internal fun FavoritesSignedOutContent(
+	onRequestLogIn: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
 	EmptyStateContent(
 		icon = Icons.Filled.Favorite,
 		iconContentDescription = "Favorites",
 		title = "Sign in to view favorites",
 		description = "Favorites are tied to your session, so each account keeps its own saved recipes.",
 		modifier = modifier,
+		action = {
+			Button(onClick = onRequestLogIn) {
+				Text(text = "Go to Account")
+			}
+		},
 	)
 }
 
@@ -43,6 +52,7 @@ private fun FavoritesSignedOutContentLightPreview() {
 			},
 		) { innerPadding ->
 			FavoritesSignedOutContent(
+				onRequestLogIn = {},
 				modifier = Modifier.padding(innerPadding),
 			)
 		}

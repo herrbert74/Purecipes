@@ -143,6 +143,12 @@ class MainViewModel(
 
 	internal val navigator: Navigator get() = navigatorImpl
 
+	internal val createRecipeTabNavigator = CreateRecipeTabNavigator(
+		stackFor = ::stackFor,
+		selectTab = ::selectTab,
+		replaceTabRoot = navigatorImpl::replaceTabRoot,
+	)
+
 	fun start() {
 		if (isStarted) {
 			return
@@ -410,6 +416,12 @@ class MainViewModel(
 		when (val target = resolvePostLoginNavigationTarget(action)) {
 			PostLoginNavigationTarget.OpenSearchWithFilters ->
 				navigator.replaceTabRoot(SearchDestination(openFiltersOnStart = true))
+
+			PostLoginNavigationTarget.OpenCreate ->
+				navigator.replaceTabRoot(CreateDestination)
+
+			PostLoginNavigationTarget.OpenFavoritesMyRecipes ->
+				navigator.replaceTabRoot(FavoritesDestination(openMyRecipes = true))
 
 			is PostLoginNavigationTarget.OpenFavoritesWithCookbookShare ->
 				navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = target.token))

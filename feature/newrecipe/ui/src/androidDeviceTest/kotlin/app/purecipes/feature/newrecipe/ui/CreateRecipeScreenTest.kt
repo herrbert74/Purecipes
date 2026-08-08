@@ -43,10 +43,12 @@ class CreateRecipeScreenTest {
 	@Test
 	fun createRecipeScreenSavesAndDisplaysRecipe() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
+		var saved = false
 		setTrackedContent {
 			PurecipesTheme {
 				CreateRecipeScreen(
 					canUploadRecipes = true,
+					onSaveSuccess = { saved = true },
 					viewModel = createRecipeViewModelForTest(repository = repository),
 				)
 			}
@@ -58,13 +60,13 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Roast until tender")
-		onNodeWithTag("createRecipeSaveButton").performScrollTo().performClick()
+		onNodeWithTag("createRecipeSaveButton").performClick()
 		waitForIdle()
 		waitUntil(timeoutMillis = 5_000) { repository.savedRequests.size == 1 }
 
 		onNodeWithText("Recipe uploaded.").performScrollTo().assertIsDisplayed()
 		repository.savedRequests.size shouldBe 1
-		onNodeWithTag("createRecipeSaveButton").assertTextContains("Update recipe")
+		saved shouldBe true
 	}
 
 	@Test
@@ -88,9 +90,8 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeImagePickButton").performScrollTo().performClick()
 
 		onNodeWithText("Importing image").assertIsDisplayed()
-		onNodeWithText("Preparing image preview...").performScrollTo().assertIsDisplayed()
-		onNodeWithTag("createRecipeImagePickButton").assertIsNotEnabled()
-		onNodeWithTag("createRecipeSaveButton").performScrollTo().assertIsNotEnabled()
+		onNodeWithText("Preparing image preview...").assertIsDisplayed()
+		onNodeWithTag("createRecipeSaveButton").assertIsNotEnabled()
 	}
 
 	@Test
@@ -116,7 +117,7 @@ class CreateRecipeScreenTest {
 
 		onNodeWithText("Could not import the selected image.").performScrollTo().assertIsDisplayed()
 		onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
-		onNodeWithTag("createRecipeSaveButton").performScrollTo().assertIsEnabled()
+		onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
 	}
 
 	@Test
@@ -181,6 +182,29 @@ class CreateRecipeScreenTest {
 			}
 			up()
 		}
+		waitForIdle()
+
+		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
+		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
+	}
+
+	@Test
+	fun createRecipeScreenMovesStepUpWithButton() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("First")
+		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
+		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Second")
+		waitForIdle()
+
+		onNodeWithTag("createRecipeMoveStepUpButton1").performScrollTo().performClick()
 		waitForIdle()
 
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")

@@ -43,6 +43,7 @@ private const val COVER_FETCH_PAGE_SIZE = 50
 enum class FavoritesTab {
 	SavedRecipes,
 	Cookbooks,
+	MyRecipes,
 }
 
 @AssistedInject
