@@ -187,6 +187,29 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
 		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
 	}
+
+	@Test
+	fun createRecipeScreenMovesStepUpWithButton() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("First")
+		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
+		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Second")
+		waitForIdle()
+
+		onNodeWithTag("createRecipeMoveStepUpButton1").performScrollTo().performClick()
+		waitForIdle()
+
+		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
+		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
+	}
 }
 
 private fun createRecipeViewModelForTest(

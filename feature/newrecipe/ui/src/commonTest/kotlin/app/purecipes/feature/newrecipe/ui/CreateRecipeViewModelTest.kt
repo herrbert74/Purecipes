@@ -127,6 +127,19 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
+	fun `move step down reorders the list`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = createViewModel(repository = repository)
+
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.addStep()
+		viewModel.onStepChange(index = 1, value = "Finish with the tomatoes")
+		viewModel.moveStepDown(index = 0)
+
+		viewModel.stepInputs.toList() shouldBe listOf("Finish with the tomatoes", "Boil the pasta")
+	}
+
+	@Test
 	fun `ingredient changes request nutrition estimate`() = runViewModelTest {
 		val estimateRepository = FakeRecipeNutritionEstimateRepository(
 			estimateResult = Ok(

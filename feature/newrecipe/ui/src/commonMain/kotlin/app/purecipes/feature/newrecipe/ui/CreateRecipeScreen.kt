@@ -216,6 +216,8 @@ fun CreateRecipeScreen(
 						},
 						onAddStepClick = viewModel::addStep,
 						onMoveStep = viewModel::moveStep,
+						onMoveStepUp = viewModel::moveStepUp,
+						onMoveStepDown = viewModel::moveStepDown,
 						onRemoveStepClick = viewModel::removeStep,
 						onStepChange = viewModel::onStepChange,
 						onTitleChange = viewModel::onTitleChange,
