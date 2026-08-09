@@ -247,6 +247,7 @@ class CreateRecipeViewModel(
 				trackEvent(
 					AnalyticsEvent.RecipeSaved(
 						recipeId = savedRecipe.id,
+						recipeName = savedRecipe.title,
 						isEditing = wasEditing,
 						hasPhoto = imageUrlInput.isNotBlank(),
 						ingredientCount = ingredients.size,

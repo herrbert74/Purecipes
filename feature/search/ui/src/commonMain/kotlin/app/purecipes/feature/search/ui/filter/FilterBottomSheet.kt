@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.CookingTimeRange
@@ -96,7 +97,7 @@ internal fun FilterBottomSheet(
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
 	isPremium: Boolean = false,
-	onOpenPaywall: () -> Unit = {},
+	onOpenPaywall: (String) -> Unit = {},
 ) {
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
@@ -146,7 +147,7 @@ private fun FilterBottomSheetContent(
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
 	isPremium: Boolean,
-	onOpenPaywall: () -> Unit,
+	onOpenPaywall: (String) -> Unit,
 ) {
 	if (!isSignedIn) {
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
@@ -290,7 +291,7 @@ private fun RecipeFiltersTabContent(
 	onFiltersChange: (SearchFilters) -> Unit,
 	onKeyIngredientsChange: (Set<String>) -> Unit,
 	onGoToPantry: () -> Unit,
-	onOpenPaywall: () -> Unit,
+	onOpenPaywall: (String) -> Unit,
 ) {
 	FilterScrollableColumn {
 		item {
@@ -313,7 +314,7 @@ private fun RecipeFiltersTabContent(
 				onKeyIngredientsChange = onKeyIngredientsChange,
 				onGoToPantry = onGoToPantry,
 				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
+				onLockedClick = { onOpenPaywall(AnalyticsPremiumFeature.KEY_INGREDIENTS) },
 			)
 		}
 		item {
@@ -378,7 +379,7 @@ private fun RecipeFiltersTabContent(
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
 				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
+				onLockedClick = { onOpenPaywall(AnalyticsPremiumFeature.CALORIE_FILTER) },
 			)
 		}
 		item {
@@ -389,7 +390,7 @@ private fun RecipeFiltersTabContent(
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
 				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
+				onLockedClick = { onOpenPaywall(AnalyticsPremiumFeature.NUTRITION_FILTER) },
 			)
 		}
 	}

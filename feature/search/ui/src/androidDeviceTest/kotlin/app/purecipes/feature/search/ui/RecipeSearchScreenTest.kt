@@ -558,7 +558,7 @@ class RecipeSearchScreenTest {
 				RecipeSearchScreen(
 					isSignedIn = true,
 					viewModel = recipeSearchViewModelForTest(),
-					onOpenPaywall = { openedPaywall = true },
+					onOpenPaywall = { _ -> openedPaywall = true },
 				)
 			}
 		}

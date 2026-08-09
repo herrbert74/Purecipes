@@ -149,7 +149,12 @@ internal fun mainViewModelForDeviceTest(
 		setCrashCustomValue = SetCrashCustomValueUseCase(FakeCrashRepository()),
 		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
 		trackScreenView = fakeTrackScreenViewUseCase(analyticsRepository),
+		trackEvent = TrackEventUseCase(analyticsRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
+		observePremiumStatus = ObservePremiumStatusUseCase(
+			subscriptionRepository,
+			FakeMonetisationDebugOverridesRepository(),
+		),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(emptyIncomingLinkRepositoryForDeviceTest()),
 		publishWebLaunchLink = PublishWebLaunchLinkUseCase(
 			object : WebLaunchLinkRepository {
@@ -171,7 +176,11 @@ internal fun mainViewModelForDeviceTest(
 			object : AdsRepository {
 				override fun initialize() = Unit
 
-				override fun showInterstitial(onDismissed: () -> Unit) {
+				override fun showInterstitial(
+					onDismissed: () -> Unit,
+					onImpression: (() -> Unit)?,
+					onClicked: (() -> Unit)?,
+				) {
 					onDismissed()
 				}
 			},
@@ -277,6 +286,7 @@ internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesVi
 		},
 	),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	sessionKey = "hardware-back-test",
 )
 

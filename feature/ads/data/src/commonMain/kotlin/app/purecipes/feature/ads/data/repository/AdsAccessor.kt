@@ -21,7 +21,15 @@ class AdsAccessor(
 		)
 	}
 
-	override fun showInterstitial(onDismissed: () -> Unit) {
-		adsDataSource.showInterstitial(onDismissed)
+	override fun showInterstitial(
+		onDismissed: () -> Unit,
+		onImpression: (() -> Unit)?,
+		onClicked: (() -> Unit)?,
+	) {
+		adsDataSource.showInterstitial(
+			onDismissed = onDismissed,
+			onImpression = onImpression,
+			onClicked = onClicked,
+		)
 	}
 }

@@ -36,7 +36,11 @@ class AdMobAdsDataSource : AdsDataSource {
 		}
 	}
 
-	override fun showInterstitial(onDismissed: () -> Unit) {
+	override fun showInterstitial(
+		onDismissed: () -> Unit,
+		onImpression: (() -> Unit)?,
+		onClicked: (() -> Unit)?,
+	) {
 		val activity = AdsAndroidRuntime.currentActivity()
 		val loadedAd = interstitialAd
 		if (activity == null || loadedAd == null) {
@@ -45,6 +49,14 @@ class AdMobAdsDataSource : AdsDataSource {
 			return
 		}
 		loadedAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+			override fun onAdImpression() {
+				onImpression?.invoke()
+			}
+
+			override fun onAdClicked() {
+				onClicked?.invoke()
+			}
+
 			override fun onAdDismissedFullScreenContent() {
 				interstitialAd = null
 				preloadInterstitial()

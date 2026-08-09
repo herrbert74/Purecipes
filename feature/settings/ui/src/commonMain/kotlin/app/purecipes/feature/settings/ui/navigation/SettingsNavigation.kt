@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.settings.ui.SettingsScreen
 import app.purecipes.feature.settings.ui.about.AboutScreen
 import app.purecipes.feature.settings.ui.about.LicensesScreen
@@ -19,7 +21,14 @@ fun EntryProviderScope<NavKey>.installSettingsFlow(
 	entry<AccountSettingsDestination> {
 		SettingsScreen(
 			onBack = { navigator.back() },
-			onOpenPaywall = { navigator.push(PaywallDestination) },
+			onOpenPaywall = {
+				navigator.push(
+					PaywallDestination(
+						feature = AnalyticsPremiumFeature.SETTINGS_PAYWALL,
+						origin = AnalyticsOrigin.SETTINGS.value,
+					),
+				)
+			},
 			onOpenAbout = { navigator.push(AboutDestination) },
 			modifier = Modifier.fillMaxSize(),
 		)

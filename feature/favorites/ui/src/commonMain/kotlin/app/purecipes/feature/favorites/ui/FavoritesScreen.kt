@@ -228,7 +228,13 @@ fun FavoritesScreen(
 					onDeleteCookbook = { cookbook, _ ->
 						pendingDeleteCookbook = cookbook
 					},
-					onCookbookClick = { id, name -> viewModel.openCookbookDetail(id, name) },
+					onCookbookClick = { cookbook ->
+						viewModel.openCookbookDetail(
+							cookbookId = cookbook.id,
+							name = cookbook.name,
+							recipeCount = cookbook.recipeCount,
+						)
+					},
 					modifier = Modifier.weight(1f),
 				)
 
@@ -507,7 +513,7 @@ private fun CookbooksTabContent(
 	deleteCookbookError: String?,
 	isDeletingCookbook: Boolean,
 	onDeleteCookbook: (CookbookSummary, (Boolean) -> Unit) -> Unit,
-	onCookbookClick: (Int, String) -> Unit,
+	onCookbookClick: (CookbookSummary) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	when {
@@ -576,7 +582,7 @@ private fun CookbooksTabContent(
 						onRequestCookbookCover = { onRequestCookbookCover(cookbook.id) },
 						isDeletingCookbook = isDeletingCookbook,
 						onDeleteCookbook = { onDeleteCookbook(cookbook) {} },
-						onClick = { onCookbookClick(cookbook.id, cookbook.name) },
+						onClick = { onCookbookClick(cookbook) },
 					)
 				}
 			}

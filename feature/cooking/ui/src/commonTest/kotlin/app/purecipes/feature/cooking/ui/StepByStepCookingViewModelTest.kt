@@ -83,6 +83,7 @@ class StepByStepCookingViewModelTest {
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingStarted>() shouldBe listOf(
 			AnalyticsEvent.CookingStarted(
 				recipeId = recipe.id,
+				recipeName = recipe.title,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
 				stepCount = recipe.steps.size,
 			),
@@ -109,6 +110,7 @@ class StepByStepCookingViewModelTest {
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingStepViewed>() shouldBe listOf(
 			AnalyticsEvent.CookingStepViewed(
 				recipeId = recipe.id,
+				recipeName = recipe.title,
 				stepIndex = 1,
 				stepCount = recipe.steps.size,
 			),
@@ -125,7 +127,60 @@ class StepByStepCookingViewModelTest {
 
 		val completedEvents = analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingCompleted>()
 		completedEvents.size shouldBe 1
-		completedEvents.single().recipeId shouldBe recipe.id
+		completedEvents.single() shouldBe AnalyticsEvent.CookingCompleted(
+			recipeId = recipe.id,
+			recipeName = recipe.title,
+			durationSeconds = completedEvents.single().durationSeconds,
+			stepCount = recipe.steps.size,
+			origin = AnalyticsOrigin.RECIPE_DETAILS,
+		)
+	}
+
+	@Test
+	fun `leaving cooking before completion tracks cooking abandoned`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			analyticsRepository = analyticsRepository,
+		)
+
+		advanceUntilIdle()
+		viewModel.nextStep()
+		advanceUntilIdle()
+		viewModel.trackCookingAbandonedIfNeeded()
+
+		val abandonedEvents = analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingAbandoned>()
+		abandonedEvents.size shouldBe 1
+		abandonedEvents.single() shouldBe AnalyticsEvent.CookingAbandoned(
+			recipeId = recipe.id,
+			recipeName = recipe.title,
+			lastStepIndex = 1,
+			stepCount = recipe.steps.size,
+			durationSeconds = abandonedEvents.single().durationSeconds,
+		)
+	}
+
+	@Test
+	fun `cooking abandoned is not tracked after completion`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			analyticsRepository = analyticsRepository,
+		)
+
+		advanceUntilIdle()
+		repeat(recipe.steps.lastIndex) {
+			viewModel.nextStep()
+		}
+		advanceUntilIdle()
+		viewModel.trackCookingAbandonedIfNeeded()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingAbandoned>() shouldBe emptyList()
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingCompleted>().size shouldBe 1
 	}
 
 	@Test

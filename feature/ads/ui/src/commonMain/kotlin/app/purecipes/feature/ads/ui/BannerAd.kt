@@ -19,6 +19,8 @@ fun BannerAd(
 			modifier = modifier
 				.fillMaxWidth()
 				.testTag(BANNER_AD_TAG),
+			onImpression = viewModel::onAdImpression,
+			onClick = viewModel::onAdClicked,
 		)
 	}
 }

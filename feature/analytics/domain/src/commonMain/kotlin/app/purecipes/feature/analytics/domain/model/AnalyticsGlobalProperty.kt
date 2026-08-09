@@ -8,6 +8,7 @@ object AnalyticsGlobalProperty {
 	const val USER_STATE = "user_state"
 	const val ACTIVE_TAB = "active_tab"
 	const val CURRENT_SCREEN = "current_screen"
+	const val PREMIUM_STATUS = "premium_status"
 }
 
 object AnalyticsUserState {

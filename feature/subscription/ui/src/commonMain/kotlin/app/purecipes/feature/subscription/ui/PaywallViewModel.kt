@@ -5,6 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsRestoreResult
+import app.purecipes.feature.analytics.domain.model.AnalyticsSubscriptionPlan
+import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
 import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.feature.subscription.domain.usecase.GetSubscriptionPlansUseCase
@@ -14,21 +22,31 @@ import app.purecipes.feature.subscription.domain.usecase.RestorePurchasesUseCase
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
-import dev.zacsweers.metro.Inject
-import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
+import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-@Inject
-@ViewModelKey
-@ContributesIntoMap(AppScope::class)
+private const val PURCHASE_CANCELLED_MESSAGE = "Purchase cancelled"
+
+@AssistedInject
 class PaywallViewModel(
 	private val getSubscriptionPlans: GetSubscriptionPlansUseCase,
 	private val observePremiumStatus: ObservePremiumStatusUseCase,
 	private val purchaseSubscription: PurchaseSubscriptionUseCase,
 	private val restorePurchases: RestorePurchasesUseCase,
+	private val trackEvent: TrackEventUseCase,
+	@Assisted private val feature: String,
+	@Assisted private val origin: String,
 ) : ViewModel() {
+
+	private val analyticsOrigin: AnalyticsOrigin =
+		AnalyticsOrigin.fromValue(origin) ?: AnalyticsOrigin.SETTINGS
 
 	var isPremium by mutableStateOf(false)
 		private set
@@ -52,6 +70,12 @@ class PaywallViewModel(
 		private set
 
 	init {
+		trackEvent(
+			AnalyticsEvent.PaywallViewed(
+				feature = feature,
+				origin = analyticsOrigin,
+			),
+		)
 		viewModelScope.launch {
 			observePremiumStatus().collectLatest { premium ->
 				isPremium = premium
@@ -66,16 +90,36 @@ class PaywallViewModel(
 		if (isPurchasing || isRestoring) {
 			return
 		}
+		val plan = packageIdentifier.toAnalyticsPlan()
 		viewModelScope.launch {
 			isPurchasing = true
 			errorMessage = null
 			successMessage = null
+			trackEvent(
+				AnalyticsEvent.PremiumUpgradeStarted(
+					feature = feature,
+					origin = analyticsOrigin,
+					plan = plan,
+				),
+			)
 			val outcome = purchaseSubscription(packageIdentifier)
 			val failure = outcome.getError()
 			if (failure != null) {
 				errorMessage = failure.message
+				trackEvent(
+					AnalyticsEvent.PremiumUpgradeFailed(
+						errorKind = failure.toPurchaseAnalyticsErrorKind(),
+						feature = feature,
+					),
+				)
 			} else {
 				successMessage = "Purchase completed."
+				trackEvent(
+					AnalyticsEvent.PremiumUpgradeCompleted(
+						feature = feature,
+						plan = plan,
+					),
+				)
 			}
 			isPurchasing = false
 		}
@@ -93,8 +137,23 @@ class PaywallViewModel(
 			val failure = outcome.getError()
 			if (failure != null) {
 				errorMessage = failure.message
+				trackEvent(
+					AnalyticsEvent.RestorePurchasesCompleted(
+						result = AnalyticsRestoreResult.FAILED,
+					),
+				)
 			} else {
 				successMessage = "Purchases restored."
+				val premiumNow = observePremiumStatus().first()
+				trackEvent(
+					AnalyticsEvent.RestorePurchasesCompleted(
+						result = if (premiumNow) {
+							AnalyticsRestoreResult.RESTORED
+						} else {
+							AnalyticsRestoreResult.NOTHING_TO_RESTORE
+						},
+					),
+				)
 			}
 			isRestoring = false
 		}
@@ -122,4 +181,24 @@ class PaywallViewModel(
 		}
 		isLoadingPlans = false
 	}
+
+	@AssistedFactory
+	@ManualViewModelAssistedFactoryKey
+	@ContributesIntoMap(AppScope::class)
+	interface Factory : ManualViewModelAssistedFactory {
+
+		fun create(feature: String, origin: String): PaywallViewModel
+	}
 }
+
+private fun SubscriptionPackageIdentifier.toAnalyticsPlan(): String = when (this) {
+	SubscriptionPackageIdentifier.MONTHLY -> AnalyticsSubscriptionPlan.MONTHLY
+	SubscriptionPackageIdentifier.ANNUAL -> AnalyticsSubscriptionPlan.ANNUAL
+}
+
+private fun Failure.toPurchaseAnalyticsErrorKind(): String =
+	if (this is Failure.ServerError && message == PURCHASE_CANCELLED_MESSAGE) {
+		AnalyticsErrorKind.USER_CANCELLED
+	} else {
+		toAnalyticsErrorKind()
+	}

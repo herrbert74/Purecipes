@@ -8,7 +8,15 @@ class ShowInterstitialAdUseCase(
 	private val repository: AdsRepository,
 ) {
 
-	operator fun invoke(onDismissed: () -> Unit) {
-		repository.showInterstitial(onDismissed)
+	operator fun invoke(
+		onDismissed: () -> Unit,
+		onImpression: (() -> Unit)? = null,
+		onClicked: (() -> Unit)? = null,
+	) {
+		repository.showInterstitial(
+			onDismissed = onDismissed,
+			onImpression = onImpression,
+			onClicked = onClicked,
+		)
 	}
 }

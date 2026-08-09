@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
@@ -137,7 +138,14 @@ private fun MainScreenContent(
 									onRequestLogInForFilters = {
 										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 									},
-									onOpenPaywall = { viewModel.navigator.push(PaywallDestination) },
+									onOpenPaywall = { feature ->
+										viewModel.navigator.push(
+											PaywallDestination(
+												feature = feature,
+												origin = AnalyticsOrigin.SEARCH.value,
+											),
+										)
+									},
 								)
 								installRecipeDetailsFlow(
 									navigator = viewModel.navigator,

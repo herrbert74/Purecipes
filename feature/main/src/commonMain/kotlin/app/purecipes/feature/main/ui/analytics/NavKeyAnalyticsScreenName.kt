@@ -30,3 +30,9 @@ internal fun NavKey.toAnalyticsScreenName(): String? = when (this) {
 	LicensesDestination -> AnalyticsScreenName.LICENSES
 	else -> null
 }
+
+internal fun NavKey.toAnalyticsRecipeId(): Int? = when (this) {
+	is RecipeDetailsDestination -> recipeId
+	is RecipeCookingDestination -> recipeId
+	else -> null
+}

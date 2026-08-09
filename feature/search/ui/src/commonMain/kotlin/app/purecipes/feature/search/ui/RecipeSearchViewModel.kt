@@ -8,7 +8,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.SearchPerformedContext
 import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
@@ -191,6 +193,16 @@ class RecipeSearchViewModel(
 			shouldReopenFilterSheetAfterNavigation = true
 			isFilterSheetVisible = false
 		}
+	}
+
+	fun onPremiumFeatureBlocked(feature: String) {
+		trackEvent(
+			AnalyticsEvent.PremiumFeatureBlocked(
+				feature = feature,
+				origin = AnalyticsOrigin.SEARCH,
+			),
+		)
+		onNavigateToPaywall()
 	}
 
 	fun onSearchContentVisible() {
@@ -419,10 +431,17 @@ class RecipeSearchViewModel(
 			if (pageNumber == FIRST_PAGE_NUMBER) {
 				logBreadcrumb(CrashBreadcrumb.SEARCH_PERFORMED)
 				trackEvent(
-					AnalyticsEvent.SearchPerformed(
-						query = searchQuery,
-						resultCount = paginatedResult.totalMatches,
-						isEmptyResult = paginatedResult.totalMatches == 0,
+					AnalyticsEvent.SearchPerformed.from(
+						SearchPerformedContext(
+							query = searchQuery,
+							resultCount = paginatedResult.totalMatches,
+							filters = filtersForSearch(),
+							pantryCount = pantryIngredients.size,
+							excludedCount = excludedIngredients.size,
+							keyIngredientCount = keyIngredientsForSearch().size,
+							nearMissCount = nearMissRecipes.size,
+							isPremiumUser = isPremium,
+						),
 					),
 				)
 			}

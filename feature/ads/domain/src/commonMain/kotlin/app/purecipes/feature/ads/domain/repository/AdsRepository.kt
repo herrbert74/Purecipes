@@ -4,5 +4,9 @@ interface AdsRepository {
 
 	fun initialize()
 
-	fun showInterstitial(onDismissed: () -> Unit)
+	fun showInterstitial(
+		onDismissed: () -> Unit,
+		onImpression: (() -> Unit)? = null,
+		onClicked: (() -> Unit)? = null,
+	)
 }
