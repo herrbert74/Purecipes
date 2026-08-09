@@ -1,5 +1,10 @@
 package app.purecipes.feature.analytics.domain.model
 
+import app.purecipes.shared.domain.model.CalorieRange
+import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.MealType
+import app.purecipes.shared.domain.model.NutritionFilter
+import app.purecipes.shared.domain.model.SearchFilters
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -7,10 +12,22 @@ class AnalyticsEventTest {
 
 	@Test
 	fun `SearchPerformed has correct event name and properties`() {
-		val event = AnalyticsEvent.SearchPerformed(
-			query = "pasta",
-			resultCount = 12,
-			isEmptyResult = false,
+		val event = AnalyticsEvent.SearchPerformed.from(
+			SearchPerformedContext(
+				query = "pasta",
+				resultCount = 12,
+				filters = SearchFilters(
+					cuisines = setOf(Cuisine.ITALIAN, Cuisine.FRENCH),
+					mealTypes = setOf(MealType.DINNER),
+					calorieRanges = setOf(CalorieRange.LOW),
+					nutritionFilters = setOf(NutritionFilter.HIGH_PROTEIN),
+				),
+				pantryCount = 3,
+				excludedCount = 1,
+				keyIngredientCount = 2,
+				nearMissCount = 4,
+				isPremiumUser = true,
+			),
 		)
 
 		event.eventName shouldBe "search_performed"
@@ -19,18 +36,47 @@ class AnalyticsEventTest {
 			"query_length" to AnalyticsValue.NumberValue(5L),
 			"result_count" to AnalyticsValue.NumberValue(12L),
 			"is_empty_result" to AnalyticsValue.BooleanValue(false),
+			"has_query" to AnalyticsValue.BooleanValue(true),
+			"has_filters" to AnalyticsValue.BooleanValue(true),
+			"filter_count" to AnalyticsValue.NumberValue(5L),
+			"cuisines" to AnalyticsValue.TextValue("French,Italian"),
+			"meal_types" to AnalyticsValue.TextValue("Dinner"),
+			"cooking_time_ranges" to AnalyticsValue.TextValue(""),
+			"difficulty_levels" to AnalyticsValue.TextValue(""),
+			"cooking_methods" to AnalyticsValue.TextValue(""),
+			"dietary_preferences" to AnalyticsValue.TextValue(""),
+			"calorie_ranges" to AnalyticsValue.TextValue("Under 300 kcal"),
+			"nutrition_filters" to AnalyticsValue.TextValue("High Protein"),
+			"pantry_count" to AnalyticsValue.NumberValue(3L),
+			"excluded_count" to AnalyticsValue.NumberValue(1L),
+			"key_ingredient_count" to AnalyticsValue.NumberValue(2L),
+			"near_miss_count" to AnalyticsValue.NumberValue(4L),
+			"premium_filters_applied" to AnalyticsValue.BooleanValue(true),
+			"is_premium_user" to AnalyticsValue.BooleanValue(true),
 		)
 	}
 
 	@Test
 	fun `SearchPerformed marks empty results`() {
-		val event = AnalyticsEvent.SearchPerformed(
-			query = "",
-			resultCount = 0,
-			isEmptyResult = true,
+		val event = AnalyticsEvent.SearchPerformed.from(
+			SearchPerformedContext(
+				query = "",
+				resultCount = 0,
+				filters = SearchFilters(),
+				pantryCount = 0,
+				excludedCount = 0,
+				keyIngredientCount = 0,
+				nearMissCount = 0,
+				isPremiumUser = false,
+			),
 		)
 
 		event.properties["is_empty_result"] shouldBe AnalyticsValue.BooleanValue(true)
+		event.properties["has_query"] shouldBe AnalyticsValue.BooleanValue(false)
+		event.properties["has_filters"] shouldBe AnalyticsValue.BooleanValue(false)
+		event.properties["filter_count"] shouldBe AnalyticsValue.NumberValue(0L)
+		event.properties["premium_filters_applied"] shouldBe AnalyticsValue.BooleanValue(false)
+		event.properties["is_premium_user"] shouldBe AnalyticsValue.BooleanValue(false)
 	}
 
 	@Test

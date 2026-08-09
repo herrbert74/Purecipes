@@ -1,15 +1,12 @@
 package app.purecipes.feature.search.ui
 
 import app.purecipes.base.kotlin.result.Failure
-import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
-import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
-import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
@@ -18,8 +15,6 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
-import app.purecipes.feature.subscription.domain.model.SubscriptionState
-import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientMatchCount
@@ -64,7 +59,7 @@ class RecipeSearchViewModelTest {
 				),
 			),
 		)
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -79,7 +74,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `reports readiness once the first page finishes loading`() = runViewModelTest {
 		val readiness = SearchReadinessCoordinator()
-		val viewModel = makeViewModel(searchReadiness = readiness)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchReadiness = readiness)
 
 		readiness.isReady.value shouldBe false
 		advanceUntilIdle()
@@ -91,7 +86,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `reports readiness even when the first page fails`() = runViewModelTest {
 		val readiness = SearchReadinessCoordinator()
-		makeViewModel(
+		RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = FakeRecipeSearchRepository(result = Err(Failure.ServerError("Search failed"))),
 			searchReadiness = readiness,
 		)
@@ -104,7 +99,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `search now keeps search bar expanded when already expanded`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 		advanceUntilIdle()
 
 		viewModel.onSearchBarExpandedChange(true)
@@ -119,7 +114,7 @@ class RecipeSearchViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Err(Failure.ServerError("Search failed")),
 		)
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -139,27 +134,18 @@ class RecipeSearchViewModelTest {
 			),
 			missingIngredient = "Basil",
 		)
-		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(emptyList()),
 			totalMatches = 0,
 			nearMissRecipes = listOf(nearMiss),
 		)
-		val viewModel = makeViewModel(
-			searchRepository = repository,
-			analyticsRepository = analyticsRepository,
-		)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
 		viewModel.totalMatches shouldBe 0
 		viewModel.recipes.isEmpty() shouldBe true
 		viewModel.nearMissRecipes.single() shouldBe nearMiss
-		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.SearchPerformed(
-			query = "",
-			resultCount = 0,
-			isEmptyResult = true,
-		)
 	}
 
 	@Test
@@ -186,7 +172,7 @@ class RecipeSearchViewModelTest {
 			totalMatches = 1,
 			nearMissRecipes = listOf(nearMiss),
 		)
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -211,7 +197,7 @@ class RecipeSearchViewModelTest {
 			),
 			totalMatches = 37,
 		)
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 
 		advanceUntilIdle()
 
@@ -222,7 +208,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `search now sends updated query and first page request`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = repository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
 		advanceUntilIdle()
 
 		viewModel.onSearchQueryChange("chicken")
@@ -237,7 +223,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `init uses default filters when saved filters are empty`() = runViewModelTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
-		val viewModel = makeViewModel(filterRepository = filterRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(filterRepository = filterRepository)
 
 		advanceUntilIdle()
 
@@ -249,7 +235,7 @@ class RecipeSearchViewModelTest {
 	fun `init uses saved filters when they are not empty`() = runViewModelTest {
 		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
-		val viewModel = makeViewModel(filterRepository = filterRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(filterRepository = filterRepository)
 
 		advanceUntilIdle()
 
@@ -259,7 +245,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `onFiltersChange updates active filters without saving`() = runViewModelTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
-		val viewModel = makeViewModel(filterRepository = filterRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(filterRepository = filterRepository)
 		advanceUntilIdle()
 		val savedAfterInit = filterRepository.savedFilters
 
@@ -274,7 +260,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `onFiltersChange does not trigger a new search`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = searchRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = searchRepository)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
 
@@ -286,14 +272,14 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `filter sheet is hidden by default`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 
 		viewModel.isFilterSheetVisible shouldBe false
 	}
 
 	@Test
 	fun `onFilterButtonClick shows the filter sheet`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 
 		viewModel.onFilterButtonClick()
 
@@ -302,7 +288,7 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `navigating to paywall from filters reopens sheet when search becomes visible`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 		advanceUntilIdle()
 
 		viewModel.onFilterButtonClick()
@@ -318,7 +304,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `filter sheet dismiss during paywall navigation does not apply filters`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = searchRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = searchRepository)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
 
@@ -368,7 +354,7 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onFilterSheetDismiss hides the filter sheet`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 		viewModel.onFilterButtonClick()
 
 		viewModel.onFilterSheetDismiss()
@@ -380,7 +366,7 @@ class RecipeSearchViewModelTest {
 	fun `onFilterSheetDismiss saves filters and triggers search when filters changed`() = runViewModelTest {
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = SearchFilters())
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
 		)
@@ -400,7 +386,7 @@ class RecipeSearchViewModelTest {
 	fun `onFilterSheetDismiss updates pantry and triggers search when pantry changed`() = runViewModelTest {
 		val pantryRepository = FakeUserPantryRepository(setOf("Chicken"))
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
 			pantryRepository = pantryRepository,
 		)
@@ -422,7 +408,7 @@ class RecipeSearchViewModelTest {
 			updateFailure = Failure.ServerError("Something went wrong. Please try again."),
 		)
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
 			pantryRepository = pantryRepository,
 			sessionKey = "user-1",
@@ -445,7 +431,7 @@ class RecipeSearchViewModelTest {
 		runViewModelTest {
 			val excludedRepository = FakeUserExcludedIngredientsRepository(setOf("Garlic"))
 			val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-			val viewModel = makeViewModel(
+			val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 				searchRepository = searchRepository,
 				excludedIngredientsRepository = excludedRepository,
 			)
@@ -462,7 +448,7 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onIngredientSelectionChange keeps pantry and excluded ingredients mutually exclusive`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 		advanceUntilIdle()
 
 		viewModel.onIngredientSelectionChange(setOf("Chicken"), emptySet())
@@ -479,7 +465,7 @@ class RecipeSearchViewModelTest {
 		val saved = SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
 		val filterRepository = FakeRecipeSearchFilterRepository(savedFilters = saved)
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
 		)
@@ -501,7 +487,7 @@ class RecipeSearchViewModelTest {
 		val pantryRepository = FakeUserPantryRepository(setOf("Chicken"))
 		val excludedRepository = FakeUserExcludedIngredientsRepository(setOf("Garlic"))
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
 			pantryRepository = pantryRepository,
@@ -525,7 +511,7 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onAddIngredient adds custom ingredient to pantry`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 		advanceUntilIdle()
 
 		viewModel.onAddIngredient("gochujang")
@@ -537,7 +523,7 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onCustomIngredientToggle switches between pantry and excluded`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 		advanceUntilIdle()
 
 		viewModel.onAddIngredient("gochujang")
@@ -555,7 +541,7 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onRemoveCustomIngredient removes custom ingredient from pantry and list`() = runViewModelTest {
-		val viewModel = makeViewModel()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
 		advanceUntilIdle()
 
 		viewModel.onAddIngredient("gochujang")
@@ -576,7 +562,8 @@ class RecipeSearchViewModelTest {
 				),
 			),
 		)
-		val viewModel = makeViewModel(ingredientMatchRepository = ingredientMatchRepository)
+		val viewModel =
+			RecipeSearchViewModelTestSupport.makeViewModel(ingredientMatchRepository = ingredientMatchRepository)
 
 		viewModel.onAddIngredientQueryChange("tarragon")
 		advanceTimeBy(299)
@@ -592,7 +579,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `onSessionKeyChanged does nothing when session key is unchanged`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = searchRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = searchRepository)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
 
@@ -605,9 +592,11 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `search sends key ingredients to repository`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
-			subscriptionRepository = FakeSubscriptionRepository(initialState = premiumSubscriptionState()),
+			subscriptionRepository = FakeSubscriptionRepository(
+				initialState = RecipeSearchViewModelTestSupport.premiumSubscriptionState(),
+			),
 		)
 		advanceUntilIdle()
 
@@ -621,7 +610,7 @@ class RecipeSearchViewModelTest {
 	@Test
 	fun `free user search strips key ingredients`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
-		val viewModel = makeViewModel(searchRepository = searchRepository)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = searchRepository)
 		advanceUntilIdle()
 
 		viewModel.onKeyIngredientsChange(setOf("Tomato", "Chicken"))
@@ -636,10 +625,12 @@ class RecipeSearchViewModelTest {
 	fun `filter sheet dismiss with key ingredients change re-runs search without saving filters`() = runViewModelTest {
 		val searchRepository = FakeRecipeSearchRepository(result = Ok(emptyList()))
 		val filterRepository = FakeRecipeSearchFilterRepository()
-		val viewModel = makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = searchRepository,
 			filterRepository = filterRepository,
-			subscriptionRepository = FakeSubscriptionRepository(initialState = premiumSubscriptionState()),
+			subscriptionRepository = FakeSubscriptionRepository(
+				initialState = RecipeSearchViewModelTestSupport.premiumSubscriptionState(),
+			),
 		)
 		advanceUntilIdle()
 		val searchCountAfterInit = searchRepository.queries.size
@@ -657,8 +648,10 @@ class RecipeSearchViewModelTest {
 
 	@Test
 	fun `onKeyIngredientsChange clears all key ingredients`() = runViewModelTest {
-		val viewModel = makeViewModel(
-			subscriptionRepository = FakeSubscriptionRepository(initialState = premiumSubscriptionState()),
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
+			subscriptionRepository = FakeSubscriptionRepository(
+				initialState = RecipeSearchViewModelTestSupport.premiumSubscriptionState(),
+			),
 		)
 		advanceUntilIdle()
 
@@ -667,45 +660,4 @@ class RecipeSearchViewModelTest {
 
 		viewModel.keyIngredients shouldBe emptySet()
 	}
-
-	private fun makeViewModel(
-		searchRepository: RecipeSearchRepository = FakeRecipeSearchRepository(Ok(emptyList())),
-		filterRepository: RecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
-		pantryRepository: FakeUserPantryRepository = FakeUserPantryRepository(),
-		excludedIngredientsRepository: FakeUserExcludedIngredientsRepository =
-			FakeUserExcludedIngredientsRepository(),
-		ingredientMatchRepository: FakeIngredientMatchRepository = FakeIngredientMatchRepository(),
-		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
-		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
-		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
-		sessionKey: String? = null,
-	) = RecipeSearchViewModel(
-		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
-		searchRecipes = SearchRecipesUseCase(searchRepository),
-		trackEvent = TrackEventUseCase(analyticsRepository),
-		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
-		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
-		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-		getUserPantry = GetUserPantryUseCase(pantryRepository),
-		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
-		getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
-		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
-		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
-		searchReadiness = searchReadiness,
-		observePremiumStatus = ObservePremiumStatusUseCase(
-			subscriptionRepository,
-			FakeMonetisationDebugOverridesRepository()
-		),
-		initialShowFilterSheet = false,
-		sessionKey = sessionKey,
-	)
-
-	private fun premiumSubscriptionState(): SubscriptionState = SubscriptionState(
-		status = SubscriptionStatus.PREMIUM,
-		isActive = true,
-		expirationInstant = null,
-		trialActive = false,
-	)
 }
