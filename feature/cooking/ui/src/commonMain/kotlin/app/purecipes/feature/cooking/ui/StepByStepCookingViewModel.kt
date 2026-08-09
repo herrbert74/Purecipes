@@ -125,6 +125,7 @@ class StepByStepCookingViewModel(
 				trackEvent(
 					AnalyticsEvent.CookingStarted(
 						recipeId = recipeId,
+						recipeName = details.title,
 						origin = AnalyticsOrigin.RECIPE_DETAILS,
 						stepCount = details.steps.size,
 					),
@@ -137,6 +138,7 @@ class StepByStepCookingViewModel(
 					AnalyticsEvent.RecipeLoadFailed(
 						recipeId = recipeId,
 						errorKind = error.toAnalyticsErrorKind(),
+						recipeName = details?.title,
 					),
 				)
 			}
@@ -152,6 +154,7 @@ class StepByStepCookingViewModel(
 		trackEvent(
 			AnalyticsEvent.CookingStepViewed(
 				recipeId = recipeId,
+				recipeName = details.title,
 				stepIndex = currentStepIndex,
 				stepCount = details.steps.size,
 			),
@@ -167,6 +170,7 @@ class StepByStepCookingViewModel(
 		trackEvent(
 			AnalyticsEvent.CookingCompleted(
 				recipeId = recipeId,
+				recipeName = details.title,
 				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
 			),
 		)

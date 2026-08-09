@@ -8,13 +8,15 @@ internal class ScreenViewTracker(
 ) {
 
 	private var lastScreenName: String? = null
+	private var lastRecipeId: Int? = null
 
-	fun onScreenVisible(screenName: String) {
-		if (screenName == lastScreenName) {
+	fun onScreenVisible(screenName: String, recipeId: Int? = null) {
+		if (screenName == lastScreenName && recipeId == lastRecipeId) {
 			return
 		}
 		val origin = lastScreenName?.let(AnalyticsOrigin::fromValue)
 		lastScreenName = screenName
-		trackScreenView(screenName = screenName, origin = origin)
+		lastRecipeId = recipeId
+		trackScreenView(screenName = screenName, origin = origin, recipeId = recipeId)
 	}
 }

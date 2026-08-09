@@ -21,9 +21,9 @@ class ScreenViewTrackerTest {
 
 		tracker.onScreenVisible(AnalyticsScreenName.SEARCH)
 		tracker.onScreenVisible(AnalyticsScreenName.SEARCH)
-		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS)
-		tracker.onScreenVisible(AnalyticsScreenName.COOKING)
-		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS)
+		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS, recipeId = 42)
+		tracker.onScreenVisible(AnalyticsScreenName.COOKING, recipeId = 42)
+		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS, recipeId = 42)
 		tracker.onScreenVisible(AnalyticsScreenName.SEARCH)
 
 		analyticsRepository.trackedScreenViews.map { it.screenName } shouldBe listOf(
@@ -39,6 +39,13 @@ class ScreenViewTrackerTest {
 			AnalyticsValue.TextValue(AnalyticsOrigin.RECIPE_DETAILS.value),
 			AnalyticsValue.TextValue(AnalyticsOrigin.COOKING.value),
 			AnalyticsValue.TextValue(AnalyticsOrigin.RECIPE_DETAILS.value),
+		)
+		analyticsRepository.trackedScreenViews.map { it.properties["recipe_id"] } shouldBe listOf(
+			null,
+			AnalyticsValue.NumberValue(42L),
+			AnalyticsValue.NumberValue(42L),
+			AnalyticsValue.NumberValue(42L),
+			null,
 		)
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.CURRENT_SCREEN] shouldBe
 			AnalyticsValue.TextValue(AnalyticsScreenName.SEARCH)
@@ -58,13 +65,28 @@ class ScreenViewTrackerTest {
 		val tracker = ScreenViewTracker(fakeTrackScreenViewUseCase(analyticsRepository))
 
 		tracker.onScreenVisible(AnalyticsScreenName.SEARCH)
-		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS)
+		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS, recipeId = 1)
 		tracker.onScreenVisible(AnalyticsScreenName.SEARCH)
 
 		analyticsRepository.trackedScreenViews.map { it.screenName } shouldBe listOf(
 			AnalyticsScreenName.SEARCH,
 			AnalyticsScreenName.RECIPE_DETAILS,
 			AnalyticsScreenName.SEARCH,
+		)
+	}
+
+	@Test
+	fun `re-emits recipe details when recipe id changes`() {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val tracker = ScreenViewTracker(fakeTrackScreenViewUseCase(analyticsRepository))
+
+		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS, recipeId = 1)
+		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS, recipeId = 1)
+		tracker.onScreenVisible(AnalyticsScreenName.RECIPE_DETAILS, recipeId = 2)
+
+		analyticsRepository.trackedScreenViews.map { it.properties["recipe_id"] } shouldBe listOf(
+			AnalyticsValue.NumberValue(1L),
+			AnalyticsValue.NumberValue(2L),
 		)
 	}
 }

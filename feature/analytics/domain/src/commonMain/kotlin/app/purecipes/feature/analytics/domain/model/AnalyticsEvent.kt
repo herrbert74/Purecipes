@@ -24,27 +24,27 @@ sealed interface AnalyticsEvent {
 
 	data class RecipeViewed(
 		val recipeId: Int,
+		val recipeName: String,
 		val origin: AnalyticsOrigin,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_viewed"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
 	}
 
 	data class CookingStarted(
 		val recipeId: Int,
+		val recipeName: String,
 		val origin: AnalyticsOrigin,
 		val stepCount: Int,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_started"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
 			"step_count" to stepCount.asAnalyticsValue(),
 		)
@@ -52,14 +52,14 @@ sealed interface AnalyticsEvent {
 
 	data class FavoriteChanged(
 		val recipeId: Int,
+		val recipeName: String,
 		val isFavorite: Boolean,
 		val origin: AnalyticsOrigin,
 	) : AnalyticsEvent {
 
 		override val eventName = "favorite_changed"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"is_favorite" to isFavorite.asAnalyticsValue(),
 			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
@@ -67,6 +67,7 @@ sealed interface AnalyticsEvent {
 
 	data class RecipeSaved(
 		val recipeId: Int,
+		val recipeName: String,
 		val isEditing: Boolean,
 		val hasPhoto: Boolean,
 		val ingredientCount: Int,
@@ -75,8 +76,7 @@ sealed interface AnalyticsEvent {
 
 		override val eventName = "recipe_saved"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"is_editing" to isEditing.asAnalyticsValue(),
 			"has_photo" to hasPhoto.asAnalyticsValue(),
 			"ingredient_count" to ingredientCount.asAnalyticsValue(),
@@ -115,14 +115,14 @@ sealed interface AnalyticsEvent {
 
 	data class CookingStepViewed(
 		val recipeId: Int,
+		val recipeName: String,
 		val stepIndex: Int,
 		val stepCount: Int,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_step_viewed"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"step_index" to stepIndex.asAnalyticsValue(),
 			"step_count" to stepCount.asAnalyticsValue(),
 		)
@@ -130,26 +130,26 @@ sealed interface AnalyticsEvent {
 
 	data class CookingCompleted(
 		val recipeId: Int,
+		val recipeName: String,
 		val durationSeconds: Long,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_completed"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"duration_seconds" to durationSeconds.asAnalyticsValue(),
 		)
 	}
 
 	data class RecipeShared(
 		val recipeId: Int,
+		val recipeName: String,
 		val origin: AnalyticsOrigin,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_shared"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
 	}
@@ -179,12 +179,12 @@ sealed interface AnalyticsEvent {
 	data class RecipeLoadFailed(
 		val recipeId: Int,
 		val errorKind: String,
+		val recipeName: String? = null,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_load_failed"
 
-		override val properties = mapOf(
-			"recipe_id" to recipeId.asAnalyticsValue(),
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"error_kind" to AnalyticsValue.TextValue(errorKind),
 		)
 	}

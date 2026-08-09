@@ -83,6 +83,7 @@ class StepByStepCookingViewModelTest {
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingStarted>() shouldBe listOf(
 			AnalyticsEvent.CookingStarted(
 				recipeId = recipe.id,
+				recipeName = recipe.title,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
 				stepCount = recipe.steps.size,
 			),
@@ -109,6 +110,7 @@ class StepByStepCookingViewModelTest {
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingStepViewed>() shouldBe listOf(
 			AnalyticsEvent.CookingStepViewed(
 				recipeId = recipe.id,
+				recipeName = recipe.title,
 				stepIndex = 1,
 				stepCount = recipe.steps.size,
 			),
@@ -126,6 +128,7 @@ class StepByStepCookingViewModelTest {
 		val completedEvents = analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingCompleted>()
 		completedEvents.size shouldBe 1
 		completedEvents.single().recipeId shouldBe recipe.id
+		completedEvents.single().recipeName shouldBe recipe.title
 	}
 
 	@Test

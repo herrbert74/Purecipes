@@ -246,6 +246,7 @@ class RecipeDetailsViewModelTest {
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeShared>() shouldBe listOf(
 			AnalyticsEvent.RecipeShared(
 				recipeId = recipe.id,
+				recipeName = recipe.title,
 				origin = AnalyticsOrigin.SEARCH,
 			),
 		)

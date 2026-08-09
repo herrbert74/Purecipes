@@ -174,6 +174,7 @@ class RecipeDetailsViewModel(
 				trackEvent(
 					AnalyticsEvent.FavoriteChanged(
 						recipeId = currentRecipe.id,
+						recipeName = currentRecipe.title,
 						isFavorite = !currentRecipe.isFavorite,
 						origin = AnalyticsOrigin.RECIPE_DETAILS,
 					),
@@ -249,6 +250,7 @@ class RecipeDetailsViewModel(
 		trackEvent(
 			AnalyticsEvent.RecipeShared(
 				recipeId = recipeId,
+				recipeName = recipeDetails?.title.orEmpty(),
 				origin = analyticsOrigin,
 			),
 		)
@@ -297,9 +299,16 @@ class RecipeDetailsViewModel(
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
-			if (baseRecipeDetails != null && shouldTrackAnalytics) {
+			val loadedRecipe = baseRecipeDetails
+			if (loadedRecipe != null && shouldTrackAnalytics) {
 				logBreadcrumb(CrashBreadcrumb.recipeOpened(recipeId))
-				trackEvent(AnalyticsEvent.RecipeViewed(recipeId = recipeId, origin = analyticsOrigin))
+				trackEvent(
+					AnalyticsEvent.RecipeViewed(
+						recipeId = recipeId,
+						recipeName = loadedRecipe.title,
+						origin = analyticsOrigin,
+					),
+				)
 			}
 			val error = outcome.getError()
 			if (error != null && shouldTrackAnalytics) {
@@ -308,6 +317,7 @@ class RecipeDetailsViewModel(
 					AnalyticsEvent.RecipeLoadFailed(
 						recipeId = recipeId,
 						errorKind = error.toAnalyticsErrorKind(),
+						recipeName = loadedRecipe?.title,
 					),
 				)
 			}

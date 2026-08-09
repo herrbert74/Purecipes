@@ -67,6 +67,7 @@ class CreateRecipeViewModelTest {
 		trackedEvent.hasPhoto shouldBe false
 		trackedEvent.ingredientCount shouldBe 2
 		trackedEvent.stepCount shouldBe 2
+		trackedEvent.recipeName shouldBe "Tomato Pasta"
 	}
 
 	@Test

@@ -46,6 +46,13 @@ class NavKeyAnalyticsScreenNameTest {
 	}
 
 	@Test
+	fun `maps recipe destinations to recipe ids`() {
+		RecipeDetailsDestination(42).toAnalyticsRecipeId() shouldBe 42
+		RecipeCookingDestination(7).toAnalyticsRecipeId() shouldBe 7
+		SearchDestination().toAnalyticsRecipeId() shouldBe null
+	}
+
+	@Test
 	fun `inventory includes account_settings and consent_preferences screen names`() {
 		AnalyticsScreenName.ACCOUNT_SETTINGS shouldBe "account_settings"
 		AnalyticsScreenName.CONSENT_PREFERENCES shouldBe "consent_preferences"
