@@ -205,6 +205,8 @@ class AnalyticsEventTest {
 			recipeId = 7,
 			recipeName = "Tomato Pasta",
 			durationSeconds = 120L,
+			stepCount = 5,
+			origin = AnalyticsOrigin.RECIPE_DETAILS,
 		)
 
 		event.eventName shouldBe "cooking_completed"
@@ -212,6 +214,66 @@ class AnalyticsEventTest {
 			"recipe_id" to AnalyticsValue.NumberValue(7L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
 			"duration_seconds" to AnalyticsValue.NumberValue(120L),
+			"step_count" to AnalyticsValue.NumberValue(5L),
+			"origin" to AnalyticsValue.TextValue("recipe_details"),
+		)
+	}
+
+	@Test
+	fun `CookingAbandoned has correct event name and properties`() {
+		val event = AnalyticsEvent.CookingAbandoned(
+			recipeId = 7,
+			recipeName = "Tomato Pasta",
+			lastStepIndex = 2,
+			stepCount = 5,
+			durationSeconds = 45L,
+		)
+
+		event.eventName shouldBe "cooking_abandoned"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(7L),
+			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"last_step_index" to AnalyticsValue.NumberValue(2L),
+			"step_count" to AnalyticsValue.NumberValue(5L),
+			"duration_seconds" to AnalyticsValue.NumberValue(45L),
+		)
+	}
+
+	@Test
+	fun `DeepLinkOpened has correct event name and properties`() {
+		val recipeEvent = AnalyticsEvent.DeepLinkOpened(
+			linkType = AnalyticsDeepLinkType.RECIPE,
+			recipeId = 99,
+		)
+		val cookbookEvent = AnalyticsEvent.DeepLinkOpened(
+			linkType = AnalyticsDeepLinkType.COOKBOOK,
+			tokenPresent = true,
+		)
+
+		recipeEvent.eventName shouldBe "deep_link_opened"
+		recipeEvent.properties shouldBe mapOf(
+			"link_type" to AnalyticsValue.TextValue("recipe"),
+			"recipe_id" to AnalyticsValue.NumberValue(99L),
+		)
+		cookbookEvent.eventName shouldBe "deep_link_opened"
+		cookbookEvent.properties shouldBe mapOf(
+			"link_type" to AnalyticsValue.TextValue("cookbook"),
+			"token_present" to AnalyticsValue.BooleanValue(true),
+		)
+	}
+
+	@Test
+	fun `AdImpression and AdClicked have correct event name and properties`() {
+		val impression = AnalyticsEvent.AdImpression(placement = AnalyticsAdPlacement.BANNER)
+		val clicked = AnalyticsEvent.AdClicked(placement = AnalyticsAdPlacement.INTERSTITIAL)
+
+		impression.eventName shouldBe "ad_impression"
+		impression.properties shouldBe mapOf(
+			"placement" to AnalyticsValue.TextValue("banner"),
+		)
+		clicked.eventName shouldBe "ad_clicked"
+		clicked.properties shouldBe mapOf(
+			"placement" to AnalyticsValue.TextValue("interstitial"),
 		)
 	}
 

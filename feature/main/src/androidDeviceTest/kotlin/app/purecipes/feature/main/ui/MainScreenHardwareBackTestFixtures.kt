@@ -149,6 +149,7 @@ internal fun mainViewModelForDeviceTest(
 		setCrashCustomValue = SetCrashCustomValueUseCase(FakeCrashRepository()),
 		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
 		trackScreenView = fakeTrackScreenViewUseCase(analyticsRepository),
+		trackEvent = TrackEventUseCase(analyticsRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
 		observePremiumStatus = ObservePremiumStatusUseCase(
 			subscriptionRepository,
@@ -175,7 +176,11 @@ internal fun mainViewModelForDeviceTest(
 			object : AdsRepository {
 				override fun initialize() = Unit
 
-				override fun showInterstitial(onDismissed: () -> Unit) {
+				override fun showInterstitial(
+					onDismissed: () -> Unit,
+					onImpression: (() -> Unit)?,
+					onClicked: (() -> Unit)?,
+				) {
 					onDismissed()
 				}
 			},

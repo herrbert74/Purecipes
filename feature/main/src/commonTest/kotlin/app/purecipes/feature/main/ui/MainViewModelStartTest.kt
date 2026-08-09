@@ -1,5 +1,7 @@
 package app.purecipes.feature.main.ui
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
@@ -91,14 +93,22 @@ class MainViewModelStartTest {
 		runUnconfinedViewModelTest {
 			val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
 			val authenticationRepository = FakeAuthenticationRepository()
+			val analyticsRepository = FakeAnalyticsRepository()
 			val viewModel = mainViewModelForTest(
 				authenticationRepository = authenticationRepository,
 				incomingLinkRepository = incomingLinksRepository(links),
+				analyticsRepository = analyticsRepository,
 			)
 			viewModel.start()
 			links.emit(PurecipesLink.CookbookShare(sampleShareToken))
 
 			viewModel.peekBackStack() shouldBe listOf(AccountDestination)
+			analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>() shouldBe listOf(
+				AnalyticsEvent.DeepLinkOpened(
+					linkType = AnalyticsDeepLinkType.COOKBOOK,
+					tokenPresent = true,
+				),
+			)
 			authenticationRepository.signInWithGoogle(
 				GoogleAuthenticationProfile(
 					idToken = sampleUser.id,
@@ -111,6 +121,7 @@ class MainViewModelStartTest {
 			viewModel.peekBackStack() shouldBe listOf(
 				FavoritesDestination(cookbookShareToken = sampleShareToken),
 			)
+			analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>().size shouldBe 1
 		}
 
 	@Test

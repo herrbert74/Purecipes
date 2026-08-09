@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.ads.domain.AdMobDefaults
 import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
+import app.purecipes.feature.analytics.domain.model.AnalyticsAdPlacement
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
@@ -21,6 +24,7 @@ import kotlinx.coroutines.launch
 class BannerAdViewModel(
 	observeShouldShowAds: ObserveShouldShowAdsUseCase,
 	purecipesConfig: PurecipesConfig,
+	private val trackEvent: TrackEventUseCase,
 ) : ViewModel() {
 
 	var shouldShowAds by mutableStateOf(false)
@@ -36,5 +40,13 @@ class BannerAdViewModel(
 				shouldShowAds = shouldShow
 			}
 		}
+	}
+
+	fun onAdImpression() {
+		trackEvent(AnalyticsEvent.AdImpression(placement = AnalyticsAdPlacement.BANNER))
+	}
+
+	fun onAdClicked() {
+		trackEvent(AnalyticsEvent.AdClicked(placement = AnalyticsAdPlacement.BANNER))
 	}
 }

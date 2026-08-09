@@ -65,6 +65,8 @@ class StepByStepCookingViewModel(
 
 	private var hasTrackedCookingCompleted = false
 
+	private var hasTrackedCookingAbandoned = false
+
 	init {
 		viewModelScope.launch {
 			observeMeasurementPreferences().collectLatest { preferences ->
@@ -73,6 +75,11 @@ class StepByStepCookingViewModel(
 			}
 		}
 		loadRecipe()
+	}
+
+	override fun onCleared() {
+		trackCookingAbandonedIfNeeded()
+		super.onCleared()
 	}
 
 	fun previousStep() {
@@ -121,6 +128,7 @@ class StepByStepCookingViewModel(
 			val details = recipeDetails ?: baseRecipeDetails
 			if (details != null) {
 				cookingStartedMark = monotonicTimeSource.markNow()
+				hasTrackedCookingAbandoned = false
 				logBreadcrumb(CrashBreadcrumb.cookingStarted(recipeId))
 				trackEvent(
 					AnalyticsEvent.CookingStarted(
@@ -171,6 +179,25 @@ class StepByStepCookingViewModel(
 			AnalyticsEvent.CookingCompleted(
 				recipeId = recipeId,
 				recipeName = details.title,
+				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
+				stepCount = details.steps.size,
+				origin = AnalyticsOrigin.RECIPE_DETAILS,
+			),
+		)
+	}
+
+	internal fun trackCookingAbandonedIfNeeded() {
+		val details = recipeDetails ?: baseRecipeDetails ?: return
+		if (hasTrackedCookingCompleted || hasTrackedCookingAbandoned || details.steps.isEmpty()) {
+			return
+		}
+		hasTrackedCookingAbandoned = true
+		trackEvent(
+			AnalyticsEvent.CookingAbandoned(
+				recipeId = recipeId,
+				recipeName = details.title,
+				lastStepIndex = currentStepIndex,
+				stepCount = details.steps.size,
 				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
 			),
 		)

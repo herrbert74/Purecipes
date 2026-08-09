@@ -10,7 +10,11 @@ class UnsupportedAdsDataSource : AdsDataSource {
 
 	override fun initialize(appId: String?, interstitialAdUnitId: String?) = Unit
 
-	override fun showInterstitial(onDismissed: () -> Unit) {
+	override fun showInterstitial(
+		onDismissed: () -> Unit,
+		onImpression: (() -> Unit)?,
+		onClicked: (() -> Unit)?,
+	) {
 		onDismissed()
 	}
 }

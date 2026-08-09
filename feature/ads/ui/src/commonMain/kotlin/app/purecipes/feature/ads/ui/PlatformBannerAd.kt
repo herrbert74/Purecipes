@@ -7,4 +7,6 @@ import androidx.compose.ui.Modifier
 internal expect fun PlatformBannerAd(
 	adUnitId: String,
 	modifier: Modifier = Modifier,
+	onImpression: (() -> Unit)? = null,
+	onClick: (() -> Unit)? = null,
 )

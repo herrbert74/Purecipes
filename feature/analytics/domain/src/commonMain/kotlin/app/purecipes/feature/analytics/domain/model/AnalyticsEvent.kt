@@ -195,12 +195,74 @@ sealed interface AnalyticsEvent {
 		val recipeId: Int,
 		val recipeName: String,
 		val durationSeconds: Long,
+		val stepCount: Int,
+		val origin: AnalyticsOrigin,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_completed"
 
 		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"duration_seconds" to durationSeconds.asAnalyticsValue(),
+			"step_count" to stepCount.asAnalyticsValue(),
+			"origin" to AnalyticsValue.TextValue(origin.value),
+		)
+	}
+
+	data class CookingAbandoned(
+		val recipeId: Int,
+		val recipeName: String,
+		val lastStepIndex: Int,
+		val stepCount: Int,
+		val durationSeconds: Long,
+	) : AnalyticsEvent {
+
+		override val eventName = "cooking_abandoned"
+
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+			"last_step_index" to lastStepIndex.asAnalyticsValue(),
+			"step_count" to stepCount.asAnalyticsValue(),
+			"duration_seconds" to durationSeconds.asAnalyticsValue(),
+		)
+	}
+
+	data class DeepLinkOpened(
+		val linkType: String,
+		val recipeId: Int? = null,
+		val tokenPresent: Boolean? = null,
+	) : AnalyticsEvent {
+
+		override val eventName = "deep_link_opened"
+
+		override val properties = buildMap {
+			put("link_type", AnalyticsValue.TextValue(linkType))
+			if (recipeId != null) {
+				put(RecipeAnalyticsProperty.RECIPE_ID, recipeId.asAnalyticsValue())
+			}
+			if (tokenPresent != null) {
+				put("token_present", tokenPresent.asAnalyticsValue())
+			}
+		}
+	}
+
+	data class AdImpression(
+		val placement: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "ad_impression"
+
+		override val properties = mapOf(
+			"placement" to AnalyticsValue.TextValue(placement),
+		)
+	}
+
+	data class AdClicked(
+		val placement: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "ad_clicked"
+
+		override val properties = mapOf(
+			"placement" to AnalyticsValue.TextValue(placement),
 		)
 	}
 

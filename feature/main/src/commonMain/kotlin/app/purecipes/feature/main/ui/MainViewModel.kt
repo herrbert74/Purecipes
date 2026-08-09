@@ -14,6 +14,9 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
+import app.purecipes.feature.analytics.domain.model.AnalyticsAdPlacement
+import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumStatus
@@ -24,6 +27,7 @@ import app.purecipes.feature.analytics.domain.usecase.SetAnalyticsUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetCrashCustomValueUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetCrashUserIdUseCase
 import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
@@ -71,6 +75,7 @@ class MainViewModel(
 	private val setCrashCustomValue: SetCrashCustomValueUseCase,
 	private val setGlobalProperties: SetGlobalPropertiesUseCase,
 	trackScreenView: TrackScreenViewUseCase,
+	private val trackEvent: TrackEventUseCase,
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
 	private val observePremiumStatus: ObservePremiumStatusUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
@@ -277,9 +282,28 @@ class MainViewModel(
 	}
 
 	fun onDeepLink(link: PurecipesLink) {
+		trackDeepLinkOpened(link)
 		when (link) {
 			is PurecipesLink.Recipe -> navigateToRecipe(link.id)
 			is PurecipesLink.CookbookShare -> navigateToCookbookShare(link.token)
+		}
+	}
+
+	private fun trackDeepLinkOpened(link: PurecipesLink) {
+		when (link) {
+			is PurecipesLink.Recipe -> trackEvent(
+				AnalyticsEvent.DeepLinkOpened(
+					linkType = AnalyticsDeepLinkType.RECIPE,
+					recipeId = link.id,
+				),
+			)
+
+			is PurecipesLink.CookbookShare -> trackEvent(
+				AnalyticsEvent.DeepLinkOpened(
+					linkType = AnalyticsDeepLinkType.COOKBOOK,
+					tokenPresent = link.token.isNotBlank(),
+				),
+			)
 		}
 	}
 
@@ -313,9 +337,21 @@ class MainViewModel(
 	fun onStartCooking(recipeId: Int) {
 		viewModelScope.launch {
 			if (decidePreCookInterstitial()) {
-				showInterstitialAd {
-					navigator.push(RecipeCookingDestination(recipeId))
-				}
+				showInterstitialAd(
+					onDismissed = {
+						navigator.push(RecipeCookingDestination(recipeId))
+					},
+					onImpression = {
+						trackEvent(
+							AnalyticsEvent.AdImpression(placement = AnalyticsAdPlacement.INTERSTITIAL),
+						)
+					},
+					onClicked = {
+						trackEvent(
+							AnalyticsEvent.AdClicked(placement = AnalyticsAdPlacement.INTERSTITIAL),
+						)
+					},
+				)
 			} else {
 				navigator.push(RecipeCookingDestination(recipeId))
 			}
@@ -422,6 +458,7 @@ class MainViewModel(
 		incomingLinksCollectionJob = viewModelScope.launch {
 			observeIncomingLinks().collect { link ->
 				if (link is PurecipesLink.CookbookShare && !isSignedIn) {
+					trackDeepLinkOpened(link)
 					requestLoginForPostLoginAction(PostLoginAction.ImportCookbookShare(link.token))
 				} else {
 					onDeepLink(link)

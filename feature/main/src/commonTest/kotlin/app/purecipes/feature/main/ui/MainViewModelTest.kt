@@ -1,6 +1,10 @@
 package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.ads.domain.repository.AdsRepository
+import app.purecipes.feature.analytics.domain.model.AnalyticsAdPlacement
+import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
@@ -9,6 +13,7 @@ import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import io.kotest.matchers.shouldBe
@@ -108,13 +113,20 @@ class MainViewModelTest {
 
 	@Test
 	fun `deep link to recipe opens recipe details on search tab`() {
-		val viewModel = mainViewModelForTest()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = mainViewModelForTest(analyticsRepository = analyticsRepository)
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
 		viewModel.peekBackStack() shouldBe listOf(
 			SearchDestination(),
 			RecipeDetailsDestination(99, origin = AnalyticsOrigin.DEEP_LINK.value),
+		)
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>() shouldBe listOf(
+			AnalyticsEvent.DeepLinkOpened(
+				linkType = AnalyticsDeepLinkType.RECIPE,
+				recipeId = 99,
+			),
 		)
 	}
 
@@ -131,11 +143,18 @@ class MainViewModelTest {
 
 	@Test
 	fun `deep link to cookbook share switches to favorites with share token on destination`() {
-		val viewModel = mainViewModelForTest()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = mainViewModelForTest(analyticsRepository = analyticsRepository)
 		viewModel.onDeepLink(PurecipesLink.CookbookShare(sampleShareToken))
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(
 			FavoritesDestination(cookbookShareToken = sampleShareToken),
+		)
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>() shouldBe listOf(
+			AnalyticsEvent.DeepLinkOpened(
+				linkType = AnalyticsDeepLinkType.COOKBOOK,
+				tokenPresent = true,
+			),
 		)
 	}
 
@@ -172,5 +191,37 @@ class MainViewModelTest {
 		viewModel.onBack()
 
 		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(42))
+	}
+
+	@Test
+	fun `pre cook interstitial tracks ad impression and click callbacks`() = runUnconfinedViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = mainViewModelForTest(
+			analyticsRepository = analyticsRepository,
+			adsRepository = object : AdsRepository {
+				override fun initialize() = Unit
+
+				override fun showInterstitial(
+					onDismissed: () -> Unit,
+					onImpression: (() -> Unit)?,
+					onClicked: (() -> Unit)?,
+				) {
+					onImpression?.invoke()
+					onClicked?.invoke()
+					onDismissed()
+				}
+			},
+			preCookInterstitialChance = { true },
+		)
+
+		viewModel.onRecipeSelected(42)
+		viewModel.onStartCooking(42)
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.AdImpression>() shouldBe listOf(
+			AnalyticsEvent.AdImpression(placement = AnalyticsAdPlacement.INTERSTITIAL),
+		)
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.AdClicked>() shouldBe listOf(
+			AnalyticsEvent.AdClicked(placement = AnalyticsAdPlacement.INTERSTITIAL),
+		)
 	}
 }
