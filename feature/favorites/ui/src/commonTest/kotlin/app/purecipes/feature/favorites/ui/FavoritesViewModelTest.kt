@@ -1,6 +1,7 @@
 package app.purecipes.feature.favorites.ui
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
@@ -10,11 +11,14 @@ import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseC
 import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
@@ -72,6 +76,7 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
 			shareCookbook = unusedShareCookbookUseCase(),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
 
@@ -97,6 +102,7 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
 			shareCookbook = unusedShareCookbookUseCase(),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
 
@@ -137,6 +143,7 @@ class FavoritesViewModelTest {
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
 			shareCookbook = unusedShareCookbookUseCase(),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
 
@@ -291,6 +298,9 @@ class FavoritesViewModelTest {
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
 		sessionKey: String? = "session",
+		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		importCookbookShare: ImportCookbookShareUseCase = unusedImportCookbookShareUseCase(),
+		shareCookbook: ShareCookbookUseCase = unusedShareCookbookUseCase(),
 	): FavoritesViewModel = FavoritesViewModel(
 		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),
 		getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
@@ -298,9 +308,10 @@ class FavoritesViewModelTest {
 		deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-		importCookbookShare = unusedImportCookbookShareUseCase(),
+		importCookbookShare = importCookbookShare,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
-		shareCookbook = unusedShareCookbookUseCase(),
+		shareCookbook = shareCookbook,
+		trackEvent = TrackEventUseCase(analyticsRepository),
 		sessionKey = sessionKey,
 	)
 }

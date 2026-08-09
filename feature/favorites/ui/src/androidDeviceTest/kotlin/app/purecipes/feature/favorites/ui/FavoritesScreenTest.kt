@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.favorites.domain.model.FavoriteEvent
 import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.favorites.domain.repository.CookbooksRepository
@@ -27,6 +28,7 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -286,5 +288,6 @@ private fun favoritesViewModelForTest(
 	importCookbookShare = unusedImportCookbookShareUseCase(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 	shareCookbook = unusedShareCookbookUseCase(),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	sessionKey = sessionKey,
 )

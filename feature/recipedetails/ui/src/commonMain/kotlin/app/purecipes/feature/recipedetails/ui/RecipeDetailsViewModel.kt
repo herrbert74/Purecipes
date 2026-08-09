@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsShareType
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
 import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
@@ -203,6 +204,16 @@ class RecipeDetailsViewModel(
 			val outcome = addRecipeToCookbook(cookbookId, recipe.id)
 			val err = outcome.getError()?.message
 			if (err == null) {
+				val cookbookName = sheetCookbooks.firstOrNull { it.id == cookbookId }?.name
+				trackEvent(
+					AnalyticsEvent.RecipeAddedToCookbook(
+						recipeId = recipe.id,
+						recipeName = recipe.title,
+						cookbookId = cookbookId,
+						cookbookName = cookbookName,
+						origin = AnalyticsOrigin.RECIPE_DETAILS,
+					),
+				)
 				refreshCookbookMembership()
 			}
 			isCookbookActionInFlight = false
@@ -231,9 +242,24 @@ class RecipeDetailsViewModel(
 					onDone(createOutcome.getError()?.message)
 					return@launch
 				}
+				trackEvent(
+					AnalyticsEvent.CookbookCreated(
+						cookbookId = created.id,
+						cookbookName = created.name,
+					),
+				)
 				val addOutcome = addRecipeToCookbook(created.id, recipe.id)
 				val err = addOutcome.getError()?.message
 				if (err == null) {
+					trackEvent(
+						AnalyticsEvent.RecipeAddedToCookbook(
+							recipeId = recipe.id,
+							recipeName = recipe.title,
+							cookbookId = created.id,
+							cookbookName = created.name,
+							origin = AnalyticsOrigin.RECIPE_DETAILS,
+						),
+					)
 					refreshCookbookMembership()
 				}
 				isCookbookActionInFlight = false
@@ -252,6 +278,7 @@ class RecipeDetailsViewModel(
 				recipeId = recipeId,
 				recipeName = recipeDetails?.title.orEmpty(),
 				origin = analyticsOrigin,
+				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
 	}

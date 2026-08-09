@@ -5,6 +5,7 @@ import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsShareType
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
@@ -248,6 +249,7 @@ class RecipeDetailsViewModelTest {
 				recipeId = recipe.id,
 				recipeName = recipe.title,
 				origin = AnalyticsOrigin.SEARCH,
+				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
 	}
@@ -384,6 +386,63 @@ class RecipeDetailsViewModelTest {
 		viewModel.cookbookActionError shouldBe "Cookbook already exists"
 		cookbooksRepository.createCookbookCallCount shouldBe 0
 		cookbooksRepository.addRecipeToCookbookCallCount shouldBe 0
+	}
+
+	@Test
+	fun `create cookbook and add tracks cookbook created and recipe added`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val createdCookbook = CookbookSummary(
+			id = 15,
+			name = "Batch Cooking",
+			recipeCount = 0,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			createCookbookResult = Ok(createdCookbook),
+		)
+		val recipe = fakeRecipeDetails()
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(Ok(recipe))),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = "session",
+			origin = AnalyticsOrigin.SEARCH.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+		advanceUntilIdle()
+
+		viewModel.createCookbookAndAdd("Batch Cooking") { err ->
+			err shouldBe null
+		}
+		advanceUntilIdle()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookbookCreated>() shouldBe listOf(
+			AnalyticsEvent.CookbookCreated(
+				cookbookId = createdCookbook.id,
+				cookbookName = createdCookbook.name,
+			),
+		)
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeAddedToCookbook>() shouldBe listOf(
+			AnalyticsEvent.RecipeAddedToCookbook(
+				recipeId = recipe.id,
+				recipeName = recipe.title,
+				cookbookId = createdCookbook.id,
+				cookbookName = createdCookbook.name,
+				origin = AnalyticsOrigin.RECIPE_DETAILS,
+			),
+		)
 	}
 
 	private class BlockingFavoritesRepository(

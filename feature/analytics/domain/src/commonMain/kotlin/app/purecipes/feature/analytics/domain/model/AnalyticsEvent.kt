@@ -208,12 +208,117 @@ sealed interface AnalyticsEvent {
 		val recipeId: Int,
 		val recipeName: String,
 		val origin: AnalyticsOrigin,
+		val shareType: String = AnalyticsShareType.RECIPE,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_shared"
 
 		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
+			"share_type" to AnalyticsValue.TextValue(shareType),
+		)
+	}
+
+	data class FavoritesTabSelected(
+		val tab: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "favorites_tab_selected"
+
+		override val properties = mapOf(
+			"tab" to AnalyticsValue.TextValue(tab),
+		)
+	}
+
+	data class CookbookCreated(
+		val cookbookId: Int,
+		val cookbookName: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "cookbook_created"
+
+		override val properties = CookbookAnalyticsProperty.identity(cookbookId, cookbookName)
+	}
+
+	data class CookbookOpened(
+		val cookbookId: Int,
+		val cookbookName: String,
+		val recipeCount: Int?,
+	) : AnalyticsEvent {
+
+		override val eventName = "cookbook_opened"
+
+		override val properties = CookbookAnalyticsProperty.identity(cookbookId, cookbookName) + buildMap {
+			if (recipeCount != null) {
+				put("recipe_count", recipeCount.asAnalyticsValue())
+			}
+		}
+	}
+
+	data class CookbookDeleted(
+		val cookbookId: Int,
+	) : AnalyticsEvent {
+
+		override val eventName = "cookbook_deleted"
+
+		override val properties = CookbookAnalyticsProperty.identity(cookbookId, cookbookName = null)
+	}
+
+	data class RecipeAddedToCookbook(
+		val recipeId: Int,
+		val recipeName: String,
+		val cookbookId: Int,
+		val cookbookName: String?,
+		val origin: AnalyticsOrigin,
+	) : AnalyticsEvent {
+
+		override val eventName = "recipe_added_to_cookbook"
+
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) +
+			CookbookAnalyticsProperty.identity(cookbookId, cookbookName) +
+			mapOf(
+				"origin" to AnalyticsValue.TextValue(origin.value),
+			)
+	}
+
+	data class CookbookShared(
+		val cookbookId: Int,
+		val cookbookName: String?,
+		val origin: AnalyticsOrigin,
+		val shareType: String = AnalyticsShareType.COOKBOOK,
+	) : AnalyticsEvent {
+
+		override val eventName = "cookbook_shared"
+
+		override val properties = CookbookAnalyticsProperty.identity(cookbookId, cookbookName) + mapOf(
+			"origin" to AnalyticsValue.TextValue(origin.value),
+			"share_type" to AnalyticsValue.TextValue(shareType),
+		)
+	}
+
+	data class CookbookImportCompleted(
+		val importedRecipeCount: Int,
+		val cookbookId: Int?,
+	) : AnalyticsEvent {
+
+		override val eventName = "cookbook_import_completed"
+
+		override val properties = buildMap {
+			put("imported_recipe_count", importedRecipeCount.asAnalyticsValue())
+			if (cookbookId != null) {
+				put(CookbookAnalyticsProperty.COOKBOOK_ID, cookbookId.asAnalyticsValue())
+			}
+		}
+	}
+
+	data class CookbookImportFailed(
+		val errorKind: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "cookbook_import_failed"
+
+		override val properties = mapOf(
+			"error_kind" to AnalyticsValue.TextValue(errorKind),
 		)
 	}
 

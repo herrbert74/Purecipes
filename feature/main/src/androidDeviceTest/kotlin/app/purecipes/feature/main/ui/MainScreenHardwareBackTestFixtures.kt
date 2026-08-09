@@ -277,6 +277,7 @@ internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesVi
 		},
 	),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	sessionKey = "hardware-back-test",
 )
 

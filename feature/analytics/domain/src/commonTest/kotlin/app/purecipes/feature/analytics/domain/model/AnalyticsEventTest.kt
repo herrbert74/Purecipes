@@ -228,6 +228,118 @@ class AnalyticsEventTest {
 			"recipe_id" to AnalyticsValue.NumberValue(42L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
+			"share_type" to AnalyticsValue.TextValue(AnalyticsShareType.RECIPE),
+		)
+	}
+
+	@Test
+	fun `FavoritesTabSelected has correct event name and properties`() {
+		val event = AnalyticsEvent.FavoritesTabSelected(tab = AnalyticsFavoritesTab.COOKBOOKS)
+
+		event.eventName shouldBe "favorites_tab_selected"
+		event.properties shouldBe mapOf(
+			"tab" to AnalyticsValue.TextValue("cookbooks"),
+		)
+	}
+
+	@Test
+	fun `CookbookCreated has correct event name and properties`() {
+		val event = AnalyticsEvent.CookbookCreated(
+			cookbookId = 10,
+			cookbookName = "Weeknight Dinners",
+		)
+
+		event.eventName shouldBe "cookbook_created"
+		event.properties shouldBe mapOf(
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+			"cookbook_name" to AnalyticsValue.TextValue("Weeknight Dinners"),
+		)
+	}
+
+	@Test
+	fun `CookbookOpened has correct event name and properties`() {
+		val event = AnalyticsEvent.CookbookOpened(
+			cookbookId = 10,
+			cookbookName = "Weeknight Dinners",
+			recipeCount = 4,
+		)
+
+		event.eventName shouldBe "cookbook_opened"
+		event.properties shouldBe mapOf(
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+			"cookbook_name" to AnalyticsValue.TextValue("Weeknight Dinners"),
+			"recipe_count" to AnalyticsValue.NumberValue(4L),
+		)
+	}
+
+	@Test
+	fun `CookbookDeleted has correct event name and properties`() {
+		val event = AnalyticsEvent.CookbookDeleted(cookbookId = 10)
+
+		event.eventName shouldBe "cookbook_deleted"
+		event.properties shouldBe mapOf(
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+		)
+	}
+
+	@Test
+	fun `RecipeAddedToCookbook has correct event name and properties`() {
+		val event = AnalyticsEvent.RecipeAddedToCookbook(
+			recipeId = 42,
+			recipeName = "Tomato Pasta",
+			cookbookId = 10,
+			cookbookName = "Weeknight Dinners",
+			origin = AnalyticsOrigin.RECIPE_DETAILS,
+		)
+
+		event.eventName shouldBe "recipe_added_to_cookbook"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(42L),
+			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+			"cookbook_name" to AnalyticsValue.TextValue("Weeknight Dinners"),
+			"origin" to AnalyticsValue.TextValue("recipe_details"),
+		)
+	}
+
+	@Test
+	fun `CookbookShared has correct event name and properties`() {
+		val event = AnalyticsEvent.CookbookShared(
+			cookbookId = 10,
+			cookbookName = "Weeknight Dinners",
+			origin = AnalyticsOrigin.FAVORITES,
+		)
+
+		event.eventName shouldBe "cookbook_shared"
+		event.properties shouldBe mapOf(
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+			"cookbook_name" to AnalyticsValue.TextValue("Weeknight Dinners"),
+			"origin" to AnalyticsValue.TextValue("favorites"),
+			"share_type" to AnalyticsValue.TextValue(AnalyticsShareType.COOKBOOK),
+		)
+	}
+
+	@Test
+	fun `CookbookImportCompleted has correct event name and properties`() {
+		val event = AnalyticsEvent.CookbookImportCompleted(
+			importedRecipeCount = 3,
+			cookbookId = 10,
+		)
+
+		event.eventName shouldBe "cookbook_import_completed"
+		event.properties shouldBe mapOf(
+			"imported_recipe_count" to AnalyticsValue.NumberValue(3L),
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+		)
+	}
+
+	@Test
+	fun `CookbookImportFailed has correct event name and properties`() {
+		val event = AnalyticsEvent.CookbookImportFailed(errorKind = AnalyticsErrorKind.SERVER_ERROR)
+
+		event.eventName shouldBe "cookbook_import_failed"
+		event.properties shouldBe mapOf(
+			"error_kind" to AnalyticsValue.TextValue("server_error"),
 		)
 	}
 
