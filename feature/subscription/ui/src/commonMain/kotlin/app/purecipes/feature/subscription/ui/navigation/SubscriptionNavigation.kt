@@ -13,8 +13,10 @@ import kotlinx.serialization.modules.subclass
 fun EntryProviderScope<NavKey>.installSubscriptionFlow(
 	navigator: Navigator,
 ) {
-	entry<PaywallDestination> {
+	entry<PaywallDestination> { destination ->
 		PaywallScreen(
+			feature = destination.feature,
+			origin = destination.origin,
 			onBack = { navigator.back() },
 			modifier = Modifier.fillMaxSize(),
 		)

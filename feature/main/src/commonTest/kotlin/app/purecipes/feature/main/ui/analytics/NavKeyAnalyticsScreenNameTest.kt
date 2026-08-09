@@ -42,7 +42,7 @@ class NavKeyAnalyticsScreenNameTest {
 
 	@Test
 	fun `returns null for destinations without a screen name mapping`() {
-		(PaywallDestination as NavKey).toAnalyticsScreenName() shouldBe null
+		(PaywallDestination() as NavKey).toAnalyticsScreenName() shouldBe null
 	}
 
 	@Test

@@ -29,10 +29,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
 import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import dev.zacsweers.metrox.viewmodel.metroViewModel
+import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -46,7 +48,13 @@ internal const val PAYWALL_RESTORE_BUTTON_TAG = "paywallRestoreButton"
 fun PaywallScreen(
 	onBack: () -> Unit,
 	modifier: Modifier = Modifier,
-	viewModel: PaywallViewModel = metroViewModel(),
+	feature: String = AnalyticsPremiumFeature.SETTINGS_PAYWALL,
+	origin: String = AnalyticsOrigin.SETTINGS.value,
+	viewModel: PaywallViewModel = assistedMetroViewModel<PaywallViewModel, PaywallViewModel.Factory>(
+		key = "$feature-$origin",
+	) {
+		create(feature = feature, origin = origin)
+	},
 ) {
 	val snackbarHostState = remember { SnackbarHostState() }
 

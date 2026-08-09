@@ -3,6 +3,7 @@ package app.purecipes.feature.main.ui
 import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
 import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumStatus
 import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
@@ -23,7 +24,7 @@ class MainViewModelGlobalPropertiesTest {
 	private val sampleUser = fakeAuthUser(displayName = "Taylor")
 
 	@Test
-	fun `start sets active tab and anonymous user state`() = runUnconfinedViewModelTest {
+	fun `start sets active tab anonymous user state and free premium status`() = runUnconfinedViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val crashRepository = FakeCrashRepository()
 		mainViewModelForTest(
@@ -35,6 +36,8 @@ class MainViewModelGlobalPropertiesTest {
 			AnalyticsValue.TextValue(AnalyticsActiveTab.SEARCH)
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.USER_STATE] shouldBe
 			AnalyticsValue.TextValue(AnalyticsUserState.ANONYMOUS)
+		analyticsRepository.globalProperties[AnalyticsGlobalProperty.PREMIUM_STATUS] shouldBe
+			AnalyticsValue.TextValue(AnalyticsPremiumStatus.FREE)
 		crashRepository.customValues[AnalyticsGlobalProperty.ENVIRONMENT] shouldBe "debug"
 		crashRepository.customValues[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe AnalyticsActiveTab.SEARCH
 		crashRepository.customValues[AnalyticsGlobalProperty.USER_STATE] shouldBe AnalyticsUserState.ANONYMOUS

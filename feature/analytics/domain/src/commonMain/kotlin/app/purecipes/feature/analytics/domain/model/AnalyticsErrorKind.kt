@@ -11,6 +11,7 @@ object AnalyticsErrorKind {
 	const val UNEXPECTED = "unexpected"
 	const val NOT_MODIFIED = "not_modified"
 	const val USER_NOT_LOGGED_IN = "user_not_logged_in"
+	const val USER_CANCELLED = "user_cancelled"
 	const val UNKNOWN = "unknown"
 }
 

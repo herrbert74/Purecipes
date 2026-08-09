@@ -18,6 +18,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:subscription:domain"))
+				implementation(project(":feature:analytics:domain"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlinx.collectionsImmutable)
 				implementation(libs.kotlinx.serializationJson)

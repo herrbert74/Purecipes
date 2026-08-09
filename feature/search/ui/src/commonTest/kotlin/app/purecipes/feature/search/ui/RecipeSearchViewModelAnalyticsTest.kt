@@ -1,6 +1,8 @@
 package app.purecipes.feature.search.ui
 
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.analytics.domain.model.SearchPerformedContext
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.Cuisine
@@ -118,6 +120,25 @@ class RecipeSearchViewModelAnalyticsTest {
 				nearMissCount = 1,
 				isPremiumUser = true,
 			),
+		)
+	}
+
+	@Test
+	fun `premium feature blocked tracks analytics and closes filter sheet`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
+			analyticsRepository = analyticsRepository,
+		)
+		advanceUntilIdle()
+		viewModel.onFilterButtonClick()
+		analyticsRepository.trackedEvents.clear()
+
+		viewModel.onPremiumFeatureBlocked(AnalyticsPremiumFeature.KEY_INGREDIENTS)
+
+		viewModel.isFilterSheetVisible shouldBe false
+		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.PremiumFeatureBlocked(
+			feature = AnalyticsPremiumFeature.KEY_INGREDIENTS,
+			origin = AnalyticsOrigin.SEARCH,
 		)
 	}
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
 import app.purecipes.feature.analytics.domain.model.SearchPerformedContext
 import app.purecipes.feature.analytics.domain.model.asHandledException
@@ -192,6 +193,16 @@ class RecipeSearchViewModel(
 			shouldReopenFilterSheetAfterNavigation = true
 			isFilterSheetVisible = false
 		}
+	}
+
+	fun onPremiumFeatureBlocked(feature: String) {
+		trackEvent(
+			AnalyticsEvent.PremiumFeatureBlocked(
+				feature = feature,
+				origin = AnalyticsOrigin.SEARCH,
+			),
+		)
+		onNavigateToPaywall()
 	}
 
 	fun onSearchContentVisible() {

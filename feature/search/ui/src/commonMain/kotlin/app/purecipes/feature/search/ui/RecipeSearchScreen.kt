@@ -34,7 +34,7 @@ fun RecipeSearchScreen(
 	isSignedIn: Boolean = true,
 	onRecipeSelect: (Int) -> Unit = {},
 	onRequestLogInForFilters: () -> Unit = {},
-	onOpenPaywall: () -> Unit = {},
+	onOpenPaywall: (String) -> Unit = {},
 	closeScreen: () -> Unit = {},
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
@@ -78,9 +78,9 @@ fun RecipeSearchScreen(
 				onRequestLogInForFilters()
 			},
 			isPremium = viewModel.isPremium,
-			onOpenPaywall = {
-				viewModel.onNavigateToPaywall()
-				onOpenPaywall()
+			onOpenPaywall = { feature ->
+				viewModel.onPremiumFeatureBlocked(feature)
+				onOpenPaywall(feature)
 			},
 		)
 	}

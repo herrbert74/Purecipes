@@ -16,6 +16,7 @@ import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
 import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
 import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumStatus
 import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.analytics.domain.usecase.RefreshConsentUseCase
@@ -41,6 +42,7 @@ import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.ui.navigation.Navigator
@@ -56,6 +58,7 @@ import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -69,6 +72,7 @@ class MainViewModel(
 	private val setGlobalProperties: SetGlobalPropertiesUseCase,
 	trackScreenView: TrackScreenViewUseCase,
 	private val syncSubscriptionUserId: SyncSubscriptionUserIdUseCase,
+	private val observePremiumStatus: ObservePremiumStatusUseCase,
 	private val observeIncomingLinks: ObserveIncomingLinksUseCase,
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	private val decidePreCookInterstitial: DecidePreCookInterstitialUseCase,
@@ -156,6 +160,20 @@ class MainViewModel(
 		isStarted = true
 		setCrashCustomValue(AnalyticsGlobalProperty.ENVIRONMENT, purecipesConfig.environment())
 		setActiveTabContext(AnalyticsActiveTab.SEARCH)
+		viewModelScope.launch {
+			observePremiumStatus().collectLatest { premium ->
+				val premiumStatus = if (premium) {
+					AnalyticsPremiumStatus.PREMIUM
+				} else {
+					AnalyticsPremiumStatus.FREE
+				}
+				setGlobalProperties(
+					mapOf(
+						AnalyticsGlobalProperty.PREMIUM_STATUS to AnalyticsValue.TextValue(premiumStatus),
+					),
+				)
+			}
+		}
 		viewModelScope.launch {
 			refreshConsent()
 		}

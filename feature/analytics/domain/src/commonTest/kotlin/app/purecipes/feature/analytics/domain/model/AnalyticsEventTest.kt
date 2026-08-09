@@ -344,6 +344,90 @@ class AnalyticsEventTest {
 	}
 
 	@Test
+	fun `PaywallViewed has correct event name and properties`() {
+		val event = AnalyticsEvent.PaywallViewed(
+			feature = AnalyticsPremiumFeature.CALORIE_FILTER,
+			origin = AnalyticsOrigin.SEARCH,
+		)
+
+		event.eventName shouldBe "paywall_viewed"
+		event.properties shouldBe mapOf(
+			"feature" to AnalyticsValue.TextValue("calorie_filter"),
+			"origin" to AnalyticsValue.TextValue("search"),
+		)
+	}
+
+	@Test
+	fun `PremiumUpgradeStarted has correct event name and properties`() {
+		val event = AnalyticsEvent.PremiumUpgradeStarted(
+			feature = AnalyticsPremiumFeature.KEY_INGREDIENTS,
+			origin = AnalyticsOrigin.SEARCH,
+			plan = AnalyticsSubscriptionPlan.ANNUAL,
+		)
+
+		event.eventName shouldBe "premium_upgrade_started"
+		event.properties shouldBe mapOf(
+			"feature" to AnalyticsValue.TextValue("key_ingredients"),
+			"origin" to AnalyticsValue.TextValue("search"),
+			"plan" to AnalyticsValue.TextValue("annual"),
+		)
+	}
+
+	@Test
+	fun `PremiumUpgradeCompleted has correct event name and properties`() {
+		val event = AnalyticsEvent.PremiumUpgradeCompleted(
+			feature = AnalyticsPremiumFeature.SETTINGS_PAYWALL,
+			plan = AnalyticsSubscriptionPlan.MONTHLY,
+		)
+
+		event.eventName shouldBe "premium_upgrade_completed"
+		event.properties shouldBe mapOf(
+			"feature" to AnalyticsValue.TextValue("settings_paywall"),
+			"plan" to AnalyticsValue.TextValue("monthly"),
+		)
+	}
+
+	@Test
+	fun `PremiumUpgradeFailed has correct event name and properties`() {
+		val event = AnalyticsEvent.PremiumUpgradeFailed(
+			errorKind = AnalyticsErrorKind.USER_CANCELLED,
+			feature = AnalyticsPremiumFeature.NUTRITION_FILTER,
+		)
+
+		event.eventName shouldBe "premium_upgrade_failed"
+		event.properties shouldBe mapOf(
+			"error_kind" to AnalyticsValue.TextValue("user_cancelled"),
+			"feature" to AnalyticsValue.TextValue("nutrition_filter"),
+		)
+	}
+
+	@Test
+	fun `RestorePurchasesCompleted has correct event name and properties`() {
+		val event = AnalyticsEvent.RestorePurchasesCompleted(
+			result = AnalyticsRestoreResult.NOTHING_TO_RESTORE,
+		)
+
+		event.eventName shouldBe "restore_purchases_completed"
+		event.properties shouldBe mapOf(
+			"result" to AnalyticsValue.TextValue("nothing_to_restore"),
+		)
+	}
+
+	@Test
+	fun `PremiumFeatureBlocked has correct event name and properties`() {
+		val event = AnalyticsEvent.PremiumFeatureBlocked(
+			feature = AnalyticsPremiumFeature.KEY_INGREDIENTS,
+			origin = AnalyticsOrigin.SEARCH,
+		)
+
+		event.eventName shouldBe "premium_feature_blocked"
+		event.properties shouldBe mapOf(
+			"feature" to AnalyticsValue.TextValue("key_ingredients"),
+			"origin" to AnalyticsValue.TextValue("search"),
+		)
+	}
+
+	@Test
 	fun `MeasurementChanged has correct event name and properties`() {
 		val event = AnalyticsEvent.MeasurementChanged(system = AnalyticsMeasurementSystem.METRIC)
 

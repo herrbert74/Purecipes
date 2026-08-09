@@ -322,6 +322,92 @@ sealed interface AnalyticsEvent {
 		)
 	}
 
+	data class PaywallViewed(
+		val feature: String,
+		val origin: AnalyticsOrigin,
+	) : AnalyticsEvent {
+
+		override val eventName = "paywall_viewed"
+
+		override val properties = mapOf(
+			"feature" to AnalyticsValue.TextValue(feature),
+			"origin" to AnalyticsValue.TextValue(origin.value),
+		)
+	}
+
+	data class PremiumUpgradeStarted(
+		val feature: String,
+		val origin: AnalyticsOrigin,
+		val plan: String?,
+	) : AnalyticsEvent {
+
+		override val eventName = "premium_upgrade_started"
+
+		override val properties = buildMap {
+			put("feature", AnalyticsValue.TextValue(feature))
+			put("origin", AnalyticsValue.TextValue(origin.value))
+			if (!plan.isNullOrBlank()) {
+				put("plan", AnalyticsValue.TextValue(plan))
+			}
+		}
+	}
+
+	data class PremiumUpgradeCompleted(
+		val feature: String?,
+		val plan: String?,
+	) : AnalyticsEvent {
+
+		override val eventName = "premium_upgrade_completed"
+
+		override val properties = buildMap {
+			if (!feature.isNullOrBlank()) {
+				put("feature", AnalyticsValue.TextValue(feature))
+			}
+			if (!plan.isNullOrBlank()) {
+				put("plan", AnalyticsValue.TextValue(plan))
+			}
+		}
+	}
+
+	data class PremiumUpgradeFailed(
+		val errorKind: String,
+		val feature: String?,
+	) : AnalyticsEvent {
+
+		override val eventName = "premium_upgrade_failed"
+
+		override val properties = buildMap {
+			put("error_kind", AnalyticsValue.TextValue(errorKind))
+			if (!feature.isNullOrBlank()) {
+				put("feature", AnalyticsValue.TextValue(feature))
+			}
+		}
+	}
+
+	data class RestorePurchasesCompleted(
+		val result: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "restore_purchases_completed"
+
+		override val properties = mapOf(
+			"result" to AnalyticsValue.TextValue(result),
+		)
+	}
+
+	data class PremiumFeatureBlocked(
+		val feature: String,
+		val origin: AnalyticsOrigin,
+	) : AnalyticsEvent {
+
+		override val eventName = "premium_feature_blocked"
+
+		override val properties = mapOf(
+			"feature" to AnalyticsValue.TextValue(feature),
+			"origin" to AnalyticsValue.TextValue(origin.value),
+		)
+	}
+
 	data class MeasurementChanged(
 		val system: String,
 	) : AnalyticsEvent {

@@ -61,6 +61,10 @@ internal fun mainViewModelForTest(
 		setGlobalProperties = SetGlobalPropertiesUseCase(analyticsRepository),
 		trackScreenView = fakeTrackScreenViewUseCase(analyticsRepository, crashRepository),
 		syncSubscriptionUserId = SyncSubscriptionUserIdUseCase(subscriptionRepository),
+		observePremiumStatus = ObservePremiumStatusUseCase(
+			subscriptionRepository,
+			FakeMonetisationDebugOverridesRepository(),
+		),
 		observeIncomingLinks = ObserveIncomingLinksUseCase(incomingLinkRepository),
 		publishWebLaunchLink = PublishWebLaunchLinkUseCase(
 			object : WebLaunchLinkRepository {
