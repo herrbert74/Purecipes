@@ -78,7 +78,8 @@ sourceSets {
 	}
 }
 
-val generateBackendRuntimeConfig by tasks.registering(WriteProperties::class) {
+val generateBackendRuntimeConfig = tasks.register<WriteProperties>("generateBackendRuntimeConfig") {
+	description = "Writes backend runtime config properties into generated resources"
 	val outputFile = generatedBackendResourcesDir.map { it.file("purecipes-backend.properties").asFile }
 	destinationFile = outputFile.get()
 	encoding = "UTF-8"
