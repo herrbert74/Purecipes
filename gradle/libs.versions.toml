@@ -21,7 +21,7 @@ kotlin = "2.4.10"
 kotlinx-collections = "0.5.1"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
-ksp = "2.3.10"
+ksp = "2.3.11"
 
 #other
 
@@ -54,14 +54,15 @@ googleServices = "4.5.0"
 #decompose = "3.5.0"
 dejavu = "0.3.1"
 dependencyAnalysis = "3.10.0"
-detekt = "2.0.0-alpha.5"
-detekt-compose = "0.6.3"
+detekt = "2.0.0-alpha.6"
+detekt-compose = "0.6.4"
 diamondedge-logging = "2.1.1"
 essenty = "2.5.0"
 h2 = "2.4.240"
 #facebook = "16.1.2"
 firebaseBom = "34.17.0"
 firebaseIosSdk = "12.14.0"
+gitlive-firebase = "2.5.0"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
@@ -71,7 +72,7 @@ jetBrains-compose = "1.11.1"
 jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
-jUnit5 = "6.1.2"
+jUnit5 = "6.1.3"
 kmpauth = "2.5.0-alpha01"
 kmpnotifier = "2.0.0"
 kotest = "6.2.3"
@@ -79,7 +80,7 @@ kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.5.2"
 ktorfit = "2.7.5"
-metro = "1.4.0"
+metro = "1.4.1"
 mixpanelAndroid = "8.9.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.4.2"
@@ -96,7 +97,7 @@ shadow = "9.6.1"
 testcontainers = "2.0.5"
 tensorflow-java = "1.2.0"
 uri-kmp = "0.0.21"
-usercentrics = "2.28.2"
+usercentrics = "2.29.1"
 
 [libraries]
 
@@ -254,10 +255,11 @@ firebaseBom = { group = "com.google.firebase", name = "firebase-bom", version.re
 
 firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebaseAuth = { group = "com.google.firebase", name = "firebase-auth" }
-firebaseAuthKmp = { module = "dev.gitlive:firebase-auth", version = "2.5.0" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 #firebaseDatabase = { module = "com.google.firebase:firebase-database" }
 #firebaseConfig = { module = "com.google.firebase:firebase-config" }
+
+gitlive-firebaseAuth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
 
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
@@ -283,7 +285,7 @@ jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
 jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
 #jUnit5-jupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit5" }
-jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.2" }
+jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.3" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
 kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }

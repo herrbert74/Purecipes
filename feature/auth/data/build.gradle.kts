@@ -21,12 +21,12 @@ kotlin {
 		androidMain {
 			dependencies {
 				implementation(project.dependencies.platform(libs.firebaseBom))
-				implementation(libs.firebaseAuthKmp)
+				implementation(libs.gitlive.firebaseAuth)
 			}
 		}
 		iosMain {
 			dependencies {
-				implementation(libs.firebaseAuthKmp)
+				implementation(libs.gitlive.firebaseAuth)
 			}
 		}
 		commonMain {

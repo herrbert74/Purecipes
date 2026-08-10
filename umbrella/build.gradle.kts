@@ -195,7 +195,7 @@ kotlin {
 		iosMain {
 			dependencies {
 				implementation(libs.crashkios.crashlytics)
-				implementation(libs.firebaseAuthKmp)
+				implementation(libs.gitlive.firebaseAuth)
 				implementation(libs.ktor.clientCore)
 				implementation(libs.ktor.clientDarwin)
 				implementation(libs.ktor.clientContentNegotiation)
