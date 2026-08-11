@@ -14,8 +14,21 @@ Rules:
 - Use bullet lists under each section heading (`### Added`, etc.).
 - Write for testers, not developers: no PR numbers, no internal codenames, no "misc fixes".
 - Merge related pull requests into concise bullets.
-- Maximum about 4000 characters.
 - Do not invent features not supported by the pull request summaries.
+
+### Google Play 500-character limit (required while drafting)
+
+Google Play rejects release notes longer than **500 characters**. The text uploaded is the **extracted** section from `CHANGELOG.md` (`scripts/release/extract_release_notes.main.kts`), not the markdown file as-is: `###` headings become plain labels such as `Changed` / `Fixed`, with blank lines around them.
+
+This check belongs in the **changelog draft / release PR** step — not after tagging. Catching it only in Distribute Android is too late (Firebase may already have uploaded).
+
+While drafting:
+
+1. Run `kotlin scripts/release/extract_release_notes.main.kts <version>`.
+2. If it fails because notes exceed 500 characters, **rephrase** the `CHANGELOG.md` bullets shorter and rerun. Do not truncate with `...`.
+3. Only open the release PR after extract succeeds.
+
+`open_android_release_pr.main.kts` also runs this extract check before pushing the release branch.
 
 ## Versioning
 

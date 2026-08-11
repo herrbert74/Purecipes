@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
 		?.readText()
 		?.trim()
 		?.takeIf { it.isNotEmpty() }
-		?.let(::truncateReleaseNotes)
+		?.also(::requireReleaseNotesWithinLimit)
 
 	println("Package: ${options.packageName}")
 	println("AAB: ${options.aabFile.relativeTo(options.projectRoot)}")
@@ -126,12 +126,11 @@ private fun createPublisher(credentialsFile: File): AndroidPublisher {
 	}.setApplicationName(APPLICATION_NAME).build()
 }
 
-private fun truncateReleaseNotes(notes: String): String {
-	if (notes.length <= MAX_RELEASE_NOTES_LENGTH) {
-		return notes
+private fun requireReleaseNotesWithinLimit(notes: String) {
+	require(notes.length <= MAX_RELEASE_NOTES_LENGTH) {
+		"Release notes are ${notes.length} characters; Google Play allows at most " +
+			"$MAX_RELEASE_NOTES_LENGTH. Rephrase CHANGELOG.md and re-extract notes."
 	}
-	val trimmed = notes.take(MAX_RELEASE_NOTES_LENGTH - 1).trimEnd()
-	return "$trimmed..."
 }
 
 private fun parseUploadArgs(args: Array<String>): UploadOptions {

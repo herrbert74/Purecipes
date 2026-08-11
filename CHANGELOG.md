@@ -8,15 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Create recipe screen redesign: recipe photo sits in the header, ingredients are listed as rows, and cooking steps use numbered cards.
+- Create recipe redesign: photo in the header, ingredient rows, and numbered cooking steps.
 - My recipes now lives under Favourites.
-- Sign-in prompts on Favourites and Create recipe open the Account screen.
-- Recipe filters are clearer: collapsed sections show selected values, and Key ingredients guides you to Pantry when it is empty.
+- Sign-in from Favourites or Create recipe opens Account.
+- Recipe filters show selections when collapsed; empty pantry links to the Pantry tab.
 
 ### Fixed
 
-- Expired or invalid sessions clear local sign-in and show a clear “please sign in again” message instead of a raw server error.
-- Session data is excluded from Android backup so a restored install is less likely to leave you signed in with an invalid session.
+- Expired sessions clear sign-in and ask you to sign in again.
+- Session data is excluded from Android backup to avoid invalid restored sessions.
 
 ## [0.7.1] - 2026-07-29
 
