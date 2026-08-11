@@ -48,6 +48,6 @@ Beyond screenshot uploads, the service account needs release access on **Purecip
 | `purecipes.play.track` | `alpha` | `internal`, `alpha` (closed), `beta` (open), or `production` |
 | `purecipes.play.status` | `completed` | `completed`, `draft`, `inProgress`, or `halted` |
 | `purecipes.play.language` / `language` | `en-GB` | Release notes locale |
-| `purecipes.play.releaseNotesFile` | `build/release-notes.txt` | Plain-text notes (truncated to 500 chars) |
+| `purecipes.play.releaseNotesFile` | `build/release-notes.txt` | Plain-text notes (must be ≤500 chars; upload fails if longer) |
 | `purecipes.play.releaseName` | (omit) | Optional release name in Play Console |
 | `dryRun` | off | Print plan only |
