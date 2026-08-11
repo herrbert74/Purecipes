@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Create recipe screen redesign: recipe photo sits in the header, ingredients are listed as rows, and cooking steps use numbered cards.
 - My recipes now lives under Favourites.
 - Sign-in prompts on Favourites and Create recipe open the Account screen.
+- Recipe filters are clearer: collapsed sections show selected values, and Key ingredients guides you to Pantry when it is empty.
 
 ### Fixed
 
