@@ -4,6 +4,19 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] - 2026-08-11
+
+### Changed
+
+- Create recipe screen redesign: recipe photo sits in the header, ingredients are listed as rows, and cooking steps use numbered cards.
+- My recipes now lives under Favourites.
+- Sign-in prompts on Favourites and Create recipe open the Account screen.
+
+### Fixed
+
+- Expired or invalid sessions clear local sign-in and show a clear “please sign in again” message instead of a raw server error.
+- Session data is excluded from Android backup so a restored install is less likely to leave you signed in with an invalid session.
+
 ## [0.7.1] - 2026-07-29
 
 ### Fixed
