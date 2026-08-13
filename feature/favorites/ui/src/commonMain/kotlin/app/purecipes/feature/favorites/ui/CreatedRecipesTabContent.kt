@@ -1,4 +1,4 @@
-package app.purecipes.feature.newrecipe.ui
+package app.purecipes.feature.favorites.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,8 +33,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
-fun CreatedRecipesTabContent(
+internal fun CreatedRecipesTabContent(
 	onCreateRecipe: () -> Unit,
+	onRecipeSelect: (Int) -> Unit,
 	onEditRecipe: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: CreatedRecipesViewModel = metroViewModel(),
@@ -48,6 +49,7 @@ fun CreatedRecipesTabContent(
 		errorMessage = viewModel.errorMessage,
 		recipes = viewModel.recipes.toImmutableList(),
 		onCreateRecipe = onCreateRecipe,
+		onRecipeSelect = onRecipeSelect,
 		onEditRecipe = onEditRecipe,
 		onRetry = viewModel::retry,
 		modifier = modifier,
@@ -60,6 +62,7 @@ internal fun CreatedRecipesTabContent(
 	errorMessage: String?,
 	recipes: ImmutableList<RecipeSummary>,
 	onCreateRecipe: () -> Unit,
+	onRecipeSelect: (Int) -> Unit,
 	onEditRecipe: (Int) -> Unit,
 	onRetry: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -121,7 +124,8 @@ internal fun CreatedRecipesTabContent(
 			items(recipes, key = RecipeSummary::id) { recipe ->
 				RecipeCard(
 					recipe = recipe,
-					onClick = { onEditRecipe(recipe.id) },
+					onClick = { onRecipeSelect(recipe.id) },
+					onEditClick = { onEditRecipe(recipe.id) },
 				)
 			}
 		}
@@ -142,6 +146,7 @@ private fun CreatedRecipesTabContentEmptyLightPreview() {
 			errorMessage = null,
 			recipes = persistentListOf(),
 			onCreateRecipe = {},
+			onRecipeSelect = {},
 			onEditRecipe = {},
 			onRetry = {},
 		)
@@ -170,6 +175,7 @@ private fun CreatedRecipesTabContentListLightPreview() {
 				),
 			),
 			onCreateRecipe = {},
+			onRecipeSelect = {},
 			onEditRecipe = {},
 			onRetry = {},
 		)

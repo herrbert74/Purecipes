@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
-import app.purecipes.feature.newrecipe.ui.CreatedRecipesTabContent
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -240,6 +239,7 @@ fun FavoritesScreen(
 
 				FavoritesTab.MyRecipes -> CreatedRecipesTabContent(
 					onCreateRecipe = onCreateRecipe,
+					onRecipeSelect = onRecipeSelect,
 					onEditRecipe = onEditCreatedRecipe,
 					modifier = Modifier.weight(1f),
 				)

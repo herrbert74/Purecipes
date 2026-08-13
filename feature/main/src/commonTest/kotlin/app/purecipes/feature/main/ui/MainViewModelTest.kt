@@ -8,6 +8,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
@@ -172,6 +173,21 @@ class MainViewModelTest {
 	fun `onBack at search root returns false`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onBack() shouldBe false
+	}
+
+	@Test
+	fun `editing created recipe pushes editor onto the current tab`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.createRecipeTabNavigator.openEditor(42)
+
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Favorites
+		viewModel.peekBackStack() shouldBe listOf(
+			FavoritesDestination(),
+			CreateEditorDestination(recipeId = 42),
+		)
+		viewModel.onBack() shouldBe true
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
 	}
 
 	@Test
