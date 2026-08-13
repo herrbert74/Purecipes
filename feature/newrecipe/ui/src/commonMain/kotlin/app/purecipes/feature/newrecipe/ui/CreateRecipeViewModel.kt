@@ -171,6 +171,14 @@ class CreateRecipeViewModel(
 		selectedCuisine = value
 	}
 
+	fun onRecipeIdChanged(recipeId: Int?) {
+		if (recipeId != null) {
+			loadRecipe(recipeId)
+		} else if (isEditing) {
+			startNewRecipe()
+		}
+	}
+
 	fun loadRecipe(recipeId: Int) {
 		if (editingRecipeId == recipeId && !isLoadingRecipe) {
 			return

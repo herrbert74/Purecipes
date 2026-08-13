@@ -71,6 +71,36 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
+	fun `onRecipeIdChanged does not reset a new recipe draft`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Roasted Carrots")
+		viewModel.onDescriptionChange("Sweet and savory side dish.")
+		viewModel.onStepChange(index = 0, value = "Trim the carrots")
+		viewModel.onRecipeIdChanged(recipeId = null)
+
+		viewModel.titleInput shouldBe "Roasted Carrots"
+		viewModel.descriptionInput shouldBe "Sweet and savory side dish."
+		viewModel.stepInputs.toList() shouldBe listOf("Trim the carrots")
+	}
+
+	@Test
+	fun `onRecipeIdChanged resets the form when leaving edit mode`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe()
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+		)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+		viewModel.onRecipeIdChanged(recipeId = null)
+
+		viewModel.isEditing shouldBe false
+		viewModel.titleInput shouldBe ""
+		viewModel.stepInputs.toList() shouldBe listOf("")
+	}
+
+	@Test
 	fun `loading a recipe populates the form for editing`() = runViewModelTest {
 		val recipe = sampleCreatedRecipe()
 		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
