@@ -1,5 +1,9 @@
 package app.purecipes.feature.newrecipe.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -186,6 +190,40 @@ class CreateRecipeScreenTest {
 
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
 		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
+	}
+
+	@Test
+	fun createRecipeScreenRetainsFormDataAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val viewModel = createRecipeViewModelForTest()
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					CreateRecipeScreen(
+						canUploadRecipes = true,
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
+		onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
+		onNodeWithTag("createRecipeTotalTimeField").performScrollTo().performTextInput("25")
+		onNodeWithTag("createRecipeYieldsField").performScrollTo().performTextInput("4 servings")
+		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().performTextInput("carrots")
+		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
+		waitForIdle()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithTag("createRecipeTitleField").assertTextContains("Roasted Carrots")
+		onNodeWithTag("createRecipeDescriptionField").assertTextContains("Sweet and savory side dish.")
+		onNodeWithTag("createRecipeTotalTimeField").performScrollTo().assertTextContains("25")
+		onNodeWithTag("createRecipeYieldsField").performScrollTo().assertTextContains("4 servings")
+		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().assertTextContains("carrots")
+		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Trim the carrots")
 	}
 
 	@Test

@@ -66,11 +66,7 @@ fun CreateRecipeScreen(
 	val currentOnSaveSuccess by rememberUpdatedState(onSaveSuccess)
 
 	LaunchedEffect(recipeId) {
-		if (recipeId != null) {
-			viewModel.loadRecipe(recipeId)
-		} else {
-			viewModel.startNewRecipe()
-		}
+		viewModel.onRecipeIdChanged(recipeId)
 	}
 
 	LaunchedEffect(viewModel.saveCompletedEvent) {
