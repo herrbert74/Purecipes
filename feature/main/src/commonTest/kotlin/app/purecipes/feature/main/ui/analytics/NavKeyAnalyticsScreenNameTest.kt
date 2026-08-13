@@ -8,6 +8,7 @@ import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
+import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AboutDestination
@@ -27,6 +28,7 @@ class NavKeyAnalyticsScreenNameTest {
 			RecipeCookingDestination(7) to AnalyticsScreenName.COOKING,
 			FavoritesDestination() to AnalyticsScreenName.FAVORITES,
 			CreateDestination to AnalyticsScreenName.CREATE_RECIPE,
+			CreateEditorDestination(recipeId = 42) to AnalyticsScreenName.CREATE_RECIPE,
 			AccountDestination to AnalyticsScreenName.ACCOUNT,
 			EmailSignInDestination() to AnalyticsScreenName.EMAIL_SIGN_IN,
 			EmailRegistrationDestination to AnalyticsScreenName.EMAIL_REGISTRATION,

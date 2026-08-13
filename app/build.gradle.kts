@@ -139,7 +139,9 @@ android {
 		}
 	}
 	kotlin {
-		jvmToolchain(21)
+		jvmToolchain {
+			languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
+		}
 	}
 	buildFeatures {
 		buildConfig = true

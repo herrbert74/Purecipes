@@ -1,4 +1,4 @@
-package app.purecipes.feature.newrecipe.ui
+package app.purecipes.feature.favorites.ui
 
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.shared.domain.model.Cuisine

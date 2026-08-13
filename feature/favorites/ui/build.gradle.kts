@@ -21,7 +21,7 @@ kotlin {
 				api(project(":feature:sharing:domain"))
 				implementation(project(":feature:ads:ui"))
 				implementation(project(":feature:analytics:domain"))
-				implementation(project(":feature:newrecipe:ui"))
+				implementation(project(":feature:newrecipe:domain"))
 				implementation(project(":feature:sharing:ui"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)

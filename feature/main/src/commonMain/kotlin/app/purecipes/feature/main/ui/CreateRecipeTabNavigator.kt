@@ -10,6 +10,7 @@ internal class CreateRecipeTabNavigator(
 	private val stackFor: (MainTabStackId) -> NavBackStack<NavKey>,
 	private val selectTab: (MainTabStackId) -> Unit,
 	private val replaceTabRoot: (NavKey) -> Unit,
+	private val push: (NavKey) -> Unit,
 ) {
 
 	fun openNewRecipe() {
@@ -20,11 +21,7 @@ internal class CreateRecipeTabNavigator(
 	}
 
 	fun openEditor(recipeId: Int) {
-		val stack = stackFor(MainTabStackId.Create)
-		stack.clear()
-		stack += CreateDestination
-		stack += CreateEditorDestination(recipeId = recipeId)
-		selectTab(MainTabStackId.Create)
+		push(CreateEditorDestination(recipeId = recipeId))
 	}
 
 	fun onRecipeSaveSuccess(message: String) {

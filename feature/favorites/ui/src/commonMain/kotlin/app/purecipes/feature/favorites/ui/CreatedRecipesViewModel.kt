@@ -1,4 +1,4 @@
-package app.purecipes.feature.newrecipe.ui
+package app.purecipes.feature.favorites.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf

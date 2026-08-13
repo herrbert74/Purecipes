@@ -156,6 +156,7 @@ class MainViewModel(
 		stackFor = ::stackFor,
 		selectTab = ::selectTab,
 		replaceTabRoot = navigatorImpl::replaceTabRoot,
+		push = navigatorImpl::push,
 	)
 
 	fun start() {
