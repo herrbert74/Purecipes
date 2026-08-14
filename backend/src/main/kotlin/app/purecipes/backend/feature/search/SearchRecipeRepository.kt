@@ -104,7 +104,7 @@ class SearchRecipeRepository(
 			if (userId != null) loadExcludedIngredientsForUser(conn, userId) else emptyList()
 		val requiresIngredientPostFilter =
 			availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty() || keyIngredients.isNotEmpty()
-		return if (!requiresIngredientPostFilter) {
+		val result = if (!requiresIngredientPostFilter) {
 			val total = countSearchWithFiltersRecipes(conn, whereClause, params)
 			val page = querySearchWithFiltersRecipes(
 				conn = conn,
@@ -179,6 +179,36 @@ class SearchRecipeRepository(
 				items = matches.drop(offset).take(limit),
 				totalMatches = matches.size,
 				nearMissRecipes = nearMissRecipes,
+			)
+		}
+		return markFavoriteRecipes(conn, userId, result)
+	}
+
+	private fun markFavoriteRecipes(
+		conn: Connection,
+		userId: Long?,
+		result: FilteredSearchResult,
+	): FilteredSearchResult {
+		if (userId == null) {
+			return result
+		}
+		val recipeIds = result.items.map { summary -> summary.id } +
+			result.nearMissRecipes.map { nearMiss -> nearMiss.recipe.id }
+		val favoriteIds = recipeRepository.loadFavoriteRecipeIds(conn, userId, recipeIds)
+		return if (favoriteIds.isEmpty()) {
+			result
+		} else {
+			result.copy(
+				items = result.items.map { summary ->
+					if (summary.id in favoriteIds) summary.copy(isFavorite = true) else summary
+				},
+				nearMissRecipes = result.nearMissRecipes.map { nearMiss ->
+					if (nearMiss.recipe.id in favoriteIds) {
+						nearMiss.copy(recipe = nearMiss.recipe.copy(isFavorite = true))
+					} else {
+						nearMiss
+					}
+				},
 			)
 		}
 	}

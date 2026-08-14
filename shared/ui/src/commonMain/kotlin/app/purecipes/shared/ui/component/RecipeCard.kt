@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -35,6 +36,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
 const val RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX = "recipeCardEditButton:"
+const val RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX = "recipeCardFavoriteIcon:"
 
 private const val RECIPE_CARD_ASPECT_RATIO_WIDTH = 16f
 private const val RECIPE_CARD_ASPECT_RATIO_HEIGHT = 9f
@@ -109,18 +111,33 @@ fun RecipeCard(
 					)
 				}
 			}
-			if (onEditClick != null) {
-				IconButton(
-					onClick = onEditClick,
-					modifier = Modifier
-						.align(Alignment.TopEnd)
-						.testTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX${recipe.id}"),
+			if (recipe.isFavorite || onEditClick != null) {
+				Row(
+					modifier = Modifier.align(Alignment.TopEnd),
+					verticalAlignment = Alignment.CenterVertically,
 				) {
-					Icon(
-						imageVector = Icons.Filled.Edit,
-						contentDescription = "Edit recipe",
-						tint = Color.White,
-					)
+					if (recipe.isFavorite) {
+						Icon(
+							imageVector = Icons.Filled.Favorite,
+							contentDescription = "Favorited",
+							tint = Color.White,
+							modifier = Modifier
+								.padding(PurecipesTheme.space.s)
+								.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
+						)
+					}
+					if (onEditClick != null) {
+						IconButton(
+							onClick = onEditClick,
+							modifier = Modifier.testTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX${recipe.id}"),
+						) {
+							Icon(
+								imageVector = Icons.Filled.Edit,
+								contentDescription = "Edit recipe",
+								tint = Color.White,
+							)
+						}
+					}
 				}
 			}
 		}
@@ -162,6 +179,12 @@ private val previewRecipeCardSample = RecipeSummary(
 	imageUrl = null,
 	totalTime = 20,
 	measurementSystem = MeasurementSystem.METRIC,
+)
+
+private val previewRecipeCardFavorited = previewRecipeCardSample.copy(
+	id = 4,
+	title = "Favorite tomato pasta",
+	isFavorite = true,
 )
 
 private val previewRecipeCardSampleB = RecipeSummary(
@@ -248,6 +271,23 @@ private fun RecipeCardWithEditPreview() {
 			recipe = previewRecipeCardSample,
 			onClick = {},
 			onEditClick = {},
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+		)
+	}
+}
+
+@Preview(
+	name = "Recipe card favorited",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun RecipeCardFavoritedPreview() {
+	PurecipesTheme(darkTheme = false) {
+		RecipeCard(
+			recipe = previewRecipeCardFavorited,
+			onClick = {},
 			modifier = Modifier.padding(PurecipesTheme.space.m),
 		)
 	}

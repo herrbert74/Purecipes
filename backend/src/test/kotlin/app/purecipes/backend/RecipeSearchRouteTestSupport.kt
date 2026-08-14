@@ -205,6 +205,21 @@ internal fun seedAppUsersForSearchRouteTest(db: Db, isPremium: Boolean = true) {
 	}
 }
 
+internal fun seedFavoriteForSearchRouteTest(db: Db, userId: Long, recipeId: Int) {
+	db.dataSource.connection.use { connection ->
+		connection.prepareStatement(
+			"""
+				INSERT INTO favorites (user_id, recipe_id, created_at)
+				VALUES (?, ?, CURRENT_TIMESTAMP)
+			""".trimIndent(),
+		).use { statement ->
+			statement.setLong(1, userId)
+			statement.setInt(2, recipeId)
+			statement.executeUpdate()
+		}
+	}
+}
+
 internal fun setRecipeCalorieRangeForSearchRouteTest(db: Db, title: String, calorieRange: String) {
 	db.dataSource.connection.use { connection ->
 		connection.prepareStatement(

@@ -17,6 +17,7 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -60,6 +61,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
+import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -68,6 +70,7 @@ import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import app.purecipes.shared.ui.component.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
 import dejavu.assertStable
@@ -124,6 +127,42 @@ class RecipeSearchScreenTest {
 		}
 
 		onNodeWithText("1 recipes found").assertIsDisplayed()
+	}
+
+	@Test
+	fun searchScreenShowsFavoriteHeartOnFavoritedRecipe() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository(
+			result = com.github.michaelbull.result.Ok(
+				listOf(
+					RecipeSummary(
+						id = 1,
+						title = "Tomato Pasta",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 20,
+						isFavorite = true,
+					),
+					RecipeSummary(
+						id = 2,
+						title = "Green Salad",
+						cuisine = Cuisine.FRENCH,
+						imageUrl = null,
+						totalTime = 15,
+					),
+				),
+			),
+		)
+
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+				)
+			}
+		}
+
+		onNodeWithTag("${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}1").assertIsDisplayed()
+		onNodeWithTag("${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}2").assertDoesNotExist()
 	}
 
 	@Test
@@ -680,6 +719,7 @@ private fun recipeSearchViewModelForTest(
 	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 	searchReadiness = SearchReadinessCoordinator(),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 	observePremiumStatus = ObservePremiumStatusUseCase(
 		FakeSubscriptionRepository(
 			initialState = if (isPremium) {

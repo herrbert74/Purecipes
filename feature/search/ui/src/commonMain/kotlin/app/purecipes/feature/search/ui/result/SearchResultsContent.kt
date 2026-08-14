@@ -123,6 +123,7 @@ private val previewRecipeA = RecipeSummary(
 	imageUrl = null,
 	totalTime = 25,
 	measurementSystem = MeasurementSystem.METRIC,
+	isFavorite = true,
 )
 
 private val previewRecipeB = RecipeSummary(

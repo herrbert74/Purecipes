@@ -22,6 +22,7 @@ kotlin {
 				api(project(":feature:measurement:domain"))
 				api(project(":shared:domain"))
 				implementation(project(":feature:ads:ui"))
+				implementation(project(":feature:favorites:domain"))
 				implementation(project(":feature:subscription:domain"))
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
