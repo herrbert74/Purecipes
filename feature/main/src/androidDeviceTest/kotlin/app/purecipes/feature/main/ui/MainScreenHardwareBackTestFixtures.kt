@@ -18,19 +18,19 @@ import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
-import app.purecipes.feature.favorites.domain.repository.CookbookCoverRepository
-import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
-import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.ui.FavoritesViewModel
+import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
+import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.DeleteCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
+import app.purecipes.feature.library.ui.LibraryViewModel
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -94,7 +94,7 @@ internal data class HardwareBackTestEnvironment(
 	val mainViewModel: MainViewModel,
 	val searchViewModel: RecipeSearchViewModel,
 	val recipeDetailsViewModel: RecipeDetailsViewModel,
-	val favoritesViewModel: FavoritesViewModel,
+	val libraryViewModel: LibraryViewModel,
 	val analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	val recipeId: Int = HARDWARE_BACK_TEST_RECIPE_ID,
 )
@@ -130,7 +130,7 @@ internal fun hardwareBackTestEnvironment(
 				),
 			),
 		),
-		favoritesViewModel = favoritesViewModelForDeviceTest(),
+		libraryViewModel = favoritesViewModelForDeviceTest(),
 		analyticsRepository = analyticsRepository,
 		recipeId = recipeId,
 	)
@@ -250,7 +250,7 @@ internal fun recipeDetailsViewModelForDeviceTest(
 	origin = AnalyticsOrigin.SEARCH.value,
 )
 
-internal fun favoritesViewModelForDeviceTest(): FavoritesViewModel = FavoritesViewModel(
+internal fun favoritesViewModelForDeviceTest(): LibraryViewModel = LibraryViewModel(
 	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 	getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 	createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),

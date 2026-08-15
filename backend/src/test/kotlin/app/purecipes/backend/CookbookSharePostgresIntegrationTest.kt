@@ -1,9 +1,9 @@
 package app.purecipes.backend
 
 import app.purecipes.backend.db.Db
-import app.purecipes.backend.feature.favorites.CookbookRepository
-import app.purecipes.backend.feature.favorites.CookbookShareRepository
-import app.purecipes.backend.feature.favorites.FavoritesRepository
+import app.purecipes.backend.feature.library.CookbookRepository
+import app.purecipes.backend.feature.library.CookbookShareRepository
+import app.purecipes.backend.feature.library.FavoritesRepository
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.matchers.shouldBe

@@ -23,8 +23,8 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import app.purecipes.feature.favorites.ui.FavoritesScreen
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.LibraryScreen
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.recipedetails.ui.RECIPE_DETAILS_CONTENT_TAG
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
@@ -61,7 +61,7 @@ class MainScreenHardwareBackTest {
 		setUpHarness(environment)
 
 		openRecipeDetails(environment)
-		selectMainTab(environment, MainTabStackId.Favorites)
+		selectMainTab(environment, MainTabStackId.Library)
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
 		selectMainTab(environment, MainTabStackId.Search)
 
@@ -85,7 +85,7 @@ class MainScreenHardwareBackTest {
 		val environment = hardwareBackTestEnvironment()
 		setUpHarness(environment)
 
-		selectMainTab(environment, MainTabStackId.Favorites)
+		selectMainTab(environment, MainTabStackId.Library)
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
 		pressHardwareBack()
 
@@ -96,7 +96,7 @@ class MainScreenHardwareBackTest {
 		val mainViewModel = environment.mainViewModel
 		val searchViewModel = environment.searchViewModel
 		val recipeDetailsViewModel = environment.recipeDetailsViewModel
-		val favoritesViewModel = environment.favoritesViewModel
+		val favoritesViewModel = environment.libraryViewModel
 		composeRule.setContent {
 			PurecipesTheme {
 				LaunchedEffect(mainViewModel) {
@@ -164,8 +164,8 @@ class MainScreenHardwareBackTest {
 										viewModel = recipeDetailsViewModel,
 									)
 								}
-								entry<FavoritesDestination> {
-									FavoritesScreen(
+								entry<LibraryDestination> {
+									LibraryScreen(
 										modifier = Modifier.fillMaxSize(),
 										sessionKey = "hardware-back-test",
 										onRecipeSelect = mainViewModel::onRecipeSelected,

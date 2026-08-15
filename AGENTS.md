@@ -38,7 +38,7 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
   * **step-by-step cooking**
   * **new recipe**
   * **measurement** (preferences and unit conversion; consumed by search, recipe details, cooking, and settings UI)
-  * **auth**, **favorites**, **settings**, **sharing**, and **analytics** also live under `feature/`
+  * **auth**, **library**, **settings**, **sharing**, and **analytics** also live under `feature/`
 * **Submodules** within above features.
   * **domain** - Contains the feature **api interfaces** and optionally **use cases**. Domain depends only on itself and all interaction it does is via _dependency
       inversion_.

@@ -7,7 +7,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -66,9 +66,9 @@ class MainViewModelTest {
 	fun `switching tabs preserves in tab depth`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(LibraryDestination())
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
 
 		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(42))
@@ -86,7 +86,7 @@ class MainViewModelTest {
 	@Test
 	fun `back at non search tab root switches to search`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
 		viewModel.onBack() shouldBe true
 
@@ -116,7 +116,7 @@ class MainViewModelTest {
 	fun `deep link to recipe opens recipe details on search tab`() {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val viewModel = mainViewModelForTest(analyticsRepository = analyticsRepository)
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
 		viewModel.peekBackStack() shouldBe listOf(
@@ -134,12 +134,12 @@ class MainViewModelTest {
 	@Test
 	fun `deep link to recipe does not clobber other tab stacks`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(LibraryDestination())
 	}
 
 	@Test
@@ -149,7 +149,7 @@ class MainViewModelTest {
 		viewModel.onDeepLink(PurecipesLink.CookbookShare(sampleShareToken))
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(
-			FavoritesDestination(cookbookShareToken = sampleShareToken),
+			LibraryDestination(cookbookShareToken = sampleShareToken),
 		)
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>() shouldBe listOf(
 			AnalyticsEvent.DeepLinkOpened(
@@ -178,16 +178,16 @@ class MainViewModelTest {
 	@Test
 	fun `editing created recipe pushes editor onto the current tab`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 		viewModel.createRecipeTabNavigator.openEditor(42)
 
-		viewModel.selectedTab.stackId shouldBe MainTabStackId.Favorites
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Library
 		viewModel.peekBackStack() shouldBe listOf(
-			FavoritesDestination(),
+			LibraryDestination(),
 			CreateEditorDestination(recipeId = 42),
 		)
 		viewModel.onBack() shouldBe true
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(FavoritesDestination())
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(LibraryDestination())
 	}
 
 	@Test

@@ -8,7 +8,7 @@ import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -84,7 +84,7 @@ class MainViewModelStartTest {
 		)
 
 		viewModel.peekBackStack() shouldBe listOf(
-			FavoritesDestination(cookbookShareToken = sampleShareToken),
+			LibraryDestination(cookbookShareToken = sampleShareToken),
 		)
 	}
 
@@ -119,7 +119,7 @@ class MainViewModelStartTest {
 			)
 
 			viewModel.peekBackStack() shouldBe listOf(
-				FavoritesDestination(cookbookShareToken = sampleShareToken),
+				LibraryDestination(cookbookShareToken = sampleShareToken),
 			)
 			analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>().size shouldBe 1
 		}
