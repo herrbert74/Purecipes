@@ -17,4 +17,6 @@ class CreatedRecipeAccessor(
 
 	override suspend fun saveCreatedRecipe(request: SaveCreatedRecipeRequest) =
 		remoteDataSource.saveCreatedRecipe(request)
+
+	override suspend fun deleteCreatedRecipe(recipeId: Int) = remoteDataSource.deleteCreatedRecipe(recipeId)
 }

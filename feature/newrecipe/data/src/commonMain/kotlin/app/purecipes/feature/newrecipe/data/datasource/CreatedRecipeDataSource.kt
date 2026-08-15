@@ -17,9 +17,12 @@ import dev.zacsweers.metro.Inject
 interface CreatedRecipeDataSource {
 
 	interface Remote {
+
 		suspend fun getCreatedRecipes(): Outcome<List<RecipeDetails>>
 
 		suspend fun saveCreatedRecipe(request: SaveCreatedRecipeRequest): Outcome<RecipeDetails>
+
+		suspend fun deleteCreatedRecipe(recipeId: Int): Outcome<Unit>
 	}
 }
 
@@ -53,6 +56,10 @@ class CreatedRecipeRemoteDataSource(
 				api.updateRecipe(recipeId, recipeWriteRequest)
 			}
 		}
+	}
+
+	override suspend fun deleteCreatedRecipe(recipeId: Int): Outcome<Unit> = runCatchingApi {
+		api.deleteRecipe(recipeId)
 	}
 
 	private suspend fun resolveImageUrl(imageInput: String?): Outcome<String?> {

@@ -165,6 +165,28 @@ internal suspend fun ApplicationCall.respondUpdateRecipe(
 	}
 }
 
+internal suspend fun ApplicationCall.respondDeleteRecipe(
+	sessionService: SessionService,
+	dbProvider: () -> Db,
+	ingredientMatchCorpusCache: IngredientMatchCorpusCache,
+) {
+	val recipeId = requireRecipeIdOrRespond() ?: return
+	val userId = requireAuthenticatedUserId(sessionService) ?: return
+	val repo = RecipeRepository(dbProvider().dataSource)
+	if (!repo.deleteCreatedRecipe(userId = userId, recipeId = recipeId)) {
+		respond(
+			HttpStatusCode.NotFound,
+			ErrorResponse(
+				message = "Recipe not found",
+				detail = "No editable recipe found for id: $recipeId",
+			),
+		)
+	} else {
+		respond(HttpStatusCode.NoContent)
+		ingredientMatchCorpusCache.invalidate()
+	}
+}
+
 private suspend fun ApplicationCall.requireRecipeIdOrRespond(): Int? {
 	val recipeId = parameters["id"]?.toIntOrNull()
 	if (recipeId == null) {

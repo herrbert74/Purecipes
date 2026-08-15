@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
@@ -35,6 +36,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
+const val RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX = "recipeCardDeleteButton:"
 const val RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX = "recipeCardEditButton:"
 const val RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX = "recipeCardFavoriteIcon:"
 
@@ -49,6 +51,7 @@ fun RecipeCard(
 	modifier: Modifier = Modifier,
 	widthFraction: Float = RecipeCardDefaults.FullWidthFraction,
 	onEditClick: (() -> Unit)? = null,
+	onDeleteClick: (() -> Unit)? = null,
 ) {
 	val fixedColors = PurecipesTheme.fixedColors
 	Card(
@@ -111,7 +114,7 @@ fun RecipeCard(
 					)
 				}
 			}
-			if (recipe.isFavorite || onEditClick != null) {
+			if (recipe.isFavorite || onEditClick != null || onDeleteClick != null) {
 				Row(
 					modifier = Modifier.align(Alignment.TopEnd),
 					verticalAlignment = Alignment.CenterVertically,
@@ -134,6 +137,18 @@ fun RecipeCard(
 							Icon(
 								imageVector = Icons.Filled.Edit,
 								contentDescription = "Edit recipe",
+								tint = Color.White,
+							)
+						}
+					}
+					if (onDeleteClick != null) {
+						IconButton(
+							onClick = onDeleteClick,
+							modifier = Modifier.testTag("$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX${recipe.id}"),
+						) {
+							Icon(
+								imageVector = Icons.Filled.Delete,
+								contentDescription = "Delete recipe",
 								tint = Color.White,
 							)
 						}
@@ -271,6 +286,25 @@ private fun RecipeCardWithEditPreview() {
 			recipe = previewRecipeCardSample,
 			onClick = {},
 			onEditClick = {},
+			modifier = Modifier.padding(PurecipesTheme.space.m),
+		)
+	}
+}
+
+@Preview(
+	name = "Recipe card with edit and delete",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun RecipeCardWithEditAndDeletePreview() {
+	PurecipesTheme(darkTheme = false) {
+		RecipeCard(
+			recipe = previewRecipeCardSample,
+			onClick = {},
+			onEditClick = {},
+			onDeleteClick = {},
 			modifier = Modifier.padding(PurecipesTheme.space.m),
 		)
 	}

@@ -154,6 +154,20 @@ class AnalyticsEventTest {
 	}
 
 	@Test
+	fun `RecipeDeleted has correct event name and properties`() {
+		val event = AnalyticsEvent.RecipeDeleted(
+			recipeId = 99,
+			recipeName = "Tomato Pasta",
+		)
+
+		event.eventName shouldBe "recipe_deleted"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(99L),
+			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+		)
+	}
+
+	@Test
 	fun `SignInCompleted has correct event name and properties`() {
 		val event = AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.GOOGLE)
 

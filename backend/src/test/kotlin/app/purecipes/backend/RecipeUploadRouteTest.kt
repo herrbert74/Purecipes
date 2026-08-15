@@ -3,6 +3,7 @@ package app.purecipes.backend
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.fake.FakeSessionService
 import io.kotest.matchers.shouldBe
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -59,6 +60,10 @@ class RecipeUploadRouteTest {
 			contentType(ContentType.Application.Json)
 			setBody(request)
 		}.also {
+			it.status shouldBe HttpStatusCode.Unauthorized
+		}
+
+		client.delete("/recipes/1").also {
 			it.status shouldBe HttpStatusCode.Unauthorized
 		}
 
@@ -177,6 +182,120 @@ class RecipeUploadRouteTest {
 				resultSet.getString(1) shouldBe "METRIC"
 			}
 		}
+	}
+
+	@Test
+	fun `authenticated user can delete their recipe`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+				recipeImageStorage = recipeImageStorage,
+			)
+		}
+
+		val createResponse = client.post("/recipes") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"title": "Roasted Carrots",
+						"description": "Sweet and savory side dish.",
+						"ingredientGroups": [
+							{
+								"ingredients": ["8 cups (1.9L) vegetable stock"]
+							}
+						],
+						"steps": ["Trim the carrots", "Roast until tender"]
+					}
+				""".trimIndent(),
+			)
+		}
+		createResponse.status shouldBe HttpStatusCode.Created
+
+		val deleteResponse = client.delete("/recipes/1") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+		}
+		deleteResponse.status shouldBe HttpStatusCode.NoContent
+
+		val mineResponse = client.get("/recipes/mine") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+		}
+		mineResponse.status shouldBe HttpStatusCode.OK
+		mineResponse.bodyAsText() shouldBe "[]"
+
+		val detailsResponse = client.get("/recipes/1") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+		}
+		detailsResponse.status shouldBe HttpStatusCode.NotFound
+	}
+
+	@Test
+	fun `authenticated user cannot delete a recipe they do not own`() = testApplication {
+		val db = createDb()
+		seedAppUsers(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+		val recipeImageStorage = RecipeImageStorage(createTempDirectory("recipe-images-test"))
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+				recipeImageStorage = recipeImageStorage,
+			)
+		}
+
+		val createResponse = client.post("/recipes") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+			contentType(ContentType.Application.Json)
+			setBody(
+				"""
+					{
+						"title": "Roasted Carrots",
+						"description": "Sweet and savory side dish.",
+						"ingredientGroups": [
+							{
+								"ingredients": ["8 cups (1.9L) vegetable stock"]
+							}
+						],
+						"steps": ["Trim the carrots"]
+					}
+				""".trimIndent(),
+			)
+		}
+		createResponse.status shouldBe HttpStatusCode.Created
+		db.dataSource.connection.use { connection ->
+			connection.prepareStatement("UPDATE recipes SET created_by_user_id = NULL WHERE id = ?").use { statement ->
+				statement.setInt(1, 1)
+				statement.executeUpdate()
+			}
+		}
+
+		val deleteResponse = client.delete("/recipes/1") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+		}
+		deleteResponse.status shouldBe HttpStatusCode.NotFound
+
+		val missingResponse = client.delete("/recipes/999") {
+			header(HttpHeaders.Authorization, "Bearer ${sessionService.session.accessToken}")
+		}
+		missingResponse.status shouldBe HttpStatusCode.NotFound
 	}
 
 	@Test

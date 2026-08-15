@@ -8,6 +8,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX
 import app.purecipes.shared.ui.component.RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
@@ -31,18 +32,11 @@ class MyRecipesTabContentTest {
 				MyRecipesContent(
 					isLoading = false,
 					errorMessage = null,
-					recipes = persistentListOf(
-						RecipeSummary(
-							id = RECIPE_ID,
-							title = RECIPE_TITLE,
-							cuisine = Cuisine.ITALIAN,
-							imageUrl = null,
-							totalTime = 25,
-						),
-					),
+					recipes = persistentListOf(sampleRecipe()),
 					onCreateRecipe = {},
 					onRecipeSelect = { selectedId = it },
 					onEditRecipe = { editedId = it },
+					onDeleteRecipe = {},
 					onRetry = {},
 				)
 			}
@@ -56,6 +50,40 @@ class MyRecipesTabContentTest {
 		onNodeWithText(RECIPE_TITLE).performClick()
 		assertEquals(RECIPE_ID, selectedId)
 	}
+
+	@Test
+	fun deleteRequiresConfirmationAndInvokesDeleteCallback() = runRecompositionTrackingUiTest {
+		var deletedRecipe: RecipeSummary? = null
+		setTrackedContent {
+			PurecipesTheme {
+				MyRecipesContent(
+					isLoading = false,
+					errorMessage = null,
+					recipes = persistentListOf(sampleRecipe()),
+					onCreateRecipe = {},
+					onRecipeSelect = {},
+					onEditRecipe = {},
+					onDeleteRecipe = { deletedRecipe = it },
+					onRetry = {},
+				)
+			}
+		}
+
+		onNodeWithTag("$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX$RECIPE_ID").performClick()
+		onNodeWithText("Delete recipe?", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithTag(DELETE_CREATED_RECIPE_DIALOG_CONFIRM_TAG, useUnmergedTree = true).performClick()
+
+		assertEquals(RECIPE_ID, deletedRecipe?.id)
+		assertEquals(RECIPE_TITLE, deletedRecipe?.title)
+	}
+
+	private fun sampleRecipe(): RecipeSummary = RecipeSummary(
+		id = RECIPE_ID,
+		title = RECIPE_TITLE,
+		cuisine = Cuisine.ITALIAN,
+		imageUrl = null,
+		totalTime = 25,
+	)
 
 	private companion object {
 

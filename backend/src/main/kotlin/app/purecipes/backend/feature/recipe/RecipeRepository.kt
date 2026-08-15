@@ -73,6 +73,14 @@ class RecipeRepository(
 		}
 	}
 
+	fun deleteCreatedRecipe(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
+		conn.prepareStatement(RecipeRepositorySql.DELETE_CREATED_RECIPE_SQL).use { ps ->
+			ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+			ps.setLong(RecipeRepositorySql.SECOND_PARAMETER_INDEX, userId)
+			ps.executeUpdate() > 0
+		}
+	}
+
 	private fun <T> runInTransaction(conn: java.sql.Connection, block: () -> T): T {
 		val originalAutoCommit = conn.autoCommit
 		conn.autoCommit = false

@@ -138,6 +138,32 @@ class CreatedRecipeAccessorTest {
 		outcome.getError()?.message shouldBe "Could not read the image file from the provided local path."
 	}
 
+	@Test
+	fun `deleting a recipe removes it from created recipes`() = runTest {
+		val api = FakePurecipesApi()
+		val accessor = CreatedRecipeAccessor(
+			remoteDataSource = CreatedRecipeRemoteDataSource(
+				api = api,
+				imagePathLoader = FakeRecipeImagePathLoader(),
+				imageUploader = FakeRecipeImageUploader(),
+			),
+		)
+		val savedRecipe = accessor.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = "Tomato Pasta",
+				description = "Quick weeknight dinner.",
+				steps = listOf("Boil the pasta"),
+			),
+		).get().shouldNotBeNull()
+
+		val deleteOutcome = accessor.deleteCreatedRecipe(savedRecipe.id)
+		val storedRecipes = accessor.getCreatedRecipes().get()
+
+		deleteOutcome.getError() shouldBe null
+		storedRecipes shouldBe emptyList()
+		api.deletedRecipeIds.single() shouldBe savedRecipe.id
+	}
+
 	private class FakeRecipeImagePathLoader(
 		private val result: Outcome<RecipeImageUpload> = Ok(
 			RecipeImageUpload(

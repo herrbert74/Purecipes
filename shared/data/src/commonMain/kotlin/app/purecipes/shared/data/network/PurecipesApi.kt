@@ -55,6 +55,9 @@ interface PurecipesApi {
 	@PUT("recipes/{id}")
 	suspend fun updateRecipe(@Path("id") recipeId: Int, @Body request: RecipeWriteRequest): RecipeDetails
 
+	@DELETE("recipes/{id}")
+	suspend fun deleteRecipe(@Path("id") recipeId: Int)
+
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("auth/facebook")
 	suspend fun signInWithFacebook(@Body request: FacebookSignInRequest): AuthenticatedSession
