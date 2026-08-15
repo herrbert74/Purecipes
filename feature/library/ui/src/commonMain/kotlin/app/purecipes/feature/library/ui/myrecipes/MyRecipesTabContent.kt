@@ -31,6 +31,7 @@ internal fun MyRecipesTabContent(
 		onCreateRecipe = onCreateRecipe,
 		onRecipeSelect = onRecipeSelect,
 		onEditRecipe = onEditRecipe,
+		onDeleteRecipe = { recipe -> viewModel.deleteRecipe(recipe) },
 		onRetry = viewModel::retry,
 		modifier = modifier,
 	)
@@ -52,6 +53,7 @@ private fun MyRecipesTabContentEmptyLightPreview() {
 			onCreateRecipe = {},
 			onRecipeSelect = {},
 			onEditRecipe = {},
+			onDeleteRecipe = {},
 			onRetry = {},
 		)
 	}
@@ -81,6 +83,7 @@ private fun MyRecipesTabContentListLightPreview() {
 			onCreateRecipe = {},
 			onRecipeSelect = {},
 			onEditRecipe = {},
+			onDeleteRecipe = {},
 			onRetry = {},
 		)
 	}

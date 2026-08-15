@@ -147,6 +147,16 @@ sealed interface AnalyticsEvent {
 		)
 	}
 
+	data class RecipeDeleted(
+		val recipeId: Int,
+		val recipeName: String,
+	) : AnalyticsEvent {
+
+		override val eventName = "recipe_deleted"
+
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName)
+	}
+
 	data class SignInCompleted(
 		val method: String,
 	) : AnalyticsEvent {

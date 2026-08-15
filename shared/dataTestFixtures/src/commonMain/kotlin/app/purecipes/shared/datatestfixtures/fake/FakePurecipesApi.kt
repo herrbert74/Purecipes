@@ -66,6 +66,7 @@ class FakePurecipesApi(
 	val removedFavoriteIds = mutableListOf<Int>()
 	val createdRecipeRequests = mutableListOf<RecipeWriteRequest>()
 	val updatedRecipeRequests = mutableListOf<Pair<Int, RecipeWriteRequest>>()
+	val deletedRecipeIds = mutableListOf<Int>()
 	val savedMeasurementPreferences = mutableListOf<MeasurementPreferences>()
 	val savedSearchFiltersList = mutableListOf<SearchFilters>()
 
@@ -118,6 +119,12 @@ class FakePurecipesApi(
 		val recipe = request.toRecipeDetails(id = recipeId)
 		storeRecipe(recipe)
 		return recipe
+	}
+
+	override suspend fun deleteRecipe(recipeId: Int) {
+		deletedRecipeIds += recipeId
+		createdRecipes.removeAll { it.id == recipeId }
+		recipeDetailsById.remove(recipeId)
 	}
 
 	override suspend fun signInWithFacebook(request: FacebookSignInRequest): AuthenticatedSession = session

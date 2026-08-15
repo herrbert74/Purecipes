@@ -1,7 +1,5 @@
 package app.purecipes.backend.feature.recipe
 
-import kotlin.text.RegexOption
-
 internal object RecipeRepositorySql {
 
 	const val SEARCH_WITH_FILTERS_MAX_LIMIT = 200
@@ -108,6 +106,12 @@ internal object RecipeRepositorySql {
 	const val RECIPE_OWNED_BY_USER_SQL = """
 		SELECT 1
 		FROM recipes
+		WHERE id = ?
+			AND created_by_user_id = ?
+	"""
+
+	const val DELETE_CREATED_RECIPE_SQL = """
+		DELETE FROM recipes
 		WHERE id = ?
 			AND created_by_user_id = ?
 	"""
