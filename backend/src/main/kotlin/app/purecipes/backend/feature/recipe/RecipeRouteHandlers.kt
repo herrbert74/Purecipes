@@ -5,8 +5,8 @@ import app.purecipes.backend.auth.SessionService
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.optionalAuthenticatedUserId
 import app.purecipes.backend.feature.auth.requireAuthenticatedUserId
-import app.purecipes.backend.feature.favorites.CookbookRepository
 import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
+import app.purecipes.backend.feature.library.CookbookRepository
 import app.purecipes.backend.feature.search.SearchRecipeRepository
 import app.purecipes.backend.feature.subscription.UserPremiumRepository
 import app.purecipes.shared.domain.model.canUseKeyIngredients

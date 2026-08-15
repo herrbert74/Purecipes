@@ -36,7 +36,7 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.ScreenViewTracker
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
@@ -217,10 +217,10 @@ class MainViewModel(
 			configuration = configuration,
 			root = tabRootForStack(MainTabStackId.Search),
 		)
-		val favoritesStack = rememberMainTabNavBackStack(
-			saveStateKey = MainTabStackId.Favorites.saveStateKey,
+		val libraryStack = rememberMainTabNavBackStack(
+			saveStateKey = MainTabStackId.Library.saveStateKey,
 			configuration = configuration,
-			root = tabRootForStack(MainTabStackId.Favorites),
+			root = tabRootForStack(MainTabStackId.Library),
 		)
 		val createStack = rememberMainTabNavBackStack(
 			saveStateKey = MainTabStackId.Create.saveStateKey,
@@ -234,13 +234,13 @@ class MainViewModel(
 		)
 		SideEffect {
 			tabBackStacks[MainTabStackId.Search] = searchStack
-			tabBackStacks[MainTabStackId.Favorites] = favoritesStack
+			tabBackStacks[MainTabStackId.Library] = libraryStack
 			tabBackStacks[MainTabStackId.Create] = createStack
 			tabBackStacks[MainTabStackId.Account] = accountStack
 		}
 		return when (selectedTab.stackId) {
 			MainTabStackId.Search -> searchStack
-			MainTabStackId.Favorites -> favoritesStack
+			MainTabStackId.Library -> libraryStack
 			MainTabStackId.Create -> createStack
 			MainTabStackId.Account -> accountStack
 		}
@@ -332,7 +332,7 @@ class MainViewModel(
 	}
 
 	private fun navigateToCookbookShare(token: String) {
-		navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = token))
+		navigator.replaceTabRoot(LibraryDestination(cookbookShareToken = token))
 	}
 
 	fun onStartCooking(recipeId: Int) {
@@ -477,10 +477,10 @@ class MainViewModel(
 				navigator.replaceTabRoot(CreateDestination)
 
 			PostLoginNavigationTarget.OpenFavoritesMyRecipes ->
-				navigator.replaceTabRoot(FavoritesDestination(openMyRecipes = true))
+				navigator.replaceTabRoot(LibraryDestination(openMyRecipes = true))
 
 			is PostLoginNavigationTarget.OpenFavoritesWithCookbookShare ->
-				navigator.replaceTabRoot(FavoritesDestination(cookbookShareToken = target.token))
+				navigator.replaceTabRoot(LibraryDestination(cookbookShareToken = target.token))
 		}
 	}
 
@@ -512,7 +512,7 @@ class MainViewModel(
 
 	private fun analyticsOriginForSelectedTab(): AnalyticsOrigin = when (selectedTab.stackId) {
 		MainTabStackId.Search -> AnalyticsOrigin.SEARCH
-		MainTabStackId.Favorites -> AnalyticsOrigin.FAVORITES
+		MainTabStackId.Library -> AnalyticsOrigin.FAVORITES
 		MainTabStackId.Create -> AnalyticsOrigin.CREATE_RECIPE
 		MainTabStackId.Account -> AnalyticsOrigin.ACCOUNT
 	}
@@ -521,7 +521,7 @@ class MainViewModel(
 
 	private fun tabRootForStack(stackId: MainTabStackId): NavKey = when (stackId) {
 		MainTabStackId.Search -> SearchDestination()
-		MainTabStackId.Favorites -> FavoritesDestination()
+		MainTabStackId.Library -> LibraryDestination()
 		MainTabStackId.Create -> CreateDestination
 		MainTabStackId.Account -> AccountDestination
 	}
@@ -533,9 +533,9 @@ class MainViewModel(
 				else -> SearchDestination()
 			}
 
-			MainTabStackId.Favorites -> when (destination) {
-				is FavoritesDestination -> destination
-				else -> FavoritesDestination()
+			MainTabStackId.Library -> when (destination) {
+				is LibraryDestination -> destination
+				else -> LibraryDestination()
 			}
 
 			else -> destination
@@ -543,7 +543,7 @@ class MainViewModel(
 
 	private fun tabStackIdForRoot(destination: NavKey): MainTabStackId = when (destination) {
 		is SearchDestination -> MainTabStackId.Search
-		is FavoritesDestination -> MainTabStackId.Favorites
+		is LibraryDestination -> MainTabStackId.Library
 		CreateDestination -> MainTabStackId.Create
 		AccountDestination -> MainTabStackId.Account
 		else -> error("$destination is not a tab root destination")
@@ -551,7 +551,7 @@ class MainViewModel(
 
 	private fun NavKey?.isSameTabRoot(root: NavKey): Boolean = when (root) {
 		is SearchDestination -> this is SearchDestination
-		is FavoritesDestination -> this is FavoritesDestination
+		is LibraryDestination -> this is LibraryDestination
 		else -> this == root
 	}
 

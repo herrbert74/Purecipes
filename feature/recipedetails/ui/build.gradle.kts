@@ -19,7 +19,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:analytics:domain"))
-				api(project(":feature:favorites:domain"))
+				api(project(":feature:library:domain"))
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:measurement:domain"))
 				api(project(":feature:sharing:domain"))

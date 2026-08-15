@@ -2,7 +2,7 @@ package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 
@@ -29,7 +29,7 @@ internal class CreateRecipeTabNavigator(
 		createStack.clear()
 		createStack += CreateDestination
 		replaceTabRoot(
-			FavoritesDestination(
+			LibraryDestination(
 				openMyRecipes = true,
 				recipeSaveMessage = message,
 			),

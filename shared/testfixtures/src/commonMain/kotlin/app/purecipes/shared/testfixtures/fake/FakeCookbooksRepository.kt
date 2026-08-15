@@ -1,7 +1,7 @@
 package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.base.kotlin.result.Outcome
-import app.purecipes.feature.favorites.domain.repository.CookbooksRepository
+import app.purecipes.feature.library.domain.repository.CookbooksRepository
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary

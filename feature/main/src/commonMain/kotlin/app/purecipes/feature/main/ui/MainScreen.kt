@@ -26,7 +26,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
-import app.purecipes.feature.favorites.ui.navigation.installFavoritesFlow
+import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
@@ -157,7 +157,7 @@ private fun MainScreenContent(
 								installCookingFlow(
 									navigator = viewModel.navigator,
 								)
-								installFavoritesFlow(
+								installLibraryFlow(
 									sessionKey = sessionKey,
 									onRecipeSelect = viewModel::onRecipeSelected,
 									onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,

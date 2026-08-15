@@ -7,7 +7,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumStatus
 import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
@@ -56,7 +56,7 @@ class MainViewModelGlobalPropertiesTest {
 		)
 		viewModel.start()
 
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe
 			AnalyticsValue.TextValue(AnalyticsActiveTab.FAVORITES)
@@ -80,11 +80,11 @@ class MainViewModelGlobalPropertiesTest {
 	@Test
 	fun `recipe selection from favorites stamps favorites origin`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 		viewModel.onRecipeSelected(42)
 
 		viewModel.peekBackStack() shouldBe listOf(
-			FavoritesDestination(),
+			LibraryDestination(),
 			RecipeDetailsDestination(42, origin = AnalyticsOrigin.FAVORITES.value),
 		)
 	}

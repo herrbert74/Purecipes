@@ -4,7 +4,7 @@ set -euo pipefail
 UI_TEST_MODULES=(
 	feature/auth/ui
 	feature/cooking/ui
-	feature/favorites/ui
+	feature/library/ui
 	feature/newrecipe/ui
 	feature/recipedetails/ui
 	feature/search/ui
