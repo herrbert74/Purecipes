@@ -295,6 +295,36 @@ class RecipeRepository(
 		}
 	}
 
+	internal fun loadFavoriteRecipeIds(
+		conn: java.sql.Connection,
+		userId: Long,
+		recipeIds: Collection<Int>,
+	): Set<Int> {
+		if (recipeIds.isEmpty()) {
+			return emptySet()
+		}
+		val placeholders = recipeIds.joinToString(separator = ",") { "?" }
+		val sql = """
+			SELECT recipe_id
+			FROM favorites
+			WHERE user_id = ?
+				AND recipe_id IN ($placeholders)
+		""".trimIndent()
+		return conn.prepareStatement(sql).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			recipeIds.forEachIndexed { index, recipeId ->
+				ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX + index, recipeId)
+			}
+			ps.executeQuery().use { rs ->
+				buildSet {
+					while (rs.next()) {
+						add(rs.getInt("recipe_id"))
+					}
+				}
+			}
+		}
+	}
+
 	private fun isRecipeOwnedByUser(conn: java.sql.Connection, recipeId: Int, userId: Long): Boolean {
 		return conn.prepareStatement(RecipeRepositorySql.RECIPE_OWNED_BY_USER_SQL).use { ps ->
 			ps.setInt(1, recipeId)

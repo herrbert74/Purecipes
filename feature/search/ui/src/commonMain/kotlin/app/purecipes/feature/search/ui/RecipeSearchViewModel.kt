@@ -15,6 +15,8 @@ import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.favorites.domain.model.FavoriteEvent
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -71,6 +73,7 @@ class RecipeSearchViewModel(
 	private val updateUserExcludedIngredients: UpdateUserExcludedIngredientsUseCase,
 	private val matchIngredientInRecipes: MatchIngredientInRecipesUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
+	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	observePremiumStatus: ObservePremiumStatusUseCase,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
@@ -119,6 +122,7 @@ class RecipeSearchViewModel(
 		private set
 
 	private var ingredientMatchJob: Job? = null
+	private var favoriteEventsJob: Job? = null
 	private var lastSearchedFilters: SearchFilters = SearchFilters()
 	private var lastSearchedKeyIngredients: Set<String> = emptySet()
 	private var lastSavedPantry: Set<String> = emptySet()
@@ -165,6 +169,7 @@ class RecipeSearchViewModel(
 			}
 			doSearch()
 		}
+		startFavoriteEventsCollection(sessionKey)
 	}
 
 	fun onSessionKeyChanged(sessionKey: String?) {
@@ -172,7 +177,40 @@ class RecipeSearchViewModel(
 		viewModelScope.launch {
 			reloadSessionState(sessionKey)
 			loadedSessionKey = sessionKey
+			startFavoriteEventsCollection(sessionKey)
 			doSearch()
+		}
+	}
+
+	private fun startFavoriteEventsCollection(sessionKey: String?) {
+		favoriteEventsJob?.cancel()
+		favoriteEventsJob = null
+		if (sessionKey == null) {
+			return
+		}
+		favoriteEventsJob = viewModelScope.launch {
+			observeFavoriteEvents().collect { event ->
+				applyFavoriteEvent(event)
+			}
+		}
+	}
+
+	private fun applyFavoriteEvent(event: FavoriteEvent) {
+		val isFavorite = when (event) {
+			is FavoriteEvent.Added -> true
+			is FavoriteEvent.Removed -> false
+		}
+		recipes.forEachIndexed { index, recipe ->
+			if (recipe.id == event.recipeId && recipe.isFavorite != isFavorite) {
+				recipes[index] = recipe.copy(isFavorite = isFavorite)
+			}
+		}
+		nearMissRecipes.forEachIndexed { index, nearMiss ->
+			if (nearMiss.recipe.id == event.recipeId && nearMiss.recipe.isFavorite != isFavorite) {
+				nearMissRecipes[index] = nearMiss.copy(
+					recipe = nearMiss.recipe.copy(isFavorite = isFavorite),
+				)
+			}
 		}
 	}
 

@@ -4,6 +4,8 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.favorites.domain.model.FavoriteEvent
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -24,6 +26,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
+import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -69,6 +72,82 @@ class RecipeSearchViewModelTest {
 		viewModel.isSearching shouldBe false
 		viewModel.isSearchBarActive shouldBe false
 		viewModel.errorMessage shouldBe null
+	}
+
+	@Test
+	fun `favorite added event marks matching search result as favorite`() = runViewModelTest {
+		val favoritesRepository = FakeFavoritesRepository()
+		val repository = FakeRecipeSearchRepository(
+			result = Ok(
+				listOf(
+					RecipeSummary(
+						id = 7,
+						title = "Tomato Pasta",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 20,
+					),
+				),
+			),
+		)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
+			searchRepository = repository,
+			favoritesRepository = favoritesRepository,
+			sessionKey = "session",
+		)
+		advanceUntilIdle()
+		viewModel.recipes.single().isFavorite shouldBe false
+
+		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Added(7))
+		advanceUntilIdle()
+
+		viewModel.recipes.single().isFavorite shouldBe true
+	}
+
+	@Test
+	fun `favorite removed event clears favorite on matching search result`() = runViewModelTest {
+		val favoritesRepository = FakeFavoritesRepository()
+		val repository = FakeRecipeSearchRepository(
+			result = Ok(
+				listOf(
+					RecipeSummary(
+						id = 7,
+						title = "Tomato Pasta",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 20,
+						isFavorite = true,
+					),
+				),
+			),
+			nearMissRecipes = listOf(
+				NearMissRecipe(
+					recipe = RecipeSummary(
+						id = 9,
+						title = "Almost Stew",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 30,
+						isFavorite = true,
+					),
+					missingIngredient = "Basil",
+				),
+			),
+		)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
+			searchRepository = repository,
+			favoritesRepository = favoritesRepository,
+			sessionKey = "session",
+		)
+		advanceUntilIdle()
+
+		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Removed(7))
+		advanceUntilIdle()
+		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Removed(9))
+		advanceUntilIdle()
+
+		viewModel.recipes.single().isFavorite shouldBe false
+		viewModel.nearMissRecipes.single().recipe.isFavorite shouldBe false
 	}
 
 	@Test
@@ -339,6 +418,7 @@ class RecipeSearchViewModelTest {
 			),
 			matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 			searchReadiness = SearchReadinessCoordinator(),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 			observePremiumStatus = ObservePremiumStatusUseCase(
 				FakeSubscriptionRepository(),
 				FakeMonetisationDebugOverridesRepository(),

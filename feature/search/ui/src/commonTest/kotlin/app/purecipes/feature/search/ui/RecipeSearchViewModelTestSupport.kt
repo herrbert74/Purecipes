@@ -3,6 +3,7 @@ package app.purecipes.feature.search.ui
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.favorites.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -21,6 +22,7 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
+import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -43,6 +45,7 @@ internal object RecipeSearchViewModelTestSupport {
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		sessionKey: String? = null,
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
@@ -59,6 +62,7 @@ internal object RecipeSearchViewModelTestSupport {
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = searchReadiness,
+		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		observePremiumStatus = ObservePremiumStatusUseCase(
 			subscriptionRepository,
 			FakeMonetisationDebugOverridesRepository(),
