@@ -54,4 +54,17 @@ class FavoritesAccessorTest {
 
 		event.await() shouldBe FavoriteEvent.Added(recipeId = 42)
 	}
+
+	@Test
+	fun `remove favorite emits removed event`() = runTest {
+		val accessor = FavoritesAccessor(
+			FavoritesRemoteDataSource(FakePurecipesApi()),
+		)
+		val event = async { accessor.observeFavoriteEvents().take(1).single() }
+		runCurrent()
+
+		accessor.removeFavorite(recipeId = 7)
+
+		event.await() shouldBe FavoriteEvent.Removed(recipeId = 7)
+	}
 }
