@@ -18,8 +18,11 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 fun StepByStepCookingScreenContent(
 	darkTheme: Boolean,
 	recipe: RecipeDetails,
-	currentStepIndex: Int,
+	currentPageIndex: Int,
 	modifier: Modifier = Modifier,
+	canManageFavorites: Boolean = true,
+	favoriteErrorMessage: String? = null,
+	isFavoriteUpdating: Boolean = false,
 ) {
 	PurecipesTheme(darkTheme = darkTheme) {
 		Scaffold(
@@ -35,8 +38,16 @@ fun StepByStepCookingScreenContent(
 		) { innerPadding ->
 			StepByStepCookingScreen(
 				recipe = recipe,
-				currentStepIndex = currentStepIndex,
-				onStepChange = {},
+				canManageFavorites = canManageFavorites,
+				currentPageIndex = currentPageIndex,
+				favoriteErrorMessage = favoriteErrorMessage,
+				isFavoriteUpdating = isFavoriteUpdating,
+				onPageChange = {},
+				onToggleFavorite = {},
+				onShare = {},
+				onShowCookbookSheet = {},
+				onDone = {},
+				onFindMoreRecipes = {},
 				modifier = Modifier.padding(innerPadding),
 			)
 		}
