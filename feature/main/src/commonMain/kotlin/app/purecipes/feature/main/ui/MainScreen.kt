@@ -156,6 +156,9 @@ private fun MainScreenContent(
 								)
 								installCookingFlow(
 									navigator = viewModel.navigator,
+									canManageFavorites = canManageFavorites,
+									sessionKey = sessionKey,
+									onFindMoreRecipes = viewModel.cookingFlowNavigator::findMoreRecipes,
 								)
 								installLibraryFlow(
 									sessionKey = sessionKey,

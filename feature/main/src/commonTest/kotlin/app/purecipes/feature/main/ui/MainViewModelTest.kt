@@ -210,6 +210,31 @@ class MainViewModelTest {
 	}
 
 	@Test
+	fun `find more recipes from cooking returns to search root`() = runUnconfinedViewModelTest {
+		val viewModel = mainViewModelForTest()
+		viewModel.onRecipeSelected(42)
+		viewModel.onStartCooking(42)
+
+		viewModel.cookingFlowNavigator.findMoreRecipes()
+
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+	}
+
+	@Test
+	fun `find more recipes from library cooking switches to search root`() = runUnconfinedViewModelTest {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
+		viewModel.onRecipeSelected(42)
+		viewModel.onStartCooking(42)
+
+		viewModel.cookingFlowNavigator.findMoreRecipes()
+
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+	}
+
+	@Test
 	fun `pre cook interstitial tracks ad impression and click callbacks`() = runUnconfinedViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val viewModel = mainViewModelForTest(

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -20,6 +21,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,21 +37,30 @@ import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.CenteredMessageContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
+import kotlinx.coroutines.launch
 
 internal const val STEP_BY_STEP_CURRENT_STEP_TEXT_TAG = "stepByStepCurrentStepText"
+internal const val FINISH_COOKING_BUTTON_TAG = "finishCookingButton"
 
 @Composable
 fun StepByStepCookingRoute(
 	recipeId: Int,
+	canManageFavorites: Boolean,
 	onBack: () -> Unit,
+	onFindMoreRecipes: () -> Unit,
 	modifier: Modifier = Modifier,
+	sessionKey: String? = null,
 	viewModel: StepByStepCookingViewModel =
 		assistedMetroViewModel<StepByStepCookingViewModel, StepByStepCookingViewModel.Factory>(
 			key = recipeId.toString(),
 		) {
-			create(recipeId = recipeId)
+			create(recipeId = recipeId, sessionKey = sessionKey)
 		},
 ) {
+	LaunchedEffect(sessionKey) {
+		viewModel.onSessionKeyChanged(sessionKey)
+	}
+
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
@@ -83,8 +94,15 @@ fun StepByStepCookingRoute(
 
 			else -> StepByStepCookingScreen(
 				recipe = viewModel.recipeDetails ?: return@Scaffold,
-				currentStepIndex = viewModel.currentStepIndex,
-				onStepChange = viewModel::setCurrentStep,
+				canManageFavorites = canManageFavorites,
+				currentPageIndex = viewModel.currentPageIndex,
+				favoriteErrorMessage = viewModel.favoriteErrorMessage,
+				isFavoriteUpdating = viewModel.isFavoriteUpdating,
+				onPageChange = viewModel::setCurrentPage,
+				onToggleFavorite = viewModel::toggleFavorite,
+				onShare = viewModel::shareCurrentRecipe,
+				onDone = onBack,
+				onFindMoreRecipes = onFindMoreRecipes,
 				modifier = Modifier.padding(innerPadding),
 			)
 		}
@@ -94,19 +112,29 @@ fun StepByStepCookingRoute(
 @Composable
 internal fun StepByStepCookingScreen(
 	recipe: RecipeDetails,
-	currentStepIndex: Int,
-	onStepChange: (Int) -> Unit,
+	canManageFavorites: Boolean,
+	currentPageIndex: Int,
+	favoriteErrorMessage: String?,
+	isFavoriteUpdating: Boolean,
+	onPageChange: (Int) -> Unit,
+	onToggleFavorite: () -> Unit,
+	onShare: () -> Unit,
+	onDone: () -> Unit,
+	onFindMoreRecipes: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	val pagerState = rememberPagerState(
-		initialPage = currentStepIndex,
-		pageCount = { recipe.steps.size },
+		initialPage = currentPageIndex,
+		pageCount = { recipe.steps.size + 1 },
 	)
-	val currentOnStepChange by rememberUpdatedState(onStepChange)
+	val currentOnPageChange by rememberUpdatedState(onPageChange)
+	val pagerScope = rememberCoroutineScope()
+	val isFinishPage = currentPageIndex >= recipe.steps.size
+	val finishPageIndex = recipe.steps.size
 
 	LaunchedEffect(pagerState.currentPage) {
-		if (pagerState.currentPage != currentStepIndex) {
-			currentOnStepChange(pagerState.currentPage)
+		if (pagerState.currentPage != currentPageIndex) {
+			currentOnPageChange(pagerState.currentPage)
 		}
 	}
 
@@ -116,33 +144,71 @@ internal fun StepByStepCookingScreen(
 			.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
-		Text(
-			text = "${currentStepIndex + 1} of ${recipe.steps.size}",
-			style = PurecipesTheme.typography.titleMedium,
-			color = PurecipesTheme.colorScheme.primary,
-		)
-		PagerIndicator(
-			currentStepIndex = currentStepIndex,
-			stepCount = recipe.steps.size,
-			modifier = Modifier.fillMaxWidth(),
-		)
+		if (!isFinishPage) {
+			Text(
+				text = "${currentPageIndex + 1} of ${recipe.steps.size}",
+				style = PurecipesTheme.typography.titleMedium,
+				color = PurecipesTheme.colorScheme.primary,
+			)
+			PagerIndicator(
+				currentPageIndex = currentPageIndex,
+				stepCount = recipe.steps.size,
+				modifier = Modifier.fillMaxWidth(),
+			)
+		}
 		HorizontalPager(
 			state = pagerState,
 			modifier = Modifier
 				.fillMaxWidth()
 				.weight(1f),
 		) { page ->
-			Card(
-				modifier = Modifier.fillMaxSize(),
-				colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
-			) {
-				Text(
-					text = recipe.steps[page],
-					modifier = Modifier
-						.padding(PurecipesTheme.space.l)
-						.testTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG),
-					style = PurecipesTheme.typography.bodyLarge,
+			if (page >= finishPageIndex) {
+				CookingFinishedContent(
+					recipe = recipe,
+					canManageFavorites = canManageFavorites,
+					isFavoriteUpdating = isFavoriteUpdating,
+					favoriteErrorMessage = favoriteErrorMessage,
+					onToggleFavorite = onToggleFavorite,
+					onShare = onShare,
+					onDone = onDone,
+					onFindMoreRecipes = onFindMoreRecipes,
 				)
+			} else {
+				Column(
+					modifier = Modifier.fillMaxSize(),
+					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				) {
+					Card(
+						modifier = Modifier
+							.fillMaxWidth()
+							.weight(1f),
+						colors = CardDefaults.cardColors(
+							containerColor = PurecipesTheme.colorScheme.surfaceContainerLow,
+						),
+					) {
+						Text(
+							text = recipe.steps[page],
+							modifier = Modifier
+								.padding(PurecipesTheme.space.l)
+								.testTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG),
+							style = PurecipesTheme.typography.bodyLarge,
+						)
+					}
+					if (page == recipe.steps.lastIndex) {
+						Button(
+							onClick = {
+								pagerScope.launch {
+									pagerState.animateScrollToPage(finishPageIndex)
+								}
+							},
+							modifier = Modifier
+								.fillMaxWidth()
+								.testTag(FINISH_COOKING_BUTTON_TAG),
+						) {
+							Text(text = "Finish cooking")
+						}
+					}
+				}
 			}
 		}
 	}
@@ -150,11 +216,11 @@ internal fun StepByStepCookingScreen(
 
 @Composable
 private fun PagerIndicator(
-	currentStepIndex: Int,
+	currentPageIndex: Int,
 	stepCount: Int,
 	modifier: Modifier = Modifier,
 ) {
-	val progress = (currentStepIndex + 1) / stepCount.toFloat()
+	val progress = (currentPageIndex + 1) / stepCount.toFloat()
 
 	Box(
 		modifier = modifier
@@ -207,7 +273,7 @@ private fun StepByStepCookingScreenLightPreview() {
 	StepByStepCookingScreenContent(
 		darkTheme = false,
 		recipe = previewCookingRecipe,
-		currentStepIndex = 1,
+		currentPageIndex = 1,
 	)
 }
 
@@ -222,6 +288,36 @@ private fun StepByStepCookingScreenDarkPreview() {
 	StepByStepCookingScreenContent(
 		darkTheme = true,
 		recipe = previewCookingRecipe,
-		currentStepIndex = 0,
+		currentPageIndex = 0,
+	)
+}
+
+@Preview(
+	name = "Step by step cooking last step",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun StepByStepCookingScreenLastStepPreview() {
+	StepByStepCookingScreenContent(
+		darkTheme = false,
+		recipe = previewCookingRecipe,
+		currentPageIndex = previewCookingRecipe.steps.lastIndex,
+	)
+}
+
+@Preview(
+	name = "Step by step cooking finished",
+	device = Devices.PIXEL_4,
+	showBackground = true,
+	backgroundColor = 0xFFF5F5F5,
+)
+@Composable
+private fun StepByStepCookingScreenFinishedPreview() {
+	StepByStepCookingScreenContent(
+		darkTheme = false,
+		recipe = previewCookingRecipe,
+		currentPageIndex = previewCookingRecipe.steps.size,
 	)
 }

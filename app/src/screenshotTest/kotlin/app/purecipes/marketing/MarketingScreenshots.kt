@@ -99,7 +99,7 @@ private fun CookingMarketingScreenshot() {
 	StepByStepCookingScreenContent(
 		darkTheme = false,
 		recipe = marketingCookingRecipe,
-		currentStepIndex = 1,
+		currentPageIndex = 1,
 	)
 }
 

@@ -8,15 +8,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsShareType
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
 import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
@@ -28,20 +34,28 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
 
 @AssistedInject
 class StepByStepCookingViewModel(
+	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
 	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
+	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
+	private val shareRecipe: ShareRecipeUseCase,
 	private val trackEvent: TrackEventUseCase,
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
 	@Assisted private val recipeId: Int,
+	@Assisted sessionKey: String?,
 ) : ViewModel() {
+
+	private var activeSessionKey: String? = sessionKey
 
 	var isLoading by mutableStateOf(true)
 		private set
@@ -52,7 +66,13 @@ class StepByStepCookingViewModel(
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
 
-	var currentStepIndex by mutableIntStateOf(0)
+	var favoriteErrorMessage by mutableStateOf<String?>(null)
+		private set
+
+	var isFavoriteUpdating by mutableStateOf(false)
+		private set
+
+	var currentPageIndex by mutableIntStateOf(0)
 		private set
 
 	private var baseRecipeDetails: RecipeDetails? = null
@@ -67,6 +87,8 @@ class StepByStepCookingViewModel(
 
 	private var hasTrackedCookingAbandoned = false
 
+	private var favoriteEventsJob: Job? = null
+
 	init {
 		viewModelScope.launch {
 			observeMeasurementPreferences().collectLatest { preferences ->
@@ -75,6 +97,7 @@ class StepByStepCookingViewModel(
 			}
 		}
 		loadRecipe()
+		startFavoriteEventsCollection(sessionKey)
 	}
 
 	override fun onCleared() {
@@ -82,31 +105,125 @@ class StepByStepCookingViewModel(
 		super.onCleared()
 	}
 
+	fun onSessionKeyChanged(sessionKey: String?) {
+		if (sessionKey == activeSessionKey) {
+			return
+		}
+		activeSessionKey = sessionKey
+		startFavoriteEventsCollection(sessionKey)
+		if (sessionKey == null) {
+			baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = false)
+			recipeDetails = recipeDetails?.copy(isFavorite = false)
+		} else {
+			refreshFavoriteState()
+		}
+	}
+
 	fun previousStep() {
-		if (currentStepIndex > 0) {
-			currentStepIndex -= 1
-			trackCookingStepViewed()
+		if (currentPageIndex > 0) {
+			currentPageIndex -= 1
+			onPageChanged()
 		}
 	}
 
 	fun nextStep() {
 		val details = recipeDetails ?: return
-		if (currentStepIndex < details.steps.lastIndex) {
-			currentStepIndex += 1
-			trackCookingStepViewed()
-			trackCookingCompletedIfNeeded()
+		if (currentPageIndex < finishPageIndex(details)) {
+			currentPageIndex += 1
+			onPageChanged()
 		}
 	}
 
-	fun setCurrentStep(stepIndex: Int) {
+	fun setCurrentPage(pageIndex: Int) {
 		val details = recipeDetails ?: return
-		val newIndex = stepIndex.coerceIn(0, details.steps.lastIndex)
-		if (newIndex == currentStepIndex) {
+		val newIndex = pageIndex.coerceIn(0, finishPageIndex(details))
+		if (newIndex == currentPageIndex) {
 			return
 		}
-		currentStepIndex = newIndex
-		trackCookingStepViewed()
-		trackCookingCompletedIfNeeded()
+		currentPageIndex = newIndex
+		onPageChanged()
+	}
+
+	fun toggleFavorite() {
+		val currentRecipe = recipeDetails ?: return
+		if (isFavoriteUpdating) return
+		isFavoriteUpdating = true
+		favoriteErrorMessage = null
+
+		viewModelScope.launch {
+			val outcome = if (currentRecipe.isFavorite) {
+				removeFavoriteRecipe(currentRecipe.id)
+			} else {
+				addFavoriteRecipe(currentRecipe.id)
+			}
+
+			if (outcome.getError() == null) {
+				baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = !currentRecipe.isFavorite)
+				recipeDetails = currentRecipe.copy(isFavorite = !currentRecipe.isFavorite)
+				trackEvent(
+					AnalyticsEvent.FavoriteChanged(
+						recipeId = currentRecipe.id,
+						recipeName = currentRecipe.title,
+						isFavorite = !currentRecipe.isFavorite,
+						origin = AnalyticsOrigin.COOKING,
+					),
+				)
+			} else {
+				favoriteErrorMessage = outcome.getError()?.message
+			}
+			isFavoriteUpdating = false
+		}
+	}
+
+	fun shareCurrentRecipe() {
+		shareRecipe(
+			recipeId = recipeId,
+			title = recipeDetails?.title,
+		)
+		trackEvent(
+			AnalyticsEvent.RecipeShared(
+				recipeId = recipeId,
+				recipeName = recipeDetails?.title.orEmpty(),
+				origin = AnalyticsOrigin.COOKING,
+				shareType = AnalyticsShareType.RECIPE,
+			),
+		)
+	}
+
+	private fun startFavoriteEventsCollection(sessionKey: String?) {
+		favoriteEventsJob?.cancel()
+		favoriteEventsJob = null
+		if (sessionKey == null) {
+			return
+		}
+		favoriteEventsJob = viewModelScope.launch {
+			observeFavoriteEvents().collect { event ->
+				applyFavoriteEvent(event)
+			}
+		}
+	}
+
+	private fun applyFavoriteEvent(event: FavoriteEvent) {
+		if (event.recipeId != recipeId) {
+			return
+		}
+		val isFavorite = when (event) {
+			is FavoriteEvent.Added -> true
+			is FavoriteEvent.Removed -> false
+		}
+		if (baseRecipeDetails?.isFavorite == isFavorite && recipeDetails?.isFavorite == isFavorite) {
+			return
+		}
+		baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = isFavorite)
+		recipeDetails = recipeDetails?.copy(isFavorite = isFavorite)
+	}
+
+	private fun refreshFavoriteState() {
+		viewModelScope.launch {
+			val loaded = getRecipeDetails(recipeId).get() ?: return@launch
+			baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = loaded.isFavorite)
+			recipeDetails = recipeDetails?.copy(isFavorite = loaded.isFavorite)
+		}
 	}
 
 	private fun applyMeasurementPreferences() {
@@ -119,6 +236,7 @@ class StepByStepCookingViewModel(
 		viewModelScope.launch {
 			isLoading = true
 			errorMessage = null
+			favoriteErrorMessage = null
 			recipeDetails = null
 			hasTrackedCookingCompleted = false
 
@@ -151,19 +269,33 @@ class StepByStepCookingViewModel(
 				)
 			}
 			errorMessage = error?.message
-			currentStepIndex = 0
+			currentPageIndex = 0
 			isLoading = false
 		}
 	}
 
+	private fun onPageChanged() {
+		if (!isOnFinishPage()) {
+			trackCookingStepViewed()
+		}
+		trackCookingCompletedIfNeeded()
+	}
+
+	private fun isOnFinishPage(): Boolean {
+		val details = recipeDetails ?: baseRecipeDetails ?: return false
+		return currentPageIndex >= details.steps.size
+	}
+
+	private fun finishPageIndex(details: RecipeDetails): Int = details.steps.size
+
 	private fun trackCookingStepViewed() {
 		val details = recipeDetails ?: baseRecipeDetails ?: return
-		logBreadcrumb(CrashBreadcrumb.cookingStepAdvanced(recipeId, currentStepIndex))
+		logBreadcrumb(CrashBreadcrumb.cookingStepAdvanced(recipeId, currentPageIndex))
 		trackEvent(
 			AnalyticsEvent.CookingStepViewed(
 				recipeId = recipeId,
 				recipeName = details.title,
-				stepIndex = currentStepIndex,
+				stepIndex = currentPageIndex,
 				stepCount = details.steps.size,
 			),
 		)
@@ -171,7 +303,7 @@ class StepByStepCookingViewModel(
 
 	private fun trackCookingCompletedIfNeeded() {
 		val details = recipeDetails ?: baseRecipeDetails ?: return
-		if (hasTrackedCookingCompleted || currentStepIndex != details.steps.lastIndex) {
+		if (hasTrackedCookingCompleted || currentPageIndex < details.steps.lastIndex) {
 			return
 		}
 		hasTrackedCookingCompleted = true
@@ -196,7 +328,7 @@ class StepByStepCookingViewModel(
 			AnalyticsEvent.CookingAbandoned(
 				recipeId = recipeId,
 				recipeName = details.title,
-				lastStepIndex = currentStepIndex,
+				lastStepIndex = currentPageIndex.coerceAtMost(details.steps.lastIndex),
 				stepCount = details.steps.size,
 				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
 			),
@@ -208,6 +340,6 @@ class StepByStepCookingViewModel(
 	@ContributesIntoMap(AppScope::class)
 	interface Factory : ManualViewModelAssistedFactory {
 
-		fun create(recipeId: Int): StepByStepCookingViewModel
+		fun create(recipeId: Int, sessionKey: String?): StepByStepCookingViewModel
 	}
 }

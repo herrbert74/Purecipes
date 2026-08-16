@@ -159,6 +159,12 @@ class MainViewModel(
 		push = navigatorImpl::push,
 	)
 
+	internal val cookingFlowNavigator = CookingFlowNavigator(
+		activeStack = { activeStack },
+		stackFor = ::stackFor,
+		selectTab = ::selectTab,
+	)
+
 	fun start() {
 		if (isStarted) {
 			return

@@ -4,16 +4,24 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsShareType
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.sharing.domain.repository.ShareRepository
+import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
+import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
@@ -37,16 +45,16 @@ class StepByStepCookingViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.previousStep()
-		viewModel.currentStepIndex shouldBe 0
+		viewModel.currentPageIndex shouldBe 0
 
 		viewModel.nextStep()
 		viewModel.nextStep()
 		viewModel.nextStep()
 
-		viewModel.currentStepIndex shouldBe recipe.steps.lastIndex
+		viewModel.currentPageIndex shouldBe recipe.steps.size
 
 		viewModel.previousStep()
-		viewModel.currentStepIndex shouldBe recipe.steps.lastIndex - 1
+		viewModel.currentPageIndex shouldBe recipe.steps.lastIndex
 	}
 
 	@Test
@@ -56,14 +64,14 @@ class StepByStepCookingViewModelTest {
 
 		advanceUntilIdle()
 
-		viewModel.setCurrentStep(1)
-		viewModel.currentStepIndex shouldBe 1
+		viewModel.setCurrentPage(1)
+		viewModel.currentPageIndex shouldBe 1
 
-		viewModel.setCurrentStep(99)
-		viewModel.currentStepIndex shouldBe recipe.steps.lastIndex
+		viewModel.setCurrentPage(99)
+		viewModel.currentPageIndex shouldBe recipe.steps.size
 
-		viewModel.setCurrentStep(-1)
-		viewModel.currentStepIndex shouldBe 0
+		viewModel.setCurrentPage(-1)
+		viewModel.currentPageIndex shouldBe 0
 	}
 
 	@Test
@@ -137,6 +145,33 @@ class StepByStepCookingViewModelTest {
 	}
 
 	@Test
+	fun `moving to finish page does not track an extra cooking step viewed`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			analyticsRepository = analyticsRepository,
+		)
+
+		advanceUntilIdle()
+		repeat(recipe.steps.lastIndex) {
+			viewModel.nextStep()
+		}
+		advanceUntilIdle()
+		val stepViewedCount =
+			analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingStepViewed>().size
+
+		viewModel.nextStep()
+		advanceUntilIdle()
+
+		viewModel.currentPageIndex shouldBe recipe.steps.size
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingStepViewed>().size shouldBe
+			stepViewedCount
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookingCompleted>().size shouldBe 1
+	}
+
+	@Test
 	fun `leaving cooking before completion tracks cooking abandoned`() = runViewModelTest {
 		val recipe = fakeRecipeDetails()
 		val analyticsRepository = FakeAnalyticsRepository()
@@ -201,22 +236,105 @@ class StepByStepCookingViewModelTest {
 		)
 	}
 
+	@Test
+	fun `toggle favorite updates recipe state and tracks event`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val favoritesRepository = FakeFavoritesRepository()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			favoritesRepository = favoritesRepository,
+			analyticsRepository = analyticsRepository,
+		)
+
+		advanceUntilIdle()
+		viewModel.toggleFavorite()
+		advanceUntilIdle()
+
+		viewModel.recipeDetails?.isFavorite shouldBe true
+		viewModel.favoriteErrorMessage shouldBe null
+		favoritesRepository.addedRecipeIds shouldBe listOf(recipe.id)
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.FavoriteChanged>() shouldBe listOf(
+			AnalyticsEvent.FavoriteChanged(
+				recipeId = recipe.id,
+				recipeName = recipe.title,
+				isFavorite = true,
+				origin = AnalyticsOrigin.COOKING,
+			),
+		)
+	}
+
+	@Test
+	fun `favorite added event marks matching recipe as favorite`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val favoritesRepository = FakeFavoritesRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			favoritesRepository = favoritesRepository,
+			sessionKey = "session",
+		)
+
+		advanceUntilIdle()
+		viewModel.recipeDetails?.isFavorite shouldBe false
+
+		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Added(recipe.id))
+		advanceUntilIdle()
+
+		viewModel.recipeDetails?.isFavorite shouldBe true
+	}
+
+	@Test
+	fun `share current recipe tracks recipe shared`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			analyticsRepository = analyticsRepository,
+		)
+
+		advanceUntilIdle()
+		viewModel.shareCurrentRecipe()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeShared>() shouldBe listOf(
+			AnalyticsEvent.RecipeShared(
+				recipeId = recipe.id,
+				recipeName = recipe.title,
+				origin = AnalyticsOrigin.COOKING,
+				shareType = AnalyticsShareType.RECIPE,
+			),
+		)
+	}
+
 	private fun createViewModel(
 		recipeId: Int,
 		recipe: RecipeDetails = fakeRecipeDetails(id = recipeId),
 		recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(Ok(recipe)),
+		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 		crashRepository: FakeCrashRepository = FakeCrashRepository(),
+		sessionKey: String? = null,
 	): StepByStepCookingViewModel {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		return StepByStepCookingViewModel(
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
 			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+			shareRecipe = ShareRecipeUseCase(
+				object : ShareRepository {
+					override fun shareText(text: String, title: String?) = Unit
+				},
+			),
 			trackEvent = TrackEventUseCase(analyticsRepository),
 			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
 			sendHandledException = SendHandledExceptionUseCase(crashRepository),
 			recipeId = recipeId,
+			sessionKey = sessionKey,
 		)
 	}
 }
