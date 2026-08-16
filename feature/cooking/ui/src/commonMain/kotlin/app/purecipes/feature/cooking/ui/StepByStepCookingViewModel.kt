@@ -2,6 +2,7 @@ package app.purecipes.feature.cooking.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -17,12 +18,16 @@ import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCas
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
@@ -39,9 +44,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
 
+private const val COOKBOOK_PICKER_PAGE_SIZE = 100
+
 @AssistedInject
 class StepByStepCookingViewModel(
 	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
+	private val addRecipeToCookbook: AddRecipeToCookbookUseCase,
+	private val createCookbook: CreateCookbookUseCase,
+	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
 	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
@@ -70,6 +80,14 @@ class StepByStepCookingViewModel(
 		private set
 
 	var isFavoriteUpdating by mutableStateOf(false)
+		private set
+
+	val sheetCookbooks = mutableStateListOf<CookbookSummary>()
+
+	var cookbookActionError by mutableStateOf<String?>(null)
+		private set
+
+	var isCookbookActionInFlight by mutableStateOf(false)
 		private set
 
 	var currentPageIndex by mutableIntStateOf(0)
@@ -114,6 +132,7 @@ class StepByStepCookingViewModel(
 		if (sessionKey == null) {
 			baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = false)
 			recipeDetails = recipeDetails?.copy(isFavorite = false)
+			sheetCookbooks.clear()
 		} else {
 			refreshFavoriteState()
 		}
@@ -188,6 +207,84 @@ class StepByStepCookingViewModel(
 				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
+	}
+
+	fun prepareCookbookPicker() {
+		viewModelScope.launch {
+			sheetCookbooks.clear()
+			val page = getCookbooksPage(1, COOKBOOK_PICKER_PAGE_SIZE).get() ?: return@launch
+			sheetCookbooks.addAll(page.items)
+		}
+	}
+
+	fun addRecipeToCookbookId(cookbookId: Int, onDone: (String?) -> Unit) {
+		val recipe = recipeDetails ?: return onDone(null)
+		viewModelScope.launch {
+			isCookbookActionInFlight = true
+			cookbookActionError = null
+			val outcome = addRecipeToCookbook(cookbookId, recipe.id)
+			val err = outcome.getError()?.message
+			if (err == null) {
+				val cookbookName = sheetCookbooks.firstOrNull { it.id == cookbookId }?.name
+				trackEvent(
+					AnalyticsEvent.RecipeAddedToCookbook(
+						recipeId = recipe.id,
+						recipeName = recipe.title,
+						cookbookId = cookbookId,
+						cookbookName = cookbookName,
+						origin = AnalyticsOrigin.COOKING,
+					),
+				)
+			}
+			isCookbookActionInFlight = false
+			onDone(err)
+		}
+	}
+
+	fun createCookbookAndAdd(name: String, onDone: (String?) -> Unit) {
+		val recipe = recipeDetails
+		val trimmed = name.trim()
+		when {
+			recipe == null || trimmed.isEmpty() -> onDone(null)
+			sheetCookbooks.any { it.name.trim().equals(trimmed, ignoreCase = true) } -> {
+				val duplicateMessage = "Cookbook already exists"
+				cookbookActionError = duplicateMessage
+				onDone(duplicateMessage)
+			}
+
+			else -> viewModelScope.launch {
+				isCookbookActionInFlight = true
+				cookbookActionError = null
+				val createOutcome = createCookbook(trimmed)
+				val created = createOutcome.get()
+				if (created == null) {
+					isCookbookActionInFlight = false
+					onDone(createOutcome.getError()?.message)
+					return@launch
+				}
+				trackEvent(
+					AnalyticsEvent.CookbookCreated(
+						cookbookId = created.id,
+						cookbookName = created.name,
+					),
+				)
+				val addOutcome = addRecipeToCookbook(created.id, recipe.id)
+				val err = addOutcome.getError()?.message
+				if (err == null) {
+					trackEvent(
+						AnalyticsEvent.RecipeAddedToCookbook(
+							recipeId = recipe.id,
+							recipeName = recipe.title,
+							cookbookId = created.id,
+							cookbookName = created.name,
+							origin = AnalyticsOrigin.COOKING,
+						),
+					)
+				}
+				isCookbookActionInFlight = false
+				onDone(err)
+			}
+		}
 	}
 
 	private fun startFavoriteEventsCollection(sessionKey: String?) {

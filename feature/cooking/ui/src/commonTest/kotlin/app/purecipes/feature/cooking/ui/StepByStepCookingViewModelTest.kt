@@ -11,6 +11,9 @@ import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCas
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
@@ -18,8 +21,11 @@ import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForM
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.shared.domain.model.CookbookListPage
+import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
@@ -308,11 +314,141 @@ class StepByStepCookingViewModelTest {
 		)
 	}
 
+	@Test
+	fun `create cookbook and add rejects duplicate name`() = runViewModelTest {
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(
+						CookbookSummary(
+							id = 5,
+							name = "Weeknight Dinners",
+							recipeCount = 0,
+							updatedAtEpochMillis = 0L,
+						),
+					),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = createViewModel(
+			recipeId = 42,
+			cookbooksRepository = cookbooksRepository,
+		)
+		advanceUntilIdle()
+		viewModel.prepareCookbookPicker()
+		advanceUntilIdle()
+
+		var returnedError: String? = null
+		viewModel.createCookbookAndAdd("  weeknight dinners ") { err ->
+			returnedError = err
+		}
+		advanceUntilIdle()
+
+		returnedError shouldBe "Cookbook already exists"
+		viewModel.cookbookActionError shouldBe "Cookbook already exists"
+		cookbooksRepository.createCookbookCallCount shouldBe 0
+		cookbooksRepository.addRecipeToCookbookCallCount shouldBe 0
+	}
+
+	@Test
+	fun `create cookbook and add tracks cookbook created and recipe added`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val createdCookbook = CookbookSummary(
+			id = 15,
+			name = "Batch Cooking",
+			recipeCount = 0,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			createCookbookResult = Ok(createdCookbook),
+		)
+		val recipe = fakeRecipeDetails()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			cookbooksRepository = cookbooksRepository,
+			analyticsRepository = analyticsRepository,
+		)
+		advanceUntilIdle()
+
+		viewModel.createCookbookAndAdd("Batch Cooking") { err ->
+			err shouldBe null
+		}
+		advanceUntilIdle()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookbookCreated>() shouldBe listOf(
+			AnalyticsEvent.CookbookCreated(
+				cookbookId = createdCookbook.id,
+				cookbookName = createdCookbook.name,
+			),
+		)
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeAddedToCookbook>() shouldBe listOf(
+			AnalyticsEvent.RecipeAddedToCookbook(
+				recipeId = recipe.id,
+				recipeName = recipe.title,
+				cookbookId = createdCookbook.id,
+				cookbookName = createdCookbook.name,
+				origin = AnalyticsOrigin.COOKING,
+			),
+		)
+	}
+
+	@Test
+	fun `add recipe to cookbook tracks recipe added with cooking origin`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val cookbook = CookbookSummary(
+			id = 8,
+			name = "Sunday Roast",
+			recipeCount = 2,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val recipe = fakeRecipeDetails()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			cookbooksRepository = cookbooksRepository,
+			analyticsRepository = analyticsRepository,
+		)
+		advanceUntilIdle()
+		viewModel.prepareCookbookPicker()
+		advanceUntilIdle()
+
+		viewModel.addRecipeToCookbookId(cookbook.id) { err ->
+			err shouldBe null
+		}
+		advanceUntilIdle()
+
+		cookbooksRepository.addRecipeToCookbookCallCount shouldBe 1
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeAddedToCookbook>() shouldBe listOf(
+			AnalyticsEvent.RecipeAddedToCookbook(
+				recipeId = recipe.id,
+				recipeName = recipe.title,
+				cookbookId = cookbook.id,
+				cookbookName = cookbook.name,
+				origin = AnalyticsOrigin.COOKING,
+			),
+		)
+	}
+
 	private fun createViewModel(
 		recipeId: Int,
 		recipe: RecipeDetails = fakeRecipeDetails(id = recipeId),
 		recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(Ok(recipe)),
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 		crashRepository: FakeCrashRepository = FakeCrashRepository(),
 		sessionKey: String? = null,
@@ -320,6 +456,9 @@ class StepByStepCookingViewModelTest {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		return StepByStepCookingViewModel(
 			addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
 			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),

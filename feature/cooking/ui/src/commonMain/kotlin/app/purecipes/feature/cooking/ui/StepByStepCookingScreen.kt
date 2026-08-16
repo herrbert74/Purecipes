@@ -21,8 +21,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,55 +60,84 @@ fun StepByStepCookingRoute(
 			create(recipeId = recipeId, sessionKey = sessionKey)
 		},
 ) {
+	var showCookbookSheet by remember { mutableStateOf(false) }
+	var newCookbookName by remember { mutableStateOf("") }
+
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
 	}
 
-	Scaffold(
-		modifier = modifier.fillMaxSize(),
-		topBar = {
-			TopAppBar(
-				title = { Text(text = viewModel.recipeDetails?.title.orEmpty()) },
-				navigationIcon = {
-					BackNavigationButton(onBack = onBack)
-				},
-			)
-		},
-	) { innerPadding ->
-		when {
-			viewModel.isLoading -> Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding),
-				contentAlignment = Alignment.Center,
-			) {
-				CircularProgressIndicator()
+	Box(modifier = modifier.fillMaxSize()) {
+		Scaffold(
+			modifier = Modifier.fillMaxSize(),
+			topBar = {
+				TopAppBar(
+					title = { Text(text = viewModel.recipeDetails?.title.orEmpty()) },
+					navigationIcon = {
+						BackNavigationButton(onBack = onBack)
+					},
+				)
+			},
+		) { innerPadding ->
+			when {
+				viewModel.isLoading -> Box(
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding),
+					contentAlignment = Alignment.Center,
+				) {
+					CircularProgressIndicator()
+				}
+
+				viewModel.errorMessage != null -> CenteredMessageContent(
+					message = viewModel.errorMessage ?: "Unknown error",
+					modifier = Modifier.padding(innerPadding),
+				)
+
+				viewModel.recipeDetails == null || viewModel.recipeDetails?.steps.isNullOrEmpty() ->
+					CenteredMessageContent(
+						message = "No cooking steps available yet.",
+						modifier = Modifier.padding(innerPadding),
+					)
+
+				else -> StepByStepCookingScreen(
+					recipe = viewModel.recipeDetails ?: return@Scaffold,
+					canManageFavorites = canManageFavorites,
+					currentPageIndex = viewModel.currentPageIndex,
+					favoriteErrorMessage = viewModel.favoriteErrorMessage,
+					isFavoriteUpdating = viewModel.isFavoriteUpdating,
+					onPageChange = viewModel::setCurrentPage,
+					onToggleFavorite = viewModel::toggleFavorite,
+					onShare = viewModel::shareCurrentRecipe,
+					onShowCookbookSheet = {
+						viewModel.prepareCookbookPicker()
+						showCookbookSheet = true
+					},
+					onDone = onBack,
+					onFindMoreRecipes = onFindMoreRecipes,
+					modifier = Modifier.padding(innerPadding),
+				)
 			}
-
-			viewModel.errorMessage != null -> CenteredMessageContent(
-				message = viewModel.errorMessage ?: "Unknown error",
-				modifier = Modifier.padding(innerPadding),
-			)
-
-			viewModel.recipeDetails == null || viewModel.recipeDetails?.steps.isNullOrEmpty() -> CenteredMessageContent(
-				message = "No cooking steps available yet.",
-				modifier = Modifier.padding(innerPadding),
-			)
-
-			else -> StepByStepCookingScreen(
-				recipe = viewModel.recipeDetails ?: return@Scaffold,
-				canManageFavorites = canManageFavorites,
-				currentPageIndex = viewModel.currentPageIndex,
-				favoriteErrorMessage = viewModel.favoriteErrorMessage,
-				isFavoriteUpdating = viewModel.isFavoriteUpdating,
-				onPageChange = viewModel::setCurrentPage,
-				onToggleFavorite = viewModel::toggleFavorite,
-				onShare = viewModel::shareCurrentRecipe,
-				onDone = onBack,
-				onFindMoreRecipes = onFindMoreRecipes,
-				modifier = Modifier.padding(innerPadding),
-			)
 		}
+
+		CookingCookbookSheet(
+			showSheet = showCookbookSheet,
+			sheetCookbooks = CookingSheetCookbooksList(viewModel.sheetCookbooks.toList()),
+			cookbookActionError = viewModel.cookbookActionError,
+			isCookbookActionInFlight = viewModel.isCookbookActionInFlight,
+			newCookbookName = newCookbookName,
+			onNewCookbookNameChange = { newCookbookName = it },
+			onDismiss = {
+				showCookbookSheet = false
+				newCookbookName = ""
+			},
+			onAddToCookbook = { cookbookId, onComplete ->
+				viewModel.addRecipeToCookbookId(cookbookId, onComplete)
+			},
+			onCreateCookbookAndAdd = { name, onComplete ->
+				viewModel.createCookbookAndAdd(name, onComplete)
+			},
+		)
 	}
 }
 
@@ -119,6 +151,7 @@ internal fun StepByStepCookingScreen(
 	onPageChange: (Int) -> Unit,
 	onToggleFavorite: () -> Unit,
 	onShare: () -> Unit,
+	onShowCookbookSheet: () -> Unit,
 	onDone: () -> Unit,
 	onFindMoreRecipes: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -170,6 +203,7 @@ internal fun StepByStepCookingScreen(
 					favoriteErrorMessage = favoriteErrorMessage,
 					onToggleFavorite = onToggleFavorite,
 					onShare = onShare,
+					onShowCookbookSheet = onShowCookbookSheet,
 					onDone = onDone,
 					onFindMoreRecipes = onFindMoreRecipes,
 				)

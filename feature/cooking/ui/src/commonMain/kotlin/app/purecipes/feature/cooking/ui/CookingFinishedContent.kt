@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -41,6 +42,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
 internal const val COOKING_FINISHED_CONTENT_TAG = "cookingFinishedContent"
+internal const val COOKING_ADD_TO_COOKBOOK_BUTTON_TAG = "cookingAddToCookbookButton"
 
 @Composable
 internal fun CookingFinishedContent(
@@ -50,6 +52,7 @@ internal fun CookingFinishedContent(
 	favoriteErrorMessage: String?,
 	onToggleFavorite: () -> Unit,
 	onShare: () -> Unit,
+	onShowCookbookSheet: () -> Unit,
 	onDone: () -> Unit,
 	onFindMoreRecipes: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -124,6 +127,23 @@ internal fun CookingFinishedContent(
 					Text(text = "Share")
 				}
 			}
+			if (canManageFavorites && recipe.isFavorite) {
+				FilledTonalButton(
+					onClick = onShowCookbookSheet,
+					enabled = !isFavoriteUpdating,
+					modifier = Modifier
+						.fillMaxWidth()
+						.testTag(COOKING_ADD_TO_COOKBOOK_BUTTON_TAG),
+				) {
+					Icon(
+						imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+						contentDescription = null,
+						modifier = Modifier.size(ButtonDefaults.IconSize),
+					)
+					Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+					Text(text = "Add to cookbook")
+				}
+			}
 			favoriteErrorMessage?.let { message ->
 				ErrorText(
 					text = message,
@@ -186,6 +206,7 @@ private fun CookingFinishedContentLightPreview() {
 			favoriteErrorMessage = null,
 			onToggleFavorite = {},
 			onShare = {},
+			onShowCookbookSheet = {},
 			onDone = {},
 			onFindMoreRecipes = {},
 		)
@@ -208,6 +229,7 @@ private fun CookingFinishedContentDarkPreview() {
 			favoriteErrorMessage = null,
 			onToggleFavorite = {},
 			onShare = {},
+			onShowCookbookSheet = {},
 			onDone = {},
 			onFindMoreRecipes = {},
 		)
@@ -230,6 +252,7 @@ private fun CookingFinishedContentSignedOutPreview() {
 			favoriteErrorMessage = null,
 			onToggleFavorite = {},
 			onShare = {},
+			onShowCookbookSheet = {},
 			onDone = {},
 			onFindMoreRecipes = {},
 		)

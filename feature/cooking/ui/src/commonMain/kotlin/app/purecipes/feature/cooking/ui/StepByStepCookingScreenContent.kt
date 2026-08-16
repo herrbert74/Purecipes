@@ -45,6 +45,7 @@ fun StepByStepCookingScreenContent(
 				onPageChange = {},
 				onToggleFavorite = {},
 				onShare = {},
+				onShowCookbookSheet = {},
 				onDone = {},
 				onFindMoreRecipes = {},
 				modifier = Modifier.padding(innerPadding),
