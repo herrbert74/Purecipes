@@ -21,6 +21,14 @@ class RecipeSearchAccessor(
 		keyIngredients: Set<String>,
 		pageNumber: Int,
 		pageSize: Int,
+		applyRecipeFilters: Boolean,
 	): SearchOutcome<SearchResultsPage> =
-		remoteDataSource.search(query, filters, keyIngredients, pageNumber, pageSize)
+		remoteDataSource.search(
+			query,
+			filters,
+			keyIngredients,
+			pageNumber,
+			pageSize,
+			applyRecipeFilters,
+		)
 }

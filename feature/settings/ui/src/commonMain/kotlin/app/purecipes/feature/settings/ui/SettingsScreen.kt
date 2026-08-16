@@ -18,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import app.purecipes.feature.search.domain.model.SearchPreferences
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
 import app.purecipes.feature.subscription.ui.GoPremiumSettingsPanel
 import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
@@ -40,6 +41,7 @@ fun SettingsScreen(
 	val notificationPreferences by viewModel.notificationPreferences.collectAsState(
 		initial = NotificationPreferences(),
 	)
+	val searchPreferences by viewModel.searchPreferences.collectAsState(initial = SearchPreferences())
 	val measurementPreferences by viewModel.measurementPreferences.collectAsState(initial = null)
 	val monetisationDebugOverrides by viewModel.monetisationDebugOverrides.collectAsState(
 		initial = MonetisationDebugOverrides(),
@@ -85,6 +87,10 @@ fun SettingsScreen(
 					onReset = viewModel::onResetMeasurementPreferences,
 				)
 			}
+			SearchPreferencesSection(
+				preferences = searchPreferences,
+				onPreferencesChange = viewModel::onSearchPreferencesChange,
+			)
 			NotificationPreferencesSection(
 				preferences = notificationPreferences,
 				onPreferencesChange = viewModel::onNotificationPreferencesChange,
@@ -110,6 +116,19 @@ private fun NotificationPreferencesSection(
 		preferences = preferences,
 		onPreferencesChange = onPreferencesChange,
 		onSendTestNotification = onSendTestNotification,
+		modifier = modifier,
+	)
+}
+
+@Composable
+private fun SearchPreferencesSection(
+	preferences: SearchPreferences,
+	onPreferencesChange: (SearchPreferences) -> Unit,
+	modifier: Modifier = Modifier,
+) {
+	SearchPreferencesPanel(
+		preferences = preferences,
+		onPreferencesChange = onPreferencesChange,
 		modifier = modifier,
 	)
 }

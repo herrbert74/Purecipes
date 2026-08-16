@@ -7,6 +7,9 @@ import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPrefer
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SyncMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.model.SearchPreferences
+import app.purecipes.feature.search.domain.usecase.ObserveSearchPreferencesUseCase
+import app.purecipes.feature.search.domain.usecase.SaveSearchPreferencesUseCase
 import app.purecipes.feature.settings.domain.repository.NotificationPreferencesRepository
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
@@ -24,6 +27,7 @@ import app.purecipes.shared.domain.notification.NotificationManager
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
+import app.purecipes.shared.testfixtures.fake.FakeSearchPreferencesRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,8 +62,23 @@ class SettingsViewModelTest {
 			.showMonetisationDebugOverrides shouldBe false
 	}
 
+	@Test
+	fun `search preference change is saved`() = runViewModelTest {
+		val searchPreferencesRepository = FakeSearchPreferencesRepository()
+		val viewModel = createViewModel(searchPreferencesRepository = searchPreferencesRepository)
+
+		viewModel.onSearchPreferencesChange(
+			SearchPreferences(applyRecipeFiltersToTitleSearch = false),
+		)
+
+		searchPreferencesRepository.getSearchPreferences() shouldBe SearchPreferences(
+			applyRecipeFiltersToTitleSearch = false,
+		)
+	}
+
 	private fun createViewModel(
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+		searchPreferencesRepository: FakeSearchPreferencesRepository = FakeSearchPreferencesRepository(),
 		showDebugOverrides: Boolean = true,
 	): SettingsViewModel {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
@@ -97,6 +116,8 @@ class SettingsViewModelTest {
 				notificationManager = notificationManager,
 			),
 			sendTestNotification = SendTestNotificationUseCase(notificationManager),
+			observeSearchPreferences = ObserveSearchPreferencesUseCase(searchPreferencesRepository),
+			saveSearchPreferences = SaveSearchPreferencesUseCase(searchPreferencesRepository),
 			observeMonetisationDebugOverrides = ObserveMonetisationDebugOverridesUseCase(monetisationRepository),
 			setPremiumStatusOverride = SetPremiumStatusOverrideUseCase(monetisationRepository),
 			setAdsDisplayOverride = SetAdsDisplayOverrideUseCase(monetisationRepository),

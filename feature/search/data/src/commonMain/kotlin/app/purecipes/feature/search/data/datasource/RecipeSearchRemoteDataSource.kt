@@ -22,6 +22,7 @@ class RecipeSearchRemoteDataSource(
 		keyIngredients: Set<String>,
 		pageNumber: Int,
 		pageSize: Int,
+		applyRecipeFilters: Boolean,
 	): SearchOutcome<SearchResultsPage> {
 		return runCatchingApi {
 			api.searchWithFilters(
@@ -31,6 +32,7 @@ class RecipeSearchRemoteDataSource(
 					keyIngredients = keyIngredients,
 					pageNumber = pageNumber,
 					pageSize = pageSize,
+					applyRecipeFilters = applyRecipeFilters,
 				),
 			)
 		}

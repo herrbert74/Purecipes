@@ -9,4 +9,5 @@ data class SearchRequest(
 	val keyIngredients: Set<String> = emptySet(),
 	val pageNumber: Int = 1,
 	val pageSize: Int = 20,
+	val applyRecipeFilters: Boolean = true,
 )

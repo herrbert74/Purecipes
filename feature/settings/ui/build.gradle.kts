@@ -27,6 +27,7 @@ kotlin {
 			dependencies {
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:measurement:domain"))
+				api(project(":feature:search:domain"))
 				api(project(":feature:settings:domain"))
 				implementation(project(":feature:subscription:ui"))
 				implementation(project(":shared:data"))

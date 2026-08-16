@@ -613,16 +613,42 @@ internal fun countSearchWithFiltersRecipes(
 	}
 }
 
+internal data class PantryCoverage(
+	val coveredSlots: Int,
+	val totalRequiredSlots: Int,
+) {
+
+	val missingSlots: Int
+		get() = (totalRequiredSlots - coveredSlots).coerceAtLeast(0)
+}
+
 internal fun isRecipeCoveredByAvailableIngredients(
 	recipeId: Int,
 	availableIngredients: List<String>,
 	loadIngredientGroups: (Int) -> List<IngredientGroup>,
 ): Boolean {
-	return loadIngredientGroups(recipeId).all { group ->
-		ingredientSlots(group.ingredients).all { slot ->
-			isIngredientSlotCoveredByPantry(slot, availableIngredients)
-		}
+	return pantryCoverageForRecipe(
+		recipeId = recipeId,
+		availableIngredients = availableIngredients,
+		loadIngredientGroups = loadIngredientGroups,
+	).missingSlots == 0
+}
+
+internal fun pantryCoverageForRecipe(
+	recipeId: Int,
+	availableIngredients: List<String>,
+	loadIngredientGroups: (Int) -> List<IngredientGroup>,
+): PantryCoverage {
+	val requiredSlots = loadIngredientGroups(recipeId)
+		.flatMap { group -> ingredientSlots(group.ingredients) }
+		.filterNot { slot -> slotIsOptional(slot) }
+	val coveredSlots = requiredSlots.count { slot ->
+		isIngredientSlotCoveredByPantry(slot, availableIngredients)
 	}
+	return PantryCoverage(
+		coveredSlots = coveredSlots,
+		totalRequiredSlots = requiredSlots.size,
+	)
 }
 
 internal fun singleMissingPantryIngredientLabel(

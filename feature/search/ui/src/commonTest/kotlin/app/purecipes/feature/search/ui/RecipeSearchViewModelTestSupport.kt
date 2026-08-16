@@ -10,9 +10,11 @@ import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.MatchIngredientInRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
@@ -28,6 +30,7 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeSearchPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
@@ -46,6 +49,7 @@ internal object RecipeSearchViewModelTestSupport {
 		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		searchPreferencesRepository: FakeSearchPreferencesRepository = FakeSearchPreferencesRepository(),
 		sessionKey: String? = null,
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
@@ -56,6 +60,8 @@ internal object RecipeSearchViewModelTestSupport {
 		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
 		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+		getSearchPreferences = GetSearchPreferencesUseCase(searchPreferencesRepository),
+		observeSearchPreferences = ObserveSearchPreferencesUseCase(searchPreferencesRepository),
 		getUserPantry = GetUserPantryUseCase(pantryRepository),
 		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
 		getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
