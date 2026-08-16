@@ -22,9 +22,11 @@ import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurem
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.MatchIngredientInRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
@@ -67,6 +69,7 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
+import app.purecipes.shared.testfixtures.fake.FakeSearchPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
@@ -127,6 +130,25 @@ class RecipeSearchScreenTest {
 		}
 
 		onNodeWithText("1 recipes found").assertIsDisplayed()
+	}
+
+	@Test
+	fun searchScreenShowsPantryFilterNoteWhenSignedIn() = runRecompositionTrackingUiTest {
+		val viewModel = recipeSearchViewModelForTest(
+			pantryRepository = FakeUserPantryRepository(setOf("Chicken")),
+			sessionKey = "session",
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					sessionKey = "session",
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		onNodeWithTag(SEARCH_FILTER_NOTE_TAG).assertIsDisplayed()
+		onNodeWithText("Showing recipes you can make with your pantry.").assertIsDisplayed()
 	}
 
 	@Test
@@ -704,37 +726,43 @@ private fun recipeSearchViewModelForTest(
 	ingredientMatchRepository: FakeIngredientMatchRepository = FakeIngredientMatchRepository(),
 	initialShowFilterSheet: Boolean = false,
 	isPremium: Boolean = false,
-): RecipeSearchViewModel = RecipeSearchViewModel(
-	filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
-	getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
-	searchRecipes = SearchRecipesUseCase(searchRepository),
-	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
-	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
-	getSearchFilters = GetSearchFiltersUseCase(filterRepository),
-	saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
-	getUserPantry = GetUserPantryUseCase(pantryRepository),
-	updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
-	getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
-	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
-	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
-	searchReadiness = SearchReadinessCoordinator(),
-	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
-	observePremiumStatus = ObservePremiumStatusUseCase(
-		FakeSubscriptionRepository(
-			initialState = if (isPremium) {
-				SubscriptionState(
-					status = SubscriptionStatus.PREMIUM,
-					isActive = true,
-					expirationInstant = null,
-					trialActive = false,
-				)
-			} else {
-				SubscriptionState.FREE
-			},
+	sessionKey: String? = null,
+): RecipeSearchViewModel {
+	val searchPreferencesRepository = FakeSearchPreferencesRepository()
+	return RecipeSearchViewModel(
+		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
+		getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
+		searchRecipes = SearchRecipesUseCase(searchRepository),
+		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+		getSearchFilters = GetSearchFiltersUseCase(filterRepository),
+		saveSearchFilters = SaveSearchFiltersUseCase(filterRepository),
+		getSearchPreferences = GetSearchPreferencesUseCase(searchPreferencesRepository),
+		observeSearchPreferences = ObserveSearchPreferencesUseCase(searchPreferencesRepository),
+		getUserPantry = GetUserPantryUseCase(pantryRepository),
+		updateUserPantry = UpdateUserPantryUseCase(pantryRepository),
+		getUserExcludedIngredients = GetUserExcludedIngredientsUseCase(excludedIngredientsRepository),
+		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
+		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
+		searchReadiness = SearchReadinessCoordinator(),
+		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+		observePremiumStatus = ObservePremiumStatusUseCase(
+			FakeSubscriptionRepository(
+				initialState = if (isPremium) {
+					SubscriptionState(
+						status = SubscriptionStatus.PREMIUM,
+						isActive = true,
+						expirationInstant = null,
+						trialActive = false,
+					)
+				} else {
+					SubscriptionState.FREE
+				},
+			),
+			FakeMonetisationDebugOverridesRepository(),
 		),
-		FakeMonetisationDebugOverridesRepository(),
-	),
-	initialShowFilterSheet = initialShowFilterSheet,
-	sessionKey = null,
-)
+		initialShowFilterSheet = initialShowFilterSheet,
+		sessionKey = sessionKey,
+	)
+}

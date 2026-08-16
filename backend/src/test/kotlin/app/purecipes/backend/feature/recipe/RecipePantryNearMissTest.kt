@@ -39,6 +39,24 @@ class RecipePantryNearMissTest {
 	}
 
 	@Test
+	fun `coverage counts uncovered required slots`() {
+		pantryCoverageForRecipe(
+			recipeId = recipeId,
+			availableIngredients = availableIngredients,
+			loadIngredientGroups = { listOf(chickenTomatoBasilGroup()) },
+		) shouldBe PantryCoverage(coveredSlots = 2, totalRequiredSlots = 3)
+	}
+
+	@Test
+	fun `coverage is complete when pantry covers every required slot`() {
+		pantryCoverageForRecipe(
+			recipeId = recipeId,
+			availableIngredients = availableIngredients,
+			loadIngredientGroups = { listOf(chickenTomatoGroup()) },
+		) shouldBe PantryCoverage(coveredSlots = 3, totalRequiredSlots = 3)
+	}
+
+	@Test
 	fun `default pantry staples do not count as missing`() {
 		singleMissingPantryIngredientLabel(
 			recipeId = recipeId,

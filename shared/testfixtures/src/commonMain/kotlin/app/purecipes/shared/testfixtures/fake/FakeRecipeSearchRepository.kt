@@ -22,6 +22,8 @@ class FakeRecipeSearchRepository(
 	var lastKeyIngredients: Set<String>? = null
 	var lastPageNumber: Int? = null
 	var lastPageSize: Int? = null
+	var lastFilters: SearchFilters? = null
+	var lastApplyRecipeFilters: Boolean? = null
 
 	override suspend fun search(
 		query: String,
@@ -29,11 +31,14 @@ class FakeRecipeSearchRepository(
 		keyIngredients: Set<String>,
 		pageNumber: Int,
 		pageSize: Int,
+		applyRecipeFilters: Boolean,
 	): SearchOutcome<SearchResultsPage> {
 		lastQuery = query
+		lastFilters = filters
 		lastKeyIngredients = keyIngredients
 		lastPageNumber = pageNumber
 		lastPageSize = pageSize
+		lastApplyRecipeFilters = applyRecipeFilters
 		queries += query
 		val error = result.getError()
 		if (error != null) {

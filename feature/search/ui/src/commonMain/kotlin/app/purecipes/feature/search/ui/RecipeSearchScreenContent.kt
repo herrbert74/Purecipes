@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -25,12 +26,12 @@ fun RecipeSearchScreenContent(
 	isSearchExpanded: Boolean,
 	searchQuery: String,
 	hasActiveFilters: Boolean,
-	measurementLabel: String?,
 	isSearching: Boolean,
 	errorMessage: String?,
 	totalMatches: Int,
 	recipes: ImmutableList<RecipeSummary>,
 	modifier: Modifier = Modifier,
+	searchFilterNote: String? = null,
 ) {
 	PurecipesTheme(darkTheme = darkTheme) {
 		Column(
@@ -40,12 +41,15 @@ fun RecipeSearchScreenContent(
 				.padding(PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
-			measurementLabel?.let { label ->
-				Text(
-					text = label,
-					style = PurecipesTheme.typography.bodyMedium,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
+			if (!isSearchExpanded) {
+				searchFilterNote?.let { note ->
+					Text(
+						text = note,
+						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+						style = PurecipesTheme.typography.bodyMedium,
+						color = PurecipesTheme.colorScheme.onSurfaceVariant,
+					)
+				}
 			}
 			RecipeSearchHeader(
 				isSearchBarActive = isSearchExpanded,

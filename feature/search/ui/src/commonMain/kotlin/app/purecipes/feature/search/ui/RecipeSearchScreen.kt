@@ -14,6 +14,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.ads.ui.BannerAdViewModel
@@ -92,12 +93,15 @@ fun RecipeSearchScreen(
 			.padding(PurecipesTheme.space.m),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		viewModel.measurementFilterLabel?.let { label ->
-			Text(
-				text = label,
-				style = PurecipesTheme.typography.bodyMedium,
-				color = PurecipesTheme.colorScheme.onSurfaceVariant,
-			)
+		if (!viewModel.isSearchBarActive) {
+			viewModel.searchFilterNote?.let { note ->
+				Text(
+					text = note,
+					modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
+				)
+			}
 		}
 		RecipeSearchHeader(
 			isSearchBarActive = viewModel.isSearchBarActive,
@@ -168,7 +172,6 @@ private fun RecipeSearchScreenCollapsedLightPreview() {
 			isSearchExpanded = false,
 			searchQuery = "",
 			hasActiveFilters = false,
-			measurementLabel = null,
 			isSearching = false,
 			errorMessage = null,
 			totalMatches = 2,
@@ -191,7 +194,6 @@ private fun RecipeSearchScreenExpandedLightPreview() {
 			isSearchExpanded = true,
 			searchQuery = "tom",
 			hasActiveFilters = true,
-			measurementLabel = "Showing metric recipes only",
 			isSearching = false,
 			errorMessage = null,
 			totalMatches = 2,
@@ -214,7 +216,6 @@ private fun RecipeSearchScreenDarkPreview() {
 			isSearchExpanded = false,
 			searchQuery = "",
 			hasActiveFilters = false,
-			measurementLabel = null,
 			isSearching = false,
 			errorMessage = null,
 			totalMatches = 1,
@@ -237,7 +238,6 @@ private fun RecipeSearchScreenLoadingPreview() {
 			isSearchExpanded = true,
 			searchQuery = "x",
 			hasActiveFilters = false,
-			measurementLabel = null,
 			isSearching = true,
 			errorMessage = null,
 			totalMatches = 0,
@@ -260,7 +260,6 @@ private fun RecipeSearchScreenErrorPreview() {
 			isSearchExpanded = true,
 			searchQuery = "broken",
 			hasActiveFilters = false,
-			measurementLabel = null,
 			isSearching = false,
 			errorMessage = "Search failed",
 			totalMatches = 0,

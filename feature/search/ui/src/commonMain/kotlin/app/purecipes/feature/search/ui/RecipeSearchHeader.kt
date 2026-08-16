@@ -44,7 +44,8 @@ internal const val RECIPE_SEARCH_COLLAPSED_BAR_TAG = "recipeSearchCollapsedBar"
 
 internal const val RECIPE_SEARCH_TITLE = "Search in recipe titles"
 internal const val RECIPE_SEARCH_HELPER =
-	"Only recipe titles are matched. Use the filter button to narrow results by cuisine, time, pantry, and more."
+	"Only recipe titles are matched. Recipes you can make are listed first. " +
+		"Diet and other filters apply by default — change this in Settings."
 
 @Composable
 internal fun RecipeSearchHeader(

@@ -11,5 +11,6 @@ interface RecipeSearchRepository {
 		keyIngredients: Set<String> = emptySet(),
 		pageNumber: Int = 1,
 		pageSize: Int = 20,
+		applyRecipeFilters: Boolean = true,
 	): SearchOutcome<SearchResultsPage>
 }

@@ -9,6 +9,9 @@ import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPrefer
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SyncMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.model.SearchPreferences
+import app.purecipes.feature.search.domain.usecase.ObserveSearchPreferencesUseCase
+import app.purecipes.feature.search.domain.usecase.SaveSearchPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.ObserveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SaveNotificationPreferencesUseCase
 import app.purecipes.feature.settings.domain.usecase.SendTestNotificationUseCase
@@ -39,6 +42,8 @@ class SettingsViewModel(
 	observeNotificationPreferences: ObserveNotificationPreferencesUseCase,
 	private val saveNotificationPreferences: SaveNotificationPreferencesUseCase,
 	private val sendTestNotification: SendTestNotificationUseCase,
+	observeSearchPreferences: ObserveSearchPreferencesUseCase,
+	private val saveSearchPreferences: SaveSearchPreferencesUseCase,
 	observeMonetisationDebugOverrides: ObserveMonetisationDebugOverridesUseCase,
 	private val setPremiumStatusOverride: SetPremiumStatusOverrideUseCase,
 	private val setAdsDisplayOverride: SetAdsDisplayOverrideUseCase,
@@ -49,6 +54,8 @@ class SettingsViewModel(
 	val measurementPreferences: Flow<MeasurementPreferences> = observeMeasurementPreferences()
 
 	val notificationPreferences: Flow<NotificationPreferences> = observeNotificationPreferences()
+
+	val searchPreferences: Flow<SearchPreferences> = observeSearchPreferences()
 
 	val showMonetisationDebugOverrides: Boolean = purecipesConfig.showMonetisationDebugOverrides()
 
@@ -82,6 +89,10 @@ class SettingsViewModel(
 		viewModelScope.launch {
 			saveNotificationPreferences(preferences)
 		}
+	}
+
+	fun onSearchPreferencesChange(preferences: SearchPreferences) {
+		saveSearchPreferences(preferences)
 	}
 
 	fun onSendTestNotification() {
