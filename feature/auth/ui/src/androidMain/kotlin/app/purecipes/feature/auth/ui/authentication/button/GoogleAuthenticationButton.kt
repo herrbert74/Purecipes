@@ -10,10 +10,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
-import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
+import com.mmk.kmpauth.google.rememberGoogleAuthState
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
+import dev.gitlive.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
 @Composable
@@ -45,37 +46,32 @@ internal actual fun GoogleAuthenticationButton(
 	}
 	val coroutineScope = rememberCoroutineScope()
 	if (isConfigured) {
-		GoogleButtonUiContainerFirebase(
+		val googleAuth = rememberGoogleAuthState(
 			linkAccount = false,
 			filterByAuthorizedAccounts = false,
 			onResult = { result ->
-				val failure = result.exceptionOrNull()
-				if (failure != null) {
-					onGoogleSignInResult(null, null, "", null)
-					return@GoogleButtonUiContainerFirebase
-				}
-				val firebaseUser = result.getOrNull()
+				val firebaseUser = result.getOrNull()?.raw as? FirebaseUser
 				if (firebaseUser == null) {
 					onGoogleSignInResult(null, null, "", null)
-					return@GoogleButtonUiContainerFirebase
-				}
-				coroutineScope.launch {
-					val profile = firebaseUser.toGoogleAuthenticationProfile()
-					onGoogleSignInResult(
-						profile?.idToken,
-						profile?.email,
-						profile?.displayName.orEmpty(),
-						profile?.profileImageUrl,
-					)
+				} else {
+					coroutineScope.launch {
+						val profile = firebaseUser.toGoogleAuthenticationProfile()
+						onGoogleSignInResult(
+							profile?.idToken,
+							profile?.email,
+							profile?.displayName.orEmpty(),
+							profile?.profileImageUrl,
+						)
+					}
 				}
 			},
-		) {
-			GoogleSignInButton(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(PurecipesButtonDefaults.providerButtonHeight),
-			) { this.onClick() }
-		}
+		)
+		GoogleSignInButton(
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(PurecipesButtonDefaults.providerButtonHeight),
+			onClick = { googleAuth.launch() },
+		)
 	} else {
 		GoogleSignInButton(
 			modifier = Modifier

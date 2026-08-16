@@ -13,7 +13,7 @@ kotlin {
 		iosMinimumDeploymentTarget.set("26.0")
 		swiftPackage(
 			url = url("https://github.com/firebase/firebase-ios-sdk.git"),
-			version = exact(libs.versions.firebaseIosSdk.get()),
+			version = from(libs.versions.firebaseIosSdk.get()),
 			products = listOf(
 				product("FirebaseAnalytics"),
 				product("FirebaseCrashlytics"),

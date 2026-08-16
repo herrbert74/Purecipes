@@ -19,6 +19,8 @@ internal actual fun createAuthSessionSettings(): Settings {
 	return SharedPreferencesSettings(delegate)
 }
 
+internal actual fun protectAuthSessionSettingsFromBackup() = Unit
+
 class AuthSessionSettingsInitializer : Initializer<Context> {
 
 	override fun create(context: Context): Context = context.applicationContext.also { appContext = it }

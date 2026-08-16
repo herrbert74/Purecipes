@@ -32,6 +32,7 @@ class SettingsSessionTokenStore(
 
 	init {
 		migrateFromLegacySettings()
+		protectAuthSessionSettingsFromBackup()
 	}
 
 	override fun currentSession(): AuthenticatedSession? {
@@ -44,6 +45,7 @@ class SettingsSessionTokenStore(
 	override fun saveSession(session: AuthenticatedSession) {
 		settings[SESSION_KEY] = json.encodeToString(session)
 		legacySettings.remove(SESSION_KEY)
+		protectAuthSessionSettingsFromBackup()
 	}
 
 	override fun clearSession() {
