@@ -1,8 +1,5 @@
 package app.purecipes.feature.auth.ui.authentication
 
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -49,6 +46,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -58,44 +56,25 @@ class AuthScreenTest {
 
 	@Test
 	fun authScreenTypingDoesNotRecomposeTitle() = runRecompositionTrackingUiTest {
-		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
-		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
-		setTrackedContent {
-			PurecipesTheme {
-				AuthenticationScreen(
-					onOpenSettings = {},
-					onNavigateToEmailRegistration = {},
-					onNavigateToSignIn = {},
-					googleWebClientId = null,
-					viewModel = AuthenticationViewModel(
-						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
-						signInWithFacebook = SignInWithFacebookUseCase(authRepo),
-						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
-						deleteAccount = DeleteAccountUseCase(authRepo),
-						signOut = SignOutUseCase(authRepo),
-						observeConsentState = ObserveConsentStateUseCase(consentRepo),
-						showConsentForm = ShowConsentFormUseCase(consentRepo),
-						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
-						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
-					),
-					initializeGoogleAuthenticationProvider = {},
-					authenticationProviderButtons = {
-							_,
-							onEmailProviderClick,
-							_,
-							_,
-							_,
-							_,
-						->
-						FakeAuthenticationProviderButtons(onEmailProviderClick = onEmailProviderClick)
-					},
-				)
-			}
-		}
-		onNodeWithText("Or, sign in").assertIsDisplayed()
+		showSignedOutAccountScreen()
+		onNodeWithText("Sign in with email").assertIsDisplayed()
 		onNodeWithTag(AUTH_SCREEN_TITLE_TAG).assertStable()
+	}
+
+	@Test
+	fun signedOutEmailActionsNavigateToSignInAndRegistration() = runRecompositionTrackingUiTest {
+		var signInClicks = 0
+		var registrationClicks = 0
+		showSignedOutAccountScreen(
+			onNavigateToEmailRegistration = { registrationClicks++ },
+			onNavigateToSignIn = { signInClicks++ },
+		)
+		onNodeWithText("Sign in or create an account.").assertIsDisplayed()
+		onNodeWithText("or use email").assertIsDisplayed()
+		onNodeWithTag(AUTH_SIGN_IN_WITH_EMAIL_TAG).performClick()
+		onNodeWithTag(AUTH_CREATE_ACCOUNT_WITH_EMAIL_TAG).performClick()
+		assertEquals(1, signInClicks)
+		assertEquals(1, registrationClicks)
 	}
 
 	@Test
@@ -141,6 +120,39 @@ class AuthScreenTest {
 		assertPolicyError(PASSWORD_MISSING_NUMBER_MESSAGE)
 	}
 
+	private fun ComposeUiTest.showSignedOutAccountScreen(
+		onNavigateToEmailRegistration: () -> Unit = {},
+		onNavigateToSignIn: () -> Unit = {},
+	) {
+		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
+		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
+		setTrackedContent {
+			PurecipesTheme {
+				AuthenticationScreen(
+					onOpenSettings = {},
+					onNavigateToEmailRegistration = onNavigateToEmailRegistration,
+					onNavigateToSignIn = onNavigateToSignIn,
+					googleWebClientId = null,
+					viewModel = AuthenticationViewModel(
+						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+						signInWithExternalProvider = SignInWithExternalProviderUseCase(authRepo),
+						signInWithFacebook = SignInWithFacebookUseCase(authRepo),
+						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+						deleteAccount = DeleteAccountUseCase(authRepo),
+						signOut = SignOutUseCase(authRepo),
+						observeConsentState = ObserveConsentStateUseCase(consentRepo),
+						showConsentForm = ShowConsentFormUseCase(consentRepo),
+						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+					),
+					initializeGoogleAuthenticationProvider = {},
+					authenticationProviderButtons = { _, _, _, _, _ -> },
+				)
+			}
+		}
+	}
+
 	private fun ComposeUiTest.showSignedInAccountScreen() {
 		val authRepo = FakeAuthenticationRepository(
 			AuthenticationState.SignedIn(fakeAuthUser()),
@@ -167,9 +179,7 @@ class AuthScreenTest {
 						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
 					),
 					initializeGoogleAuthenticationProvider = {},
-					authenticationProviderButtons = { _, _, _, _, _, _ ->
-						FakeAuthenticationProviderButtons(onEmailProviderClick = {})
-					},
+					authenticationProviderButtons = { _, _, _, _, _ -> },
 				)
 			}
 		}
@@ -202,12 +212,5 @@ class AuthScreenTest {
 			.performScrollTo()
 			.assertIsDisplayed()
 			.assertTextEquals(expectedMessage)
-	}
-
-	@Composable
-	private fun FakeAuthenticationProviderButtons(onEmailProviderClick: () -> Unit) {
-		FilledTonalButton(onClick = onEmailProviderClick) {
-			Text(text = "Continue with email")
-		}
 	}
 }

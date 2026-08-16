@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -32,7 +31,6 @@ internal fun SignedOutContent(
 	onGoogleUnavailableClick: () -> Unit,
 	authenticationProviderButtons: @Composable (
 		isGoogleConfigured: Boolean,
-		onEmailProviderClick: () -> Unit,
 		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
@@ -41,21 +39,21 @@ internal fun SignedOutContent(
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m)) {
 		Text(
-			text = "Choose how you want to sign in. Email registration asks for a display name shown on your profile.",
+			text = "Sign in or create an account.",
 			style = PurecipesTheme.typography.bodyLarge,
 			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
 		authenticationProviderButtons(
 			isGoogleConfigured,
-			onEmailRegistrationClick,
 			onExternalProviderSignInResult,
 			onFacebookSignInResult,
 			onGoogleSignInResult,
 			onGoogleUnavailableClick,
 		)
-		TextButton(onClick = onSignInClick) {
-			Text(text = "Or, sign in")
-		}
+		EmailAuthenticationActions(
+			onSignInClick = onSignInClick,
+			onCreateAccountClick = onEmailRegistrationClick,
+		)
 		HorizontalDivider()
 		PrivacySettingsContent(
 			consentState = consentState,
@@ -96,7 +94,6 @@ private fun SignedOutContentLightPreview() {
 					onGoogleUnavailableClick = {},
 					authenticationProviderButtons = {
 							configured,
-							onEmail,
 							onExternal,
 							onFacebook,
 							onGoogle,
@@ -104,7 +101,6 @@ private fun SignedOutContentLightPreview() {
 						->
 						AuthenticationProviderButtons(
 							isGoogleConfigured = configured,
-							onEmailProviderClick = onEmail,
 							onExternalProviderSignInResult = onExternal,
 							onFacebookSignInResult = onFacebook,
 							onGoogleSignInResult = onGoogle,

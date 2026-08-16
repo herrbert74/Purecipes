@@ -12,18 +12,8 @@ import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
-internal fun PreviewAuthenticationProviderButtons(
-	onEmailProviderClick: () -> Unit,
-) {
+internal fun PreviewAuthenticationProviderButtons() {
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
-		FilledTonalButton(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight),
-			onClick = onEmailProviderClick,
-		) {
-			Text(text = "Continue with email")
-		}
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()

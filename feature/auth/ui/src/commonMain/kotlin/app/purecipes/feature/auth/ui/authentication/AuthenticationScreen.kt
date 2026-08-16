@@ -43,14 +43,12 @@ fun AuthenticationScreen(
 		{ InitializeGoogleAuthenticationProvider(it) },
 	authenticationProviderButtons: @Composable (
 		isGoogleConfigured: Boolean,
-		onEmailProviderClick: () -> Unit,
 		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit = {
 			isGoogleConfigured,
-			onEmailProviderClick,
 			onExternalProviderSignInResult,
 			onFacebookSignInResult,
 			onGoogleSignInResult,
@@ -58,7 +56,6 @@ fun AuthenticationScreen(
 		->
 		AuthenticationProviderButtons(
 			isGoogleConfigured = isGoogleConfigured,
-			onEmailProviderClick = onEmailProviderClick,
 			onExternalProviderSignInResult = onExternalProviderSignInResult,
 			onFacebookSignInResult = onFacebookSignInResult,
 			onGoogleSignInResult = onGoogleSignInResult,
@@ -164,7 +161,6 @@ private fun AuthenticationScreenErrorPreview() {
 					onGoogleUnavailableClick = {},
 					authenticationProviderButtons = {
 							configured,
-							onEmail,
 							onExternal,
 							onFacebook,
 							onGoogle,
@@ -172,7 +168,6 @@ private fun AuthenticationScreenErrorPreview() {
 						->
 						AuthenticationProviderButtons(
 							isGoogleConfigured = configured,
-							onEmailProviderClick = onEmail,
 							onExternalProviderSignInResult = onExternal,
 							onFacebookSignInResult = onFacebook,
 							onGoogleSignInResult = onGoogle,
