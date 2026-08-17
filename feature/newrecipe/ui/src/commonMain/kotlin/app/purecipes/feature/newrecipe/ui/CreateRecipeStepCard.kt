@@ -24,6 +24,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,6 +52,7 @@ internal fun CreateRecipeStepCard(
 	onDrag: (Float) -> Unit,
 	onDragEnd: () -> Unit,
 	modifier: Modifier = Modifier,
+	focusRequester: FocusRequester? = null,
 ) {
 	val stepNumber = index + 1
 	Card(
@@ -135,6 +138,13 @@ internal fun CreateRecipeStepCard(
 					onValueChange = onStepChange,
 					modifier = Modifier
 						.fillMaxWidth()
+						.then(
+							if (focusRequester != null) {
+								Modifier.focusRequester(focusRequester)
+							} else {
+								Modifier
+							},
+						)
 						.testTag("$STEP_FIELD_TAG_PREFIX$index"),
 					placeholder = { Text(text = "Describe this step") },
 					minLines = 2,

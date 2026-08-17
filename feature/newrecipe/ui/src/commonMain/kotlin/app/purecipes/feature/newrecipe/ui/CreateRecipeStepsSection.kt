@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,10 +42,12 @@ internal fun CreateRecipeStepsSection(
 	var draggedIndex by remember { mutableIntStateOf(-1) }
 	var dragOffsetY by remember { mutableFloatStateOf(0f) }
 	val addButtonBringIntoViewRequester = remember { BringIntoViewRequester() }
+	val newStepFocusRequester = remember { FocusRequester() }
 	var previousStepCount by remember { mutableIntStateOf(stepInputs.items.size) }
 
 	LaunchedEffect(stepInputs.items.size) {
 		if (stepInputs.items.size > previousStepCount) {
+			newStepFocusRequester.requestFocus()
 			addButtonBringIntoViewRequester.bringIntoView()
 		}
 		previousStepCount = stepInputs.items.size
@@ -114,6 +117,7 @@ internal fun CreateRecipeStepsSection(
 						)
 					}
 					.zIndex(if (draggedIndex == index) 1f else 0f),
+				focusRequester = newStepFocusRequester.takeIf { index == stepInputs.items.lastIndex },
 			)
 		}
 

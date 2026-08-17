@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onAllNodesWithText
@@ -158,7 +159,10 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		waitForIdle()
 
-		onNodeWithTag("createRecipeStepField1").performScrollTo().assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField1")
+			.performScrollTo()
+			.assertIsDisplayed()
+			.assertIsFocused()
 	}
 
 	@Test
