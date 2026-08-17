@@ -4,6 +4,44 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] - 2026-08-11
+
+### Changed
+
+- Create recipe redesign: photo in the header, ingredient rows, and numbered cooking steps.
+- My recipes now lives under Favourites.
+- Sign-in from Favourites or Create recipe opens Account.
+- Recipe filters show selections when collapsed; empty pantry links to the Pantry tab.
+
+### Fixed
+
+- Expired sessions clear sign-in and ask you to sign in again.
+- Session data is excluded from Android backup to avoid invalid restored sessions.
+
+## [0.7.1] - 2026-07-29
+
+### Fixed
+
+- Google Play uploads are less likely to time out when publishing a release.
+
+## [0.7.0] - 2026-07-28
+
+### Added
+
+- Privacy Policy and Terms of Service links in Settings under Legal.
+
+### Changed
+
+- Release builds use Google Play subscriptions. Monetisation debug overrides are no longer available in release builds.
+- Deleting your account also clears favourites, cookbooks, and preferences.
+
+### Fixed
+
+- Search filters no longer stop working intermittently after database errors.
+- Pantry ingredient chips respond more quickly when you toggle them.
+- Calorie and nutrition recipe filters apply correctly when premium features are unlocked.
+- Subscriptions and purchase restore work more reliably on release builds.
+
 ## [0.6.1] - 2026-07-18
 
 ### Fixed

@@ -73,6 +73,14 @@ class RecipeRepository(
 		}
 	}
 
+	fun deleteCreatedRecipe(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
+		conn.prepareStatement(RecipeRepositorySql.DELETE_CREATED_RECIPE_SQL).use { ps ->
+			ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+			ps.setLong(RecipeRepositorySql.SECOND_PARAMETER_INDEX, userId)
+			ps.executeUpdate() > 0
+		}
+	}
+
 	private fun <T> runInTransaction(conn: java.sql.Connection, block: () -> T): T {
 		val originalAutoCommit = conn.autoCommit
 		conn.autoCommit = false
@@ -291,6 +299,36 @@ class RecipeRepository(
 			ps.setInt(2, recipeId)
 			ps.executeQuery().use { rs ->
 				rs.next() && rs.getBoolean("is_favorite")
+			}
+		}
+	}
+
+	internal fun loadFavoriteRecipeIds(
+		conn: java.sql.Connection,
+		userId: Long,
+		recipeIds: Collection<Int>,
+	): Set<Int> {
+		if (recipeIds.isEmpty()) {
+			return emptySet()
+		}
+		val placeholders = recipeIds.joinToString(separator = ",") { "?" }
+		val sql = """
+			SELECT recipe_id
+			FROM favorites
+			WHERE user_id = ?
+				AND recipe_id IN ($placeholders)
+		""".trimIndent()
+		return conn.prepareStatement(sql).use { ps ->
+			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			recipeIds.forEachIndexed { index, recipeId ->
+				ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX + index, recipeId)
+			}
+			ps.executeQuery().use { rs ->
+				buildSet {
+					while (rs.next()) {
+						add(rs.getInt("recipe_id"))
+					}
+				}
 			}
 		}
 	}
@@ -575,16 +613,42 @@ internal fun countSearchWithFiltersRecipes(
 	}
 }
 
+internal data class PantryCoverage(
+	val coveredSlots: Int,
+	val totalRequiredSlots: Int,
+) {
+
+	val missingSlots: Int
+		get() = (totalRequiredSlots - coveredSlots).coerceAtLeast(0)
+}
+
 internal fun isRecipeCoveredByAvailableIngredients(
 	recipeId: Int,
 	availableIngredients: List<String>,
 	loadIngredientGroups: (Int) -> List<IngredientGroup>,
 ): Boolean {
-	return loadIngredientGroups(recipeId).all { group ->
-		ingredientSlots(group.ingredients).all { slot ->
-			isIngredientSlotCoveredByPantry(slot, availableIngredients)
-		}
+	return pantryCoverageForRecipe(
+		recipeId = recipeId,
+		availableIngredients = availableIngredients,
+		loadIngredientGroups = loadIngredientGroups,
+	).missingSlots == 0
+}
+
+internal fun pantryCoverageForRecipe(
+	recipeId: Int,
+	availableIngredients: List<String>,
+	loadIngredientGroups: (Int) -> List<IngredientGroup>,
+): PantryCoverage {
+	val requiredSlots = loadIngredientGroups(recipeId)
+		.flatMap { group -> ingredientSlots(group.ingredients) }
+		.filterNot { slot -> slotIsOptional(slot) }
+	val coveredSlots = requiredSlots.count { slot ->
+		isIngredientSlotCoveredByPantry(slot, availableIngredients)
 	}
+	return PantryCoverage(
+		coveredSlots = coveredSlots,
+		totalRequiredSlots = requiredSlots.size,
+	)
 }
 
 internal fun singleMissingPantryIngredientLabel(

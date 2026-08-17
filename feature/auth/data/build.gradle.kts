@@ -8,7 +8,7 @@ kotlin {
 		iosMinimumDeploymentTarget.set("26.0")
 		swiftPackage(
 			url = url("https://github.com/firebase/firebase-ios-sdk.git"),
-			version = exact(libs.versions.firebaseIosSdk.get()),
+			version = from(libs.versions.firebaseIosSdk.get()),
 			products = listOf(product("FirebaseAuth")),
 		)
 	}
@@ -21,12 +21,12 @@ kotlin {
 		androidMain {
 			dependencies {
 				implementation(project.dependencies.platform(libs.firebaseBom))
-				implementation(libs.firebaseAuthKmp)
+				implementation(libs.gitlive.firebaseAuth)
 			}
 		}
 		iosMain {
 			dependencies {
-				implementation(libs.firebaseAuthKmp)
+				implementation(libs.gitlive.firebaseAuth)
 			}
 		}
 		commonMain {

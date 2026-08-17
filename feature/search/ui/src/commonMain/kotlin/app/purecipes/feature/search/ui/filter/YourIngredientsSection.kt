@@ -60,6 +60,7 @@ internal fun YourIngredientsSection(
 			title = "Your ingredients",
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
 			isCollapsed = collapsed,
+			subtitle = formatFilterSectionSelectionSubtitle(customPantryIngredients.sorted()),
 			onToggleCollapse = { collapsed = !collapsed },
 		)
 		AnimatedVisibility(
@@ -96,6 +97,7 @@ internal fun YourIngredientsSection(
 								state = state,
 								onToggle = { onCustomIngredientToggle(item) },
 								onRemove = { onRemoveCustomIngredient(item) },
+								modifier = Modifier.testTag(customIngredientChipTag(item)),
 							)
 						}
 					}

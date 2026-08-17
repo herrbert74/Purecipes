@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -15,13 +16,21 @@ import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
-internal fun UploadSignedOutContent(modifier: Modifier = Modifier) {
+internal fun UploadSignedOutContent(
+	onRequestLogIn: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
 	EmptyStateContent(
 		icon = Icons.Filled.Add,
 		iconContentDescription = "Create recipe",
 		title = "Sign in to upload recipes",
 		description = "Recipe upload is tied to your account so you can edit your uploaded recipes later.",
 		modifier = modifier,
+		action = {
+			Button(onClick = onRequestLogIn) {
+				Text(text = "Go to Account")
+			}
+		},
 	)
 }
 
@@ -43,6 +52,7 @@ private fun UploadSignedOutContentLightPreview() {
 			},
 		) { innerPadding ->
 			UploadSignedOutContent(
+				onRequestLogIn = {},
 				modifier = Modifier.padding(innerPadding).padding(PurecipesTheme.space.m),
 			)
 		}

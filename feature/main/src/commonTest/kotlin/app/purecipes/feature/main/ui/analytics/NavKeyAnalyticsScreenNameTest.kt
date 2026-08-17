@@ -6,8 +6,9 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
+import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AboutDestination
@@ -25,8 +26,9 @@ class NavKeyAnalyticsScreenNameTest {
 			SearchDestination() to AnalyticsScreenName.SEARCH,
 			RecipeDetailsDestination(42) to AnalyticsScreenName.RECIPE_DETAILS,
 			RecipeCookingDestination(7) to AnalyticsScreenName.COOKING,
-			FavoritesDestination() to AnalyticsScreenName.FAVORITES,
+			LibraryDestination() to AnalyticsScreenName.FAVORITES,
 			CreateDestination to AnalyticsScreenName.CREATE_RECIPE,
+			CreateEditorDestination(recipeId = 42) to AnalyticsScreenName.CREATE_RECIPE,
 			AccountDestination to AnalyticsScreenName.ACCOUNT,
 			EmailSignInDestination() to AnalyticsScreenName.EMAIL_SIGN_IN,
 			EmailRegistrationDestination to AnalyticsScreenName.EMAIL_REGISTRATION,
@@ -42,7 +44,14 @@ class NavKeyAnalyticsScreenNameTest {
 
 	@Test
 	fun `returns null for destinations without a screen name mapping`() {
-		(PaywallDestination as NavKey).toAnalyticsScreenName() shouldBe null
+		(PaywallDestination() as NavKey).toAnalyticsScreenName() shouldBe null
+	}
+
+	@Test
+	fun `maps recipe destinations to recipe ids`() {
+		RecipeDetailsDestination(42).toAnalyticsRecipeId() shouldBe 42
+		RecipeCookingDestination(7).toAnalyticsRecipeId() shouldBe 7
+		SearchDestination().toAnalyticsRecipeId() shouldBe null
 	}
 
 	@Test

@@ -16,7 +16,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import app.purecipes.feature.favorites.domain.CookbookNameSuggestions
+import app.purecipes.feature.library.domain.CookbookNameSuggestions
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 

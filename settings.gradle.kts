@@ -13,9 +13,9 @@ pluginManagement {
 
 plugins {
 	id("org.gradle.toolchains.foojay-resolver-convention") version ("1.0.0")
-	id("com.autonomousapps.build-health") version ("3.17.0")
+	id("com.autonomousapps.build-health") version ("3.18.0")
 	id("org.jetbrains.kotlin.jvm") version ("2.4.10") apply false
-	id("com.android.application") version ("9.3.0") apply false
+	id("com.android.application") version ("9.3.1") apply false
 	id("org.jetbrains.kotlin.android") version ("2.4.10") apply false
 }
 
@@ -50,9 +50,9 @@ include(":feature:newrecipe:data")
 include(":feature:newrecipe:domain")
 include(":feature:newrecipe:ui")
 include(":feature:cooking:ui")
-include(":feature:favorites:data")
-include(":feature:favorites:domain")
-include(":feature:favorites:ui")
+include(":feature:library:data")
+include(":feature:library:domain")
+include(":feature:library:ui")
 include(":feature:recipedetails:data")
 include(":feature:recipedetails:domain")
 include(":feature:recipedetails:ui")
@@ -74,3 +74,5 @@ include(":shared:dataTestFixtures")
 include(":shared:domain")
 include(":shared:testfixtures")
 include(":shared:ui")
+include(":tools:play-publish")
+include(":tools:store-screenshots")

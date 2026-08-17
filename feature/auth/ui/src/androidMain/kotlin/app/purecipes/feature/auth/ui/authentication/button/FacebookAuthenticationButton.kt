@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.facebook.FacebookLoginTracking
-import com.mmk.kmpauth.firebase.facebook.rememberFirebaseFacebookSignInState
+import com.mmk.kmpauth.facebook.rememberFacebookAuthState
 import com.mmk.kmpauth.uihelper.facebook.FacebookSignInButton
 import kotlinx.coroutines.launch
 
@@ -31,22 +31,18 @@ internal actual fun FacebookAuthenticationButton(
 		return
 	}
 	val coroutineScope = rememberCoroutineScope()
-	val facebookSignIn = rememberFirebaseFacebookSignInState(
+	val facebookAuth = rememberFacebookAuthState(
 		linkAccount = false,
 		loginTracking = FacebookLoginTracking.Enabled,
 		onResult = { result ->
-			val failure = result.exceptionOrNull()
-			if (failure != null) {
-				onFacebookSignInResult(null, null, "", null)
-				return@rememberFirebaseFacebookSignInState
-			}
-			val firebaseUser = result.getOrNull()
-			if (firebaseUser == null) {
-				onFacebookSignInResult(null, null, "", null)
-				return@rememberFirebaseFacebookSignInState
-			}
 			coroutineScope.launch {
-				val profile = firebaseUser.toFacebookAuthenticationProfile()
+				val profileResult = result.toFacebookAuthenticationProfileResult()
+				val failure = profileResult.exceptionOrNull()
+				if (failure != null) {
+					onFacebookSignInResult(null, null, "", null)
+					return@launch
+				}
+				val profile = profileResult.getOrNull()
 				onFacebookSignInResult(
 					profile?.idToken,
 					profile?.email,
@@ -60,6 +56,6 @@ internal actual fun FacebookAuthenticationButton(
 		modifier = Modifier
 			.fillMaxWidth()
 			.height(PurecipesButtonDefaults.providerButtonHeight),
-		onClick = { facebookSignIn.launch() },
+		onClick = { facebookAuth.launch() },
 	)
 }

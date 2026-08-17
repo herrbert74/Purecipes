@@ -7,6 +7,7 @@ plugins {
 	alias(libs.plugins.googleServices)
 	alias(libs.plugins.crashlytics)
 	alias(libs.plugins.aboutLibraries)
+	alias(libs.plugins.compose.screenshotTesting)
 	alias(libs.plugins.ksp)
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("dev.zacsweers.metro")
@@ -138,12 +139,15 @@ android {
 		}
 	}
 	kotlin {
-		jvmToolchain(21)
+		jvmToolchain {
+			languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
+		}
 	}
 	buildFeatures {
 		buildConfig = true
 		compose = true
 	}
+	experimentalProperties["android.experimental.enableScreenshotTest"] = true
 }
 
 dependencies {
@@ -156,13 +160,13 @@ dependencies {
 	implementation(project(":feature:analytics:ui"))
 	implementation(project(":feature:auth:ui"))
 	implementation(project(":feature:cooking:ui"))
-	implementation(project(":feature:favorites:ui"))
+	implementation(project(":feature:library:ui"))
 	implementation(project(":feature:newrecipe:ui"))
 	implementation(project(":feature:recipedetails:ui"))
 	implementation(project(":feature:search:ui"))
 	implementation(project(":feature:settings:ui"))
 	implementation(project(":feature:subscription:ui"))
-	implementation(project(":feature:favorites:data"))
+	implementation(project(":feature:library:data"))
 	implementation(project(":feature:newrecipe:data"))
 	implementation(project(":feature:recipedetails:data"))
 	implementation(project(":feature:search:data"))
@@ -176,12 +180,23 @@ dependencies {
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
+	implementation(libs.androidx.fragment)
 	implementation(libs.androidx.splash)
 	implementation(libs.androidx.vectordrawableAnimated)
 	implementation(libs.kmpnotifier.push.firebase)
 	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.metro.runtime)
+	screenshotTestImplementation(project(":feature:cooking:ui"))
+	screenshotTestImplementation(project(":feature:recipedetails:ui"))
+	screenshotTestImplementation(project(":feature:search:ui"))
+	screenshotTestImplementation(project(":shared:domain"))
+	screenshotTestImplementation(platform(libs.androidx.composeBom))
+	screenshotTestImplementation(libs.androidx.composeUiTooling)
+	screenshotTestImplementation(libs.androidx.core)
+	screenshotTestImplementation(libs.coil.compose)
+	screenshotTestImplementation(libs.kotlinx.collectionsImmutable)
+	screenshotTestImplementation(libs.screenshot.validationApi)
 }
 
 private fun Project.releaseSigningStoreFile(): String {

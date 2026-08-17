@@ -3,6 +3,7 @@ package app.purecipes.feature.main.ui
 import androidx.lifecycle.ViewModel
 import app.purecipes.feature.ads.domain.usecase.ObserveShouldShowAdsUseCase
 import app.purecipes.feature.ads.ui.BannerAdViewModel
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
 import app.purecipes.feature.search.ui.RecipeSearchViewModel
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
@@ -12,6 +13,7 @@ import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
@@ -138,6 +140,7 @@ private class RecipeSelectionTestViewModelFactory(
 
 					override fun versionCode(): Long = 0L
 				},
+				trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			)
 		},
 	)

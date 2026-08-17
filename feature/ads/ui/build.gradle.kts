@@ -17,6 +17,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:ads:domain"))
+				implementation(project(":feature:analytics:domain"))
 				implementation(project(":shared:data"))
 			}
 		}

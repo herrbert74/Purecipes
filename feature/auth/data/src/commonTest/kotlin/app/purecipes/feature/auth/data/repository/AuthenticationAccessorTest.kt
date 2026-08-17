@@ -4,6 +4,8 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.data.datasource.AuthenticationDataSource
 import app.purecipes.feature.auth.data.datasource.AuthenticationStore
+import app.purecipes.feature.auth.data.datasource.FakeFirebaseEmailPasswordAuth
+import app.purecipes.feature.auth.data.datasource.FirebaseAuthenticationLocalDataSource
 import app.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDataSource
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
@@ -168,6 +170,180 @@ class AuthenticationAccessorTest {
 		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
 	}
 
+	@Test
+	fun `delete account deletes the firebase identity before backend data and then signs out`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val firebaseAuthService = FakeFirebaseEmailPasswordAuth()
+		val localDataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = sessionTokenStore,
+			firebaseAuthService = firebaseAuthService,
+		)
+		var identityDeletionsBeforeBackendCall = 0
+		var accessTokenDuringBackendCall: String? = null
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			onDeleteAccount = {
+				identityDeletionsBeforeBackendCall = firebaseAuthService.deleteCurrentUserCallCount
+				accessTokenDuringBackendCall = sessionTokenStore.currentAccessToken()
+			},
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		val result = accessor.deleteAccount()
+
+		result.getError() shouldBe null
+		identityDeletionsBeforeBackendCall shouldBe 1
+		accessTokenDuringBackendCall shouldBe "session-token"
+		remoteDataSource.deleteAccountCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+		sessionTokenStore.currentSession() shouldBe null
+	}
+
+	@Test
+	fun `delete account keeps the session when firebase requires a recent login`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = sessionTokenStore,
+			firebaseAuthService = FakeFirebaseEmailPasswordAuth(
+				deleteCurrentUserHandler = { error("This operation requires recent authentication") },
+			),
+		)
+		val remoteDataSource = FakeAuthenticationRemoteDataSource()
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		val result = accessor.deleteAccount()
+
+		result.getError()?.message shouldBe "This operation requires recent authentication"
+		remoteDataSource.deleteAccountCallCount shouldBe 0
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+	}
+
+	@Test
+	fun `delete account keeps the session when backend deletion fails so it can be retried`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = FirebaseAuthenticationLocalDataSource(
+			store = AuthenticationStore(),
+			sessionTokenStore = sessionTokenStore,
+			firebaseAuthService = FakeFirebaseEmailPasswordAuth(),
+		)
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			deleteAccountResults = listOf(Err(Failure.IoFailure), Ok(Unit)),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		val failedResult = accessor.deleteAccount()
+
+		failedResult.getError() shouldBe Failure.IoFailure
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+
+		val retriedResult = accessor.deleteAccount()
+
+		retriedResult.getError() shouldBe null
+		remoteDataSource.deleteAccountCallCount shouldBe 2
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+		sessionTokenStore.currentSession() shouldBe null
+	}
+
+	@Test
+	fun `validateSession signs out when backend session is unauthorized`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = InMemoryAuthenticationLocalDataSource(
+			AuthenticationStore(),
+			sessionTokenStore,
+		)
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Err(Failure.UserNotLoggedIn),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+		sessionTokenStore.currentSession() shouldBe null
+	}
+
+	@Test
+	fun `validateSession keeps signed in state when backend session is valid`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = InMemoryAuthenticationLocalDataSource(
+			AuthenticationStore(),
+			sessionTokenStore,
+		)
+		val refreshedSession = fakeSession().copy(accessToken = "refreshed-session-token")
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Ok(refreshedSession),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "refreshed-session-token"
+	}
+
+	@Test
+	fun `validateSession keeps signed in state when validation fails with network error`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val localDataSource = InMemoryAuthenticationLocalDataSource(
+			AuthenticationStore(),
+			sessionTokenStore,
+		)
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Err(Failure.IoFailure),
+		)
+		val accessor = AuthenticationAccessor(localDataSource, remoteDataSource)
+		localDataSource.signInWithBackendSession(fakeSession())
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 1
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedIn>()
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
+	}
+
+	@Test
+	fun `validateSession skips remote check when signed out`() = runTest {
+		val remoteDataSource = FakeAuthenticationRemoteDataSource(
+			getCurrentSessionResult = Err(Failure.UserNotLoggedIn),
+		)
+		val accessor = AuthenticationAccessor(
+			localDataSource = InMemoryAuthenticationLocalDataSource(
+				AuthenticationStore(),
+				FakeSessionTokenStore(),
+			),
+			remoteDataSource = remoteDataSource,
+		)
+
+		accessor.validateSession()
+
+		remoteDataSource.getCurrentSessionCallCount shouldBe 0
+		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+	}
+
+	private fun fakeSession(): AuthenticatedSession = AuthenticatedSession(
+		accessToken = "session-token",
+		expiresAtEpochSeconds = 4_000_000_000,
+		user = AuthenticatedBackendUser(
+			id = "42",
+			email = "taylor@example.com",
+			displayName = "Taylor Baker",
+			firstName = "Taylor",
+			familyName = "Baker",
+			profileImageUrl = "https://example.com/avatar.png",
+			provider = "GOOGLE",
+		),
+	)
+
 	private class FakeAuthenticationRemoteDataSource(
 		private val result: Outcome<AuthenticatedSession> = Ok(
 			AuthenticatedSession(
@@ -184,7 +360,16 @@ class AuthenticationAccessorTest {
 				),
 			),
 		),
+		private val getCurrentSessionResult: Outcome<AuthenticatedSession> = result,
+		private val deleteAccountResults: List<Outcome<Unit>> = listOf(Ok(Unit)),
+		private val onDeleteAccount: () -> Unit = {},
 	) : AuthenticationDataSource.Remote {
+
+		var deleteAccountCallCount = 0
+			private set
+
+		var getCurrentSessionCallCount = 0
+			private set
 
 		override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = result
 
@@ -192,7 +377,17 @@ class AuthenticationAccessorTest {
 
 		override suspend fun signInWithEmailToken(idToken: String): Outcome<AuthenticatedSession> = result
 
-		override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> = result
+		override suspend fun getCurrentSession(): Outcome<AuthenticatedSession> {
+			getCurrentSessionCallCount++
+			return getCurrentSessionResult
+		}
+
+		override suspend fun deleteAccount(): Outcome<Unit> {
+			onDeleteAccount()
+			val deleteAccountResult = deleteAccountResults.getOrElse(deleteAccountCallCount) { Ok(Unit) }
+			deleteAccountCallCount++
+			return deleteAccountResult
+		}
 
 		override suspend fun signOut() = Unit
 	}

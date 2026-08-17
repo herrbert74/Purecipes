@@ -1,8 +1,8 @@
 package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.base.kotlin.result.Outcome
-import app.purecipes.feature.favorites.domain.model.FavoriteEvent
-import app.purecipes.feature.favorites.domain.repository.FavoritesRepository
+import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.repository.FavoritesRepository
 import app.purecipes.shared.domain.model.SearchResultsPage
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.getError

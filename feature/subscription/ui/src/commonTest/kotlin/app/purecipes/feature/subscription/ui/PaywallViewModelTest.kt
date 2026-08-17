@@ -1,5 +1,8 @@
 package app.purecipes.feature.subscription.ui
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
 import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
@@ -8,6 +11,7 @@ import app.purecipes.feature.subscription.domain.usecase.GetSubscriptionPlansUse
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.PurchaseSubscriptionUseCase
 import app.purecipes.feature.subscription.domain.usecase.RestorePurchasesUseCase
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
@@ -31,12 +35,7 @@ class PaywallViewModelTest {
 			),
 		)
 		val repository = FakeSubscriptionRepository(subscriptionPlans = plans)
-		val viewModel = PaywallViewModel(
-			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
-			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
-			restorePurchases = RestorePurchasesUseCase(repository),
-		)
+		val viewModel = paywallViewModel(repository)
 
 		advanceUntilIdle()
 
@@ -55,12 +54,7 @@ class PaywallViewModelTest {
 				trialActive = false,
 			),
 		)
-		val viewModel = PaywallViewModel(
-			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
-			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
-			restorePurchases = RestorePurchasesUseCase(repository),
-		)
+		val viewModel = paywallViewModel(repository)
 
 		advanceUntilIdle()
 
@@ -70,12 +64,7 @@ class PaywallViewModelTest {
 	@Test
 	fun `onPurchase delegates to repository`() = runViewModelTest {
 		val repository = FakeSubscriptionRepository()
-		val viewModel = PaywallViewModel(
-			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
-			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
-			restorePurchases = RestorePurchasesUseCase(repository),
-		)
+		val viewModel = paywallViewModel(repository)
 
 		advanceUntilIdle()
 		viewModel.onPurchase(SubscriptionPackageIdentifier.MONTHLY)
@@ -89,12 +78,7 @@ class PaywallViewModelTest {
 	@Test
 	fun `onRestorePurchases shows success feedback`() = runViewModelTest {
 		val repository = FakeSubscriptionRepository()
-		val viewModel = PaywallViewModel(
-			getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
-			observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
-			purchaseSubscription = PurchaseSubscriptionUseCase(repository),
-			restorePurchases = RestorePurchasesUseCase(repository),
-		)
+		val viewModel = paywallViewModel(repository)
 
 		advanceUntilIdle()
 		viewModel.onRestorePurchases()
@@ -104,4 +88,16 @@ class PaywallViewModelTest {
 		viewModel.successMessage shouldBe "Purchases restored."
 		viewModel.errorMessage shouldBe null
 	}
+
+	private fun paywallViewModel(
+		repository: FakeSubscriptionRepository,
+	) = PaywallViewModel(
+		getSubscriptionPlans = GetSubscriptionPlansUseCase(repository),
+		observePremiumStatus = ObservePremiumStatusUseCase(repository, FakeMonetisationDebugOverridesRepository()),
+		purchaseSubscription = PurchaseSubscriptionUseCase(repository),
+		restorePurchases = RestorePurchasesUseCase(repository),
+		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		feature = AnalyticsPremiumFeature.SETTINGS_PAYWALL,
+		origin = AnalyticsOrigin.SETTINGS.value,
+	)
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.CookingTimeRange
@@ -96,7 +97,7 @@ internal fun FilterBottomSheet(
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
 	isPremium: Boolean = false,
-	onOpenPaywall: () -> Unit = {},
+	onOpenPaywall: (String) -> Unit = {},
 ) {
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
@@ -146,7 +147,7 @@ private fun FilterBottomSheetContent(
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
 	isPremium: Boolean,
-	onOpenPaywall: () -> Unit,
+	onOpenPaywall: (String) -> Unit,
 ) {
 	if (!isSignedIn) {
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
@@ -209,6 +210,7 @@ private fun FilterBottomSheetContent(
 							isPremium = isPremium,
 							onFiltersChange = onFiltersChange,
 							onKeyIngredientsChange = onKeyIngredientsChange,
+							onGoToPantry = { selectedTab = FilterTab.Pantry },
 							onOpenPaywall = onOpenPaywall,
 						)
 					}
@@ -288,18 +290,10 @@ private fun RecipeFiltersTabContent(
 	isPremium: Boolean,
 	onFiltersChange: (SearchFilters) -> Unit,
 	onKeyIngredientsChange: (Set<String>) -> Unit,
-	onOpenPaywall: () -> Unit,
+	onGoToPantry: () -> Unit,
+	onOpenPaywall: (String) -> Unit,
 ) {
 	FilterScrollableColumn {
-		item {
-			KeyIngredientsSection(
-				keyIngredients = keyIngredients,
-				pantryIngredients = pantryIngredients,
-				onKeyIngredientsChange = onKeyIngredientsChange,
-				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
-			)
-		}
 		item {
 			Text(
 				text = "With the filters below you can get a more tailored result.",
@@ -311,6 +305,16 @@ private fun RecipeFiltersTabContent(
 						end = PurecipesTheme.space.m,
 						top = PurecipesTheme.space.s,
 					),
+			)
+		}
+		item {
+			KeyIngredientsSection(
+				keyIngredients = keyIngredients,
+				pantryIngredients = pantryIngredients,
+				onKeyIngredientsChange = onKeyIngredientsChange,
+				onGoToPantry = onGoToPantry,
+				isLocked = !isPremium,
+				onLockedClick = { onOpenPaywall(AnalyticsPremiumFeature.KEY_INGREDIENTS) },
 			)
 		}
 		item {
@@ -375,7 +379,7 @@ private fun RecipeFiltersTabContent(
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(calorieRanges = it)) },
 				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
+				onLockedClick = { onOpenPaywall(AnalyticsPremiumFeature.CALORIE_FILTER) },
 			)
 		}
 		item {
@@ -386,7 +390,7 @@ private fun RecipeFiltersTabContent(
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(nutritionFilters = it)) },
 				isLocked = !isPremium,
-				onLockedClick = onOpenPaywall,
+				onLockedClick = { onOpenPaywall(AnalyticsPremiumFeature.NUTRITION_FILTER) },
 			)
 		}
 	}

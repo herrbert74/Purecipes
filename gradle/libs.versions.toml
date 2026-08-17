@@ -2,15 +2,15 @@
 
 #common configuration
 
-versionCode = "10"
-versionName = "0.6.1"
+versionCode = "13"
+versionName = "0.8.0"
 minSdkVersion = "24"
 compileSdkVersion = "37"
 targetSdkVersion = "37"
 
 #platform
 
-androidGradlePlugin = "9.3.0"
+androidGradlePlugin = "9.3.1"
 appDistributionPlugin = "5.3.0"
 #androidGradlePlugin = "7.3.1" # For IntelliJ plugin runIde
 coroutines = "1.11.0"
@@ -21,16 +21,16 @@ kotlin = "2.4.10"
 kotlinx-collections = "0.5.1"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
-ksp = "2.3.10"
+ksp = "2.3.11"
 
 #other
 
 aboutLibraries = "15.0.4"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
-androidx-composeBom = "2026.06.01"
-androidx-composeMaterial3 = "1.5.0-alpha24" #For alpha releases only
-androidx-composeUiAndroidTest = "1.11.4"
+androidx-composeBom = "2026.08.00"
+androidx-composeMaterial3 = "1.5.0-alpha26" #For alpha releases only
+androidx-composeUiAndroidTest = "1.12.0"
 androidx-lifecycle = "2.11.0"
 #androidx-navigation = "2.9.1"
 #androidx-paletteKtx = "1.0.0"
@@ -44,21 +44,25 @@ androidx-work = "2.11.2"
 #autoBind = "2.0.0"
 babestudios-base = "3.2.1"
 buildKonfig = "0.22.0"
-#compose-screenshotTesting = "0.0.1-alpha09"
+compose-screenshotTesting = "0.0.1-alpha16"
 #chucker = "4.2.0"
 coil = "3.5.0"
+googleAndroidPublisher = "v3-rev20260723-2.0.0"
+googleApiClient = "2.9.0"
+googleAuthLibrary = "1.50.0"
 googleServices = "4.5.0"
 #decompose = "3.5.0"
 dejavu = "0.3.1"
 dependencyAnalysis = "3.10.0"
-detekt = "2.0.0-alpha.5"
-detekt-compose = "0.6.3"
+detekt = "2.0.0-alpha.6"
+detekt-compose = "0.6.4"
 diamondedge-logging = "2.1.1"
 essenty = "2.5.0"
 h2 = "2.4.240"
 #facebook = "16.1.2"
-firebaseBom = "34.16.0"
-firebaseIosSdk = "12.14.0"
+firebaseBom = "34.17.0"
+firebaseIosSdk = "12.17.0"
+gitlive-firebase = "3.0.0-alpha01"
 gradleDoctor = "0.12.1"
 #graphql = "4.3.1"
 #javaPoet = "1.13.0"
@@ -68,32 +72,32 @@ jetBrains-compose = "1.11.1"
 jetbrains-composeMaterial3 = "1.11.0-alpha07"
 jetbrains-navigation3 = "1.1.1"
 jUnit = "4.13.2"
-jUnit5 = "6.1.2"
-kmpauth = "3.0.0-alpha04"
-kmpnotifier = "2.0.0"
-kotest = "6.2.2"
+jUnit5 = "6.1.3"
+kmpauth = "3.0.5"
+kmpnotifier = "2.0.1"
+kotest = "6.2.4"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
-ktor = "3.5.1"
+ktor = "3.5.2"
 ktorfit = "2.7.5"
-metro = "1.3.2"
+metro = "1.4.2"
 mixpanelAndroid = "8.9.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.4.2"
 multiplatform-settings = "1.3.0"
-okhttp = "5.4.0"
+okhttp = "5.5.0"
 #parcelize-darwin = "0.2.4"
 playServicesAds = "25.4.0"
 postgresql = "42.7.13"
-revenueCat = "3.3.0"
+revenueCat = "3.5.0"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
-shadow = "9.6.0"
+shadow = "9.6.1"
 #skie = "0.10.4"
 testcontainers = "2.0.5"
 tensorflow-java = "1.2.0"
 uri-kmp = "0.0.21"
-usercentrics = "2.28.1"
+usercentrics = "2.29.1"
 
 [libraries]
 
@@ -142,12 +146,14 @@ androidx-composeMaterial3 = { module = "androidx.compose.material3:material3", v
 #androidx-composeMaterial3 = { module = "androidx.compose.material3:material3" }
 
 #androidx-constraintLayout = "androidx.constraintlayout:constraintlayout:2.2.1"
-androidx-constraintLayoutCompose = "androidx.constraintlayout:constraintlayout-compose:1.1.1"
+androidx-constraintLayoutCompose = "androidx.constraintlayout:constraintlayout-compose:1.1.2"
 
 androidx-core = "androidx.core:core:1.19.0" #Bundle
 #androidx-coreKtx = "androidx.core:core-ktx:1.16.0" #Bundle
 
 #androidx-datastore = "androidx.datastore:datastore-preferences:1.1.7"
+
+androidx-fragment = "androidx.fragment:fragment:1.9.0"
 
 androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version.ref = "androidx-lifecycle" }
 androidx-lifecycleRuntime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
@@ -174,7 +180,7 @@ androidx-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel
 androidx-savedState = "androidx.savedstate:savedstate:1.5.0"
 androidx-splash = "androidx.core:core-splashscreen:1.2.0"
 #androidx-sqlite = "androidx.sqlite:sqlite:2.5.2"
-#androidx-startup = "androidx.startup:startup-runtime:1.2.0"
+androidx-startupRuntime = "androidx.startup:startup-runtime:1.2.0"
 #androidx-swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 #androidx-viewPager2 = "androidx.viewpager2:viewpager2:1.1.0"
 
@@ -228,6 +234,10 @@ diamondedge-logging = { module = "com.diamondedge:logging", version.ref = "diamo
 #essenty-instanceKeeper = { module = "com.arkivanov.essenty:instance-keeper", version.ref = "essenty" }
 #essenty-stateKeeper = { module = "com.arkivanov.essenty:state-keeper", version.ref = "essenty" }
 
+google-androidPublisherApi = { module = "com.google.apis:google-api-services-androidpublisher", version.ref = "googleAndroidPublisher" }
+google-apiClient = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
+google-authOauth2Http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibrary" }
+
 #googlePlay-appUpdateKtx = "com.google.android.play:app-update-ktx:2.1.0"
 #googlePlay-servicesAnalytics = "com.google.android.gms:play-services-analytics:18.1.1"
 #googlePlay-servicesLocation = "com.google.android.gms:play-services-location:21.3.0"
@@ -245,10 +255,11 @@ firebaseBom = { group = "com.google.firebase", name = "firebase-bom", version.re
 
 firebaseAnalytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebaseAuth = { group = "com.google.firebase", name = "firebase-auth" }
-firebaseAuthKmp = { module = "dev.gitlive:firebase-auth", version = "2.5.0" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 #firebaseDatabase = { module = "com.google.firebase:firebase-database" }
 #firebaseConfig = { module = "com.google.firebase:firebase-config" }
+
+gitlive-firebaseAuth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
 
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
@@ -274,12 +285,12 @@ jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }
 jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit5" }
 #jUnit5-jupiterParams = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit5" }
-jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.2" }
+jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.3" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
-kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
-kmpauth-firebaseFacebook = { module = "io.github.mirzemehdi:kmpauth-firebase-facebook", version.ref = "kmpauth" }
+kmpauth-apple = { module = "io.github.mirzemehdi:kmpauth-apple", version.ref = "kmpauth" }
 kmpauth-facebook = { module = "io.github.mirzemehdi:kmpauth-facebook", version.ref = "kmpauth" }
+kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
 kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauth" }
 kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauth" }
 kmpnotifier-push-firebase = { group = "io.github.mirzemehdi", name = "kmpnotifier-push-firebase", version.ref = "kmpnotifier" }
@@ -375,6 +386,8 @@ revenuecat-purchasesKmpCore = { module = "com.revenuecat.purchases:purchases-kmp
 
 #robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
+screenshot-validationApi = { module = "com.android.tools.screenshot:screenshot-validation-api", version.ref = "compose-screenshotTesting" }
+
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 tensorflowJava = { module = "org.tensorflow:tensorflow-core-platform", version.ref = "tensorflow-java" }
@@ -396,7 +409,7 @@ androidApplication = { id = "com.android.application", version.ref = "androidGra
 appDistribution = { id = "com.google.firebase.appdistribution", version.ref = "appDistributionPlugin" }
 androidKotlinMultiPlatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
 buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
-#compose-screenshotTesting = { id = "com.android.compose.screenshot", version.ref = "compose-screenshotTesting" }
+compose-screenshotTesting = { id = "com.android.compose.screenshot", version.ref = "compose-screenshotTesting" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlyticsPlugin" }
 #dependencyAnalysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" } #fine-grained plugin
 #dependencyAnalysisBuildHealth = { id = "com.autonomousapps.build-health", version.ref = "dependencyAnalysis" } #settings plugin

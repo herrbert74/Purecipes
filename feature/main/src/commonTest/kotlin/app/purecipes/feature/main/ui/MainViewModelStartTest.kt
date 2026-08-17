@@ -1,12 +1,14 @@
 package app.purecipes.feature.main.ui
 
+import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
+import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -82,7 +84,7 @@ class MainViewModelStartTest {
 		)
 
 		viewModel.peekBackStack() shouldBe listOf(
-			FavoritesDestination(cookbookShareToken = sampleShareToken),
+			LibraryDestination(cookbookShareToken = sampleShareToken),
 		)
 	}
 
@@ -91,14 +93,22 @@ class MainViewModelStartTest {
 		runUnconfinedViewModelTest {
 			val links = MutableSharedFlow<PurecipesLink>(extraBufferCapacity = 1)
 			val authenticationRepository = FakeAuthenticationRepository()
+			val analyticsRepository = FakeAnalyticsRepository()
 			val viewModel = mainViewModelForTest(
 				authenticationRepository = authenticationRepository,
 				incomingLinkRepository = incomingLinksRepository(links),
+				analyticsRepository = analyticsRepository,
 			)
 			viewModel.start()
 			links.emit(PurecipesLink.CookbookShare(sampleShareToken))
 
 			viewModel.peekBackStack() shouldBe listOf(AccountDestination)
+			analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>() shouldBe listOf(
+				AnalyticsEvent.DeepLinkOpened(
+					linkType = AnalyticsDeepLinkType.COOKBOOK,
+					tokenPresent = true,
+				),
+			)
 			authenticationRepository.signInWithGoogle(
 				GoogleAuthenticationProfile(
 					idToken = sampleUser.id,
@@ -109,8 +119,9 @@ class MainViewModelStartTest {
 			)
 
 			viewModel.peekBackStack() shouldBe listOf(
-				FavoritesDestination(cookbookShareToken = sampleShareToken),
+				LibraryDestination(cookbookShareToken = sampleShareToken),
 			)
+			analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>().size shouldBe 1
 		}
 
 	@Test
@@ -168,6 +179,22 @@ class MainViewModelStartTest {
 		)
 
 		analyticsRepository.lastUserId shouldBe sampleUser.id
+	}
+
+	@Test
+	fun `start clears signed in state when session validation signs out`() = runUnconfinedViewModelTest {
+		val authenticationRepository = FakeAuthenticationRepository(
+			initialState = AuthenticationState.SignedIn(sampleUser),
+			signOutOnValidateSession = true,
+		)
+		val viewModel = mainViewModelForTest(
+			authenticationRepository = authenticationRepository,
+		)
+
+		viewModel.start()
+
+		authenticationRepository.validateSessionCallCount shouldBe 1
+		viewModel.authenticationState shouldBe AuthenticationState.SignedOut
 	}
 
 	@Test

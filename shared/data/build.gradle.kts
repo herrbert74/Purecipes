@@ -44,6 +44,7 @@ kotlin {
 		androidMain {
 			dependencies {
 				implementation(project(":base:kotlin"))
+				implementation(libs.androidx.startupRuntime)
 				implementation(libs.ktor.clientOkhttp)
 			}
 		}

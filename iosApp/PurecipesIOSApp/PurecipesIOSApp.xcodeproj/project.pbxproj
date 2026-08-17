@@ -193,7 +193,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\nset -e\nJAVA_HOME_CANDIDATE=\"\"\nif [ -n \"$JAVA_HOME\" ] && [ -x \"$JAVA_HOME/bin/java\" ]; then\n  JAVA_VERSION_LINE=\"$(\"$JAVA_HOME/bin/java\" -version 2>&1 | head -n 1)\"\n  case \"$JAVA_VERSION_LINE\" in\n    *21.*) JAVA_HOME_CANDIDATE=\"$JAVA_HOME\" ;;\n  esac\nfi\nif [ -z \"$JAVA_HOME_CANDIDATE\" ]; then\n  for CANDIDATE in \"$HOME/Applications/Android Studio.app/Contents/jbr/Contents/Home\" \"/Applications/Android Studio.app/Contents/jbr/Contents/Home\"; do\n    if [ -x \"$CANDIDATE/bin/java\" ]; then\n      JAVA_VERSION_LINE=\"$(\"$CANDIDATE/bin/java\" -version 2>&1 | head -n 1)\"\n      case \"$JAVA_VERSION_LINE\" in\n        *21.*) JAVA_HOME_CANDIDATE=\"$CANDIDATE\"; break ;;\n      esac\n    fi\n  done\nfi\nif [ -z \"$JAVA_HOME_CANDIDATE\" ]; then\n  echo \"Java 21 is required for the iOS Gradle build. Install a JDK 21 or use Android Studio's bundled JBR 21.\" >&2\n  exit 1\nfi\nPURECIPES_BUILD_TYPE_VALUE=$(printf '%s' \"${PURECIPES_BUILD_TYPE:-$CONFIGURATION}\" | tr '[:upper:]' '[:lower:]')\nexport JAVA_HOME=\"$JAVA_HOME_CANDIDATE\"\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\njava -version\ncd \"$SRCROOT/../..\"\n./gradlew --stop\n./gradlew -Dorg.gradle.java.home=\"$JAVA_HOME\" -Ppurecipes.buildType=\"$PURECIPES_BUILD_TYPE_VALUE\" :umbrella:embedAndSignAppleFrameworkForXcode --stacktrace\n";
+			shellScript = "\"$SRCROOT/../../scripts/ios/embed-kotlin-framework.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

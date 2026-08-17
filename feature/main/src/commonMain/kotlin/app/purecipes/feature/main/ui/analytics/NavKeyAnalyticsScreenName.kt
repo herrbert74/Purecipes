@@ -6,8 +6,9 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
+import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AboutDestination
@@ -18,13 +19,20 @@ internal fun NavKey.toAnalyticsScreenName(): String? = when (this) {
 	is SearchDestination -> AnalyticsScreenName.SEARCH
 	is RecipeDetailsDestination -> AnalyticsScreenName.RECIPE_DETAILS
 	is RecipeCookingDestination -> AnalyticsScreenName.COOKING
-	is FavoritesDestination -> AnalyticsScreenName.FAVORITES
+	is LibraryDestination -> AnalyticsScreenName.FAVORITES
 	CreateDestination -> AnalyticsScreenName.CREATE_RECIPE
+	is CreateEditorDestination -> AnalyticsScreenName.CREATE_RECIPE
 	AccountDestination -> AnalyticsScreenName.ACCOUNT
 	is EmailSignInDestination -> AnalyticsScreenName.EMAIL_SIGN_IN
 	EmailRegistrationDestination -> AnalyticsScreenName.EMAIL_REGISTRATION
 	AccountSettingsDestination -> AnalyticsScreenName.ACCOUNT_SETTINGS
 	AboutDestination -> AnalyticsScreenName.ABOUT
 	LicensesDestination -> AnalyticsScreenName.LICENSES
+	else -> null
+}
+
+internal fun NavKey.toAnalyticsRecipeId(): Int? = when (this) {
+	is RecipeDetailsDestination -> recipeId
+	is RecipeCookingDestination -> recipeId
 	else -> null
 }

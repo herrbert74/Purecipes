@@ -2,6 +2,8 @@
 
 import java.io.File
 
+val maxPlayReleaseNotesLength = 500
+
 fun repoRoot(): File {
 	var dir = File(System.getProperty("user.dir"))
 	while (dir.parentFile != null) {
@@ -79,9 +81,19 @@ fun main(args: Array<String>) {
 		kotlin.system.exitProcess(1)
 	}
 
+	val plainText = plainLines.joinToString("\n") + "\n"
+	if (plainText.trim().length > maxPlayReleaseNotesLength) {
+		System.err.println(
+			"Extracted release notes are ${plainText.trim().length} characters; " +
+				"Google Play allows at most $maxPlayReleaseNotesLength. Rephrase the " +
+				"CHANGELOG.md section for $version (do not truncate).",
+		)
+		kotlin.system.exitProcess(1)
+	}
+
 	outputFile.parentFile?.mkdirs()
-	outputFile.writeText(plainLines.joinToString("\n") + "\n")
-	println("Wrote release notes to ${outputFile.absolutePath}")
+	outputFile.writeText(plainText)
+	println("Wrote release notes to ${outputFile.absolutePath} (${plainText.trim().length} chars)")
 }
 
 main(args)

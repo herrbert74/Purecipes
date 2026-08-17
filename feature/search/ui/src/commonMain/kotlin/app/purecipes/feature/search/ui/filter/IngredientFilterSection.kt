@@ -132,11 +132,13 @@ private fun IngredientGroupChips(
 	val groupItems = group.items.toSet()
 	val selectedPantryCount = group.items.count { it in pantryIngredients }
 	val selectedExcludedCount = group.items.count { it in excludedIngredients }
+	val selectedLabels = group.items.filter { it in pantryIngredients || it in excludedIngredients }
 	Column {
 		FilterSectionHeader(
 			title = group.name,
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
 			isCollapsed = collapsed,
+			subtitle = formatFilterSectionSelectionSubtitle(selectedLabels),
 			onToggleCollapse = { collapsed = !collapsed },
 		)
 		AnimatedVisibility(

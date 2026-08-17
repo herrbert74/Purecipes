@@ -6,6 +6,8 @@ class FakeAdsDataSource : AdsDataSource {
 	var lastAppId: String? = null
 	var lastInterstitialAdUnitId: String? = null
 	var showInterstitialCalls = 0
+	var lastOnImpression: (() -> Unit)? = null
+	var lastOnClicked: (() -> Unit)? = null
 
 	override fun initialize(appId: String?, interstitialAdUnitId: String?) {
 		initializeCalls += 1
@@ -13,8 +15,14 @@ class FakeAdsDataSource : AdsDataSource {
 		lastInterstitialAdUnitId = interstitialAdUnitId
 	}
 
-	override fun showInterstitial(onDismissed: () -> Unit) {
+	override fun showInterstitial(
+		onDismissed: () -> Unit,
+		onImpression: (() -> Unit)?,
+		onClicked: (() -> Unit)?,
+	) {
 		showInterstitialCalls += 1
+		lastOnImpression = onImpression
+		lastOnClicked = onClicked
 		onDismissed()
 	}
 }

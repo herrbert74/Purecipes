@@ -5,8 +5,8 @@ import app.purecipes.backend.auth.SessionService
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.optionalAuthenticatedUserId
 import app.purecipes.backend.feature.auth.requireAuthenticatedUserId
-import app.purecipes.backend.feature.favorites.CookbookRepository
 import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
+import app.purecipes.backend.feature.library.CookbookRepository
 import app.purecipes.backend.feature.search.SearchRecipeRepository
 import app.purecipes.backend.feature.subscription.UserPremiumRepository
 import app.purecipes.shared.domain.model.canUseKeyIngredients
@@ -162,6 +162,28 @@ internal suspend fun ApplicationCall.respondUpdateRecipe(
 				detail = validationError,
 			),
 		)
+	}
+}
+
+internal suspend fun ApplicationCall.respondDeleteRecipe(
+	sessionService: SessionService,
+	dbProvider: () -> Db,
+	ingredientMatchCorpusCache: IngredientMatchCorpusCache,
+) {
+	val recipeId = requireRecipeIdOrRespond() ?: return
+	val userId = requireAuthenticatedUserId(sessionService) ?: return
+	val repo = RecipeRepository(dbProvider().dataSource)
+	if (!repo.deleteCreatedRecipe(userId = userId, recipeId = recipeId)) {
+		respond(
+			HttpStatusCode.NotFound,
+			ErrorResponse(
+				message = "Recipe not found",
+				detail = "No editable recipe found for id: $recipeId",
+			),
+		)
+	} else {
+		respond(HttpStatusCode.NoContent)
+		ingredientMatchCorpusCache.invalidate()
 	}
 }
 

@@ -21,13 +21,12 @@ class CommonAppGraphMetroTest {
 	}
 
 	@Test
-	fun metroViewModelFactoryIncludesPaywallViewModel() {
+	fun metroViewModelFactoryIncludesPaywallManualAssistedFactory() {
 		val graph = createGraph<TestAppGraph>()
-		val viewModel = graph.metroViewModelFactory.create(
-			PaywallViewModel::class,
-			CreationExtras.Empty,
+		val factoryProvider = graph.metroViewModelFactory.createManuallyAssistedFactory(
+			PaywallViewModel.Factory::class,
 		)
-		viewModel.shouldNotBeNull()
+		factoryProvider().shouldNotBeNull()
 	}
 
 	@Test

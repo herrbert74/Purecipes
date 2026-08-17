@@ -7,11 +7,11 @@ import app.purecipes.backend.auth.SessionService
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.authenticationRoutes
 import app.purecipes.backend.feature.deeplink.deepLinkRoutes
-import app.purecipes.backend.feature.favorites.cookbookRoutes
-import app.purecipes.backend.feature.favorites.cookbookShareRoutes
-import app.purecipes.backend.feature.favorites.favoriteRoutes
 import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.ingredient.ingredientRoutes
+import app.purecipes.backend.feature.library.cookbookRoutes
+import app.purecipes.backend.feature.library.cookbookShareRoutes
+import app.purecipes.backend.feature.library.favoriteRoutes
 import app.purecipes.backend.feature.recipe.recipeImageRoutes
 import app.purecipes.backend.feature.recipe.recipeRoutes
 import app.purecipes.backend.feature.settings.settingsRoutes
@@ -97,7 +97,7 @@ fun Application.module(
 			call.respond(mapOf("status" to "ok"))
 		}
 		deepLinkRoutes()
-		authenticationRoutes(firebaseIdTokenVerifier, sessionService)
+		authenticationRoutes(firebaseIdTokenVerifier, sessionService) { db }
 		favoriteRoutes(sessionService) { db }
 		cookbookRoutes(sessionService) { db }
 		cookbookShareRoutes(sessionService) { db }

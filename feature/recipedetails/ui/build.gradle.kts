@@ -19,7 +19,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:analytics:domain"))
-				api(project(":feature:favorites:domain"))
+				api(project(":feature:library:domain"))
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:measurement:domain"))
 				api(project(":feature:sharing:domain"))
@@ -29,6 +29,7 @@ kotlin {
 				implementation(libs.coil.compose)
 				implementation(libs.coil.networkKtor3)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.kotlinx.collectionsImmutable)
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}

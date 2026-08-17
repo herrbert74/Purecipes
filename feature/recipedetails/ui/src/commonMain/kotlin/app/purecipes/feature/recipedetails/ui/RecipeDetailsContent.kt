@@ -13,10 +13,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,16 +23,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
-import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import kotlinx.collections.immutable.persistentListOf
 
 const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
 
@@ -229,7 +226,11 @@ private val previewRecipeDetails = RecipeDetails(
 )
 @Composable
 private fun RecipeDetailsContentLightPreview() {
-	RecipeDetailsContentPreviewScaffold(darkTheme = false)
+	RecipeDetailsScreenContent(
+		darkTheme = false,
+		recipe = previewRecipeDetails,
+		cookbookNames = persistentListOf("Weeknight", "Pasta"),
+	)
 }
 
 @Preview(
@@ -240,42 +241,9 @@ private fun RecipeDetailsContentLightPreview() {
 )
 @Composable
 private fun RecipeDetailsContentDarkPreview() {
-	RecipeDetailsContentPreviewScaffold(darkTheme = true)
-}
-
-@Composable
-private fun RecipeDetailsContentPreviewScaffold(darkTheme: Boolean) {
-	PurecipesTheme(darkTheme = darkTheme) {
-		Scaffold(
-			modifier = Modifier.fillMaxSize(),
-			topBar = {
-				TopAppBar(
-					title = { Text(text = previewRecipeDetails.title) },
-					navigationIcon = {
-						BackNavigationButton(onBack = {})
-					},
-				)
-			},
-		) { innerPadding ->
-			RecipeDetailsContent(
-				canManageFavorites = true,
-				favoriteErrorMessage = null,
-				isFavoriteUpdating = false,
-				isRecipeConverted = false,
-				recipe = previewRecipeDetails,
-				recipeCookbooks = RecipeCookbooksList(
-					items = listOf(
-						CookbookRef(id = 1, name = "Weeknight"),
-						CookbookRef(id = 2, name = "Pasta"),
-					),
-				),
-				showNutrition = false,
-				onShowNutrition = {},
-				onShowCookbookSheet = {},
-				onStartCooking = {},
-				onToggleFavorite = {},
-				modifier = Modifier.padding(innerPadding),
-			)
-		}
-	}
+	RecipeDetailsScreenContent(
+		darkTheme = true,
+		recipe = previewRecipeDetails,
+		cookbookNames = persistentListOf("Weeknight", "Pasta"),
+	)
 }

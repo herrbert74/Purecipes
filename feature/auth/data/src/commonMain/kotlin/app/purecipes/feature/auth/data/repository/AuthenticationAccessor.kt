@@ -12,8 +12,11 @@ import app.purecipes.feature.auth.domain.model.toAuthUser
 import app.purecipes.feature.auth.domain.repository.AuthenticationRepository
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.mapError
+import com.github.michaelbull.result.onOk
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -70,7 +73,24 @@ class AuthenticationAccessor(
 		return localDataSource.signInWithExternalProvider(profile.toAuthUser())
 	}
 
-	override suspend fun deleteAccount(): Outcome<Unit> = localDataSource.deleteAccount()
+	override suspend fun deleteAccount(): Outcome<Unit> =
+		localDataSource.deleteAuthenticationIdentity()
+			.mapFailureUserMessage()
+			.andThen { remoteDataSource.deleteAccount() }
+			.onOk { localDataSource.signOut() }
+
+	override suspend fun validateSession() {
+		if (localDataSource.authenticationState.value !is AuthenticationState.SignedIn) {
+			return
+		}
+		val outcome = remoteDataSource.getCurrentSession()
+		val session = outcome.get()
+		if (session != null) {
+			localDataSource.signInWithBackendSession(session)
+		} else if (outcome.getError() is Failure.UserNotLoggedIn) {
+			localDataSource.signOut()
+		}
+	}
 
 	override suspend fun signOut() {
 		localDataSource.signOut()

@@ -27,18 +27,28 @@ class AdsAccessorTest {
 	}
 
 	@Test
-	fun `showInterstitial forwards dismissal callback`() {
+	fun `showInterstitial forwards dismissal and optional callbacks`() {
 		val dataSource = FakeAdsDataSource()
 		val accessor = AdsAccessor(
 			adsDataSource = dataSource,
 			purecipesConfig = testPurecipesConfig(),
 		)
 		var dismissed = false
+		var impressed = false
+		var clicked = false
 
-		accessor.showInterstitial { dismissed = true }
+		accessor.showInterstitial(
+			onDismissed = { dismissed = true },
+			onImpression = { impressed = true },
+			onClicked = { clicked = true },
+		)
 
 		dataSource.showInterstitialCalls shouldBe 1
 		dismissed shouldBe true
+		dataSource.lastOnImpression?.invoke()
+		dataSource.lastOnClicked?.invoke()
+		impressed shouldBe true
+		clicked shouldBe true
 	}
 
 	private fun testPurecipesConfig(

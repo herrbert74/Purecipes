@@ -78,7 +78,8 @@ sourceSets {
 	}
 }
 
-val generateBackendRuntimeConfig by tasks.registering(WriteProperties::class) {
+val generateBackendRuntimeConfig = tasks.register<WriteProperties>("generateBackendRuntimeConfig") {
+	description = "Writes backend runtime config properties into generated resources"
 	val outputFile = generatedBackendResourcesDir.map { it.file("purecipes-backend.properties").asFile }
 	destinationFile = outputFile.get()
 	encoding = "UTF-8"
@@ -219,6 +220,32 @@ tasks.register<JavaExec>("importNutritionSeed") {
 		}
 		if (project.findProperty("nutrition.skipAliases")?.toString() == "true") {
 			add("--skip-aliases")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("deleteAccount") {
+	group = "application"
+	description = "Deletes a user account for a verified email deletion request, dry run unless deleteAccount" +
+		".execute=true"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.DeleteAccountMainKt")
+	val userId = project.findProperty("deleteAccount.userId")?.toString().orEmpty()
+	val email = project.findProperty("deleteAccount.email")?.toString().orEmpty()
+	val provider = project.findProperty("deleteAccount.provider")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (userId.isNotBlank()) {
+			add("--user-id=$userId")
+		}
+		if (email.isNotBlank()) {
+			add("--email=$email")
+		}
+		if (provider.isNotBlank()) {
+			add("--provider=$provider")
+		}
+		if (project.findProperty("deleteAccount.execute")?.toString() == "true") {
+			add("--execute")
 		}
 	}
 	args = extraArgs

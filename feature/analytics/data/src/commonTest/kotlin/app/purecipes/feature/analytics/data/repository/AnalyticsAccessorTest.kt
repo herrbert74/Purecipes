@@ -28,7 +28,11 @@ class AnalyticsAccessorTest {
 		)
 
 		accessor.trackEvent(
-			AnalyticsEvent.RecipeViewed(recipeId = 42, origin = AnalyticsOrigin.SEARCH),
+			AnalyticsEvent.RecipeViewed(
+				recipeId = 42,
+				recipeName = "Tomato Pasta",
+				origin = AnalyticsOrigin.SEARCH,
+			),
 		)
 
 		dataSource.lastTrackedEventName shouldBe null
@@ -43,7 +47,11 @@ class AnalyticsAccessorTest {
 		)
 
 		accessor.trackEvent(
-			AnalyticsEvent.RecipeViewed(recipeId = 1, origin = AnalyticsOrigin.SEARCH),
+			AnalyticsEvent.RecipeViewed(
+				recipeId = 1,
+				recipeName = "Tomato Pasta",
+				origin = AnalyticsOrigin.SEARCH,
+			),
 		)
 
 		dataSource.lastTrackedEventName shouldBe null
@@ -58,7 +66,11 @@ class AnalyticsAccessorTest {
 		)
 
 		accessor.trackEvent(
-			AnalyticsEvent.RecipeViewed(recipeId = 1, origin = AnalyticsOrigin.SEARCH),
+			AnalyticsEvent.RecipeViewed(
+				recipeId = 1,
+				recipeName = "Tomato Pasta",
+				origin = AnalyticsOrigin.SEARCH,
+			),
 		)
 
 		dataSource.lastTrackedEventName shouldBe null
@@ -75,6 +87,7 @@ class AnalyticsAccessorTest {
 		accessor.trackEvent(
 			AnalyticsEvent.FavoriteChanged(
 				recipeId = 7,
+				recipeName = "Tomato Pasta",
 				isFavorite = true,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
 			),
@@ -83,6 +96,7 @@ class AnalyticsAccessorTest {
 		dataSource.lastTrackedEventName shouldBe "favorite_changed"
 		dataSource.lastTrackedProperties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7),
+			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
 			"is_favorite" to AnalyticsValue.BooleanValue(true),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
 		)
@@ -100,6 +114,7 @@ class AnalyticsAccessorTest {
 		accessor.trackEvent(
 			AnalyticsEvent.CookingStarted(
 				recipeId = 5,
+				recipeName = "Tomato Pasta",
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
 				stepCount = 3,
 			),
@@ -119,7 +134,11 @@ class AnalyticsAccessorTest {
 		val enabledCallsAfterInit = dataSource.setTrackingEnabledCallCount
 
 		accessor.trackEvent(
-			AnalyticsEvent.RecipeViewed(recipeId = 1, origin = AnalyticsOrigin.SEARCH),
+			AnalyticsEvent.RecipeViewed(
+				recipeId = 1,
+				recipeName = "Tomato Pasta",
+				origin = AnalyticsOrigin.SEARCH,
+			),
 		)
 
 		dataSource.setTrackingEnabledCallCount shouldBe enabledCallsAfterInit

@@ -12,11 +12,17 @@ import kotlinx.serialization.modules.subclass
 
 fun EntryProviderScope<NavKey>.installCookingFlow(
 	navigator: Navigator,
+	canManageFavorites: Boolean,
+	sessionKey: String?,
+	onFindMoreRecipes: () -> Unit,
 ) {
 	entry<RecipeCookingDestination> { destination ->
 		StepByStepCookingRoute(
 			recipeId = destination.recipeId,
+			canManageFavorites = canManageFavorites,
 			onBack = { navigator.back() },
+			onFindMoreRecipes = onFindMoreRecipes,
+			sessionKey = sessionKey,
 			modifier = Modifier.fillMaxSize(),
 		)
 	}

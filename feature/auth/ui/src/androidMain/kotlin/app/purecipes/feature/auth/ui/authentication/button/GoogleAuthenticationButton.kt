@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
-import com.mmk.kmpauth.firebase.google.rememberFirebaseGoogleSignInState
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
+import com.mmk.kmpauth.google.rememberGoogleAuthState
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
 import kotlinx.coroutines.launch
 
@@ -46,19 +46,12 @@ internal actual fun GoogleAuthenticationButton(
 	}
 	val coroutineScope = rememberCoroutineScope()
 	if (isConfigured) {
-		val googleSignIn = rememberFirebaseGoogleSignInState(
+		val googleAuth = rememberGoogleAuthState(
 			linkAccount = false,
 			filterByAuthorizedAccounts = false,
 			onResult = { result ->
 				coroutineScope.launch {
-					onGoogleSignInResult(
-						result.fold(
-							onSuccess = { firebaseUser ->
-								Result.success(firebaseUser?.toGoogleAuthenticationProfile())
-							},
-							onFailure = { error -> Result.failure(error) },
-						),
-					)
+					onGoogleSignInResult(result.toGoogleAuthenticationProfileResult())
 				}
 			},
 		)
@@ -66,7 +59,7 @@ internal actual fun GoogleAuthenticationButton(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(PurecipesButtonDefaults.providerButtonHeight),
-			onClick = { googleSignIn.launch() },
+			onClick = { googleAuth.launch() },
 		)
 	} else {
 		GoogleSignInButton(

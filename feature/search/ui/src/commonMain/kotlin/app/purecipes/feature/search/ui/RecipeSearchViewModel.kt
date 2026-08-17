@@ -8,18 +8,25 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
+import app.purecipes.feature.analytics.domain.model.SearchPerformedContext
 import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.model.SearchPreferences
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
+import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.MatchIngredientInRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
@@ -29,10 +36,8 @@ import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
-import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.PantryDelta
-import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -63,12 +68,15 @@ class RecipeSearchViewModel(
 	private val sendHandledException: SendHandledExceptionUseCase,
 	private val getSearchFilters: GetSearchFiltersUseCase,
 	private val saveSearchFilters: SaveSearchFiltersUseCase,
+	private val getSearchPreferences: GetSearchPreferencesUseCase,
+	private val observeSearchPreferences: ObserveSearchPreferencesUseCase,
 	private val getUserPantry: GetUserPantryUseCase,
 	private val updateUserPantry: UpdateUserPantryUseCase,
 	private val getUserExcludedIngredients: GetUserExcludedIngredientsUseCase,
 	private val updateUserExcludedIngredients: UpdateUserExcludedIngredientsUseCase,
 	private val matchIngredientInRecipes: MatchIngredientInRecipesUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
+	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	observePremiumStatus: ObservePremiumStatusUseCase,
 	@Assisted initialShowFilterSheet: Boolean,
 	@Assisted private val sessionKey: String?,
@@ -92,7 +100,7 @@ class RecipeSearchViewModel(
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
 
-	var measurementFilterLabel by mutableStateOf<String?>(null)
+	var searchFilterNote by mutableStateOf<String?>(null)
 		private set
 
 	var activeFilters by mutableStateOf(SearchFilters())
@@ -117,12 +125,14 @@ class RecipeSearchViewModel(
 		private set
 
 	private var ingredientMatchJob: Job? = null
+	private var favoriteEventsJob: Job? = null
 	private var lastSearchedFilters: SearchFilters = SearchFilters()
 	private var lastSearchedKeyIngredients: Set<String> = emptySet()
 	private var lastSavedPantry: Set<String> = emptySet()
 	private var lastSavedExcludedIngredients: Set<String> = emptySet()
 	private var loadedSessionKey: String? = null
 	private var shouldReopenFilterSheetAfterNavigation = false
+	private var searchPreferences = SearchPreferences()
 
 	var totalMatches by mutableIntStateOf(0)
 		private set
@@ -158,11 +168,19 @@ class RecipeSearchViewModel(
 		viewModelScope.launch {
 			reloadSessionState(sessionKey)
 			loadedSessionKey = sessionKey
+			searchPreferences = getSearchPreferences()
 			if (initialShowFilterSheet) {
 				isFilterSheetVisible = true
 			}
 			doSearch()
+			observeSearchPreferences().collect { preferences ->
+				if (preferences != searchPreferences) {
+					searchPreferences = preferences
+					doSearch()
+				}
+			}
 		}
+		startFavoriteEventsCollection(sessionKey)
 	}
 
 	fun onSessionKeyChanged(sessionKey: String?) {
@@ -170,7 +188,40 @@ class RecipeSearchViewModel(
 		viewModelScope.launch {
 			reloadSessionState(sessionKey)
 			loadedSessionKey = sessionKey
+			startFavoriteEventsCollection(sessionKey)
 			doSearch()
+		}
+	}
+
+	private fun startFavoriteEventsCollection(sessionKey: String?) {
+		favoriteEventsJob?.cancel()
+		favoriteEventsJob = null
+		if (sessionKey == null) {
+			return
+		}
+		favoriteEventsJob = viewModelScope.launch {
+			observeFavoriteEvents().collect { event ->
+				applyFavoriteEvent(event)
+			}
+		}
+	}
+
+	private fun applyFavoriteEvent(event: FavoriteEvent) {
+		val isFavorite = when (event) {
+			is FavoriteEvent.Added -> true
+			is FavoriteEvent.Removed -> false
+		}
+		recipes.forEachIndexed { index, recipe ->
+			if (recipe.id == event.recipeId && recipe.isFavorite != isFavorite) {
+				recipes[index] = recipe.copy(isFavorite = isFavorite)
+			}
+		}
+		nearMissRecipes.forEachIndexed { index, nearMiss ->
+			if (nearMiss.recipe.id == event.recipeId && nearMiss.recipe.isFavorite != isFavorite) {
+				nearMissRecipes[index] = nearMiss.copy(
+					recipe = nearMiss.recipe.copy(isFavorite = isFavorite),
+				)
+			}
 		}
 	}
 
@@ -191,6 +242,16 @@ class RecipeSearchViewModel(
 			shouldReopenFilterSheetAfterNavigation = true
 			isFilterSheetVisible = false
 		}
+	}
+
+	fun onPremiumFeatureBlocked(feature: String) {
+		trackEvent(
+			AnalyticsEvent.PremiumFeatureBlocked(
+				feature = feature,
+				origin = AnalyticsOrigin.SEARCH,
+			),
+		)
+		onNavigateToPaywall()
 	}
 
 	fun onSearchContentVisible() {
@@ -394,6 +455,7 @@ class RecipeSearchViewModel(
 			keyIngredients = keyIngredientsForSearch(),
 			pageNumber = pageNumber,
 			pageSize = PAGE_SIZE,
+			applyRecipeFilters = applyRecipeFiltersForSearch(),
 		)
 		val paginatedResult = outcome.get()
 		if (paginatedResult != null) {
@@ -407,7 +469,6 @@ class RecipeSearchViewModel(
 			}
 			val filtered = filterRecipesForMeasurementPreferences(paginatedResult.items, preferences)
 			recipes.addAll(filtered)
-			measurementFilterLabel = preferences.filterSummary()
 			val nextPageKey = pageNumber + 1
 			val isLastPage = (paginatedResult.pageNumber * paginatedResult.pageSize) >= paginatedResult.totalMatches
 			paginationState.appendPage(
@@ -419,10 +480,17 @@ class RecipeSearchViewModel(
 			if (pageNumber == FIRST_PAGE_NUMBER) {
 				logBreadcrumb(CrashBreadcrumb.SEARCH_PERFORMED)
 				trackEvent(
-					AnalyticsEvent.SearchPerformed(
-						query = searchQuery,
-						resultCount = paginatedResult.totalMatches,
-						isEmptyResult = paginatedResult.totalMatches == 0,
+					AnalyticsEvent.SearchPerformed.from(
+						SearchPerformedContext(
+							query = searchQuery,
+							resultCount = paginatedResult.totalMatches,
+							filters = selectedFilters(),
+							pantryCount = pantryIngredients.size,
+							excludedCount = excludedIngredients.size,
+							keyIngredientCount = selectedKeyIngredients().size,
+							nearMissCount = nearMissRecipes.size,
+							isPremiumUser = isPremium,
+						),
 					),
 				)
 			}
@@ -438,22 +506,42 @@ class RecipeSearchViewModel(
 			}
 		}
 		if (pageNumber == FIRST_PAGE_NUMBER) {
+			refreshSearchFilterNote()
 			isSearching = false
 			searchReadiness.reportReady()
 		}
 	}
 
-	private fun filtersForSearch(): SearchFilters =
+	private fun applyRecipeFiltersForSearch(): Boolean =
+		searchQuery.isBlank() || searchPreferences.applyRecipeFiltersToTitleSearch
+
+	private fun refreshSearchFilterNote() {
+		searchFilterNote = formatSearchFilterNote(
+			isTitleSearch = searchQuery.isNotBlank(),
+			hasPantry = pantryIngredients.isNotEmpty(),
+			hasExclusions = excludedIngredients.isNotEmpty(),
+			hasRecipeFilters = !selectedFilters().isEmpty || selectedKeyIngredients().isNotEmpty(),
+			applyRecipeFiltersToTitleSearch = searchPreferences.applyRecipeFiltersToTitleSearch,
+		)
+	}
+
+	private fun selectedFilters(): SearchFilters =
 	// Temporary: client still gates on isPremium (Force Premium in settings). Backend does not
 	// strip premium filters while TREAT_PREMIUM_SEARCH_AS_NON_PREMIUM is true, until
 		// RevenueCat/Google Play premium sync updates app_users.is_premium.
 		if (isPremium) activeFilters else activeFilters.withoutPremiumFilters()
 
-	private fun keyIngredientsForSearch(): Set<String> =
+	private fun selectedKeyIngredients(): Set<String> =
 	// Temporary: client still gates on isPremium (Force Premium in settings). Backend does not
 	// strip keyIngredients while TREAT_PREMIUM_SEARCH_AS_NON_PREMIUM is true, until
 		// RevenueCat/Google Play premium sync updates app_users.is_premium.
 		if (isPremium) keyIngredients else emptySet()
+
+	private fun filtersForSearch(): SearchFilters =
+		if (applyRecipeFiltersForSearch()) selectedFilters() else SearchFilters()
+
+	private fun keyIngredientsForSearch(): Set<String> =
+		if (applyRecipeFiltersForSearch()) selectedKeyIngredients() else emptySet()
 
 	private fun filterNearMissRecipes(
 		nearMissRecipes: List<NearMissRecipe>,
@@ -464,18 +552,6 @@ class RecipeSearchViewModel(
 			preferences = preferences,
 		).map { recipe -> recipe.id }.toSet()
 		return nearMissRecipes.filter { nearMiss -> nearMiss.recipe.id in allowedRecipeIds }
-	}
-
-	private fun MeasurementPreferences.filterSummary(): String? {
-		return when (formatHandling) {
-			RecipeFormatHandling.FILTER_OUT -> {
-				val systemLabel = if (preferredSystem == MeasurementSystem.IMPERIAL) "imperial" else "metric"
-				"Showing $systemLabel recipes only"
-			}
-
-			RecipeFormatHandling.CONVERT_TO_PREFERRED -> "Recipe details will use your preferred measurements"
-			RecipeFormatHandling.KEEP_AS_IS -> null
-		}
 	}
 
 	@AssistedFactory

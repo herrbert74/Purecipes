@@ -14,6 +14,18 @@ class PostLoginNavigationTargetTest {
 	}
 
 	@Test
+	fun `open create resolves to create target`() {
+		resolvePostLoginNavigationTarget(PostLoginAction.OpenCreate) shouldBe
+			PostLoginNavigationTarget.OpenCreate
+	}
+
+	@Test
+	fun `open favorites my recipes resolves to my recipes target`() {
+		resolvePostLoginNavigationTarget(PostLoginAction.OpenFavoritesMyRecipes) shouldBe
+			PostLoginNavigationTarget.OpenFavoritesMyRecipes
+	}
+
+	@Test
 	fun `import cookbook share resolves to favorites with token`() {
 		resolvePostLoginNavigationTarget(PostLoginAction.ImportCookbookShare(sampleShareToken)) shouldBe
 			PostLoginNavigationTarget.OpenFavoritesWithCookbookShare(sampleShareToken)

@@ -10,12 +10,13 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -109,6 +110,7 @@ private fun recipeDetailsViewModelForTest(
 	markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),

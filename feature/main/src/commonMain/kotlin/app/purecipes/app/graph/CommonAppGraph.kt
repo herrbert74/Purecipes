@@ -21,17 +21,17 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.DeleteCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookCoverImageUrlUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbookRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetFavoriteRecipesPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveRecipeFromCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.DeleteCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -39,6 +39,7 @@ import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPrefer
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ResetMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.SaveMeasurementPreferencesUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.DeleteCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -132,6 +133,8 @@ interface CommonAppGraph :
 	val getMeasurementPreferencesUseCase: GetMeasurementPreferencesUseCase
 
 	val getCreatedRecipesUseCase: GetCreatedRecipesUseCase
+
+	val deleteCreatedRecipeUseCase: DeleteCreatedRecipeUseCase
 
 	val getRecipeDetailsUseCase: GetRecipeDetailsUseCase
 

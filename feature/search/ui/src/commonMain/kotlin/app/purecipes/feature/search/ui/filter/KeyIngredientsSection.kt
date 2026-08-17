@@ -38,11 +38,12 @@ internal fun KeyIngredientsSection(
 	keyIngredients: ImmutableSet<String>,
 	pantryIngredients: ImmutableSet<String>,
 	onKeyIngredientsChange: (Set<String>) -> Unit,
+	onGoToPantry: () -> Unit,
 	modifier: Modifier = Modifier,
 	isLocked: Boolean = false,
 	onLockedClick: () -> Unit = {},
 ) {
-	var collapsed by rememberSaveable { mutableStateOf(false) }
+	var collapsed by rememberSaveable { mutableStateOf(keyIngredients.isEmpty()) }
 	val pantryQuickPicks = pantryIngredients - keyIngredients
 
 	Column(modifier = modifier.testTag(FILTER_KEY_INGREDIENTS_SECTION_TAG)) {
@@ -50,6 +51,8 @@ internal fun KeyIngredientsSection(
 			title = "Key ingredients",
 			isCollapsed = collapsed,
 			isLocked = isLocked,
+			titleColor = PurecipesTheme.colorScheme.primary,
+			subtitle = formatFilterSectionSelectionSubtitle(keyIngredients.sorted()),
 			onToggleCollapse = {
 				if (isLocked) {
 					onLockedClick()
@@ -69,7 +72,7 @@ internal fun KeyIngredientsSection(
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
 				Text(
-					text = "Recipes must include all selected ingredients.",
+					text = "You can select ingredients from your pantry that must be included in the results.",
 					style = PurecipesTheme.typography.bodyMedium,
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier
@@ -97,29 +100,24 @@ internal fun KeyIngredientsSection(
 						}
 					}
 				}
-				if (pantryQuickPicks.isNotEmpty()) {
-					Column(
+				if (pantryIngredients.isEmpty()) {
+					EmptyPantryCallout(onGoToPantry = onGoToPantry)
+				} else if (pantryQuickPicks.isNotEmpty()) {
+					FlowRow(
 						modifier = Modifier
+							.fillMaxWidth()
 							.testTag(FILTER_KEY_INGREDIENTS_PANTRY_QUICK_PICKS_TAG)
 							.padding(horizontal = PurecipesTheme.space.xl),
+						horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 						verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 					) {
-						Text(
-							text = "From your pantry",
-							style = PurecipesTheme.typography.labelLarge,
-						)
-						FlowRow(
-							horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-							verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
-						) {
-							pantryQuickPicks.sorted().forEach { item ->
-								FilterChip(
-									selected = false,
-									onClick = { onKeyIngredientsChange(keyIngredients + item) },
-									label = { Text(item) },
-									modifier = Modifier.testTag(keyIngredientPantryQuickPickTag(item)),
-								)
-							}
+						pantryQuickPicks.sorted().forEach { item ->
+							FilterChip(
+								selected = false,
+								onClick = { onKeyIngredientsChange(keyIngredients + item) },
+								label = { Text(item) },
+								modifier = Modifier.testTag(keyIngredientPantryQuickPickTag(item)),
+							)
 						}
 					}
 				}
@@ -136,6 +134,20 @@ private fun KeyIngredientsSectionPreview() {
 			keyIngredients = persistentSetOf("Tomato", "Chicken"),
 			pantryIngredients = persistentSetOf("Chicken", "Rice", "Tomato"),
 			onKeyIngredientsChange = {},
+			onGoToPantry = {},
+		)
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun KeyIngredientsSectionEmptyPantryPreview() {
+	PurecipesTheme {
+		KeyIngredientsSection(
+			keyIngredients = persistentSetOf("Tomato"),
+			pantryIngredients = persistentSetOf(),
+			onKeyIngredientsChange = {},
+			onGoToPantry = {},
 		)
 	}
 }

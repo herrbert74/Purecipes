@@ -44,6 +44,14 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.binaryen.B
 	rootProject.the<org.jetbrains.kotlin.gradle.targets.wasm.binaryen.BinaryenEnvSpec>().download.set(false)
 }
 
-tasks.register("prepareKotlinIdeaImport") {
-	dependsOn(":feature:analytics:data:prepareKotlinIdeaImport")
+tasks.register("generateStoreScreenshots") {
+	group = "store listing"
+	description = "Render framed Play Store marketing screenshots into store-listing/"
+	dependsOn(":tools:store-screenshots:generateStoreScreenshots")
+}
+
+tasks.register("uploadStoreScreenshots") {
+	group = "store listing"
+	description = "Upload store-listing/ screenshots to Google Play via the Android Publisher API"
+	dependsOn(":tools:store-screenshots:uploadStoreScreenshots")
 }

@@ -3,10 +3,11 @@ package app.purecipes.feature.main.ui
 import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
 import app.purecipes.feature.analytics.domain.model.AnalyticsGlobalProperty
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumStatus
 import app.purecipes.feature.analytics.domain.model.AnalyticsUserState
 import app.purecipes.feature.analytics.domain.model.AnalyticsValue
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
@@ -23,7 +24,7 @@ class MainViewModelGlobalPropertiesTest {
 	private val sampleUser = fakeAuthUser(displayName = "Taylor")
 
 	@Test
-	fun `start sets active tab and anonymous user state`() = runUnconfinedViewModelTest {
+	fun `start sets active tab anonymous user state and free premium status`() = runUnconfinedViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val crashRepository = FakeCrashRepository()
 		mainViewModelForTest(
@@ -35,6 +36,8 @@ class MainViewModelGlobalPropertiesTest {
 			AnalyticsValue.TextValue(AnalyticsActiveTab.SEARCH)
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.USER_STATE] shouldBe
 			AnalyticsValue.TextValue(AnalyticsUserState.ANONYMOUS)
+		analyticsRepository.globalProperties[AnalyticsGlobalProperty.PREMIUM_STATUS] shouldBe
+			AnalyticsValue.TextValue(AnalyticsPremiumStatus.FREE)
 		crashRepository.customValues[AnalyticsGlobalProperty.ENVIRONMENT] shouldBe "debug"
 		crashRepository.customValues[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe AnalyticsActiveTab.SEARCH
 		crashRepository.customValues[AnalyticsGlobalProperty.USER_STATE] shouldBe AnalyticsUserState.ANONYMOUS
@@ -53,7 +56,7 @@ class MainViewModelGlobalPropertiesTest {
 		)
 		viewModel.start()
 
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe
 			AnalyticsValue.TextValue(AnalyticsActiveTab.FAVORITES)
@@ -77,11 +80,11 @@ class MainViewModelGlobalPropertiesTest {
 	@Test
 	fun `recipe selection from favorites stamps favorites origin`() {
 		val viewModel = mainViewModelForTest()
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 		viewModel.onRecipeSelected(42)
 
 		viewModel.peekBackStack() shouldBe listOf(
-			FavoritesDestination(),
+			LibraryDestination(),
 			RecipeDetailsDestination(42, origin = AnalyticsOrigin.FAVORITES.value),
 		)
 	}

@@ -15,6 +15,9 @@ internal fun TrackActiveScreenViews(
 	val currentDestination = backStack.lastOrNull()
 	LaunchedEffect(selectedTab, currentDestination) {
 		val screenName = currentDestination?.toAnalyticsScreenName() ?: return@LaunchedEffect
-		screenViewTracker.onScreenVisible(screenName)
+		screenViewTracker.onScreenVisible(
+			screenName = screenName,
+			recipeId = currentDestination.toAnalyticsRecipeId(),
+		)
 	}
 }

@@ -22,10 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
-import app.purecipes.feature.favorites.ui.navigation.installFavoritesFlow
+import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
@@ -137,7 +138,14 @@ private fun MainScreenContent(
 									onRequestLogInForFilters = {
 										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
 									},
-									onOpenPaywall = { viewModel.navigator.push(PaywallDestination) },
+									onOpenPaywall = { feature ->
+										viewModel.navigator.push(
+											PaywallDestination(
+												feature = feature,
+												origin = AnalyticsOrigin.SEARCH.value,
+											),
+										)
+									},
 								)
 								installRecipeDetailsFlow(
 									navigator = viewModel.navigator,
@@ -148,13 +156,28 @@ private fun MainScreenContent(
 								)
 								installCookingFlow(
 									navigator = viewModel.navigator,
+									canManageFavorites = canManageFavorites,
+									sessionKey = sessionKey,
+									onFindMoreRecipes = viewModel.cookingFlowNavigator::findMoreRecipes,
 								)
-								installFavoritesFlow(
+								installLibraryFlow(
 									sessionKey = sessionKey,
 									onRecipeSelect = viewModel::onRecipeSelected,
+									onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,
+									onEditCreatedRecipe = viewModel.createRecipeTabNavigator::openEditor,
+									onRequestLogIn = {
+										viewModel.requestLoginForPostLoginAction(
+											PostLoginAction.OpenFavoritesMyRecipes,
+										)
+									},
 								)
 								installCreateFlow(
+									navigator = viewModel.navigator,
 									canUploadRecipes = canManageFavorites,
+									onSaveSuccess = viewModel.createRecipeTabNavigator::onRecipeSaveSuccess,
+									onRequestLogIn = {
+										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenCreate)
+									},
 								)
 								installAuthFlow(
 									navigator = viewModel.navigator,

@@ -63,11 +63,15 @@ class FakeAuthenticationRepository(
 			),
 		)
 	},
+	var signOutOnValidateSession: Boolean = false,
 ) : AuthenticationRepository {
 
 	private val mutableAuthenticationState = MutableStateFlow(initialState)
 
 	override val authenticationState: StateFlow<AuthenticationState> = mutableAuthenticationState
+
+	var validateSessionCallCount = 0
+		private set
 
 	override suspend fun signInWithEmail(email: String, password: String): Outcome<AuthUser> {
 		return signInWithEmailHandler(email, password).also(::updateAuthenticationState)
@@ -106,6 +110,13 @@ class FakeAuthenticationRepository(
 	override suspend fun deleteAccount(): Outcome<Unit> {
 		mutableAuthenticationState.value = AuthenticationState.SignedOut
 		return Ok(Unit)
+	}
+
+	override suspend fun validateSession() {
+		validateSessionCallCount++
+		if (signOutOnValidateSession) {
+			signOut()
+		}
 	}
 
 	override suspend fun signOut() {

@@ -22,8 +22,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.AnalyticsScreenName
-import app.purecipes.feature.favorites.ui.FavoritesScreen
-import app.purecipes.feature.favorites.ui.navigation.FavoritesDestination
+import app.purecipes.feature.library.ui.LibraryScreen
+import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.recipedetails.ui.RECIPE_DETAILS_CONTENT_TAG
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
@@ -74,7 +74,7 @@ class MainScreenScreenViewTrackingTest {
 		}
 
 		composeRule.runOnIdle {
-			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Favorites })
+			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 		}
 		composeRule.waitForIdle()
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
@@ -134,7 +134,7 @@ class MainScreenScreenViewTrackingTest {
 		val mainViewModel = environment.mainViewModel
 		val searchViewModel = environment.searchViewModel
 		val recipeDetailsViewModel = environment.recipeDetailsViewModel
-		val favoritesViewModel = environment.favoritesViewModel
+		val favoritesViewModel = environment.libraryViewModel
 		composeRule.setContent {
 			PurecipesTheme {
 				LaunchedEffect(mainViewModel) {
@@ -202,8 +202,8 @@ class MainScreenScreenViewTrackingTest {
 										viewModel = recipeDetailsViewModel,
 									)
 								}
-								entry<FavoritesDestination> {
-									FavoritesScreen(
+								entry<LibraryDestination> {
+									LibraryScreen(
 										modifier = Modifier.fillMaxSize(),
 										sessionKey = "screen-view-test",
 										onRecipeSelect = mainViewModel::onRecipeSelected,

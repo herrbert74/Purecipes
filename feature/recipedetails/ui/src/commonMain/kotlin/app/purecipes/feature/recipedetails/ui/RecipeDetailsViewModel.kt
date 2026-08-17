@@ -8,18 +8,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsShareType
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
 import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddFavoriteRecipeUseCase
-import app.purecipes.feature.favorites.domain.usecase.AddRecipeToCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.CreateCookbookUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetCookbooksPageUseCase
-import app.purecipes.feature.favorites.domain.usecase.GetRecipeCookbooksUseCase
-import app.purecipes.feature.favorites.domain.usecase.RemoveFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
+import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
+import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
@@ -39,6 +42,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -52,6 +56,7 @@ class RecipeDetailsViewModel(
 	private val markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
+	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	private val trackEvent: TrackEventUseCase,
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
@@ -105,6 +110,8 @@ class RecipeDetailsViewModel(
 
 	private var measurementPreferences: MeasurementPreferences? = null
 
+	private var favoriteEventsJob: Job? = null
+
 	init {
 		viewModelScope.launch {
 			observeMeasurementPreferences().collectLatest { preferences ->
@@ -113,6 +120,7 @@ class RecipeDetailsViewModel(
 			}
 		}
 		loadRecipe()
+		startFavoriteEventsCollection(sessionKey)
 	}
 
 	fun retry() {
@@ -124,6 +132,7 @@ class RecipeDetailsViewModel(
 			return
 		}
 		activeSessionKey = sessionKey
+		startFavoriteEventsCollection(sessionKey)
 		if (sessionKey == null) {
 			baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = false)
 			recipeDetails = recipeDetails?.copy(isFavorite = false)
@@ -131,6 +140,35 @@ class RecipeDetailsViewModel(
 		} else {
 			loadRecipe(shouldTrackAnalytics = false)
 		}
+	}
+
+	private fun startFavoriteEventsCollection(sessionKey: String?) {
+		favoriteEventsJob?.cancel()
+		favoriteEventsJob = null
+		if (sessionKey == null) {
+			return
+		}
+		favoriteEventsJob = viewModelScope.launch {
+			observeFavoriteEvents().collect { event ->
+				applyFavoriteEvent(event)
+			}
+		}
+	}
+
+	private fun applyFavoriteEvent(event: FavoriteEvent) {
+		if (event.recipeId != recipeId) {
+			return
+		}
+		val isFavorite = when (event) {
+			is FavoriteEvent.Added -> true
+			is FavoriteEvent.Removed -> false
+		}
+		if (baseRecipeDetails?.isFavorite == isFavorite && recipeDetails?.isFavorite == isFavorite) {
+			return
+		}
+		baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = isFavorite)
+		recipeDetails = recipeDetails?.copy(isFavorite = isFavorite)
+		refreshCookbookMembership()
 	}
 
 	fun dismissMeasurementMismatchDialog() {
@@ -174,6 +212,7 @@ class RecipeDetailsViewModel(
 				trackEvent(
 					AnalyticsEvent.FavoriteChanged(
 						recipeId = currentRecipe.id,
+						recipeName = currentRecipe.title,
 						isFavorite = !currentRecipe.isFavorite,
 						origin = AnalyticsOrigin.RECIPE_DETAILS,
 					),
@@ -202,6 +241,16 @@ class RecipeDetailsViewModel(
 			val outcome = addRecipeToCookbook(cookbookId, recipe.id)
 			val err = outcome.getError()?.message
 			if (err == null) {
+				val cookbookName = sheetCookbooks.firstOrNull { it.id == cookbookId }?.name
+				trackEvent(
+					AnalyticsEvent.RecipeAddedToCookbook(
+						recipeId = recipe.id,
+						recipeName = recipe.title,
+						cookbookId = cookbookId,
+						cookbookName = cookbookName,
+						origin = AnalyticsOrigin.RECIPE_DETAILS,
+					),
+				)
 				refreshCookbookMembership()
 			}
 			isCookbookActionInFlight = false
@@ -230,9 +279,24 @@ class RecipeDetailsViewModel(
 					onDone(createOutcome.getError()?.message)
 					return@launch
 				}
+				trackEvent(
+					AnalyticsEvent.CookbookCreated(
+						cookbookId = created.id,
+						cookbookName = created.name,
+					),
+				)
 				val addOutcome = addRecipeToCookbook(created.id, recipe.id)
 				val err = addOutcome.getError()?.message
 				if (err == null) {
+					trackEvent(
+						AnalyticsEvent.RecipeAddedToCookbook(
+							recipeId = recipe.id,
+							recipeName = recipe.title,
+							cookbookId = created.id,
+							cookbookName = created.name,
+							origin = AnalyticsOrigin.RECIPE_DETAILS,
+						),
+					)
 					refreshCookbookMembership()
 				}
 				isCookbookActionInFlight = false
@@ -249,7 +313,9 @@ class RecipeDetailsViewModel(
 		trackEvent(
 			AnalyticsEvent.RecipeShared(
 				recipeId = recipeId,
+				recipeName = recipeDetails?.title.orEmpty(),
 				origin = analyticsOrigin,
+				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
 	}
@@ -297,9 +363,16 @@ class RecipeDetailsViewModel(
 			val outcome = getRecipeDetails(recipeId)
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
-			if (baseRecipeDetails != null && shouldTrackAnalytics) {
+			val loadedRecipe = baseRecipeDetails
+			if (loadedRecipe != null && shouldTrackAnalytics) {
 				logBreadcrumb(CrashBreadcrumb.recipeOpened(recipeId))
-				trackEvent(AnalyticsEvent.RecipeViewed(recipeId = recipeId, origin = analyticsOrigin))
+				trackEvent(
+					AnalyticsEvent.RecipeViewed(
+						recipeId = recipeId,
+						recipeName = loadedRecipe.title,
+						origin = analyticsOrigin,
+					),
+				)
 			}
 			val error = outcome.getError()
 			if (error != null && shouldTrackAnalytics) {
@@ -308,6 +381,7 @@ class RecipeDetailsViewModel(
 					AnalyticsEvent.RecipeLoadFailed(
 						recipeId = recipeId,
 						errorKind = error.toAnalyticsErrorKind(),
+						recipeName = loadedRecipe?.title,
 					),
 				)
 			}

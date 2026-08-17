@@ -124,6 +124,7 @@ fun main(args: Array<String>) {
 	if (!changelogSectionHasContent(notes)) {
 		error("CHANGELOG.md section for $version is empty; draft release notes before opening a PR")
 	}
+	runCommand(root, "kotlin", "scripts/release/extract_release_notes.main.kts", version)
 
 	val branch = "release/v$version-changelog"
 	bumpVersion(versionsFile, version, bumpCode)
@@ -151,6 +152,7 @@ fun main(args: Array<String>) {
 		## Review before merge
 
 		- [ ] Edit CHANGELOG.md for accuracy and tester-friendly wording
+		- [ ] Confirm extracted release notes are ≤500 characters (Play limit; rephrase if needed)
 		- [ ] Confirm versionCode and versionName in gradle/libs.versions.toml
 		- [ ] Merge, then tag v$version (or v$version-rc.N) on main to trigger distribution
 
