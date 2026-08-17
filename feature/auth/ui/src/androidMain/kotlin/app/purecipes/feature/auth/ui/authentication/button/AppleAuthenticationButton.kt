@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
-import com.mmk.kmpauth.firebase.apple.AppleButtonUiContainer
+import com.mmk.kmpauth.apple.rememberAppleAuthState
 import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
 
 @Composable
@@ -29,16 +29,19 @@ internal actual fun AppleAuthenticationButton(
 		}
 		return
 	}
-	AppleButtonUiContainer(
+	val appleAuth = rememberAppleAuthState(
 		linkAccount = false,
 		onResult = { result ->
-			onResult(result.map { it?.toExternalAuthenticationProfile(AuthProvider.APPLE) })
+			val mapped: Result<ExternalAuthenticationProfile?> = result.map { user ->
+				user.toExternalAuthenticationProfile(AuthProvider.APPLE)
+			}
+			onResult(mapped)
 		},
-	) {
-		AppleSignInButton(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight),
-		) { this.onClick() }
-	}
+	)
+	AppleSignInButton(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(PurecipesButtonDefaults.providerButtonHeight),
+		onClick = { appleAuth.launch() },
+	)
 }

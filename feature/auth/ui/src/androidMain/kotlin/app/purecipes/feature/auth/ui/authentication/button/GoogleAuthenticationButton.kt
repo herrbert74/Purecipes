@@ -9,12 +9,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import com.mmk.kmpauth.google.rememberGoogleAuthState
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
-import dev.gitlive.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
 @Composable
@@ -29,7 +29,7 @@ internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal actual fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onUnavailable: () -> Unit,
 ) {
 	if (LocalInspectionMode.current) {
@@ -50,19 +50,8 @@ internal actual fun GoogleAuthenticationButton(
 			linkAccount = false,
 			filterByAuthorizedAccounts = false,
 			onResult = { result ->
-				val firebaseUser = result.getOrNull()?.raw as? FirebaseUser
-				if (firebaseUser == null) {
-					onGoogleSignInResult(null, null, "", null)
-				} else {
-					coroutineScope.launch {
-						val profile = firebaseUser.toGoogleAuthenticationProfile()
-						onGoogleSignInResult(
-							profile?.idToken,
-							profile?.email,
-							profile?.displayName.orEmpty(),
-							profile?.profileImageUrl,
-						)
-					}
+				coroutineScope.launch {
+					onGoogleSignInResult(result.toGoogleAuthenticationProfileResult())
 				}
 			},
 		)

@@ -5,10 +5,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
-import com.mmk.kmpauth.google.GoogleButtonUiContainer
+import com.mmk.kmpauth.google.rememberGoogleSignInState
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
 
 @Composable
@@ -23,26 +24,30 @@ internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal actual fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onUnavailable: () -> Unit,
 ) {
 	if (isConfigured) {
-		GoogleButtonUiContainer(
-			onGoogleSignInResult = { googleUser ->
+		val googleSignIn = rememberGoogleSignInState(
+			onResult = { result ->
 				onGoogleSignInResult(
-					googleUser?.idToken,
-					googleUser?.email,
-					googleUser?.displayName.orEmpty(),
-					googleUser?.profilePicUrl,
+					result.map { googleUser ->
+						GoogleAuthenticationProfile(
+							idToken = googleUser.idToken,
+							email = googleUser.email,
+							displayName = googleUser.displayName.orEmpty(),
+							profileImageUrl = googleUser.profilePicUrl,
+						)
+					},
 				)
 			},
-		) {
-			GoogleSignInButton(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(PurecipesButtonDefaults.providerButtonHeight),
-			) { this.onClick() }
-		}
+		)
+		GoogleSignInButton(
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(PurecipesButtonDefaults.providerButtonHeight),
+			onClick = { googleSignIn.launch() },
+		)
 	} else {
 		GoogleSignInButton(
 			modifier = Modifier

@@ -6,6 +6,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 
 @Composable
@@ -14,7 +15,7 @@ internal actual fun InitializeGoogleAuthenticationProvider(googleWebClientId: St
 @Composable
 internal actual fun GoogleAuthenticationButton(
 	isConfigured: Boolean,
-	onGoogleSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onUnavailable: () -> Unit,
 ) {
 	OutlinedButton(

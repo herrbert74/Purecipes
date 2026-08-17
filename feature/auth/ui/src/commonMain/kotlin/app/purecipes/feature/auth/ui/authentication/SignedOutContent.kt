@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.profile.PrivacySettingsContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -26,14 +27,14 @@ internal fun SignedOutContent(
 	onSignInClick: () -> Unit,
 	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 	onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
-	onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onManagePrivacySettings: () -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 	authenticationProviderButtons: @Composable (
 		isGoogleConfigured: Boolean,
 		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
 		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
-		onGoogleSignInResult: (String?, String?, String, String?) -> Unit,
+		onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit,
 ) {
@@ -89,7 +90,7 @@ private fun SignedOutContentLightPreview() {
 					onSignInClick = {},
 					onExternalProviderSignInResult = { _, _ -> },
 					onFacebookSignInResult = { _, _, _, _ -> },
-					onGoogleSignInResult = { _, _, _, _ -> },
+					onGoogleSignInResult = {},
 					onManagePrivacySettings = {},
 					onGoogleUnavailableClick = {},
 					authenticationProviderButtons = {

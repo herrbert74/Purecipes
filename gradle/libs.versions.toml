@@ -288,9 +288,9 @@ jUnit5-jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 jUnit5-platformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.1.3" }
 #jUnit5-vintageEngine = { module = "org.junit.jupiter:junit-vintage-engine", version.ref = "jUnit5" }
 
-kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
-kmpauth-firebaseFacebook = { module = "io.github.mirzemehdi:kmpauth-firebase-facebook", version.ref = "kmpauth" }
+kmpauth-apple = { module = "io.github.mirzemehdi:kmpauth-apple", version.ref = "kmpauth" }
 kmpauth-facebook = { module = "io.github.mirzemehdi:kmpauth-facebook", version.ref = "kmpauth" }
+kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauth" }
 kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauth" }
 kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauth" }
 kmpnotifier-push-firebase = { group = "io.github.mirzemehdi", name = "kmpnotifier-push-firebase", version.ref = "kmpnotifier" }

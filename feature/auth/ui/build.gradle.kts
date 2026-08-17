@@ -42,16 +42,18 @@ kotlin {
 				implementation(project.dependencies.platform(libs.firebaseBom))
 				implementation(libs.firebaseAuth)
 				implementation(libs.gitlive.firebaseAuth)
+				implementation(libs.kmpauth.apple)
+				implementation(libs.kmpauth.facebook)
 				implementation(libs.kmpauth.firebase)
-				implementation(libs.kmpauth.firebaseFacebook)
 				implementation(libs.kmpauth.google)
 			}
 		}
 		iosMain {
 			dependencies {
 				implementation(libs.gitlive.firebaseAuth)
+				implementation(libs.kmpauth.apple)
+				implementation(libs.kmpauth.facebook)
 				implementation(libs.kmpauth.firebase)
-				implementation(libs.kmpauth.firebaseFacebook)
 				implementation(libs.kmpauth.google)
 			}
 		}

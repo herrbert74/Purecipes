@@ -82,28 +82,22 @@ class AuthenticationViewModel(
 		showConsentForm()
 	}
 
-	fun onGoogleSignInResult(
-		idToken: String?,
-		email: String?,
-		displayName: String,
-		profileImageUrl: String?,
-	) {
-		if (idToken.isNullOrBlank()) {
+	fun onGoogleSignInResult(result: Result<GoogleAuthenticationProfile?>) {
+		val failure = result.exceptionOrNull()
+		if (failure != null) {
+			message = failure.message ?: "Google sign-in failed."
+			return
+		}
+		val profile = result.getOrNull()
+		if (profile == null || profile.idToken.isBlank()) {
 			message = "Google sign-in was cancelled."
 			return
 		}
 		viewModelScope.launch {
 			isBusy = true
 			logBreadcrumb(CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.GOOGLE))
-			val result = signInWithGoogle(
-				GoogleAuthenticationProfile(
-					idToken = idToken,
-					email = email,
-					displayName = displayName,
-					profileImageUrl = profileImageUrl,
-				),
-			)
-			reportSignInOutcome(result.getError(), AnalyticsAuthMethod.GOOGLE)
+			val signInResult = signInWithGoogle(profile)
+			reportSignInOutcome(signInResult.getError(), AnalyticsAuthMethod.GOOGLE)
 			isBusy = false
 		}
 	}

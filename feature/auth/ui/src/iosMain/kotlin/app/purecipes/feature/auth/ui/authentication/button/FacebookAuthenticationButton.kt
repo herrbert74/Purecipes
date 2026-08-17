@@ -6,7 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
-import com.mmk.kmpauth.firebase.facebook.FacebookButtonUiContainerFirebase
+import com.mmk.kmpauth.facebook.FacebookLoginTracking
+import com.mmk.kmpauth.facebook.rememberFacebookAuthState
 import com.mmk.kmpauth.uihelper.facebook.FacebookSignInButton
 import kotlinx.coroutines.launch
 
@@ -15,21 +16,18 @@ internal actual fun FacebookAuthenticationButton(
 	onFacebookSignInResult: (idToken: String?, email: String?, displayName: String, profileImageUrl: String?) -> Unit,
 ) {
 	val coroutineScope = rememberCoroutineScope()
-	FacebookButtonUiContainerFirebase(
+	val facebookAuth = rememberFacebookAuthState(
 		linkAccount = false,
+		loginTracking = FacebookLoginTracking.Enabled,
 		onResult = { result ->
-			val failure = result.exceptionOrNull()
-			if (failure != null) {
-				onFacebookSignInResult(null, null, "", null)
-				return@FacebookButtonUiContainerFirebase
-			}
-			val firebaseUser = result.getOrNull()
-			if (firebaseUser == null) {
-				onFacebookSignInResult(null, null, "", null)
-				return@FacebookButtonUiContainerFirebase
-			}
 			coroutineScope.launch {
-				val profile = firebaseUser.toFacebookAuthenticationProfile()
+				val profileResult = result.toFacebookAuthenticationProfileResult()
+				val failure = profileResult.exceptionOrNull()
+				if (failure != null) {
+					onFacebookSignInResult(null, null, "", null)
+					return@launch
+				}
+				val profile = profileResult.getOrNull()
 				onFacebookSignInResult(
 					profile?.idToken,
 					profile?.email,
@@ -38,11 +36,11 @@ internal actual fun FacebookAuthenticationButton(
 				)
 			}
 		},
-	) {
-		FacebookSignInButton(
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight),
-		) { this.onClick() }
-	}
+	)
+	FacebookSignInButton(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(PurecipesButtonDefaults.providerButtonHeight),
+		onClick = { facebookAuth.launch() },
+	)
 }

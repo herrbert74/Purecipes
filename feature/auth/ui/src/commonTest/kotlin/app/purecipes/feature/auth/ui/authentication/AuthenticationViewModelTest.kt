@@ -11,6 +11,7 @@ import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
@@ -44,8 +45,17 @@ class AuthenticationViewModelTest {
 	fun `blank google result shows cancellation message`() = runViewModelTest {
 		val viewModel = createViewModel()
 
-		viewModel.onGoogleSignInResult(idToken = null, email = null, displayName = "", profileImageUrl = null)
+		viewModel.onGoogleSignInResult(Result.success(null))
 		viewModel.message shouldBe "Google sign-in was cancelled."
+		(viewModel.authenticationState is AuthenticationState.SignedOut) shouldBe true
+	}
+
+	@Test
+	fun `google failure exposes the exception message`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onGoogleSignInResult(Result.failure(IllegalStateException("No credentials available")))
+		viewModel.message shouldBe "No credentials available"
 		(viewModel.authenticationState is AuthenticationState.SignedOut) shouldBe true
 	}
 
@@ -64,10 +74,14 @@ class AuthenticationViewModelTest {
 		val viewModel = createViewModel(analyticsRepository = analyticsRepository)
 
 		viewModel.onGoogleSignInResult(
-			idToken = "token",
-			email = "user@example.com",
-			displayName = "User",
-			profileImageUrl = null,
+			Result.success(
+				GoogleAuthenticationProfile(
+					idToken = "token",
+					email = "user@example.com",
+					displayName = "User",
+					profileImageUrl = null,
+				),
+			),
 		)
 		advanceUntilIdle()
 
