@@ -32,6 +32,7 @@ class AnalyticsAccessorTest {
 				recipeId = 42,
 				recipeName = "Tomato Pasta",
 				origin = AnalyticsOrigin.SEARCH,
+				isPrivate = false,
 			),
 		)
 
@@ -51,6 +52,7 @@ class AnalyticsAccessorTest {
 				recipeId = 1,
 				recipeName = "Tomato Pasta",
 				origin = AnalyticsOrigin.SEARCH,
+				isPrivate = false,
 			),
 		)
 
@@ -70,6 +72,7 @@ class AnalyticsAccessorTest {
 				recipeId = 1,
 				recipeName = "Tomato Pasta",
 				origin = AnalyticsOrigin.SEARCH,
+				isPrivate = false,
 			),
 		)
 
@@ -90,6 +93,7 @@ class AnalyticsAccessorTest {
 				recipeName = "Tomato Pasta",
 				isFavorite = true,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
+				isPrivate = false,
 			),
 		)
 
@@ -97,6 +101,7 @@ class AnalyticsAccessorTest {
 		dataSource.lastTrackedProperties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"is_favorite" to AnalyticsValue.BooleanValue(true),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
 		)
@@ -117,6 +122,7 @@ class AnalyticsAccessorTest {
 				recipeName = "Tomato Pasta",
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
 				stepCount = 3,
+				isPrivate = false,
 			),
 		)
 
@@ -138,6 +144,7 @@ class AnalyticsAccessorTest {
 				recipeId = 1,
 				recipeName = "Tomato Pasta",
 				origin = AnalyticsOrigin.SEARCH,
+				isPrivate = false,
 			),
 		)
 

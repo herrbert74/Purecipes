@@ -43,7 +43,8 @@ class AccountDeletionToolTest {
 		val report = tool.run(AccountDeletionRequest(email = "  Owner@Example.com "))
 
 		report.deleted shouldBe false
-		report.lines shouldContain "  created recipes (kept, reassigned to Purecipes): 1"
+		report.lines shouldContain "  created public recipes (kept, reassigned to Purecipes): 1"
+		report.lines shouldContain "  created private recipes (deleted): 0"
 		report.lines shouldContain "  favourites (deleted): 1"
 		report.lines.last() shouldContain "--execute"
 		db.countRows("SELECT COUNT(*) FROM app_users WHERE id = $userId") shouldBe 1
@@ -59,8 +60,25 @@ class AccountDeletionToolTest {
 
 		report.deleted shouldBe true
 		report.lines shouldContain "Reassigned 1 recipes to Purecipes."
+		report.lines shouldContain "Deleted 0 private recipes."
 		report.lines.any { line -> line.contains("Firebase Console") } shouldBe true
 		db.countRows("SELECT COUNT(*) FROM app_users WHERE id = $userId") shouldBe 0
+	}
+
+	@Test
+	fun `execute deletes private recipes and reassigns public recipes`() {
+		val (db, tool) = createTool()
+		val userId = db.insertAccount(email = "owner@example.com")
+		db.insertRecipe(recipeId = RECIPE_ID, createdByUserId = userId, isPrivate = false)
+		db.insertRecipe(recipeId = PRIVATE_RECIPE_ID, createdByUserId = userId, isPrivate = true)
+
+		val report = tool.run(AccountDeletionRequest(userId = userId, execute = true))
+
+		report.deleted shouldBe true
+		report.lines shouldContain "Reassigned 1 recipes to Purecipes."
+		report.lines shouldContain "Deleted 1 private recipes."
+		db.countRows("SELECT COUNT(*) FROM recipes WHERE id = $RECIPE_ID") shouldBe 1
+		db.countRows("SELECT COUNT(*) FROM recipes WHERE id = $PRIVATE_RECIPE_ID") shouldBe 0
 	}
 
 	@Test
@@ -129,12 +147,19 @@ class AccountDeletionToolTest {
 		return db to AccountDeletionTool(AccountDeletionRepository(db.dataSource))
 	}
 
-	private fun Db.insertRecipe(recipeId: Int, createdByUserId: Long) {
-		executeSql("INSERT INTO recipes (id, title, created_by_user_id) VALUES ($recipeId, 'Pasta', $createdByUserId)")
+	private fun Db.insertRecipe(recipeId: Int, createdByUserId: Long, isPrivate: Boolean = false) {
+		val privateSql = if (isPrivate) "TRUE" else "FALSE"
+		executeSql(
+			"""
+				INSERT INTO recipes (id, title, created_by_user_id, is_private)
+				VALUES ($recipeId, 'Pasta', $createdByUserId, $privateSql)
+			""".trimIndent(),
+		)
 	}
 
 	private companion object {
 
 		const val RECIPE_ID = 1
+		const val PRIVATE_RECIPE_ID = 2
 	}
 }

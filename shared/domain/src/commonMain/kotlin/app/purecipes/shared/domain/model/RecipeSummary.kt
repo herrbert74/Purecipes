@@ -11,4 +11,5 @@ data class RecipeSummary(
 	val totalTime: Int?,
 	val measurementSystem: MeasurementSystem? = null,
 	val isFavorite: Boolean = false,
+	val isPrivate: Boolean = false,
 )

@@ -27,7 +27,7 @@ fun Route.recipeRoutes(
 		}
 
 		get("/search") {
-			call.respondKeywordSearch(dbProvider)
+			call.respondKeywordSearch(sessionService, dbProvider)
 		}
 
 		post("/search") {

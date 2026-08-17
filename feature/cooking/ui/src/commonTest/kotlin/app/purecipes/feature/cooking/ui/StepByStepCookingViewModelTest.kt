@@ -100,6 +100,7 @@ class StepByStepCookingViewModelTest {
 				recipeName = recipe.title,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
 				stepCount = recipe.steps.size,
+				isPrivate = recipe.isPrivate,
 			),
 		)
 		crashRepository.breadcrumbs shouldBe listOf(CrashBreadcrumb.cookingStarted(recipe.id))
@@ -127,6 +128,7 @@ class StepByStepCookingViewModelTest {
 				recipeName = recipe.title,
 				stepIndex = 1,
 				stepCount = recipe.steps.size,
+				isPrivate = recipe.isPrivate,
 			),
 		)
 		crashRepository.breadcrumbs shouldBe listOf(
@@ -147,6 +149,7 @@ class StepByStepCookingViewModelTest {
 			durationSeconds = completedEvents.single().durationSeconds,
 			stepCount = recipe.steps.size,
 			origin = AnalyticsOrigin.RECIPE_DETAILS,
+			isPrivate = recipe.isPrivate,
 		)
 	}
 
@@ -200,6 +203,7 @@ class StepByStepCookingViewModelTest {
 			lastStepIndex = 1,
 			stepCount = recipe.steps.size,
 			durationSeconds = abandonedEvents.single().durationSeconds,
+			isPrivate = recipe.isPrivate,
 		)
 	}
 
@@ -267,6 +271,7 @@ class StepByStepCookingViewModelTest {
 				recipeName = recipe.title,
 				isFavorite = true,
 				origin = AnalyticsOrigin.COOKING,
+				isPrivate = recipe.isPrivate,
 			),
 		)
 	}
@@ -309,6 +314,7 @@ class StepByStepCookingViewModelTest {
 				recipeId = recipe.id,
 				recipeName = recipe.title,
 				origin = AnalyticsOrigin.COOKING,
+				isPrivate = recipe.isPrivate,
 				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
@@ -392,6 +398,7 @@ class StepByStepCookingViewModelTest {
 				cookbookId = createdCookbook.id,
 				cookbookName = createdCookbook.name,
 				origin = AnalyticsOrigin.COOKING,
+				isPrivate = recipe.isPrivate,
 			),
 		)
 	}
@@ -439,6 +446,7 @@ class StepByStepCookingViewModelTest {
 				cookbookId = cookbook.id,
 				cookbookName = cookbook.name,
 				origin = AnalyticsOrigin.COOKING,
+				isPrivate = recipe.isPrivate,
 			),
 		)
 	}

@@ -9,6 +9,8 @@ import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.library.CookbookRepository
 import app.purecipes.backend.feature.search.SearchRecipeRepository
 import app.purecipes.backend.feature.subscription.UserPremiumRepository
+import app.purecipes.shared.domain.model.RecipeWriteRequest
+import app.purecipes.shared.domain.model.canPrivatizeRecipe
 import app.purecipes.shared.domain.model.canUseKeyIngredients
 import app.purecipes.shared.domain.model.canUsePremiumFilters
 import io.ktor.http.HttpStatusCode
@@ -37,6 +39,10 @@ internal suspend fun ApplicationCall.respondCreateRecipe(
 	val request = receiveRecipeWriteRequestOrRespond()
 	val validationError = request?.let(::validateRecipeWriteRequest)
 	if (request != null && validationError == null) {
+		if (!canSetRecipePrivate(dbProvider, userId, request.isPrivate, currentlyPrivate = false)) {
+			respondPrivateRecipePremiumRequired()
+			return
+		}
 		val repo = RecipeRepository(dbProvider().dataSource)
 		respond(HttpStatusCode.Created, repo.createRecipe(userId, request))
 		ingredientMatchCorpusCache.invalidate()
@@ -51,7 +57,10 @@ internal suspend fun ApplicationCall.respondCreateRecipe(
 	}
 }
 
-internal suspend fun ApplicationCall.respondKeywordSearch(dbProvider: () -> Db) {
+internal suspend fun ApplicationCall.respondKeywordSearch(
+	sessionService: SessionService,
+	dbProvider: () -> Db,
+) {
 	val query = request.queryParameters["query"]?.trim().orEmpty()
 	if (query.isEmpty()) {
 		respond(
@@ -67,7 +76,14 @@ internal suspend fun ApplicationCall.respondKeywordSearch(dbProvider: () -> Db) 
 	val pageSize = request.queryParameters["pageSize"]?.toIntOrNull()
 		?.coerceIn(1, HIGHEST_RESULT_COUNT_LIMIT) ?: DEFAULT_RESULT_COUNT_LIMIT
 	val repo = SearchRecipeRepository(dbProvider().dataSource)
-	respond(repo.searchByKeywordPaginated(query, pageNumber, pageSize))
+	respond(
+		repo.searchByKeywordPaginated(
+			keyword = query,
+			pageNumber = pageNumber,
+			pageSize = pageSize,
+			userId = optionalAuthenticatedUserId(sessionService),
+		),
+	)
 }
 
 internal suspend fun ApplicationCall.respondFilteredSearch(
@@ -140,20 +156,13 @@ internal suspend fun ApplicationCall.respondUpdateRecipe(
 	val request = receiveRecipeWriteRequestOrRespond()
 	val validationError = request?.let(::validateRecipeWriteRequest)
 	if (request != null && validationError == null) {
-		val repo = RecipeRepository(dbProvider().dataSource)
-		val recipe = repo.updateRecipe(userId = userId, recipeId = recipeId, request = request)
-		if (recipe == null) {
-			respond(
-				HttpStatusCode.NotFound,
-				ErrorResponse(
-					message = "Recipe not found",
-					detail = "No editable recipe found for id: $recipeId"
-				)
-			)
-		} else {
-			respond(recipe)
-			ingredientMatchCorpusCache.invalidate()
-		}
+		respondValidatedRecipeUpdate(
+			recipeId = recipeId,
+			userId = userId,
+			request = request,
+			dbProvider = dbProvider,
+			ingredientMatchCorpusCache = ingredientMatchCorpusCache,
+		)
 	} else if (request != null && validationError != null) {
 		respond(
 			HttpStatusCode.BadRequest,
@@ -174,13 +183,7 @@ internal suspend fun ApplicationCall.respondDeleteRecipe(
 	val userId = requireAuthenticatedUserId(sessionService) ?: return
 	val repo = RecipeRepository(dbProvider().dataSource)
 	if (!repo.deleteCreatedRecipe(userId = userId, recipeId = recipeId)) {
-		respond(
-			HttpStatusCode.NotFound,
-			ErrorResponse(
-				message = "Recipe not found",
-				detail = "No editable recipe found for id: $recipeId",
-			),
-		)
+		respondEditableRecipeNotFound(recipeId)
 	} else {
 		respond(HttpStatusCode.NoContent)
 		ingredientMatchCorpusCache.invalidate()
@@ -200,4 +203,70 @@ private suspend fun ApplicationCall.requireRecipeIdOrRespond(): Int? {
 		return null
 	}
 	return recipeId
+}
+
+private suspend fun ApplicationCall.respondValidatedRecipeUpdate(
+	recipeId: Int,
+	userId: Long,
+	request: RecipeWriteRequest,
+	dbProvider: () -> Db,
+	ingredientMatchCorpusCache: IngredientMatchCorpusCache,
+) {
+	val repo = RecipeRepository(dbProvider().dataSource)
+	when {
+		!repo.isRecipeOwnedByUser(userId = userId, recipeId = recipeId) -> {
+			respondEditableRecipeNotFound(recipeId)
+		}
+
+		!canSetRecipePrivate(
+			dbProvider,
+			userId,
+			request.isPrivate,
+			currentlyPrivate = repo.isRecipePrivate(recipeId) == true,
+		) -> {
+			respondPrivateRecipePremiumRequired()
+		}
+
+		else -> {
+			val recipe = repo.updateRecipe(userId = userId, recipeId = recipeId, request = request)
+			if (recipe == null) {
+				respondEditableRecipeNotFound(recipeId)
+			} else {
+				respond(recipe)
+				ingredientMatchCorpusCache.invalidate()
+			}
+		}
+	}
+}
+
+private suspend fun ApplicationCall.respondEditableRecipeNotFound(recipeId: Int) {
+	respond(
+		HttpStatusCode.NotFound,
+		ErrorResponse(
+			message = "Recipe not found",
+			detail = "No editable recipe found for id: $recipeId",
+		),
+	)
+}
+
+private fun canSetRecipePrivate(
+	dbProvider: () -> Db,
+	userId: Long,
+	requestedPrivate: Boolean,
+	currentlyPrivate: Boolean,
+): Boolean {
+	if (!requestedPrivate || currentlyPrivate) {
+		return true
+	}
+	return canPrivatizeRecipe(UserPremiumRepository(dbProvider().dataSource).isPremium(userId))
+}
+
+private suspend fun ApplicationCall.respondPrivateRecipePremiumRequired() {
+	respond(
+		HttpStatusCode.Forbidden,
+		ErrorResponse(
+			message = "Premium required",
+			detail = "Private recipes are available to premium members",
+		),
+	)
 }

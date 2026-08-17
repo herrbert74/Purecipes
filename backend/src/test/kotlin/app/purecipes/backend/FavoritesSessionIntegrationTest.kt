@@ -155,6 +155,8 @@ class FavoritesSessionIntegrationTest {
 							image_url VARCHAR(512),
 							cuisine VARCHAR(255),
 							category VARCHAR(255),
+							created_by_user_id BIGINT,
+							is_private BOOLEAN NOT NULL DEFAULT FALSE,
 							created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 						)
 					""".trimIndent(),

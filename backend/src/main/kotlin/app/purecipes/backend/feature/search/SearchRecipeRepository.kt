@@ -3,6 +3,8 @@ package app.purecipes.backend.feature.search
 import app.purecipes.backend.feature.recipe.PantryCoverage
 import app.purecipes.backend.feature.recipe.RecipeRepository
 import app.purecipes.backend.feature.recipe.RecipeRepositorySql
+import app.purecipes.backend.feature.recipe.addRecipeVisibilityCondition
+import app.purecipes.backend.feature.recipe.bindSearchParams
 import app.purecipes.backend.feature.recipe.countRecipesByKeyword
 import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
@@ -30,6 +32,7 @@ class SearchRecipeRepository(
 		keyword: String,
 		pageNumber: Int = 1,
 		pageSize: Int = 20,
+		userId: Long? = null,
 	): SearchResultsPage {
 		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
 		val searchInput =
@@ -39,8 +42,8 @@ class SearchRecipeRepository(
 				pageSize = normalizedPageSize,
 				totalMatches = 0,
 			)
-		val items = searchByKeyword(searchInput)
-		val totalMatches = countRecipesByKeyword(dataSource, searchInput.like)
+		val items = searchByKeyword(searchInput, userId)
+		val totalMatches = countRecipesByKeyword(dataSource, searchInput.like, userId)
 		return SearchResultsPage(
 			items = items,
 			pageNumber = searchInput.pageNumber,
@@ -55,7 +58,7 @@ class SearchRecipeRepository(
 		val offset = (normalizedPageNumber - 1) * normalizedPageSize
 		val isTitleSearch = request.query.isNotBlank()
 		val effectiveRequest = effectiveRequest(request, isTitleSearch)
-		val (whereClause, params) = buildSearchWhereClause(effectiveRequest)
+		val (whereClause, params) = buildSearchWhereClause(effectiveRequest, userId)
 
 		val result = dataSource.connection.use { conn ->
 			searchWithFiltersOnConnection(
@@ -90,9 +93,10 @@ class SearchRecipeRepository(
 		}
 	}
 
-	private fun buildSearchWhereClause(request: SearchRequest): Pair<String, List<Any>> {
+	private fun buildSearchWhereClause(request: SearchRequest, userId: Long?): Pair<String, List<Any>> {
 		val conditions = mutableListOf<String>()
 		val params = mutableListOf<Any>()
+		addRecipeVisibilityCondition(conditions, params, userId)
 		if (request.query.isNotBlank()) {
 			val like = "%${request.query.trim().lowercase()}%"
 			conditions.add("(LOWER(r.title) LIKE ? OR LOWER(r.cuisine) LIKE ?)")
@@ -316,15 +320,25 @@ class SearchRecipeRepository(
 		return !containsExcluded && containsAllKeyIngredients
 	}
 
-	private fun searchByKeyword(searchInput: KeywordSearchInput): List<RecipeSummary> {
+	private fun searchByKeyword(searchInput: KeywordSearchInput, userId: Long?): List<RecipeSummary> {
+		val conditions = mutableListOf("(LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?)")
+		val params = mutableListOf<Any>(searchInput.like, searchInput.like)
+		addRecipeVisibilityCondition(conditions, params, userId, tableAlias = null)
 		val sql = """
-			SELECT id, title, cuisine, image_url, total_time, measurement_system
+			SELECT id, title, cuisine, image_url, total_time, measurement_system, is_private
 			FROM recipes
-			WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
+			WHERE ${conditions.joinToString(" AND ")}
 			ORDER BY created_at DESC
 			LIMIT ? OFFSET ?
 		""".trimIndent()
-		return recipeRepository.searchRecipes(sql, searchInput.like, searchInput.pageSize, searchInput.offset)
+		return dataSource.connection.use { conn ->
+			conn.prepareStatement(sql).use { ps ->
+				bindSearchParams(ps, params)
+				ps.setInt(params.size + 1, searchInput.pageSize)
+				ps.setInt(params.size + 2, searchInput.offset)
+				recipeRepository.executeQuery(ps)
+			}
+		}
 	}
 
 	private fun prepareKeywordSearchInput(keyword: String, pageNumber: Int, pageSize: Int): KeywordSearchInput? {

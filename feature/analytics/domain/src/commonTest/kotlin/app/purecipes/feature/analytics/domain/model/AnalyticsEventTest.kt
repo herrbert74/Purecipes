@@ -85,12 +85,14 @@ class AnalyticsEventTest {
 			recipeId = 42,
 			recipeName = "Tomato Pasta",
 			origin = AnalyticsOrigin.SEARCH,
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "recipe_viewed"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(42L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"origin" to AnalyticsValue.TextValue("search"),
 		)
 	}
@@ -102,12 +104,14 @@ class AnalyticsEventTest {
 			recipeName = "Tomato Pasta",
 			origin = AnalyticsOrigin.RECIPE_DETAILS,
 			stepCount = 4,
+			isPrivate = true,
 		)
 
 		event.eventName shouldBe "cooking_started"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(true),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
 			"step_count" to AnalyticsValue.NumberValue(4L),
 		)
@@ -120,12 +124,14 @@ class AnalyticsEventTest {
 			recipeName = "Tomato Pasta",
 			isFavorite = false,
 			origin = AnalyticsOrigin.RECIPE_DETAILS,
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "favorite_changed"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(3L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"is_favorite" to AnalyticsValue.BooleanValue(false),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
 		)
@@ -140,12 +146,14 @@ class AnalyticsEventTest {
 			hasPhoto = true,
 			ingredientCount = 5,
 			stepCount = 3,
+			isPrivate = true,
 		)
 
 		event.eventName shouldBe "recipe_saved"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(99L),
 			"recipe_name" to AnalyticsValue.TextValue("Edited Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(true),
 			"is_editing" to AnalyticsValue.BooleanValue(true),
 			"has_photo" to AnalyticsValue.BooleanValue(true),
 			"ingredient_count" to AnalyticsValue.NumberValue(5L),
@@ -154,16 +162,36 @@ class AnalyticsEventTest {
 	}
 
 	@Test
+	fun `RecipePrivacyChanged has correct event name and properties`() {
+		val event = AnalyticsEvent.RecipePrivacyChanged(
+			recipeId = 99,
+			recipeName = "Edited Pasta",
+			isPrivate = true,
+			isEditing = true,
+		)
+
+		event.eventName shouldBe "recipe_privacy_changed"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(99L),
+			"recipe_name" to AnalyticsValue.TextValue("Edited Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(true),
+			"is_editing" to AnalyticsValue.BooleanValue(true),
+		)
+	}
+
+	@Test
 	fun `RecipeDeleted has correct event name and properties`() {
 		val event = AnalyticsEvent.RecipeDeleted(
 			recipeId = 99,
 			recipeName = "Tomato Pasta",
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "recipe_deleted"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(99L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 		)
 	}
 
@@ -202,12 +230,14 @@ class AnalyticsEventTest {
 			recipeName = "Tomato Pasta",
 			stepIndex = 2,
 			stepCount = 5,
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "cooking_step_viewed"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"step_index" to AnalyticsValue.NumberValue(2L),
 			"step_count" to AnalyticsValue.NumberValue(5L),
 		)
@@ -221,12 +251,14 @@ class AnalyticsEventTest {
 			durationSeconds = 120L,
 			stepCount = 5,
 			origin = AnalyticsOrigin.RECIPE_DETAILS,
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "cooking_completed"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"duration_seconds" to AnalyticsValue.NumberValue(120L),
 			"step_count" to AnalyticsValue.NumberValue(5L),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
@@ -241,12 +273,14 @@ class AnalyticsEventTest {
 			lastStepIndex = 2,
 			stepCount = 5,
 			durationSeconds = 45L,
+			isPrivate = true,
 		)
 
 		event.eventName shouldBe "cooking_abandoned"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(7L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(true),
 			"last_step_index" to AnalyticsValue.NumberValue(2L),
 			"step_count" to AnalyticsValue.NumberValue(5L),
 			"duration_seconds" to AnalyticsValue.NumberValue(45L),
@@ -297,12 +331,14 @@ class AnalyticsEventTest {
 			recipeId = 42,
 			recipeName = "Tomato Pasta",
 			origin = AnalyticsOrigin.RECIPE_DETAILS,
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "recipe_shared"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(42L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
 			"share_type" to AnalyticsValue.TextValue(AnalyticsShareType.RECIPE),
 		)
@@ -366,12 +402,14 @@ class AnalyticsEventTest {
 			cookbookId = 10,
 			cookbookName = "Weeknight Dinners",
 			origin = AnalyticsOrigin.RECIPE_DETAILS,
+			isPrivate = false,
 		)
 
 		event.eventName shouldBe "recipe_added_to_cookbook"
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(42L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
 			"cookbook_id" to AnalyticsValue.NumberValue(10L),
 			"cookbook_name" to AnalyticsValue.TextValue("Weeknight Dinners"),
 			"origin" to AnalyticsValue.TextValue("recipe_details"),
@@ -543,11 +581,13 @@ class AnalyticsEventTest {
 			recipeId = 42,
 			errorKind = AnalyticsErrorKind.SERVER_ERROR,
 			recipeName = "Tomato Pasta",
+			isPrivate = true,
 		)
 
 		event.properties shouldBe mapOf(
 			"recipe_id" to AnalyticsValue.NumberValue(42L),
 			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(true),
 			"error_kind" to AnalyticsValue.TextValue("server_error"),
 		)
 	}

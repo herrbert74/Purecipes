@@ -38,6 +38,25 @@ class MyRecipesViewModelTest {
 	}
 
 	@Test
+	fun `reload keeps existing recipes visible while refreshing`() = runViewModelTest {
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleRecipe())),
+		)
+		advanceUntilIdle()
+
+		viewModel.reload()
+
+		viewModel.isLoading shouldBe false
+		viewModel.recipes.single().id shouldBe 42
+
+		advanceUntilIdle()
+
+		viewModel.isLoading shouldBe false
+		viewModel.recipes.single().id shouldBe 42
+		viewModel.recipes.single().title shouldBe "Tomato Pasta"
+	}
+
+	@Test
 	fun `deleting a recipe removes it and tracks recipe deleted`() = runViewModelTest {
 		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleRecipe()))
 		val analyticsRepository = FakeAnalyticsRepository()
@@ -57,6 +76,7 @@ class MyRecipesViewModelTest {
 		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.RecipeDeleted(
 			recipeId = 42,
 			recipeName = "Tomato Pasta",
+			isPrivate = false,
 		)
 	}
 

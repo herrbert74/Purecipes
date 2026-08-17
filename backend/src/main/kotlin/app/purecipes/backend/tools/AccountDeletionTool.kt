@@ -92,7 +92,9 @@ class AccountDeletionTool(
 		"  email: ${account.email}",
 		"  display name: ${account.displayName}",
 		"Account data",
-		"  created recipes (kept, reassigned to $RETAINED_RECIPE_OWNER_DISPLAY_NAME): ${summary.createdRecipeCount}",
+		"  created public recipes (kept, reassigned to $RETAINED_RECIPE_OWNER_DISPLAY_NAME): " +
+			"${summary.createdPublicRecipeCount}",
+		"  created private recipes (deleted): ${summary.createdPrivateRecipeCount}",
 		"  favourites (deleted): ${summary.favoriteCount}",
 		"  cookbooks (deleted): ${summary.cookbookCount}",
 		"  active sessions (deleted): ${summary.activeSessionCount}",
@@ -109,6 +111,7 @@ class AccountDeletionTool(
 		is AccountDeletionResult.Deleted -> listOf(
 			"Deleted account ${account.id} and its account-owned data.",
 			"Reassigned ${result.reassignedRecipeCount} recipes to $RETAINED_RECIPE_OWNER_DISPLAY_NAME.",
+			"Deleted ${result.deletedPrivateRecipeCount} private recipes.",
 			"Next step: delete the Firebase Authentication user for ${account.email} in the Firebase Console.",
 			"The backend has no Firebase Admin credentials, so that step is not automated.",
 		)

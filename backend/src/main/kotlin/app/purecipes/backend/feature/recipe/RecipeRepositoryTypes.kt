@@ -19,7 +19,12 @@ internal data class RecipeRecord(
 	val calorieRange: String?,
 	val dietaryPreferences: List<String>,
 	val tags: List<String>,
-)
+	val isPrivate: Boolean,
+	val createdByUserId: Long?,
+) {
+
+	fun isVisibleTo(userId: Long?): Boolean = !isPrivate || createdByUserId == userId
+}
 
 internal data class IngredientGroupAccumulator(
 	val name: String?,

@@ -101,6 +101,13 @@ fun RecipeCard(
 							contentColor = fixedColors.onTertiaryFixed,
 						)
 					}
+					if (recipe.isPrivate) {
+						RecipeCardLabel(
+							text = "Private",
+							backgroundColor = fixedColors.secondaryFixed,
+							contentColor = fixedColors.onSecondaryFixed,
+						)
+					}
 				}
 				Column(
 					modifier = Modifier

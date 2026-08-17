@@ -13,6 +13,7 @@ import javax.sql.DataSource
 class FavoritesRepository(
 	private val dataSource: DataSource,
 ) {
+
 	private val recipeRepository = RecipeRepository(dataSource)
 
 	fun getFavoriteRecipesPage(userId: Long, pageNumber: Int, pageSize: Int): SearchResultsPage {
@@ -33,21 +34,23 @@ class FavoritesRepository(
 	): SearchResultsPage {
 		val totalMatches = conn.prepareStatement(RecipeRepositorySql.FAVORITES_COUNT_SQL).use { ps ->
 			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
+			ps.setLong(RecipeRepositorySql.SECOND_PARAMETER_INDEX, userId)
 			ps.executeQuery().use { rs ->
 				if (rs.next()) rs.getInt(1) else 0
 			}
 		}
 		val items = conn.prepareStatement(RecipeRepositorySql.FAVORITES_PAGE_SQL).use { ps ->
 			ps.setLong(RecipeRepositorySql.FIRST_PARAMETER_INDEX, userId)
-			ps.setInt(RecipeRepositorySql.SECOND_PARAMETER_INDEX, normalizedPageSize)
-			ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, offset)
+			ps.setLong(RecipeRepositorySql.SECOND_PARAMETER_INDEX, userId)
+			ps.setInt(RecipeRepositorySql.THIRD_PARAMETER_INDEX, normalizedPageSize)
+			ps.setInt(RecipeRepositorySql.FOURTH_PARAMETER_INDEX, offset)
 			ps.executeQuery().use(::readFavoriteRecipes)
 		}
 		return SearchResultsPage(items, normalizedPageNumber, normalizedPageSize, totalMatches)
 	}
 
 	fun addFavorite(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
-		if (!recipeRepository.recipeExists(conn, recipeId)) {
+		if (!recipeRepository.recipeVisibleToUser(conn, recipeId, userId)) {
 			return@use false
 		}
 		conn.prepareStatement(RecipeRepositorySql.ADD_FAVORITE_SQL).use { ps ->
@@ -89,6 +92,7 @@ class FavoritesRepository(
 					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
 						?: recipeRepository.loadMeasurementSystemForRecipe(recipeId),
 					isFavorite = true,
+					isPrivate = rs.getBoolean("is_private"),
 				),
 			)
 		}

@@ -839,6 +839,7 @@ fun ensureSchema(connection: Connection) {
 		tags TEXT[],
 		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
+		is_private BOOLEAN NOT NULL DEFAULT FALSE,
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
@@ -977,6 +978,7 @@ fun ensureSchema(connection: Connection) {
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS calorie_range VARCHAR(20);
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS dietary_preferences TEXT[];
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS tags TEXT[];
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS is_private BOOLEAN NOT NULL DEFAULT FALSE;
 	""".trimIndent()
 
 	connection.createStatement().use { it.execute(sql) }

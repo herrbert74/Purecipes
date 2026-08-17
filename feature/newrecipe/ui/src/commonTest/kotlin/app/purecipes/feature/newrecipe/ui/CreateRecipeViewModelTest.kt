@@ -1,12 +1,17 @@
 package app.purecipes.feature.newrecipe.ui
 
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import app.purecipes.feature.subscription.domain.model.SubscriptionState
+import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.NutritionSummary
@@ -14,7 +19,9 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
+import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
@@ -68,6 +75,7 @@ class CreateRecipeViewModelTest {
 		trackedEvent.ingredientCount shouldBe 2
 		trackedEvent.stepCount shouldBe 2
 		trackedEvent.recipeName shouldBe "Tomato Pasta"
+		trackedEvent.isPrivate shouldBe false
 	}
 
 	@Test
@@ -118,8 +126,12 @@ class CreateRecipeViewModelTest {
 	@Test
 	fun `editing a recipe updates the existing item`() = runViewModelTest {
 		val recipe = sampleCreatedRecipe()
+		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
-		val viewModel = createViewModel(repository = repository)
+		val viewModel = createViewModel(
+			repository = repository,
+			analyticsRepository = analyticsRepository,
+		)
 
 		viewModel.loadRecipe(recipe.id)
 		advanceUntilIdle()
@@ -130,6 +142,28 @@ class CreateRecipeViewModelTest {
 		repository.savedRequests.single().title shouldBe "Creamy Tomato Pasta"
 		viewModel.successMessage shouldBe "Recipe updated."
 		viewModel.saveCompletedEvent shouldBe 1
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeSaved>()
+			.single().isPrivate shouldBe false
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipePrivacyChanged>() shouldBe emptyList()
+	}
+
+	@Test
+	fun `reopening a recipe after save does not keep the completion event`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe()
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+		)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+		viewModel.onTitleChange("Creamy Tomato Pasta")
+		viewModel.saveRecipe()
+		advanceUntilIdle()
+		viewModel.onRecipeIdChanged(recipe.id)
+
+		viewModel.saveCompletedEvent shouldBe 0
+		viewModel.isEditing shouldBe true
+		viewModel.titleInput shouldBe "Creamy Tomato Pasta"
 	}
 
 	@Test
@@ -214,21 +248,123 @@ class CreateRecipeViewModelTest {
 		repository.savedRequests.single().ingredients.size shouldBe 2
 	}
 
-	private fun createViewModel(
-		repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
-		estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
-		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
-		crashRepository: FakeCrashRepository = FakeCrashRepository(),
-	): CreateRecipeViewModel =
-		CreateRecipeViewModel(
-			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
-			saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
-			estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
-			trackEvent = TrackEventUseCase(analyticsRepository),
-			logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
-			sendHandledException = SendHandledExceptionUseCase(crashRepository),
+	@Test
+	fun `new recipes are public by default`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		advanceUntilIdle()
+
+		viewModel.isPrivate shouldBe false
+		viewModel.canMakePrivate shouldBe false
+	}
+
+	@Test
+	fun `premium users can mark a new recipe private`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			repository = repository,
+			analyticsRepository = analyticsRepository,
+			subscriptionState = premiumSubscriptionState(),
 		)
+
+		advanceUntilIdle()
+		viewModel.onTitleChange("Secret Pasta")
+		viewModel.onDescriptionChange("Keep this one to myself.")
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.onIsPrivateChange(true)
+		viewModel.saveRecipe()
+		advanceUntilIdle()
+
+		repository.savedRequests.single().isPrivate shouldBe true
+		viewModel.isPrivate shouldBe true
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeSaved>()
+			.single().isPrivate shouldBe true
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipePrivacyChanged>().single() shouldBe
+			AnalyticsEvent.RecipePrivacyChanged(
+				recipeId = -1,
+				recipeName = "Secret Pasta",
+				isPrivate = true,
+				isEditing = false,
+			)
+	}
+
+	@Test
+	fun `free users cannot mark a new recipe private`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(analyticsRepository = analyticsRepository)
+
+		advanceUntilIdle()
+		viewModel.onIsPrivateChange(true)
+
+		viewModel.isPrivate shouldBe false
+		viewModel.canMakePrivate shouldBe false
+		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.PremiumFeatureBlocked(
+			feature = AnalyticsPremiumFeature.PRIVATE_RECIPES,
+			origin = AnalyticsOrigin.CREATE_RECIPE,
+		)
+	}
+
+	@Test
+	fun `making a private recipe public tracks privacy changed`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe().copy(isPrivate = true)
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+			analyticsRepository = analyticsRepository,
+		)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+		viewModel.onIsPrivateChange(false)
+		viewModel.saveRecipe()
+		advanceUntilIdle()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeSaved>()
+			.single().isPrivate shouldBe false
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipePrivacyChanged>().single() shouldBe
+			AnalyticsEvent.RecipePrivacyChanged(
+				recipeId = recipe.id,
+				recipeName = recipe.title,
+				isPrivate = false,
+				isEditing = true,
+			)
+	}
+
+	@Test
+	fun `loading a private recipe keeps it private for a lapsed premium user`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe().copy(isPrivate = true)
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+		)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+
+		viewModel.isPrivate shouldBe true
+		viewModel.canMakePrivate shouldBe true
+	}
 }
+
+private fun createViewModel(
+	repository: FakeCreatedRecipeRepository = FakeCreatedRecipeRepository(),
+	estimateRepository: FakeRecipeNutritionEstimateRepository = FakeRecipeNutritionEstimateRepository(),
+	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
+	crashRepository: FakeCrashRepository = FakeCrashRepository(),
+	subscriptionState: SubscriptionState = SubscriptionState.FREE,
+): CreateRecipeViewModel =
+	CreateRecipeViewModel(
+		getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+		saveCreatedRecipe = SaveCreatedRecipeUseCase(repository),
+		estimateRecipeNutrition = EstimateRecipeNutritionUseCase(estimateRepository),
+		trackEvent = TrackEventUseCase(analyticsRepository),
+		logBreadcrumb = LogBreadcrumbUseCase(crashRepository),
+		sendHandledException = SendHandledExceptionUseCase(crashRepository),
+		observePremiumStatus = ObservePremiumStatusUseCase(
+			FakeSubscriptionRepository(initialState = subscriptionState),
+			FakeMonetisationDebugOverridesRepository(),
+		),
+	)
 
 private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(
 	id = -1,
@@ -244,4 +380,11 @@ private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(
 	totalTime = 20,
 	yields = "2 servings",
 	cuisine = Cuisine.ITALIAN,
+)
+
+private fun premiumSubscriptionState(): SubscriptionState = SubscriptionState(
+	status = SubscriptionStatus.PREMIUM,
+	isActive = true,
+	expirationInstant = null,
+	trialActive = false,
 )

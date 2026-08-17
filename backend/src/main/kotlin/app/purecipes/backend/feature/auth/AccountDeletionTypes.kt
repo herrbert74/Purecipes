@@ -2,7 +2,10 @@ package app.purecipes.backend.feature.auth
 
 sealed interface AccountDeletionResult {
 
-	data class Deleted(val reassignedRecipeCount: Int) : AccountDeletionResult
+	data class Deleted(
+		val reassignedRecipeCount: Int,
+		val deletedPrivateRecipeCount: Int,
+	) : AccountDeletionResult
 
 	data object AccountNotFound : AccountDeletionResult
 
@@ -17,7 +20,8 @@ data class AccountRecord(
 )
 
 data class AccountDataSummary(
-	val createdRecipeCount: Int,
+	val createdPublicRecipeCount: Int,
+	val createdPrivateRecipeCount: Int,
 	val favoriteCount: Int,
 	val cookbookCount: Int,
 	val activeSessionCount: Int,

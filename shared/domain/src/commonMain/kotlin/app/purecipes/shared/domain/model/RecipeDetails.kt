@@ -28,4 +28,5 @@ data class RecipeDetails(
 	val dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	val tags: Set<String> = emptySet(),
 	val nutrition: RecipeNutrition? = null,
+	val isPrivate: Boolean = false,
 )
