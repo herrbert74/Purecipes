@@ -368,10 +368,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-android",
-            "artifactVersion": "1.5.0-alpha25",
+            "artifactVersion": "1.5.0-alpha26",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha25",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -393,10 +393,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-ripple-android",
-            "artifactVersion": "1.5.0-alpha25",
+            "artifactVersion": "1.5.0-alpha26",
             "name": "Compose Material3 Ripple",
             "description": "Building block APIs to build ripples that follow a Material 3 specification.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha25",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2758,7 +2758,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-compose-jvm",
-            "artifactVersion": "1.4.1",
+            "artifactVersion": "1.4.2",
             "name": "Metrox ViewModel Compose",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -2781,7 +2781,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-jvm",
-            "artifactVersion": "1.4.1",
+            "artifactVersion": "1.4.2",
             "name": "Metrox ViewModel",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -2804,7 +2804,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:runtime-jvm",
-            "artifactVersion": "1.4.1",
+            "artifactVersion": "1.4.2",
             "name": "Metro Runtime",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -2919,7 +2919,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-core-android",
-            "artifactVersion": "2.0.0",
+            "artifactVersion": "2.0.1",
             "name": "KMPNotifier Core",
             "description": "Core module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -2941,7 +2941,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-local-android",
-            "artifactVersion": "2.0.0",
+            "artifactVersion": "2.0.1",
             "name": "KMPNotifier Local",
             "description": "Local notifications module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -2963,7 +2963,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-push-firebase-android",
-            "artifactVersion": "2.0.0",
+            "artifactVersion": "2.0.1",
             "name": "KMPNotifier Push Firebase",
             "description": "Firebase push notifications module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
