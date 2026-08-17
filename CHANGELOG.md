@@ -4,6 +4,24 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.0] - 2026-08-17
+
+### Added
+
+- Premium private recipes; delete your recipes from Library.
+- Favourite heart on recipe cards.
+- After cooking: favourite, share, save to a cookbook, or find more recipes.
+
+### Changed
+
+- Favourites tab is now Library; your recipes open in details with an edit button.
+- Email sign-in and create-account are clearer; failures show a better error.
+
+### Fixed
+
+- New steps get focus; drafts survive rotation.
+- Name search ignores pantry filters; search updates with favourites.
+
 ## [0.8.0] - 2026-08-11
 
 ### Changed

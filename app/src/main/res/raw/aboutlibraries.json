@@ -333,33 +333,11 @@
             ]
         },
         {
-            "uniqueId": "androidx.collection:collection",
-            "artifactVersion": "1.1.0",
-            "name": "Support collections",
-            "description": "Standalone efficient collections.",
-            "website": "http://developer.android.com/tools/extras/support-library.html",
-            "developers": [
-                {
-                    "name": "The Android Open Source Project"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
-                "url": "http://source.android.com"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
             "uniqueId": "androidx.collection:collection-jvm",
-            "artifactVersion": "1.5.0",
+            "artifactVersion": "1.4.2",
             "name": "collections",
             "description": "Standalone efficient collections.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.5.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.4.2",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -381,10 +359,10 @@
         },
         {
             "uniqueId": "androidx.collection:collection-ktx",
-            "artifactVersion": "1.5.0",
+            "artifactVersion": "1.6.0",
             "name": "Collections Kotlin Extensions",
             "description": "Kotlin extensions for 'collection' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.5.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.6.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -406,10 +384,10 @@
         },
         {
             "uniqueId": "androidx.compose.animation:animation-android",
-            "artifactVersion": "1.12.0-beta01",
+            "artifactVersion": "1.12.0",
             "name": "Compose Animation",
             "description": "Compose animation library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -431,10 +409,10 @@
         },
         {
             "uniqueId": "androidx.compose.animation:animation-core-android",
-            "artifactVersion": "1.12.0-beta01",
+            "artifactVersion": "1.12.0",
             "name": "Compose Animation Core",
             "description": "Animation engine and animation primitives that are the building blocks of the Compose animation library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-animation#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -456,10 +434,10 @@
         },
         {
             "uniqueId": "androidx.compose.foundation:foundation-android",
-            "artifactVersion": "1.12.0-beta01",
+            "artifactVersion": "1.12.0",
             "name": "Compose Foundation",
             "description": "Higher level abstractions of the Compose UI primitives. This library is design system agnostic, providing the high-level building blocks for both application and design-system developers",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -481,10 +459,10 @@
         },
         {
             "uniqueId": "androidx.compose.foundation:foundation-layout-android",
-            "artifactVersion": "1.12.0-beta01",
+            "artifactVersion": "1.12.0",
             "name": "Compose Layouts",
             "description": "Compose layout implementations",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-foundation#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -506,10 +484,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-android",
-            "artifactVersion": "1.5.0-alpha25",
+            "artifactVersion": "1.5.0-alpha26",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha25",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -531,10 +509,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-ripple-android",
-            "artifactVersion": "1.5.0-alpha25",
+            "artifactVersion": "1.5.0-alpha26",
             "name": "Compose Material3 Ripple",
             "description": "Building block APIs to build ripples that follow a Material 3 specification.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha25",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -556,10 +534,10 @@
         },
         {
             "uniqueId": "androidx.compose.material:material-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Material Components",
             "description": "Compose Material Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -631,10 +609,10 @@
         },
         {
             "uniqueId": "androidx.compose.material:material-ripple-android",
-            "artifactVersion": "1.12.0-beta01",
+            "artifactVersion": "1.12.0",
             "name": "Compose Material Ripple",
             "description": "Material ripple used to build interactive components",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.12.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -656,10 +634,10 @@
         },
         {
             "uniqueId": "androidx.compose.runtime:runtime-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Runtime",
             "description": "Tree composition support for code generated by the Compose compiler plugin and corresponding public API",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -681,10 +659,10 @@
         },
         {
             "uniqueId": "androidx.compose.runtime:runtime-annotation-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Runtime Annotation",
             "description": "Provides Compose-specific annotations used by the compiler and tooling",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -706,10 +684,10 @@
         },
         {
             "uniqueId": "androidx.compose.runtime:runtime-retain-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Runtime Retain",
             "description": "Preserve state in composable methods across configuration changes and other transient content destruction scenarios",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -731,10 +709,10 @@
         },
         {
             "uniqueId": "androidx.compose.runtime:runtime-saveable-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Saveable",
             "description": "Compose components that allow saving and restoring the local ui state",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-runtime#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -756,10 +734,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose UI",
             "description": "Compose UI primitives. This library contains the primitives that form the Compose UI Toolkit, such as drawing, measurement and layout.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -781,10 +759,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-geometry-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Geometry",
             "description": "Compose classes related to dimensions without units",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -806,10 +784,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-graphics-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Graphics",
             "description": "Compose graphics",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -831,10 +809,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-text-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose UI Text",
             "description": "Compose Text primitives and utilities",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -856,10 +834,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-tooling-preview-android",
-            "artifactVersion": "1.12.0-beta01",
+            "artifactVersion": "1.12.0",
             "name": "Compose UI Preview Tooling",
             "description": "Compose tooling library API. This library provides the API required to declare @Preview composables in user apps.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -881,10 +859,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-unit-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Unit",
             "description": "Compose classes for simple units",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -906,10 +884,10 @@
         },
         {
             "uniqueId": "androidx.compose.ui:ui-util-android",
-            "artifactVersion": "1.11.4",
+            "artifactVersion": "1.12.0",
             "name": "Compose Util",
             "description": "Internal Compose utilities used by other modules",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.11.4",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-ui#1.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -931,7 +909,7 @@
         },
         {
             "uniqueId": "androidx.compose:compose-bom",
-            "artifactVersion": "2026.06.01",
+            "artifactVersion": "2026.08.00",
             "name": "Jetpack Compose Libraries BOM",
             "description": "A compatible set of Jetpack Compose libraries.",
             "website": "https://developer.android.com/jetpack",
@@ -1157,10 +1135,10 @@
         },
         {
             "uniqueId": "androidx.credentials:credentials",
-            "artifactVersion": "1.5.0",
+            "artifactVersion": "1.6.0",
             "name": "Credentials",
             "description": "Android Credentials Library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/credentials#1.5.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/credentials#1.6.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1182,10 +1160,10 @@
         },
         {
             "uniqueId": "androidx.credentials:credentials-play-services-auth",
-            "artifactVersion": "1.5.0",
+            "artifactVersion": "1.6.0",
             "name": "Credentials Play Services Auth",
             "description": "sign into apps using play-services-auth library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/credentials#1.5.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/credentials#1.6.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1583,35 +1561,10 @@
         },
         {
             "uniqueId": "androidx.fragment:fragment",
-            "artifactVersion": "1.8.9",
+            "artifactVersion": "1.9.0",
             "name": "fragment",
             "description": "The Support Library is a static library that you can add to your Android application in order to use APIs that are either not available for older platform versions or utility APIs that aren't a part of the framework APIs. Compatible on devices running API 14 or later.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.8.9",
-            "developers": [
-                {
-                    "name": "The Android Open Source Project"
-                }
-            ],
-            "organization": {
-                "name": "The Android Open Source Project"
-            },
-            "scm": {
-                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
-                "url": "https://cs.android.com/androidx/platform/frameworks/support"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
-            "uniqueId": "androidx.fragment:fragment-ktx",
-            "artifactVersion": "1.8.9",
-            "name": "Fragment Kotlin Extensions",
-            "description": "Kotlin extensions for 'fragment' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.8.9",
+            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.9.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2671,16 +2624,19 @@
             ]
         },
         {
-            "uniqueId": "androidx.tracing:tracing",
-            "artifactVersion": "1.2.0",
-            "name": "Android Tracing",
+            "uniqueId": "androidx.tracing:tracing-android",
+            "artifactVersion": "2.0.0",
+            "name": "Tracing",
             "description": "Android Tracing",
-            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#1.2.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#2.0.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
                 }
             ],
+            "organization": {
+                "name": "The Android Open Source Project"
+            },
             "scm": {
                 "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
                 "url": "https://cs.android.com/androidx/platform/frameworks/support"
@@ -2694,15 +2650,18 @@
         },
         {
             "uniqueId": "androidx.tracing:tracing-ktx",
-            "artifactVersion": "1.2.0",
-            "name": "Android Tracing Runtime Kotlin Extensions",
+            "artifactVersion": "2.0.0",
+            "name": "Tracing Kotlin Extensions",
             "description": "Android Tracing",
-            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#1.2.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#2.0.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
                 }
             ],
+            "organization": {
+                "name": "The Android Open Source Project"
+            },
             "scm": {
                 "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
                 "url": "https://cs.android.com/androidx/platform/frameworks/support"
@@ -3015,16 +2974,14 @@
         },
         {
             "uniqueId": "com.android.installreferrer:installreferrer",
-            "artifactVersion": "1.0",
+            "artifactVersion": "2.2",
             "name": "com.android.installreferrer:installreferrer",
             "description": "",
             "developers": [
-                {
-                    "name": "google"
-                }
+                
             ],
             "licenses": [
-                "Apache-2.0"
+                "ASDKL"
             ],
             "funding": [
                 
@@ -3053,7 +3010,7 @@
         },
         {
             "uniqueId": "com.facebook.android:facebook-bolts",
-            "artifactVersion": "18.1.3",
+            "artifactVersion": "18.3.0",
             "name": "Facebook-Bolts-Android-SDK",
             "description": "Facebook Android SDK Bolts support library",
             "website": "https://github.com/facebook/facebook-android-sdk",
@@ -3076,7 +3033,7 @@
         },
         {
             "uniqueId": "com.facebook.android:facebook-common",
-            "artifactVersion": "18.1.3",
+            "artifactVersion": "18.3.0",
             "name": "Facebook-Common-Android-SDK",
             "description": "Facebook Common Android SDK",
             "website": "https://github.com/facebook/facebook-android-sdk",
@@ -3099,7 +3056,7 @@
         },
         {
             "uniqueId": "com.facebook.android:facebook-core",
-            "artifactVersion": "18.1.3",
+            "artifactVersion": "18.3.0",
             "name": "Facebook-Core-Android-SDK",
             "description": "Facebook Core Android SDK",
             "website": "https://github.com/facebook/facebook-android-sdk",
@@ -3122,7 +3079,7 @@
         },
         {
             "uniqueId": "com.facebook.android:facebook-login",
-            "artifactVersion": "18.1.3",
+            "artifactVersion": "18.3.0",
             "name": "Facebook-Login-Android-SDK",
             "description": "Facebook Login Android SDK",
             "website": "https://github.com/facebook/facebook-android-sdk",
@@ -3306,7 +3263,7 @@
         },
         {
             "uniqueId": "com.google.android.gms:play-services-auth",
-            "artifactVersion": "21.4.0",
+            "artifactVersion": "21.6.0",
             "name": "play-services-auth",
             "description": "",
             "developers": [
@@ -3426,7 +3383,7 @@
         },
         {
             "uniqueId": "com.google.android.gms:play-services-identity-credentials",
-            "artifactVersion": "16.0.0-alpha02",
+            "artifactVersion": "16.0.0-alpha08",
             "name": "play-services-identity-credentials",
             "description": "",
             "developers": [
@@ -3591,7 +3548,7 @@
         },
         {
             "uniqueId": "com.google.android.libraries.identity.googleid:googleid",
-            "artifactVersion": "1.1.1",
+            "artifactVersion": "1.2.0",
             "name": "googleid",
             "description": "",
             "developers": [
@@ -4422,7 +4379,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases",
-            "artifactVersion": "10.16.0",
+            "artifactVersion": "10.16.1",
             "name": "purchases-android",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-android",
@@ -4445,7 +4402,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-core-android",
-            "artifactVersion": "3.4.0",
+            "artifactVersion": "3.5.0",
             "name": "purchases-kmp-(core)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4468,7 +4425,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-mappings-android",
-            "artifactVersion": "3.4.0",
+            "artifactVersion": "3.5.0",
             "name": "purchases-kmp-(mappings)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4491,7 +4448,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-models-android",
-            "artifactVersion": "3.4.0",
+            "artifactVersion": "3.5.0",
             "name": "purchases-kmp-(models)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4673,7 +4630,7 @@
         },
         {
             "uniqueId": "dev.gitlive:firebase-app-android",
-            "artifactVersion": "2.5.0",
+            "artifactVersion": "3.0.0-alpha01",
             "name": "firebase-kotlin-sdk",
             "description": "The Firebase Kotlin SDK is a Kotlin-first SDK for Firebase. It's API is similar to the Firebase Android SDK Kotlin Extensions but also supports multiplatform projects, enabling you to use Firebase directly from your common source targeting iOS, Android or JS.",
             "website": "https://github.com/GitLiveApp/firebase-kotlin-sdk",
@@ -4696,7 +4653,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-compose-jvm",
-            "artifactVersion": "1.4.1",
+            "artifactVersion": "1.4.2",
             "name": "Metrox ViewModel Compose",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -4719,7 +4676,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-jvm",
-            "artifactVersion": "1.4.1",
+            "artifactVersion": "1.4.2",
             "name": "Metrox ViewModel",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -4742,7 +4699,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:runtime-jvm",
-            "artifactVersion": "1.4.1",
+            "artifactVersion": "1.4.2",
             "name": "Metro Runtime",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -4925,8 +4882,8 @@
             ]
         },
         {
-            "uniqueId": "io.github.mirzemehdi:kmpauth-core-android-debug",
-            "artifactVersion": "2.5.0-alpha01",
+            "uniqueId": "io.github.mirzemehdi:kmpauth-apple-android",
+            "artifactVersion": "3.0.5",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -4948,7 +4905,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-core-android",
-            "artifactVersion": "2.0.0",
+            "artifactVersion": "2.0.1",
             "name": "KMPNotifier Core",
             "description": "Core module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -4970,7 +4927,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-local-android",
-            "artifactVersion": "2.0.0",
+            "artifactVersion": "2.0.1",
             "name": "KMPNotifier Local",
             "description": "Local notifications module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -4992,7 +4949,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-push-firebase-android",
-            "artifactVersion": "2.0.0",
+            "artifactVersion": "2.0.1",
             "name": "KMPNotifier Push Firebase",
             "description": "Firebase push notifications module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -5004,28 +4961,6 @@
             "scm": {
                 "connection": "https://github.com/mirzemehdi/KMPNotifier.git",
                 "url": "https://github.com/mirzemehdi/KMPNotifier"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
-            "uniqueId": "io.insert-koin:koin-android",
-            "artifactVersion": "4.2.0-beta2",
-            "name": "Koin",
-            "description": "KOIN - Kotlin simple Dependency Injection Framework",
-            "website": "https://insert-koin.io/",
-            "developers": [
-                {
-                    "name": "Arnaud Giuliani"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:https://github.com/InsertKoinIO/koin.git",
-                "url": "https://github.com/InsertKoinIO/koin"
             },
             "licenses": [
                 "Apache-2.0"
@@ -5722,30 +5657,6 @@
             ]
         },
         {
-            "uniqueId": "org.jetbrains.compose.annotation-internal:annotation",
-            "artifactVersion": "1.9.3",
-            "name": "Annotation",
-            "description": "Provides source annotations for tooling and readability.",
-            "website": "https://github.com/JetBrains/compose-jb",
-            "developers": [
-                {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
             "uniqueId": "org.jetbrains.compose.components:components-resources-android",
             "artifactVersion": "1.11.1",
             "name": "Resources for Compose JB",
@@ -5843,10 +5754,10 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.material:material",
-            "artifactVersion": "1.9.3",
+            "artifactVersion": "1.11.1",
             "name": "Compose Material Components",
             "description": "Compose Material Design Components library",
-            "website": "https://github.com/JetBrains/compose-jb",
+            "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
                     "name": "Compose Multiplatform Team",
@@ -5854,9 +5765,9 @@
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
+                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
+                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
+                "url": "https://github.com/JetBrains/compose-multiplatform"
             },
             "licenses": [
                 "Apache-2.0"
@@ -5915,7 +5826,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.material:material-ripple",
-            "artifactVersion": "1.11.0-beta03",
+            "artifactVersion": "1.11.1",
             "name": "Compose Material Ripple",
             "description": "Material ripple used to build interactive components",
             "website": "https://github.com/JetBrains/compose-multiplatform",
