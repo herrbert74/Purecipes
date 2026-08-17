@@ -34,6 +34,7 @@ class FakeCreatedRecipeRepository(
 			totalTime = request.totalTime,
 			yields = request.yields,
 			cuisine = request.cuisine,
+			isPrivate = request.isPrivate,
 		)
 		storedRecipes.removeAll { it.id == recipe.id }
 		storedRecipes.add(index = 0, element = recipe)

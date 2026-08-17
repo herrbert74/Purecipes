@@ -167,7 +167,7 @@ class CookbookRepository(
 			if (!isCookbookOwnedByUser(conn, userId, cookbookId)) {
 				return@use AddRecipeToCookbookResult.CookbookNotFound
 			}
-			if (!recipeExists(conn, recipeId)) {
+			if (!recipeVisibleToUser(conn, userId, recipeId)) {
 				return@use AddRecipeToCookbookResult.RecipeNotFound
 			}
 			if (!isFavorite(conn, userId, recipeId)) {
@@ -222,9 +222,10 @@ class CookbookRepository(
 		}
 	}
 
-	private fun recipeExists(conn: Connection, recipeId: Int): Boolean {
-		return conn.prepareStatement(RECIPE_EXISTS_SQL).use { ps ->
+	private fun recipeVisibleToUser(conn: Connection, userId: Long, recipeId: Int): Boolean {
+		return conn.prepareStatement(RECIPE_VISIBLE_TO_USER_SQL).use { ps ->
 			ps.setInt(1, recipeId)
+			ps.setLong(2, userId)
 			ps.executeQuery().use { rs -> rs.next() }
 		}
 	}
@@ -275,6 +276,7 @@ class CookbookRepository(
 				totalTime = rs.getObject("total_time") as? Int,
 				measurementSystem = rs.getNullableMeasurementSystem("measurement_system"),
 				isFavorite = true,
+				isPrivate = rs.getBoolean("is_private"),
 			)
 		}
 		return out
@@ -330,7 +332,9 @@ class CookbookRepository(
 					SELECT COUNT(*)
 					FROM cookbook_recipes cr2
 					INNER JOIN favorites f2 ON f2.recipe_id = cr2.recipe_id AND f2.user_id = c.user_id
+					INNER JOIN recipes r2 ON r2.id = cr2.recipe_id
 					WHERE cr2.cookbook_id = c.id
+						AND (r2.is_private = FALSE OR r2.created_by_user_id = c.user_id)
 				) AS recipe_count,
 				c.updated_at
 			FROM cookbooks c
@@ -361,15 +365,18 @@ class CookbookRepository(
 			SELECT COUNT(*)
 			FROM cookbook_recipes cr
 			INNER JOIN favorites f ON f.recipe_id = cr.recipe_id AND f.user_id = ?
+			INNER JOIN recipes r ON r.id = cr.recipe_id
 			WHERE cr.cookbook_id = ?
+				AND (r.is_private = FALSE OR r.created_by_user_id = f.user_id)
 		"""
 
 		const val COOKBOOK_RECIPES_PAGE_SQL = """
-			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
+			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
 			FROM cookbook_recipes cr
 			INNER JOIN favorites f ON f.recipe_id = cr.recipe_id AND f.user_id = ?
 			INNER JOIN recipes r ON r.id = cr.recipe_id
 			WHERE cr.cookbook_id = ?
+				AND (r.is_private = FALSE OR r.created_by_user_id = f.user_id)
 			ORDER BY cr.added_at DESC
 			LIMIT ? OFFSET ?
 		"""
@@ -403,10 +410,11 @@ class CookbookRepository(
 				AND user_id = ?
 		"""
 
-		const val RECIPE_EXISTS_SQL = """
+		const val RECIPE_VISIBLE_TO_USER_SQL = """
 			SELECT 1
 			FROM recipes
 			WHERE id = ?
+				AND (is_private = FALSE OR created_by_user_id = ?)
 		"""
 
 		const val IS_FAVORITE_FOR_USER_SQL = """
@@ -431,7 +439,9 @@ class CookbookRepository(
 					SELECT COUNT(*)
 					FROM cookbook_recipes cr2
 					INNER JOIN favorites f2 ON f2.recipe_id = cr2.recipe_id AND f2.user_id = c.user_id
+					INNER JOIN recipes r2 ON r2.id = cr2.recipe_id
 					WHERE cr2.cookbook_id = c.id
+						AND (r2.is_private = FALSE OR r2.created_by_user_id = c.user_id)
 				) AS recipe_count,
 				c.updated_at
 			FROM cookbooks c

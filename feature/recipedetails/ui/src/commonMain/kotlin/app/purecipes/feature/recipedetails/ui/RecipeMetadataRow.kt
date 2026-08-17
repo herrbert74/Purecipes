@@ -20,6 +20,7 @@ internal fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean
 		recipe.cuisine?.displayName,
 		recipe.totalTime?.let { "$it min" },
 		recipe.yields?.takeIf { it.isNotBlank() },
+		"Private".takeIf { recipe.isPrivate },
 		recipe.measurementSystem?.displayName(isRecipeConverted),
 	)
 

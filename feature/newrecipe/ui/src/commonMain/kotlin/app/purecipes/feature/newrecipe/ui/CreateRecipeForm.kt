@@ -75,6 +75,10 @@ internal fun CreateRecipeForm(
 	titleInput: String,
 	totalTimeInput: String,
 	yieldsInput: String,
+	isPrivate: Boolean,
+	canMakePrivate: Boolean,
+	onIsPrivateChange: (Boolean) -> Unit,
+	onPrivacyLockedClick: () -> Unit,
 ) {
 	Column(
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
@@ -139,6 +143,12 @@ internal fun CreateRecipeForm(
 				.testTag(YIELDS_FIELD_TAG),
 			label = { Text(text = "Yields") },
 			singleLine = true,
+		)
+		CreateRecipePrivacySection(
+			isPrivate = isPrivate,
+			canMakePrivate = canMakePrivate,
+			onIsPrivateChange = onIsPrivateChange,
+			onLockedClick = onPrivacyLockedClick,
 		)
 		CreateRecipeIngredientsSection(
 			ingredientRows = ingredientRows,
@@ -324,6 +334,10 @@ private fun CreateRecipeFormLightPreview() {
 					titleInput = "Tomato Pasta",
 					totalTimeInput = "25",
 					yieldsInput = "2 servings",
+					isPrivate = false,
+					canMakePrivate = true,
+					onIsPrivateChange = {},
+					onPrivacyLockedClick = {},
 				)
 			}
 		}

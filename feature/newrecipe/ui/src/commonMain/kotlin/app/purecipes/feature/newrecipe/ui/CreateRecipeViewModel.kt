@@ -8,6 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
+import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.analytics.domain.model.CrashBreadcrumb
 import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
@@ -17,6 +19,7 @@ import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.ingredient.IngredientLineParser
 import app.purecipes.shared.domain.ingredient.nutritionIngredientTexts
 import app.purecipes.shared.domain.model.Cuisine
@@ -31,6 +34,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Inject
@@ -43,10 +47,12 @@ class CreateRecipeViewModel(
 	private val trackEvent: TrackEventUseCase,
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
+	private val observePremiumStatus: ObservePremiumStatusUseCase,
 ) : ViewModel() {
 
 	private var nutritionEstimateJob: Job? = null
 	private var loadRecipeJob: Job? = null
+	private var loadedIsPrivate = false
 
 	val ingredientsEditor = CreateRecipeIngredientsEditor()
 
@@ -76,6 +82,12 @@ class CreateRecipeViewModel(
 	var selectedCuisine by mutableStateOf<Cuisine?>(null)
 		private set
 
+	var isPrivate by mutableStateOf(false)
+		private set
+
+	var isPremium by mutableStateOf(false)
+		private set
+
 	var isLoadingRecipe by mutableStateOf(false)
 		private set
 
@@ -99,6 +111,17 @@ class CreateRecipeViewModel(
 
 	val isEditing: Boolean
 		get() = editingRecipeId != null
+
+	val canMakePrivate: Boolean
+		get() = isPremium || isPrivate
+
+	init {
+		viewModelScope.launch {
+			observePremiumStatus().collect { premium ->
+				isPremium = premium
+			}
+		}
+	}
 
 	fun onTitleChange(value: String) {
 		titleInput = value
@@ -171,7 +194,21 @@ class CreateRecipeViewModel(
 		selectedCuisine = value
 	}
 
+	fun onIsPrivateChange(value: Boolean) {
+		if (value && !canMakePrivate) {
+			trackEvent(
+				AnalyticsEvent.PremiumFeatureBlocked(
+					feature = AnalyticsPremiumFeature.PRIVATE_RECIPES,
+					origin = AnalyticsOrigin.CREATE_RECIPE,
+				),
+			)
+			return
+		}
+		isPrivate = value
+	}
+
 	fun onRecipeIdChanged(recipeId: Int?) {
+		saveCompletedEvent = 0
 		if (recipeId != null) {
 			loadRecipe(recipeId)
 		} else if (isEditing) {
@@ -184,9 +221,9 @@ class CreateRecipeViewModel(
 			return
 		}
 		loadRecipeJob?.cancel()
+		isLoadingRecipe = true
+		loadErrorMessage = null
 		loadRecipeJob = viewModelScope.launch {
-			isLoadingRecipe = true
-			loadErrorMessage = null
 			val outcome = getCreatedRecipes()
 			val recipe = outcome.get()?.firstOrNull { it.id == recipeId }
 			if (recipe != null) {
@@ -211,12 +248,15 @@ class CreateRecipeViewModel(
 		totalTimeInput = ""
 		yieldsInput = ""
 		selectedCuisine = null
+		isPrivate = false
+		loadedIsPrivate = false
 		nutritionEstimate = null
 		isNutritionEstimateLoading = false
 		isLoadingRecipe = false
 		loadErrorMessage = null
 		formErrorMessage = null
 		successMessage = null
+		saveCompletedEvent = 0
 		nutritionEstimateJob?.cancel()
 	}
 
@@ -247,20 +287,18 @@ class CreateRecipeViewModel(
 					totalTime = totalTimeInput.trim().takeIf { it.isNotEmpty() }?.toIntOrNull(),
 					yields = yieldsInput,
 					cuisine = selectedCuisine,
+					isPrivate = isPrivate,
 				),
 			)
 
 			val savedRecipe = outcome.get()
 			if (savedRecipe != null) {
-				trackEvent(
-					AnalyticsEvent.RecipeSaved(
-						recipeId = savedRecipe.id,
-						recipeName = savedRecipe.title,
-						isEditing = wasEditing,
-						hasPhoto = imageUrlInput.isNotBlank(),
-						ingredientCount = ingredients.size,
-						stepCount = steps.size,
-					),
+				trackSavedRecipe(
+					savedRecipe = savedRecipe,
+					wasEditing = wasEditing,
+					hasPhoto = imageUrlInput.isNotBlank(),
+					ingredientCount = ingredients.size,
+					stepCount = steps.size,
 				)
 				successMessage = if (wasEditing) {
 					"Recipe updated."
@@ -293,10 +331,43 @@ class CreateRecipeViewModel(
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
 		yieldsInput = recipe.yields.orEmpty()
 		selectedCuisine = recipe.cuisine
+		isPrivate = recipe.isPrivate
+		loadedIsPrivate = recipe.isPrivate
 		nutritionEstimate = recipe.nutrition?.recipeTotals
 		formErrorMessage = null
 		successMessage = null
 		scheduleNutritionEstimate()
+	}
+
+	private fun trackSavedRecipe(
+		savedRecipe: RecipeDetails,
+		wasEditing: Boolean,
+		hasPhoto: Boolean,
+		ingredientCount: Int,
+		stepCount: Int,
+	) {
+		trackEvent(
+			AnalyticsEvent.RecipeSaved(
+				recipeId = savedRecipe.id,
+				recipeName = savedRecipe.title,
+				isEditing = wasEditing,
+				hasPhoto = hasPhoto,
+				ingredientCount = ingredientCount,
+				stepCount = stepCount,
+				isPrivate = savedRecipe.isPrivate,
+			),
+		)
+		if (savedRecipe.isPrivate != loadedIsPrivate) {
+			trackEvent(
+				AnalyticsEvent.RecipePrivacyChanged(
+					recipeId = savedRecipe.id,
+					recipeName = savedRecipe.title,
+					isPrivate = savedRecipe.isPrivate,
+					isEditing = wasEditing,
+				),
+			)
+		}
+		loadedIsPrivate = savedRecipe.isPrivate
 	}
 
 	private fun scheduleNutritionEstimate() {

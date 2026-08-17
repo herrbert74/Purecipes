@@ -50,7 +50,32 @@ class CreatedRecipeAccessorTest {
 		val storedRecipes = accessor.getCreatedRecipes().get()
 
 		savedRecipe.id shouldBe 1
+		savedRecipe.isPrivate shouldBe false
 		storedRecipes shouldBe listOf(savedRecipe)
+	}
+
+	@Test
+	fun `saving a private recipe forwards privacy to the api`() = runTest {
+		val api = FakePurecipesApi()
+		val accessor = CreatedRecipeAccessor(
+			remoteDataSource = CreatedRecipeRemoteDataSource(
+				api = api,
+				imagePathLoader = FakeRecipeImagePathLoader(),
+				imageUploader = FakeRecipeImageUploader(),
+			),
+		)
+
+		val savedRecipe = accessor.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = "Secret Pasta",
+				description = "Keep this one to myself.",
+				steps = listOf("Boil the pasta"),
+				isPrivate = true,
+			),
+		).get().shouldNotBeNull()
+
+		savedRecipe.isPrivate shouldBe true
+		api.createdRecipeRequests.single().isPrivate shouldBe true
 	}
 
 	@Test

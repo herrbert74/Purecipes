@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -38,6 +39,7 @@ fun CreateRecipeScreen(
 	onBack: (() -> Unit)? = null,
 	onSaveSuccess: (String) -> Unit = {},
 	onRequestLogIn: () -> Unit = {},
+	onOpenPaywall: (String) -> Unit = {},
 	rememberImagePicker: RememberRecipeImagePicker = ::rememberRecipeImagePicker,
 	viewModel: CreateRecipeViewModel = metroViewModel(),
 ) {
@@ -64,6 +66,11 @@ fun CreateRecipeScreen(
 	}
 
 	val currentOnSaveSuccess by rememberUpdatedState(onSaveSuccess)
+	val showRecipeLoading = isCreateRecipeLoading(
+		recipeId = recipeId,
+		editingRecipeId = viewModel.editingRecipeId,
+		isLoadingRecipe = viewModel.isLoadingRecipe,
+	)
 
 	LaunchedEffect(recipeId) {
 		viewModel.onRecipeIdChanged(recipeId)
@@ -92,7 +99,7 @@ fun CreateRecipeScreen(
 			pickerErrorMessage = message
 		},
 	)
-	val showEditorChrome = !viewModel.isLoadingRecipe && viewModel.loadErrorMessage == null
+	val showEditorChrome = !showRecipeLoading && viewModel.loadErrorMessage == null
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -131,7 +138,7 @@ fun CreateRecipeScreen(
 		},
 	) { innerPadding ->
 		when {
-			viewModel.isLoadingRecipe -> Box(
+			showRecipeLoading -> Box(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
@@ -224,9 +231,22 @@ fun CreateRecipeScreen(
 						titleInput = viewModel.titleInput,
 						totalTimeInput = viewModel.totalTimeInput,
 						yieldsInput = viewModel.yieldsInput,
+						isPrivate = viewModel.isPrivate,
+						canMakePrivate = viewModel.canMakePrivate,
+						onIsPrivateChange = viewModel::onIsPrivateChange,
+						onPrivacyLockedClick = {
+							viewModel.onIsPrivateChange(true)
+							onOpenPaywall(AnalyticsPremiumFeature.PRIVATE_RECIPES)
+						},
 					)
 				}
 			}
 		}
 	}
 }
+
+private fun isCreateRecipeLoading(
+	recipeId: Int?,
+	editingRecipeId: Int?,
+	isLoadingRecipe: Boolean,
+): Boolean = isLoadingRecipe || (recipeId != null && editingRecipeId != recipeId)

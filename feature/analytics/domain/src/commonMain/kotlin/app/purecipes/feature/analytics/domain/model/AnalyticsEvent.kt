@@ -89,11 +89,12 @@ sealed interface AnalyticsEvent {
 		val recipeId: Int,
 		val recipeName: String,
 		val origin: AnalyticsOrigin,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_viewed"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
 	}
@@ -103,11 +104,12 @@ sealed interface AnalyticsEvent {
 		val recipeName: String,
 		val origin: AnalyticsOrigin,
 		val stepCount: Int,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_started"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
 			"step_count" to stepCount.asAnalyticsValue(),
 		)
@@ -118,11 +120,12 @@ sealed interface AnalyticsEvent {
 		val recipeName: String,
 		val isFavorite: Boolean,
 		val origin: AnalyticsOrigin,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "favorite_changed"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"is_favorite" to isFavorite.asAnalyticsValue(),
 			"origin" to AnalyticsValue.TextValue(origin.value),
 		)
@@ -135,11 +138,12 @@ sealed interface AnalyticsEvent {
 		val hasPhoto: Boolean,
 		val ingredientCount: Int,
 		val stepCount: Int,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_saved"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"is_editing" to isEditing.asAnalyticsValue(),
 			"has_photo" to hasPhoto.asAnalyticsValue(),
 			"ingredient_count" to ingredientCount.asAnalyticsValue(),
@@ -147,14 +151,29 @@ sealed interface AnalyticsEvent {
 		)
 	}
 
+	data class RecipePrivacyChanged(
+		val recipeId: Int,
+		val recipeName: String,
+		val isPrivate: Boolean,
+		val isEditing: Boolean,
+	) : AnalyticsEvent {
+
+		override val eventName = "recipe_privacy_changed"
+
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
+			"is_editing" to isEditing.asAnalyticsValue(),
+		)
+	}
+
 	data class RecipeDeleted(
 		val recipeId: Int,
 		val recipeName: String,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_deleted"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName)
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate)
 	}
 
 	data class SignInCompleted(
@@ -191,11 +210,12 @@ sealed interface AnalyticsEvent {
 		val recipeName: String,
 		val stepIndex: Int,
 		val stepCount: Int,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_step_viewed"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"step_index" to stepIndex.asAnalyticsValue(),
 			"step_count" to stepCount.asAnalyticsValue(),
 		)
@@ -207,11 +227,12 @@ sealed interface AnalyticsEvent {
 		val durationSeconds: Long,
 		val stepCount: Int,
 		val origin: AnalyticsOrigin,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_completed"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"duration_seconds" to durationSeconds.asAnalyticsValue(),
 			"step_count" to stepCount.asAnalyticsValue(),
 			"origin" to AnalyticsValue.TextValue(origin.value),
@@ -224,11 +245,12 @@ sealed interface AnalyticsEvent {
 		val lastStepIndex: Int,
 		val stepCount: Int,
 		val durationSeconds: Long,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "cooking_abandoned"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"last_step_index" to lastStepIndex.asAnalyticsValue(),
 			"step_count" to stepCount.asAnalyticsValue(),
 			"duration_seconds" to durationSeconds.asAnalyticsValue(),
@@ -280,12 +302,13 @@ sealed interface AnalyticsEvent {
 		val recipeId: Int,
 		val recipeName: String,
 		val origin: AnalyticsOrigin,
+		val isPrivate: Boolean,
 		val shareType: String = AnalyticsShareType.RECIPE,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_shared"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"origin" to AnalyticsValue.TextValue(origin.value),
 			"share_type" to AnalyticsValue.TextValue(shareType),
 		)
@@ -342,11 +365,12 @@ sealed interface AnalyticsEvent {
 		val cookbookId: Int,
 		val cookbookName: String?,
 		val origin: AnalyticsOrigin,
+		val isPrivate: Boolean,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_added_to_cookbook"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) +
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) +
 			CookbookAnalyticsProperty.identity(cookbookId, cookbookName) +
 			mapOf(
 				"origin" to AnalyticsValue.TextValue(origin.value),
@@ -506,11 +530,12 @@ sealed interface AnalyticsEvent {
 		val recipeId: Int,
 		val errorKind: String,
 		val recipeName: String? = null,
+		val isPrivate: Boolean? = null,
 	) : AnalyticsEvent {
 
 		override val eventName = "recipe_load_failed"
 
-		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName) + mapOf(
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) + mapOf(
 			"error_kind" to AnalyticsValue.TextValue(errorKind),
 		)
 	}

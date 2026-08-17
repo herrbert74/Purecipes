@@ -20,11 +20,22 @@ internal fun ResultSet.toRecipeRecord(): RecipeRecord {
 		calorieRange = getNullableString("calorie_range"),
 		dietaryPreferences = getStringArray("dietary_preferences"),
 		tags = getStringArray("tags"),
+		isPrivate = getBoolean("is_private"),
+		createdByUserId = getNullableLong("created_by_user_id"),
 	)
 }
 
 internal fun ResultSet.getNullableString(columnLabel: String): String? =
 	getString(columnLabel)?.trim()?.takeIf { it.isNotEmpty() }
+
+internal fun ResultSet.getNullableLong(columnLabel: String): Long? {
+	val value = getObject(columnLabel) ?: return null
+	return when (value) {
+		is Long -> value
+		is Number -> value.toLong()
+		else -> null
+	}
+}
 
 internal fun ResultSet.getNullableMeasurementSystem(columnLabel: String): MeasurementSystem? =
 	getNullableString(columnLabel)?.let(MeasurementSystem::valueOf)

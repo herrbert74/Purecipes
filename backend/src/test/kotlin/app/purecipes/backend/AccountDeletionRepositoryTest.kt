@@ -19,9 +19,31 @@ class AccountDeletionRepositoryTest {
 
 		val result = repository.deleteAccount(userId)
 
-		result shouldBe AccountDeletionResult.Deleted(reassignedRecipeCount = 1)
+		result shouldBe AccountDeletionResult.Deleted(
+			reassignedRecipeCount = 1,
+			deletedPrivateRecipeCount = 0,
+		)
 		db.countRows("SELECT COUNT(*) FROM app_users WHERE id = $userId") shouldBe 0
 		db.recipeCreatedByUserId(RECIPE_ID) shouldBe db.retainedRecipeOwnerId()
+	}
+
+	@Test
+	fun `delete account deletes private recipes and reassigns public recipes`() {
+		val db = createInMemoryDb("account_deletion_repository")
+		val userId = db.insertAccount(email = "owner@example.com")
+		db.insertRecipe(recipeId = RECIPE_ID, createdByUserId = userId, isPrivate = false)
+		db.insertRecipe(recipeId = PRIVATE_RECIPE_ID, createdByUserId = userId, isPrivate = true)
+		val repository = AccountDeletionRepository(db.dataSource)
+
+		val result = repository.deleteAccount(userId)
+
+		result shouldBe AccountDeletionResult.Deleted(
+			reassignedRecipeCount = 1,
+			deletedPrivateRecipeCount = 1,
+		)
+		db.countRows("SELECT COUNT(*) FROM recipes WHERE id = $RECIPE_ID") shouldBe 1
+		db.recipeCreatedByUserId(RECIPE_ID) shouldBe db.retainedRecipeOwnerId()
+		db.countRows("SELECT COUNT(*) FROM recipes WHERE id = $PRIVATE_RECIPE_ID") shouldBe 0
 	}
 
 	@Test
@@ -38,7 +60,10 @@ class AccountDeletionRepositoryTest {
 		db.executeSql("INSERT INTO measurement_preferences (user_id, preferred_system) VALUES ($userId, 'METRIC')")
 		val repository = AccountDeletionRepository(db.dataSource)
 
-		repository.deleteAccount(userId) shouldBe AccountDeletionResult.Deleted(reassignedRecipeCount = 1)
+		repository.deleteAccount(userId) shouldBe AccountDeletionResult.Deleted(
+			reassignedRecipeCount = 1,
+			deletedPrivateRecipeCount = 0,
+		)
 
 		db.countRows("SELECT COUNT(*) FROM favorites WHERE user_id = $userId") shouldBe 0
 		db.countRows("SELECT COUNT(*) FROM cookbooks WHERE user_id = $userId") shouldBe 0
@@ -82,7 +107,8 @@ class AccountDeletionRepositoryTest {
 
 		val summary = repository.summarizeAccountData(userId)
 
-		summary.createdRecipeCount shouldBe 1
+		summary.createdPublicRecipeCount shouldBe 1
+		summary.createdPrivateRecipeCount shouldBe 0
 		summary.pantryIngredientCount shouldBe 1
 		summary.favoriteCount shouldBe 0
 		summary.cookbookCount shouldBe 0
@@ -101,16 +127,17 @@ class AccountDeletionRepositoryTest {
 		accounts.first().provider shouldBe "GOOGLE"
 	}
 
-	private fun Db.insertRecipe(recipeId: Int, createdByUserId: Long) {
+	private fun Db.insertRecipe(recipeId: Int, createdByUserId: Long, isPrivate: Boolean = false) {
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
 				"""
-					INSERT INTO recipes (id, title, created_by_user_id)
-					VALUES (?, 'Tomato Pasta', ?)
+					INSERT INTO recipes (id, title, created_by_user_id, is_private)
+					VALUES (?, 'Tomato Pasta', ?, ?)
 				""".trimIndent(),
 			).use { statement ->
 				statement.setInt(1, recipeId)
 				statement.setLong(2, createdByUserId)
+				statement.setBoolean(3, isPrivate)
 				statement.executeUpdate()
 			}
 		}
@@ -131,6 +158,7 @@ class AccountDeletionRepositoryTest {
 
 		const val MISSING_USER_ID = 4321L
 		const val RECIPE_ID = 1
+		const val PRIVATE_RECIPE_ID = 2
 		const val COOKBOOK_ID = 1
 	}
 }

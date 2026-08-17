@@ -255,9 +255,42 @@ class RecipeDetailsViewModelTest {
 				recipeId = recipe.id,
 				recipeName = recipe.title,
 				origin = AnalyticsOrigin.SEARCH,
+				isPrivate = recipe.isPrivate,
 				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
+	}
+
+	@Test
+	fun `share current recipe is skipped for private recipes`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val recipe = fakeRecipeDetails().copy(isPrivate = true)
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(Ok(recipe))),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			trackEvent = TrackEventUseCase(analyticsRepository),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+
+		advanceUntilIdle()
+		viewModel.shareCurrentRecipe()
+
+		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.RecipeShared>() shouldBe emptyList()
 	}
 
 	@Test
@@ -521,6 +554,7 @@ class RecipeDetailsViewModelTest {
 				cookbookId = createdCookbook.id,
 				cookbookName = createdCookbook.name,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
+				isPrivate = recipe.isPrivate,
 			),
 		)
 	}

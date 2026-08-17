@@ -339,6 +339,7 @@ class CookbookShareRepository(
 			FROM cookbook_recipes cr
 			INNER JOIN recipes r ON r.id = cr.recipe_id
 			WHERE cr.cookbook_id = ?
+				AND r.is_private = FALSE
 			ORDER BY cr.added_at DESC
 		"""
 
@@ -363,7 +364,9 @@ class CookbookShareRepository(
 					SELECT COUNT(*)
 					FROM cookbook_recipes cr2
 					INNER JOIN favorites f2 ON f2.recipe_id = cr2.recipe_id AND f2.user_id = c.user_id
+					INNER JOIN recipes r2 ON r2.id = cr2.recipe_id
 					WHERE cr2.cookbook_id = c.id
+						AND (r2.is_private = FALSE OR r2.created_by_user_id = c.user_id)
 				) AS recipe_count,
 				c.updated_at
 			FROM cookbooks c

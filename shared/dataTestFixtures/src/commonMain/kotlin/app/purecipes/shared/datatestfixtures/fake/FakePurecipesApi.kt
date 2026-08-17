@@ -334,6 +334,7 @@ class FakePurecipesApi(
 			totalTime = totalTime,
 			yields = yields,
 			cuisine = cuisine,
+			isPrivate = isPrivate,
 		)
 	}
 

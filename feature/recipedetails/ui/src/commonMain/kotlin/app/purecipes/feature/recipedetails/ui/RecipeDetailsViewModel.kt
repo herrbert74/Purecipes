@@ -215,6 +215,7 @@ class RecipeDetailsViewModel(
 						recipeName = currentRecipe.title,
 						isFavorite = !currentRecipe.isFavorite,
 						origin = AnalyticsOrigin.RECIPE_DETAILS,
+						isPrivate = currentRecipe.isPrivate,
 					),
 				)
 				refreshCookbookMembership()
@@ -249,6 +250,7 @@ class RecipeDetailsViewModel(
 						cookbookId = cookbookId,
 						cookbookName = cookbookName,
 						origin = AnalyticsOrigin.RECIPE_DETAILS,
+						isPrivate = recipe.isPrivate,
 					),
 				)
 				refreshCookbookMembership()
@@ -295,6 +297,7 @@ class RecipeDetailsViewModel(
 							cookbookId = created.id,
 							cookbookName = created.name,
 							origin = AnalyticsOrigin.RECIPE_DETAILS,
+							isPrivate = recipe.isPrivate,
 						),
 					)
 					refreshCookbookMembership()
@@ -306,6 +309,9 @@ class RecipeDetailsViewModel(
 	}
 
 	fun shareCurrentRecipe() {
+		if (recipeDetails?.isPrivate == true) {
+			return
+		}
 		shareRecipe(
 			recipeId = recipeId,
 			title = recipeDetails?.title,
@@ -315,6 +321,7 @@ class RecipeDetailsViewModel(
 				recipeId = recipeId,
 				recipeName = recipeDetails?.title.orEmpty(),
 				origin = analyticsOrigin,
+				isPrivate = recipeDetails?.isPrivate == true,
 				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
@@ -371,6 +378,7 @@ class RecipeDetailsViewModel(
 						recipeId = recipeId,
 						recipeName = loadedRecipe.title,
 						origin = analyticsOrigin,
+						isPrivate = loadedRecipe.isPrivate,
 					),
 				)
 			}
@@ -382,6 +390,7 @@ class RecipeDetailsViewModel(
 						recipeId = recipeId,
 						errorKind = error.toAnalyticsErrorKind(),
 						recipeName = loadedRecipe?.title,
+						isPrivate = loadedRecipe?.isPrivate,
 					),
 				)
 			}

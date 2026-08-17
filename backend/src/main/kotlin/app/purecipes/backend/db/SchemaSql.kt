@@ -93,6 +93,7 @@ internal const val RECIPES_TABLE_SQL = """
 		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
 		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
+		is_private BOOLEAN NOT NULL DEFAULT FALSE,
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)
@@ -104,6 +105,10 @@ internal const val RECIPES_ADD_DESCRIPTION_SQL = """
 
 internal const val RECIPES_ADD_CREATED_BY_USER_ID_SQL = """
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL
+"""
+
+internal const val RECIPES_ADD_IS_PRIVATE_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS is_private BOOLEAN NOT NULL DEFAULT FALSE
 """
 
 internal const val RECIPES_ADD_MEASUREMENT_SYSTEM_SQL = """

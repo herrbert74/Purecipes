@@ -15,12 +15,14 @@ fun EntryProviderScope<NavKey>.installCreateFlow(
 	canUploadRecipes: Boolean,
 	onSaveSuccess: (String) -> Unit,
 	onRequestLogIn: () -> Unit,
+	onOpenPaywall: (String) -> Unit,
 ) {
 	entry<CreateDestination> {
 		CreateRecipeScreen(
 			canUploadRecipes = canUploadRecipes,
 			onSaveSuccess = onSaveSuccess,
 			onRequestLogIn = onRequestLogIn,
+			onOpenPaywall = onOpenPaywall,
 			modifier = Modifier.fillMaxSize(),
 		)
 	}
@@ -31,6 +33,7 @@ fun EntryProviderScope<NavKey>.installCreateFlow(
 			onBack = { navigator.back() },
 			onSaveSuccess = onSaveSuccess,
 			onRequestLogIn = onRequestLogIn,
+			onOpenPaywall = onOpenPaywall,
 			modifier = Modifier.fillMaxSize(),
 		)
 	}

@@ -24,10 +24,13 @@ import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
+import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -122,6 +125,26 @@ class CreateRecipeScreenTest {
 		onNodeWithText("Could not import the selected image.").performScrollTo().assertIsDisplayed()
 		onNodeWithTag("createRecipeImagePickButton").assertIsEnabled()
 		onNodeWithTag("createRecipeSaveButton").assertIsEnabled()
+	}
+
+	@Test
+	fun createRecipeScreenOpensPaywallWhenFreeUserTapsPrivateRecipe() = runRecompositionTrackingUiTest {
+		var openedPaywall: String? = null
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					onOpenPaywall = { feature -> openedPaywall = feature },
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipePrivacySwitch").performScrollTo().assertIsDisplayed()
+		onNodeWithText("Private recipe").performScrollTo().performClick()
+		waitForIdle()
+
+		openedPaywall shouldBe "private_recipes"
 	}
 
 	@Test
@@ -260,4 +283,8 @@ private fun createRecipeViewModelForTest(
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+	observePremiumStatus = ObservePremiumStatusUseCase(
+		FakeSubscriptionRepository(),
+		FakeMonetisationDebugOverridesRepository(),
+	),
 )

@@ -57,7 +57,8 @@ class AccountDeletionRepository(
 
 	fun summarizeAccountData(userId: Long): AccountDataSummary = dataSource.connection.use { connection ->
 		AccountDataSummary(
-			createdRecipeCount = connection.countRows(COUNT_CREATED_RECIPES_SQL, userId),
+			createdPublicRecipeCount = connection.countRows(COUNT_CREATED_PUBLIC_RECIPES_SQL, userId),
+			createdPrivateRecipeCount = connection.countRows(COUNT_CREATED_PRIVATE_RECIPES_SQL, userId),
 			favoriteCount = connection.countRows(COUNT_FAVORITES_SQL, userId),
 			cookbookCount = connection.countRows(COUNT_COOKBOOKS_SQL, userId),
 			activeSessionCount = connection.countRows(COUNT_ACTIVE_SESSIONS_SQL, userId),
@@ -76,12 +77,16 @@ class AccountDeletionRepository(
 	}
 
 	private fun Connection.reassignRecipesAndDeleteAccount(userId: Long): AccountDeletionResult {
+		val deletedPrivateRecipeCount = deletePrivateCreatedRecipes(userId)
 		val reassignedRecipeCount = reassignCreatedRecipes(
 			fromUserId = userId,
 			toUserId = findOrCreateRetainedRecipeOwnerId(),
 		)
 		deleteAccountRow(userId)
-		return AccountDeletionResult.Deleted(reassignedRecipeCount = reassignedRecipeCount)
+		return AccountDeletionResult.Deleted(
+			reassignedRecipeCount = reassignedRecipeCount,
+			deletedPrivateRecipeCount = deletedPrivateRecipeCount,
+		)
 	}
 
 	private fun Connection.findAccountById(userId: Long): AccountRecord? =
@@ -115,6 +120,12 @@ class AccountDeletionRepository(
 			}
 		}
 	}
+
+	private fun Connection.deletePrivateCreatedRecipes(userId: Long): Int =
+		prepareStatement(DELETE_PRIVATE_CREATED_RECIPES_SQL).use { statement ->
+			statement.setLong(FIRST_PARAMETER_INDEX, userId)
+			statement.executeUpdate()
+		}
 
 	private fun Connection.reassignCreatedRecipes(fromUserId: Long, toUserId: Long): Int =
 		prepareStatement(REASSIGN_CREATED_RECIPES_SQL).use { statement ->
@@ -176,10 +187,17 @@ class AccountDeletionRepository(
 			VALUES (?, ?, ?, ?)
 		"""
 
+		const val DELETE_PRIVATE_CREATED_RECIPES_SQL = """
+			DELETE FROM recipes
+			WHERE created_by_user_id = ?
+				AND is_private = TRUE
+		"""
+
 		const val REASSIGN_CREATED_RECIPES_SQL = """
 			UPDATE recipes
 			SET created_by_user_id = ?
 			WHERE created_by_user_id = ?
+				AND is_private = FALSE
 		"""
 
 		const val DELETE_ACCOUNT_SQL = """
@@ -187,10 +205,18 @@ class AccountDeletionRepository(
 			WHERE id = ?
 		"""
 
-		const val COUNT_CREATED_RECIPES_SQL = """
+		const val COUNT_CREATED_PUBLIC_RECIPES_SQL = """
 			SELECT COUNT(*)
 			FROM recipes
 			WHERE created_by_user_id = ?
+				AND is_private = FALSE
+		"""
+
+		const val COUNT_CREATED_PRIVATE_RECIPES_SQL = """
+			SELECT COUNT(*)
+			FROM recipes
+			WHERE created_by_user_id = ?
+				AND is_private = TRUE
 		"""
 
 		const val COUNT_FAVORITES_SQL = """

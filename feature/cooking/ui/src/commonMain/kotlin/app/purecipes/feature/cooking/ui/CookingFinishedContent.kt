@@ -114,17 +114,19 @@ internal fun CookingFinishedContent(
 					Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
 					Text(text = favoriteButtonLabel(canManageFavorites, recipe.isFavorite))
 				}
-				FilledTonalButton(
-					onClick = onShare,
-					modifier = Modifier.weight(1f),
-				) {
-					Icon(
-						imageVector = Icons.Filled.Share,
-						contentDescription = null,
-						modifier = Modifier.size(ButtonDefaults.IconSize),
-					)
-					Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-					Text(text = "Share")
+				if (!recipe.isPrivate) {
+					FilledTonalButton(
+						onClick = onShare,
+						modifier = Modifier.weight(1f),
+					) {
+						Icon(
+							imageVector = Icons.Filled.Share,
+							contentDescription = null,
+							modifier = Modifier.size(ButtonDefaults.IconSize),
+						)
+						Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+						Text(text = "Share")
+					}
 				}
 			}
 			if (canManageFavorites && recipe.isFavorite) {

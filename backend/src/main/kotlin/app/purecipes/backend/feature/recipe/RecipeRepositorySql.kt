@@ -22,6 +22,8 @@ internal object RecipeRepositorySql {
 
 	const val NINTH_PARAMETER_INDEX = 9
 
+	const val TENTH_PARAMETER_INDEX = 10
+
 	const val ADD_FAVORITE_SQL = """
 		INSERT INTO favorites (user_id, recipe_id)
 		VALUES (?, ?)
@@ -30,15 +32,18 @@ internal object RecipeRepositorySql {
 
 	const val FAVORITES_COUNT_SQL = """
 		SELECT COUNT(*)
-		FROM favorites
-		WHERE user_id = ?
-	"""
-
-	const val FAVORITES_PAGE_SQL = """
-		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
 		FROM favorites f
 		INNER JOIN recipes r ON r.id = f.recipe_id
 		WHERE f.user_id = ?
+			AND (r.is_private = FALSE OR r.created_by_user_id = ?)
+	"""
+
+	const val FAVORITES_PAGE_SQL = """
+		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
+		FROM favorites f
+		INNER JOIN recipes r ON r.id = f.recipe_id
+		WHERE f.user_id = ?
+			AND (r.is_private = FALSE OR r.created_by_user_id = ?)
 		ORDER BY f.created_at DESC
 		LIMIT ? OFFSET ?
 	"""
@@ -55,7 +60,8 @@ internal object RecipeRepositorySql {
 
 	const val CREATED_RECIPES_SQL = """
 		SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
-		       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
+		       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system,
+		       is_private, created_by_user_id
 		FROM recipes
 		WHERE created_by_user_id = ?
 		ORDER BY created_at DESC, id DESC
@@ -72,16 +78,18 @@ internal object RecipeRepositorySql {
 
 	const val RECIPE_SQL = """
 		SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
-		       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system
+		       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system,
+		       is_private, created_by_user_id
 		FROM recipes
 		WHERE id = ?
 	"""
 
 	const val CREATE_RECIPE_SQL = """
 		INSERT INTO recipes (
-			title, description, instructions, total_time, yields, image_url, cuisine, measurement_system, created_by_user_id
+			title, description, instructions, total_time, yields, image_url, cuisine, measurement_system,
+			created_by_user_id, is_private
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	"""
 
 	const val UPDATE_RECIPE_SQL = """
@@ -93,7 +101,14 @@ internal object RecipeRepositorySql {
 			yields = ?,
 			image_url = ?,
 			cuisine = ?,
-			measurement_system = ?
+			measurement_system = ?,
+			is_private = ?
+		WHERE id = ?
+	"""
+
+	const val RECIPE_IS_PRIVATE_SQL = """
+		SELECT is_private
+		FROM recipes
 		WHERE id = ?
 	"""
 
@@ -101,6 +116,20 @@ internal object RecipeRepositorySql {
 		SELECT 1
 		FROM recipes
 		WHERE id = ?
+	"""
+
+	const val RECIPE_VISIBLE_TO_USER_SQL = """
+		SELECT 1
+		FROM recipes
+		WHERE id = ?
+			AND (is_private = FALSE OR created_by_user_id = ?)
+	"""
+
+	const val RECIPE_VISIBLE_PUBLIC_SQL = """
+		SELECT 1
+		FROM recipes
+		WHERE id = ?
+			AND is_private = FALSE
 	"""
 
 	const val RECIPE_OWNED_BY_USER_SQL = """

@@ -1,7 +1,6 @@
 package app.purecipes.feature.library.ui.myrecipes
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -33,7 +32,8 @@ class MyRecipesViewModel(
 		private set
 	var errorMessage by mutableStateOf<String?>(null)
 		private set
-	val recipes = mutableStateListOf<RecipeSummary>()
+	var recipes by mutableStateOf<List<RecipeSummary>>(emptyList())
+		private set
 	private var deleteInFlight = false
 
 	init {
@@ -59,13 +59,14 @@ class MyRecipesViewModel(
 			val outcome = deleteCreatedRecipe(recipe.id)
 			val ok = outcome.getError() == null
 			if (ok) {
+				recipes = recipes.filterNot { it.id == recipe.id }
 				trackEvent(
 					AnalyticsEvent.RecipeDeleted(
 						recipeId = recipe.id,
 						recipeName = recipe.title,
+						isPrivate = recipe.isPrivate,
 					),
 				)
-				recipes.removeAll { it.id == recipe.id }
 			} else {
 				errorMessage = outcome.getError()?.message
 			}
@@ -76,13 +77,12 @@ class MyRecipesViewModel(
 
 	private fun loadRecipes() {
 		viewModelScope.launch {
-			isLoading = true
+			if (recipes.isEmpty()) {
+				isLoading = true
+			}
 			errorMessage = null
 			val outcome = getCreatedRecipes()
-			recipes.clear()
-			recipes.addAll(
-				(outcome.get() ?: emptyList()).map(RecipeDetails::toRecipeSummary),
-			)
+			recipes = (outcome.get() ?: emptyList()).map(RecipeDetails::toRecipeSummary)
 			errorMessage = outcome.getError()?.message
 			isLoading = false
 		}
@@ -96,4 +96,5 @@ internal fun RecipeDetails.toRecipeSummary(): RecipeSummary =
 		cuisine = cuisine,
 		imageUrl = imageUrl,
 		totalTime = totalTime,
+		isPrivate = isPrivate,
 	)

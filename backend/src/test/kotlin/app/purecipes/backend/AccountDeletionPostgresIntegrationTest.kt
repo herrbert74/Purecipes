@@ -84,6 +84,7 @@ class AccountDeletionPostgresIntegrationTest {
 			val retainedOwnerId = db.retainedRecipeOwnerId()
 			db.recipeCreatedByUserId(CREATED_RECIPE_ID) shouldBe retainedOwnerId
 			db.recipeImageUrl(CREATED_RECIPE_ID) shouldBe CREATED_RECIPE_IMAGE_URL
+			db.countRows("SELECT COUNT(*) FROM recipes WHERE id = $PRIVATE_RECIPE_ID") shouldBe 0
 			db.countRows("SELECT COUNT(*) FROM recipes WHERE id = $SCRAPED_RECIPE_ID") shouldBe 1
 			db.retainedRecipeOwnerDisplayName() shouldBe RETAINED_RECIPE_OWNER_DISPLAY_NAME
 		} finally {
@@ -166,6 +167,7 @@ class AccountDeletionPostgresIntegrationTest {
 
 	private fun Db.seedAccountData(userId: Long) {
 		insertRecipe(recipeId = CREATED_RECIPE_ID, createdByUserId = userId)
+		insertRecipe(recipeId = PRIVATE_RECIPE_ID, createdByUserId = userId, isPrivate = true)
 		insertRecipe(recipeId = SCRAPED_RECIPE_ID, createdByUserId = null)
 		executeSql("INSERT INTO favorites (user_id, recipe_id) VALUES ($userId, $SCRAPED_RECIPE_ID)")
 		executeSql("INSERT INTO cookbooks (id, user_id, name) VALUES ($COOKBOOK_ID, $userId, 'Weeknight dinners')")
@@ -176,11 +178,21 @@ class AccountDeletionPostgresIntegrationTest {
 		executeSql("INSERT INTO measurement_preferences (user_id, preferred_system) VALUES ($userId, 'METRIC')")
 	}
 
-	private fun Db.insertRecipe(recipeId: Int, createdByUserId: Long?) {
+	private fun Db.insertRecipe(recipeId: Int, createdByUserId: Long?, isPrivate: Boolean = false) {
 		val createdBy = createdByUserId?.toString() ?: "NULL"
+		val privateSql = if (isPrivate) "TRUE" else "FALSE"
 		executeSql(
 			"""
-				INSERT INTO recipes (id, title, description, instructions, total_time, image_url, created_by_user_id)
+				INSERT INTO recipes (
+					id,
+					title,
+					description,
+					instructions,
+					total_time,
+					image_url,
+					created_by_user_id,
+					is_private
+				)
 				VALUES (
 					$recipeId,
 					'Tomato Pasta',
@@ -188,7 +200,8 @@ class AccountDeletionPostgresIntegrationTest {
 					'Cook pasta',
 					25,
 					'$CREATED_RECIPE_IMAGE_URL',
-					$createdBy
+					$createdBy,
+					$privateSql
 				)
 			""".trimIndent(),
 		)
@@ -233,6 +246,7 @@ class AccountDeletionPostgresIntegrationTest {
 		const val CREATED_RECIPE_ID = 1
 		const val SCRAPED_RECIPE_ID = 2
 		const val SECOND_CREATED_RECIPE_ID = 3
+		const val PRIVATE_RECIPE_ID = 4
 		const val COOKBOOK_ID = 1
 		const val CREATED_RECIPE_IMAGE_URL = "https://purecipes.app/uploads/recipes/pasta.jpg"
 	}

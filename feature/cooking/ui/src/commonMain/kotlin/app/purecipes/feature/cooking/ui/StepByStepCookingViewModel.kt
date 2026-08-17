@@ -185,6 +185,7 @@ class StepByStepCookingViewModel(
 						recipeName = currentRecipe.title,
 						isFavorite = !currentRecipe.isFavorite,
 						origin = AnalyticsOrigin.COOKING,
+						isPrivate = currentRecipe.isPrivate,
 					),
 				)
 			} else {
@@ -195,6 +196,9 @@ class StepByStepCookingViewModel(
 	}
 
 	fun shareCurrentRecipe() {
+		if (recipeDetails?.isPrivate == true) {
+			return
+		}
 		shareRecipe(
 			recipeId = recipeId,
 			title = recipeDetails?.title,
@@ -204,6 +208,7 @@ class StepByStepCookingViewModel(
 				recipeId = recipeId,
 				recipeName = recipeDetails?.title.orEmpty(),
 				origin = AnalyticsOrigin.COOKING,
+				isPrivate = recipeDetails?.isPrivate == true,
 				shareType = AnalyticsShareType.RECIPE,
 			),
 		)
@@ -233,6 +238,7 @@ class StepByStepCookingViewModel(
 						cookbookId = cookbookId,
 						cookbookName = cookbookName,
 						origin = AnalyticsOrigin.COOKING,
+						isPrivate = recipe.isPrivate,
 					),
 				)
 			}
@@ -278,6 +284,7 @@ class StepByStepCookingViewModel(
 							cookbookId = created.id,
 							cookbookName = created.name,
 							origin = AnalyticsOrigin.COOKING,
+							isPrivate = recipe.isPrivate,
 						),
 					)
 				}
@@ -351,6 +358,7 @@ class StepByStepCookingViewModel(
 						recipeName = details.title,
 						origin = AnalyticsOrigin.RECIPE_DETAILS,
 						stepCount = details.steps.size,
+						isPrivate = details.isPrivate,
 					),
 				)
 			}
@@ -362,6 +370,7 @@ class StepByStepCookingViewModel(
 						recipeId = recipeId,
 						errorKind = error.toAnalyticsErrorKind(),
 						recipeName = details?.title,
+						isPrivate = details?.isPrivate,
 					),
 				)
 			}
@@ -394,6 +403,7 @@ class StepByStepCookingViewModel(
 				recipeName = details.title,
 				stepIndex = currentPageIndex,
 				stepCount = details.steps.size,
+				isPrivate = details.isPrivate,
 			),
 		)
 	}
@@ -411,6 +421,7 @@ class StepByStepCookingViewModel(
 				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
 				stepCount = details.steps.size,
 				origin = AnalyticsOrigin.RECIPE_DETAILS,
+				isPrivate = details.isPrivate,
 			),
 		)
 	}
@@ -428,6 +439,7 @@ class StepByStepCookingViewModel(
 				lastStepIndex = currentPageIndex.coerceAtMost(details.steps.lastIndex),
 				stepCount = details.steps.size,
 				durationSeconds = cookingStartedMark.elapsedNow().inWholeSeconds,
+				isPrivate = details.isPrivate,
 			),
 		)
 	}

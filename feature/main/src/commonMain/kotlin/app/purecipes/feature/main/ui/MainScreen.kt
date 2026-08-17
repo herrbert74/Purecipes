@@ -178,6 +178,14 @@ private fun MainScreenContent(
 									onRequestLogIn = {
 										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenCreate)
 									},
+									onOpenPaywall = { feature ->
+										viewModel.navigator.push(
+											PaywallDestination(
+												feature = feature,
+												origin = AnalyticsOrigin.CREATE_RECIPE.value,
+											),
+										)
+									},
 								)
 								installAuthFlow(
 									navigator = viewModel.navigator,

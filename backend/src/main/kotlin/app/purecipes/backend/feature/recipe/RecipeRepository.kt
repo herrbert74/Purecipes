@@ -29,6 +29,9 @@ class RecipeRepository(
 
 	fun getRecipeDetails(recipeId: Int, userId: Long? = null): RecipeDetails? = dataSource.connection.use { conn ->
 		val recipeRecord = loadRecipeRecord(conn, recipeId) ?: return@use null
+		if (!recipeRecord.isVisibleTo(userId)) {
+			return@use null
+		}
 		buildRecipeDetails(conn, recipeRecord, userId)
 	}
 
@@ -120,6 +123,8 @@ class RecipeRepository(
 					calorieRange = rs.getNullableString("calorie_range"),
 					dietaryPreferences = rs.getStringArray("dietary_preferences"),
 					tags = rs.getStringArray("tags"),
+					isPrivate = rs.getBoolean("is_private"),
+					createdByUserId = rs.getNullableLong("created_by_user_id"),
 				)
 			}
 		}
@@ -178,6 +183,7 @@ class RecipeRepository(
 				.toSet(),
 			tags = recipeRecord.tags.toSet(),
 			nutrition = nutrition,
+			isPrivate = recipeRecord.isPrivate,
 		)
 	}
 
@@ -211,6 +217,7 @@ class RecipeRepository(
 					totalTime = rs.getObject("total_time") as? Int,
 					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
 						?: loadMeasurementSystemForRecipe(recipeId),
+					isPrivate = rs.getBoolean("is_private"),
 				)
 			)
 		}
@@ -333,7 +340,11 @@ class RecipeRepository(
 		}
 	}
 
-	private fun isRecipeOwnedByUser(conn: java.sql.Connection, recipeId: Int, userId: Long): Boolean {
+	fun isRecipeOwnedByUser(userId: Long, recipeId: Int): Boolean = dataSource.connection.use { conn ->
+		isRecipeOwnedByUser(conn, recipeId, userId)
+	}
+
+	internal fun isRecipeOwnedByUser(conn: java.sql.Connection, recipeId: Int, userId: Long): Boolean {
 		return conn.prepareStatement(RecipeRepositorySql.RECIPE_OWNED_BY_USER_SQL).use { ps ->
 			ps.setInt(1, recipeId)
 			ps.setLong(2, userId)
@@ -348,6 +359,32 @@ class RecipeRepository(
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
 				rs.next()
+			}
+		}
+	}
+
+	internal fun recipeVisibleToUser(conn: java.sql.Connection, recipeId: Int, userId: Long?): Boolean {
+		if (userId == null) {
+			return conn.prepareStatement(RecipeRepositorySql.RECIPE_VISIBLE_PUBLIC_SQL).use { ps ->
+				ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+				ps.executeQuery().use { rs -> rs.next() }
+			}
+		}
+		return conn.prepareStatement(RecipeRepositorySql.RECIPE_VISIBLE_TO_USER_SQL).use { ps ->
+			ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+			ps.setLong(RecipeRepositorySql.SECOND_PARAMETER_INDEX, userId)
+			ps.executeQuery().use { rs -> rs.next() }
+		}
+	}
+
+	fun isRecipePrivate(recipeId: Int): Boolean? = dataSource.connection.use { conn ->
+		conn.prepareStatement(RecipeRepositorySql.RECIPE_IS_PRIVATE_SQL).use { ps ->
+			ps.setInt(RecipeRepositorySql.FIRST_PARAMETER_INDEX, recipeId)
+			ps.executeQuery().use { rs ->
+				if (!rs.next()) {
+					return@use null
+				}
+				rs.getBoolean("is_private")
 			}
 		}
 	}
@@ -428,6 +465,7 @@ class RecipeRepository(
 			ps.setString(RecipeRepositorySql.SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
 			ps.setString(RecipeRepositorySql.EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
 			ps.setLong(RecipeRepositorySql.NINTH_PARAMETER_INDEX, userId)
+			ps.setBoolean(RecipeRepositorySql.TENTH_PARAMETER_INDEX, request.isPrivate)
 			ps.executeUpdate()
 			ps.generatedId()
 		}
@@ -444,7 +482,8 @@ class RecipeRepository(
 			ps.setString(RecipeRepositorySql.SIXTH_PARAMETER_INDEX, request.imageUrl?.trim())
 			ps.setString(RecipeRepositorySql.SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
 			ps.setString(RecipeRepositorySql.EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
-			ps.setInt(RecipeRepositorySql.NINTH_PARAMETER_INDEX, recipeId)
+			ps.setBoolean(RecipeRepositorySql.NINTH_PARAMETER_INDEX, request.isPrivate)
+			ps.setInt(RecipeRepositorySql.TENTH_PARAMETER_INDEX, recipeId)
 			ps.executeUpdate()
 		}
 	}
@@ -529,17 +568,19 @@ class RecipeRepository(
 
 }
 
-internal fun countRecipesByKeyword(dataSource: DataSource, like: String): Int {
+internal fun countRecipesByKeyword(dataSource: DataSource, like: String, userId: Long?): Int {
+	val conditions = mutableListOf("(LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?)")
+	val params = mutableListOf<Any>(like, like)
+	addRecipeVisibilityCondition(conditions, params, userId, tableAlias = null)
 	val sql = """
 		SELECT COUNT(*)
 		FROM recipes
-		WHERE LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?
+		WHERE ${conditions.joinToString(" AND ")}
 	""".trimIndent()
 
 	return dataSource.connection.use { conn ->
 		conn.prepareStatement(sql).use { ps ->
-			ps.setString(1, like)
-			ps.setString(2, like)
+			bindSearchParams(ps, params)
 			ps.executeQuery().use { rs ->
 				rs.next()
 				rs.getInt(1)
@@ -563,7 +604,7 @@ internal fun querySearchWithFiltersRecipes(
 	}
 
 	val sql = """
-		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system
+		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
 		FROM recipes r
 		$whereClause
 		GROUP BY r.id
@@ -572,13 +613,7 @@ internal fun querySearchWithFiltersRecipes(
 	""".trimIndent()
 
 	return conn.prepareStatement(sql).use { ps ->
-		params.forEachIndexed { index, param ->
-			when (param) {
-				is String -> ps.setString(index + 1, param)
-				is Int -> ps.setInt(index + 1, param)
-				else -> error("Unsupported parameter type: ${param::class}")
-			}
-		}
+		bindSearchParams(ps, params)
 		if (limit != null && offset != null) {
 			ps.setInt(params.size + 1, limit)
 			ps.setInt(params.size + 2, offset)
@@ -599,13 +634,7 @@ internal fun countSearchWithFiltersRecipes(
 	""".trimIndent()
 
 	return conn.prepareStatement(sql).use { ps ->
-		params.forEachIndexed { index, param ->
-			when (param) {
-				is String -> ps.setString(index + 1, param)
-				is Int -> ps.setInt(index + 1, param)
-				else -> error("Unsupported parameter type: ${param::class}")
-			}
-		}
+		bindSearchParams(ps, params)
 		ps.executeQuery().use { rs ->
 			rs.next()
 			rs.getInt(1)

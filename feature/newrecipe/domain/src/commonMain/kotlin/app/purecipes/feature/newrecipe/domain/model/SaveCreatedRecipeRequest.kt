@@ -13,4 +13,5 @@ data class SaveCreatedRecipeRequest(
 	val totalTime: Int? = null,
 	val yields: String? = null,
 	val cuisine: Cuisine? = null,
+	val isPrivate: Boolean = false,
 )

@@ -72,10 +72,12 @@ fun RecipeDetailsScreen(
 						BackNavigationButton(onBack = onBack)
 					},
 					actions = {
-						ShareIconButton(
-							onShare = viewModel::shareCurrentRecipe,
-							contentDescription = "Share recipe",
-						)
+						if (viewModel.recipeDetails?.isPrivate != true) {
+							ShareIconButton(
+								onShare = viewModel::shareCurrentRecipe,
+								contentDescription = "Share recipe",
+							)
+						}
 					},
 				)
 			},
