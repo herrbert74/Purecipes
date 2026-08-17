@@ -15,7 +15,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/facebook/facebook-ios-sdk.git",
-      from: "18.0.0"
+      from: "18.1.0"
     )
   ],
   targets: [

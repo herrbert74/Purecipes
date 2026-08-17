@@ -28,9 +28,9 @@ ksp = "2.3.11"
 aboutLibraries = "15.0.4"
 androidx-activity = "1.13.0"
 #androidx-appcompat = "1.7.1"
-androidx-composeBom = "2026.06.01"
-androidx-composeMaterial3 = "1.5.0-alpha25" #For alpha releases only
-androidx-composeUiAndroidTest = "1.11.4"
+androidx-composeBom = "2026.08.00"
+androidx-composeMaterial3 = "1.5.0-alpha26" #For alpha releases only
+androidx-composeUiAndroidTest = "1.12.0"
 androidx-lifecycle = "2.11.0"
 #androidx-navigation = "2.9.1"
 #androidx-paletteKtx = "1.0.0"
@@ -75,21 +75,21 @@ jUnit = "4.13.2"
 jUnit5 = "6.1.3"
 kmpauth = "3.0.5"
 kmpnotifier = "2.0.1"
-kotest = "6.2.3"
+kotest = "6.2.4"
 kotlinResult = "2.3.1"
 kotlinRetry = "2.0.2"
 ktor = "3.5.2"
 ktorfit = "2.7.5"
-metro = "1.4.1"
+metro = "1.4.2"
 mixpanelAndroid = "8.9.0"
 #mockk = "1.13.8" #1.13.4 issue: https://github.com/mockk/mockk/issues/1035
 mokkery = "3.4.2"
 multiplatform-settings = "1.3.0"
-okhttp = "5.4.0"
+okhttp = "5.5.0"
 #parcelize-darwin = "0.2.4"
 playServicesAds = "25.4.0"
 postgresql = "42.7.13"
-revenueCat = "3.4.0"
+revenueCat = "3.5.0"
 #retrofit = "2.11.0"
 #robolectric = "4.15.1"
 shadow = "9.6.1"
@@ -153,7 +153,7 @@ androidx-core = "androidx.core:core:1.19.0" #Bundle
 
 #androidx-datastore = "androidx.datastore:datastore-preferences:1.1.7"
 
-androidx-fragment = "androidx.fragment:fragment:1.8.9"
+androidx-fragment = "androidx.fragment:fragment:1.9.0"
 
 androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version.ref = "androidx-lifecycle" }
 androidx-lifecycleRuntime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidx-lifecycle" }
