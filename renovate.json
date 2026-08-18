@@ -34,6 +34,15 @@
         "https://github.com/firebase/firebase-ios-sdk.git"
       ],
       "enabled": false
+    },
+    {
+      "description": "Generated Kotlin SwiftPM import packages; Gradle regenerates these from kmpauth/kmpnotifier metadata",
+      "matchManagers": ["swift"],
+      "matchFileNames": [
+        ".swiftpm-locks/**",
+        "iosApp/PurecipesIOSApp/KotlinMultiplatformLinkedPackage/**"
+      ],
+      "enabled": false
     }
   ]
 }
