@@ -109,6 +109,8 @@ class CreateRecipeViewModel(
 	var saveCompletedEvent by mutableIntStateOf(0)
 		private set
 
+	internal var selectedSection by mutableStateOf(CreateRecipeSection.About)
+
 	val isEditing: Boolean
 		get() = editingRecipeId != null
 
@@ -257,6 +259,7 @@ class CreateRecipeViewModel(
 		formErrorMessage = null
 		successMessage = null
 		saveCompletedEvent = 0
+		selectedSection = CreateRecipeSection.About
 		nutritionEstimateJob?.cancel()
 	}
 
@@ -264,6 +267,9 @@ class CreateRecipeViewModel(
 		val validationMessage = validate()
 		if (validationMessage != null || isSaving) {
 			formErrorMessage = validationMessage
+			if (validationMessage != null) {
+				selectedSection = CreateRecipeSection.forValidationMessage(validationMessage)
+			}
 			return
 		}
 
@@ -393,13 +399,29 @@ class CreateRecipeViewModel(
 		return listOfNotNull(
 			"Add a recipe title.".takeIf { titleInput.isBlank() },
 			"Add a recipe description.".takeIf { descriptionInput.isBlank() },
-			"Add at least one cooking step.".takeIf {
+			CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE.takeIf {
+				ingredientsEditor.rows.any(::hasUnnamedIngredientContent)
+			},
+			CREATE_RECIPE_STEP_REQUIRED_MESSAGE.takeIf {
 				stepInputs.map(String::trim).none(String::isNotEmpty)
 			},
 			"Total time must be a whole number.".takeIf {
 				totalTimeInput.isNotBlank() && totalTimeInput.trim().toIntOrNull() == null
 			},
 		).firstOrNull()
+	}
+
+	private fun hasUnnamedIngredientContent(row: IngredientRowInput): Boolean {
+		if (row.primary.name.isNotBlank()) {
+			return false
+		}
+		return row.primary.amount.isNotBlank() ||
+			row.primary.unit.isNotBlank() ||
+			row.alternatives.any { alternative ->
+				alternative.name.isNotBlank() ||
+					alternative.amount.isNotBlank() ||
+					alternative.unit.isNotBlank()
+			}
 	}
 
 	private companion object {

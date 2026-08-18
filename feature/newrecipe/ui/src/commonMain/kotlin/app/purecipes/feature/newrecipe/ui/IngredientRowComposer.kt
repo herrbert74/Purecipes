@@ -39,6 +39,16 @@ internal object IngredientRowComposer {
 		"slices",
 	)
 
+	fun collapsedHeadline(index: Int, row: IngredientRowInput): String {
+		val line = composeLine(row.copy(isOptional = false))
+			.ifBlank { "Ingredient ${index + 1}" }
+		return if (row.isOptional) {
+			"$line · Optional"
+		} else {
+			line
+		}
+	}
+
 	fun composePart(part: IngredientPartInput): String =
 		listOf(part.amount, part.unit, part.name)
 			.map(String::trim)

@@ -42,7 +42,48 @@ class CreateRecipeViewModelTest {
 		viewModel.saveRecipe()
 
 		viewModel.formErrorMessage shouldBe "Add a recipe title."
+		viewModel.selectedSection shouldBe CreateRecipeSection.About
 		repository.savedRequests.isEmpty() shouldBe true
+	}
+
+	@Test
+	fun `save with missing steps jumps to the steps section`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Tomato Pasta")
+		viewModel.onDescriptionChange("Quick weeknight dinner.")
+		viewModel.saveRecipe()
+
+		viewModel.formErrorMessage shouldBe CREATE_RECIPE_STEP_REQUIRED_MESSAGE
+		viewModel.selectedSection shouldBe CreateRecipeSection.Steps
+	}
+
+	@Test
+	fun `save with unnamed ingredient jumps to the ingredients section`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Tomato Pasta")
+		viewModel.onDescriptionChange("Quick weeknight dinner.")
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g"),
+			),
+		)
+		viewModel.saveRecipe()
+
+		viewModel.formErrorMessage shouldBe CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE
+		viewModel.selectedSection shouldBe CreateRecipeSection.Ingredients
+	}
+
+	@Test
+	fun `start new recipe resets the selected section`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.selectedSection = CreateRecipeSection.Steps
+		viewModel.startNewRecipe()
+
+		viewModel.selectedSection shouldBe CreateRecipeSection.About
 	}
 
 	@Test

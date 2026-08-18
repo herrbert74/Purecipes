@@ -1,10 +1,12 @@
 package app.purecipes.feature.newrecipe.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -100,6 +102,10 @@ fun CreateRecipeScreen(
 		},
 	)
 	val showEditorChrome = !showRecipeLoading && viewModel.loadErrorMessage == null
+	val scrollState = rememberScrollState()
+	LaunchedEffect(viewModel.selectedSection) {
+		scrollState.scrollTo(0)
+	}
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -160,14 +166,29 @@ fun CreateRecipeScreen(
 				)
 			}
 
-			else -> LazyColumn(
+			else -> Column(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
-				contentPadding = PaddingValues(PurecipesTheme.space.m),
 			) {
-				item {
+				CreateRecipeSectionSwitcher(
+					selectedSection = viewModel.selectedSection,
+					onSectionChange = { viewModel.selectedSection = it },
+					modifier = Modifier.padding(
+						start = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.m,
+					),
+				)
+				Column(
+					modifier = Modifier
+						.weight(1f)
+						.fillMaxWidth()
+						.verticalScroll(scrollState)
+						.padding(PurecipesTheme.space.m),
+				) {
 					CreateRecipeForm(
+						selectedSection = viewModel.selectedSection,
 						selectedCuisine = viewModel.selectedCuisine,
 						descriptionInput = viewModel.descriptionInput,
 						formErrorMessage = viewModel.formErrorMessage,
