@@ -1,7 +1,6 @@
 package app.purecipes.feature.newrecipe.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,7 +19,6 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 @Composable
 internal fun CreateRecipeForm(
 	selectedSection: CreateRecipeSection,
-	onSectionChange: (CreateRecipeSection) -> Unit,
 	selectedCuisine: Cuisine?,
 	descriptionInput: String,
 	formErrorMessage: String?,
@@ -64,10 +62,6 @@ internal fun CreateRecipeForm(
 	Column(
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		CreateRecipeSectionSwitcher(
-			selectedSection = selectedSection,
-			onSectionChange = onSectionChange,
-		)
 		when (selectedSection) {
 			CreateRecipeSection.About -> CreateRecipeAboutSection(
 				titleInput = titleInput,
@@ -157,14 +151,18 @@ private fun CreateRecipeFormLightPreview() {
 				)
 			},
 		) { innerPadding ->
-			Box(
+			Column(
 				modifier = Modifier
 					.padding(innerPadding)
 					.padding(PurecipesTheme.space.m),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
-				CreateRecipeForm(
+				CreateRecipeSectionSwitcher(
 					selectedSection = CreateRecipeSection.About,
 					onSectionChange = {},
+				)
+				CreateRecipeForm(
+					selectedSection = CreateRecipeSection.About,
 					selectedCuisine = Cuisine.ITALIAN,
 					descriptionInput = "A quick weeknight dinner with pantry staples.",
 					formErrorMessage = null,

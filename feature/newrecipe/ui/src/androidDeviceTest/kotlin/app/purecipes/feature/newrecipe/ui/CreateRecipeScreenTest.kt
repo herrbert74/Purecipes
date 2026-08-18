@@ -363,21 +363,43 @@ private fun createRecipeViewModelForTest(
 private fun ComposeUiTest.selectCreateRecipeSection(
 	section: CreateRecipeSection,
 ) {
-	onNodeWithTag(section.testTag).performScrollTo().performClick()
-	waitForIdle()
+	repeat(times = 3) {
+		if (isCreateRecipeSectionShowing(section)) {
+			return
+		}
+		onNodeWithTag(section.testTag).performClick()
+		waitForIdle()
+	}
+	waitUntil(timeoutMillis = 5_000) { isCreateRecipeSectionShowing(section) }
 }
 
 @OptIn(ExperimentalTestApi::class)
 private fun ComposeUiTest.openIngredientEditor(index: Int) {
 	val nameTag = "$INGREDIENT_NAME_FIELD_TAG_PREFIX$index"
-	val rowTag = "$INGREDIENT_ROW_TAG_PREFIX$index"
-	onNodeWithTag(rowTag).performScrollTo()
-	waitForIdle()
+	waitUntil(timeoutMillis = 5_000) {
+		onAllNodesWithTag(nameTag).fetchSemanticsNodes().isNotEmpty() ||
+			onAllNodesWithTag(INGREDIENTS_ADD_BUTTON_TAG).fetchSemanticsNodes().isNotEmpty()
+	}
 	if (onAllNodesWithTag(nameTag).fetchSemanticsNodes().isNotEmpty()) {
 		return
 	}
-	onNodeWithTag(rowTag).performClick()
+	onNodeWithTag("$INGREDIENT_ROW_TAG_PREFIX$index", useUnmergedTree = true)
+		.performScrollTo()
+		.performClick()
 	waitUntil(timeoutMillis = 5_000) {
 		onAllNodesWithTag(nameTag).fetchSemanticsNodes().isNotEmpty()
 	}
 }
+
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.isCreateRecipeSectionShowing(section: CreateRecipeSection): Boolean =
+	when (section) {
+		CreateRecipeSection.About ->
+			onAllNodesWithTag(TITLE_FIELD_TAG).fetchSemanticsNodes().isNotEmpty()
+
+		CreateRecipeSection.Ingredients ->
+			onAllNodesWithTag(INGREDIENTS_ADD_BUTTON_TAG).fetchSemanticsNodes().isNotEmpty()
+
+		CreateRecipeSection.Steps ->
+			onAllNodesWithTag("${STEP_FIELD_TAG_PREFIX}0").fetchSemanticsNodes().isNotEmpty()
+	}
