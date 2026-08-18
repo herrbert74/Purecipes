@@ -2,6 +2,7 @@ package app.purecipes.feature.newrecipe.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -53,6 +54,7 @@ internal const val INGREDIENTS_ADD_BUTTON_TAG = "createRecipeAddIngredientButton
 internal const val INGREDIENTS_PASTE_BUTTON_TAG = "createRecipePasteIngredientsButton"
 internal const val INGREDIENTS_PASTE_FIELD_TAG = "createRecipePasteIngredientsField"
 internal const val INGREDIENT_NAME_FIELD_TAG_PREFIX = "createRecipeIngredientNameField"
+internal const val INGREDIENT_ROW_TAG_PREFIX = "createRecipeIngredientRow"
 
 @Composable
 internal fun CreateRecipeIngredientsSection(
@@ -155,6 +157,10 @@ private fun IngredientRowEditor(
 ) {
 	val headline = IngredientRowComposer.collapsedHeadline(index = index, row = row)
 	val groupItemCount = if (expanded) 2 else 1
+	val editorVisibility = remember { MutableTransitionState(expanded) }
+	if (editorVisibility.targetState != expanded) {
+		editorVisibility.targetState = expanded
+	}
 	val chevronRotation by animateFloatAsState(
 		targetValue = if (expanded) 180f else 0f,
 		label = "ingredientChevron",
@@ -167,6 +173,7 @@ private fun IngredientRowEditor(
 		SegmentedListItem(
 			onClick = onExpandToggle,
 			shapes = ListItemDefaults.segmentedShapes(index = 0, count = groupItemCount),
+			modifier = Modifier.testTag("$INGREDIENT_ROW_TAG_PREFIX$index"),
 			colors = colors,
 			verticalAlignment = Alignment.CenterVertically,
 			trailingContent = {
@@ -204,7 +211,7 @@ private fun IngredientRowEditor(
 			},
 		)
 		AnimatedVisibility(
-			visible = expanded,
+			visibleState = editorVisibility,
 			enter = fadeIn() + expandVertically(),
 			exit = fadeOut() + shrinkVertically(),
 		) {

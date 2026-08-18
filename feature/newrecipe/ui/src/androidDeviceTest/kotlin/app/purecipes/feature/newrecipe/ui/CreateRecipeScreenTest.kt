@@ -5,13 +5,14 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -246,6 +247,7 @@ class CreateRecipeScreenTest {
 		onNodeWithTag(YIELDS_ROW_TAG).performScrollTo().performClick()
 		onNodeWithTag("createRecipeYieldsField").performScrollTo().performTextInput("4 servings")
 		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
 		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().performTextInput("carrots")
 		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
@@ -262,6 +264,7 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeTotalTimeField").performScrollTo().assertTextContains("25")
 		onNodeWithTag("createRecipeYieldsField").performScrollTo().assertTextContains("4 servings")
 		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
 		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().assertTextContains("carrots")
 		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Trim the carrots")
@@ -328,6 +331,7 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeIngredientNameField0").assertDoesNotExist()
 
 		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
 		onNodeWithTag("createRecipeIngredientNameField0").assertIsDisplayed()
 		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
 		onNodeWithTag("createRecipeStepField0").assertDoesNotExist()
@@ -355,8 +359,25 @@ private fun createRecipeViewModelForTest(
 	),
 )
 
-private fun SemanticsNodeInteractionsProvider.selectCreateRecipeSection(
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.selectCreateRecipeSection(
 	section: CreateRecipeSection,
 ) {
 	onNodeWithTag(section.testTag).performScrollTo().performClick()
+	waitForIdle()
+}
+
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.openIngredientEditor(index: Int) {
+	val nameTag = "$INGREDIENT_NAME_FIELD_TAG_PREFIX$index"
+	val rowTag = "$INGREDIENT_ROW_TAG_PREFIX$index"
+	onNodeWithTag(rowTag).performScrollTo()
+	waitForIdle()
+	if (onAllNodesWithTag(nameTag).fetchSemanticsNodes().isNotEmpty()) {
+		return
+	}
+	onNodeWithTag(rowTag).performClick()
+	waitUntil(timeoutMillis = 5_000) {
+		onAllNodesWithTag(nameTag).fetchSemanticsNodes().isNotEmpty()
+	}
 }

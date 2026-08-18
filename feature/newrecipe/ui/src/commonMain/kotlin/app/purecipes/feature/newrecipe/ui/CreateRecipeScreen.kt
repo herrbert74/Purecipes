@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -100,6 +101,10 @@ fun CreateRecipeScreen(
 		},
 	)
 	val showEditorChrome = !showRecipeLoading && viewModel.loadErrorMessage == null
+	val listState = rememberLazyListState()
+	LaunchedEffect(viewModel.selectedSection) {
+		listState.scrollToItem(0)
+	}
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
@@ -164,6 +169,7 @@ fun CreateRecipeScreen(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
+				state = listState,
 				contentPadding = PaddingValues(PurecipesTheme.space.m),
 			) {
 				item {
