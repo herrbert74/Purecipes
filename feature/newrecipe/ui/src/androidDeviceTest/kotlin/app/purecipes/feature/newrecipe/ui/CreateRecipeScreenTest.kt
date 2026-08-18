@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
@@ -65,6 +66,7 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
 		onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
 		onNodeWithTag("createRecipeImagePickButton").performScrollTo().assertIsDisplayed()
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Roast until tender")
@@ -161,6 +163,7 @@ class CreateRecipeScreenTest {
 
 		onNodeWithTag("createRecipeCuisineField").performScrollTo().performClick()
 
+		onNodeWithTag(CUISINE_NONE_OPTION_TAG).assertIsDisplayed()
 		onNodeWithText("No cuisine", useUnmergedTree = true).assertIsDisplayed()
 		onNodeWithText("American", useUnmergedTree = true).assertIsDisplayed()
 		onAllNodesWithText("Italian", useUnmergedTree = true).fetchSemanticsNodes().size shouldBe 1
@@ -179,6 +182,7 @@ class CreateRecipeScreenTest {
 			}
 		}
 
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		waitForIdle()
 
@@ -199,12 +203,13 @@ class CreateRecipeScreenTest {
 			}
 		}
 
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("First")
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Second")
 		waitForIdle()
 
-		onNodeWithTag("createRecipeReorderStepButton1").performScrollTo().performTouchInput {
+		onNodeWithTag("createRecipeReorderStepButton1", useUnmergedTree = true).performTouchInput {
 			down(center)
 			advanceEventTime(STEP_REORDER_LONG_PRESS_MILLIS)
 			repeat(STEP_REORDER_DRAG_STEPS) {
@@ -236,20 +241,29 @@ class CreateRecipeScreenTest {
 
 		onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
 		onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
+		onNodeWithTag(TOTAL_TIME_ROW_TAG).performScrollTo().performClick()
 		onNodeWithTag("createRecipeTotalTimeField").performScrollTo().performTextInput("25")
+		onNodeWithTag(YIELDS_ROW_TAG).performScrollTo().performClick()
 		onNodeWithTag("createRecipeYieldsField").performScrollTo().performTextInput("4 servings")
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
 		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().performTextInput("carrots")
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("Trim the carrots")
 		waitForIdle()
 
 		compositionGeneration += 1
 		waitForIdle()
 
+		onNodeWithTag("createRecipeStepField0").assertTextContains("Trim the carrots")
+		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
+		selectCreateRecipeSection(CreateRecipeSection.About)
 		onNodeWithTag("createRecipeTitleField").assertTextContains("Roasted Carrots")
 		onNodeWithTag("createRecipeDescriptionField").assertTextContains("Sweet and savory side dish.")
 		onNodeWithTag("createRecipeTotalTimeField").performScrollTo().assertTextContains("25")
 		onNodeWithTag("createRecipeYieldsField").performScrollTo().assertTextContains("4 servings")
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
 		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().assertTextContains("carrots")
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Trim the carrots")
 	}
 
@@ -264,6 +278,7 @@ class CreateRecipeScreenTest {
 			}
 		}
 
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().performTextInput("First")
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		onNodeWithTag("createRecipeStepField1").performScrollTo().performTextInput("Second")
@@ -274,6 +289,53 @@ class CreateRecipeScreenTest {
 
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Second")
 		onNodeWithTag("createRecipeStepField1").performScrollTo().assertTextContains("First")
+	}
+
+	@Test
+	fun createRecipeScreenJumpsToStepsWhenSaveHasNoSteps() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipeTitleField").performTextInput("Roasted Carrots")
+		onNodeWithTag("createRecipeDescriptionField").performTextInput("Sweet and savory side dish.")
+		onNodeWithTag("createRecipeSaveButton").performClick()
+		waitForIdle()
+
+		onNodeWithTag("createRecipeStepField0").assertIsDisplayed()
+		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
+		onNodeWithText(CREATE_RECIPE_STEP_REQUIRED_MESSAGE).assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenHidesOtherSectionsWhenSwitching() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipeTitleField").assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField0").assertDoesNotExist()
+		onNodeWithTag("createRecipeIngredientNameField0").assertDoesNotExist()
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		onNodeWithTag("createRecipeIngredientNameField0").assertIsDisplayed()
+		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
+		onNodeWithTag("createRecipeStepField0").assertDoesNotExist()
+
+		selectCreateRecipeSection(CreateRecipeSection.Steps)
+		onNodeWithTag("createRecipeStepField0").assertIsDisplayed()
+		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
+		onNodeWithTag("createRecipeIngredientNameField0").assertDoesNotExist()
 	}
 }
 
@@ -292,3 +354,9 @@ private fun createRecipeViewModelForTest(
 		FakeMonetisationDebugOverridesRepository(),
 	),
 )
+
+private fun SemanticsNodeInteractionsProvider.selectCreateRecipeSection(
+	section: CreateRecipeSection,
+) {
+	onNodeWithTag(section.testTag).performScrollTo().performClick()
+}

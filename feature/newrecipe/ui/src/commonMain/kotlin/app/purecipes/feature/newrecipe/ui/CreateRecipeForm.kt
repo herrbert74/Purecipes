@@ -3,28 +3,13 @@ package app.purecipes.feature.newrecipe.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
@@ -32,14 +17,10 @@ import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.ui.component.NutritionSummaryCard
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
-private const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
-private const val DESCRIPTION_FIELD_TAG = "createRecipeDescriptionField"
-private const val TITLE_FIELD_TAG = "createRecipeTitleField"
-private const val TOTAL_TIME_FIELD_TAG = "createRecipeTotalTimeField"
-private const val YIELDS_FIELD_TAG = "createRecipeYieldsField"
-
 @Composable
 internal fun CreateRecipeForm(
+	selectedSection: CreateRecipeSection,
+	onSectionChange: (CreateRecipeSection) -> Unit,
 	selectedCuisine: Cuisine?,
 	descriptionInput: String,
 	formErrorMessage: String?,
@@ -83,95 +64,63 @@ internal fun CreateRecipeForm(
 	Column(
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		CreateRecipeImageSection(
-			titleInput = titleInput,
-			imageUrlInput = imageUrlInput,
-			isImportingImage = isImportingImage,
-			isSaving = isSaving,
-			imagePickerErrorMessage = imagePickerErrorMessage,
-			onClearImageClick = onClearImageClick,
-			onImageUrlChange = onImageUrlChange,
-			onPickImageClick = onPickImageClick,
+		CreateRecipeSectionSwitcher(
+			selectedSection = selectedSection,
+			onSectionChange = onSectionChange,
 		)
-
-		OutlinedTextField(
-			value = titleInput,
-			onValueChange = onTitleChange,
-			modifier = Modifier
-				.fillMaxWidth()
-				.testTag(TITLE_FIELD_TAG),
-			label = { Text(text = "Recipe title") },
-			singleLine = true,
-		)
-		OutlinedTextField(
-			value = descriptionInput,
-			onValueChange = onDescriptionChange,
-			modifier = Modifier
-				.fillMaxWidth()
-				.testTag(DESCRIPTION_FIELD_TAG),
-			label = { Text(text = "Description") },
-			minLines = 3,
-		)
-
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-		) {
-			CuisinePicker(
+		when (selectedSection) {
+			CreateRecipeSection.About -> CreateRecipeAboutSection(
+				titleInput = titleInput,
+				descriptionInput = descriptionInput,
+				imageUrlInput = imageUrlInput,
+				isImportingImage = isImportingImage,
+				isSaving = isSaving,
+				imagePickerErrorMessage = imagePickerErrorMessage,
 				selectedCuisine = selectedCuisine,
+				totalTimeInput = totalTimeInput,
+				yieldsInput = yieldsInput,
+				isPrivate = isPrivate,
+				canMakePrivate = canMakePrivate,
+				onClearImageClick = onClearImageClick,
+				onImageUrlChange = onImageUrlChange,
+				onPickImageClick = onPickImageClick,
+				onTitleChange = onTitleChange,
+				onDescriptionChange = onDescriptionChange,
 				onCuisineChange = onCuisineChange,
-				modifier = Modifier
-					.weight(1f)
-					.testTag(CUISINE_FIELD_TAG),
+				onTotalTimeChange = onTotalTimeChange,
+				onYieldsChange = onYieldsChange,
+				onIsPrivateChange = onIsPrivateChange,
+				onPrivacyLockedClick = onPrivacyLockedClick,
 			)
-			OutlinedTextField(
-				value = totalTimeInput,
-				onValueChange = onTotalTimeChange,
-				modifier = Modifier
-					.weight(1f)
-					.testTag(TOTAL_TIME_FIELD_TAG),
-				label = { Text(text = "Total minutes") },
-				singleLine = true,
+
+			CreateRecipeSection.Ingredients -> Column(
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			) {
+				CreateRecipeIngredientsSection(
+					ingredientRows = ingredientRows,
+					onRowChange = onIngredientRowChange,
+					onAddRowClick = onAddIngredientClick,
+					onRemoveRowClick = onRemoveIngredientClick,
+					onAddAlternativeClick = onAddIngredientAlternativeClick,
+					onRemoveAlternativeClick = onRemoveIngredientAlternativeClick,
+					onPasteLines = onPasteIngredientLines,
+				)
+				NutritionSummaryCard(
+					nutrition = nutritionEstimate,
+					isLoading = isNutritionEstimateLoading,
+				)
+			}
+
+			CreateRecipeSection.Steps -> CreateRecipeStepsSection(
+				stepInputs = stepInputs,
+				onAddStepClick = onAddStepClick,
+				onMoveStep = onMoveStep,
+				onMoveStepUp = onMoveStepUp,
+				onMoveStepDown = onMoveStepDown,
+				onRemoveStepClick = onRemoveStepClick,
+				onStepChange = onStepChange,
 			)
 		}
-
-		OutlinedTextField(
-			value = yieldsInput,
-			onValueChange = onYieldsChange,
-			modifier = Modifier
-				.fillMaxWidth()
-				.testTag(YIELDS_FIELD_TAG),
-			label = { Text(text = "Yields") },
-			singleLine = true,
-		)
-		CreateRecipePrivacySection(
-			isPrivate = isPrivate,
-			canMakePrivate = canMakePrivate,
-			onIsPrivateChange = onIsPrivateChange,
-			onLockedClick = onPrivacyLockedClick,
-		)
-		CreateRecipeIngredientsSection(
-			ingredientRows = ingredientRows,
-			onRowChange = onIngredientRowChange,
-			onAddRowClick = onAddIngredientClick,
-			onRemoveRowClick = onRemoveIngredientClick,
-			onAddAlternativeClick = onAddIngredientAlternativeClick,
-			onRemoveAlternativeClick = onRemoveIngredientAlternativeClick,
-			onPasteLines = onPasteIngredientLines,
-		)
-		NutritionSummaryCard(
-			nutrition = nutritionEstimate,
-			isLoading = isNutritionEstimateLoading,
-		)
-		CreateRecipeStepsSection(
-			stepInputs = stepInputs,
-			onAddStepClick = onAddStepClick,
-			onMoveStep = onMoveStep,
-			onMoveStepUp = onMoveStepUp,
-			onMoveStepDown = onMoveStepDown,
-			onRemoveStepClick = onRemoveStepClick,
-			onStepChange = onStepChange,
-		)
 
 		formErrorMessage?.let {
 			Text(
@@ -187,70 +136,6 @@ internal fun CreateRecipeForm(
 				style = PurecipesTheme.typography.bodyMedium,
 				color = PurecipesTheme.colorScheme.primary,
 			)
-		}
-	}
-}
-
-@Composable
-private fun CuisinePicker(
-	selectedCuisine: Cuisine?,
-	onCuisineChange: (Cuisine?) -> Unit,
-	modifier: Modifier = Modifier,
-) {
-	var isExpanded by remember { mutableStateOf(false) }
-
-	Box(modifier = modifier) {
-		Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs)) {
-			Text(
-				text = "Cuisine",
-				style = PurecipesTheme.typography.bodySmall,
-				color = PurecipesTheme.colorScheme.onSurfaceVariant,
-			)
-			OutlinedButton(
-				onClick = { isExpanded = true },
-				modifier = Modifier.fillMaxWidth(),
-			) {
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					horizontalArrangement = Arrangement.SpaceBetween,
-					verticalAlignment = Alignment.CenterVertically,
-				) {
-					Text(
-						text = selectedCuisine?.displayName ?: "Select cuisine",
-						color = if (selectedCuisine == null) {
-							PurecipesTheme.colorScheme.onSurfaceVariant
-						} else {
-							PurecipesTheme.colorScheme.onSurface
-						},
-					)
-					Icon(
-						imageVector = Icons.Filled.ArrowDropDown,
-						contentDescription = null,
-					)
-				}
-			}
-		}
-
-		DropdownMenu(
-			expanded = isExpanded,
-			onDismissRequest = { isExpanded = false },
-		) {
-			DropdownMenuItem(
-				text = { Text(text = "No cuisine") },
-				onClick = {
-					onCuisineChange(null)
-					isExpanded = false
-				},
-			)
-			Cuisine.entries.forEach { cuisine ->
-				DropdownMenuItem(
-					text = { Text(text = cuisine.displayName) },
-					onClick = {
-						onCuisineChange(cuisine)
-						isExpanded = false
-					},
-				)
-			}
 		}
 	}
 }
@@ -278,6 +163,8 @@ private fun CreateRecipeFormLightPreview() {
 					.padding(PurecipesTheme.space.m),
 			) {
 				CreateRecipeForm(
+					selectedSection = CreateRecipeSection.About,
+					onSectionChange = {},
 					selectedCuisine = Cuisine.ITALIAN,
 					descriptionInput = "A quick weeknight dinner with pantry staples.",
 					formErrorMessage = null,

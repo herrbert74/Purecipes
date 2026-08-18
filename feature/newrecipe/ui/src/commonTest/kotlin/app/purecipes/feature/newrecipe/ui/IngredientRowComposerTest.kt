@@ -6,6 +6,36 @@ import kotlin.test.Test
 class IngredientRowComposerTest {
 
 	@Test
+	fun `collapsed headline keeps amount unit then name on one line`() {
+		IngredientRowComposer.collapsedHeadline(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "123", unit = "g", name = "flour"),
+			),
+		) shouldBe "123 g flour"
+	}
+
+	@Test
+	fun `collapsed headline appends optional and alternatives`() {
+		IngredientRowComposer.collapsedHeadline(
+			index = 1,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "2", unit = "l", name = "milk"),
+				isOptional = true,
+				alternatives = listOf(IngredientPartInput(name = "water")),
+			),
+		) shouldBe "2 l milk or water · Optional"
+	}
+
+	@Test
+	fun `collapsed headline falls back to ingredient number when empty`() {
+		IngredientRowComposer.collapsedHeadline(
+			index = 0,
+			row = IngredientRowInput(),
+		) shouldBe "Ingredient 1"
+	}
+
+	@Test
 	fun `compose line joins amount unit and name`() {
 		IngredientRowComposer.composeLine(
 			IngredientRowInput(

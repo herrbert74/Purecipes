@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -44,10 +46,14 @@ internal fun CreateRecipeStepsSection(
 	val addButtonBringIntoViewRequester = remember { BringIntoViewRequester() }
 	val newStepFocusRequester = remember { FocusRequester() }
 	var previousStepCount by remember { mutableIntStateOf(stepInputs.items.size) }
+	val expandedSteps = remember { mutableStateMapOf(0 to true) }
+	val colors = createRecipeSegmentedListColors()
+	var focusNewStep by remember { mutableStateOf(false) }
 
 	LaunchedEffect(stepInputs.items.size) {
 		if (stepInputs.items.size > previousStepCount) {
-			newStepFocusRequester.requestFocus()
+			expandedSteps[stepInputs.items.lastIndex] = true
+			focusNewStep = true
 			addButtonBringIntoViewRequester.bringIntoView()
 		}
 		previousStepCount = stepInputs.items.size
@@ -66,59 +72,68 @@ internal fun CreateRecipeStepsSection(
 			)
 		}
 
-		stepInputs.items.forEachIndexed { index, stepInput ->
-			CreateRecipeStepCard(
-				index = index,
-				stepInput = stepInput,
-				canMoveUp = index > 0,
-				canMoveDown = index < stepInputs.items.lastIndex,
-				canRemove = stepInputs.items.size > 1,
-				onStepChange = { onStepChange(index, it) },
-				onMoveUpClick = { onMoveStepUp(index) },
-				onMoveDownClick = { onMoveStepDown(index) },
-				onRemoveClick = { onRemoveStepClick(index) },
-				onDragStart = {
-					draggedIndex = index
-					dragOffsetY = 0f
-				},
-				onDrag = { dragAmountY ->
-					val currentIndex = draggedIndex
+		Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+			stepInputs.items.forEachIndexed { index, stepInput ->
+				val expanded = expandedSteps[index] == true
+				CreateRecipeStepCard(
+					index = index,
+					stepInput = stepInput,
+					expanded = expanded,
+					canMoveUp = index > 0,
+					canMoveDown = index < stepInputs.items.lastIndex,
+					canRemove = stepInputs.items.size > 1,
+					itemCount = stepInputs.items.size,
+					onExpandToggle = { expandedSteps[index] = !expanded },
+					onStepChange = { onStepChange(index, it) },
+					onMoveUpClick = { onMoveStepUp(index) },
+					onMoveDownClick = { onMoveStepDown(index) },
+					onRemoveClick = { onRemoveStepClick(index) },
+					onDragStart = {
+						draggedIndex = index
+						dragOffsetY = 0f
+					},
+					onDrag = { dragAmountY ->
+						val currentIndex = draggedIndex
 
-					if (currentIndex >= 0) {
-						dragOffsetY += dragAmountY
-						val currentRowHeight = rowHeights[currentIndex] ?: rowHeights.values.maxOrNull()
+						if (currentIndex >= 0) {
+							dragOffsetY += dragAmountY
+							val currentRowHeight = rowHeights[currentIndex] ?: rowHeights.values.maxOrNull()
 
-						if (currentRowHeight != null) {
-							val moveDownThreshold = currentRowHeight / 2f
-							val moveUpThreshold = -currentRowHeight / 2f
+							if (currentRowHeight != null) {
+								val moveDownThreshold = currentRowHeight / 2f
+								val moveUpThreshold = -currentRowHeight / 2f
 
-							if (dragOffsetY > moveDownThreshold && currentIndex < stepInputs.items.lastIndex) {
-								onMoveStep(currentIndex, currentIndex + 1)
-								draggedIndex = currentIndex + 1
-								dragOffsetY -= currentRowHeight
-							} else if (dragOffsetY < moveUpThreshold && currentIndex > 0) {
-								onMoveStep(currentIndex, currentIndex - 1)
-								draggedIndex = currentIndex - 1
-								dragOffsetY += currentRowHeight
+								if (dragOffsetY > moveDownThreshold && currentIndex < stepInputs.items.lastIndex) {
+									onMoveStep(currentIndex, currentIndex + 1)
+									draggedIndex = currentIndex + 1
+									dragOffsetY -= currentRowHeight
+								} else if (dragOffsetY < moveUpThreshold && currentIndex > 0) {
+									onMoveStep(currentIndex, currentIndex - 1)
+									draggedIndex = currentIndex - 1
+									dragOffsetY += currentRowHeight
+								}
 							}
 						}
-					}
-				},
-				onDragEnd = {
-					draggedIndex = -1
-					dragOffsetY = 0f
-				},
-				modifier = Modifier
-					.onSizeChanged { rowHeights[index] = it.height }
-					.offset {
-						IntOffset(
-							x = 0,
-							y = if (draggedIndex == index) dragOffsetY.roundToInt() else 0,
-						)
-					}
-					.zIndex(if (draggedIndex == index) 1f else 0f),
-				focusRequester = newStepFocusRequester.takeIf { index == stepInputs.items.lastIndex },
-			)
+					},
+					onDragEnd = {
+						draggedIndex = -1
+						dragOffsetY = 0f
+					},
+					modifier = Modifier
+						.onSizeChanged { rowHeights[index] = it.height }
+						.offset {
+							IntOffset(
+								x = 0,
+								y = if (draggedIndex == index) dragOffsetY.roundToInt() else 0,
+							)
+						}
+						.zIndex(if (draggedIndex == index) 1f else 0f),
+					focusRequester = newStepFocusRequester.takeIf {
+						focusNewStep && index == stepInputs.items.lastIndex
+					},
+					colors = colors,
+				)
+			}
 		}
 
 		FilledTonalButton(

@@ -1,36 +1,52 @@
 package app.purecipes.feature.newrecipe.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val INGREDIENTS_ADD_BUTTON_TAG = "createRecipeAddIngredientButton"
@@ -51,9 +67,12 @@ internal fun CreateRecipeIngredientsSection(
 	var showPasteDialog by remember { mutableStateOf(false) }
 	val addButtonBringIntoViewRequester = remember { BringIntoViewRequester() }
 	var previousRowCount by remember { mutableIntStateOf(ingredientRows.items.size) }
+	val expandedRows = remember { mutableStateMapOf(0 to true) }
+	val colors = createRecipeSegmentedListColors()
 
 	LaunchedEffect(ingredientRows.items.size) {
 		if (ingredientRows.items.size > previousRowCount) {
+			expandedRows[ingredientRows.items.lastIndex] = true
 			addButtonBringIntoViewRequester.bringIntoView()
 		}
 		previousRowCount = ingredientRows.items.size
@@ -77,18 +96,26 @@ internal fun CreateRecipeIngredientsSection(
 			}
 		}
 
-		ingredientRows.items.forEachIndexed { index, row ->
-			IngredientRowEditor(
-				index = index,
-				row = row,
-				canRemove = ingredientRows.items.size > 1,
-				onRowChange = { onRowChange(index, it) },
-				onRemoveRowClick = { onRemoveRowClick(index) },
-				onAddAlternativeClick = { onAddAlternativeClick(index) },
-				onRemoveAlternativeClick = { altIndex ->
-					onRemoveAlternativeClick(index, altIndex)
-				},
-			)
+		Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+			ingredientRows.items.forEachIndexed { index, row ->
+				val expanded = expandedRows[index] == true
+				IngredientRowEditor(
+					index = index,
+					row = row,
+					expanded = expanded,
+					canRemove = ingredientRows.items.size > 1,
+					colors = colors,
+					onExpandToggle = {
+						expandedRows[index] = !expanded
+					},
+					onRowChange = { onRowChange(index, it) },
+					onRemoveRowClick = { onRemoveRowClick(index) },
+					onAddAlternativeClick = { onAddAlternativeClick(index) },
+					onRemoveAlternativeClick = { altIndex ->
+						onRemoveAlternativeClick(index, altIndex)
+					},
+				)
+			}
 		}
 
 		FilledTonalButton(
@@ -117,46 +144,119 @@ internal fun CreateRecipeIngredientsSection(
 private fun IngredientRowEditor(
 	index: Int,
 	row: IngredientRowInput,
+	expanded: Boolean,
 	canRemove: Boolean,
+	colors: ListItemColors,
+	onExpandToggle: () -> Unit,
 	onRowChange: (IngredientRowInput) -> Unit,
 	onRemoveRowClick: () -> Unit,
 	onAddAlternativeClick: () -> Unit,
 	onRemoveAlternativeClick: (Int) -> Unit,
 ) {
+	val headline = IngredientRowComposer.collapsedHeadline(index = index, row = row)
+	val groupItemCount = if (expanded) 2 else 1
+	val chevronRotation by animateFloatAsState(
+		targetValue = if (expanded) 180f else 0f,
+		label = "ingredientChevron",
+	)
+
 	Column(
-		modifier = Modifier.fillMaxWidth(),
-		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+		modifier = Modifier.animateContentSize(),
+		verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
 	) {
-		Text(
-			text = "Ingredient ${index + 1}",
-			style = PurecipesTheme.typography.labelLarge,
-			color = PurecipesTheme.colorScheme.onSurfaceVariant,
+		SegmentedListItem(
+			onClick = onExpandToggle,
+			shapes = ListItemDefaults.segmentedShapes(index = 0, count = groupItemCount),
+			colors = colors,
+			verticalAlignment = Alignment.CenterVertically,
+			trailingContent = {
+				Row(verticalAlignment = Alignment.CenterVertically) {
+					Box(
+						modifier = Modifier.size(PurecipesTheme.space.xxl),
+						contentAlignment = Alignment.Center,
+					) {
+						Icon(
+							imageVector = Icons.Filled.ExpandMore,
+							contentDescription = if (expanded) {
+								"Collapse ingredient ${index + 1}"
+							} else {
+								"Expand ingredient ${index + 1}"
+							},
+							modifier = Modifier.rotate(chevronRotation),
+						)
+					}
+					if (canRemove) {
+						IconButton(onClick = onRemoveRowClick) {
+							Icon(
+								imageVector = Icons.Filled.Delete,
+								contentDescription = "Remove ingredient ${index + 1}",
+							)
+						}
+					}
+				}
+			},
+			content = {
+				Text(
+					text = headline,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis,
+				)
+			},
 		)
+		AnimatedVisibility(
+			visible = expanded,
+			enter = fadeIn() + expandVertically(),
+			exit = fadeOut() + shrinkVertically(),
+		) {
+			Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+				IngredientExpandedEditor(
+					index = index,
+					row = row,
+					onRowChange = onRowChange,
+					onAddAlternativeClick = onAddAlternativeClick,
+					onRemoveAlternativeClick = onRemoveAlternativeClick,
+				)
+				SegmentedListItem(
+					checked = row.isOptional,
+					onCheckedChange = { checked -> onRowChange(row.copy(isOptional = checked)) },
+					shapes = ListItemDefaults.segmentedShapes(index = 1, count = groupItemCount),
+					colors = colors,
+					leadingContent = {
+						Checkbox(
+							checked = row.isOptional,
+							onCheckedChange = null,
+						)
+					},
+					content = { Text(text = "Optional") },
+				)
+			}
+		}
+	}
+}
+
+@Composable
+private fun IngredientExpandedEditor(
+	index: Int,
+	row: IngredientRowInput,
+	onRowChange: (IngredientRowInput) -> Unit,
+	onAddAlternativeClick: () -> Unit,
+	onRemoveAlternativeClick: (Int) -> Unit,
+) {
+	Column(
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(
+				start = PurecipesTheme.space.m,
+				end = PurecipesTheme.space.m,
+				bottom = PurecipesTheme.space.s,
+			),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+	) {
 		IngredientPartFields(
 			part = row.primary,
 			nameTestTag = "$INGREDIENT_NAME_FIELD_TAG_PREFIX$index",
 			onPartChange = { primary -> onRowChange(row.copy(primary = primary)) },
-			trailing = {
-				if (canRemove) {
-					IconButton(onClick = onRemoveRowClick) {
-						Icon(
-							imageVector = Icons.Filled.Delete,
-							contentDescription = "Remove ingredient ${index + 1}",
-						)
-					}
-				}
-			},
 		)
-		Row(verticalAlignment = Alignment.CenterVertically) {
-			Checkbox(
-				checked = row.isOptional,
-				onCheckedChange = { checked -> onRowChange(row.copy(isOptional = checked)) },
-			)
-			Text(
-				text = "Optional",
-				style = PurecipesTheme.typography.bodyMedium,
-			)
-		}
 		row.alternatives.forEachIndexed { altIndex, alternative ->
 			Text(
 				text = "or",
@@ -195,45 +295,40 @@ private fun IngredientPartFields(
 	onPartChange: (IngredientPartInput) -> Unit,
 	trailing: @Composable (() -> Unit)? = null,
 ) {
-	Column(
+	Row(
 		modifier = Modifier.fillMaxWidth(),
-		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		verticalAlignment = Alignment.CenterVertically,
 	) {
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-			verticalAlignment = Alignment.CenterVertically,
-		) {
-			OutlinedTextField(
-				value = part.amount,
-				onValueChange = { nextAmount ->
-					if (IngredientRowComposer.isAllowedAmountInput(nextAmount)) {
-						onPartChange(part.copy(amount = nextAmount))
-					}
-				},
-				modifier = Modifier.weight(1f),
-				label = { IngredientFieldLabel(text = "Amount") },
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-				singleLine = true,
-			)
-			OutlinedTextField(
-				value = part.unit,
-				onValueChange = { onPartChange(part.copy(unit = it)) },
-				modifier = Modifier.weight(1f),
-				label = { IngredientFieldLabel(text = "Unit") },
-				singleLine = true,
-			)
-			trailing?.invoke()
-		}
+		OutlinedTextField(
+			value = part.amount,
+			onValueChange = { nextAmount ->
+				if (IngredientRowComposer.isAllowedAmountInput(nextAmount)) {
+					onPartChange(part.copy(amount = nextAmount))
+				}
+			},
+			modifier = Modifier.weight(1f),
+			label = { IngredientFieldLabel(text = "Amount") },
+			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+			singleLine = true,
+		)
+		OutlinedTextField(
+			value = part.unit,
+			onValueChange = { onPartChange(part.copy(unit = it)) },
+			modifier = Modifier.weight(1f),
+			label = { IngredientFieldLabel(text = "Unit") },
+			singleLine = true,
+		)
 		OutlinedTextField(
 			value = part.name,
 			onValueChange = { onPartChange(part.copy(name = it)) },
 			modifier = Modifier
-				.fillMaxWidth()
+				.weight(2f)
 				.testTag(nameTestTag),
 			label = { IngredientFieldLabel(text = "Ingredient") },
 			singleLine = true,
 		)
+		trailing?.invoke()
 	}
 }
 
@@ -284,4 +379,36 @@ private fun PasteIngredientsDialog(
 			)
 		},
 	)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CreateRecipeIngredientsSectionPreview() {
+	PurecipesTheme {
+		CreateRecipeIngredientsSection(
+			ingredientRows = IngredientRowsState(
+				items = listOf(
+					IngredientRowInput(
+						primary = IngredientPartInput(
+							amount = "400",
+							unit = "g",
+							name = "spaghetti",
+						),
+					),
+					IngredientRowInput(
+						primary = IngredientPartInput(
+							amount = "2",
+							name = "tomatoes",
+						),
+					),
+				),
+			),
+			onRowChange = { _, _ -> },
+			onAddRowClick = {},
+			onRemoveRowClick = {},
+			onAddAlternativeClick = {},
+			onRemoveAlternativeClick = { _, _ -> },
+			onPasteLines = {},
+		)
+	}
 }

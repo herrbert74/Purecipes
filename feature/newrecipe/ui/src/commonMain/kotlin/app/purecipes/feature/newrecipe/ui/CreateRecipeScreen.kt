@@ -168,6 +168,8 @@ fun CreateRecipeScreen(
 			) {
 				item {
 					CreateRecipeForm(
+						selectedSection = viewModel.selectedSection,
+						onSectionChange = { viewModel.selectedSection = it },
 						selectedCuisine = viewModel.selectedCuisine,
 						descriptionInput = viewModel.descriptionInput,
 						formErrorMessage = viewModel.formErrorMessage,
