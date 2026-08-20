@@ -15,15 +15,18 @@ import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.ingredient.IngredientLineParser
+import app.purecipes.shared.domain.ingredient.IngredientUnitTokens
 import app.purecipes.shared.domain.ingredient.nutritionIngredientTexts
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientRequirement
+import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
@@ -48,6 +51,7 @@ class CreateRecipeViewModel(
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
 	private val observePremiumStatus: ObservePremiumStatusUseCase,
+	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 ) : ViewModel() {
 
 	private var nutritionEstimateJob: Job? = null
@@ -88,6 +92,11 @@ class CreateRecipeViewModel(
 	var isPremium by mutableStateOf(false)
 		private set
 
+	var suggestedUnits by mutableStateOf(
+		SuggestedIngredientUnits(IngredientUnitTokens.suggestedUnits(MeasurementSystem.METRIC)),
+	)
+		private set
+
 	var isLoadingRecipe by mutableStateOf(false)
 		private set
 
@@ -121,6 +130,13 @@ class CreateRecipeViewModel(
 		viewModelScope.launch {
 			observePremiumStatus().collect { premium ->
 				isPremium = premium
+			}
+		}
+		viewModelScope.launch {
+			observeMeasurementPreferences().collect { preferences ->
+				suggestedUnits = SuggestedIngredientUnits(
+					IngredientUnitTokens.suggestedUnits(preferences.preferredSystem),
+				)
 			}
 		}
 	}

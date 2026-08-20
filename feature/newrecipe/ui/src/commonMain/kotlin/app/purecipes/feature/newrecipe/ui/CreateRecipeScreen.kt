@@ -196,6 +196,7 @@ fun CreateRecipeScreen(
 						imagePickerErrorMessage = pickerErrorMessage,
 						imageUrlInput = viewModel.imageUrlInput,
 						ingredientRows = IngredientRowsState(items = viewModel.ingredientsEditor.rows.toList()),
+						suggestedUnits = viewModel.suggestedUnits,
 						isNutritionEstimateLoading = viewModel.isNutritionEstimateLoading,
 						isSaving = viewModel.isSaving,
 						nutritionEstimate = viewModel.nutritionEstimate,

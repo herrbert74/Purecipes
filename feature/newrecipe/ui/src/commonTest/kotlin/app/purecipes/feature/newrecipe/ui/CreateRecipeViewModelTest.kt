@@ -6,6 +6,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -14,11 +15,14 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.MeasurementPreferences
+import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -385,6 +389,33 @@ class CreateRecipeViewModelTest {
 		viewModel.isPrivate shouldBe true
 		viewModel.canMakePrivate shouldBe true
 	}
+
+	@Test
+	fun `imperial measurement preference uses imperial unit suggestions`() = runViewModelTest {
+		val measurementRepository = FakeMeasurementPreferencesRepository(
+			defaults = MeasurementPreferences(
+				preferredSystem = MeasurementSystem.IMPERIAL,
+			),
+		)
+		val viewModel = createViewModel(measurementRepository = measurementRepository)
+
+		advanceUntilIdle()
+
+		viewModel.suggestedUnits.items shouldBe listOf(
+			"tsp",
+			"tbsp",
+			"cup",
+			"oz",
+			"lb",
+			"pinch",
+			"clove",
+			"can",
+			"slice",
+			"piece",
+			"bunch",
+			"pack",
+		)
+	}
 }
 
 private fun createViewModel(
@@ -393,6 +424,7 @@ private fun createViewModel(
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	crashRepository: FakeCrashRepository = FakeCrashRepository(),
 	subscriptionState: SubscriptionState = SubscriptionState.FREE,
+	measurementRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
 ): CreateRecipeViewModel =
 	CreateRecipeViewModel(
 		getCreatedRecipes = GetCreatedRecipesUseCase(repository),
@@ -405,6 +437,7 @@ private fun createViewModel(
 			FakeSubscriptionRepository(initialState = subscriptionState),
 			FakeMonetisationDebugOverridesRepository(),
 		),
+		observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 	)
 
 private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(

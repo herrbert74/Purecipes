@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -31,6 +32,7 @@ import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUse
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -341,6 +343,53 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
 		onNodeWithTag("createRecipeIngredientNameField0").assertDoesNotExist()
 	}
+
+	@Test
+	fun createRecipeScreenKeepsAmountAndUnitWhenEditingIngredientName() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
+		onNodeWithTag("${INGREDIENT_AMOUNT_FIELD_TAG_PREFIX}0").performTextInput("200")
+		onNodeWithTag("${INGREDIENT_UNIT_FIELD_TAG_PREFIX}0").performClick()
+		waitForIdle()
+		onNodeWithText("g", useUnmergedTree = true).performClick()
+		waitForIdle()
+		onNodeWithTag("${INGREDIENT_NAME_FIELD_TAG_PREFIX}0").performTextInput("carrots")
+		waitForIdle()
+
+		onNodeWithTag("${INGREDIENT_AMOUNT_FIELD_TAG_PREFIX}0").assertTextContains("200")
+		onNodeWithTag("${INGREDIENT_NAME_FIELD_TAG_PREFIX}0").assertTextContains("carrots")
+		onNodeWithText("g").assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenShowsUnitDropdownOptions() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
+		onNodeWithTag("${INGREDIENT_UNIT_FIELD_TAG_PREFIX}0").performClick()
+		waitForIdle()
+
+		onNodeWithText("g", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithText("ml", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithText("oz", useUnmergedTree = true).assertDoesNotExist()
+	}
 }
 
 private fun createRecipeViewModelForTest(
@@ -356,6 +405,9 @@ private fun createRecipeViewModelForTest(
 	observePremiumStatus = ObservePremiumStatusUseCase(
 		FakeSubscriptionRepository(),
 		FakeMonetisationDebugOverridesRepository(),
+	),
+	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(
+		FakeMeasurementPreferencesRepository(),
 	),
 )
 

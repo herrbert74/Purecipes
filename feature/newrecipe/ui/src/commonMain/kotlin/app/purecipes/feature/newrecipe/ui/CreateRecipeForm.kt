@@ -26,6 +26,7 @@ internal fun CreateRecipeForm(
 	imagePickerErrorMessage: String?,
 	imageUrlInput: String,
 	ingredientRows: IngredientRowsState,
+	suggestedUnits: SuggestedIngredientUnits,
 	isNutritionEstimateLoading: Boolean,
 	isSaving: Boolean,
 	nutritionEstimate: NutritionSummary?,
@@ -92,6 +93,7 @@ internal fun CreateRecipeForm(
 			) {
 				CreateRecipeIngredientsSection(
 					ingredientRows = ingredientRows,
+					suggestedUnits = suggestedUnits,
 					onRowChange = onIngredientRowChange,
 					onAddRowClick = onAddIngredientClick,
 					onRemoveRowClick = onRemoveIngredientClick,
@@ -185,6 +187,9 @@ private fun CreateRecipeFormLightPreview() {
 								),
 							),
 						),
+					),
+					suggestedUnits = SuggestedIngredientUnits(
+						items = listOf("g", "kg", "ml", "l"),
 					),
 					isNutritionEstimateLoading = false,
 					isSaving = false,
