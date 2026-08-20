@@ -45,7 +45,8 @@ class CreateRecipeViewModelTest {
 
 		viewModel.saveRecipe()
 
-		viewModel.formErrorMessage shouldBe "Add a recipe title."
+		viewModel.fieldErrors.title shouldBe CREATE_RECIPE_TITLE_REQUIRED_MESSAGE
+		viewModel.formErrorMessage shouldBe null
 		viewModel.selectedSection shouldBe CreateRecipeSection.About
 		repository.savedRequests.isEmpty() shouldBe true
 	}
@@ -58,7 +59,8 @@ class CreateRecipeViewModelTest {
 		viewModel.onDescriptionChange("Quick weeknight dinner.")
 		viewModel.saveRecipe()
 
-		viewModel.formErrorMessage shouldBe CREATE_RECIPE_STEP_REQUIRED_MESSAGE
+		viewModel.fieldErrors.steps shouldBe CREATE_RECIPE_STEP_REQUIRED_MESSAGE
+		viewModel.formErrorMessage shouldBe null
 		viewModel.selectedSection shouldBe CreateRecipeSection.Steps
 	}
 
@@ -76,8 +78,66 @@ class CreateRecipeViewModelTest {
 		)
 		viewModel.saveRecipe()
 
-		viewModel.formErrorMessage shouldBe CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE
+		viewModel.fieldErrors.unnamedIngredientIndexes shouldBe listOf(0)
+		viewModel.formErrorMessage shouldBe null
 		viewModel.selectedSection shouldBe CreateRecipeSection.Ingredients
+	}
+
+	@Test
+	fun `ingredient name error stays until the ingredient is named`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Tomato Pasta")
+		viewModel.onDescriptionChange("Quick weeknight dinner.")
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g"),
+			),
+		)
+		viewModel.saveRecipe()
+		viewModel.onIngredientsEdited()
+
+		viewModel.fieldErrors.unnamedIngredientIndexes shouldBe listOf(0)
+
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g", name = "pasta"),
+			),
+		)
+		viewModel.onIngredientsEdited()
+
+		viewModel.fieldErrors.unnamedIngredientIndexes shouldBe emptyList()
+		advanceTimeBy(500)
+		advanceUntilIdle()
+	}
+
+	@Test
+	fun `save with invalid total time keeps the about section and field error`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Tomato Pasta")
+		viewModel.onDescriptionChange("Quick weeknight dinner.")
+		viewModel.onTotalTimeChange("twenty")
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.saveRecipe()
+
+		viewModel.fieldErrors.totalTime shouldBe CREATE_RECIPE_TOTAL_TIME_WHOLE_NUMBER_MESSAGE
+		viewModel.formErrorMessage shouldBe null
+		viewModel.selectedSection shouldBe CreateRecipeSection.About
+	}
+
+	@Test
+	fun `editing a field clears that field error`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.saveRecipe()
+		viewModel.fieldErrors.title shouldBe CREATE_RECIPE_TITLE_REQUIRED_MESSAGE
+
+		viewModel.onTitleChange("Tomato Pasta")
+
+		viewModel.fieldErrors.title shouldBe null
 	}
 
 	@Test
@@ -389,7 +449,6 @@ class CreateRecipeViewModelTest {
 		viewModel.isPrivate shouldBe true
 		viewModel.canMakePrivate shouldBe true
 	}
-
 
 	@Test
 	fun `loading recipe keeps full unit names in the unit field`() = runViewModelTest {

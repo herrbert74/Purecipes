@@ -17,19 +17,10 @@ internal enum class CreateRecipeSection(
 		label = "Steps",
 		testTag = "createRecipeSectionSteps",
 	),
-	;
-
-	companion object {
-
-		fun forValidationMessage(message: String): CreateRecipeSection {
-			return when (message) {
-				CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE -> Ingredients
-				CREATE_RECIPE_STEP_REQUIRED_MESSAGE -> Steps
-				else -> About
-			}
-		}
-	}
 }
 
+internal const val CREATE_RECIPE_DESCRIPTION_REQUIRED_MESSAGE = "Add a recipe description."
 internal const val CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE = "Add an ingredient name."
 internal const val CREATE_RECIPE_STEP_REQUIRED_MESSAGE = "Add at least one cooking step."
+internal const val CREATE_RECIPE_TITLE_REQUIRED_MESSAGE = "Add a recipe title."
+internal const val CREATE_RECIPE_TOTAL_TIME_WHOLE_NUMBER_MESSAGE = "Total time must be a whole number."

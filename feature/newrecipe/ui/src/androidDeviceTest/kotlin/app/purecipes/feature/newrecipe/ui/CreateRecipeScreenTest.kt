@@ -318,6 +318,52 @@ class CreateRecipeScreenTest {
 	}
 
 	@Test
+	fun createRecipeScreenShowsTitleErrorOnTitleField() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipeSaveButton").performClick()
+		waitForIdle()
+
+		onNodeWithTag(TITLE_FIELD_TAG).assertIsDisplayed()
+		onNodeWithText(CREATE_RECIPE_TITLE_REQUIRED_MESSAGE).assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField0").assertDoesNotExist()
+	}
+
+	@Test
+	fun createRecipeScreenShowsIngredientNameErrorOnIngredientField() = runRecompositionTrackingUiTest {
+		val viewModel = createRecipeViewModelForTest()
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		viewModel.onTitleChange("Roasted Carrots")
+		viewModel.onDescriptionChange("Sweet and savory side dish.")
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g"),
+			),
+		)
+		viewModel.saveRecipe()
+		waitForIdle()
+
+		onNodeWithTag("${INGREDIENT_NAME_FIELD_TAG_PREFIX}0").assertIsDisplayed()
+		onNodeWithText(CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE).assertIsDisplayed()
+	}
+
+	@Test
 	fun createRecipeScreenHidesOtherSectionsWhenSwitching() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {

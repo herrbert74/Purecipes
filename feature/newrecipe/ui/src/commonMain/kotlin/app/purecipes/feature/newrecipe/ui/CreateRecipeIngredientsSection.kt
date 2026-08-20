@@ -62,6 +62,7 @@ internal const val INGREDIENT_UNIT_FIELD_TAG_PREFIX = "createRecipeIngredientUni
 internal fun CreateRecipeIngredientsSection(
 	ingredientRows: IngredientRowsState,
 	suggestedUnits: SuggestedIngredientUnits,
+	fieldErrors: CreateRecipeFieldErrors,
 	onRowChange: (Int, IngredientRowInput) -> Unit,
 	onAddRowClick: () -> Unit,
 	onRemoveRowClick: (Int) -> Unit,
@@ -75,6 +76,11 @@ internal fun CreateRecipeIngredientsSection(
 	val expandedRows = remember { mutableStateMapOf(0 to true) }
 	val colors = createRecipeSegmentedListColors()
 
+	LaunchedEffect(fieldErrors.unnamedIngredientIndexes) {
+		fieldErrors.unnamedIngredientIndexes.forEach { index ->
+			expandedRows[index] = true
+		}
+	}
 	LaunchedEffect(ingredientRows.items.size) {
 		if (ingredientRows.items.size > previousRowCount) {
 			expandedRows[ingredientRows.items.lastIndex] = true
@@ -108,6 +114,7 @@ internal fun CreateRecipeIngredientsSection(
 					index = index,
 					row = row,
 					suggestedUnits = suggestedUnits,
+					nameError = fieldErrors.ingredientNameError(index),
 					expanded = expanded,
 					canRemove = ingredientRows.items.size > 1,
 					colors = colors,
@@ -151,6 +158,7 @@ private fun IngredientRowEditor(
 	index: Int,
 	row: IngredientRowInput,
 	suggestedUnits: SuggestedIngredientUnits,
+	nameError: String?,
 	expanded: Boolean,
 	canRemove: Boolean,
 	colors: ListItemColors,
@@ -225,6 +233,7 @@ private fun IngredientRowEditor(
 					index = index,
 					row = row,
 					suggestedUnits = suggestedUnits,
+					nameError = nameError,
 					onRowChange = onRowChange,
 					onAddAlternativeClick = onAddAlternativeClick,
 					onRemoveAlternativeClick = onRemoveAlternativeClick,
@@ -252,6 +261,7 @@ private fun IngredientExpandedEditor(
 	index: Int,
 	row: IngredientRowInput,
 	suggestedUnits: SuggestedIngredientUnits,
+	nameError: String?,
 	onRowChange: (IngredientRowInput) -> Unit,
 	onAddAlternativeClick: () -> Unit,
 	onRemoveAlternativeClick: (Int) -> Unit,
@@ -272,6 +282,7 @@ private fun IngredientExpandedEditor(
 			amountTestTag = "$INGREDIENT_AMOUNT_FIELD_TAG_PREFIX$index",
 			nameTestTag = "$INGREDIENT_NAME_FIELD_TAG_PREFIX$index",
 			unitTestTag = "$INGREDIENT_UNIT_FIELD_TAG_PREFIX$index",
+			nameError = nameError,
 			onPartChange = { primary -> onRowChange(row.copy(primary = primary)) },
 		)
 		row.alternatives.forEachIndexed { altIndex, alternative ->
@@ -317,6 +328,7 @@ private fun IngredientPartFields(
 	unitTestTag: String,
 	onPartChange: (IngredientPartInput) -> Unit,
 	trailing: @Composable (() -> Unit)? = null,
+	nameError: String? = null,
 ) {
 	Column(
 		modifier = Modifier.fillMaxWidth(),
@@ -360,6 +372,10 @@ private fun IngredientPartFields(
 					.weight(1f)
 					.testTag(nameTestTag),
 				label = { Text(text = "Ingredient") },
+				isError = nameError != null,
+				supportingText = nameError?.let { message ->
+					{ Text(text = message) }
+				},
 			)
 			trailing?.invoke()
 		}
@@ -430,6 +446,7 @@ private fun CreateRecipeIngredientsSectionPreview() {
 			suggestedUnits = SuggestedIngredientUnits(
 				items = listOf("g", "kg", "ml", "l"),
 			),
+			fieldErrors = CreateRecipeFieldErrors(),
 			onRowChange = { _, _ -> },
 			onAddRowClick = {},
 			onRemoveRowClick = {},

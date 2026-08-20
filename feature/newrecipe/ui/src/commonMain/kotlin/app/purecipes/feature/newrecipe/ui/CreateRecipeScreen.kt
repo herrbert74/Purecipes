@@ -192,6 +192,7 @@ fun CreateRecipeScreen(
 						selectedCuisine = viewModel.selectedCuisine,
 						descriptionInput = viewModel.descriptionInput,
 						formErrorMessage = viewModel.formErrorMessage,
+						fieldErrors = viewModel.fieldErrors,
 						isImportingImage = isImportingImage,
 						imagePickerErrorMessage = pickerErrorMessage,
 						imageUrlInput = viewModel.imageUrlInput,
