@@ -417,6 +417,28 @@ class AnalyticsEventTest {
 	}
 
 	@Test
+	fun `RecipeRemovedFromCookbook has correct event name and properties`() {
+		val event = AnalyticsEvent.RecipeRemovedFromCookbook(
+			recipeId = 42,
+			recipeName = "Tomato Pasta",
+			cookbookId = 10,
+			cookbookName = "Weeknight Dinners",
+			origin = AnalyticsOrigin.FAVORITES,
+			isPrivate = false,
+		)
+
+		event.eventName shouldBe "recipe_removed_from_cookbook"
+		event.properties shouldBe mapOf(
+			"recipe_id" to AnalyticsValue.NumberValue(42L),
+			"recipe_name" to AnalyticsValue.TextValue("Tomato Pasta"),
+			"is_private" to AnalyticsValue.BooleanValue(false),
+			"cookbook_id" to AnalyticsValue.NumberValue(10L),
+			"cookbook_name" to AnalyticsValue.TextValue("Weeknight Dinners"),
+			"origin" to AnalyticsValue.TextValue("favorites"),
+		)
+	}
+
+	@Test
 	fun `CookbookShared has correct event name and properties`() {
 		val event = AnalyticsEvent.CookbookShared(
 			cookbookId = 10,

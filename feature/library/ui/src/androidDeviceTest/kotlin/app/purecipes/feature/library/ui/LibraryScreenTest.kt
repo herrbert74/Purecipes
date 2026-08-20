@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.repository.CookbooksRepository
@@ -22,6 +23,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.library.ui.cookbooks.CREATE_COOKBOOK_DIALOG_INPUT_TAG
 import app.purecipes.feature.library.ui.cookbooks.DELETE_COOKBOOK_BUTTON_PREFIX
 import app.purecipes.feature.library.ui.cookbooks.DELETE_COOKBOOK_DIALOG_CONFIRM_TAG
@@ -34,11 +36,13 @@ import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.ui.component.RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -194,6 +198,36 @@ class LibraryScreenTest {
 		onNodeWithText("0 recipes").assertIsDisplayed()
 	}
 
+	@Test
+	fun cookbookDetailRemoveRecipeInvokesRemoveUseCase() = runRecompositionTrackingUiTest {
+		val cookbooksRepo = MutableCookbooksRepository()
+		setTrackedContent {
+			PurecipesTheme {
+				LibraryScreen(
+					sessionKey = "session",
+					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
+					onRecipeSelect = {},
+				)
+			}
+		}
+
+		onNodeWithText("Cookbooks").performClick()
+		onNodeWithText(TEST_COOKBOOK_NAME).performClick()
+		onNodeWithText(TEST_RECIPE_TITLE).assertIsDisplayed()
+		val deleteButtonTag = "$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX$TEST_RECIPE_ID"
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(deleteButtonTag).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(deleteButtonTag).performClick()
+
+		waitUntil(timeoutMillis = 5_000) {
+			cookbooksRepo.removeRecipeFromCookbookCallCount == 1 &&
+				onAllNodesWithText(TEST_RECIPE_TITLE).fetchSemanticsNodes().isEmpty()
+		}
+		assertEquals(1, cookbooksRepo.removeRecipeFromCookbookCallCount)
+		onNodeWithText("0 recipes").assertIsDisplayed()
+	}
+
 	private companion object {
 
 		const val NON_EMPTY_COOKBOOK_ID = 21
@@ -222,6 +256,9 @@ class LibraryScreenTest {
 				isFavorite = true,
 			),
 		)
+
+		var removeRecipeFromCookbookCallCount: Int = 0
+			private set
 
 		override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> {
 			val summary = cookbook.copy(recipeCount = cookbookRecipes.size)
@@ -256,9 +293,15 @@ class LibraryScreenTest {
 
 		override suspend fun addRecipeToCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> = Ok(Unit)
 
-		override suspend fun removeRecipeFromCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> = Ok(Unit)
+		override suspend fun removeRecipeFromCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit> {
+			removeRecipeFromCookbookCallCount += 1
+			cookbookRecipes = cookbookRecipes.filterNot { it.id == recipeId }
+			return Ok(Unit)
+		}
 
 		override suspend fun getRecipeCookbooks(recipeId: Int): Outcome<List<CookbookRef>> = Ok(emptyList())
+
+		override fun observeCookbookMembershipEvents() = emptyFlow<CookbookMembershipEvent>()
 
 		fun setCookbookRecipes(recipes: List<RecipeSummary>) {
 			cookbookRecipes = recipes
@@ -286,6 +329,7 @@ private fun favoritesViewModelForTest(
 	getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 	createCookbook = CreateCookbookUseCase(cookbooksRepository),
 	deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+	removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
 	importCookbookShare = unusedImportCookbookShareUseCase(),

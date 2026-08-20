@@ -21,6 +21,7 @@ import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -57,6 +58,7 @@ class RecipeDetailsViewModel(
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
+	private val observeCookbookMembershipEvents: ObserveCookbookMembershipEventsUseCase,
 	private val trackEvent: TrackEventUseCase,
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
@@ -112,6 +114,8 @@ class RecipeDetailsViewModel(
 
 	private var favoriteEventsJob: Job? = null
 
+	private var cookbookMembershipEventsJob: Job? = null
+
 	init {
 		viewModelScope.launch {
 			observeMeasurementPreferences().collectLatest { preferences ->
@@ -121,10 +125,17 @@ class RecipeDetailsViewModel(
 		}
 		loadRecipe()
 		startFavoriteEventsCollection(sessionKey)
+		startCookbookMembershipEventsCollection(sessionKey)
 	}
 
 	fun retry() {
 		loadRecipe()
+	}
+
+	fun onScreenVisible() {
+		if (recipeDetails != null && !isLoading) {
+			refreshCookbookMembership()
+		}
 	}
 
 	fun onSessionKeyChanged(sessionKey: String?) {
@@ -133,6 +144,7 @@ class RecipeDetailsViewModel(
 		}
 		activeSessionKey = sessionKey
 		startFavoriteEventsCollection(sessionKey)
+		startCookbookMembershipEventsCollection(sessionKey)
 		if (sessionKey == null) {
 			baseRecipeDetails = baseRecipeDetails?.copy(isFavorite = false)
 			recipeDetails = recipeDetails?.copy(isFavorite = false)
@@ -151,6 +163,21 @@ class RecipeDetailsViewModel(
 		favoriteEventsJob = viewModelScope.launch {
 			observeFavoriteEvents().collect { event ->
 				applyFavoriteEvent(event)
+			}
+		}
+	}
+
+	private fun startCookbookMembershipEventsCollection(sessionKey: String?) {
+		cookbookMembershipEventsJob?.cancel()
+		cookbookMembershipEventsJob = null
+		if (sessionKey == null) {
+			return
+		}
+		cookbookMembershipEventsJob = viewModelScope.launch {
+			observeCookbookMembershipEvents().collect { event ->
+				if (event.recipeId == recipeId) {
+					refreshCookbookMembership()
+				}
 			}
 		}
 	}

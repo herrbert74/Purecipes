@@ -142,6 +142,7 @@ fun LibraryScreen(
 				onShare = viewModel::shareOpenCookbook,
 				modifier = Modifier.padding(innerPadding),
 				onRecipeSelect = onRecipeSelect,
+				onRemoveRecipe = viewModel::removeRecipeFromOpenCookbook,
 				bannerAdViewModel = bannerAdViewModel,
 			)
 			return@Scaffold

@@ -11,6 +11,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
@@ -71,6 +72,7 @@ class LibraryViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
+			removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
@@ -97,6 +99,7 @@ class LibraryViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
+			removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
@@ -138,6 +141,7 @@ class LibraryViewModelTest {
 			getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 			createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 			deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
+			removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(FakeCookbooksRepository()),
 			getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
@@ -294,6 +298,66 @@ class LibraryViewModelTest {
 		kotlin.test.assertEquals(1, cookbooksRepository.deleteCookbookCallCount)
 	}
 
+	@Test
+	fun `remove recipe from open cookbook keeps favorite membership elsewhere`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 77,
+			title = "Creamy tomato pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 30,
+			isFavorite = true,
+		)
+		val cookbook = CookbookSummary(
+			id = 23,
+			name = "Weeknight dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+			cookbookRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModel(cookbooksRepository = cookbooksRepository)
+		viewModel.loadLibrary()
+		advanceUntilIdle()
+		viewModel.openCookbookDetail(
+			cookbookId = cookbook.id,
+			name = cookbook.name,
+			recipeCount = cookbook.recipeCount,
+		)
+		advanceUntilIdle()
+
+		var removed = false
+		viewModel.removeRecipeFromOpenCookbook(recipe) { ok ->
+			removed = ok
+		}
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(true, removed)
+		kotlin.test.assertEquals(1, cookbooksRepository.removeRecipeFromCookbookCallCount)
+		kotlin.test.assertEquals(cookbook.id, cookbooksRepository.lastRemovedCookbookId)
+		kotlin.test.assertEquals(recipe.id, cookbooksRepository.lastRemovedRecipeId)
+		kotlin.test.assertEquals(emptyList(), viewModel.cookbookDetailRecipes.toList())
+		kotlin.test.assertEquals(0, viewModel.totalCookbookDetailMatches)
+		kotlin.test.assertEquals(0, viewModel.cookbooks.single().recipeCount)
+		kotlin.test.assertEquals(null, viewModel.cookbookDetailErrorMessage)
+	}
+
 	private fun favoritesViewModel(
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
@@ -306,6 +370,7 @@ class LibraryViewModelTest {
 		getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 		createCookbook = CreateCookbookUseCase(cookbooksRepository),
 		deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+		removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		importCookbookShare = importCookbookShare,

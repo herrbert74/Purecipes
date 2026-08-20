@@ -56,6 +56,10 @@ fun RecipeDetailsScreen(
 		viewModel.onSessionKeyChanged(sessionKey)
 	}
 
+	LaunchedEffect(recipeId, sessionKey) {
+		viewModel.onScreenVisible()
+	}
+
 	Box(modifier = modifier.fillMaxSize()) {
 		Scaffold(
 			modifier = Modifier.fillMaxSize(),

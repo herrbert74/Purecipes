@@ -52,6 +52,7 @@ fun RecipeCard(
 	widthFraction: Float = RecipeCardDefaults.FullWidthFraction,
 	onEditClick: (() -> Unit)? = null,
 	onDeleteClick: (() -> Unit)? = null,
+	deleteContentDescription: String = "Delete recipe",
 ) {
 	val fixedColors = PurecipesTheme.fixedColors
 	Card(
@@ -155,7 +156,7 @@ fun RecipeCard(
 						) {
 							Icon(
 								imageVector = Icons.Filled.Delete,
-								contentDescription = "Delete recipe",
+								contentDescription = deleteContentDescription,
 								tint = Color.White,
 							)
 						}

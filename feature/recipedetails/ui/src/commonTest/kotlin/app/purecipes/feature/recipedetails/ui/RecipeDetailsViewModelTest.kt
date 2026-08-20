@@ -9,6 +9,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsShareType
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.repository.FavoritesRepository
 import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
@@ -16,6 +17,7 @@ import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
@@ -26,6 +28,7 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
+import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -87,6 +90,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -128,6 +132,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -161,6 +166,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -196,6 +202,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -235,6 +242,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -275,6 +283,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -307,6 +316,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -341,6 +351,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -363,6 +374,95 @@ class RecipeDetailsViewModelTest {
 	}
 
 	@Test
+	fun `cookbook membership removed event refreshes recipe cookbook chips`() = runViewModelTest {
+		val recipe = fakeRecipeDetails().copy(isFavorite = true)
+		val cookbooksRepository = FakeCookbooksRepository(
+			initialRecipeCookbooksResult = Ok(
+				listOf(
+					CookbookRef(id = 10, name = "Weeknight dinners"),
+					CookbookRef(id = 11, name = "Batch cooking"),
+				),
+			),
+		)
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(recipe)),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = "session",
+			origin = AnalyticsOrigin.FAVORITES.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+
+		advanceUntilIdle()
+		viewModel.recipeCookbooks.map { it.id } shouldBe listOf(10, 11)
+
+		cookbooksRepository.setRecipeCookbooksResult(
+			Ok(listOf(CookbookRef(id = 11, name = "Batch cooking"))),
+		)
+		cookbooksRepository.emitCookbookMembershipEvent(
+			CookbookMembershipEvent.Removed(recipeId = recipe.id, cookbookId = 10),
+		)
+		advanceUntilIdle()
+
+		viewModel.recipeCookbooks.map { it.id } shouldBe listOf(11)
+	}
+
+	@Test
+	fun `on screen visible refreshes cookbook chips for retained view model`() = runViewModelTest {
+		val recipe = fakeRecipeDetails().copy(isFavorite = true)
+		val cookbooksRepository = FakeCookbooksRepository(
+			initialRecipeCookbooksResult = Ok(
+				listOf(CookbookRef(id = 10, name = "Weeknight dinners")),
+			),
+		)
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(recipe)),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = "session",
+			origin = AnalyticsOrigin.FAVORITES.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(cookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
+			createCookbook = CreateCookbookUseCase(cookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
+			shareRecipe = shareRecipe,
+		)
+
+		advanceUntilIdle()
+		viewModel.recipeCookbooks.map { it.id } shouldBe listOf(10)
+
+		cookbooksRepository.setRecipeCookbooksResult(Ok(emptyList()))
+		viewModel.onScreenVisible()
+		advanceUntilIdle()
+
+		viewModel.recipeCookbooks shouldBe emptyList()
+	}
+
+	@Test
 	fun `favorite added event marks matching recipe as favorite`() = runViewModelTest {
 		val repository = FakeRecipeDetailsRepository(Ok(fakeRecipeDetails()))
 		val favoritesRepository = FakeFavoritesRepository()
@@ -376,6 +476,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -413,6 +514,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -473,6 +575,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -523,6 +626,7 @@ class RecipeDetailsViewModelTest {
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 			trackEvent = TrackEventUseCase(analyticsRepository),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),

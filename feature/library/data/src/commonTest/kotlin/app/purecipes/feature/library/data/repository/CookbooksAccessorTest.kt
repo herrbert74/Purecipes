@@ -1,14 +1,21 @@
 package app.purecipes.feature.library.data.repository
 
 import app.purecipes.feature.library.data.datasource.CookbooksRemoteDataSource
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import app.purecipes.shared.domain.model.CookbookSummary
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CookbooksAccessorTest {
 
 	@Test
@@ -43,5 +50,31 @@ class CookbooksAccessorTest {
 
 		deleteOutcome.getError() shouldBe null
 		pageAfterDelete.get()?.totalMatches shouldBe 0
+	}
+
+	@Test
+	fun `add recipe to cookbook emits added membership event`() = runTest {
+		val accessor = CookbooksAccessor(
+			CookbooksRemoteDataSource(FakePurecipesApi()),
+		)
+		val event = async { accessor.observeCookbookMembershipEvents().take(1).single() }
+		runCurrent()
+
+		accessor.addRecipeToCookbook(cookbookId = 10, recipeId = 42)
+
+		event.await() shouldBe CookbookMembershipEvent.Added(recipeId = 42, cookbookId = 10)
+	}
+
+	@Test
+	fun `remove recipe from cookbook emits removed membership event`() = runTest {
+		val accessor = CookbooksAccessor(
+			CookbooksRemoteDataSource(FakePurecipesApi()),
+		)
+		val event = async { accessor.observeCookbookMembershipEvents().take(1).single() }
+		runCurrent()
+
+		accessor.removeRecipeFromCookbook(cookbookId = 10, recipeId = 42)
+
+		event.await() shouldBe CookbookMembershipEvent.Removed(recipeId = 42, cookbookId = 10)
 	}
 }

@@ -1,10 +1,12 @@
 package app.purecipes.feature.library.domain.repository
 
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import kotlinx.coroutines.flow.Flow
 
 interface CookbooksRepository {
 
@@ -25,4 +27,6 @@ interface CookbooksRepository {
 	suspend fun removeRecipeFromCookbook(cookbookId: Int, recipeId: Int): Outcome<Unit>
 
 	suspend fun getRecipeCookbooks(recipeId: Int): Outcome<List<CookbookRef>>
+
+	fun observeCookbookMembershipEvents(): Flow<CookbookMembershipEvent>
 }
