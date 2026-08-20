@@ -14,6 +14,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.CreateCookbookShareUseCase
@@ -235,6 +236,7 @@ class LibraryViewModelAnalyticsTest {
 		getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 		createCookbook = CreateCookbookUseCase(cookbooksRepository),
 		deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
+		removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		importCookbookShare = importCookbookShare,

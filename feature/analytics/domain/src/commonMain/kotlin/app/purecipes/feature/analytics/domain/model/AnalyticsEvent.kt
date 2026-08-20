@@ -377,6 +377,24 @@ sealed interface AnalyticsEvent {
 			)
 	}
 
+	data class RecipeRemovedFromCookbook(
+		val recipeId: Int,
+		val recipeName: String,
+		val cookbookId: Int,
+		val cookbookName: String?,
+		val origin: AnalyticsOrigin,
+		val isPrivate: Boolean,
+	) : AnalyticsEvent {
+
+		override val eventName = "recipe_removed_from_cookbook"
+
+		override val properties = RecipeAnalyticsProperty.identity(recipeId, recipeName, isPrivate) +
+			CookbookAnalyticsProperty.identity(cookbookId, cookbookName) +
+			mapOf(
+				"origin" to AnalyticsValue.TextValue(origin.value),
+			)
+	}
+
 	data class CookbookShared(
 		val cookbookId: Int,
 		val cookbookName: String?,

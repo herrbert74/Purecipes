@@ -20,6 +20,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -57,6 +58,7 @@ class LibraryViewModel(
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
 	private val deleteCookbookUseCase: DeleteCookbookUseCase,
+	private val removeRecipeFromCookbookUseCase: RemoveRecipeFromCookbookUseCase,
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val importCookbookShare: ImportCookbookShareUseCase,
@@ -356,6 +358,41 @@ class LibraryViewModel(
 				deleteCookbookError = outcome.getError()?.message
 			}
 			isDeletingCookbook = false
+			onDone(ok)
+		}
+	}
+
+	fun removeRecipeFromOpenCookbook(recipe: RecipeSummary, onDone: (Boolean) -> Unit = {}) {
+		val cookbookId = viewingCookbookId ?: run {
+			onDone(false)
+			return
+		}
+		viewModelScope.launch {
+			val outcome = removeRecipeFromCookbookUseCase(cookbookId, recipe.id)
+			val ok = outcome.getError() == null
+			if (ok) {
+				trackEvent(
+					AnalyticsEvent.RecipeRemovedFromCookbook(
+						recipeId = recipe.id,
+						recipeName = recipe.title,
+						cookbookId = cookbookId,
+						cookbookName = viewingCookbookName.takeIf { it.isNotBlank() },
+						origin = AnalyticsOrigin.FAVORITES,
+						isPrivate = recipe.isPrivate,
+					),
+				)
+				cookbookDetailRecipes.removeAll { it.id == recipe.id }
+				totalCookbookDetailMatches = (totalCookbookDetailMatches - 1).coerceAtLeast(0)
+				val cookbookIndex = cookbooks.indexOfFirst { it.id == cookbookId }
+				if (cookbookIndex >= 0) {
+					val current = cookbooks[cookbookIndex]
+					cookbooks[cookbookIndex] = current.copy(
+						recipeCount = (current.recipeCount - 1).coerceAtLeast(0),
+					)
+				}
+			} else {
+				cookbookDetailErrorMessage = outcome.getError()?.message
+			}
 			onDone(ok)
 		}
 	}

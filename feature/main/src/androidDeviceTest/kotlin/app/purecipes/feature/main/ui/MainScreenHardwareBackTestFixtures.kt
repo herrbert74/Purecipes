@@ -28,8 +28,10 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
+import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.library.ui.LibraryViewModel
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -240,6 +242,7 @@ internal fun recipeDetailsViewModelForDeviceTest(
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -262,6 +265,7 @@ internal fun favoritesViewModelForDeviceTest(): LibraryViewModel = LibraryViewMo
 	getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 	createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 	deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
+	removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(FakeCookbooksRepository()),
 	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 	getCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
 		object : CookbookCoverRepository {

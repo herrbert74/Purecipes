@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -48,6 +47,7 @@ internal fun CookbookDetailContent(
 	onBack: () -> Unit,
 	onShare: () -> Unit,
 	onRecipeSelect: (Int) -> Unit,
+	onRemoveRecipe: (RecipeSummary) -> Unit,
 	modifier: Modifier = Modifier,
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
@@ -115,6 +115,8 @@ internal fun CookbookDetailContent(
 						RecipeCard(
 							recipe = recipe,
 							onClick = { onRecipeSelect(recipe.id) },
+							onDeleteClick = { onRemoveRecipe(recipe) },
+							deleteContentDescription = "Remove from cookbook",
 						)
 					}
 				}
