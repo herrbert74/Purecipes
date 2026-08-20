@@ -390,6 +390,35 @@ class CreateRecipeViewModelTest {
 		viewModel.canMakePrivate shouldBe true
 	}
 
+
+	@Test
+	fun `loading recipe keeps full unit names in the unit field`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe().copy(
+			ingredientGroups = listOf(
+				IngredientGroup(
+					ingredients = recipeIngredients("200 gram flour", "2 liter milk"),
+				),
+			),
+		)
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+		)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+
+		viewModel.ingredientsEditor.rows.first().primary shouldBe IngredientPartInput(
+			amount = "200",
+			unit = "g",
+			name = "flour",
+		)
+		viewModel.ingredientsEditor.rows[1].primary shouldBe IngredientPartInput(
+			amount = "2",
+			unit = "l",
+			name = "milk",
+		)
+	}
+
 	@Test
 	fun `imperial measurement preference uses imperial unit suggestions`() = runViewModelTest {
 		val measurementRepository = FakeMeasurementPreferencesRepository(
