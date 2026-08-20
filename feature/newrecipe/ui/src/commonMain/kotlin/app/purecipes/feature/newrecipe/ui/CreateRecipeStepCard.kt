@@ -61,6 +61,7 @@ internal fun CreateRecipeStepCard(
 	colors: ListItemColors,
 	modifier: Modifier = Modifier,
 	focusRequester: FocusRequester? = null,
+	errorMessage: String? = null,
 ) {
 	val stepNumber = index + 1
 	val headline = stepInput.trim().lineSequence().firstOrNull().orEmpty().ifBlank { "Step $stepNumber" }
@@ -144,6 +145,10 @@ internal fun CreateRecipeStepCard(
 						)
 						.testTag("$STEP_FIELD_TAG_PREFIX$index"),
 					placeholder = { Text(text = "Describe this step") },
+					isError = errorMessage != null,
+					supportingText = errorMessage?.let { message ->
+						{ Text(text = message) }
+					},
 					minLines = 2,
 				)
 				if (focusRequester != null) {

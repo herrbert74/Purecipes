@@ -1,5 +1,7 @@
 package app.purecipes.feature.newrecipe.ui
 
+import app.purecipes.shared.domain.ingredient.IngredientUnitTokens
+
 internal object IngredientRowComposer {
 
 	private val amountRegex = Regex(
@@ -10,34 +12,6 @@ internal object IngredientRowComposer {
 		value.all { character ->
 			character.isDigit() || character == ' ' || character == '/' || character == '.' || character == ','
 		}
-
-	private val knownUnits = setOf(
-		"g",
-		"kg",
-		"mg",
-		"ml",
-		"l",
-		"oz",
-		"lb",
-		"tsp",
-		"tbsp",
-		"cup",
-		"cups",
-		"teaspoon",
-		"teaspoons",
-		"tablespoon",
-		"tablespoons",
-		"pinch",
-		"pinches",
-		"clove",
-		"cloves",
-		"can",
-		"cans",
-		"pack",
-		"packet",
-		"slice",
-		"slices",
-	)
 
 	fun collapsedHeadline(index: Int, row: IngredientRowInput): String {
 		val line = composeLine(row.copy(isOptional = false))
@@ -124,10 +98,10 @@ internal object IngredientRowComposer {
 		}
 		val tokens = remainder.split(Regex("""\s+"""), limit = 2)
 		val maybeUnit = tokens.first()
-		return if (maybeUnit.lowercase() in knownUnits) {
+		return if (IngredientUnitTokens.isKnownUnit(maybeUnit)) {
 			IngredientPartInput(
 				amount = amount,
-				unit = maybeUnit,
+				unit = IngredientUnitTokens.canonicalUnit(maybeUnit),
 				name = tokens.getOrElse(1) { "" },
 			)
 		} else {

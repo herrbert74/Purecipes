@@ -6,6 +6,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -14,11 +15,14 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.MeasurementPreferences
+import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -41,7 +45,8 @@ class CreateRecipeViewModelTest {
 
 		viewModel.saveRecipe()
 
-		viewModel.formErrorMessage shouldBe "Add a recipe title."
+		viewModel.fieldErrors.title shouldBe CREATE_RECIPE_TITLE_REQUIRED_MESSAGE
+		viewModel.formErrorMessage shouldBe null
 		viewModel.selectedSection shouldBe CreateRecipeSection.About
 		repository.savedRequests.isEmpty() shouldBe true
 	}
@@ -54,7 +59,8 @@ class CreateRecipeViewModelTest {
 		viewModel.onDescriptionChange("Quick weeknight dinner.")
 		viewModel.saveRecipe()
 
-		viewModel.formErrorMessage shouldBe CREATE_RECIPE_STEP_REQUIRED_MESSAGE
+		viewModel.fieldErrors.steps shouldBe CREATE_RECIPE_STEP_REQUIRED_MESSAGE
+		viewModel.formErrorMessage shouldBe null
 		viewModel.selectedSection shouldBe CreateRecipeSection.Steps
 	}
 
@@ -72,8 +78,66 @@ class CreateRecipeViewModelTest {
 		)
 		viewModel.saveRecipe()
 
-		viewModel.formErrorMessage shouldBe CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE
+		viewModel.fieldErrors.unnamedIngredientIndexes shouldBe listOf(0)
+		viewModel.formErrorMessage shouldBe null
 		viewModel.selectedSection shouldBe CreateRecipeSection.Ingredients
+	}
+
+	@Test
+	fun `ingredient name error stays until the ingredient is named`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Tomato Pasta")
+		viewModel.onDescriptionChange("Quick weeknight dinner.")
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g"),
+			),
+		)
+		viewModel.saveRecipe()
+		viewModel.onIngredientsEdited()
+
+		viewModel.fieldErrors.unnamedIngredientIndexes shouldBe listOf(0)
+
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g", name = "pasta"),
+			),
+		)
+		viewModel.onIngredientsEdited()
+
+		viewModel.fieldErrors.unnamedIngredientIndexes shouldBe emptyList()
+		advanceTimeBy(500)
+		advanceUntilIdle()
+	}
+
+	@Test
+	fun `save with invalid total time keeps the about section and field error`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onTitleChange("Tomato Pasta")
+		viewModel.onDescriptionChange("Quick weeknight dinner.")
+		viewModel.onTotalTimeChange("twenty")
+		viewModel.onStepChange(index = 0, value = "Boil the pasta")
+		viewModel.saveRecipe()
+
+		viewModel.fieldErrors.totalTime shouldBe CREATE_RECIPE_TOTAL_TIME_WHOLE_NUMBER_MESSAGE
+		viewModel.formErrorMessage shouldBe null
+		viewModel.selectedSection shouldBe CreateRecipeSection.About
+	}
+
+	@Test
+	fun `editing a field clears that field error`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.saveRecipe()
+		viewModel.fieldErrors.title shouldBe CREATE_RECIPE_TITLE_REQUIRED_MESSAGE
+
+		viewModel.onTitleChange("Tomato Pasta")
+
+		viewModel.fieldErrors.title shouldBe null
 	}
 
 	@Test
@@ -385,6 +449,61 @@ class CreateRecipeViewModelTest {
 		viewModel.isPrivate shouldBe true
 		viewModel.canMakePrivate shouldBe true
 	}
+
+	@Test
+	fun `loading recipe keeps full unit names in the unit field`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe().copy(
+			ingredientGroups = listOf(
+				IngredientGroup(
+					ingredients = recipeIngredients("200 gram flour", "2 liter milk"),
+				),
+			),
+		)
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+		)
+
+		viewModel.loadRecipe(recipe.id)
+		advanceUntilIdle()
+
+		viewModel.ingredientsEditor.rows.first().primary shouldBe IngredientPartInput(
+			amount = "200",
+			unit = "g",
+			name = "flour",
+		)
+		viewModel.ingredientsEditor.rows[1].primary shouldBe IngredientPartInput(
+			amount = "2",
+			unit = "l",
+			name = "milk",
+		)
+	}
+
+	@Test
+	fun `imperial measurement preference uses imperial unit suggestions`() = runViewModelTest {
+		val measurementRepository = FakeMeasurementPreferencesRepository(
+			defaults = MeasurementPreferences(
+				preferredSystem = MeasurementSystem.IMPERIAL,
+			),
+		)
+		val viewModel = createViewModel(measurementRepository = measurementRepository)
+
+		advanceUntilIdle()
+
+		viewModel.suggestedUnits.items shouldBe listOf(
+			"tsp",
+			"tbsp",
+			"cup",
+			"oz",
+			"lb",
+			"pinch",
+			"clove",
+			"can",
+			"slice",
+			"piece",
+			"bunch",
+			"pack",
+		)
+	}
 }
 
 private fun createViewModel(
@@ -393,6 +512,7 @@ private fun createViewModel(
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	crashRepository: FakeCrashRepository = FakeCrashRepository(),
 	subscriptionState: SubscriptionState = SubscriptionState.FREE,
+	measurementRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
 ): CreateRecipeViewModel =
 	CreateRecipeViewModel(
 		getCreatedRecipes = GetCreatedRecipesUseCase(repository),
@@ -405,6 +525,7 @@ private fun createViewModel(
 			FakeSubscriptionRepository(initialState = subscriptionState),
 			FakeMonetisationDebugOverridesRepository(),
 		),
+		observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 	)
 
 private fun sampleCreatedRecipe(): RecipeDetails = RecipeDetails(

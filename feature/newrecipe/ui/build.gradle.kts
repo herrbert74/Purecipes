@@ -18,6 +18,7 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:analytics:domain"))
+				api(project(":feature:measurement:domain"))
 				api(project(":feature:newrecipe:domain"))
 				implementation(project(":feature:subscription:domain"))
 				implementation(libs.coil.compose)

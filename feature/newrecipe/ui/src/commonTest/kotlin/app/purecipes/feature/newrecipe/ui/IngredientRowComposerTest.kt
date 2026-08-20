@@ -73,6 +73,27 @@ class IngredientRowComposerTest {
 	}
 
 	@Test
+	fun `split part extracts full metric unit names`() {
+		IngredientRowComposer.splitPart("200 gram flour") shouldBe IngredientPartInput(
+			amount = "200",
+			unit = "g",
+			name = "flour",
+		)
+		IngredientRowComposer.splitPart("2 liter milk") shouldBe IngredientPartInput(
+			amount = "2",
+			unit = "l",
+			name = "milk",
+		)
+	}
+
+	@Test
+	fun `from editable line round trips full metric unit names`() {
+		val row = IngredientRowComposer.fromEditableLine("200 gram flour")
+		row.primary shouldBe IngredientPartInput(amount = "200", unit = "g", name = "flour")
+		IngredientRowComposer.composeLine(row) shouldBe "200 g flour"
+	}
+
+	@Test
 	fun `from editable line round trips optional alternatives`() {
 		val row = IngredientRowComposer.fromEditableLine("optional: parsley or tarragon")
 		row.isOptional shouldBe true

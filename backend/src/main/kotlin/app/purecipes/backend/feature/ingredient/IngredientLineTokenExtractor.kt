@@ -1,52 +1,13 @@
 package app.purecipes.backend.feature.ingredient
 
 import app.purecipes.shared.domain.ingredient.IngredientNameMatching
+import app.purecipes.shared.domain.ingredient.IngredientUnitTokens
 
 internal object IngredientLineTokenExtractor {
 
 	private const val MIN_TOKEN_LENGTH = 3
 
 	private val quantityTokenRegex = Regex("""^\d+(/\d+)?(\.\d+)?$""")
-
-	private val unitTokens = setOf(
-		"bunch",
-		"can",
-		"cans",
-		"clove",
-		"cloves",
-		"cup",
-		"cups",
-		"g",
-		"gram",
-		"grams",
-		"kg",
-		"l",
-		"lb",
-		"lbs",
-		"liter",
-		"liters",
-		"litre",
-		"litres",
-		"ml",
-		"ounce",
-		"ounces",
-		"oz",
-		"package",
-		"packages",
-		"pinch",
-		"piece",
-		"pieces",
-		"pound",
-		"pounds",
-		"slice",
-		"slices",
-		"tablespoon",
-		"tablespoons",
-		"tbsp",
-		"tsp",
-		"teaspoon",
-		"teaspoons",
-	)
 
 	private val preparationTokens = setOf(
 		"boneless",
@@ -99,7 +60,7 @@ internal object IngredientLineTokenExtractor {
 		var index = 0
 		while (index < words.size) {
 			val word = words[index]
-			if (isQuantityToken(word) || word in unitTokens) {
+			if (isQuantityToken(word) || IngredientUnitTokens.isKnownUnit(word)) {
 				index++
 			} else {
 				break

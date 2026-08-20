@@ -20,3 +20,8 @@ data class IngredientRowInput(
 data class IngredientRowsState(
 	val items: List<IngredientRowInput>,
 )
+
+@Immutable
+data class SuggestedIngredientUnits(
+	val items: List<String>,
+)

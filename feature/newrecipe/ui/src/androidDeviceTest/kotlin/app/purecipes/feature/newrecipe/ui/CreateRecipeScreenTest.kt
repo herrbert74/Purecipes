@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
@@ -31,6 +32,7 @@ import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUse
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
@@ -316,6 +318,52 @@ class CreateRecipeScreenTest {
 	}
 
 	@Test
+	fun createRecipeScreenShowsTitleErrorOnTitleField() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag("createRecipeSaveButton").performClick()
+		waitForIdle()
+
+		onNodeWithTag(TITLE_FIELD_TAG).assertIsDisplayed()
+		onNodeWithText(CREATE_RECIPE_TITLE_REQUIRED_MESSAGE).assertIsDisplayed()
+		onNodeWithTag("createRecipeStepField0").assertDoesNotExist()
+	}
+
+	@Test
+	fun createRecipeScreenShowsIngredientNameErrorOnIngredientField() = runRecompositionTrackingUiTest {
+		val viewModel = createRecipeViewModelForTest()
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		viewModel.onTitleChange("Roasted Carrots")
+		viewModel.onDescriptionChange("Sweet and savory side dish.")
+		viewModel.ingredientsEditor.onRowChange(
+			index = 0,
+			row = IngredientRowInput(
+				primary = IngredientPartInput(amount = "200", unit = "g"),
+			),
+		)
+		viewModel.saveRecipe()
+		waitForIdle()
+
+		onNodeWithTag("${INGREDIENT_NAME_FIELD_TAG_PREFIX}0").assertIsDisplayed()
+		onNodeWithText(CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE).assertIsDisplayed()
+	}
+
+	@Test
 	fun createRecipeScreenHidesOtherSectionsWhenSwitching() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {
@@ -341,6 +389,53 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeTitleField").assertDoesNotExist()
 		onNodeWithTag("createRecipeIngredientNameField0").assertDoesNotExist()
 	}
+
+	@Test
+	fun createRecipeScreenKeepsAmountAndUnitWhenEditingIngredientName() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
+		onNodeWithTag("${INGREDIENT_AMOUNT_FIELD_TAG_PREFIX}0").performTextInput("200")
+		onNodeWithTag("${INGREDIENT_UNIT_FIELD_TAG_PREFIX}0").performClick()
+		waitForIdle()
+		onNodeWithText("g", useUnmergedTree = true).performClick()
+		waitForIdle()
+		onNodeWithTag("${INGREDIENT_NAME_FIELD_TAG_PREFIX}0").performTextInput("carrots")
+		waitForIdle()
+
+		onNodeWithTag("${INGREDIENT_AMOUNT_FIELD_TAG_PREFIX}0").assertTextContains("200")
+		onNodeWithTag("${INGREDIENT_NAME_FIELD_TAG_PREFIX}0").assertTextContains("carrots")
+		onNodeWithText("g").assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenShowsUnitDropdownOptions() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		openIngredientEditor(index = 0)
+		onNodeWithTag("${INGREDIENT_UNIT_FIELD_TAG_PREFIX}0").performClick()
+		waitForIdle()
+
+		onNodeWithText("g", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithText("ml", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithText("oz", useUnmergedTree = true).assertDoesNotExist()
+	}
 }
 
 private fun createRecipeViewModelForTest(
@@ -356,6 +451,9 @@ private fun createRecipeViewModelForTest(
 	observePremiumStatus = ObservePremiumStatusUseCase(
 		FakeSubscriptionRepository(),
 		FakeMonetisationDebugOverridesRepository(),
+	),
+	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(
+		FakeMeasurementPreferencesRepository(),
 	),
 )
 

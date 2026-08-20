@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +62,9 @@ internal fun CreateRecipeAboutSection(
 	onYieldsChange: (String) -> Unit,
 	onIsPrivateChange: (Boolean) -> Unit,
 	onPrivacyLockedClick: () -> Unit,
+	titleError: String? = null,
+	descriptionError: String? = null,
+	totalTimeError: String? = null,
 ) {
 	var showCuisineSheet by remember { mutableStateOf(false) }
 	val colors = createRecipeSegmentedListColors()
@@ -83,6 +87,10 @@ internal fun CreateRecipeAboutSection(
 				.fillMaxWidth()
 				.testTag(TITLE_FIELD_TAG),
 			label = { Text(text = "Recipe title") },
+			isError = titleError != null,
+			supportingText = titleError?.let { message ->
+				{ Text(text = message) }
+			},
 			singleLine = true,
 		)
 		OutlinedTextField(
@@ -92,6 +100,10 @@ internal fun CreateRecipeAboutSection(
 				.fillMaxWidth()
 				.testTag(DESCRIPTION_FIELD_TAG),
 			label = { Text(text = "Description") },
+			isError = descriptionError != null,
+			supportingText = descriptionError?.let { message ->
+				{ Text(text = message) }
+			},
 			minLines = 3,
 		)
 		Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
@@ -123,6 +135,7 @@ internal fun CreateRecipeAboutSection(
 				rowTestTag = TOTAL_TIME_ROW_TAG,
 				fieldTestTag = TOTAL_TIME_FIELD_TAG,
 				startExpanded = totalTimeInput.isNotBlank(),
+				errorMessage = totalTimeError,
 				onValueChange = onTotalTimeChange,
 				colors = colors,
 			)
@@ -168,8 +181,14 @@ private fun ExpandableMetadataField(
 	startExpanded: Boolean,
 	onValueChange: (String) -> Unit,
 	colors: ListItemColors,
+	errorMessage: String? = null,
 ) {
 	var expanded by remember { mutableStateOf(startExpanded) }
+	LaunchedEffect(errorMessage) {
+		if (errorMessage != null) {
+			expanded = true
+		}
+	}
 	val shapes = ListItemDefaults.segmentedShapes(
 		index = index,
 		count = METADATA_GROUP_ITEM_COUNT,
@@ -215,6 +234,10 @@ private fun ExpandableMetadataField(
 					)
 					.testTag(fieldTestTag),
 				label = { Text(text = fieldLabel) },
+				isError = errorMessage != null,
+				supportingText = errorMessage?.let { message ->
+					{ Text(text = message) }
+				},
 				singleLine = true,
 			)
 		}

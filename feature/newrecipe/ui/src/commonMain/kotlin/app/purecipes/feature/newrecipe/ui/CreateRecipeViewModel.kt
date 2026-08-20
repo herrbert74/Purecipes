@@ -15,15 +15,18 @@ import app.purecipes.feature.analytics.domain.model.asHandledException
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.ingredient.IngredientLineParser
+import app.purecipes.shared.domain.ingredient.IngredientUnitTokens
 import app.purecipes.shared.domain.ingredient.nutritionIngredientTexts
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientRequirement
+import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
@@ -34,7 +37,6 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Inject
@@ -48,6 +50,7 @@ class CreateRecipeViewModel(
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
 	private val observePremiumStatus: ObservePremiumStatusUseCase,
+	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 ) : ViewModel() {
 
 	private var nutritionEstimateJob: Job? = null
@@ -88,6 +91,11 @@ class CreateRecipeViewModel(
 	var isPremium by mutableStateOf(false)
 		private set
 
+	var suggestedUnits by mutableStateOf(
+		SuggestedIngredientUnits(IngredientUnitTokens.suggestedUnits(MeasurementSystem.METRIC)),
+	)
+		private set
+
 	var isLoadingRecipe by mutableStateOf(false)
 		private set
 
@@ -98,6 +106,9 @@ class CreateRecipeViewModel(
 		private set
 
 	var formErrorMessage by mutableStateOf<String?>(null)
+		private set
+
+	var fieldErrors by mutableStateOf(CreateRecipeFieldErrors())
 		private set
 
 	var successMessage by mutableStateOf<String?>(null)
@@ -123,14 +134,27 @@ class CreateRecipeViewModel(
 				isPremium = premium
 			}
 		}
+		viewModelScope.launch {
+			observeMeasurementPreferences().collect { preferences ->
+				suggestedUnits = SuggestedIngredientUnits(
+					IngredientUnitTokens.suggestedUnits(preferences.preferredSystem),
+				)
+			}
+		}
 	}
 
 	fun onTitleChange(value: String) {
 		titleInput = value
+		if (fieldErrors.title != null) {
+			fieldErrors = fieldErrors.copy(title = null)
+		}
 	}
 
 	fun onDescriptionChange(value: String) {
 		descriptionInput = value
+		if (fieldErrors.description != null) {
+			fieldErrors = fieldErrors.copy(description = null)
+		}
 	}
 
 	fun onImageUrlChange(value: String) {
@@ -138,11 +162,22 @@ class CreateRecipeViewModel(
 	}
 
 	fun onIngredientsEdited() {
+		if (fieldErrors.unnamedIngredientIndexes.isNotEmpty()) {
+			fieldErrors = fieldErrors.copy(
+				unnamedIngredientIndexes = fieldErrors.unnamedIngredientIndexes.filter { index ->
+					index in ingredientsEditor.rows.indices &&
+						hasUnnamedIngredientContent(ingredientsEditor.rows[index])
+				},
+			)
+		}
 		scheduleNutritionEstimate()
 	}
 
 	fun onStepChange(index: Int, value: String) {
 		stepInputs[index] = value
+		if (fieldErrors.steps != null) {
+			fieldErrors = fieldErrors.copy(steps = null)
+		}
 	}
 
 	fun addStep() {
@@ -186,6 +221,9 @@ class CreateRecipeViewModel(
 
 	fun onTotalTimeChange(value: String) {
 		totalTimeInput = value
+		if (fieldErrors.totalTime != null) {
+			fieldErrors = fieldErrors.copy(totalTime = null)
+		}
 	}
 
 	fun onYieldsChange(value: String) {
@@ -257,6 +295,7 @@ class CreateRecipeViewModel(
 		isLoadingRecipe = false
 		loadErrorMessage = null
 		formErrorMessage = null
+		fieldErrors = CreateRecipeFieldErrors()
 		successMessage = null
 		saveCompletedEvent = 0
 		selectedSection = CreateRecipeSection.About
@@ -264,17 +303,19 @@ class CreateRecipeViewModel(
 	}
 
 	fun saveRecipe() {
-		val validationMessage = validate()
-		if (validationMessage != null || isSaving) {
-			formErrorMessage = validationMessage
-			if (validationMessage != null) {
-				selectedSection = CreateRecipeSection.forValidationMessage(validationMessage)
+		val validationErrors = validate()
+		if (validationErrors.hasErrors || isSaving) {
+			fieldErrors = validationErrors
+			formErrorMessage = null
+			if (validationErrors.hasErrors) {
+				selectedSection = validationErrors.firstSection
 			}
 			return
 		}
 
 		isSaving = true
 		formErrorMessage = null
+		fieldErrors = CreateRecipeFieldErrors()
 		successMessage = null
 		val wasEditing = isEditing
 
@@ -341,6 +382,7 @@ class CreateRecipeViewModel(
 		loadedIsPrivate = recipe.isPrivate
 		nutritionEstimate = recipe.nutrition?.recipeTotals
 		formErrorMessage = null
+		fieldErrors = CreateRecipeFieldErrors()
 		successMessage = null
 		scheduleNutritionEstimate()
 	}
@@ -395,20 +437,21 @@ class CreateRecipeViewModel(
 		}
 	}
 
-	private fun validate(): String? {
-		return listOfNotNull(
-			"Add a recipe title.".takeIf { titleInput.isBlank() },
-			"Add a recipe description.".takeIf { descriptionInput.isBlank() },
-			CREATE_RECIPE_INGREDIENT_NAME_REQUIRED_MESSAGE.takeIf {
-				ingredientsEditor.rows.any(::hasUnnamedIngredientContent)
-			},
-			CREATE_RECIPE_STEP_REQUIRED_MESSAGE.takeIf {
-				stepInputs.map(String::trim).none(String::isNotEmpty)
-			},
-			"Total time must be a whole number.".takeIf {
+	private fun validate(): CreateRecipeFieldErrors {
+		val unnamedIngredientIndexes = ingredientsEditor.rows.mapIndexedNotNull { index, row ->
+			index.takeIf { hasUnnamedIngredientContent(row) }
+		}
+		return CreateRecipeFieldErrors(
+			title = CREATE_RECIPE_TITLE_REQUIRED_MESSAGE.takeIf { titleInput.isBlank() },
+			description = CREATE_RECIPE_DESCRIPTION_REQUIRED_MESSAGE.takeIf { descriptionInput.isBlank() },
+			totalTime = CREATE_RECIPE_TOTAL_TIME_WHOLE_NUMBER_MESSAGE.takeIf {
 				totalTimeInput.isNotBlank() && totalTimeInput.trim().toIntOrNull() == null
 			},
-		).firstOrNull()
+			unnamedIngredientIndexes = unnamedIngredientIndexes,
+			steps = CREATE_RECIPE_STEP_REQUIRED_MESSAGE.takeIf {
+				stepInputs.map(String::trim).none(String::isNotEmpty)
+			},
+		)
 	}
 
 	private fun hasUnnamedIngredientContent(row: IngredientRowInput): Boolean {

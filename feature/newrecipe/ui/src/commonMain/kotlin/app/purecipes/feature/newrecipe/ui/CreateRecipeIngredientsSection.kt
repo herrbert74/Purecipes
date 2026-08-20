@@ -53,12 +53,16 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 internal const val INGREDIENTS_ADD_BUTTON_TAG = "createRecipeAddIngredientButton"
 internal const val INGREDIENTS_PASTE_BUTTON_TAG = "createRecipePasteIngredientsButton"
 internal const val INGREDIENTS_PASTE_FIELD_TAG = "createRecipePasteIngredientsField"
+internal const val INGREDIENT_AMOUNT_FIELD_TAG_PREFIX = "createRecipeIngredientAmountField"
 internal const val INGREDIENT_NAME_FIELD_TAG_PREFIX = "createRecipeIngredientNameField"
 internal const val INGREDIENT_ROW_TAG_PREFIX = "createRecipeIngredientRow"
+internal const val INGREDIENT_UNIT_FIELD_TAG_PREFIX = "createRecipeIngredientUnitField"
 
 @Composable
 internal fun CreateRecipeIngredientsSection(
 	ingredientRows: IngredientRowsState,
+	suggestedUnits: SuggestedIngredientUnits,
+	fieldErrors: CreateRecipeFieldErrors,
 	onRowChange: (Int, IngredientRowInput) -> Unit,
 	onAddRowClick: () -> Unit,
 	onRemoveRowClick: (Int) -> Unit,
@@ -72,6 +76,11 @@ internal fun CreateRecipeIngredientsSection(
 	val expandedRows = remember { mutableStateMapOf(0 to true) }
 	val colors = createRecipeSegmentedListColors()
 
+	LaunchedEffect(fieldErrors.unnamedIngredientIndexes) {
+		fieldErrors.unnamedIngredientIndexes.forEach { index ->
+			expandedRows[index] = true
+		}
+	}
 	LaunchedEffect(ingredientRows.items.size) {
 		if (ingredientRows.items.size > previousRowCount) {
 			expandedRows[ingredientRows.items.lastIndex] = true
@@ -104,6 +113,8 @@ internal fun CreateRecipeIngredientsSection(
 				IngredientRowEditor(
 					index = index,
 					row = row,
+					suggestedUnits = suggestedUnits,
+					nameError = fieldErrors.ingredientNameError(index),
 					expanded = expanded,
 					canRemove = ingredientRows.items.size > 1,
 					colors = colors,
@@ -146,6 +157,8 @@ internal fun CreateRecipeIngredientsSection(
 private fun IngredientRowEditor(
 	index: Int,
 	row: IngredientRowInput,
+	suggestedUnits: SuggestedIngredientUnits,
+	nameError: String?,
 	expanded: Boolean,
 	canRemove: Boolean,
 	colors: ListItemColors,
@@ -219,6 +232,8 @@ private fun IngredientRowEditor(
 				IngredientExpandedEditor(
 					index = index,
 					row = row,
+					suggestedUnits = suggestedUnits,
+					nameError = nameError,
 					onRowChange = onRowChange,
 					onAddAlternativeClick = onAddAlternativeClick,
 					onRemoveAlternativeClick = onRemoveAlternativeClick,
@@ -245,6 +260,8 @@ private fun IngredientRowEditor(
 private fun IngredientExpandedEditor(
 	index: Int,
 	row: IngredientRowInput,
+	suggestedUnits: SuggestedIngredientUnits,
+	nameError: String?,
 	onRowChange: (IngredientRowInput) -> Unit,
 	onAddAlternativeClick: () -> Unit,
 	onRemoveAlternativeClick: (Int) -> Unit,
@@ -261,7 +278,11 @@ private fun IngredientExpandedEditor(
 	) {
 		IngredientPartFields(
 			part = row.primary,
+			suggestedUnits = suggestedUnits,
+			amountTestTag = "$INGREDIENT_AMOUNT_FIELD_TAG_PREFIX$index",
 			nameTestTag = "$INGREDIENT_NAME_FIELD_TAG_PREFIX$index",
+			unitTestTag = "$INGREDIENT_UNIT_FIELD_TAG_PREFIX$index",
+			nameError = nameError,
 			onPartChange = { primary -> onRowChange(row.copy(primary = primary)) },
 		)
 		row.alternatives.forEachIndexed { altIndex, alternative ->
@@ -273,7 +294,10 @@ private fun IngredientExpandedEditor(
 			)
 			IngredientPartFields(
 				part = alternative,
+				suggestedUnits = suggestedUnits,
+				amountTestTag = "${INGREDIENT_AMOUNT_FIELD_TAG_PREFIX}${index}Alt$altIndex",
 				nameTestTag = "${INGREDIENT_NAME_FIELD_TAG_PREFIX}${index}Alt$altIndex",
+				unitTestTag = "${INGREDIENT_UNIT_FIELD_TAG_PREFIX}${index}Alt$altIndex",
 				onPartChange = { updated ->
 					val alternatives = row.alternatives.toMutableList()
 					alternatives[altIndex] = updated
@@ -298,55 +322,64 @@ private fun IngredientExpandedEditor(
 @Composable
 private fun IngredientPartFields(
 	part: IngredientPartInput,
+	suggestedUnits: SuggestedIngredientUnits,
+	amountTestTag: String,
 	nameTestTag: String,
+	unitTestTag: String,
 	onPartChange: (IngredientPartInput) -> Unit,
 	trailing: @Composable (() -> Unit)? = null,
+	nameError: String? = null,
 ) {
-	Row(
+	Column(
 		modifier = Modifier.fillMaxWidth(),
-		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-		verticalAlignment = Alignment.CenterVertically,
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		OutlinedTextField(
-			value = part.amount,
-			onValueChange = { nextAmount ->
-				if (IngredientRowComposer.isAllowedAmountInput(nextAmount)) {
-					onPartChange(part.copy(amount = nextAmount))
-				}
-			},
-			modifier = Modifier.weight(1f),
-			label = { IngredientFieldLabel(text = "Amount") },
-			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-			singleLine = true,
-		)
-		OutlinedTextField(
-			value = part.unit,
-			onValueChange = { onPartChange(part.copy(unit = it)) },
-			modifier = Modifier.weight(1f),
-			label = { IngredientFieldLabel(text = "Unit") },
-			singleLine = true,
-		)
-		OutlinedTextField(
-			value = part.name,
-			onValueChange = { onPartChange(part.copy(name = it)) },
-			modifier = Modifier
-				.weight(2f)
-				.testTag(nameTestTag),
-			label = { IngredientFieldLabel(text = "Ingredient") },
-			singleLine = true,
-		)
-		trailing?.invoke()
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalAlignment = Alignment.CenterVertically,
+		) {
+			DenseOutlinedTextField(
+				value = part.amount,
+				onValueChange = { nextAmount ->
+					if (IngredientRowComposer.isAllowedAmountInput(nextAmount)) {
+						onPartChange(part.copy(amount = nextAmount))
+					}
+				},
+				modifier = Modifier
+					.weight(1f)
+					.testTag(amountTestTag),
+				label = { Text(text = "Amount") },
+				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+			)
+			IngredientUnitField(
+				value = part.unit,
+				suggestedUnits = suggestedUnits,
+				onValueChange = { onPartChange(part.copy(unit = it)) },
+				modifier = Modifier.weight(1f),
+				testTag = unitTestTag,
+			)
+		}
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			verticalAlignment = Alignment.CenterVertically,
+		) {
+			DenseOutlinedTextField(
+				value = part.name,
+				onValueChange = { onPartChange(part.copy(name = it)) },
+				modifier = Modifier
+					.weight(1f)
+					.testTag(nameTestTag),
+				label = { Text(text = "Ingredient") },
+				isError = nameError != null,
+				supportingText = nameError?.let { message ->
+					{ Text(text = message) }
+				},
+			)
+			trailing?.invoke()
+		}
 	}
-}
-
-@Composable
-private fun IngredientFieldLabel(text: String) {
-	Text(
-		text = text,
-		maxLines = 1,
-		softWrap = false,
-		overflow = TextOverflow.Ellipsis,
-	)
 }
 
 @Composable
@@ -410,6 +443,10 @@ private fun CreateRecipeIngredientsSectionPreview() {
 					),
 				),
 			),
+			suggestedUnits = SuggestedIngredientUnits(
+				items = listOf("g", "kg", "ml", "l"),
+			),
+			fieldErrors = CreateRecipeFieldErrors(),
 			onRowChange = { _, _ -> },
 			onAddRowClick = {},
 			onRemoveRowClick = {},

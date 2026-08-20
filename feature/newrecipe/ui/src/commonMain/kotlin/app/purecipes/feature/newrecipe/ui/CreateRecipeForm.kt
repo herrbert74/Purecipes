@@ -22,10 +22,12 @@ internal fun CreateRecipeForm(
 	selectedCuisine: Cuisine?,
 	descriptionInput: String,
 	formErrorMessage: String?,
+	fieldErrors: CreateRecipeFieldErrors,
 	isImportingImage: Boolean,
 	imagePickerErrorMessage: String?,
 	imageUrlInput: String,
 	ingredientRows: IngredientRowsState,
+	suggestedUnits: SuggestedIngredientUnits,
 	isNutritionEstimateLoading: Boolean,
 	isSaving: Boolean,
 	nutritionEstimate: NutritionSummary?,
@@ -85,6 +87,9 @@ internal fun CreateRecipeForm(
 				onYieldsChange = onYieldsChange,
 				onIsPrivateChange = onIsPrivateChange,
 				onPrivacyLockedClick = onPrivacyLockedClick,
+				titleError = fieldErrors.title,
+				descriptionError = fieldErrors.description,
+				totalTimeError = fieldErrors.totalTime,
 			)
 
 			CreateRecipeSection.Ingredients -> Column(
@@ -92,6 +97,8 @@ internal fun CreateRecipeForm(
 			) {
 				CreateRecipeIngredientsSection(
 					ingredientRows = ingredientRows,
+					suggestedUnits = suggestedUnits,
+					fieldErrors = fieldErrors,
 					onRowChange = onIngredientRowChange,
 					onAddRowClick = onAddIngredientClick,
 					onRemoveRowClick = onRemoveIngredientClick,
@@ -107,6 +114,7 @@ internal fun CreateRecipeForm(
 
 			CreateRecipeSection.Steps -> CreateRecipeStepsSection(
 				stepInputs = stepInputs,
+				stepsError = fieldErrors.steps,
 				onAddStepClick = onAddStepClick,
 				onMoveStep = onMoveStep,
 				onMoveStepUp = onMoveStepUp,
@@ -166,6 +174,7 @@ private fun CreateRecipeFormLightPreview() {
 					selectedCuisine = Cuisine.ITALIAN,
 					descriptionInput = "A quick weeknight dinner with pantry staples.",
 					formErrorMessage = null,
+					fieldErrors = CreateRecipeFieldErrors(),
 					isImportingImage = false,
 					imagePickerErrorMessage = null,
 					imageUrlInput = "",
@@ -185,6 +194,9 @@ private fun CreateRecipeFormLightPreview() {
 								),
 							),
 						),
+					),
+					suggestedUnits = SuggestedIngredientUnits(
+						items = listOf("g", "kg", "ml", "l"),
 					),
 					isNutritionEstimateLoading = false,
 					isSaving = false,

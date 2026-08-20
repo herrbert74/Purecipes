@@ -33,6 +33,7 @@ internal const val STEP_ADD_BUTTON_TAG = "createRecipeAddStepButton"
 @Composable
 internal fun CreateRecipeStepsSection(
 	stepInputs: StepInputsState,
+	stepsError: String?,
 	onAddStepClick: () -> Unit,
 	onMoveStep: (Int, Int) -> Unit,
 	onMoveStepUp: (Int) -> Unit,
@@ -50,6 +51,11 @@ internal fun CreateRecipeStepsSection(
 	val colors = createRecipeSegmentedListColors()
 	var focusNewStep by remember { mutableStateOf(false) }
 
+	LaunchedEffect(stepsError) {
+		if (stepsError != null) {
+			expandedSteps[0] = true
+		}
+	}
 	LaunchedEffect(stepInputs.items.size) {
 		if (stepInputs.items.size > previousStepCount) {
 			expandedSteps[stepInputs.items.lastIndex] = true
@@ -79,6 +85,7 @@ internal fun CreateRecipeStepsSection(
 					index = index,
 					stepInput = stepInput,
 					expanded = expanded,
+					errorMessage = stepsError.takeIf { index == 0 },
 					canMoveUp = index > 0,
 					canMoveDown = index < stepInputs.items.lastIndex,
 					canRemove = stepInputs.items.size > 1,
@@ -159,6 +166,7 @@ private fun CreateRecipeStepsSectionPreview() {
 					"Cook the pasta until al dente.",
 				),
 			),
+			stepsError = null,
 			onAddStepClick = {},
 			onMoveStep = { _, _ -> },
 			onMoveStepUp = {},
