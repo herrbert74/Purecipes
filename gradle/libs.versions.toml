@@ -270,16 +270,17 @@ jetbrains-androidXLifecycleViewmodelCompose = { module = "org.jetbrains.androidx
 jetbrains-androidXNavigation3Runtime = { module = "org.jetbrains.androidx.navigation3:navigation3-runtime", version.ref = "jetbrains-navigation3" }
 jetbrains-androidXNavigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-navigation3" }
 
+jetbrains-composeBackhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "jetBrains-compose" }
 jetbrains-composeFoundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetBrains-compose" }
 jetbrains-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version.ref ="jetbrains-composeMaterial3" }
-jetbrains-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetBrains-compose" }
-jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetBrains-compose" }
+jetbrains-composeMaterial3AdaptiveNavigationSuite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "jetbrains-composeMaterial3" }
+jetbrains-composeMaterial3WindowSizeClass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "jetbrains-composeMaterial3" }
 jetbrains-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }
 jetbrains-composeResources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "jetBrains-compose" }
-jetbrains-composeMaterial3WindowSizeClass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "jetBrains-compose" }
+jetbrains-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "jetBrains-compose" }
+jetbrains-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetBrains-compose" }
 jetbrains-composeUiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "jetBrains-compose" }
 jetbrains-composeUiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "jetBrains-compose" }
-jetbrains-composeBackhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "jetBrains-compose" }
 
 jUnit = { group = "junit", name = "junit", version.ref = "jUnit" }
 jUnit5-jupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit5" }

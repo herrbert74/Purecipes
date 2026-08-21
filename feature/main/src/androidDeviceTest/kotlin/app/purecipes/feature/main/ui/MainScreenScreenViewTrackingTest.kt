@@ -2,12 +2,6 @@ package app.purecipes.feature.main.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
@@ -156,32 +150,14 @@ class MainScreenScreenViewTrackingTest {
 						}
 					},
 				)
-				Scaffold(
-					modifier = Modifier.fillMaxSize(),
-					bottomBar = {
-						NavigationBar {
-							mainTabs.forEach { tab ->
-								NavigationBarItem(
-									selected = tab.stackId == mainViewModel.selectedTab.stackId,
-									onClick = { mainViewModel.onTabSelected(tab) },
-									icon = {
-										Icon(
-											imageVector = tab.icon,
-											contentDescription = tab.label,
-										)
-									},
-									label = { Text(text = tab.label) },
-								)
-							}
-						}
-					},
-				) { innerPadding ->
+				MainNavigationSuiteScaffold(
+					selectedTab = mainViewModel.selectedTab,
+					onTabSelect = mainViewModel::onTabSelected,
+				) {
 					key(mainViewModel.selectedTab.stackId) {
 						NavDisplay(
 							backStack = tabBackStack,
-							modifier = Modifier
-								.fillMaxSize()
-								.padding(innerPadding),
+							modifier = Modifier.fillMaxSize(),
 							entryProvider = entryProvider {
 								entry<SearchDestination> {
 									RecipeSearchScreen(

@@ -1,17 +1,15 @@
 package app.purecipes.adaptive
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,26 +39,24 @@ internal fun FormFactorMainShellContent(
 	selectedTabIndex: Int = 0,
 ) {
 	PurecipesTheme(darkTheme = darkTheme) {
-		Scaffold(
+		NavigationSuiteScaffold(
 			modifier = modifier.fillMaxSize(),
-			bottomBar = {
-				NavigationBar {
-					formFactorMainTabs.forEachIndexed { index, tab ->
-						NavigationBarItem(
-							selected = index == selectedTabIndex,
-							onClick = {},
-							icon = {
-								Icon(
-									imageVector = tab.icon,
-									contentDescription = tab.label,
-								)
-							},
-							label = { Text(text = tab.label) },
-						)
-					}
+			navigationItems = {
+				formFactorMainTabs.forEachIndexed { index, tab ->
+					NavigationSuiteItem(
+						selected = index == selectedTabIndex,
+						onClick = {},
+						icon = {
+							Icon(
+								imageVector = tab.icon,
+								contentDescription = tab.label,
+							)
+						},
+						label = { Text(text = tab.label) },
+					)
 				}
 			},
-		) { innerPadding ->
+		) {
 			RecipeSearchScreenContent(
 				darkTheme = darkTheme,
 				isSearchExpanded = false,
@@ -70,7 +66,6 @@ internal fun FormFactorMainShellContent(
 				errorMessage = null,
 				totalMatches = totalMatches,
 				recipes = recipes,
-				modifier = Modifier.padding(innerPadding),
 			)
 		}
 	}
