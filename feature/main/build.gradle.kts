@@ -53,6 +53,7 @@ kotlin {
 				implementation(project(":feature:settings:ui"))
 				implementation(project(":feature:subscription:ui"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
+				implementation(libs.jetbrains.composeMaterial3AdaptiveNavigationSuite)
 				implementation(libs.kotlinx.serializationJson)
 			}
 		}

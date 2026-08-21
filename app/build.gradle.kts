@@ -200,6 +200,7 @@ dependencies {
 	screenshotTestImplementation(libs.androidx.composeUiTooling)
 	screenshotTestImplementation(libs.androidx.core)
 	screenshotTestImplementation(libs.coil.compose)
+	screenshotTestImplementation(libs.jetbrains.composeMaterial3AdaptiveNavigationSuite)
 	screenshotTestImplementation(libs.kotlinx.collectionsImmutable)
 	screenshotTestImplementation(libs.screenshot.validationApi)
 }

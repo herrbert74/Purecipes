@@ -1,15 +1,6 @@
 package app.purecipes.feature.main.ui
 
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -101,35 +92,14 @@ private fun MainScreenContent(
 					},
 				)
 
-				Scaffold(
-					modifier = Modifier.fillMaxSize(),
-					contentWindowInsets = ScaffoldDefaults.contentWindowInsets.only(
-						WindowInsetsSides.Bottom,
-					),
-					bottomBar = {
-						NavigationBar {
-							mainTabs.forEach { tab ->
-								NavigationBarItem(
-									selected = tab.stackId == viewModel.selectedTab.stackId,
-									onClick = { viewModel.onTabSelected(tab) },
-									icon = {
-										Icon(
-											imageVector = tab.icon,
-											contentDescription = tab.label,
-										)
-									},
-									label = { Text(text = tab.label) },
-								)
-							}
-						}
-					},
-				) { innerPadding ->
+				MainNavigationSuiteScaffold(
+					selectedTab = viewModel.selectedTab,
+					onTabSelect = viewModel::onTabSelected,
+				) {
 					key(viewModel.selectedTab.stackId) {
 						NavDisplay(
 							backStack = tabBackStack,
-							modifier = Modifier
-								.fillMaxSize()
-								.padding(innerPadding),
+							modifier = Modifier.fillMaxSize(),
 							entryProvider = entryProvider {
 								installSearchFlow(
 									isSignedIn = authenticationState is AuthenticationState.SignedIn,
