@@ -37,37 +37,44 @@ fun RecipeSearchScreenContent(
 		Column(
 			modifier = modifier
 				.fillMaxSize()
-				.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top))
-				.padding(PurecipesTheme.space.m),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+				.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)),
 		) {
-			if (!isSearchExpanded) {
-				searchFilterNote?.let { note ->
+			Column(
+				modifier = Modifier.padding(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+				),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			) {
+				if (!isSearchExpanded) {
+					searchFilterNote?.let { note ->
+						Text(
+							text = note,
+							modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+							style = PurecipesTheme.typography.bodyMedium,
+							color = PurecipesTheme.colorScheme.onSurfaceVariant,
+						)
+					}
+				}
+				RecipeSearchHeader(
+					isSearchBarActive = isSearchExpanded,
+					searchQuery = searchQuery,
+					hasActiveFilters = hasActiveFilters,
+					onFilterClick = {},
+					onExpandSearch = {},
+					onCloseSearch = {},
+					onSearchQueryChange = {},
+					onSearchImeSearch = {},
+					onClearSearchText = {},
+				)
+				if (isSearchExpanded) {
 					Text(
-						text = note,
-						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-						style = PurecipesTheme.typography.bodyMedium,
+						text = RECIPE_SEARCH_HELPER,
+						style = PurecipesTheme.typography.labelMedium,
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
 				}
-			}
-			RecipeSearchHeader(
-				isSearchBarActive = isSearchExpanded,
-				searchQuery = searchQuery,
-				hasActiveFilters = hasActiveFilters,
-				onFilterClick = {},
-				onExpandSearch = {},
-				onCloseSearch = {},
-				onSearchQueryChange = {},
-				onSearchImeSearch = {},
-				onClearSearchText = {},
-			)
-			if (isSearchExpanded) {
-				Text(
-					text = RECIPE_SEARCH_HELPER,
-					style = PurecipesTheme.typography.labelMedium,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
 			}
 			val recipeList = remember(recipes) {
 				mutableStateListOf<RecipeSummary>().apply { addAll(recipes) }
@@ -89,7 +96,9 @@ fun RecipeSearchScreenContent(
 				paginationState = paginationState,
 				recipes = recipeList,
 				onRecipeSelect = {},
-				modifier = Modifier.weight(1f),
+				modifier = Modifier
+					.weight(1f)
+					.padding(top = PurecipesTheme.space.s),
 			)
 		}
 	}

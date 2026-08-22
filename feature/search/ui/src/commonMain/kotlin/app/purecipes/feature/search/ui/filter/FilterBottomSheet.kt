@@ -1,20 +1,16 @@
 package app.purecipes.feature.search.ui.filter
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ModalBottomSheet
@@ -24,17 +20,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,13 +42,13 @@ import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.NutritionFilter
 import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.shared.ui.component.VerticalScrollbar
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 
-private const val SCROLLBAR_MIN_THUMB_FRACTION = 0.1f
 private const val FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP = 720
 private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_LARGE = 0.8f
 private const val FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL = 0.9f
@@ -450,51 +441,6 @@ private fun FilterLoginRequiredContent(
 		) {
 			Text("Go to Account")
 		}
-	}
-}
-
-@Composable
-private fun VerticalScrollbar(state: LazyListState, modifier: Modifier = Modifier) {
-	val thumbFractions by remember {
-		derivedStateOf {
-			val layoutInfo = state.layoutInfo
-			val totalItems = layoutInfo.totalItemsCount
-			val visibleItems = layoutInfo.visibleItemsInfo
-			if (totalItems == 0 || visibleItems.isEmpty()) return@derivedStateOf null
-			val viewportH = (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset).toFloat()
-			if (viewportH <= 0f) return@derivedStateOf null
-			val firstItem = visibleItems.first()
-			val lastItem = visibleItems.last()
-			val avgH = if (visibleItems.size > 1) {
-				(lastItem.offset + lastItem.size - firstItem.offset).toFloat() / visibleItems.size
-			} else {
-				firstItem.size.toFloat()
-			}
-			val totalH = totalItems * avgH
-			if (totalH <= viewportH) return@derivedStateOf null
-			val thumbH = (viewportH / totalH).coerceIn(SCROLLBAR_MIN_THUMB_FRACTION, 1f)
-			val scrolled = firstItem.index * avgH - firstItem.offset.toFloat()
-			val maxScroll = totalH - viewportH
-			val thumbStart = if (maxScroll > 0f) {
-				(scrolled / maxScroll * (1f - thumbH)).coerceIn(0f, 1f - thumbH)
-			} else {
-				0f
-			}
-			thumbStart to thumbStart + thumbH
-		}
-	}
-	val (thumbStart, thumbEnd) = thumbFractions ?: return
-	Canvas(
-		modifier = modifier
-			.fillMaxHeight()
-			.width(6.dp),
-	) {
-		drawRoundRect(
-			color = Color.Gray.copy(alpha = 0.4f),
-			topLeft = Offset(1.dp.toPx(), size.height * thumbStart),
-			size = Size(4.dp.toPx(), size.height * (thumbEnd - thumbStart)),
-			cornerRadius = CornerRadius(2.dp.toPx()),
-		)
 	}
 }
 

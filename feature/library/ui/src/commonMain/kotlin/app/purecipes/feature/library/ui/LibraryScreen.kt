@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -12,6 +13,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,6 +24,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.feature.ads.ui.BannerAdViewModel
@@ -37,6 +41,7 @@ import kotlinx.collections.immutable.toImmutableList
 
 internal const val LIBRARY_TITLE_TAG = "libraryTitle"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
 	modifier: Modifier = Modifier,
@@ -88,11 +93,17 @@ fun LibraryScreen(
 		snackbarHostState.showSnackbar(message)
 	}
 
+	val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+		rememberTopAppBarState(),
+	)
 	Scaffold(
-		modifier = modifier.fillMaxSize(),
+		modifier = modifier
+			.fillMaxSize()
+			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
 				title = { Text(text = "Library", modifier = Modifier.testTag(LIBRARY_TITLE_TAG)) },
+				scrollBehavior = topAppBarScrollBehavior,
 			)
 		},
 		snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

@@ -3,7 +3,9 @@ package app.purecipes.shared.ui.component.paging
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -12,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.component.VerticalScrollbar
 
 /**
  * Copied from: [https://github.com/Ahmad-Hamwi/lazy-pagination-compose]
@@ -20,6 +23,7 @@ import androidx.compose.ui.unit.dp
 fun <KEY, T> PaginatedLazyColumn(
 	paginationState: PaginationState<KEY, T>,
 	modifier: Modifier = Modifier,
+	lazyModifier: Modifier = Modifier,
 	firstPageProgressIndicator: @Composable () -> Unit = {},
 	newPageProgressIndicator: @Composable () -> Unit = {},
 	firstPageErrorIndicator: @Composable (e: Exception) -> Unit = {},
@@ -47,19 +51,27 @@ fun <KEY, T> PaginatedLazyColumn(
 		newPageEmptyIndicator,
 		requestInitialPageAutomatically,
 	) { paginatedItemsHandler ->
-		LazyColumn(
-			modifier = modifier,
-			state = state,
-			contentPadding = contentPadding,
-			reverseLayout = reverseLayout,
-			verticalArrangement = verticalArrangement,
-			horizontalAlignment = horizontalAlignment,
-			flingBehavior = flingBehavior,
-			userScrollEnabled = userScrollEnabled,
-		) {
-			paginatedItemsHandler {
-				content()
+		Box(modifier = modifier) {
+			LazyColumn(
+				modifier = Modifier
+					.fillMaxSize()
+					.then(lazyModifier),
+				state = state,
+				contentPadding = contentPadding,
+				reverseLayout = reverseLayout,
+				verticalArrangement = verticalArrangement,
+				horizontalAlignment = horizontalAlignment,
+				flingBehavior = flingBehavior,
+				userScrollEnabled = userScrollEnabled,
+			) {
+				paginatedItemsHandler {
+					content()
+				}
 			}
+			VerticalScrollbar(
+				state = state,
+				modifier = Modifier.align(Alignment.CenterEnd),
+			)
 		}
 	}
 }

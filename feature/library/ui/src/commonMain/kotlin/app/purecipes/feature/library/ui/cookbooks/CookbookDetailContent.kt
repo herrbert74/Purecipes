@@ -14,11 +14,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,10 +55,16 @@ internal fun CookbookDetailContent(
 	showBackNavigation: Boolean = true,
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
+	val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+		rememberTopAppBarState(),
+	)
 	Scaffold(
-		modifier = modifier.fillMaxSize(),
+		modifier = modifier
+			.fillMaxSize()
+			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
+				scrollBehavior = topAppBarScrollBehavior,
 				title = {
 					Row(
 						verticalAlignment = Alignment.CenterVertically,
