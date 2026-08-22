@@ -2,6 +2,7 @@ package app.purecipes.feature.main.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.library.ui.LibraryListDetailPlaceholder
 import app.purecipes.feature.library.ui.LibraryScreen
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
@@ -24,6 +26,7 @@ import app.purecipes.feature.recipedetails.ui.RECIPE_DETAILS_CONTENT_TAG
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsScreen
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.RecipeSearchScreen
+import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -97,6 +100,7 @@ class MainScreenHardwareBackTest {
 					mainViewModel.start()
 				}
 				val tabBackStack = mainViewModel.rememberActiveTabBackStack()
+				val listDetailSceneStrategy = rememberMainListDetailSceneStrategy()
 				TrackActiveScreenViews(
 					selectedTab = mainViewModel.selectedTab,
 					backStack = tabBackStack,
@@ -120,8 +124,13 @@ class MainScreenHardwareBackTest {
 						NavDisplay(
 							backStack = tabBackStack,
 							modifier = Modifier.fillMaxSize(),
+							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
-								entry<SearchDestination> {
+								entry<SearchDestination>(
+									metadata = ListDetailSceneStrategy.listPane(
+										detailPlaceholder = { SearchListDetailPlaceholder() },
+									),
+								) {
 									RecipeSearchScreen(
 										modifier = Modifier.fillMaxSize(),
 										isSignedIn = true,
@@ -130,7 +139,9 @@ class MainScreenHardwareBackTest {
 										viewModel = searchViewModel,
 									)
 								}
-								entry<RecipeDetailsDestination> { destination ->
+								entry<RecipeDetailsDestination>(
+									metadata = ListDetailSceneStrategy.detailPane(),
+								) { destination ->
 									RecipeDetailsScreen(
 										recipeId = destination.recipeId,
 										canManageFavorites = true,
@@ -140,7 +151,11 @@ class MainScreenHardwareBackTest {
 										viewModel = recipeDetailsViewModel,
 									)
 								}
-								entry<LibraryDestination> {
+								entry<LibraryDestination>(
+									metadata = ListDetailSceneStrategy.listPane(
+										detailPlaceholder = { LibraryListDetailPlaceholder() },
+									),
+								) {
 									LibraryScreen(
 										modifier = Modifier.fillMaxSize(),
 										sessionKey = "hardware-back-test",

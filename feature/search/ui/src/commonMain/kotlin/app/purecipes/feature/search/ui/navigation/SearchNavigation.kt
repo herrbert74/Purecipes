@@ -1,11 +1,13 @@
 package app.purecipes.feature.search.ui.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.search.ui.RecipeSearchScreen
+import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -18,7 +20,11 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 	onRequestLogInForFilters: () -> Unit,
 	onOpenPaywall: (String) -> Unit,
 ) {
-	entry<SearchDestination> { destination ->
+	entry<SearchDestination>(
+		metadata = ListDetailSceneStrategy.listPane(
+			detailPlaceholder = { SearchListDetailPlaceholder() },
+		),
+	) { destination ->
 		RecipeSearchScreen(
 			initialShowFilterSheet = destination.openFiltersOnStart,
 			isSignedIn = isSignedIn,

@@ -1,10 +1,12 @@
 package app.purecipes.feature.library.ui.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.ads.ui.BannerAdViewModel
+import app.purecipes.feature.library.ui.LibraryListDetailPlaceholder
 import app.purecipes.feature.library.ui.LibraryScreen
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.serialization.modules.SerializersModule
@@ -18,7 +20,11 @@ fun EntryProviderScope<NavKey>.installLibraryFlow(
 	onEditCreatedRecipe: (Int) -> Unit,
 	onRequestLogIn: () -> Unit,
 ) {
-	entry<LibraryDestination> { destination ->
+	entry<LibraryDestination>(
+		metadata = ListDetailSceneStrategy.listPane(
+			detailPlaceholder = { LibraryListDetailPlaceholder() },
+		),
+	) { destination ->
 		LibraryScreen(
 			modifier = Modifier.fillMaxSize(),
 			sessionKey = sessionKey,

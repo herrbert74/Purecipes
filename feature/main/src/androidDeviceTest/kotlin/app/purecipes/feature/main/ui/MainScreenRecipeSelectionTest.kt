@@ -2,6 +2,7 @@ package app.purecipes.feature.main.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -17,6 +18,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
 import app.purecipes.feature.search.ui.RecipeSearchScreen
+import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -62,6 +64,7 @@ class MainScreenRecipeSelectionTest {
 						mainViewModel.start()
 					}
 					val tabBackStack = mainViewModel.rememberActiveTabBackStack()
+					val listDetailSceneStrategy = rememberMainListDetailSceneStrategy()
 					NavigationBackHandler(
 						enabled = true,
 						backStackDepth = tabBackStack.size,
@@ -71,8 +74,13 @@ class MainScreenRecipeSelectionTest {
 						NavDisplay(
 							backStack = tabBackStack,
 							modifier = Modifier.fillMaxSize(),
+							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
-								entry<SearchDestination> {
+								entry<SearchDestination>(
+									metadata = ListDetailSceneStrategy.listPane(
+										detailPlaceholder = { SearchListDetailPlaceholder() },
+									),
+								) {
 									RecipeSearchScreen(
 										modifier = Modifier.fillMaxSize(),
 										isSignedIn = true,
