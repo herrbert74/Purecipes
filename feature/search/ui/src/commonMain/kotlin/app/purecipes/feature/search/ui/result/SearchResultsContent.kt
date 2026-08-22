@@ -79,9 +79,8 @@ internal fun SearchResultsContent(
 		else -> PaginatedLazyVerticalGrid(
 			paginationState = paginationState,
 			requestInitialPageAutomatically = false,
-			modifier = modifier
-				.fillMaxWidth()
-				.testTag(SEARCH_RESULTS_LIST_TAG),
+			modifier = modifier.fillMaxWidth(),
+			lazyModifier = Modifier.testTag(SEARCH_RESULTS_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(

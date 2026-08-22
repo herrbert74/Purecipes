@@ -37,6 +37,7 @@ fun <KEY, T> PaginatedLazyColumn(
 	horizontalAlignment: Alignment.Horizontal = Alignment.Start,
 	flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
 	userScrollEnabled: Boolean = true,
+	lazyModifier: Modifier = Modifier,
 	content: LazyListScope.() -> Unit,
 ) {
 	PaginatedLazyScrollable<KEY, T, LazyListState, LazyListScope>(
@@ -52,7 +53,9 @@ fun <KEY, T> PaginatedLazyColumn(
 	) { paginatedItemsHandler ->
 		Box(modifier = modifier) {
 			LazyColumn(
-				modifier = Modifier.fillMaxSize(),
+				modifier = Modifier
+					.fillMaxSize()
+					.then(lazyModifier),
 				state = state,
 				contentPadding = contentPadding,
 				reverseLayout = reverseLayout,

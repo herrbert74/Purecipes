@@ -41,6 +41,7 @@ fun <KEY, T> PaginatedLazyVerticalGrid(
 	horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
 	flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
 	userScrollEnabled: Boolean = true,
+	lazyModifier: Modifier = Modifier,
 	content: LazyGridScope.() -> Unit,
 ) {
 	PaginatedLazyScrollable<KEY, T, LazyGridState, LazyGridScope>(
@@ -57,7 +58,9 @@ fun <KEY, T> PaginatedLazyVerticalGrid(
 		Box(modifier = modifier) {
 			LazyVerticalGrid(
 				columns = columns,
-				modifier = Modifier.fillMaxSize(),
+				modifier = Modifier
+					.fillMaxSize()
+					.then(lazyModifier),
 				state = state,
 				contentPadding = contentPadding,
 				reverseLayout = reverseLayout,
