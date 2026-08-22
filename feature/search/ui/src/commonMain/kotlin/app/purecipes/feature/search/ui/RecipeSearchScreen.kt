@@ -89,43 +89,50 @@ fun RecipeSearchScreen(
 	Column(
 		modifier = modifier
 			.fillMaxSize()
-			.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top))
-			.padding(PurecipesTheme.space.m),
-		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)),
 	) {
-		if (!viewModel.isSearchBarActive) {
-			viewModel.searchFilterNote?.let { note ->
+		Column(
+			modifier = Modifier.padding(
+				start = PurecipesTheme.space.m,
+				top = PurecipesTheme.space.m,
+				end = PurecipesTheme.space.m,
+			),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		) {
+			if (!viewModel.isSearchBarActive) {
+				viewModel.searchFilterNote?.let { note ->
+					Text(
+						text = note,
+						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+						style = PurecipesTheme.typography.bodyMedium,
+						color = PurecipesTheme.colorScheme.onSurfaceVariant,
+					)
+				}
+			}
+			RecipeSearchHeader(
+				isSearchBarActive = viewModel.isSearchBarActive,
+				searchQuery = viewModel.searchQuery,
+				hasActiveFilters = !viewModel.activeFilters.isEmpty || viewModel.keyIngredients.isNotEmpty(),
+				onFilterClick = viewModel::onFilterButtonClick,
+				onExpandSearch = { viewModel.onSearchBarExpandedChange(true) },
+				onCloseSearch = {
+					viewModel.onSearchBarExpandedChange(false)
+					closeScreen()
+				},
+				onSearchQueryChange = viewModel::onSearchQueryChange,
+				onSearchImeSearch = viewModel::searchNow,
+				onClearSearchText = {
+					viewModel.onSearchQueryChange("")
+					viewModel.searchNow()
+				},
+			)
+			if (viewModel.isSearchBarActive) {
 				Text(
-					text = note,
-					modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-					style = PurecipesTheme.typography.bodyMedium,
+					text = RECIPE_SEARCH_HELPER,
+					style = PurecipesTheme.typography.labelMedium,
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
-		}
-		RecipeSearchHeader(
-			isSearchBarActive = viewModel.isSearchBarActive,
-			searchQuery = viewModel.searchQuery,
-			hasActiveFilters = !viewModel.activeFilters.isEmpty || viewModel.keyIngredients.isNotEmpty(),
-			onFilterClick = viewModel::onFilterButtonClick,
-			onExpandSearch = { viewModel.onSearchBarExpandedChange(true) },
-			onCloseSearch = {
-				viewModel.onSearchBarExpandedChange(false)
-				closeScreen()
-			},
-			onSearchQueryChange = viewModel::onSearchQueryChange,
-			onSearchImeSearch = viewModel::searchNow,
-			onClearSearchText = {
-				viewModel.onSearchQueryChange("")
-				viewModel.searchNow()
-			},
-		)
-		if (viewModel.isSearchBarActive) {
-			Text(
-				text = RECIPE_SEARCH_HELPER,
-				style = PurecipesTheme.typography.labelMedium,
-				color = PurecipesTheme.colorScheme.onSurfaceVariant,
-			)
 		}
 		SearchResultsContent(
 			isSearching = viewModel.isSearching,
@@ -137,7 +144,9 @@ fun RecipeSearchScreen(
 			onRecipeSelect = onRecipeSelect,
 			onRetryClick = viewModel::searchNow,
 			bannerAdViewModel = bannerAdViewModel,
-			modifier = Modifier.weight(1f),
+			modifier = Modifier
+				.weight(1f)
+				.padding(top = PurecipesTheme.space.s),
 		)
 	}
 }

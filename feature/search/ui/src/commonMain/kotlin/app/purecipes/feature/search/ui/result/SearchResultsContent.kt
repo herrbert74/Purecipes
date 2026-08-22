@@ -84,7 +84,11 @@ internal fun SearchResultsContent(
 				.testTag(SEARCH_RESULTS_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
+			contentPadding = PaddingValues(
+				start = PurecipesTheme.space.m,
+				end = PurecipesTheme.space.m,
+				bottom = PurecipesTheme.space.m,
+			),
 		) {
 			item(span = { GridItemSpan(maxLineSpan) }) {
 				Text(
