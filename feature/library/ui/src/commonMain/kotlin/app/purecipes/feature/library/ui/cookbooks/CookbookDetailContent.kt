@@ -3,20 +3,16 @@ package app.purecipes.feature.library.ui.cookbooks
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -24,11 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
@@ -36,6 +34,7 @@ import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CookbookDetailContent(
 	title: String,
@@ -52,43 +51,50 @@ internal fun CookbookDetailContent(
 	showBackNavigation: Boolean = true,
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
-	Column(modifier = modifier.fillMaxSize()) {
-		Row(
-			verticalAlignment = Alignment.CenterVertically,
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-		) {
-			if (showBackNavigation) {
-				IconButton(onClick = onBack) {
-					Icon(
-						imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-						contentDescription = "Back",
+	Scaffold(
+		modifier = modifier.fillMaxSize(),
+		topBar = {
+			TopAppBar(
+				title = {
+					Row(
+						verticalAlignment = Alignment.CenterVertically,
+						horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+					) {
+						AsyncImage(
+							model = coverUrl?.trim()?.takeIf { it.isNotEmpty() },
+							contentDescription = title,
+							modifier = Modifier
+								.size(40.dp)
+								.clip(RoundedCornerShape(PurecipesTheme.space.s))
+								.background(PurecipesTheme.colorScheme.secondaryContainer),
+							contentScale = ContentScale.Crop,
+						)
+						Text(
+							text = title,
+							maxLines = 1,
+							overflow = TextOverflow.Ellipsis,
+						)
+					}
+				},
+				navigationIcon = {
+					if (showBackNavigation) {
+						BackNavigationButton(onBack = onBack)
+					}
+				},
+				actions = {
+					ShareIconButton(
+						onShare = onShare,
+						contentDescription = "Share cookbook",
 					)
-				}
-			}
-			AsyncImage(
-				model = coverUrl?.trim()?.takeIf { it.isNotEmpty() },
-				contentDescription = title,
-				modifier = Modifier
-					.size(48.dp)
-					.clip(RoundedCornerShape(PurecipesTheme.space.s))
-					.background(PurecipesTheme.colorScheme.secondaryContainer),
-				contentScale = ContentScale.Crop,
+				},
 			)
-			Text(
-				text = title,
-				style = MaterialTheme.typography.titleLarge,
-				modifier = Modifier.weight(1f),
-			)
-			ShareIconButton(
-				onShare = onShare,
-				contentDescription = "Share cookbook",
-			)
-		}
+		},
+	) { innerPadding ->
 		when {
 			errorMessage != null -> Box(
 				modifier = Modifier
 					.fillMaxSize()
+					.padding(innerPadding)
 					.padding(PurecipesTheme.space.l),
 				contentAlignment = Alignment.Center,
 			) {
@@ -97,7 +103,9 @@ internal fun CookbookDetailContent(
 
 			else -> PaginatedLazyColumn(
 				paginationState = paginationState,
-				modifier = Modifier.fillMaxSize(),
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(innerPadding),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				contentPadding = PaddingValues(PurecipesTheme.space.m),
 			) {

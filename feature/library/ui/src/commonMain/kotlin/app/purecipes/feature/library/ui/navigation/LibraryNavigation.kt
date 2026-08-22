@@ -7,8 +7,6 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.library.ui.CookbookDetailScreen
-import app.purecipes.feature.library.ui.CookbookListDetailPlaceholder
-import app.purecipes.feature.library.ui.LibraryCookbooksScreen
 import app.purecipes.feature.library.ui.LibraryListDetailPlaceholder
 import app.purecipes.feature.library.ui.LibraryScreen
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -48,33 +46,13 @@ fun EntryProviderScope<NavKey>.installLibraryFlow(
 	}
 }
 
-fun EntryProviderScope<NavKey>.installLibraryCookbooksFlow(
-	sessionKey: String?,
-	onCookbookSelect: (CookbookSummary) -> Unit,
-) {
-	entry<LibraryCookbooksDestination>(
-		metadata = ListDetailSceneStrategy.listPane(
-			sceneKey = LibraryCookbookListDetailSceneKey,
-			detailPlaceholder = { CookbookListDetailPlaceholder() },
-		),
-	) {
-		LibraryCookbooksScreen(
-			modifier = Modifier.fillMaxSize(),
-			sessionKey = sessionKey,
-			onCookbookSelect = onCookbookSelect,
-		)
-	}
-}
-
 fun EntryProviderScope<NavKey>.installCookbookDetailFlow(
 	sessionKey: String?,
 	onRecipeSelect: (Int) -> Unit,
 	onBack: () -> Unit,
 ) {
 	entry<CookbookDetailDestination>(
-		metadata = ListDetailSceneStrategy.detailPane(
-			sceneKey = LibraryCookbookListDetailSceneKey,
-		),
+		metadata = ListDetailSceneStrategy.detailPane(),
 	) { destination ->
 		CookbookDetailScreen(
 			cookbookId = destination.cookbookId,
@@ -91,7 +69,6 @@ fun EntryProviderScope<NavKey>.installCookbookDetailFlow(
 fun libraryNavigationSerializersModule(): SerializersModule = SerializersModule {
 	polymorphic(baseClass = NavKey::class) {
 		subclass(LibraryDestination.serializer())
-		subclass(LibraryCookbooksDestination.serializer())
 		subclass(CookbookDetailDestination.serializer())
 	}
 }

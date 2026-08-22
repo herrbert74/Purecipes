@@ -2,8 +2,9 @@ package app.purecipes.feature.main.ui
 
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
-import app.purecipes.feature.library.ui.navigation.LibraryCookbooksDestination
+import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.shared.domain.model.CookbookSummary
 
 internal class LibraryTabNavigator(
@@ -12,10 +13,11 @@ internal class LibraryTabNavigator(
 
 	fun openCookbookDetail(cookbookId: Int, name: String) {
 		val stack = stackFor(MainTabStackId.Library)
-		if (stack.none { it is LibraryCookbooksDestination }) {
-			stack += LibraryCookbooksDestination
-		}
-		while (stack.lastOrNull() is CookbookDetailDestination) {
+		while (
+			stack.lastOrNull() is CookbookDetailDestination ||
+			stack.lastOrNull() is RecipeDetailsDestination ||
+			stack.lastOrNull() is RecipeCookingDestination
+		) {
 			stack.removeAt(stack.lastIndex)
 		}
 		stack += CookbookDetailDestination(

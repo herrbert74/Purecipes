@@ -8,7 +8,6 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
-import app.purecipes.feature.library.ui.navigation.LibraryCookbooksDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
@@ -285,8 +284,25 @@ class MainViewModelTest {
 
 		viewModel.peekBackStack() shouldBe listOf(
 			LibraryDestination(),
-			LibraryCookbooksDestination,
 			CookbookDetailDestination(cookbookId = 10, name = "Weeknight Dinners"),
 		)
+	}
+
+	@Test
+	fun `back from cookbook detail returns to library root`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
+		viewModel.libraryTabNavigator.openCookbook(
+			CookbookSummary(
+				id = 10,
+				name = "Weeknight Dinners",
+				recipeCount = 4,
+				updatedAtEpochMillis = 0L,
+			),
+		)
+
+		viewModel.onBack() shouldBe true
+
+		viewModel.peekBackStack() shouldBe listOf(LibraryDestination())
 	}
 }

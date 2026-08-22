@@ -18,7 +18,6 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
 import app.purecipes.feature.library.ui.navigation.installCookbookDetailFlow
-import app.purecipes.feature.library.ui.navigation.installLibraryCookbooksFlow
 import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
@@ -156,10 +155,6 @@ private fun MainScreenContent(
 											PostLoginAction.OpenFavoritesMyRecipes,
 										)
 									},
-								)
-								installLibraryCookbooksFlow(
-									sessionKey = sessionKey,
-									onCookbookSelect = viewModel.libraryTabNavigator::openCookbook,
 								)
 								installCookbookDetailFlow(
 									sessionKey = sessionKey,
