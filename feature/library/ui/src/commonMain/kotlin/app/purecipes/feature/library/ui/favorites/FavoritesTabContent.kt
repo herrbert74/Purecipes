@@ -5,8 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Text
@@ -21,7 +20,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
+import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -53,13 +52,14 @@ internal fun FavoritesTabContent(
 			modifier = modifier,
 		)
 
-		else -> PaginatedLazyColumn(
+		else -> PaginatedLazyVerticalGrid(
 			paginationState = paginationState,
 			modifier = modifier.fillMaxSize(),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(PurecipesTheme.space.m),
 		) {
-			item {
+			item(span = { GridItemSpan(maxLineSpan) }) {
 				Text(
 					text = "$totalMatches saved recipes",
 					style = PurecipesTheme.typography.labelMedium,

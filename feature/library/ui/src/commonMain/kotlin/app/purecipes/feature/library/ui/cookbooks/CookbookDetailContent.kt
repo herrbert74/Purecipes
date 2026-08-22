@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -29,7 +30,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
+import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
@@ -101,15 +102,16 @@ internal fun CookbookDetailContent(
 				ErrorText(text = errorMessage, textAlign = TextAlign.Center)
 			}
 
-			else -> PaginatedLazyColumn(
+			else -> PaginatedLazyVerticalGrid(
 				paginationState = paginationState,
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				contentPadding = PaddingValues(PurecipesTheme.space.m),
 			) {
-				item {
+				item(span = { GridItemSpan(maxLineSpan) }) {
 					Text(
 						text = "$totalMatches recipes",
 						style = PurecipesTheme.typography.labelMedium,

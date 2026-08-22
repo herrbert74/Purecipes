@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
@@ -31,7 +32,7 @@ import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
+import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -75,16 +76,17 @@ internal fun SearchResultsContent(
 			}
 		}
 
-		else -> PaginatedLazyColumn(
+		else -> PaginatedLazyVerticalGrid(
 			paginationState = paginationState,
 			requestInitialPageAutomatically = false,
 			modifier = modifier
 				.fillMaxWidth()
 				.testTag(SEARCH_RESULTS_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
 		) {
-			item {
+			item(span = { GridItemSpan(maxLineSpan) }) {
 				Text(
 					text = "$totalMatches recipes found",
 					style = PurecipesTheme.typography.labelMedium,
@@ -105,7 +107,7 @@ internal fun SearchResultsContent(
 				}
 			}
 			if (nearMissRecipes.isNotEmpty()) {
-				item {
+				item(span = { GridItemSpan(maxLineSpan) }) {
 					NearMissSearchResults(
 						nearMissRecipes = nearMissRecipes,
 						onRecipeSelect = onRecipeSelect,
