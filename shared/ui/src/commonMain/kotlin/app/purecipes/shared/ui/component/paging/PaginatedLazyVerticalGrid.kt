@@ -26,6 +26,7 @@ import app.purecipes.shared.ui.component.VerticalScrollbar
 fun <KEY, T> PaginatedLazyVerticalGrid(
 	paginationState: PaginationState<KEY, T>,
 	modifier: Modifier = Modifier,
+	lazyModifier: Modifier = Modifier,
 	columns: GridCells = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
 	firstPageProgressIndicator: @Composable () -> Unit = {},
 	newPageProgressIndicator: @Composable () -> Unit = {},
@@ -41,7 +42,6 @@ fun <KEY, T> PaginatedLazyVerticalGrid(
 	horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
 	flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
 	userScrollEnabled: Boolean = true,
-	lazyModifier: Modifier = Modifier,
 	content: LazyGridScope.() -> Unit,
 ) {
 	PaginatedLazyScrollable<KEY, T, LazyGridState, LazyGridScope>(

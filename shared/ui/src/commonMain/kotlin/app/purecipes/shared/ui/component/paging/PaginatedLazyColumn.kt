@@ -23,6 +23,7 @@ import app.purecipes.shared.ui.component.VerticalScrollbar
 fun <KEY, T> PaginatedLazyColumn(
 	paginationState: PaginationState<KEY, T>,
 	modifier: Modifier = Modifier,
+	lazyModifier: Modifier = Modifier,
 	firstPageProgressIndicator: @Composable () -> Unit = {},
 	newPageProgressIndicator: @Composable () -> Unit = {},
 	firstPageErrorIndicator: @Composable (e: Exception) -> Unit = {},
@@ -37,7 +38,6 @@ fun <KEY, T> PaginatedLazyColumn(
 	horizontalAlignment: Alignment.Horizontal = Alignment.Start,
 	flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
 	userScrollEnabled: Boolean = true,
-	lazyModifier: Modifier = Modifier,
 	content: LazyListScope.() -> Unit,
 ) {
 	PaginatedLazyScrollable<KEY, T, LazyListState, LazyListScope>(
