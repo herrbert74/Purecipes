@@ -94,13 +94,14 @@ private fun VerticalScrollbarThumb(
 	thumbFractions: Pair<Float, Float>?,
 	modifier: Modifier = Modifier,
 ) {
-	val (thumbStart, thumbEnd) = thumbFractions ?: return
 	val thumbColor = PurecipesTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
 	Canvas(
 		modifier = modifier
 			.fillMaxHeight()
 			.width(6.dp),
 	) {
+		val fractions = thumbFractions ?: return@Canvas
+		val (thumbStart, thumbEnd) = fractions
 		drawRoundRect(
 			color = thumbColor,
 			topLeft = Offset(1.dp.toPx(), size.height * thumbStart),
