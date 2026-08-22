@@ -165,6 +165,10 @@ class MainViewModel(
 		selectTab = ::selectTab,
 	)
 
+	internal val libraryTabNavigator = LibraryTabNavigator(
+		stackFor = ::stackFor,
+	)
+
 	fun start() {
 		if (isStarted) {
 			return

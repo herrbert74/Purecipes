@@ -7,6 +7,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
@@ -14,6 +15,7 @@ import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import app.purecipes.shared.ui.navigation.PostLoginAction
@@ -264,5 +266,43 @@ class MainViewModelTest {
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.AdClicked>() shouldBe listOf(
 			AnalyticsEvent.AdClicked(placement = AnalyticsAdPlacement.INTERSTITIAL),
 		)
+	}
+
+	@Test
+	fun `selecting cookbook pushes cookbooks list and detail destinations`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
+
+		viewModel.libraryTabNavigator.openCookbook(
+			CookbookSummary(
+				id = 10,
+				name = "Weeknight Dinners",
+				recipeCount = 4,
+				updatedAtEpochMillis = 0L,
+			),
+		)
+
+		viewModel.peekBackStack() shouldBe listOf(
+			LibraryDestination(),
+			CookbookDetailDestination(cookbookId = 10, name = "Weeknight Dinners"),
+		)
+	}
+
+	@Test
+	fun `back from cookbook detail returns to library root`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
+		viewModel.libraryTabNavigator.openCookbook(
+			CookbookSummary(
+				id = 10,
+				name = "Weeknight Dinners",
+				recipeCount = 4,
+				updatedAtEpochMillis = 0L,
+			),
+		)
+
+		viewModel.onBack() shouldBe true
+
+		viewModel.peekBackStack() shouldBe listOf(LibraryDestination())
 	}
 }

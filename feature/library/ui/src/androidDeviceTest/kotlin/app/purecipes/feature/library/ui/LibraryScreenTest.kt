@@ -169,22 +169,22 @@ class LibraryScreenTest {
 	fun cookbookDetailRefreshRemovesRecipeAfterFavoriteEvent() = runRecompositionTrackingUiTest {
 		val cookbooksRepo = MutableCookbooksRepository()
 		val favoritesRepo = FakeFavoritesRepository()
+		val viewModel = cookbookDetailViewModelForTest(
+			cookbooksRepository = cookbooksRepo,
+			favoritesRepository = favoritesRepo,
+		)
 		setTrackedContent {
 			PurecipesTheme {
-				LibraryScreen(
+				CookbookDetailScreen(
+					cookbookId = TEST_COOKBOOK_ID,
+					name = TEST_COOKBOOK_NAME,
 					sessionKey = "session",
-					viewModel = favoritesViewModelForTest(
-						favoritesRepository = favoritesRepo,
-						cookbooksRepository = cookbooksRepo,
-					),
+					onBack = {},
 					onRecipeSelect = {},
+					viewModel = viewModel,
 				)
 			}
 		}
-
-		onNodeWithText("Cookbooks").performClick()
-		onNodeWithText(TEST_COOKBOOK_NAME).performClick()
-		onNodeWithText(TEST_RECIPE_TITLE).assertIsDisplayed()
 		onNodeWithText("1 recipes").assertIsDisplayed()
 
 		runOnIdle {
@@ -201,18 +201,20 @@ class LibraryScreenTest {
 	@Test
 	fun cookbookDetailRemoveRecipeInvokesRemoveUseCase() = runRecompositionTrackingUiTest {
 		val cookbooksRepo = MutableCookbooksRepository()
+		val viewModel = cookbookDetailViewModelForTest(cookbooksRepository = cookbooksRepo)
 		setTrackedContent {
 			PurecipesTheme {
-				LibraryScreen(
+				CookbookDetailScreen(
+					cookbookId = TEST_COOKBOOK_ID,
+					name = TEST_COOKBOOK_NAME,
 					sessionKey = "session",
-					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
+					onBack = {},
 					onRecipeSelect = {},
+					viewModel = viewModel,
 				)
 			}
 		}
 
-		onNodeWithText("Cookbooks").performClick()
-		onNodeWithText(TEST_COOKBOOK_NAME).performClick()
 		onNodeWithText(TEST_RECIPE_TITLE).assertIsDisplayed()
 		val deleteButtonTag = "$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX$TEST_RECIPE_ID"
 		waitUntil(timeoutMillis = 5_000) {
@@ -320,6 +322,9 @@ private val testCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
 	},
 )
 
+private const val TEST_COOKBOOK_ID = 23
+private const val TEST_COOKBOOK_NAME = "Weeknight dinners"
+
 private fun favoritesViewModelForTest(
 	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 	cookbooksRepository: CookbooksRepository = FakeCookbooksRepository(),
@@ -329,12 +334,25 @@ private fun favoritesViewModelForTest(
 	getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 	createCookbook = CreateCookbookUseCase(cookbooksRepository),
 	deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
-	removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
 	importCookbookShare = unusedImportCookbookShareUseCase(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
-	shareCookbook = unusedShareCookbookUseCase(),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	sessionKey = sessionKey,
+)
+
+private fun cookbookDetailViewModelForTest(
+	cookbooksRepository: CookbooksRepository,
+	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+): CookbookDetailViewModel = CookbookDetailViewModel(
+	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
+	removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
+	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+	shareCookbook = unusedShareCookbookUseCase(),
+	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	cookbookId = TEST_COOKBOOK_ID,
+	initialName = TEST_COOKBOOK_NAME,
+	sessionKey = "session",
 )

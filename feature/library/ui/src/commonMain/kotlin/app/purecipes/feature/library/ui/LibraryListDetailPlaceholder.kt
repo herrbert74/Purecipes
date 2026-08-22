@@ -5,5 +5,5 @@ import app.purecipes.shared.ui.component.CenteredMessageContent
 
 @Composable
 fun LibraryListDetailPlaceholder() {
-	CenteredMessageContent(message = "Select a recipe from your library")
+	CenteredMessageContent(message = "Select a recipe or cookbook from your library")
 }
