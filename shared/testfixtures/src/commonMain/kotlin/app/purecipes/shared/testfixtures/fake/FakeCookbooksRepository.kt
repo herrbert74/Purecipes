@@ -25,7 +25,7 @@ class FakeCookbooksRepository(
 	private val createCookbookResult: Outcome<CookbookSummary> = Ok(
 		CookbookSummary(id = 1, name = "Test", recipeCount = 0, updatedAtEpochMillis = 0L),
 	),
-	private val cookbookRecipesPageResult: Outcome<SearchResultsPage> = Ok(
+	var cookbookRecipesPageResult: Outcome<SearchResultsPage> = Ok(
 		SearchResultsPage(
 			items = emptyList(),
 			pageNumber = 1,

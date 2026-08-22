@@ -169,6 +169,10 @@ class LibraryScreenTest {
 	fun cookbookDetailRefreshRemovesRecipeAfterFavoriteEvent() = runRecompositionTrackingUiTest {
 		val cookbooksRepo = MutableCookbooksRepository()
 		val favoritesRepo = FakeFavoritesRepository()
+		val viewModel = cookbookDetailViewModelForTest(
+			cookbooksRepository = cookbooksRepo,
+			favoritesRepository = favoritesRepo,
+		)
 		setTrackedContent {
 			PurecipesTheme {
 				CookbookDetailScreen(
@@ -177,10 +181,7 @@ class LibraryScreenTest {
 					sessionKey = "session",
 					onBack = {},
 					onRecipeSelect = {},
-					viewModel = cookbookDetailViewModelForTest(
-						cookbooksRepository = cookbooksRepo,
-						favoritesRepository = favoritesRepo,
-					),
+					viewModel = viewModel,
 				)
 			}
 		}
@@ -200,6 +201,7 @@ class LibraryScreenTest {
 	@Test
 	fun cookbookDetailRemoveRecipeInvokesRemoveUseCase() = runRecompositionTrackingUiTest {
 		val cookbooksRepo = MutableCookbooksRepository()
+		val viewModel = cookbookDetailViewModelForTest(cookbooksRepository = cookbooksRepo)
 		setTrackedContent {
 			PurecipesTheme {
 				CookbookDetailScreen(
@@ -208,7 +210,7 @@ class LibraryScreenTest {
 					sessionKey = "session",
 					onBack = {},
 					onRecipeSelect = {},
-					viewModel = cookbookDetailViewModelForTest(cookbooksRepository = cookbooksRepo),
+					viewModel = viewModel,
 				)
 			}
 		}

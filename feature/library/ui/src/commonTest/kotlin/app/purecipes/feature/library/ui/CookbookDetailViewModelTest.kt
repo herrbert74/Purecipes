@@ -1,6 +1,7 @@
 package app.purecipes.feature.library.ui
 
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
@@ -81,6 +82,65 @@ class CookbookDetailViewModelTest {
 		assertEquals(null, viewModel.errorMessage)
 	}
 
+	@Test
+	fun `favorite event refreshes cookbook detail list`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 77,
+			title = "Creamy tomato pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 30,
+			isFavorite = true,
+		)
+		val cookbook = CookbookSummary(
+			id = 23,
+			name = "Weeknight dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+			cookbookRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val favoritesRepository = FakeFavoritesRepository()
+		val viewModel = cookbookDetailViewModel(
+			cookbookId = cookbook.id,
+			name = cookbook.name,
+			cookbooksRepository = cookbooksRepository,
+			favoritesRepository = favoritesRepository,
+		)
+		advanceUntilIdle()
+		assertEquals(listOf(recipe), viewModel.recipes.toList())
+
+		cookbooksRepository.cookbookRecipesPageResult = Ok(
+			SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 0,
+			),
+		)
+		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Removed(recipeId = recipe.id))
+		advanceUntilIdle()
+
+		assertEquals(emptyList(), viewModel.recipes.toList())
+		assertEquals(0, viewModel.totalMatches)
+	}
+
 	private val getCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
 		repository = object : CookbookCoverRepository {
 			override fun getCookbookCoverImageUrl(
@@ -96,11 +156,12 @@ class CookbookDetailViewModelTest {
 		cookbookId: Int,
 		name: String,
 		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
+		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 	): CookbookDetailViewModel = CookbookDetailViewModel(
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
-		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		shareCookbook = unusedShareCookbookUseCase(),
 		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		cookbookId = cookbookId,
