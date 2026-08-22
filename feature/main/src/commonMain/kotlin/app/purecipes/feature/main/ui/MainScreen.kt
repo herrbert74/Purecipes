@@ -16,6 +16,7 @@ import androidx.navigation3.ui.NavDisplay
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
+import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
 import app.purecipes.feature.library.ui.navigation.installCookbookDetailFlow
 import app.purecipes.feature.library.ui.navigation.installLibraryFlow
@@ -95,9 +96,11 @@ private fun MainScreenContent(
 					},
 				)
 
+				val isNavBarVisible = tabBackStack.lastOrNull() !is RecipeCookingDestination
 				MainNavigationSuiteScaffold(
 					selectedTab = viewModel.selectedTab,
 					onTabSelect = viewModel::onTabSelected,
+					isNavBarVisible = isNavBarVisible,
 				) {
 					key(viewModel.selectedTab.stackId) {
 						NavDisplay(

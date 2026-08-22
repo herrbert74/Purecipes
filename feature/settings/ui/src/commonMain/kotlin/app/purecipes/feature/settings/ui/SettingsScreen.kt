@@ -8,15 +8,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import app.purecipes.feature.search.domain.model.SearchPreferences
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
@@ -30,6 +34,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 private const val PRIVACY_POLICY_URL = "https://purecipes.app/privacy"
 private const val TERMS_OF_SERVICE_URL = "https://purecipes.app/terms"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
 	onBack: () -> Unit,
@@ -48,11 +53,17 @@ fun SettingsScreen(
 	)
 	val uriHandler = LocalUriHandler.current
 
+	val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+		rememberTopAppBarState(),
+	)
 	Scaffold(
-		modifier = modifier.fillMaxSize(),
+		modifier = modifier
+			.fillMaxSize()
+			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
 				title = { Text(text = "Settings") },
+				scrollBehavior = topAppBarScrollBehavior,
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
