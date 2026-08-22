@@ -2,6 +2,7 @@ package app.purecipes.shared.ui.component.paging
 
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
@@ -103,7 +104,11 @@ internal fun <KEY, T, LAZY_STATE, LAZY_SCROLLABLE_SCOPE> PaginatedLazyScrollable
 			) -> Unit = { key, content ->
 				when (scope) {
 					is LazyListScope -> scope.item(key) { scope.content() }
-					is LazyGridScope -> scope.item(key) { scope.content() }
+					is LazyGridScope -> scope.item(
+						key = key,
+						span = { GridItemSpan(maxLineSpan) },
+					) { scope.content() }
+
 					else -> error("Unsupported Lazy scrollable scope type")
 				}
 			}

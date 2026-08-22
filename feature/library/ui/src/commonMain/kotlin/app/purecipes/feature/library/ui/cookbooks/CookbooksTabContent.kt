@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
+import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -86,10 +84,11 @@ internal fun CookbooksTabContent(
 			) {
 				Text(text = "Create new cookbook")
 			}
-			PaginatedLazyColumn(
+			PaginatedLazyVerticalGrid(
 				paginationState = paginationState,
 				modifier = Modifier.weight(1f),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				contentPadding = PaddingValues(
 					start = PurecipesTheme.space.m,
 					end = PurecipesTheme.space.m,

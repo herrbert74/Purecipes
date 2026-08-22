@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -27,6 +29,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.RecipeCard
+import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 
@@ -92,12 +95,14 @@ internal fun MyRecipesContent(
 							.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.s),
 					)
 				}
-				LazyColumn(
+				LazyVerticalGrid(
+					columns = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
 					modifier = Modifier.weight(1f),
 					contentPadding = PaddingValues(PurecipesTheme.space.m),
 					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				) {
-					item {
+					item(span = { GridItemSpan(maxLineSpan) }) {
 						Text(
 							text = if (recipes.size == 1) {
 								"1 recipe"
