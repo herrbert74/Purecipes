@@ -1,6 +1,7 @@
 package app.purecipes.feature.recipedetails.ui.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -19,7 +20,9 @@ fun EntryProviderScope<NavKey>.installRecipeDetailsFlow(
 	onStartCooking: (Int) -> Unit,
 	onOpenMeasurementPreferences: () -> Unit,
 ) {
-	entry<RecipeDetailsDestination> { destination ->
+	entry<RecipeDetailsDestination>(
+		metadata = ListDetailSceneStrategy.detailPane(),
+	) { destination ->
 		RecipeDetailsScreen(
 			recipeId = destination.recipeId,
 			origin = destination.origin,

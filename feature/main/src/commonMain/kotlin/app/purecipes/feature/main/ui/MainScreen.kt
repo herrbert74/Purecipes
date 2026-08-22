@@ -82,6 +82,7 @@ private fun MainScreenContent(
 					AuthenticationState.SignedOut -> null
 				}
 				val canManageFavorites = authenticationState is AuthenticationState.SignedIn
+				val listDetailSceneStrategy = rememberMainListDetailSceneStrategy()
 				NavigationBackHandler(
 					enabled = true,
 					backStackDepth = tabBackStack.size,
@@ -100,6 +101,7 @@ private fun MainScreenContent(
 						NavDisplay(
 							backStack = tabBackStack,
 							modifier = Modifier.fillMaxSize(),
+							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
 								installSearchFlow(
 									isSignedIn = authenticationState is AuthenticationState.SignedIn,

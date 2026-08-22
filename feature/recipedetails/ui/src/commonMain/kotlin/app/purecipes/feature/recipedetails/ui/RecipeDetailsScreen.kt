@@ -51,6 +51,7 @@ fun RecipeDetailsScreen(
 	var showCookbookSheet by remember { mutableStateOf(false) }
 	var showNutritionDialog by remember { mutableStateOf(false) }
 	var newCookbookName by remember { mutableStateOf("") }
+	val showBackNavigation = rememberShowRecipeDetailsBackNavigation()
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
@@ -73,7 +74,9 @@ fun RecipeDetailsScreen(
 						)
 					},
 					navigationIcon = {
-						BackNavigationButton(onBack = onBack)
+						if (showBackNavigation) {
+							BackNavigationButton(onBack = onBack)
+						}
 					},
 					actions = {
 						if (viewModel.recipeDetails?.isPrivate != true) {
