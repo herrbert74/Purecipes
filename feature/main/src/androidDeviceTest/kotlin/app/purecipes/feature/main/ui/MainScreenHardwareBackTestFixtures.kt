@@ -31,7 +31,6 @@ import app.purecipes.feature.library.domain.usecase.GetRecipeCookbooksUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
-import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.library.ui.LibraryViewModel
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -57,11 +56,9 @@ import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.repository.WebLaunchLinkRepository
-import app.purecipes.feature.sharing.domain.usecase.CreateCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ObserveIncomingLinksUseCase
 import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
@@ -265,7 +262,6 @@ internal fun favoritesViewModelForDeviceTest(): LibraryViewModel = LibraryViewMo
 	getCookbooksPage = GetCookbooksPageUseCase(FakeCookbooksRepository()),
 	createCookbook = CreateCookbookUseCase(FakeCookbooksRepository()),
 	deleteCookbookUseCase = DeleteCookbookUseCase(FakeCookbooksRepository()),
-	removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(FakeCookbooksRepository()),
 	getCookbookRecipesPage = GetCookbookRecipesPageUseCase(FakeCookbooksRepository()),
 	getCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
 		object : CookbookCoverRepository {
@@ -282,18 +278,6 @@ internal fun favoritesViewModelForDeviceTest(): LibraryViewModel = LibraryViewMo
 			override suspend fun createShare(cookbookId: Int) = Err(Failure.ServerError("unused"))
 
 			override suspend fun importShare(token: String) = Err(Failure.ServerError("unused"))
-		},
-	),
-	shareCookbook = ShareCookbookUseCase(
-		createCookbookShareUseCase = CreateCookbookShareUseCase(
-			object : CookbookShareRepository {
-				override suspend fun createShare(cookbookId: Int) = Err(Failure.ServerError("unused"))
-
-				override suspend fun importShare(token: String) = Err(Failure.ServerError("unused"))
-			},
-		),
-		shareRepository = object : ShareRepository {
-			override fun shareText(text: String, title: String?) = Unit
 		},
 	),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),

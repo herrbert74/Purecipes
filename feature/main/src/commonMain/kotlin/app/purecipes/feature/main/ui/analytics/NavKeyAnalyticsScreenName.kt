@@ -6,6 +6,8 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
+import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
+import app.purecipes.feature.library.ui.navigation.LibraryCookbooksDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
@@ -20,6 +22,8 @@ internal fun NavKey.toAnalyticsScreenName(): String? = when (this) {
 	is RecipeDetailsDestination -> AnalyticsScreenName.RECIPE_DETAILS
 	is RecipeCookingDestination -> AnalyticsScreenName.COOKING
 	is LibraryDestination -> AnalyticsScreenName.FAVORITES
+	is LibraryCookbooksDestination -> AnalyticsScreenName.FAVORITES
+	is CookbookDetailDestination -> AnalyticsScreenName.FAVORITES
 	CreateDestination -> AnalyticsScreenName.CREATE_RECIPE
 	is CreateEditorDestination -> AnalyticsScreenName.CREATE_RECIPE
 	AccountDestination -> AnalyticsScreenName.ACCOUNT

@@ -17,13 +17,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.feature.ads.ui.BannerAdViewModel
-import app.purecipes.feature.library.ui.cookbooks.CookbookDetailContent
 import app.purecipes.feature.library.ui.cookbooks.CookbooksTabContent
 import app.purecipes.feature.library.ui.cookbooks.CreateCookbookDialog
 import app.purecipes.feature.library.ui.cookbooks.DeleteCookbookDialog
@@ -45,6 +45,8 @@ fun LibraryScreen(
 	openMyRecipes: Boolean = false,
 	recipeSaveMessage: String? = null,
 	onRecipeSelect: (Int) -> Unit = {},
+	onCookbookSelect: (CookbookSummary) -> Unit = {},
+	onCookbookImportSuccess: (cookbookId: Int, name: String, recipeCount: Int) -> Unit = { _, _, _ -> },
 	onCreateRecipe: () -> Unit = {},
 	onEditCreatedRecipe: (Int) -> Unit = {},
 	onRequestLogIn: () -> Unit = {},
@@ -57,6 +59,7 @@ fun LibraryScreen(
 	var showCreateCookbookDialog by remember { mutableStateOf(false) }
 	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
 	val snackbarHostState = remember { SnackbarHostState() }
+	val currentOnCookbookImportSuccess by rememberUpdatedState(onCookbookImportSuccess)
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
@@ -68,7 +71,9 @@ fun LibraryScreen(
 	LaunchedEffect(initialCookbookShareToken, sessionKey) {
 		val shareToken = initialCookbookShareToken ?: return@LaunchedEffect
 		if (sessionKey != null) {
-			viewModel.importSharedCookbook(shareToken)
+			viewModel.importSharedCookbook(shareToken) { cookbookId, name, recipeCount ->
+				currentOnCookbookImportSuccess(cookbookId, name, recipeCount)
+			}
 		}
 	}
 
@@ -125,29 +130,6 @@ fun LibraryScreen(
 			return@Scaffold
 		}
 
-		val cookbookId = viewModel.viewingCookbookId
-		if (cookbookId != null) {
-			LaunchedEffect(cookbookId) {
-				viewModel.loadCookbookCover(cookbookId)
-			}
-			val detailCoverUrl = viewModel.cookbookCoverUrls[cookbookId]
-			CookbookDetailContent(
-				title = viewModel.viewingCookbookName,
-				errorMessage = viewModel.cookbookDetailErrorMessage,
-				recipes = viewModel.cookbookDetailRecipes,
-				paginationState = viewModel.cookbookDetailPaginationState,
-				totalMatches = viewModel.totalCookbookDetailMatches,
-				coverUrl = detailCoverUrl,
-				onBack = viewModel::closeCookbookDetail,
-				onShare = viewModel::shareOpenCookbook,
-				modifier = Modifier.padding(innerPadding),
-				onRecipeSelect = onRecipeSelect,
-				onRemoveRecipe = viewModel::removeRecipeFromOpenCookbook,
-				bannerAdViewModel = bannerAdViewModel,
-			)
-			return@Scaffold
-		}
-
 		Column(modifier = Modifier.padding(innerPadding)) {
 			PrimaryTabRow(selectedTabIndex = viewModel.selectedTab.ordinal) {
 				Tab(
@@ -191,13 +173,7 @@ fun LibraryScreen(
 					onDeleteCookbook = { cookbook, _ ->
 						pendingDeleteCookbook = cookbook
 					},
-					onCookbookClick = { cookbook ->
-						viewModel.openCookbookDetail(
-							cookbookId = cookbook.id,
-							name = cookbook.name,
-							recipeCount = cookbook.recipeCount,
-						)
-					},
+					onCookbookClick = onCookbookSelect,
 					modifier = Modifier.weight(1f),
 				)
 

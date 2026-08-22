@@ -4,7 +4,6 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.AnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsFavoritesTab
-import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
@@ -14,14 +13,9 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
-import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
-import app.purecipes.feature.sharing.domain.repository.ShareRepository
-import app.purecipes.feature.sharing.domain.usecase.CreateCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookImportResult
-import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
@@ -88,26 +82,6 @@ class LibraryViewModelAnalyticsTest {
 	}
 
 	@Test
-	fun `open cookbook detail tracks cookbook opened`() = runViewModelTest {
-		val analyticsRepository = FakeAnalyticsRepository()
-		val viewModel = favoritesViewModel(analyticsRepository = analyticsRepository)
-
-		viewModel.openCookbookDetail(
-			cookbookId = 10,
-			name = "Weeknight Dinners",
-			recipeCount = 4,
-		)
-		advanceUntilIdle()
-
-		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookbookOpened>().single() shouldBe
-			AnalyticsEvent.CookbookOpened(
-				cookbookId = 10,
-				cookbookName = "Weeknight Dinners",
-				recipeCount = 4,
-			)
-	}
-
-	@Test
 	fun `delete cookbook tracks cookbook deleted`() = runViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val viewModel = favoritesViewModel(analyticsRepository = analyticsRepository)
@@ -127,40 +101,7 @@ class LibraryViewModelAnalyticsTest {
 	}
 
 	@Test
-	fun `share open cookbook tracks cookbook shared`() = runViewModelTest {
-		val analyticsRepository = FakeAnalyticsRepository()
-		val shareRepository = object : ShareRepository {
-			override fun shareText(text: String, title: String?) = Unit
-		}
-		val cookbookShareRepository = object : CookbookShareRepository {
-			override suspend fun createShare(cookbookId: Int) = Ok(CookbookShareToken(token = "token"))
-
-			override suspend fun importShare(token: String) = Err(Failure.ServerError("unused"))
-		}
-		val viewModel = favoritesViewModel(
-			analyticsRepository = analyticsRepository,
-			shareCookbook = ShareCookbookUseCase(
-				createCookbookShareUseCase = CreateCookbookShareUseCase(cookbookShareRepository),
-				shareRepository = shareRepository,
-			),
-		)
-		viewModel.openCookbookDetail(cookbookId = 10, name = "Weeknight Dinners", recipeCount = 2)
-		advanceUntilIdle()
-		analyticsRepository.trackedEvents.clear()
-
-		viewModel.shareOpenCookbook()
-		advanceUntilIdle()
-
-		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookbookShared>().single() shouldBe
-			AnalyticsEvent.CookbookShared(
-				cookbookId = 10,
-				cookbookName = "Weeknight Dinners",
-				origin = AnalyticsOrigin.FAVORITES,
-			)
-	}
-
-	@Test
-	fun `import shared cookbook tracks completed and opened`() = runViewModelTest {
+	fun `import shared cookbook tracks completed and invokes callback`() = runViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val importedCookbook = CookbookSummary(
 			id = 33,
@@ -170,7 +111,8 @@ class LibraryViewModelAnalyticsTest {
 		)
 		val importUseCase = ImportCookbookShareUseCase(
 			object : CookbookShareRepository {
-				override suspend fun createShare(cookbookId: Int) = Err(Failure.ServerError("unused"))
+				override suspend fun createShare(cookbookId: Int) =
+					Err(Failure.ServerError("unused"))
 
 				override suspend fun importShare(token: String) = Ok(
 					CookbookImportResult(
@@ -186,8 +128,11 @@ class LibraryViewModelAnalyticsTest {
 			analyticsRepository = analyticsRepository,
 			importCookbookShare = importUseCase,
 		)
+		var importedCookbookId: Int? = null
 
-		viewModel.importSharedCookbook("share-token")
+		viewModel.importSharedCookbook("share-token") { cookbookId, _, _ ->
+			importedCookbookId = cookbookId
+		}
 		advanceUntilIdle()
 
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookbookImportCompleted>().single() shouldBe
@@ -195,12 +140,7 @@ class LibraryViewModelAnalyticsTest {
 				importedRecipeCount = 2,
 				cookbookId = importedCookbook.id,
 			)
-		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.CookbookOpened>().single() shouldBe
-			AnalyticsEvent.CookbookOpened(
-				cookbookId = importedCookbook.id,
-				cookbookName = importedCookbook.name,
-				recipeCount = importedCookbook.recipeCount,
-			)
+		importedCookbookId shouldBe importedCookbook.id
 	}
 
 	@Test
@@ -208,9 +148,11 @@ class LibraryViewModelAnalyticsTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val importUseCase = ImportCookbookShareUseCase(
 			object : CookbookShareRepository {
-				override suspend fun createShare(cookbookId: Int) = Err(Failure.ServerError("unused"))
+				override suspend fun createShare(cookbookId: Int) =
+					Err(Failure.ServerError("unused"))
 
-				override suspend fun importShare(token: String) = Err(Failure.ServerError("Import failed"))
+				override suspend fun importShare(token: String) =
+					Err(Failure.ServerError("Import failed"))
 			},
 		)
 		val viewModel = favoritesViewModel(
@@ -230,18 +172,15 @@ class LibraryViewModelAnalyticsTest {
 		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 		importCookbookShare: ImportCookbookShareUseCase = unusedImportCookbookShareUseCase(),
-		shareCookbook: ShareCookbookUseCase = unusedShareCookbookUseCase(),
 	): LibraryViewModel = LibraryViewModel(
 		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 		getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 		createCookbook = CreateCookbookUseCase(cookbooksRepository),
 		deleteCookbookUseCase = DeleteCookbookUseCase(cookbooksRepository),
-		removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		importCookbookShare = importCookbookShare,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
-		shareCookbook = shareCookbook,
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		sessionKey = "session",
 	)

@@ -17,6 +17,8 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
+import app.purecipes.feature.library.ui.navigation.installCookbookDetailFlow
+import app.purecipes.feature.library.ui.navigation.installLibraryCookbooksFlow
 import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
@@ -25,6 +27,7 @@ import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
 import app.purecipes.feature.subscription.ui.navigation.PaywallDestination
 import app.purecipes.feature.subscription.ui.navigation.installSubscriptionFlow
+import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -135,6 +138,17 @@ private fun MainScreenContent(
 								installLibraryFlow(
 									sessionKey = sessionKey,
 									onRecipeSelect = viewModel::onRecipeSelected,
+									onCookbookSelect = viewModel.libraryTabNavigator::openCookbook,
+									onCookbookImportSuccess = { cookbookId, name, recipeCount ->
+										viewModel.libraryTabNavigator.openCookbook(
+											CookbookSummary(
+												id = cookbookId,
+												name = name,
+												recipeCount = recipeCount,
+												updatedAtEpochMillis = 0L,
+											),
+										)
+									},
 									onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,
 									onEditCreatedRecipe = viewModel.createRecipeTabNavigator::openEditor,
 									onRequestLogIn = {
@@ -142,6 +156,15 @@ private fun MainScreenContent(
 											PostLoginAction.OpenFavoritesMyRecipes,
 										)
 									},
+								)
+								installLibraryCookbooksFlow(
+									sessionKey = sessionKey,
+									onCookbookSelect = viewModel.libraryTabNavigator::openCookbook,
+								)
+								installCookbookDetailFlow(
+									sessionKey = sessionKey,
+									onRecipeSelect = viewModel::onRecipeSelected,
+									onBack = viewModel::onBack,
 								)
 								installCreateFlow(
 									navigator = viewModel.navigator,

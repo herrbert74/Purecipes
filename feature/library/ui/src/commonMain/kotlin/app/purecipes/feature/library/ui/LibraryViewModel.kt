@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsFavoritesTab
-import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.toAnalyticsErrorKind
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
@@ -20,9 +19,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
-import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
-import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -58,11 +55,9 @@ class LibraryViewModel(
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val createCookbook: CreateCookbookUseCase,
 	private val deleteCookbookUseCase: DeleteCookbookUseCase,
-	private val removeRecipeFromCookbookUseCase: RemoveRecipeFromCookbookUseCase,
 	private val getCookbookRecipesPage: GetCookbookRecipesPageUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val importCookbookShare: ImportCookbookShareUseCase,
-	private val shareCookbook: ShareCookbookUseCase,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	private val trackEvent: TrackEventUseCase,
 	@Assisted sessionKey: String?,
@@ -78,12 +73,6 @@ class LibraryViewModel(
 	var selectedTab by mutableStateOf(LibraryTab.Favorites)
 		private set
 
-	var viewingCookbookId by mutableStateOf<Int?>(null)
-		private set
-
-	var viewingCookbookName by mutableStateOf("")
-		private set
-
 	var isInitialLoading by mutableStateOf(false)
 		private set
 
@@ -91,9 +80,6 @@ class LibraryViewModel(
 		private set
 
 	var cookbooksErrorMessage by mutableStateOf<String?>(null)
-		private set
-
-	var cookbookDetailErrorMessage by mutableStateOf<String?>(null)
 		private set
 
 	var isImportingSharedCookbook by mutableStateOf(false)
@@ -106,9 +92,6 @@ class LibraryViewModel(
 		private set
 
 	var totalCookbooksMatches by mutableIntStateOf(0)
-		private set
-
-	var totalCookbookDetailMatches by mutableIntStateOf(0)
 		private set
 
 	var createCookbookError by mutableStateOf<String?>(null)
@@ -125,7 +108,6 @@ class LibraryViewModel(
 
 	val savedRecipes = mutableStateListOf<RecipeSummary>()
 	val cookbooks = mutableStateListOf<CookbookSummary>()
-	val cookbookDetailRecipes = mutableStateListOf<RecipeSummary>()
 
 	val cookbookCoverUrls = mutableStateMapOf<Int, String?>()
 
@@ -143,15 +125,6 @@ class LibraryViewModel(
 		onRequestPage = { pageKey ->
 			viewModelScope.launch {
 				loadCookbooksPage(pageKey)
-			}
-		},
-	)
-
-	val cookbookDetailPaginationState: PaginationState<Int, RecipeSummary> = PaginationState(
-		initialPageKey = FIRST_PAGE_NUMBER,
-		onRequestPage = { pageKey ->
-			viewModelScope.launch {
-				loadCookbookDetailPage(pageKey)
 			}
 		},
 	)
@@ -176,32 +149,6 @@ class LibraryViewModel(
 		startFavoriteEventsCollection()
 	}
 
-	fun openCookbookDetail(cookbookId: Int, name: String, recipeCount: Int? = null) {
-		viewingCookbookId = cookbookId
-		viewingCookbookName = name
-		cookbookDetailRecipes.clear()
-		totalCookbookDetailMatches = 0
-		cookbookDetailErrorMessage = null
-		trackEvent(
-			AnalyticsEvent.CookbookOpened(
-				cookbookId = cookbookId,
-				cookbookName = name,
-				recipeCount = recipeCount,
-			),
-		)
-		cookbookDetailPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
-		viewModelScope.launch {
-			loadCookbookDetailPage(FIRST_PAGE_NUMBER)
-		}
-	}
-
-	fun closeCookbookDetail() {
-		viewingCookbookId = null
-		viewingCookbookName = ""
-		cookbookDetailRecipes.clear()
-		cookbookDetailPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
-	}
-
 	fun loadLibrary() {
 		if (activeSessionKey == null) {
 			return
@@ -218,20 +165,8 @@ class LibraryViewModel(
 			cookbooksPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 			loadSavedPage(FIRST_PAGE_NUMBER)
 			loadCookbooksPage(FIRST_PAGE_NUMBER)
-			refreshCookbookDetailIfOpen()
 			isInitialLoading = false
 		}
-	}
-
-	private suspend fun refreshCookbookDetailIfOpen() {
-		if (viewingCookbookId == null) {
-			return
-		}
-		cookbookDetailRecipes.clear()
-		totalCookbookDetailMatches = 0
-		cookbookDetailErrorMessage = null
-		cookbookDetailPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
-		loadCookbookDetailPage(FIRST_PAGE_NUMBER)
 	}
 
 	private fun startFavoriteEventsCollection() {
@@ -245,7 +180,10 @@ class LibraryViewModel(
 		}
 	}
 
-	fun importSharedCookbook(shareToken: String) {
+	fun importSharedCookbook(
+		shareToken: String,
+		onImported: (cookbookId: Int, name: String, recipeCount: Int) -> Unit = { _, _, _ -> },
+	) {
 		if (activeSessionKey == null) {
 			return
 		}
@@ -265,10 +203,10 @@ class LibraryViewModel(
 				selectedTab = LibraryTab.Cookbooks
 				cookbooksPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 				loadCookbooksPage(FIRST_PAGE_NUMBER)
-				openCookbookDetail(
-					cookbookId = result.cookbook.id,
-					name = result.cookbook.name,
-					recipeCount = result.cookbook.recipeCount,
+				onImported(
+					result.cookbook.id,
+					result.cookbook.name,
+					result.cookbook.recipeCount,
 				)
 			} else {
 				val error = outcome.getError()
@@ -288,7 +226,7 @@ class LibraryViewModel(
 		viewModelScope.launch {
 			val page = getCookbookRecipesPage(cookbookId, FIRST_PAGE_NUMBER, COVER_FETCH_PAGE_SIZE).get()
 				?: return@launch
-			val urls = page.items.mapNotNull { it.imageUrl?.trim()?.takeIf { u -> u.isNotEmpty() } }
+			val urls = page.items.mapNotNull { it.imageUrl?.trim()?.takeIf { url -> url.isNotEmpty() } }
 			val url = getCookbookCoverImageUrl(
 				cookbookId = cookbookId,
 				candidateImageUrls = urls,
@@ -362,60 +300,6 @@ class LibraryViewModel(
 		}
 	}
 
-	fun removeRecipeFromOpenCookbook(recipe: RecipeSummary, onDone: (Boolean) -> Unit = {}) {
-		val cookbookId = viewingCookbookId ?: run {
-			onDone(false)
-			return
-		}
-		viewModelScope.launch {
-			val outcome = removeRecipeFromCookbookUseCase(cookbookId, recipe.id)
-			val ok = outcome.getError() == null
-			if (ok) {
-				trackEvent(
-					AnalyticsEvent.RecipeRemovedFromCookbook(
-						recipeId = recipe.id,
-						recipeName = recipe.title,
-						cookbookId = cookbookId,
-						cookbookName = viewingCookbookName.takeIf { it.isNotBlank() },
-						origin = AnalyticsOrigin.FAVORITES,
-						isPrivate = recipe.isPrivate,
-					),
-				)
-				cookbookDetailRecipes.removeAll { it.id == recipe.id }
-				totalCookbookDetailMatches = (totalCookbookDetailMatches - 1).coerceAtLeast(0)
-				val cookbookIndex = cookbooks.indexOfFirst { it.id == cookbookId }
-				if (cookbookIndex >= 0) {
-					val current = cookbooks[cookbookIndex]
-					cookbooks[cookbookIndex] = current.copy(
-						recipeCount = (current.recipeCount - 1).coerceAtLeast(0),
-					)
-				}
-			} else {
-				cookbookDetailErrorMessage = outcome.getError()?.message
-			}
-			onDone(ok)
-		}
-	}
-
-	fun shareOpenCookbook() {
-		val cookbookId = viewingCookbookId ?: return
-		val title = viewingCookbookName.takeIf { it.isNotBlank() }
-		viewModelScope.launch {
-			shareCookbook(
-				cookbookId = cookbookId,
-				recipeCount = totalCookbookDetailMatches,
-				title = title,
-			)
-			trackEvent(
-				AnalyticsEvent.CookbookShared(
-					cookbookId = cookbookId,
-					cookbookName = title,
-					origin = AnalyticsOrigin.FAVORITES,
-				),
-			)
-		}
-	}
-
 	private fun LibraryTab.toAnalyticsTab(): String = when (this) {
 		LibraryTab.Favorites -> AnalyticsFavoritesTab.SAVED_RECIPES
 		LibraryTab.Cookbooks -> AnalyticsFavoritesTab.COOKBOOKS
@@ -470,33 +354,6 @@ class LibraryViewModel(
 			if (err != null) {
 				cookbooksPaginationState.setError(IllegalStateException(err.message))
 				cookbooksErrorMessage = err.message
-			}
-		}
-	}
-
-	private suspend fun loadCookbookDetailPage(pageNumber: Int) {
-		val cookbookId = viewingCookbookId ?: return
-		val outcome = getCookbookRecipesPage(cookbookId, pageNumber, PAGE_SIZE)
-		val page = outcome.get()
-		if (page != null) {
-			if (pageNumber == FIRST_PAGE_NUMBER) {
-				cookbookDetailRecipes.clear()
-				totalCookbookDetailMatches = page.totalMatches
-			}
-			cookbookDetailRecipes.addAll(page.items)
-			val nextPageKey = pageNumber + 1
-			val isLastPage = (page.pageNumber * page.pageSize) >= page.totalMatches
-			cookbookDetailPaginationState.appendPage(
-				pageKey = pageNumber,
-				items = page.items,
-				nextPageKey = nextPageKey,
-				isLastPage = isLastPage,
-			)
-		} else {
-			val err = outcome.getError()
-			if (err != null) {
-				cookbookDetailPaginationState.setError(IllegalStateException(err.message))
-				cookbookDetailErrorMessage = err.message
 			}
 		}
 	}

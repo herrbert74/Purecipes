@@ -49,6 +49,7 @@ internal fun CookbookDetailContent(
 	onRecipeSelect: (Int) -> Unit,
 	onRemoveRecipe: (RecipeSummary) -> Unit,
 	modifier: Modifier = Modifier,
+	showBackNavigation: Boolean = true,
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
 	Column(modifier = modifier.fillMaxSize()) {
@@ -57,11 +58,13 @@ internal fun CookbookDetailContent(
 			modifier = Modifier.fillMaxWidth(),
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
-			IconButton(onClick = onBack) {
-				Icon(
-					imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-					contentDescription = "Back",
-				)
+			if (showBackNavigation) {
+				IconButton(onClick = onBack) {
+					Icon(
+						imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+						contentDescription = "Back",
+					)
+				}
 			}
 			AsyncImage(
 				model = coverUrl?.trim()?.takeIf { it.isNotEmpty() },
