@@ -7,12 +7,12 @@ import androidx.compose.ui.graphics.Color
 
 object BrandColors {
 
-	val primary = Color(0xFF8D495A)
-	val primaryContainer = Color(0xFFFFD9DF)
+	val primary = Color(0xFF7E0046)
+	val primaryContainer = Color(0xFFFFD9E3)
 	val secondary = Color(0xFF745B0B)
 	val secondaryContainer = Color(0xFFFFDF92)
 	val onPrimary = Color(0xFFFFFFFF)
-	val onPrimaryMuted = Color(0xFFFFD9DF)
+	val onPrimaryMuted = Color(0xFFFFD9E3)
 	val onGoldMuted = Color(0xFFFFDF92)
 	val deviceBezel = Color(0xFF1A1214)
 	val deviceShine = Color(0xFF2A2123)
@@ -20,7 +20,7 @@ object BrandColors {
 	fun portraitBackground(theme: MarketingTheme): Brush {
 		return when (theme) {
 			MarketingTheme.ROSE -> Brush.verticalGradient(
-				colors = listOf(Color(0xFF5D2232), Color(0xFF8D495A)),
+				colors = listOf(Color(0xFF5C0033), Color(0xFF7E0046)),
 			)
 
 			MarketingTheme.GOLD -> Brush.verticalGradient(
@@ -28,7 +28,7 @@ object BrandColors {
 			)
 
 			MarketingTheme.DEEP -> Brush.verticalGradient(
-				colors = listOf(Color(0xFF191113), Color(0xFF5D2232)),
+				colors = listOf(Color(0xFF191113), Color(0xFF5C0033)),
 			)
 		}
 	}
@@ -36,7 +36,7 @@ object BrandColors {
 	fun featureBackground(theme: MarketingTheme): Brush {
 		return when (theme) {
 			MarketingTheme.ROSE -> Brush.horizontalGradient(
-				colors = listOf(Color(0xFF3A1520), Color(0xFF8D495A)),
+				colors = listOf(Color(0xFF3A001F), Color(0xFF7E0046)),
 			)
 
 			MarketingTheme.GOLD -> Brush.horizontalGradient(
@@ -44,7 +44,7 @@ object BrandColors {
 			)
 
 			MarketingTheme.DEEP -> Brush.horizontalGradient(
-				colors = listOf(Color(0xFF191113), Color(0xFF8D495A)),
+				colors = listOf(Color(0xFF191113), Color(0xFF7E0046)),
 			)
 		}
 	}
