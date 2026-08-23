@@ -4,6 +4,23 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.0] - 2026-08-23
+
+### Added
+
+- Tablet layouts: navigation rail, list and recipe detail side by side, and multi-column grids.
+- Scrollbars on long recipe and cookbook lists.
+
+### Changed
+
+- Create recipe split into sections for basics, ingredients, and steps.
+- Ingredient units chosen from a dropdown when adding ingredients.
+
+### Fixed
+
+- You can remove a recipe from a cookbook again.
+- Create recipe: grams no longer jump focus; errors show at the bottom of the screen.
+
 ## [0.9.0] - 2026-08-17
 
 ### Added
