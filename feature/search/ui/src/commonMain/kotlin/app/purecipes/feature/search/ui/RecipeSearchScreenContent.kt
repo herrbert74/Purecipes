@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -96,6 +97,7 @@ fun RecipeSearchScreenContent(
 				paginationState = paginationState,
 				recipes = recipeList,
 				onRecipeSelect = {},
+				browseTiles = searchBrowseTiles(SearchFilters.default()),
 				modifier = Modifier
 					.weight(1f)
 					.padding(top = PurecipesTheme.space.s),

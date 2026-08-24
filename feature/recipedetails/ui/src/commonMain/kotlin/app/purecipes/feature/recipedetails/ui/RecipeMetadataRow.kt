@@ -1,46 +1,48 @@
 package app.purecipes.feature.recipedetails.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.ui.component.ContainerTint
+import app.purecipes.shared.ui.component.MetadataPillChip
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun RecipeMetadataRow(recipe: RecipeDetails, isRecipeConverted: Boolean) {
-	val items = listOfNotNull(
-		recipe.cuisine?.displayName,
-		recipe.totalTime?.let { "$it min" },
-		recipe.yields?.takeIf { it.isNotBlank() },
-		"Private".takeIf { recipe.isPrivate },
-		recipe.measurementSystem?.displayName(isRecipeConverted),
-	)
+internal fun RecipeMetadataRow(
+	recipe: RecipeDetails,
+	isRecipeConverted: Boolean,
+	modifier: Modifier = Modifier,
+) {
+	val chips = buildList {
+		recipe.cuisine?.displayName?.let { add(it to ContainerTint.Primary) }
+		recipe.mealType?.displayName?.let { add(it to ContainerTint.Secondary) }
+		recipe.difficultyLevel?.displayName?.let { add(it to ContainerTint.Tertiary) }
+		recipe.dietaryPreferences.forEach { preference ->
+			add(preference.displayName to ContainerTint.Primary)
+		}
+		"Private".takeIf { recipe.isPrivate }?.let { add(it to ContainerTint.Secondary) }
+		recipe.measurementSystem?.let { system ->
+			add(system.displayName(isRecipeConverted) to ContainerTint.Secondary)
+		}
+	}
+	if (chips.isEmpty()) return
 
-	if (items.isEmpty()) return
-
-	Row(
-		modifier = Modifier.fillMaxWidth(),
+	FlowRow(
+		modifier = modifier.fillMaxWidth(),
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		items.forEach { item ->
-			Surface(
-				shape = RoundedCornerShape(999.dp),
-				color = PurecipesTheme.colorScheme.secondaryContainer,
-			) {
-				Text(
-					text = item,
-					modifier = Modifier.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.s),
-					style = PurecipesTheme.typography.labelLarge,
-				)
-			}
+		chips.forEach { (text, tint) ->
+			MetadataPillChip(
+				text = text,
+				tint = tint,
+			)
 		}
 	}
 }

@@ -3,7 +3,7 @@ package app.purecipes.shared.ui.component
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,15 +12,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
-fun PurecipesOutlinedButton(
+fun PurecipesButton(
 	text: String,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	enabled: Boolean = true,
 ) {
-	OutlinedButton(
-		modifier = modifier.fillMaxWidth(),
+	Button(
 		onClick = onClick,
+		modifier = modifier.fillMaxWidth(),
 		enabled = enabled,
 		shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
 		contentPadding = PaddingValues(vertical = PurecipesTheme.space.s),
@@ -34,11 +34,11 @@ fun PurecipesOutlinedButton(
 
 @Preview
 @Composable
-private fun PurecipesOutlinedButtonLightPreview() {
+private fun PurecipesButtonLightPreview() {
 	PurecipesTheme(darkTheme = false) {
 		Surface {
-			PurecipesOutlinedButton(
-				text = "Send Test Notification",
+			PurecipesButton(
+				text = "Start cooking",
 				onClick = {},
 			)
 		}
@@ -47,11 +47,11 @@ private fun PurecipesOutlinedButtonLightPreview() {
 
 @Preview
 @Composable
-private fun PurecipesOutlinedButtonDarkPreview() {
+private fun PurecipesButtonDarkPreview() {
 	PurecipesTheme(darkTheme = true) {
 		Surface {
-			PurecipesOutlinedButton(
-				text = "Send Test Notification",
+			PurecipesButton(
+				text = "Start cooking",
 				onClick = {},
 			)
 		}

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,6 +30,9 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.BrowseTileGrid
+import app.purecipes.shared.ui.component.BrowseTileItem
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -50,6 +52,8 @@ internal fun SearchResultsContent(
 	onRecipeSelect: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
+	browseTiles: ImmutableList<BrowseTileItem> = persistentListOf(),
+	onBrowseTileClick: (BrowseTileItem) -> Unit = {},
 	onRetryClick: () -> Unit = {},
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
@@ -70,9 +74,10 @@ internal fun SearchResultsContent(
 					textAlign = TextAlign.Center,
 				)
 				Spacer(modifier = Modifier.height(PurecipesTheme.space.l))
-				Button(onClick = onRetryClick) {
-					Text(text = "Retry")
-				}
+				PurecipesButton(
+					text = "Retry",
+					onClick = onRetryClick,
+				)
 			}
 		}
 
@@ -89,6 +94,14 @@ internal fun SearchResultsContent(
 				bottom = PurecipesTheme.space.m,
 			),
 		) {
+			if (browseTiles.isNotEmpty()) {
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					BrowseTileGrid(
+						tiles = browseTiles,
+						onTileClick = onBrowseTileClick,
+					)
+				}
+			}
 			item(span = { GridItemSpan(maxLineSpan) }) {
 				Text(
 					text = "$totalMatches recipes found",

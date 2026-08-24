@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SheetState
@@ -42,6 +41,7 @@ import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.NutritionFilter
 import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.VerticalScrollbar
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
@@ -435,12 +435,11 @@ private fun FilterLoginRequiredContent(
 			style = PurecipesTheme.typography.bodyMedium,
 			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
-		Button(
+		PurecipesButton(
+			text = "Go to Account",
 			onClick = onRequestLogIn,
 			modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG),
-		) {
-			Text("Go to Account")
-		}
+		)
 	}
 }
 

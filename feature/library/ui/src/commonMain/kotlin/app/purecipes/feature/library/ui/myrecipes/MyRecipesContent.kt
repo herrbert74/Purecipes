@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.VerticalScrollbar
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
@@ -81,9 +81,10 @@ internal fun MyRecipesContent(
 				title = "No recipes uploaded yet",
 				description = "Create your own recipes, then edit them any time from here.",
 				action = {
-					Button(onClick = onCreateRecipe) {
-						Text(text = "Create recipe")
-					}
+					PurecipesButton(
+						text = "Create recipe",
+						onClick = onCreateRecipe,
+					)
 				},
 			)
 

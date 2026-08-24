@@ -9,7 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.DietaryPreference
+import app.purecipes.shared.domain.model.DifficultyLevel
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
@@ -97,4 +100,7 @@ val marketingRecipeDetails = RecipeDetails(
 	cuisine = Cuisine.ITALIAN,
 	measurementSystem = MeasurementSystem.METRIC,
 	isFavorite = true,
+	mealType = MealType.DINNER,
+	difficultyLevel = DifficultyLevel.EASY,
+	dietaryPreferences = setOf(DietaryPreference.GLUTEN_FREE),
 )

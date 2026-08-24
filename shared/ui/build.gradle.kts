@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -55,6 +54,7 @@ kotlin {
 				implementation(libs.coil.compose)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlin.stdlib)
+				implementation(libs.kotlinx.collectionsImmutable)
 			}
 		}
 

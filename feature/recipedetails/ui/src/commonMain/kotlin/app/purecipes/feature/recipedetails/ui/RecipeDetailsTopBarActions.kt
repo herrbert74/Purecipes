@@ -14,17 +14,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
 import app.purecipes.shared.ui.preview.PreviewScreenSizes
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import org.jetbrains.compose.resources.painterResource
-import purecipes.feature.recipedetails.ui.generated.resources.Res
-import purecipes.feature.recipedetails.ui.generated.resources.nutrition
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -33,8 +28,6 @@ internal fun RecipeDetailsTopBarActions(
 	isFavorite: Boolean,
 	isFavoriteUpdating: Boolean,
 	hasRecipe: Boolean,
-	showNutrition: Boolean,
-	onShowNutrition: () -> Unit,
 	onToggleFavorite: () -> Unit,
 	onShowCookbookSheet: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -44,19 +37,6 @@ internal fun RecipeDetailsTopBarActions(
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		if (showNutrition) {
-			AssistChip(
-				onClick = onShowNutrition,
-				label = { Text(text = "Nutrition data") },
-				leadingIcon = {
-					Icon(
-						painter = painterResource(Res.drawable.nutrition),
-						contentDescription = null,
-					)
-				},
-				modifier = Modifier.testTag(NUTRITION_FACTS_BUTTON_TAG),
-			)
-		}
 		FilterChip(
 			selected = isFavorite,
 			onClick = onToggleFavorite,
@@ -105,8 +85,6 @@ private fun RecipeDetailsTopBarActionsPreview(
 			isFavorite = previewCase.isFavorite,
 			isFavoriteUpdating = false,
 			hasRecipe = true,
-			showNutrition = true,
-			onShowNutrition = {},
 			onToggleFavorite = {},
 			onShowCookbookSheet = {},
 		)
@@ -117,6 +95,7 @@ private data class RecipeDetailsTopBarActionsPreviewCase(
 	val canManageFavorites: Boolean,
 	val isFavorite: Boolean,
 ) {
+
 	override fun toString(): String = if (canManageFavorites) {
 		"Signed in"
 	} else {
@@ -126,6 +105,7 @@ private data class RecipeDetailsTopBarActionsPreviewCase(
 
 private class RecipeDetailsTopBarActionsPreviewParameterProvider :
 	PreviewParameterProvider<RecipeDetailsTopBarActionsPreviewCase> {
+
 	override val values: Sequence<RecipeDetailsTopBarActionsPreviewCase> = sequenceOf(
 		RecipeDetailsTopBarActionsPreviewCase(
 			canManageFavorites = true,
