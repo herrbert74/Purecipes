@@ -36,6 +36,7 @@ import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.staggeredAppear
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -119,6 +120,7 @@ internal fun SearchResultsContent(
 					RecipeCard(
 						recipe = recipe,
 						onClick = { onRecipeSelect(recipe.id) },
+						modifier = Modifier.staggeredAppear(index = index),
 					)
 				}
 			}

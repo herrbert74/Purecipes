@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -17,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import app.purecipes.shared.ui.component.FavoriteHeartIcon
 import app.purecipes.shared.ui.preview.PreviewScreenSizes
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -42,19 +41,7 @@ internal fun RecipeDetailsTopBarActions(
 			onClick = onToggleFavorite,
 			label = { Text(text = "Favorites") },
 			leadingIcon = {
-				Icon(
-					imageVector = if (isFavorite) {
-						Icons.Filled.Favorite
-					} else {
-						Icons.Outlined.FavoriteBorder
-					},
-					contentDescription = null,
-					tint = if (isFavorite) {
-						PurecipesTheme.colorScheme.primary
-					} else {
-						PurecipesTheme.colorScheme.onSurfaceVariant
-					},
-				)
+				FavoriteHeartIcon(selected = isFavorite)
 			},
 			enabled = canManageFavorites && hasRecipe && !isFavoriteUpdating,
 		)

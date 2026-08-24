@@ -66,6 +66,8 @@ internal fun CookingStepPage(
 	}
 }
 
+private const val TIMER_CHIP_ENTER_SCALE = 0.92f
+
 @Preview(showBackground = true)
 @Composable
 private fun CookingStepPagePreview() {

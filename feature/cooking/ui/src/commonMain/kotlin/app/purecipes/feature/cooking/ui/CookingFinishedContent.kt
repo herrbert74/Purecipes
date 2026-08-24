@@ -1,5 +1,11 @@
 package app.purecipes.feature.cooking.ui
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,14 +22,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -38,6 +43,7 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.ui.component.ContainerTint
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.FavoriteHeartIcon
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import app.purecipes.shared.ui.component.PurecipesOutlinedButton
@@ -102,13 +108,8 @@ internal fun CookingFinishedContent(
 					modifier = Modifier.weight(1f),
 					shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
 				) {
-					Icon(
-						imageVector = if (recipe.isFavorite) {
-							Icons.Filled.Favorite
-						} else {
-							Icons.Outlined.FavoriteBorder
-						},
-						contentDescription = null,
+					FavoriteHeartIcon(
+						selected = recipe.isFavorite,
 						modifier = Modifier.size(ButtonDefaults.IconSize),
 					)
 					Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
@@ -168,6 +169,19 @@ internal fun CookingFinishedContent(
 
 @Composable
 private fun CookingCelebrationEmojis() {
+	val infiniteTransition = rememberInfiniteTransition(label = "celebrationFloat")
+	val floatProgress by infiniteTransition.animateFloat(
+		initialValue = 0f,
+		targetValue = 1f,
+		animationSpec = infiniteRepeatable(
+			animation = tween(
+				durationMillis = CELEBRATION_FLOAT_DURATION_MS,
+				easing = FastOutSlowInEasing,
+			),
+			repeatMode = RepeatMode.Reverse,
+		),
+		label = "celebrationFloatProgress",
+	)
 	Row(
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		verticalAlignment = Alignment.CenterVertically,
@@ -175,10 +189,11 @@ private fun CookingCelebrationEmojis() {
 		CELEBRATION_EMOJIS.forEachIndexed { index, emoji ->
 			val tint = ContainerTint.forIndex(index)
 			val colors = tint.colorFamily()
-			val offsetY = if (index % 2 == 0) -CELEBRATION_OFFSET_Y else CELEBRATION_OFFSET_Y
+			val baseOffset = if (index % 2 == 0) -CELEBRATION_OFFSET_Y else CELEBRATION_OFFSET_Y
+			val animatedOffset = baseOffset * (0.65f + (0.35f * floatProgress))
 			Box(
 				modifier = Modifier
-					.offset(y = offsetY)
+					.offset(y = animatedOffset)
 					.size(CELEBRATION_CIRCLE_SIZE)
 					.background(color = colors.colorContainer, shape = CircleShape),
 				contentAlignment = Alignment.Center,
@@ -192,6 +207,8 @@ private fun CookingCelebrationEmojis() {
 		}
 	}
 }
+
+private const val CELEBRATION_FLOAT_DURATION_MS = 2_200
 
 private fun favoriteButtonLabel(canManageFavorites: Boolean, isFavorite: Boolean): String = when {
 	!canManageFavorites -> "Sign in to save"

@@ -1,5 +1,14 @@
 package app.purecipes.feature.cooking.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -14,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -30,16 +40,22 @@ internal fun CookingFloatingTimerChip(
 	onDismiss: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	val containerColor = if (timer.isComplete) {
-		PurecipesTheme.colorScheme.tertiaryContainer
-	} else {
-		PurecipesTheme.colorScheme.primaryContainer
-	}
-	val contentColor = if (timer.isComplete) {
-		PurecipesTheme.colorScheme.onTertiaryContainer
-	} else {
-		PurecipesTheme.colorScheme.onPrimaryContainer
-	}
+	val containerColor by animateColorAsState(
+		targetValue = if (timer.isComplete) {
+			PurecipesTheme.colorScheme.tertiaryContainer
+		} else {
+			PurecipesTheme.colorScheme.primaryContainer
+		},
+		label = "timerContainer",
+	)
+	val contentColor by animateColorAsState(
+		targetValue = if (timer.isComplete) {
+			PurecipesTheme.colorScheme.onTertiaryContainer
+		} else {
+			PurecipesTheme.colorScheme.onPrimaryContainer
+		},
+		label = "timerContent",
+	)
 	Surface(
 		modifier = modifier.testTag(COOKING_FLOATING_TIMER_TAG),
 		shape = RoundedCornerShape(PurecipesTheme.space.l),
@@ -56,12 +72,28 @@ internal fun CookingFloatingTimerChip(
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
-			Icon(
-				imageVector = if (timer.isComplete) Icons.Filled.Check else Icons.Filled.Timer,
-				contentDescription = null,
-				tint = contentColor,
-				modifier = Modifier.size(TIMER_ICON_SIZE),
-			)
+			AnimatedContent(
+				targetState = timer.isComplete,
+				transitionSpec = {
+					(
+						fadeIn() + scaleIn(
+							initialScale = TIMER_ICON_SCALE_START,
+							animationSpec = spring(
+								dampingRatio = Spring.DampingRatioMediumBouncy,
+								stiffness = Spring.StiffnessMedium,
+							),
+						)
+						) togetherWith (fadeOut() + scaleOut(targetScale = TIMER_ICON_SCALE_START))
+				},
+				label = "timerIcon",
+			) { complete ->
+				Icon(
+					imageVector = if (complete) Icons.Filled.Check else Icons.Filled.Timer,
+					contentDescription = null,
+					tint = contentColor,
+					modifier = Modifier.size(TIMER_ICON_SIZE),
+				)
+			}
 			Text(
 				text = if (timer.isComplete) {
 					"Done · ${timer.label}"
@@ -83,6 +115,7 @@ internal fun CookingFloatingTimerChip(
 }
 
 private val TIMER_ICON_SIZE = 20.dp
+private const val TIMER_ICON_SCALE_START = 0.6f
 
 @Preview(showBackground = true)
 @Composable
