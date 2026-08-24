@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -20,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +28,7 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.CenteredMessageContent
+import app.purecipes.shared.ui.component.ShowLoading
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.coroutines.delay
@@ -76,14 +75,9 @@ fun StepByStepCookingRoute(
 			},
 		) { innerPadding ->
 			when {
-				viewModel.isLoading -> Box(
-					modifier = Modifier
-						.fillMaxSize()
-						.padding(innerPadding),
-					contentAlignment = Alignment.Center,
-				) {
-					CircularProgressIndicator()
-				}
+				viewModel.isLoading -> ShowLoading(
+					modifier = Modifier.padding(innerPadding),
+				)
 
 				viewModel.errorMessage != null -> CenteredMessageContent(
 					message = viewModel.errorMessage ?: "Unknown error",

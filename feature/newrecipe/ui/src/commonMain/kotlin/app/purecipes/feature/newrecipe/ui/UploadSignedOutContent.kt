@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -13,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.EmptyStateContent
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -27,9 +27,10 @@ internal fun UploadSignedOutContent(
 		description = "Recipe upload is tied to your account so you can edit your uploaded recipes later.",
 		modifier = modifier,
 		action = {
-			Button(onClick = onRequestLogIn) {
-				Text(text = "Go to Account")
-			}
+			PurecipesButton(
+				text = "Go to Account",
+				onClick = onRequestLogIn,
+			)
 		},
 	)
 }

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -15,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
@@ -46,26 +49,19 @@ internal fun CookbooksTabContent(
 			ErrorText(text = cookbooksErrorMessage, textAlign = TextAlign.Center)
 		}
 
-		cookbooks.isEmpty() && totalMatches == 0 -> Box(
-			modifier = modifier.fillMaxSize(),
-			contentAlignment = Alignment.Center,
-		) {
-			Column(
-				horizontalAlignment = Alignment.CenterHorizontally,
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-				modifier = Modifier.padding(PurecipesTheme.space.l),
-			) {
-				Text(
-					text = "Organize saved recipes into cookbooks",
-					style = PurecipesTheme.typography.bodyLarge,
-					textAlign = TextAlign.Center,
-				)
+		cookbooks.isEmpty() && totalMatches == 0 -> EmptyStateContent(
+			icon = Icons.AutoMirrored.Filled.MenuBook,
+			iconContentDescription = "Cookbooks",
+			title = "No cookbooks yet",
+			description = "Organize saved recipes into cookbooks.",
+			modifier = modifier,
+			action = {
 				PurecipesButton(
 					text = "Create new cookbook",
 					onClick = onCreateClick,
 				)
-			}
-		}
+			},
+		)
 
 		else -> Column(modifier = modifier.fillMaxSize()) {
 			deleteCookbookError?.let { message ->

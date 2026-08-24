@@ -1,24 +1,23 @@
 package app.purecipes.shared.ui.component.paging
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import app.purecipes.shared.ui.component.EmptyStateContent
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.ShowLoading
 
 /**
@@ -30,7 +29,7 @@ import app.purecipes.shared.ui.component.ShowLoading
 fun FirstPageProgressIndicator(modifier: Modifier = Modifier) {
 	Box(
 		modifier = modifier.fillMaxSize(),
-		contentAlignment = Alignment.Center
+		contentAlignment = Alignment.Center,
 	) {
 		ShowLoading()
 	}
@@ -39,14 +38,12 @@ fun FirstPageProgressIndicator(modifier: Modifier = Modifier) {
 @Composable
 fun NewPageProgressIndicator(modifier: Modifier = Modifier) {
 	Box(
-		modifier = modifier.fillMaxWidth().padding(vertical = 16.dp),
-		contentAlignment = Alignment.Center
+		modifier = modifier
+			.fillMaxWidth()
+			.padding(vertical = 16.dp),
+		contentAlignment = Alignment.Center,
 	) {
-		Box(
-			modifier = Modifier,
-		) {
-			LinearProgressIndicator()
-		}
+		LinearProgressIndicator()
 	}
 }
 
@@ -56,30 +53,19 @@ fun FirstPageErrorIndicator(
 	modifier: Modifier = Modifier,
 	onRetryClick: () -> Unit = {},
 ) {
-	Box(
-		modifier = modifier.fillMaxSize(),
-		contentAlignment = Alignment.Center
-	) {
-		Column(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalAlignment = Alignment.CenterHorizontally
-		) {
-			Text(
-				exception.message!!,
-				textAlign = TextAlign.Center,
-				fontWeight = FontWeight.Bold,
-				fontSize = 18.sp
+	EmptyStateContent(
+		icon = Icons.Filled.Warning,
+		iconContentDescription = "Error",
+		title = exception.message ?: "Something went wrong",
+		description = "Check your connection, then try again.",
+		modifier = modifier,
+		action = {
+			PurecipesButton(
+				text = "Retry",
+				onClick = onRetryClick,
 			)
-
-			Spacer(modifier = Modifier.height(32.dp))
-
-			Button(
-				onClick = onRetryClick
-			) {
-				Text("Retry")
-			}
-		}
-	}
+		},
+	)
 }
 
 @Composable
@@ -90,24 +76,20 @@ fun NewPageErrorIndicator(
 ) {
 	Box(
 		modifier = modifier.fillMaxSize(),
-		contentAlignment = Alignment.Center
+		contentAlignment = Alignment.Center,
 	) {
 		Row(
-			verticalAlignment = Alignment.CenterVertically
+			verticalAlignment = Alignment.CenterVertically,
 		) {
 			Text(
-				exception.message!!,
+				text = exception.message.orEmpty(),
 				textAlign = TextAlign.Center,
-				fontWeight = FontWeight.Bold,
-				fontSize = 18.sp
 			)
 
-			Spacer(modifier = Modifier.width(32.dp))
+			Box(modifier = Modifier.width(32.dp))
 
-			Button(
-				onClick = onRetryClick
-			) {
-				Text("Retry")
+			TextButton(onClick = onRetryClick) {
+				Text(text = "Retry")
 			}
 		}
 	}
