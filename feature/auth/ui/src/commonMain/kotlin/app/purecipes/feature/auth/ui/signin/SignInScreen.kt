@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.component.BrandMomentHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
@@ -100,6 +102,13 @@ internal fun SignInScreenContent(
 					.padding(PurecipesTheme.space.l),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
+				BrandMomentHeader(
+					icon = Icons.Filled.Person,
+					iconContentDescription = "Sign in",
+					title = "Welcome back",
+					description = "Sign in with your email to pick up where you left off.",
+					compact = true,
+				)
 				infoMessage?.let { message ->
 					Text(
 						text = message,

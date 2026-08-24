@@ -1,10 +1,12 @@
 package app.purecipes.feature.recipedetails.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
@@ -25,7 +27,10 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.DifficultyLevel
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.NutritionSummary
+import app.purecipes.shared.domain.model.RecipeNutrition
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
@@ -34,6 +39,8 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
+import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
+import app.purecipes.shared.ui.component.RecipeDetailsSection
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import org.junit.Rule
 import org.junit.Test
@@ -77,6 +84,11 @@ class RecipeDetailsScreenTest {
 								totalTime = 35,
 								yields = "4 servings",
 								cuisine = Cuisine.MEDITERRANEAN,
+							).copy(
+								difficultyLevel = DifficultyLevel.EASY,
+								nutrition = RecipeNutrition(
+									recipeTotals = NutritionSummary(calories = 180.0, protein = 3.0),
+								),
 							),
 						),
 						sessionKey = "user-7",
@@ -88,12 +100,23 @@ class RecipeDetailsScreenTest {
 		composeRule.onNodeWithText("Roasted Carrots").assertIsDisplayed()
 		composeRule.onNodeWithText("Sweet and savory side dish.").assertIsDisplayed()
 		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
+		composeRule.onNodeWithText("35 min").assertIsDisplayed()
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasTestTag(RecipeDetailsSection.Ingredients.testTag))
+		composeRule.onNodeWithTag(RecipeDetailsSection.Ingredients.testTag).assertIsDisplayed()
 		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText("- 6 carrots"))
 		composeRule.onNodeWithText("- 6 carrots").assertIsDisplayed()
+		composeRule.onNodeWithTag(RecipeDetailsSection.Method.testTag).performClick()
 		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText("Roast until tender"))
 		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasTestTag(RecipeDetailsSection.Nutrition.testTag))
+		composeRule.onNodeWithTag(RecipeDetailsSection.Nutrition.testTag).performClick()
+		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasTestTag(NUTRITION_FACTS_BUTTON_TAG))
+		composeRule.onNodeWithTag(NUTRITION_FACTS_BUTTON_TAG).assertIsDisplayed()
 	}
 }
 

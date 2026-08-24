@@ -58,6 +58,7 @@ detekt = "2.0.0-alpha.6"
 detekt-compose = "0.6.4"
 diamondedge-logging = "2.1.1"
 essenty = "2.5.0"
+eygraber-composePlaceholder = "1.0.12"
 h2 = "2.4.240"
 #facebook = "16.1.2"
 firebaseBom = "34.17.0"
@@ -234,6 +235,8 @@ diamondedge-logging = { module = "com.diamondedge:logging", version.ref = "diamo
 #essenty-backHandler = { module = "com.arkivanov.essenty:back-handler", version.ref = "essenty" }
 #essenty-instanceKeeper = { module = "com.arkivanov.essenty:instance-keeper", version.ref = "essenty" }
 #essenty-stateKeeper = { module = "com.arkivanov.essenty:state-keeper", version.ref = "essenty" }
+
+eygraber-composePlaceholderMaterial3 = { module = "com.eygraber:compose-placeholder-material3", version.ref = "eygraber-composePlaceholder" }
 
 google-androidPublisherApi = { module = "com.google.apis:google-api-services-androidpublisher", version.ref = "googleAndroidPublisher" }
 google-apiClient = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }

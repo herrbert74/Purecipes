@@ -68,14 +68,14 @@ class StepByStepCookingRouteTest {
 		}
 
 		onNodeWithText("Roasted Carrots").assertIsDisplayed()
-		onNodeWithText("1 of 2").assertIsDisplayed()
+		onNodeWithText("Step 1 of 2").assertIsDisplayed()
 		onNodeWithText("Trim the carrots").assertIsDisplayed()
 
 		onNodeWithText("Trim the carrots").performTouchInput {
 			swipeLeft()
 		}
 
-		onNodeWithText("2 of 2").assertIsDisplayed()
+		onNodeWithText("Step 2 of 2").assertIsDisplayed()
 		onNodeWithText("Roast until tender").assertIsDisplayed()
 		onNodeWithText("Finish cooking").assertIsDisplayed()
 		onNodeWithTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG).assertStable()
@@ -106,10 +106,10 @@ class StepByStepCookingRouteTest {
 		onNodeWithText("Finish cooking").performClick()
 
 		onNodeWithTag(COOKING_FINISHED_CONTENT_TAG).assertIsDisplayed()
-		onNodeWithText("Enjoy your meal").assertIsDisplayed()
+		onNodeWithText("You finished cooking").assertIsDisplayed()
 		onNodeWithText("Favorite").assertIsDisplayed()
 		onNodeWithText("Share").assertIsDisplayed()
-		onAllNodesWithText("1 of 2").assertCountEquals(0)
+		onAllNodesWithText("Step 1 of 2").assertCountEquals(0)
 		onAllNodesWithTag(COOKING_ADD_TO_COOKBOOK_BUTTON_TAG).assertCountEquals(0)
 
 		onNodeWithText("Done").performClick()

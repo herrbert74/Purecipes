@@ -1,27 +1,21 @@
 package app.purecipes.feature.search.ui.result
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,9 +25,15 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.BrowseTileGrid
+import app.purecipes.shared.ui.component.BrowseTileItem
+import app.purecipes.shared.ui.component.EmptyStateContent
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
+import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.staggeredAppear
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -50,31 +50,27 @@ internal fun SearchResultsContent(
 	onRecipeSelect: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
+	browseTiles: ImmutableList<BrowseTileItem> = persistentListOf(),
+	onBrowseTileClick: (BrowseTileItem) -> Unit = {},
 	onRetryClick: () -> Unit = {},
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
 	when {
-		isSearching -> Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-			CircularProgressIndicator()
-		}
+		isSearching -> RecipeCardSkeletonGrid(modifier = modifier)
 
-		errorMessage != null -> Box(
-			modifier = modifier.fillMaxSize(),
-			contentAlignment = Alignment.Center,
-		) {
-			Column(horizontalAlignment = Alignment.CenterHorizontally) {
-				Text(
-					text = errorMessage,
-					style = PurecipesTheme.typography.bodyLarge,
-					color = PurecipesTheme.colorScheme.error,
-					textAlign = TextAlign.Center,
+		errorMessage != null -> EmptyStateContent(
+			icon = Icons.Filled.Warning,
+			iconContentDescription = "Error",
+			title = errorMessage,
+			description = "Check your connection, then try again.",
+			modifier = modifier,
+			action = {
+				PurecipesButton(
+					text = "Retry",
+					onClick = onRetryClick,
 				)
-				Spacer(modifier = Modifier.height(PurecipesTheme.space.l))
-				Button(onClick = onRetryClick) {
-					Text(text = "Retry")
-				}
-			}
-		}
+			},
+		)
 
 		else -> PaginatedLazyVerticalGrid(
 			paginationState = paginationState,
@@ -89,6 +85,14 @@ internal fun SearchResultsContent(
 				bottom = PurecipesTheme.space.m,
 			),
 		) {
+			if (browseTiles.isNotEmpty()) {
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					BrowseTileGrid(
+						tiles = browseTiles,
+						onTileClick = onBrowseTileClick,
+					)
+				}
+			}
 			item(span = { GridItemSpan(maxLineSpan) }) {
 				Text(
 					text = "$totalMatches recipes found",
@@ -106,6 +110,7 @@ internal fun SearchResultsContent(
 					RecipeCard(
 						recipe = recipe,
 						onClick = { onRecipeSelect(recipe.id) },
+						modifier = Modifier.staggeredAppear(index = index),
 					)
 				}
 			}

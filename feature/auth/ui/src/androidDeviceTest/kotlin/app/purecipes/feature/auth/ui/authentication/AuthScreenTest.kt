@@ -1,9 +1,11 @@
 package app.purecipes.feature.auth.ui.authentication
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -187,27 +189,39 @@ class AuthScreenTest {
 
 	private fun ComposeUiTest.showRegisterEmailForm() {
 		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
+		val trackEvent = TrackEventUseCase(FakeAnalyticsRepository())
 		setTrackedContent {
+			val viewModel = remember {
+				RegistrationViewModel(
+					registerWithEmail = RegisterWithEmailUseCase(authRepo),
+					trackEvent = trackEvent,
+				)
+			}
 			PurecipesTheme {
 				RegistrationScreen(
 					onBack = {},
 					onRegistrationSuccess = {},
-					viewModel = RegistrationViewModel(
-						registerWithEmail = RegisterWithEmailUseCase(authRepo),
-						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-					),
+					viewModel = viewModel,
 				)
 			}
 		}
 		onNodeWithText("Display name").performTextInput("Taylor Baker")
 		onNodeWithTag(REGISTRATION_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performScrollTo()
 	}
 
 	private fun ComposeUiTest.submitRegisterForm() {
-		onNodeWithTag(REGISTRATION_SUBMIT_TAG).performClick()
+		onNodeWithTag(REGISTRATION_SUBMIT_TAG)
+			.performScrollTo()
+			.performClick()
 	}
 
 	private fun ComposeUiTest.assertPolicyError(expectedMessage: String) {
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(REGISTRATION_PASSWORD_ERROR_TAG, useUnmergedTree = true)
+				.fetchSemanticsNodes()
+				.isNotEmpty()
+		}
 		onNodeWithTag(REGISTRATION_PASSWORD_ERROR_TAG, useUnmergedTree = true)
 			.performScrollTo()
 			.assertIsDisplayed()

@@ -141,6 +141,13 @@ fun RecipeSearchScreen(
 			paginationState = viewModel.paginationState,
 			recipes = viewModel.recipes,
 			nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
+			browseTiles = searchBrowseTiles(viewModel.activeFilters),
+			onBrowseTileClick = { tile ->
+				viewModel.onFiltersChange(
+					filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
+					search = true,
+				)
+			},
 			onRecipeSelect = onRecipeSelect,
 			onRetryClick = viewModel::searchNow,
 			bannerAdViewModel = bannerAdViewModel,

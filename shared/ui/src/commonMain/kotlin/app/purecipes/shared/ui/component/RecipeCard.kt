@@ -1,7 +1,6 @@
 package app.purecipes.shared.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,17 +18,16 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -43,6 +41,7 @@ const val RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX = "recipeCardFavoriteIcon:"
 private const val RECIPE_CARD_ASPECT_RATIO_WIDTH = 16f
 private const val RECIPE_CARD_ASPECT_RATIO_HEIGHT = 9f
 private const val PREP_TIME_UNKNOWN = "Prep time unknown"
+private const val QUICK_RECIPE_MAX_MINUTES = 30
 
 @Composable
 fun RecipeCard(
@@ -54,138 +53,122 @@ fun RecipeCard(
 	onDeleteClick: (() -> Unit)? = null,
 	deleteContentDescription: String = "Delete recipe",
 ) {
-	val fixedColors = PurecipesTheme.fixedColors
+	val tint = ContainerTint.forIndex(recipe.id)
+	val colors = tint.colorFamily()
 	Card(
+		onClick = onClick,
 		modifier = modifier.fillMaxWidth(widthFraction),
-		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
+		colors = CardDefaults.cardColors(containerColor = colors.colorContainer),
 	) {
-		Box(
+		Column(
 			modifier = Modifier
 				.fillMaxWidth()
-				.aspectRatio(RECIPE_CARD_ASPECT_RATIO_WIDTH / RECIPE_CARD_ASPECT_RATIO_HEIGHT),
+				.padding(PurecipesTheme.space.s),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
+			RecipeCardLabels(recipe = recipe, tint = tint)
 			Box(
 				modifier = Modifier
-					.fillMaxSize()
-					.clickable(onClick = onClick),
+					.fillMaxWidth()
+					.aspectRatio(RECIPE_CARD_ASPECT_RATIO_WIDTH / RECIPE_CARD_ASPECT_RATIO_HEIGHT)
+					.clip(RoundedCornerShape(PurecipesTheme.space.m)),
 			) {
 				AsyncImage(
 					model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
-						.background(PurecipesTheme.colorScheme.secondaryContainer),
+						.background(colors.color),
 					contentScale = ContentScale.Crop,
 				)
-				Box(
-					modifier = Modifier
-						.fillMaxSize()
-						.background(PurecipesTheme.fixedScrimBrush()),
-				)
-				Row(
-					modifier = Modifier
-						.align(Alignment.TopStart)
-						.padding(PurecipesTheme.space.s),
-					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
-				) {
-					recipe.cuisine?.displayName?.let { cuisine ->
-						RecipeCardLabel(
-							text = cuisine,
-							backgroundColor = fixedColors.primaryFixed,
-							contentColor = fixedColors.onPrimaryFixed,
-						)
+				if (recipe.isFavorite || onEditClick != null || onDeleteClick != null) {
+					Row(
+						modifier = Modifier.align(Alignment.TopEnd),
+						verticalAlignment = Alignment.CenterVertically,
+					) {
+						if (recipe.isFavorite) {
+							Icon(
+								imageVector = Icons.Filled.Favorite,
+								contentDescription = "Favorited",
+								tint = Color.White,
+								modifier = Modifier
+									.padding(PurecipesTheme.space.s)
+									.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
+							)
+						}
+						if (onEditClick != null) {
+							IconButton(
+								onClick = onEditClick,
+								modifier = Modifier.testTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX${recipe.id}"),
+							) {
+								Icon(
+									imageVector = Icons.Filled.Edit,
+									contentDescription = "Edit recipe",
+									tint = Color.White,
+								)
+							}
+						}
+						if (onDeleteClick != null) {
+							IconButton(
+								onClick = onDeleteClick,
+								modifier = Modifier.testTag("$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX${recipe.id}"),
+							) {
+								Icon(
+									imageVector = Icons.Filled.Delete,
+									contentDescription = deleteContentDescription,
+									tint = Color.White,
+								)
+							}
+						}
 					}
-					recipe.measurementSystem?.let { measurementSystem ->
-						RecipeCardLabel(
-							text = measurementSystem.displayName(),
-							backgroundColor = fixedColors.tertiaryFixed,
-							contentColor = fixedColors.onTertiaryFixed,
-						)
-					}
-					if (recipe.isPrivate) {
-						RecipeCardLabel(
-							text = "Private",
-							backgroundColor = fixedColors.secondaryFixed,
-							contentColor = fixedColors.onSecondaryFixed,
-						)
-					}
-				}
-				Column(
-					modifier = Modifier
-						.align(Alignment.BottomStart)
-						.padding(PurecipesTheme.space.m),
-					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
-				) {
-					FixedTitleText(text = recipe.title)
-					FixedSubtitleText(
-						text = recipe.totalTime?.let { "$it min" } ?: PREP_TIME_UNKNOWN,
-					)
 				}
 			}
-			if (recipe.isFavorite || onEditClick != null || onDeleteClick != null) {
-				Row(
-					modifier = Modifier.align(Alignment.TopEnd),
-					verticalAlignment = Alignment.CenterVertically,
-				) {
-					if (recipe.isFavorite) {
-						Icon(
-							imageVector = Icons.Filled.Favorite,
-							contentDescription = "Favorited",
-							tint = Color.White,
-							modifier = Modifier
-								.padding(PurecipesTheme.space.s)
-								.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
-						)
-					}
-					if (onEditClick != null) {
-						IconButton(
-							onClick = onEditClick,
-							modifier = Modifier.testTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX${recipe.id}"),
-						) {
-							Icon(
-								imageVector = Icons.Filled.Edit,
-								contentDescription = "Edit recipe",
-								tint = Color.White,
-							)
-						}
-					}
-					if (onDeleteClick != null) {
-						IconButton(
-							onClick = onDeleteClick,
-							modifier = Modifier.testTag("$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX${recipe.id}"),
-						) {
-							Icon(
-								imageVector = Icons.Filled.Delete,
-								contentDescription = deleteContentDescription,
-								tint = Color.White,
-							)
-						}
-					}
-				}
+			Column(
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+			) {
+				Text(
+					text = recipe.title,
+					style = PurecipesTheme.typography.titleMedium,
+					color = colors.onColorContainer,
+				)
+				Text(
+					text = recipe.totalTime?.let { "$it min" } ?: PREP_TIME_UNKNOWN,
+					style = PurecipesTheme.typography.bodyMedium,
+					color = colors.onColorContainer,
+				)
 			}
 		}
 	}
 }
 
 @Composable
-private fun RecipeCardLabel(
-	text: String,
-	backgroundColor: Color,
-	contentColor: Color,
+private fun RecipeCardLabels(
+	recipe: RecipeSummary,
+	tint: ContainerTint,
 ) {
-	Surface(
-		shape = RoundedCornerShape(999.dp),
-		color = backgroundColor,
+	val labels = buildList {
+		recipe.totalTime
+			?.takeIf { minutes -> minutes <= QUICK_RECIPE_MAX_MINUTES }
+			?.let { add("Quick" to ContainerTint.Tertiary) }
+		recipe.cuisine?.displayName?.let { add(it to tint) }
+		recipe.measurementSystem?.let { system ->
+			add(system.displayName() to ContainerTint.Secondary)
+		}
+		if (recipe.isPrivate) {
+			add("Private" to ContainerTint.Secondary)
+		}
+	}
+	if (labels.isEmpty()) return
+	Row(
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 	) {
-		Text(
-			text = text,
-			modifier = Modifier.padding(
-				horizontal = PurecipesTheme.space.s,
-				vertical = PurecipesTheme.space.xs,
-			),
-			style = PurecipesTheme.typography.labelLarge,
-			color = contentColor,
-		)
+		labels.forEach { (text, chipTint) ->
+			MetadataPillChip(
+				text = text,
+				tint = chipTint,
+				filled = true,
+			)
+		}
 	}
 }
 

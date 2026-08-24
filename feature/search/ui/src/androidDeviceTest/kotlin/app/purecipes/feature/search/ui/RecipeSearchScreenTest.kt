@@ -73,6 +73,7 @@ import app.purecipes.shared.testfixtures.fake.FakeSearchPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import app.purecipes.shared.ui.component.BROWSE_TILE_TAG_PREFIX
 import app.purecipes.shared.ui.component.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
@@ -129,6 +130,7 @@ class RecipeSearchScreenTest {
 			}
 		}
 
+		onNodeWithTag("${BROWSE_TILE_TAG_PREFIX}meal:BREAKFAST").assertIsDisplayed()
 		onNodeWithText("1 recipes found").assertIsDisplayed()
 	}
 
@@ -183,8 +185,19 @@ class RecipeSearchScreenTest {
 			}
 		}
 
-		onNodeWithTag("${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}1").assertIsDisplayed()
-		onNodeWithTag("${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}2").assertDoesNotExist()
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
+			.performScrollToNode(hasText("Tomato Pasta"))
+		onNodeWithTag(
+			testTag = "${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}1",
+			useUnmergedTree = true,
+		).assertIsDisplayed()
+		onNodeWithTag(
+			testTag = "${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}2",
+			useUnmergedTree = true,
+		).assertDoesNotExist()
 	}
 
 	@Test

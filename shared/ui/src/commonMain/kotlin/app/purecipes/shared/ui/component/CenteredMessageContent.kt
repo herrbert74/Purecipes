@@ -1,5 +1,6 @@
 package app.purecipes.shared.ui.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ fun CenteredMessageContent(
 	Box(
 		modifier = modifier
 			.fillMaxSize()
+			.background(PurecipesTheme.colorScheme.primaryContainer)
 			.padding(
 				PaddingValues(
 					horizontal = PurecipesTheme.space.l,
@@ -31,7 +33,8 @@ fun CenteredMessageContent(
 	) {
 		Text(
 			text = message,
-			style = PurecipesTheme.typography.bodyLarge,
+			style = PurecipesTheme.typography.headlineMedium,
+			color = PurecipesTheme.colorScheme.onPrimaryContainer,
 			textAlign = TextAlign.Center,
 		)
 	}

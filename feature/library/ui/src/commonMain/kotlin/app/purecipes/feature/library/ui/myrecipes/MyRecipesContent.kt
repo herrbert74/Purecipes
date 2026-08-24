@@ -14,10 +14,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
+import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.VerticalScrollbar
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -51,29 +51,20 @@ internal fun MyRecipesContent(
 
 	Box(modifier = modifier.fillMaxSize()) {
 		when {
-			isLoading && recipes.isEmpty() -> Box(
-				modifier = Modifier.fillMaxSize(),
-				contentAlignment = Alignment.Center,
-			) {
-				CircularProgressIndicator()
-			}
+			isLoading && recipes.isEmpty() -> RecipeCardSkeletonGrid()
 
-			errorMessage != null && recipes.isEmpty() -> Box(
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(PurecipesTheme.space.l),
-				contentAlignment = Alignment.Center,
-			) {
-				Column(
-					horizontalAlignment = Alignment.CenterHorizontally,
-					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-				) {
-					ErrorText(text = errorMessage, textAlign = TextAlign.Center)
-					TextButton(onClick = onRetry) {
-						Text(text = "Retry")
-					}
-				}
-			}
+			errorMessage != null && recipes.isEmpty() -> EmptyStateContent(
+				icon = Icons.Filled.Warning,
+				iconContentDescription = "Error",
+				title = "Couldn't load recipes",
+				description = errorMessage,
+				action = {
+					PurecipesButton(
+						text = "Retry",
+						onClick = onRetry,
+					)
+				},
+			)
 
 			recipes.isEmpty() -> EmptyStateContent(
 				icon = Icons.Filled.Add,
@@ -81,9 +72,10 @@ internal fun MyRecipesContent(
 				title = "No recipes uploaded yet",
 				description = "Create your own recipes, then edit them any time from here.",
 				action = {
-					Button(onClick = onCreateRecipe) {
-						Text(text = "Create recipe")
-					}
+					PurecipesButton(
+						text = "Create recipe",
+						onClick = onCreateRecipe,
+					)
 				},
 			)
 

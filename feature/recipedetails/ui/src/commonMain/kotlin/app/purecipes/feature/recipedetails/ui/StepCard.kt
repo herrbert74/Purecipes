@@ -35,6 +35,7 @@ internal fun StepCard(stepNumber: Int, step: String) {
 					Text(
 						text = stepNumber.toString(),
 						style = PurecipesTheme.typography.titleMedium,
+						color = PurecipesTheme.colorScheme.onPrimaryContainer,
 					)
 				}
 			}

@@ -352,8 +352,11 @@ class RecipeSearchViewModel(
 		}
 	}
 
-	fun onFiltersChange(filters: SearchFilters) {
+	fun onFiltersChange(filters: SearchFilters, search: Boolean = false) {
 		activeFilters = if (isPremium) filters else filters.withoutPremiumFilters()
+		if (search) {
+			persistFilterSheetChangesAndSearch()
+		}
 	}
 
 	fun onKeyIngredientsChange(ingredients: Set<String>) {
