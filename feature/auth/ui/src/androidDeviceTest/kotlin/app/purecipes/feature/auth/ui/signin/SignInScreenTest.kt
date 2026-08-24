@@ -1,5 +1,6 @@
 package app.purecipes.feature.auth.ui.signin
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -65,21 +66,24 @@ class SignInScreenTest {
 		repository: FakeAuthenticationRepository = FakeAuthenticationRepository(),
 	) {
 		setTrackedContent {
+			val viewModel = remember {
+				SignInViewModel(
+					signInWithEmail = SignInWithEmailUseCase(repository),
+					resendEmailVerification = ResendEmailVerificationUseCase(repository),
+					sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+					trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+					logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+					sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+					initialEmail = "",
+					showRegistrationSuccessMessage = false,
+				)
+			}
 			PurecipesTheme {
 				SignInScreen(
 					initialEmail = "",
 					showRegistrationSuccessMessage = false,
 					onBack = {},
-					viewModel = SignInViewModel(
-						signInWithEmail = SignInWithEmailUseCase(repository),
-						resendEmailVerification = ResendEmailVerificationUseCase(repository),
-						sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
-						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
-						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
-						initialEmail = "",
-						showRegistrationSuccessMessage = false,
-					),
+					viewModel = viewModel,
 				)
 			}
 		}

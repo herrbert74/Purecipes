@@ -64,6 +64,7 @@ fun RegistrationScreen(
 					iconContentDescription = "Create account",
 					title = "Join Purecipes",
 					description = "Register with your email. Your display name is shown on your profile.",
+					compact = true,
 				)
 				RegistrationForm(
 					displayName = viewModel.displayName,

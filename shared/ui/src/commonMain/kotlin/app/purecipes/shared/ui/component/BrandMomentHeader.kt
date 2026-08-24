@@ -26,7 +26,23 @@ fun BrandMomentHeader(
 	title: String,
 	description: String,
 	modifier: Modifier = Modifier,
+	compact: Boolean = false,
 ) {
+	val illustrationSize = if (compact) {
+		BrandMomentHeaderDefaults.CompactIllustrationSize
+	} else {
+		BrandMomentHeaderDefaults.IllustrationSize
+	}
+	val illustrationIconSize = if (compact) {
+		BrandMomentHeaderDefaults.CompactIllustrationIconSize
+	} else {
+		BrandMomentHeaderDefaults.IllustrationIconSize
+	}
+	val titleStyle = if (compact) {
+		PurecipesTheme.typography.headlineSmall
+	} else {
+		PurecipesTheme.typography.headlineMedium
+	}
 	Column(
 		modifier = modifier
 			.fillMaxWidth()
@@ -34,19 +50,22 @@ fun BrandMomentHeader(
 				color = PurecipesTheme.colorScheme.primaryContainer,
 				shape = RoundedCornerShape(PurecipesTheme.space.m),
 			)
-			.padding(PurecipesTheme.space.l),
+			.padding(
+				horizontal = PurecipesTheme.space.l,
+				vertical = if (compact) PurecipesTheme.space.m else PurecipesTheme.space.l,
+			),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
 		BrandMomentIllustration(
 			icon = icon,
 			contentDescription = iconContentDescription,
-			size = 96.dp,
-			iconSize = 48.dp,
+			size = illustrationSize,
+			iconSize = illustrationIconSize,
 		)
 		Text(
 			text = title,
-			style = PurecipesTheme.typography.headlineMedium,
+			style = titleStyle,
 			color = PurecipesTheme.colorScheme.onPrimaryContainer,
 			textAlign = TextAlign.Center,
 		)
@@ -57,6 +76,14 @@ fun BrandMomentHeader(
 			textAlign = TextAlign.Center,
 		)
 	}
+}
+
+object BrandMomentHeaderDefaults {
+
+	val IllustrationSize = 96.dp
+	val IllustrationIconSize = 48.dp
+	val CompactIllustrationSize = 56.dp
+	val CompactIllustrationIconSize = 28.dp
 }
 
 @Preview

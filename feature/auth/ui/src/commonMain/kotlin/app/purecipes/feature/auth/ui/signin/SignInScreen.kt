@@ -107,6 +107,7 @@ internal fun SignInScreenContent(
 					iconContentDescription = "Sign in",
 					title = "Welcome back",
 					description = "Sign in with your email to pick up where you left off.",
+					compact = true,
 				)
 				infoMessage?.let { message ->
 					Text(
