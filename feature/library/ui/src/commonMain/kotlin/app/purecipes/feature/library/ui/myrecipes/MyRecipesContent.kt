@@ -29,7 +29,7 @@ import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.ShowLoading
+import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.VerticalScrollbar
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -51,7 +51,7 @@ internal fun MyRecipesContent(
 
 	Box(modifier = modifier.fillMaxSize()) {
 		when {
-			isLoading && recipes.isEmpty() -> ShowLoading()
+			isLoading && recipes.isEmpty() -> RecipeCardSkeletonGrid()
 
 			errorMessage != null && recipes.isEmpty() -> EmptyStateContent(
 				icon = Icons.Filled.Warning,

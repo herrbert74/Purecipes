@@ -30,7 +30,7 @@ import app.purecipes.shared.ui.component.BrowseTileItem
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.ShowLoading
+import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.component.staggeredAppear
@@ -56,7 +56,7 @@ internal fun SearchResultsContent(
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
 	when {
-		isSearching -> ShowLoading(modifier = modifier)
+		isSearching -> RecipeCardSkeletonGrid(modifier = modifier)
 
 		errorMessage != null -> EmptyStateContent(
 			icon = Icons.Filled.Warning,

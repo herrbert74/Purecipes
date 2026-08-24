@@ -52,6 +52,7 @@ kotlin {
 			dependencies {
 				implementation(project(":shared:domain"))
 				implementation(libs.coil.compose)
+				implementation(libs.eygraber.composePlaceholderMaterial3)
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.kotlin.stdlib)
 				implementation(libs.kotlinx.collectionsImmutable)

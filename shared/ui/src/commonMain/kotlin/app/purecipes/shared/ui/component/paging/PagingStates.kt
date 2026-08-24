@@ -18,21 +18,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.ShowLoading
+import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 
 /**
  * Copied from: [https://github.com/Ahmad-Hamwi/lazy-pagination-compose]
  *
- * Modified: Replaced CircularProgressIndicator() with ShowLoading()
+ * Modified: Replaced CircularProgressIndicator() with RecipeCardSkeletonGrid()
  */
 @Composable
 fun FirstPageProgressIndicator(modifier: Modifier = Modifier) {
-	Box(
-		modifier = modifier.fillMaxSize(),
-		contentAlignment = Alignment.Center,
-	) {
-		ShowLoading()
-	}
+	RecipeCardSkeletonGrid(modifier = modifier)
 }
 
 @Composable
