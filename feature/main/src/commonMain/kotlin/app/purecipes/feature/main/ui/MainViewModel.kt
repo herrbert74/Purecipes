@@ -39,6 +39,8 @@ import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.ScreenViewTracker
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
+import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
+import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
@@ -82,6 +84,8 @@ class MainViewModel(
 	private val publishWebLaunchLink: PublishWebLaunchLinkUseCase,
 	private val decidePreCookInterstitial: DecidePreCookInterstitialUseCase,
 	private val showInterstitialAd: ShowInterstitialAdUseCase,
+	isOnboardingCompleted: IsOnboardingCompletedUseCase,
+	completeOnboarding: CompleteOnboardingUseCase,
 	private val purecipesConfig: PurecipesConfig,
 	searchReadiness: SearchReadinessCoordinator,
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
@@ -95,6 +99,13 @@ class MainViewModel(
 
 	internal var selectedTab by mutableStateOf(mainTabs.first { it.stackId == MainTabStackId.Search })
 		private set
+
+	internal val onboardingGate = OnboardingGate(
+		isOnboardingCompleted = isOnboardingCompleted,
+		completeOnboarding = completeOnboarding,
+		trackEvent = trackEvent,
+		scope = viewModelScope,
+	)
 
 	private var pendingPostLoginAction: PostLoginAction? = null
 

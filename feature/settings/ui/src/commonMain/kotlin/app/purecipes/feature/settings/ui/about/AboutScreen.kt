@@ -1,6 +1,7 @@
 package app.purecipes.feature.settings.ui.about
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -74,6 +75,13 @@ fun AboutScreen(
 					snackbarHostState.showSnackbar(COMING_SOON_MESSAGE)
 				}
 			},
+			onVersionClick = {
+				if (viewModel.onVersionTapped()) {
+					scope.launch {
+						snackbarHostState.showSnackbar(ONBOARDING_RESET_MESSAGE)
+					}
+				}
+			},
 			onOpenLicenses = onOpenLicenses,
 			modifier = Modifier
 				.fillMaxSize()
@@ -87,6 +95,7 @@ fun AboutScreen(
 internal fun AboutScreenContent(
 	versionText: String,
 	onPlaceholderClick: () -> Unit,
+	onVersionClick: () -> Unit,
 	onOpenLicenses: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
@@ -113,6 +122,11 @@ internal fun AboutScreenContent(
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier
 						.fillMaxWidth()
+						.clickable(
+							interactionSource = remember { MutableInteractionSource() },
+							indication = null,
+							onClick = onVersionClick,
+						)
 						.padding(vertical = PurecipesTheme.space.xs)
 						.testTag(ABOUT_VERSION_ROW_TAG),
 				)
@@ -191,6 +205,7 @@ private fun AboutRow(
 }
 
 private const val COMING_SOON_MESSAGE = "Coming soon"
+private const val ONBOARDING_RESET_MESSAGE = "Onboarding will show the next time you open the app"
 
 @Preview(
 	name = "About screen light",
@@ -204,6 +219,7 @@ private fun AboutScreenLightPreview() {
 		AboutScreenContent(
 			versionText = "Version 0.4.0 (7)",
 			onPlaceholderClick = {},
+			onVersionClick = {},
 			onOpenLicenses = {},
 			modifier = Modifier
 				.fillMaxSize()
@@ -224,6 +240,7 @@ private fun AboutScreenDarkPreview() {
 		AboutScreenContent(
 			versionText = "Version 0.4.0 (7)",
 			onPlaceholderClick = {},
+			onVersionClick = {},
 			onOpenLicenses = {},
 			modifier = Modifier
 				.fillMaxSize()

@@ -544,6 +544,28 @@ sealed interface AnalyticsEvent {
 		)
 	}
 
+	data class OnboardingCompleted(
+		val skipped: Boolean,
+		val lastPageIndex: Int,
+		val pageCount: Int,
+	) : AnalyticsEvent {
+
+		override val eventName = "onboarding_completed"
+
+		override val properties = mapOf(
+			"skipped" to skipped.asAnalyticsValue(),
+			"last_page_index" to lastPageIndex.asAnalyticsValue(),
+			"page_count" to pageCount.asAnalyticsValue(),
+		)
+	}
+
+	data object OnboardingReset : AnalyticsEvent {
+
+		override val eventName = "onboarding_reset"
+
+		override val properties = emptyMap<String, AnalyticsValue>()
+	}
+
 	data class RecipeLoadFailed(
 		val recipeId: Int,
 		val errorKind: String,

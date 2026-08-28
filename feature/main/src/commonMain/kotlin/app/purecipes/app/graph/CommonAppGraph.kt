@@ -43,6 +43,8 @@ import app.purecipes.feature.newrecipe.domain.usecase.DeleteCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
+import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
+import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
@@ -135,6 +137,10 @@ interface CommonAppGraph :
 	val getCreatedRecipesUseCase: GetCreatedRecipesUseCase
 
 	val deleteCreatedRecipeUseCase: DeleteCreatedRecipeUseCase
+
+	val isOnboardingCompletedUseCase: IsOnboardingCompletedUseCase
+
+	val completeOnboardingUseCase: CompleteOnboardingUseCase
 
 	val getRecipeDetailsUseCase: GetRecipeDetailsUseCase
 

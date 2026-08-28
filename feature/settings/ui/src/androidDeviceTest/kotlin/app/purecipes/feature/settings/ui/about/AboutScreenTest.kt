@@ -6,11 +6,16 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.onboarding.domain.usecase.ResetOnboardingUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,12 +31,7 @@ class AboutScreenTest {
 				AboutScreen(
 					onBack = {},
 					onOpenLicenses = {},
-					viewModel = AboutViewModel(
-						purecipesConfig = fakePurecipesConfig(
-							versionName = "1.2.3",
-							versionCode = 42L,
-						),
-					),
+					viewModel = aboutViewModel(versionName = "1.2.3", versionCode = 42L),
 				)
 			}
 		}
@@ -47,7 +47,7 @@ class AboutScreenTest {
 				AboutScreen(
 					onBack = {},
 					onOpenLicenses = {},
-					viewModel = AboutViewModel(purecipesConfig = fakePurecipesConfig()),
+					viewModel = aboutViewModel(),
 				)
 			}
 		}
@@ -66,6 +66,7 @@ class AboutScreenTest {
 				AboutScreenContent(
 					versionText = "Version 1.2.3 (42)",
 					onPlaceholderClick = {},
+					onVersionClick = {},
 					onOpenLicenses = { openedLicenses = true },
 				)
 			}
@@ -75,6 +76,45 @@ class AboutScreenTest {
 
 		assertTrue(openedLicenses)
 	}
+
+	@Test
+	fun tappingTheVersionSevenTimesResetsOnboarding() = runRecompositionTrackingUiTest {
+		val onboardingRepository = FakeOnboardingRepository(completed = true)
+		setTrackedContent {
+			PurecipesTheme {
+				AboutScreen(
+					onBack = {},
+					onOpenLicenses = {},
+					viewModel = aboutViewModel(onboardingRepository = onboardingRepository),
+				)
+			}
+		}
+
+		repeat(ONBOARDING_RESET_TAP_COUNT - 1) {
+			onNodeWithTag(ABOUT_VERSION_ROW_TAG).performClick()
+		}
+		waitForIdle()
+		assertEquals(0, onboardingRepository.resetOnboardingCallCount)
+
+		onNodeWithTag(ABOUT_VERSION_ROW_TAG).performClick()
+		waitForIdle()
+
+		assertEquals(1, onboardingRepository.resetOnboardingCallCount)
+		onNodeWithText("Onboarding will show the next time you open the app").assertIsDisplayed()
+	}
+
+	private fun aboutViewModel(
+		versionName: String = "0.0.0",
+		versionCode: Long = 0L,
+		onboardingRepository: FakeOnboardingRepository = FakeOnboardingRepository(),
+	): AboutViewModel = AboutViewModel(
+		purecipesConfig = fakePurecipesConfig(
+			versionName = versionName,
+			versionCode = versionCode,
+		),
+		resetOnboarding = ResetOnboardingUseCase(onboardingRepository),
+		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+	)
 
 	private fun fakePurecipesConfig(
 		versionName: String = "0.0.0",
