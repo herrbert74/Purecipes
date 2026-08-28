@@ -6,6 +6,7 @@ UI_TEST_MODULES=(
 	feature/cooking/ui
 	feature/library/ui
 	feature/newrecipe/ui
+	feature/onboarding/ui
 	feature/recipedetails/ui
 	feature/search/ui
 	feature/settings/ui
