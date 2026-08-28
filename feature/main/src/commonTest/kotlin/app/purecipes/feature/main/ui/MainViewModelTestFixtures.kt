@@ -14,6 +14,8 @@ import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
+import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
+import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
@@ -29,6 +31,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
+import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.fakeTrackScreenViewUseCase
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +57,7 @@ internal fun mainViewModelForTest(
 	},
 	preCookInterstitialChance: PreCookInterstitialChance = PreCookInterstitialChance { false },
 	searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
+	onboardingRepository: FakeOnboardingRepository = FakeOnboardingRepository(completed = true),
 	onDeliverPendingIncomingLink: () -> Unit = {},
 ): MainViewModel {
 	val viewModel = MainViewModel(
@@ -89,6 +93,8 @@ internal fun mainViewModelForTest(
 			preCookInterstitialChance = preCookInterstitialChance,
 		),
 		showInterstitialAd = ShowInterstitialAdUseCase(adsRepository),
+		isOnboardingCompleted = IsOnboardingCompletedUseCase(onboardingRepository),
+		completeOnboarding = CompleteOnboardingUseCase(onboardingRepository),
 		purecipesConfig = object : PurecipesConfig {
 			override fun buildType(): PurecipesBuildType = PurecipesBuildType.DEBUG
 

@@ -37,6 +37,8 @@ import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreference
 import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchSeenUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
+import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
+import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
@@ -75,6 +77,7 @@ import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
+import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
@@ -142,6 +145,7 @@ internal fun mainViewModelForDeviceTest(
 	analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 ): MainViewModel {
 	val subscriptionRepository = FakeSubscriptionRepository()
+	val onboardingRepository = FakeOnboardingRepository(completed = true)
 	return MainViewModel(
 		observeAuthenticationState = ObserveAuthenticationStateUseCase(FakeAuthenticationRepository()),
 		validateSession = ValidateSessionUseCase(FakeAuthenticationRepository()),
@@ -194,6 +198,8 @@ internal fun mainViewModelForDeviceTest(
 
 			override fun versionCode(): Long = 0L
 		},
+		isOnboardingCompleted = IsOnboardingCompletedUseCase(onboardingRepository),
+		completeOnboarding = CompleteOnboardingUseCase(onboardingRepository),
 		searchReadiness = SearchReadinessCoordinator(),
 		onDeliverPendingIncomingLink = {},
 	).also { it.initializeTabBackStacksForTest() }

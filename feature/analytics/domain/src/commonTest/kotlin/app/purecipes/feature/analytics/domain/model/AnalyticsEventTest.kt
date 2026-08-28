@@ -584,6 +584,40 @@ class AnalyticsEventTest {
 	}
 
 	@Test
+	fun `OnboardingCompleted has correct event name and properties`() {
+		val finished = AnalyticsEvent.OnboardingCompleted(
+			skipped = false,
+			lastPageIndex = 3,
+			pageCount = 4,
+		)
+		val skipped = AnalyticsEvent.OnboardingCompleted(
+			skipped = true,
+			lastPageIndex = 1,
+			pageCount = 4,
+		)
+
+		finished.eventName shouldBe "onboarding_completed"
+		finished.properties shouldBe mapOf(
+			"skipped" to AnalyticsValue.BooleanValue(false),
+			"last_page_index" to AnalyticsValue.NumberValue(3L),
+			"page_count" to AnalyticsValue.NumberValue(4L),
+		)
+		skipped.properties shouldBe mapOf(
+			"skipped" to AnalyticsValue.BooleanValue(true),
+			"last_page_index" to AnalyticsValue.NumberValue(1L),
+			"page_count" to AnalyticsValue.NumberValue(4L),
+		)
+	}
+
+	@Test
+	fun `OnboardingReset has correct event name and properties`() {
+		val event = AnalyticsEvent.OnboardingReset
+
+		event.eventName shouldBe "onboarding_reset"
+		event.properties shouldBe emptyMap()
+	}
+
+	@Test
 	fun `RecipeLoadFailed has correct event name and properties`() {
 		val event = AnalyticsEvent.RecipeLoadFailed(
 			recipeId = 42,

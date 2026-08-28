@@ -15,6 +15,7 @@ kotlin {
 				api(project(":feature:auth:domain"))
 				api(project(":feature:library:domain"))
 				api(project(":feature:newrecipe:domain"))
+				api(project(":feature:onboarding:domain"))
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:search:domain"))
 				api(project(":feature:subscription:domain"))

@@ -1,5 +1,6 @@
 package app.purecipes.feature.main.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,6 +23,7 @@ import app.purecipes.feature.library.ui.navigation.installCookbookDetailFlow
 import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
+import app.purecipes.feature.onboarding.ui.OnboardingScreen
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
 import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
@@ -206,7 +208,12 @@ private fun MainScreenContent(
 			onMainContentStart = { mainContentReady = true },
 			modifier = modifier,
 		) {
-			mainContent()
+			Box(modifier = Modifier.fillMaxSize()) {
+				mainContent()
+			if (viewModel.onboardingGate.isVisible) {
+				OnboardingScreen(onFinish = viewModel.onboardingGate::onFinished)
+			}
+			}
 		}
 	}
 }
