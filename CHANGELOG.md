@@ -4,6 +4,18 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.11.0] - 2026-08-29
+
+### Added
+
+- First-launch onboarding covering search, filters, cooking, and your library.
+
+### Changed
+
+- Fresh look with a bolder berry palette and clearer cards, chips, and tiles.
+- Cook mode: step progress, timers, and a calm finish screen.
+- Loading and empty screens use branded placeholders instead of spinners.
+
 ## [0.10.0] - 2026-08-23
 
 ### Added
