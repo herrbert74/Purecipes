@@ -10,7 +10,9 @@ Used by [`.github/workflows/distribute-android.yml`](../../.github/workflows/dis
 | Preview upload | `./gradlew :tools:play-publish:uploadPlayRelease -PdryRun` |
 | Upload to Play | `./gradlew :tools:play-publish:uploadPlayRelease` |
 
-Defaults: track **alpha** (closed testing), status **completed**, language **en-GB**, AAB at `app/build/outputs/bundle/release/app-release.aab`, notes from `build/release-notes.txt`.
+Defaults: track **alpha** (closed testing), status **completed**, language **en-GB**, AAB at `app/build/outputs/bundle/release/app-release.aab`, R8 mapping at `app/build/outputs/mapping/release/mapping.txt`, notes from `build/release-notes.txt`.
+
+Release builds set `ndk.debugSymbolLevel = SYMBOL_TABLE` so native debug symbols are embedded in the AAB for Play crash symbolication. The upload step also sends the R8 `mapping.txt` for Java/Kotlin deobfuscation. The Distribute Android workflow also archives the AAB and `mapping.txt` as a GitHub Actions artifact (`android-release-<version>`, 90-day retention) for manual download or Play Console re-upload.
 
 ## Credentials
 
@@ -45,6 +47,7 @@ Beyond screenshot uploads, the service account needs release access on **Purecip
 | Property | Default | Meaning |
 |----------|---------|---------|
 | `purecipes.play.aab` | `app/build/outputs/bundle/release/app-release.aab` | Path to the signed AAB |
+| `purecipes.play.mapping` | `app/build/outputs/mapping/release/mapping.txt` | R8 mapping uploaded for Play deobfuscation |
 | `purecipes.play.track` | `alpha` | `internal`, `alpha` (closed), `beta` (open), or `production` |
 | `purecipes.play.status` | `completed` | `completed`, `draft`, `inProgress`, or `halted` |
 | `purecipes.play.language` / `language` | `en-GB` | Release notes locale |

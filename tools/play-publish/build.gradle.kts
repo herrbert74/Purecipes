@@ -40,6 +40,10 @@ tasks.register<JavaExec>("uploadPlayRelease") {
 		.resolve("app/build/outputs/bundle/release/app-release.aab")
 		.absolutePath
 	val aab = providers.gradleProperty("purecipes.play.aab").orElse(defaultAab)
+	val defaultMapping = rootProject.projectDir
+		.resolve("app/build/outputs/mapping/release/mapping.txt")
+		.absolutePath
+	val mapping = providers.gradleProperty("purecipes.play.mapping").orElse(defaultMapping)
 	val track = providers.gradleProperty("purecipes.play.track").orElse("alpha")
 	val status = providers.gradleProperty("purecipes.play.status").orElse("completed")
 	val language = providers.gradleProperty("language")
@@ -56,6 +60,8 @@ tasks.register<JavaExec>("uploadPlayRelease") {
 			add(rootProject.projectDir.absolutePath)
 			add("--aab")
 			add(aab.get())
+			add("--mapping")
+			add(mapping.get())
 			add("--track")
 			add(track.get())
 			add("--status")
