@@ -41,10 +41,10 @@ If Firebase shows **two** SHA-256 certificates for release, that is normal when 
 
 | Certificate | Who holds the key | Typical install source |
 |---------------|-------------------|-------------------------|
-| **Upload certificate** | You (your release/upload keystore) | Firebase App Distribution, local release APK, sideload, internal testing you sign yourself |
-| **App signing certificate** | Google | Play Store (production and most internal/closed tracks after Google re-signs) |
+| **Upload certificate** | You (your release/upload keystore) | Local release APK/AAB, sideload, or any distribution signed only with the upload key |
+| **App signing certificate** | Google | Play Store (all tracks after Google re-signs), and Firebase App Distribution **AAB** releases after the Firebase ↔ Play link |
 
-You sign the AAB/APK with your **upload key**; Google re-signs with the **app signing key** before users download from Play. App Links verification checks the certificate on the **installed** APK, so both fingerprints must appear on the **same** `app.purecipes` entry.
+You sign the AAB/APK with your **upload key**; Google re-signs with the **app signing key** before users download from Play (and before App Distribution serves AAB-derived APKs). App Links verification checks the certificate on the **installed** APK, so both fingerprints must appear on the **same** `app.purecipes` entry.
 
 **What to do:** put **both** SHA-256 values in one array (comma-separated in env, or two strings in JSON):
 
