@@ -144,7 +144,7 @@ jobs:
             exit 1
           fi
 
-      - name: Build release APK and AAB
+      - name: Build release AAB
         env:
           PURECIPES_GOOGLE_WEB_CLIENT_ID: ${{ secrets.PURECIPES_GOOGLE_WEB_CLIENT_ID }}
           PURECIPES_MIXPANEL_PROJECT_TOKEN: ${{ secrets.PURECIPES_MIXPANEL_PROJECT_TOKEN }}
@@ -156,10 +156,10 @@ jobs:
           PURECIPES_SIGNING_KEY_ALIAS: ${{ secrets.PURECIPES_SIGNING_KEY_ALIAS }}
           PURECIPES_SIGNING_KEY_PASSWORD: ${{ secrets.PURECIPES_SIGNING_KEY_PASSWORD }}
         run: |
-          ./gradlew :app:assembleRelease :app:bundleRelease \
+          ./gradlew :app:bundleRelease \
             -Ppurecipes.revenueCatApiKey.release="${PURECIPES_REVENUECAT_API_KEY}"
 
-      - name: Upload to Firebase App Distribution
+      - name: Upload AAB to Firebase App Distribution
         if: ${{ steps.flags.outputs.skip_firebase != 'true' }}
         env:
           PURECIPES_GOOGLE_WEB_CLIENT_ID: ${{ secrets.PURECIPES_GOOGLE_WEB_CLIENT_ID }}

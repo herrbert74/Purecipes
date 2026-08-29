@@ -107,7 +107,7 @@ android {
 				revenueCatApiKey("release").asBuildConfigString(),
 			)
 			firebaseAppDistribution {
-				artifactType = "APK"
+				artifactType = "AAB"
 				releaseNotesFile = rootProject.layout.buildDirectory.file("release-notes.txt").get().asFile.path
 				groups = "alpha-testers"
 				val credentialsFile = providers.gradleProperty("firebaseAppDistribution.serviceCredentialsFile")

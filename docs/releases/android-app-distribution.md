@@ -1,6 +1,6 @@
 # Android releases (Firebase App Distribution + Google Play)
 
-Release builds use the **release** variant (`app.purecipes`), [Firebase App Distribution](https://firebase.google.com/docs/app-distribution) (APK for testers), and a Google Play **closed testing** upload (AAB, API track `alpha`). Notes come from a reviewed root [CHANGELOG.md](../../CHANGELOG.md). Release builds use the RevenueCat Google Play key, are not debuggable, and do not show monetisation debug overrides.
+Release builds use the **release** variant (`app.purecipes`), [Firebase App Distribution](https://firebase.google.com/docs/app-distribution) (**AAB** for testers, via Google Play App Signing), and a Google Play **closed testing** upload (AAB, API track `alpha`). Notes come from a reviewed root [CHANGELOG.md](../../CHANGELOG.md). Release builds use the RevenueCat Google Play key, are not debuggable, and do not show monetisation debug overrides.
 
 Release scripts: [`scripts/release/README.md`](../../scripts/release/README.md).
 
@@ -16,6 +16,17 @@ Play AAB upload tool: [`tools/play-publish/README.md`](../../tools/play-publish/
 4. Create a CI service account (Google Cloud → IAM):
    - Role: **Firebase App Distribution Admin** (or **Firebase Admin**).
    - Download JSON key → GitHub secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
+
+## One-time Firebase ↔ Google Play link (required for AAB)
+
+App Distribution AAB uploads need the Firebase Android app linked to the Play Console app so Play can re-sign with [Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756) and serve device-optimized APKs via internal app sharing. See [Distribute Android apps (AAB)](https://firebase.google.com/docs/app-distribution/android/distribute-console?apptype=aab).
+
+1. Firebase Console → project **purecipes-50e5c** → **Project settings** → **Integrations** → **Google Play** → **Link**.
+2. Enable the **App Distribution** integration and link Android app **app.purecipes** to the matching Play app (same package name).
+3. The Play developer account used for linking must be **Owner** or **Admin**, and the Play app must already have been published to at least one track (internal, closed, open, or production). Purecipes already meets this via closed testing.
+4. After linking, distribute **AABs** only (`artifactType = "AAB"` in `app/build.gradle.kts`). APK uploads still use the upload key and will not match Play-signed installs.
+
+This link does **not** replace the separate Google Play closed-testing / production upload in CI. Play track releases and Firebase App Distribution remain two channels.
 
 ## One-time Google Play API setup
 
@@ -52,8 +63,8 @@ Never tag before the changelog PR is merged.
 1. **Prepare the release PR locally.** Follow [`scripts/release/README.md`](../../scripts/release/README.md) and [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md): draft the `## [version]` section in [CHANGELOG.md](../../CHANGELOG.md), bump `versionName` / `versionCode`, and regenerate the open source license definitions. The PR on branch `release/v<version>-changelog` includes `CHANGELOG.md`, `gradle/libs.versions.toml`, and the regenerated `aboutlibraries.json` files (`app/src/main/res/raw/` and `feature/settings/ui/src/commonMain/composeResources/files/`).
 2. Review and merge the PR.
 3. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` then `git push origin v0.2.0` (optional suffix, e.g. `v0.2.0-rc.1`).
-4. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds APK + AAB, uploads APK to Firebase, uploads AAB to Play closed testing.
-5. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing). Closed testers install from the Play Store after accepting the Play invite.
+4. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds the release AAB, uploads it to Firebase App Distribution, and uploads the same AAB to Play closed testing.
+5. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing) (AAB → Play-signed APK; enable Play **internal app sharing** when prompted). Closed testers install from the Play Store after accepting the Play invite.
 
 ## Tag naming
 
@@ -64,10 +75,10 @@ Never tag before the changelog PR is merged.
 
 Release-prep commands (changelog, version bump, license export, release PR) live in [`scripts/release/README.md`](../../scripts/release/README.md).
 
-Firebase App Distribution (APK):
+Firebase App Distribution (AAB; requires Firebase ↔ Play link):
 
 ```bash
-./gradlew :app:assembleRelease :app:appDistributionUploadRelease \
+./gradlew :app:bundleRelease :app:appDistributionUploadRelease \
   -PfirebaseAppDistribution.serviceCredentialsFile=/path/to/firebase-sa.json
 ```
 
@@ -81,6 +92,6 @@ Google Play closed testing (AAB):
 
 ## Tester channels
 
-- **Firebase App Distribution** and **Play closed testing** are separate invites and install sources. Prefer one channel per tester group; do not ping-pong the same people between them for the same release.
-- Firebase still uploads an **APK** until Play review / published track status allows switching App Distribution to **AAB** (Firebase ↔ Play link).
-- Play closed installs use Google Play App Signing; Firebase installs use your upload key. Switching channels may require uninstalling once.
+- **Firebase App Distribution** and **Play closed / open testing** are separate invites and install sources. Prefer one channel per tester group; do not ping-pong the same people between them for the same release.
+- With the Firebase ↔ Play link and **AAB** uploads, App Distribution installs use **Play App Signing** (same certificate as Play Store installs), so testers can usually switch from a Play testing build to App Tester without uninstalling.
+- Testers installing an AAB release must enable **Play internal app sharing** once when App Tester / Play prompts them.

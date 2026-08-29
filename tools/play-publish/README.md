@@ -2,7 +2,7 @@
 
 Uploads a signed Android App Bundle to a Google Play track via the Android Publisher API (`app.purecipes`).
 
-Used by [`.github/workflows/distribute-android.yml`](../../.github/workflows/distribute-android.yml) on tag `v*` (closed testing / API track `alpha`), alongside Firebase App Distribution.
+Used by [`.github/workflows/distribute-android.yml`](../../.github/workflows/distribute-android.yml) on tag `v*` (closed testing / API track `alpha`), alongside Firebase App Distribution (same release AAB).
 
 | Step | Command |
 |------|---------|
