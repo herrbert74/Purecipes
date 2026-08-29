@@ -90,6 +90,9 @@ android {
 			isShrinkResources = true
 			lint.checkReleaseBuilds = false
 			signingConfig = signingConfigs.getByName("release")
+			ndk {
+				debugSymbolLevel = "SYMBOL_TABLE"
+			}
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 			buildConfigField(
 				"String",

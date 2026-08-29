@@ -63,7 +63,7 @@ Never tag before the changelog PR is merged.
 1. **Prepare the release PR locally.** Follow [`scripts/release/README.md`](../../scripts/release/README.md) and [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md): draft the `## [version]` section in [CHANGELOG.md](../../CHANGELOG.md), bump `versionName` / `versionCode`, and regenerate the open source license definitions. The PR on branch `release/v<version>-changelog` includes `CHANGELOG.md`, `gradle/libs.versions.toml`, and the regenerated `aboutlibraries.json` files (`app/src/main/res/raw/` and `feature/settings/ui/src/commonMain/composeResources/files/`).
 2. Review and merge the PR.
 3. Tag on `main`: `git tag -a v0.2.0 -m "0.2.0"` then `git push origin v0.2.0` (optional suffix, e.g. `v0.2.0-rc.1`).
-4. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds the release AAB, uploads it to Firebase App Distribution, and uploads the same AAB to Play closed testing.
+4. **Distribute Android** workflow runs on the tag: extracts [CHANGELOG.md](../../CHANGELOG.md), builds the release AAB (with native debug symbols), archives the AAB and R8 `mapping.txt` as a workflow artifact, uploads the AAB to Firebase App Distribution, and uploads the same AAB plus R8 mapping to Play closed testing.
 5. **alpha-testers** install via [Firebase App Tester](https://firebase.google.com/docs/app-distribution/android/set-up-for-testing) (AAB → Play-signed APK; enable Play **internal app sharing** when prompted). Closed testers install from the Play Store after accepting the Play invite.
 
 ## Tag naming

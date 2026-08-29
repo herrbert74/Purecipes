@@ -159,6 +159,16 @@ jobs:
           ./gradlew :app:bundleRelease \
             -Ppurecipes.revenueCatApiKey.release="${PURECIPES_REVENUECAT_API_KEY}"
 
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-${{ steps.version.outputs.semver }}
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Upload AAB to Firebase App Distribution
         if: ${{ steps.flags.outputs.skip_firebase != 'true' }}
         env:
@@ -181,6 +191,7 @@ jobs:
           ./gradlew :tools:play-publish:uploadPlayRelease \
             -Ppurecipes.play.serviceAccountJson="${PLAY_SERVICE_ACCOUNT_FILE}" \
             -Ppurecipes.play.aab="${GITHUB_WORKSPACE}/app/build/outputs/bundle/release/app-release.aab" \
+            -Ppurecipes.play.mapping="${GITHUB_WORKSPACE}/app/build/outputs/mapping/release/mapping.txt" \
             -Ppurecipes.play.track=alpha \
             -Ppurecipes.play.status=completed \
             -Ppurecipes.play.releaseName="${{ steps.version.outputs.semver }}" \

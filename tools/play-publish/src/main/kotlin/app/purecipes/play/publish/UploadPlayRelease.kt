@@ -20,11 +20,15 @@ private const val DEFAULT_STATUS = "completed"
 private const val APPLICATION_NAME = "Purecipes Play Publish"
 private const val MAX_RELEASE_NOTES_LENGTH = 500
 private const val REQUEST_TIMEOUT_MILLIS = 300_000
+private const val DEOBFUSCATION_FILE_TYPE_PROGUARD = "proguard"
 
 fun main(args: Array<String>) {
 	val options = parseUploadArgs(args)
 	require(options.aabFile.isFile) {
 		"AAB not found: ${options.aabFile.absolutePath}. Run ./gradlew :app:bundleRelease first."
+	}
+	require(options.mappingFile.isFile) {
+		"R8 mapping not found: ${options.mappingFile.absolutePath}. Run ./gradlew :app:bundleRelease first."
 	}
 
 	val releaseNotes = options.releaseNotesFile
@@ -36,6 +40,7 @@ fun main(args: Array<String>) {
 
 	println("Package: ${options.packageName}")
 	println("AAB: ${options.aabFile.relativeTo(options.projectRoot)}")
+	println("Mapping: ${options.mappingFile.relativeTo(options.projectRoot)}")
 	println("Track: ${options.track}")
 	println("Status: ${options.status}")
 	println("Language: ${options.language}")
@@ -70,6 +75,18 @@ fun main(args: Array<String>) {
 		?: error("Play API returned a bundle without a versionCode")
 	println("Uploaded bundle versionCode=$versionCode")
 
+	val mappingContent = FileContent("application/octet-stream", options.mappingFile)
+	publisher.edits().deobfuscationfiles()
+		.upload(
+			options.packageName,
+			editId,
+			versionCode,
+			DEOBFUSCATION_FILE_TYPE_PROGUARD,
+			mappingContent,
+		)
+		.execute()
+	println("Uploaded R8 mapping for versionCode=$versionCode")
+
 	val trackRelease = TrackRelease()
 		.setVersionCodes(listOf(versionCode.toLong()))
 		.setStatus(options.status)
@@ -99,6 +116,7 @@ fun main(args: Array<String>) {
 private data class UploadOptions(
 	val projectRoot: File,
 	val aabFile: File,
+	val mappingFile: File,
 	val credentialsFile: File?,
 	val packageName: String,
 	val track: String,
@@ -134,8 +152,19 @@ private fun requireReleaseNotesWithinLimit(notes: String) {
 }
 
 private fun parseUploadArgs(args: Array<String>): UploadOptions {
+	val parsed = ParsedUploadArgs()
+	var index = 0
+	while (index < args.size) {
+		index = consumeUploadArg(args, index, parsed)
+	}
+	return parsed.toUploadOptions()
+}
+
+private class ParsedUploadArgs {
+
 	var projectRoot = File(".").canonicalFile
 	var aabFile: File? = null
+	var mappingFile: File? = null
 	var credentialsFile: File? = null
 	var packageName = DEFAULT_PACKAGE_NAME
 	var track = DEFAULT_TRACK
@@ -144,86 +173,61 @@ private fun parseUploadArgs(args: Array<String>): UploadOptions {
 	var releaseName: String? = null
 	var releaseNotesFile: File? = null
 	var dryRun = false
-	var index = 0
-	while (index < args.size) {
-		when (val arg = args[index]) {
-			"--project-root" -> {
-				projectRoot = File(requireNext(args, index, arg)).canonicalFile
-				index += 2
-			}
 
-			"--aab" -> {
-				aabFile = File(requireNext(args, index, arg))
-				index += 2
-			}
-
-			"--credentials" -> {
-				credentialsFile = File(requireNext(args, index, arg))
-				index += 2
-			}
-
-			"--package-name" -> {
-				packageName = requireNext(args, index, arg)
-				index += 2
-			}
-
-			"--track" -> {
-				track = requireNext(args, index, arg)
-				index += 2
-			}
-
-			"--status" -> {
-				status = requireNext(args, index, arg)
-				index += 2
-			}
-
-			"--language" -> {
-				language = requireNext(args, index, arg)
-				index += 2
-			}
-
-			"--release-name" -> {
-				releaseName = requireNext(args, index, arg)
-				index += 2
-			}
-
-			"--release-notes-file" -> {
-				releaseNotesFile = File(requireNext(args, index, arg))
-				index += 2
-			}
-
-			"--dry-run" -> {
-				dryRun = true
-				index += 1
-			}
-
-			else -> error("Unknown argument: $arg")
+	fun toUploadOptions(): UploadOptions {
+		val resolvedAab = resolveRelativeFile(
+			projectRoot,
+			aabFile ?: File(projectRoot, "app/build/outputs/bundle/release/app-release.aab"),
+		)
+		val resolvedMapping = resolveRelativeFile(
+			projectRoot,
+			mappingFile ?: File(projectRoot, "app/build/outputs/mapping/release/mapping.txt"),
+		)
+		val resolvedNotes = releaseNotesFile?.let { resolveRelativeFile(projectRoot, it) }
+		val resolvedCredentials = resolveCredentialsFile(projectRoot, credentialsFile)
+		require(track in setOf("internal", "alpha", "beta", "production")) {
+			"Unsupported track '$track'. Use internal, alpha, beta, or production."
 		}
+		require(status in setOf("completed", "draft", "inProgress", "halted")) {
+			"Unsupported status '$status'. Use completed, draft, inProgress, or halted."
+		}
+		return UploadOptions(
+			projectRoot = projectRoot,
+			aabFile = resolvedAab,
+			mappingFile = resolvedMapping,
+			credentialsFile = resolvedCredentials,
+			packageName = packageName,
+			track = track,
+			status = status,
+			language = language,
+			releaseName = releaseName,
+			releaseNotesFile = resolvedNotes,
+			dryRun = dryRun,
+		)
 	}
-	val resolvedAab = resolveRelativeFile(
-		projectRoot,
-		aabFile ?: File(projectRoot, "app/build/outputs/bundle/release/app-release.aab"),
-	)
-	val resolvedNotes = releaseNotesFile?.let { resolveRelativeFile(projectRoot, it) }
-	val resolvedCredentials = resolveCredentialsFile(projectRoot, credentialsFile)
-	require(track in setOf("internal", "alpha", "beta", "production")) {
-		"Unsupported track '$track'. Use internal, alpha, beta, or production."
+}
+
+private fun consumeUploadArg(args: Array<String>, index: Int, parsed: ParsedUploadArgs): Int {
+	val arg = args[index]
+	if (arg == "--dry-run") {
+		parsed.dryRun = true
+		return index + 1
 	}
-	require(status in setOf("completed", "draft", "inProgress", "halted")) {
-		"Unsupported status '$status'. Use completed, draft, inProgress, or halted."
+	val value = requireNext(args, index, arg)
+	when (arg) {
+		"--project-root" -> parsed.projectRoot = File(value).canonicalFile
+		"--aab" -> parsed.aabFile = File(value)
+		"--mapping" -> parsed.mappingFile = File(value)
+		"--credentials" -> parsed.credentialsFile = File(value)
+		"--package-name" -> parsed.packageName = value
+		"--track" -> parsed.track = value
+		"--status" -> parsed.status = value
+		"--language" -> parsed.language = value
+		"--release-name" -> parsed.releaseName = value
+		"--release-notes-file" -> parsed.releaseNotesFile = File(value)
+		else -> error("Unknown argument: $arg")
 	}
-	return UploadOptions(
-		projectRoot = projectRoot,
-		aabFile = resolvedAab,
-		credentialsFile = resolvedCredentials,
-		packageName = packageName,
-		track = track,
-		status = status,
-		language = language,
-		releaseName = releaseName,
-		releaseNotesFile = resolvedNotes,
-		dryRun = dryRun,
-	)
+	return index + 2
 }
 
 private fun resolveCredentialsFile(projectRoot: File, explicit: File?): File? {
