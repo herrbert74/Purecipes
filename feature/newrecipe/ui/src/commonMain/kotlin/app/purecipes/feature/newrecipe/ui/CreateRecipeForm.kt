@@ -60,6 +60,8 @@ internal fun CreateRecipeForm(
 	canMakePrivate: Boolean,
 	onIsPrivateChange: (Boolean) -> Unit,
 	onPrivacyLockedClick: () -> Unit,
+	stepsFormActionChips: StepFormActionChips? = null,
+	onLastStepFieldFocusChange: (Boolean) -> Unit = {},
 ) {
 	Column(
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
@@ -121,6 +123,8 @@ internal fun CreateRecipeForm(
 				onMoveStepDown = onMoveStepDown,
 				onRemoveStepClick = onRemoveStepClick,
 				onStepChange = onStepChange,
+				formActionChips = stepsFormActionChips,
+				onLastStepFieldFocusChange = onLastStepFieldFocusChange,
 			)
 		}
 

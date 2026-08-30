@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -46,24 +47,11 @@ fun CreateRecipeScreen(
 	viewModel: CreateRecipeViewModel = metroViewModel(),
 ) {
 	if (!canUploadRecipes) {
-		Scaffold(
-			modifier = modifier.fillMaxSize(),
-			topBar = {
-				TopAppBar(
-					title = { Text(text = "Create recipe") },
-					navigationIcon = {
-						if (onBack != null) {
-							BackNavigationButton(onBack = onBack)
-						}
-					},
-				)
-			},
-		) { innerPadding ->
-			UploadSignedOutContent(
-				onRequestLogIn = onRequestLogIn,
-				modifier = Modifier.padding(innerPadding),
-			)
-		}
+		CreateRecipeSignedOutScaffold(
+			modifier = modifier,
+			onBack = onBack,
+			onRequestLogIn = onRequestLogIn,
+		)
 		return
 	}
 
@@ -103,8 +91,13 @@ fun CreateRecipeScreen(
 	)
 	val showEditorChrome = !showRecipeLoading && viewModel.loadErrorMessage == null
 	val scrollState = rememberScrollState()
+	var isLastStepFieldFocused by remember { mutableStateOf(false) }
+	var showClearFormConfirmation by remember { mutableStateOf(false) }
 	LaunchedEffect(viewModel.selectedSection) {
 		scrollState.scrollTo(0)
+		if (viewModel.selectedSection != CreateRecipeSection.Steps) {
+			isLastStepFieldFocused = false
+		}
 	}
 
 	Scaffold(
@@ -128,49 +121,33 @@ fun CreateRecipeScreen(
 			)
 		},
 		bottomBar = {
-			if (showEditorChrome) {
+			if (showEditorChrome && !isLastStepFieldFocused) {
 				CreateRecipeSaveBar(
 					isEditing = viewModel.isEditing,
 					isSaving = viewModel.isSaving,
 					isImportingImage = isImportingImage,
 					onSaveClick = viewModel::saveRecipe,
-					onClearClick = {
-						isImportingImage = false
-						pickerErrorMessage = null
-						viewModel.startNewRecipe()
-					},
+					onClearClick = { showClearFormConfirmation = true },
 				)
 			}
 		},
 	) { innerPadding ->
 		when {
-			showRecipeLoading -> Box(
+			showRecipeLoading -> CreateRecipeLoadingContent(
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding),
-				contentAlignment = Alignment.Center,
-			) {
-				CircularProgressIndicator()
-			}
+			)
 
-			viewModel.loadErrorMessage != null -> Box(
+			viewModel.loadErrorMessage != null -> CreateRecipeLoadErrorContent(
+				message = viewModel.loadErrorMessage ?: "Unknown error",
 				modifier = Modifier
 					.fillMaxSize()
 					.padding(innerPadding)
 					.padding(PurecipesTheme.space.l),
-				contentAlignment = Alignment.Center,
-			) {
-				ErrorText(
-					text = viewModel.loadErrorMessage ?: "Unknown error",
-					textAlign = TextAlign.Center,
-				)
-			}
+			)
 
-			else -> Column(
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding),
-			) {
+			else -> Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
 				CreateRecipeSectionSwitcher(
 					selectedSection = viewModel.selectedSection,
 					onSectionChange = { viewModel.selectedSection = it },
@@ -185,6 +162,7 @@ fun CreateRecipeScreen(
 						.weight(1f)
 						.fillMaxWidth()
 						.verticalScroll(scrollState)
+						.imePadding()
 						.padding(PurecipesTheme.space.m),
 				) {
 					CreateRecipeForm(
@@ -261,10 +239,98 @@ fun CreateRecipeScreen(
 							viewModel.onIsPrivateChange(true)
 							onOpenPaywall(AnalyticsPremiumFeature.PRIVATE_RECIPES)
 						},
+						stepsFormActionChips = createRecipeStepsFormActionChips(
+							isEditing = viewModel.isEditing,
+							isSaving = viewModel.isSaving,
+							isImportingImage = isImportingImage,
+							onSaveClick = viewModel::saveRecipe,
+							onClearClick = { showClearFormConfirmation = true },
+						),
+						onLastStepFieldFocusChange = { isLastStepFieldFocused = it },
 					)
 				}
 			}
 		}
+	}
+
+	CreateRecipeClearFormConfirmation(
+		visible = showClearFormConfirmation,
+		isEditing = viewModel.isEditing,
+		onDismiss = { showClearFormConfirmation = false },
+		onConfirm = {
+			isImportingImage = false
+			pickerErrorMessage = null
+			viewModel.startNewRecipe()
+			showClearFormConfirmation = false
+		},
+	)
+}
+
+@Composable
+private fun CreateRecipeClearFormConfirmation(
+	visible: Boolean,
+	isEditing: Boolean,
+	onDismiss: () -> Unit,
+	onConfirm: () -> Unit,
+) {
+	if (visible) {
+		CreateRecipeClearFormDialog(
+			isEditing = isEditing,
+			onDismiss = onDismiss,
+			onConfirm = onConfirm,
+		)
+	}
+}
+
+@Composable
+private fun CreateRecipeSignedOutScaffold(
+	modifier: Modifier = Modifier,
+	onBack: (() -> Unit)? = null,
+	onRequestLogIn: () -> Unit = {},
+) {
+	Scaffold(
+		modifier = modifier.fillMaxSize(),
+		topBar = {
+			TopAppBar(
+				title = { Text(text = "Create recipe") },
+				navigationIcon = {
+					if (onBack != null) {
+						BackNavigationButton(onBack = onBack)
+					}
+				},
+			)
+		},
+	) { innerPadding ->
+		UploadSignedOutContent(
+			onRequestLogIn = onRequestLogIn,
+			modifier = Modifier.padding(innerPadding),
+		)
+	}
+}
+
+@Composable
+private fun CreateRecipeLoadingContent(modifier: Modifier = Modifier) {
+	Box(
+		modifier = modifier,
+		contentAlignment = Alignment.Center,
+	) {
+		CircularProgressIndicator()
+	}
+}
+
+@Composable
+private fun CreateRecipeLoadErrorContent(
+	message: String,
+	modifier: Modifier = Modifier,
+) {
+	Box(
+		modifier = modifier,
+		contentAlignment = Alignment.Center,
+	) {
+		ErrorText(
+			text = message,
+			textAlign = TextAlign.Center,
+		)
 	}
 }
 
