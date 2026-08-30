@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SAVE_BUTTON_TAG = "createRecipeSaveButton"
+internal const val CLEAR_BUTTON_TAG = "createRecipeClearButton"
 
 @Composable
 internal fun CreateRecipeSaveBar(
@@ -47,6 +48,7 @@ internal fun CreateRecipeSaveBar(
 			TextButton(
 				onClick = onClearClick,
 				enabled = !isSaving && !isImportingImage,
+				modifier = Modifier.testTag(CLEAR_BUTTON_TAG),
 			) {
 				Text(text = if (isEditing) "Start new" else "Clear form")
 			}

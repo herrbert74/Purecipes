@@ -48,7 +48,7 @@ done
 
 if [[ "${executed_test_count}" -lt "${expected_test_count}" ]]; then
 	echo "::error::Expected at least ${expected_test_count} connected UI tests from source, but results recorded ${executed_test_count}."
-	exit 1
+	exit 1``
 fi
 
 if [[ "${failure_count}" -gt 0 || "${error_count}" -gt 0 ]]; then

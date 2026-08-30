@@ -186,6 +186,7 @@ class CreateRecipeScreenTest {
 		}
 
 		selectCreateRecipeSection(CreateRecipeSection.Steps)
+		onNodeWithTag("createRecipeStepField0").performScrollTo().performClick()
 		onNodeWithTag("createRecipeAddStepButton").performScrollTo().performClick()
 		waitForIdle()
 
