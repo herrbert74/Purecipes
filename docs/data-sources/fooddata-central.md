@@ -73,3 +73,16 @@ After seed data is loaded, parse ingredient lines, persist measurements and matc
 The calculator writes `ingredient_measurements`, `ingredient_nutrition_matches`, and upserts `nutrition` when at least one ingredient matched. Backfill output lists recipes with partial or missing totals and aggregates unmatched parsed ingredient names so aliases and measures can be improved.
 
 New scraped recipes are calculated automatically when using the recipe scraper with default `--calculate-nutrition true` (see [`scripts/scraping/README.md`](../../scripts/scraping/README.md)).
+
+## Ingredient food-table matching report
+
+Read stored parse and match rows without recalculating nutrition:
+
+```bash
+./gradlew reportIngredientFoodMatches
+./gradlew reportIngredientFoodMatches -Preport.output=/tmp/ingredient-food-match-report.txt
+```
+
+The report counts countable ingredient lines (required, plus one option per alternative group) that were never parsed, were not measurable, had no food match, or had a food but no gram weight. It also lists frequent unmatched names, weak prefix matches, and recipes whose nutrition totals came from the website (`scraped`) rather than calculation.
+
+Run `calculateRecipeNutrition` first when you want the report to reflect a fresh matcher pass.
