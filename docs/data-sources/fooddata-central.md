@@ -55,6 +55,8 @@ Skip alias seeding on a large import (`-Pnutrition.skipAliases=true` or `--skip-
 
 The importer loads foods with energy (kcal) data, stores per-100g nutrients, imports household measures from FDC portions (plus a small supplemental list), and links pantry catalogue names and handwritten aliases to canonical foods.
 
+Handwritten aliases are also applied when calculating or estimating nutrition, so adding one in code takes effect on the next `calculateRecipeNutrition` run even if you do not re-import USDA JSON.
+
 ## Recipe nutrition backfill
 
 After seed data is loaded, parse ingredient lines, persist measurements and matches, and calculate totals for existing recipes:

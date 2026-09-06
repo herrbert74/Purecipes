@@ -20,15 +20,19 @@ internal class NutritionLookupIndex(
 	private val foodIdByNormalizedAlias: Map<String, Int>,
 	private val measuresByFoodId: Map<Int, Map<String, BigDecimal>>,
 ) {
+
 	fun findFood(parsedName: String): NutritionFoodMatch? {
-		val normalizedName = NutritionNameNormalizer.normalize(parsedName)
-		if (normalizedName.isBlank()) {
+		val lookupQueries = listOf(
+			NutritionNameNormalizer.normalize(parsedName),
+			NutritionNameNormalizer.forLookup(parsedName),
+		).distinct().filter { query -> query.isNotBlank() }
+		if (lookupQueries.isEmpty()) {
 			return null
 		}
 
-		return matchAlias(normalizedName)
-			?: matchExactName(normalizedName)
-			?: matchBestPrefix(normalizedName)
+		return lookupQueries.firstNotNullOfOrNull { query ->
+			matchAlias(query) ?: matchExactName(query)
+		} ?: matchBestTokenScore(NutritionNameNormalizer.forLookup(parsedName))
 	}
 
 	fun food(foodId: Int): NutritionFoodRecord? = foodById[foodId]
@@ -55,22 +59,35 @@ internal class NutritionLookupIndex(
 		)
 	}
 
-	private fun matchBestPrefix(normalizedName: String): NutritionFoodMatch? {
-		val bestPrefixMatch = foodById.values
-			.filter { food ->
-				food.normalizedName.startsWith(normalizedName) ||
-					normalizedName.startsWith(food.normalizedName)
+	private fun matchBestTokenScore(queryNormalized: String): NutritionFoodMatch? =
+		bestTokenMatch(queryNormalized)?.let { food ->
+			NutritionFoodMatch(
+				foodId = food.id,
+				matchSource = MATCH_SOURCE_TOKENS,
+				confidence = TOKEN_MATCH_CONFIDENCE,
+			)
+		}
+
+	private fun bestTokenMatch(queryNormalized: String): NutritionFoodRecord? {
+		if (queryNormalized.isBlank()) {
+			return null
+		}
+		return foodById.values
+			.mapNotNull { food ->
+				val scored = NutritionFoodNameScorer.score(queryNormalized, food.normalizedName)
+					?: return@mapNotNull null
+				scored to food
 			}
-			.maxByOrNull { food -> food.normalizedName.length }
-			?: return null
-		return NutritionFoodMatch(
-			foodId = bestPrefixMatch.id,
-			matchSource = MATCH_SOURCE_NAME,
-			confidence = PREFIX_MATCH_CONFIDENCE,
-		)
+			.maxWithOrNull(
+				compareByDescending<Pair<NutritionFoodNameScore, NutritionFoodRecord>> { it.first.score }
+					.thenBy { it.first.extraTokenCount }
+					.thenBy { it.second.normalizedName.length },
+			)
+			?.second
 	}
 
 	companion object {
+
 		val EMPTY = NutritionLookupIndex(
 			foodById = emptyMap(),
 			foodIdByNormalizedAlias = emptyMap(),
@@ -79,8 +96,9 @@ internal class NutritionLookupIndex(
 
 		private const val MATCH_SOURCE_ALIAS = "alias"
 		private const val MATCH_SOURCE_NAME = "name"
+		private const val MATCH_SOURCE_TOKENS = "tokens"
 		private val ALIAS_MATCH_CONFIDENCE = BigDecimal("1.00")
 		private val NAME_MATCH_CONFIDENCE = BigDecimal("0.90")
-		private val PREFIX_MATCH_CONFIDENCE = BigDecimal("0.75")
+		private val TOKEN_MATCH_CONFIDENCE = BigDecimal("0.80")
 	}
 }

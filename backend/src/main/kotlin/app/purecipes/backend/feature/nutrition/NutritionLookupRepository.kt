@@ -6,13 +6,14 @@ import javax.sql.DataSource
 internal class NutritionLookupRepository(
 	private val dataSource: DataSource,
 ) {
+
 	fun loadIndex(): NutritionLookupIndex {
 		val foods = loadFoods()
 		val aliases = loadAliases()
 		val measures = loadMeasures()
 		return NutritionLookupIndex(
 			foodById = foods.associateBy { it.id },
-			foodIdByNormalizedAlias = aliases,
+			foodIdByNormalizedAlias = NutritionSeedAliasIndex.merge(foods, aliases),
 			measuresByFoodId = measures,
 		)
 	}

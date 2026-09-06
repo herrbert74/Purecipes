@@ -210,7 +210,7 @@ Matching order at calculation time:
 
 1. Read `ingredients.ingredient`.
 2. Parse quantity, unit, and a cleaned name into `ingredient_measurements`.
-3. Look up the cleaned name in `nutrition_food_aliases`, then in `nutrition_foods` names (exact, then prefix).
+3. Look up the cleaned name in handwritten seed aliases and `nutrition_food_aliases`, then in `nutrition_foods` names (exact, then whole-token overlap).
 4. Convert the unit to grams using `nutrition_food_measures` (or a built-in gram/ml conversion).
 5. Store the match and the calorie contribution.
 
@@ -240,6 +240,8 @@ Canonical foods, mostly from USDA FoodData Central. Nutrients are stored **per 1
 ### `nutrition_food_aliases`
 
 Other spellings that should resolve to a food. This is the main lever for improving food-table matches: add `olive oil` → extra virgin olive oil, `caster sugar` → granulated sugar, and so on.
+
+Handwritten aliases live in backend seed code and are applied at lookup time, so `calculateRecipeNutrition` picks them up without a USDA re-import. The same list is also written into this table during USDA import when those foods exist.
 
 Catalogue names from the app pantry list are also seeded here during USDA import, when the importer can guess a food.
 
@@ -289,8 +291,8 @@ Which food we chose for a measurable line.
 | `unit` | Parsed unit copied onto the match. |
 | `parsed_name` | Name we tried to match. |
 | `food_id` | The chosen `nutrition_foods` row. Empty if we stored a match attempt without a food (current calculator deletes the row instead when there is no food). |
-| `confidence` | How sure the matcher was: `1.00` alias, `0.90` exact name, `0.75` prefix (for example `olive` matching a name that starts with olive). Prefix matches are the most likely to be *wrong* foods, not just missing. |
-| `match_source` | `alias` or `name`. |
+| `confidence` | How sure the matcher was: `1.00` alias, `0.90` exact name, `0.80` whole-token overlap, `0.75` string prefix. |
+| `match_source` | `alias`, `name`, or `tokens`. |
 | `updated_at` | When this match was last written. |
 
 If this row is missing, the line was not measurable or no food was found.
