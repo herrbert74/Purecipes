@@ -282,7 +282,7 @@ The parse of one recipe line. Written by nutrition calculation. This is “what 
 | `parsed_name` | Remainder after stripping quantity and unit, for example `olive oil`. This is what is looked up in the food table. |
 | `is_measurable` | True only when quantity and a known unit were both found. Unmeasurable lines never get a nutrition match. |
 
-Known units: g, kg, ml, l, tsp, tbsp, cup, oz, lb, egg, clove, piece. Size words such as `large` are not units. The parser also reads unicode and mixed fractions (`1½`, `3 1/2`) and parenthetical weights (`(120 ml)`, `(2½ lb.)`).
+Known units: g, kg, ml, l, tsp, tbsp, cup, oz, lb, egg, clove, piece. Size words such as `large` are not units. The parser also reads unicode and mixed fractions (`1½`, `3 1/2`), parenthetical weights (`(120 ml)`, `(2½ lb.)`), and pack sizes (`1 x 400 g`, `1 400 g`, `.5x 400g`). After a mass or volume unit it drops container words (`can`, `tin`, `jar`).
 
 ### `ingredient_nutrition_matches`
 

@@ -140,6 +140,41 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergeAppliesLeftoverPantryAliases() {
+		val italianBread = food(
+			id = 51,
+			displayName = "Bread, Italian",
+			normalizedName = "bread italian",
+		)
+		val oatMilk = food(
+			id = 52,
+			displayName = "Oat milk, unsweetened, plain, refrigerated",
+			normalizedName = "oat milk unsweetened plain refrigerated",
+		)
+		val canola = food(
+			id = 53,
+			displayName = "Oil, canola",
+			normalizedName = "oil canola",
+		)
+		val shrimp = food(
+			id = 54,
+			displayName = "Crustaceans, shrimp, raw",
+			normalizedName = "crustaceans shrimp raw",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(italianBread, oatMilk, canola, shrimp),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["ciabatta"] shouldBe 51
+		aliases["oat milk"] shouldBe 52
+		aliases["neutral oil"] shouldBe 53
+		aliases["canola oil"] shouldBe 53
+		aliases["king prawns"] shouldBe 54
+		aliases["prawns"] shouldBe 54
+	}
+
+	@Test
 	fun mergePrefersSeedAliasesOverStoredRows() {
 		val unsalted = food(
 			id = 8,

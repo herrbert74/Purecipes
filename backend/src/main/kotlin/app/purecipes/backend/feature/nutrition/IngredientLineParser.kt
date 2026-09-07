@@ -6,7 +6,7 @@ import java.math.RoundingMode
 
 internal object IngredientLineParser {
 
-	private const val QUANTITY_PATTERN = """\d+\s+\d+\s*/\s*\d+|\d+\s*/\s*\d+|\d+(?:\.\d+)?"""
+	private const val QUANTITY_PATTERN = """\d+\s+\d+\s*/\s*\d+|\d+\s*/\s*\d+|\d+(?:\.\d+)?|\.\d+"""
 	private const val QUANTITY_SCALE = 4
 
 	private val unicodeFractions = mapOf(
@@ -51,6 +51,16 @@ internal object IngredientLineParser {
 
 	private val extraWhitespacePattern = Regex("""\s+""")
 
+	private val packTimesPattern = Regex(
+		"""^[x×*]\s*($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val implicitPackPattern = Regex(
+		"""^($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val sizeTokens = setOf(
 		"large",
 		"small",
@@ -91,6 +101,27 @@ internal object IngredientLineParser {
 		"oz",
 		"lb",
 		"clove",
+	)
+
+	private val packUnits = setOf(
+		"g",
+		"kg",
+		"ml",
+		"l",
+		"tsp",
+		"tbsp",
+		"cup",
+		"oz",
+		"lb",
+	)
+
+	private val containerTokens = setOf(
+		"can",
+		"cans",
+		"jar",
+		"jars",
+		"tin",
+		"tins",
 	)
 
 	private val defaultSingleCountUnits = setOf("clove", "piece")
@@ -141,21 +172,10 @@ internal object IngredientLineParser {
 		}
 
 		var rest = canonicalizeLine(rawText)
-		var quantity: BigDecimal? = null
-		var unit: String? = null
-
-		val leadingParenthetical = leadingParentheticalAmountPattern.find(rest)
-		if (leadingParenthetical != null) {
-			quantity = parseQuantity(leadingParenthetical.groupValues[1])
-			unit = normalizeUnit(leadingParenthetical.groupValues[2])
-			rest = rest.substring(leadingParenthetical.range.last + 1).trim()
-		} else {
-			val leadingQuantity = leadingQuantityPattern.find(rest)
-			if (leadingQuantity != null) {
-				quantity = parseQuantity(leadingQuantity.groupValues[1])
-				rest = rest.substring(leadingQuantity.range.last + 1).trim()
-			}
-		}
+		val leadingAmount = consumeLeadingQuantityAndPack(rest)
+		var quantity = leadingAmount.quantity
+		var unit = leadingAmount.unit
+		rest = leadingAmount.rest
 
 		rest = skipSizeTokens(rest)
 		if (unit == null) {
@@ -166,6 +186,7 @@ internal object IngredientLineParser {
 			}
 		}
 		rest = stripLeadingParenthetical(rest)
+		rest = stripContainerWords(rest)
 
 		if (unit == null) {
 			val parentheticalMeasure = findParentheticalMeasure(rest)
@@ -210,6 +231,61 @@ internal object IngredientLineParser {
 		return extraWhitespacePattern.replace(replaced, " ").trim()
 	}
 
+	private fun consumeLeadingQuantityAndPack(value: String): LeadingAmount {
+		val leadingParenthetical = leadingParentheticalAmountPattern.find(value)
+		if (leadingParenthetical != null) {
+			return LeadingAmount(
+				quantity = parseQuantity(leadingParenthetical.groupValues[1]),
+				unit = normalizeUnit(leadingParenthetical.groupValues[2]),
+				rest = value.substring(leadingParenthetical.range.last + 1).trim(),
+			)
+		}
+		val leadingQuantity = leadingQuantityPattern.find(value)
+		val quantity = leadingQuantity?.let { match -> parseQuantity(match.groupValues[1]) }
+		val afterQuantity = if (leadingQuantity == null) {
+			value
+		} else {
+			value.substring(leadingQuantity.range.last + 1).trim()
+		}
+		val pack = consumePackQuantity(
+			value = afterQuantity,
+			allowImplicit = quantity != null,
+		)
+		return if (pack == null) {
+			LeadingAmount(
+				quantity = quantity,
+				unit = null,
+				rest = afterQuantity,
+			)
+		} else {
+			val packCount = quantity ?: BigDecimal.ONE
+			LeadingAmount(
+				quantity = packCount.multiply(pack.quantity),
+				unit = pack.unit,
+				rest = pack.rest,
+			)
+		}
+	}
+
+	private fun consumePackQuantity(value: String, allowImplicit: Boolean): PackQuantity? {
+		val match = packTimesPattern.find(value)
+			?: if (allowImplicit) implicitPackPattern.find(value) else null
+		if (match == null) {
+			return null
+		}
+		val quantity = parseQuantity(match.groupValues[1])
+		val unit = normalizeUnit(match.groupValues[2])
+		return if (quantity != null && unit != null && unit in packUnits) {
+			PackQuantity(
+				quantity = quantity,
+				unit = unit,
+				rest = value.substring(match.range.last + 1).trim(),
+			)
+		} else {
+			null
+		}
+	}
+
 	private fun skipSizeTokens(value: String): String {
 		var rest = value.trim()
 		while (rest.isNotEmpty()) {
@@ -234,6 +310,18 @@ internal object IngredientLineParser {
 
 	private fun stripLeadingParenthetical(value: String): String =
 		leadingParentheticalPattern.replaceFirst(value, "").trim()
+
+	private fun stripContainerWords(value: String): String {
+		val token = firstToken(value).lowercase()
+		if (token !in containerTokens) {
+			return value.trim()
+		}
+		var rest = dropFirstWord(value)
+		if (firstToken(rest).lowercase() == "of") {
+			rest = dropFirstWord(rest)
+		}
+		return rest
+	}
 
 	private fun findParentheticalMeasure(value: String): ParsedIngredientLine? {
 		parentheticalPattern.findAll(value).forEach { match ->
@@ -341,4 +429,16 @@ internal object IngredientLineParser {
 			else -> unit
 		}
 	}
+
+	private data class LeadingAmount(
+		val quantity: BigDecimal?,
+		val unit: String?,
+		val rest: String,
+	)
+
+	private data class PackQuantity(
+		val quantity: BigDecimal,
+		val unit: String,
+		val rest: String,
+	)
 }

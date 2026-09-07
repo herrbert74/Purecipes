@@ -17,5 +17,8 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("homemade chicken stock") shouldBe "chicken stock"
 		NutritionNameNormalizer.forLookup("eggs, beaten") shouldBe "eggs"
 		NutritionNameNormalizer.forLookup("lime, juiced") shouldBe "lime"
+		NutritionNameNormalizer.forLookup("neutral oil such as canola") shouldBe "neutral oil"
+		NutritionNameNormalizer.forLookup("double-concentrated tomato paste") shouldBe "double tomato paste"
+		NutritionNameNormalizer.forLookup("chickpeas, drained") shouldBe "chickpeas"
 	}
 }

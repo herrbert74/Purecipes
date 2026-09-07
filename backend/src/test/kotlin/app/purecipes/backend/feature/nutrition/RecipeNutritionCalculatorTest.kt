@@ -127,4 +127,41 @@ class RecipeNutritionCalculatorTest {
 		result.ingredientResults.single().foodMatch?.foodId shouldBe 9
 		result.ingredientResults.single().grams shouldBe null
 	}
+
+	@Test
+	fun calculateUsesPackTimesMassForCannedProduce() {
+		val lookupIndex = NutritionLookupIndex(
+			foodById = mapOf(
+				7 to NutritionFoodRecord(
+					id = 7,
+					displayName = "Tomatoes, red, ripe, raw, year round average",
+					normalizedName = "tomatoes red ripe raw",
+					nutrients = FdcNutrientsPer100g(
+						calories = BigDecimal("18"),
+						protein = null,
+						carbohydrates = null,
+						fat = null,
+						fiber = null,
+						sugar = null,
+						sodium = null,
+					),
+				),
+			),
+			foodIdByNormalizedAlias = mapOf("plum tomatoes" to 7),
+			measuresByFoodId = emptyMap(),
+		)
+		val calculator = RecipeNutritionCalculator(lookupIndex)
+		val result = calculator.calculate(
+			listOf(
+				RecipeIngredientRow(ingredientId = 13, rawText = "1 x 400 g Can Plum Tomatoes"),
+			),
+		)
+
+		result.ingredientResults.single().parsed.quantity shouldBe BigDecimal("400")
+		result.ingredientResults.single().parsed.unit shouldBe "g"
+		result.ingredientResults.single().parsed.parsedName shouldBe "Plum Tomatoes"
+		result.ingredientResults.single().foodMatch?.foodId shouldBe 7
+		result.ingredientResults.single().grams shouldBe BigDecimal("400")
+		result.ingredientResults.single().gramsSource shouldBe GramWeightSource.MASS
+	}
 }

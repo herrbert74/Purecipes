@@ -162,4 +162,50 @@ class IngredientLineParserTest {
 		IngredientLineParser.parse("Bunch Parsley").isMeasurable shouldBe false
 		IngredientLineParser.parse("Black Pepper").isMeasurable shouldBe false
 	}
+
+	@Test
+	fun parseReadsPackTimesMassAndDropsContainerWords() {
+		val oneTin = IngredientLineParser.parse("1 x 400 g Can Plum Tomatoes")
+		oneTin.quantity shouldBe BigDecimal("400")
+		oneTin.unit shouldBe "g"
+		oneTin.parsedName shouldBe "Plum Tomatoes"
+		oneTin.isMeasurable shouldBe true
+
+		val twoTins = IngredientLineParser.parse("2 x 400 g Can Plum Tomatoes")
+		twoTins.quantity shouldBe BigDecimal("800")
+		twoTins.unit shouldBe "g"
+		twoTins.parsedName shouldBe "Plum Tomatoes"
+		twoTins.isMeasurable shouldBe true
+
+		val halfTin = IngredientLineParser.parse(".5x 400 g Can Chopped Tomatoes")
+		halfTin.quantity shouldBe BigDecimal("0.5").multiply(BigDecimal("400"))
+		halfTin.unit shouldBe "g"
+		halfTin.parsedName shouldBe "Chopped Tomatoes"
+		halfTin.isMeasurable shouldBe true
+
+		val coconutMilk = IngredientLineParser.parse("1 x 400 ml Can Coconut Milk")
+		coconutMilk.quantity shouldBe BigDecimal("400")
+		coconutMilk.unit shouldBe "ml"
+		coconutMilk.parsedName shouldBe "Coconut Milk"
+		coconutMilk.isMeasurable shouldBe true
+
+		val tinOf = IngredientLineParser.parse("1 x 400 g tin of tomatoes")
+		tinOf.parsedName shouldBe "tomatoes"
+
+		val noTimesMarker = IngredientLineParser.parse("1 400 g tin chopped tomatoes")
+		noTimesMarker.quantity shouldBe BigDecimal("400")
+		noTimesMarker.unit shouldBe "g"
+		noTimesMarker.parsedName shouldBe "chopped tomatoes"
+		noTimesMarker.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseDropsContainerWordsAfterAPlainMass() {
+		val parsed = IngredientLineParser.parse("400 g Can Plum Tomatoes")
+
+		parsed.quantity shouldBe BigDecimal("400")
+		parsed.unit shouldBe "g"
+		parsed.parsedName shouldBe "Plum Tomatoes"
+		parsed.isMeasurable shouldBe true
+	}
 }
