@@ -9,11 +9,9 @@ How to load USDA foods, calculate recipe nutrition, and inspect food-table match
 - **Attribution:** USDA requests attribution to FoodData Central as the data source. This is a courtesy, not a share-alike obligation.
 - **MVP scope:** USDA FoodData Central only. **Open Food Facts is deferred** until we accept its Open Database Licence share-alike implications for a combined proprietary database.
 
-## Product attribution (TODO)
+## Product attribution
 
-Decide where attribution appears in the app (for example About, nutrition card footer, or legal page). Until then, this document records the obligation for implementers.
-
-Suggested wording:
+The app shows this wording on nutrition cards, the nutrition facts dialog, and the About screen:
 
 > Nutrition estimates for some ingredients use data from USDA FoodData Central.
 
@@ -90,7 +88,7 @@ Read stored parse and match rows without recalculating nutrition. With no extra 
 ./gradlew reportIngredientFoodMatches -Preport.output=/tmp/ingredient-food-match-report.txt
 ```
 
-The report counts countable ingredient lines (required, plus one option per alternative group) that were never parsed, were not measurable, had no food match, or had a food but no gram weight. It also lists frequent unmatched names, weak prefix matches, and recipes whose nutrition totals came from the website (`scraped`) rather than calculation.
+The report counts countable ingredient lines (required, plus one option per alternative group) that were never parsed, were not measurable, had no food match, or had a food but no gram weight. It also lists frequent unmatched names and recipes whose nutrition totals came from the website (`scraped`) rather than calculation.
 
 Run `calculateRecipeNutrition` first when you want the report to reflect a fresh matcher pass.
 

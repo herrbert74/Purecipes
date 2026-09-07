@@ -103,4 +103,45 @@ class IngredientLineParserTest {
 		parsed.parsedName shouldBe "garlic, minced"
 		parsed.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseTreatsBareCloveCountsAsGarlic() {
+		val parsed = IngredientLineParser.parse("8 cloves")
+
+		parsed.quantity shouldBe BigDecimal("8")
+		parsed.unit shouldBe "clove"
+		parsed.parsedName shouldBe "garlic"
+		parsed.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseKeepsGroundCloveAsTheSpice() {
+		val parsed = IngredientLineParser.parse("1 clove, ground")
+
+		parsed.quantity shouldBe BigDecimal("1")
+		parsed.unit shouldBe "clove"
+		parsed.parsedName shouldBe "ground clove"
+		parsed.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseDefaultsCountProduceWithoutAnAmountToOnePiece() {
+		val onion = IngredientLineParser.parse("Onion")
+		onion.quantity shouldBe BigDecimal.ONE
+		onion.unit shouldBe "piece"
+		onion.parsedName shouldBe "Onion"
+		onion.isMeasurable shouldBe true
+
+		val redOnion = IngredientLineParser.parse("Red Onion")
+		redOnion.quantity shouldBe BigDecimal.ONE
+		redOnion.unit shouldBe "piece"
+		redOnion.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseLeavesSaltAndOilWithoutAmountsUnmeasurable() {
+		IngredientLineParser.parse("Salt").isMeasurable shouldBe false
+		IngredientLineParser.parse("Olive Oil").isMeasurable shouldBe false
+		IngredientLineParser.parse("Bunch Parsley").isMeasurable shouldBe false
+	}
 }

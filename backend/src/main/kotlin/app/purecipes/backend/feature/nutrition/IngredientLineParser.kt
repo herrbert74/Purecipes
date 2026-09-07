@@ -93,6 +93,19 @@ internal object IngredientLineParser {
 		"clove",
 	)
 
+	private val defaultSingleCountUnits = setOf("clove", "piece")
+
+	private val defaultOnePieceTokens = setOf(
+		"lemon",
+		"lemons",
+		"lime",
+		"limes",
+		"onion",
+		"onions",
+		"shallot",
+		"shallots",
+	)
+
 	fun parse(rawLine: String): ParsedIngredientLine {
 		val rawText = rawLine.trim()
 		if (IngredientVocabulary.isIgnorableIngredientLine(rawText)) {
@@ -144,8 +157,11 @@ internal object IngredientLineParser {
 		if (unit == null) {
 			unit = inferCountUnit(rest)
 		}
+		if (quantity == null && unit in defaultSingleCountUnits) {
+			quantity = BigDecimal.ONE
+		}
 
-		val parsedName = rest.ifBlank { rawText }
+		val parsedName = parsedNameForUnit(unit = unit, rest = rest, rawText = rawText)
 		val isMeasurable = quantity != null && unit != null && unit in knownUnits
 		return ParsedIngredientLine(
 			rawText = rawText,
@@ -218,13 +234,33 @@ internal object IngredientLineParser {
 		return null
 	}
 
-	private fun inferCountUnit(parsedName: String): String? =
-		when (normalizeUnit(firstToken(parsedName))) {
-			"egg" -> "egg"
-			"clove" -> "clove"
-			"piece" -> "piece"
+	private fun inferCountUnit(parsedName: String): String? {
+		val first = normalizeUnit(firstToken(parsedName))
+		val lookupTokens = NutritionNameNormalizer.forLookup(parsedName)
+			.split(' ')
+			.filter { token -> token.isNotEmpty() }
+		val isGarlicClove = lookupTokens.any { token -> token == "garlic" } &&
+			lookupTokens.any { token -> token.startsWith("clove") }
+		val isProduce = lookupTokens.any { token -> token in defaultOnePieceTokens }
+		return when {
+			first == "egg" || first == "clove" || first == "piece" -> first
+			isGarlicClove -> "clove"
+			isProduce -> "piece"
 			else -> null
 		}
+	}
+
+	private fun parsedNameForUnit(unit: String?, rest: String, rawText: String): String {
+		if (unit != "clove") {
+			return rest.ifBlank { rawText }
+		}
+		val trimmed = rest.trim()
+		return when {
+			trimmed.isEmpty() -> "garlic"
+			trimmed.equals("ground", ignoreCase = true) -> "ground clove"
+			else -> trimmed
+		}
+	}
 
 	private fun firstToken(value: String): String =
 		value.trim().substringBefore(' ').trimEnd(',', ';', '.')

@@ -12,6 +12,7 @@ import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
+import app.purecipes.shared.ui.component.USDA_NUTRITION_ATTRIBUTION
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -38,6 +39,7 @@ class AboutScreenTest {
 
 		onNodeWithTag(ABOUT_VERSION_ROW_TAG).assertIsDisplayed()
 		onNodeWithText("Version 1.2.3 (42)").assertIsDisplayed()
+		onNodeWithText(USDA_NUTRITION_ATTRIBUTION).assertIsDisplayed()
 	}
 
 	@Test

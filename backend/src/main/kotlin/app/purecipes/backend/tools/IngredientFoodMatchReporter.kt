@@ -21,12 +21,10 @@ internal data class IngredientFoodMatchReportData(
 	val massGramCount: Int,
 	val measureGramCount: Int,
 	val densityGramCount: Int,
-	val weakMatchCount: Int,
 	val neverParsedNames: List<FrequencyCount>,
 	val notMeasurableNames: List<FrequencyCount>,
 	val unmatchedNames: List<FrequencyCount>,
 	val unresolvedGramsNames: List<FrequencyCount>,
-	val weakMatches: List<FrequencyCount>,
 	val totalRecipes: Int,
 	val calculatedNutritionCount: Int,
 	val scrapedNutritionCount: Int,
@@ -54,7 +52,6 @@ internal class IngredientFoodMatchReporter(
 			massGramCount = matched.count { it.gramsSource == GramWeightSource.MASS },
 			measureGramCount = matched.count { it.gramsSource == GramWeightSource.MEASURE },
 			densityGramCount = matched.count { it.gramsSource == GramWeightSource.DENSITY },
-			weakMatchCount = classified.count { it.isWeakMatch },
 			neverParsedNames = frequencyCounts(
 				classified,
 				IngredientFoodMatchGapKind.NEVER_PARSED,
@@ -71,11 +68,6 @@ internal class IngredientFoodMatchReporter(
 				classified,
 				IngredientFoodMatchGapKind.NO_GRAMS,
 			) { it.label },
-			weakMatches = classified
-				.filter { it.isWeakMatch }
-				.map { it.weakLabel.orEmpty() }
-				.filter { it.isNotBlank() }
-				.let(::frequencyCounts),
 			totalRecipes = recipes.size,
 			calculatedNutritionCount = recipes.count { it.calculationSource == CALCULATION_SOURCE_CALCULATED },
 			scrapedNutritionCount = recipes.count { it.calculationSource == CALCULATION_SOURCE_SCRAPED },
@@ -99,7 +91,6 @@ internal class IngredientFoodMatchReporter(
 		appendLine("  Gram source mass: ${data.massGramCount}")
 		appendLine("  Gram source measure: ${data.measureGramCount}")
 		appendLine("  Gram source density fallback: ${data.densityGramCount}")
-		appendLine("Weak (prefix) matches: ${data.weakMatchCount}")
 		appendLine()
 		appendLine("Recipes: ${data.totalRecipes}")
 		appendLine("Calculated nutrition: ${data.calculatedNutritionCount}")
@@ -111,7 +102,6 @@ internal class IngredientFoodMatchReporter(
 		appendFrequencySection("Not measurable parsed names", data.notMeasurableNames)
 		appendFrequencySection("Unmatched parsed names", data.unmatchedNames)
 		appendFrequencySection("Unresolved gram weights", data.unresolvedGramsNames)
-		appendFrequencySection("Weak prefix matches", data.weakMatches)
 		appendLineList("Scraped nutrition recipes", data.scrapedRecipes)
 	}
 
@@ -168,16 +158,9 @@ internal class IngredientFoodMatchReporter(
 			IngredientFoodMatchGapKind.NO_GRAMS -> unresolvedGramsLabel(parsedLabel, row.unit)
 			else -> parsedLabel
 		}
-		val isWeakMatch = isWeakPrefixMatch(row)
-		val weakLabel = when {
-			isWeakMatch -> weakMatchLabel(parsedLabel, row.foodDisplayName)
-			else -> null
-		}
 		return ClassifiedIngredientLine(
 			kind = kind,
 			label = label,
-			isWeakMatch = isWeakMatch,
-			weakLabel = weakLabel,
 			gramsSource = row.gramsSource,
 		)
 	}
@@ -198,9 +181,6 @@ internal class IngredientFoodMatchReporter(
 				im.parsed_name,
 				im.unit,
 				inm.food_id,
-				inm.confidence,
-				inm.match_source,
-				nf.display_name AS food_display_name,
 				inc.grams_resolved,
 				inc.grams_source
 			FROM recipes r
@@ -208,7 +188,6 @@ internal class IngredientFoodMatchReporter(
 			JOIN ingredients i ON i.ingredient_group_id = ig.id
 			LEFT JOIN ingredient_measurements im ON im.ingredient_id = i.id
 			LEFT JOIN ingredient_nutrition_matches inm ON inm.ingredient_id = i.id
-			LEFT JOIN nutrition_foods nf ON nf.id = inm.food_id
 			LEFT JOIN ingredient_nutrition_contributions inc ON inc.ingredient_id = i.id
 			WHERE i.ingredient IS NOT NULL
 			ORDER BY r.id, ig.order_index, i.order_index
@@ -228,9 +207,6 @@ internal class IngredientFoodMatchReporter(
 	}
 }
 
-private const val MATCH_SOURCE_NAME = "name"
-private val PREFIX_MATCH_CONFIDENCE: BigDecimal = BigDecimal("0.75")
-
 private enum class IngredientFoodMatchGapKind {
 	NEVER_PARSED,
 	NOT_MEASURABLE,
@@ -249,9 +225,6 @@ private data class IngredientFoodMatchRow(
 	val parsedName: String?,
 	val unit: String?,
 	val foodId: Int?,
-	val confidence: BigDecimal?,
-	val matchSource: String?,
-	val foodDisplayName: String?,
 	val gramsResolved: BigDecimal?,
 	val gramsSource: String?,
 )
@@ -267,8 +240,6 @@ private data class RecipeNutritionRow(
 private data class ClassifiedIngredientLine(
 	val kind: IngredientFoodMatchGapKind,
 	val label: String,
-	val isWeakMatch: Boolean,
-	val weakLabel: String?,
 	val gramsSource: String?,
 )
 
@@ -282,28 +253,12 @@ private fun countsTowardMatching(
 	else -> true
 }
 
-private fun isWeakPrefixMatch(row: IngredientFoodMatchRow): Boolean {
-	val confidence = row.confidence ?: return false
-	return row.foodId != null &&
-		row.matchSource == MATCH_SOURCE_NAME &&
-		confidence.compareTo(PREFIX_MATCH_CONFIDENCE) == 0
-}
-
 private fun unresolvedGramsLabel(parsedName: String, unit: String?): String =
 	if (unit.isNullOrBlank()) {
 		parsedName
 	} else {
 		"$parsedName ($unit)"
 	}
-
-private fun weakMatchLabel(parsedName: String, foodDisplayName: String?): String {
-	val foodName = foodDisplayName?.trim().orEmpty()
-	return if (foodName.isEmpty()) {
-		parsedName
-	} else {
-		"$parsedName -> $foodName"
-	}
-}
 
 private fun frequencyCounts(
 	lines: List<ClassifiedIngredientLine>,
@@ -356,9 +311,6 @@ private fun ResultSet.toIngredientFoodMatchRow(): IngredientFoodMatchRow {
 		parsedName = getNullableTrimmedString("parsed_name"),
 		unit = getNullableTrimmedString("unit"),
 		foodId = getNullableInt("food_id"),
-		confidence = getNullableBigDecimal("confidence"),
-		matchSource = getNullableTrimmedString("match_source"),
-		foodDisplayName = getNullableTrimmedString("food_display_name"),
 		gramsResolved = getNullableBigDecimal("grams_resolved"),
 		gramsSource = getNullableTrimmedString("grams_source"),
 	)

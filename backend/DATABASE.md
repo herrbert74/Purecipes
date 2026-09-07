@@ -297,7 +297,7 @@ Which food we chose for a measurable line.
 | `unit` | Parsed unit copied onto the match. |
 | `parsed_name` | Name we tried to match. |
 | `food_id` | The chosen `nutrition_foods` row. Empty if we stored a match attempt without a food (current calculator deletes the row instead when there is no food). |
-| `confidence` | How sure the matcher was: `1.00` alias, `0.90` exact name, `0.80` whole-token overlap, `0.75` string prefix. |
+| `confidence` | How sure the matcher was: `1.00` alias, `0.90` exact name, `0.80` whole-token overlap. |
 | `match_source` | `alias`, `name`, or `tokens`. |
 | `updated_at` | When this match was last written. |
 

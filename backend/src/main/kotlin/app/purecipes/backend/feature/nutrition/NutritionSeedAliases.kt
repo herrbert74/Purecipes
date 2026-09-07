@@ -39,6 +39,7 @@ internal object NutritionSeedAliases {
 	private const val CIDER_VINEGAR_DESCRIPTION = "Vinegar, cider"
 	private const val CILANTRO_DESCRIPTION = "Coriander (cilantro) leaves, raw"
 	private const val CINNAMON_DESCRIPTION = "Spices, cinnamon, ground"
+	private const val CLOVE_SPICE_DESCRIPTION = "Spices, cloves, ground"
 	private const val COCOA_DESCRIPTION = "Cocoa, dry powder, unsweetened"
 	private const val CORIANDER_SEED_DESCRIPTION = "Spices, coriander seed"
 	private const val CORNSTARCH_DESCRIPTION = "Cornstarch"
@@ -58,26 +59,37 @@ internal object NutritionSeedAliases {
 	private const val GARLIC_POWDER_DESCRIPTION = "Spices, garlic powder"
 	private const val GINGER_FRESH_DESCRIPTION = "Ginger root, raw"
 	private const val GINGER_GROUND_DESCRIPTION = "Spices, ginger, ground"
+	private const val HALLOUMI_DESCRIPTION = "Cheese, halloumi"
+	private const val ITALIAN_BREAD_DESCRIPTION = "Bread, italian"
 	private const val KETCHUP_DESCRIPTION = "Catsup"
+	private const val LEMON_DESCRIPTION = "Lemons, raw, without peel"
 	private const val LEMON_JUICE_DESCRIPTION = "Lemon juice, raw"
+	private const val LIME_DESCRIPTION = "Limes, raw"
 	private const val LIME_JUICE_DESCRIPTION = "Lime juice, raw"
+	private const val MAPLE_SYRUP_DESCRIPTION = "Syrups, maple"
 	private const val MILK_DESCRIPTION = "Milk, whole, 3.25% milkfat, with added vitamin D"
 	private const val MINT_DESCRIPTION = "Spearmint, fresh"
+	private const val MISO_DESCRIPTION = "Miso"
 	private const val MUSTARD_DESCRIPTION = "Mustard, prepared, yellow"
 	private const val MUSHROOM_DESCRIPTION = "Mushrooms, white, raw"
+	private const val OAT_MILK_DESCRIPTION = "Beverages, oat milk"
 	private const val OLIVE_OIL_DESCRIPTION = "Oil, olive, extra virgin"
 	private const val OLIVE_OIL_FALLBACK_DESCRIPTION = "Oil, olive, salad or cooking"
 	private const val OLIVE_DESCRIPTION = "Olives, ripe, canned (small-extra large)"
+	private const val ONION_DESCRIPTION = "Onions, raw"
 	private const val OREGANO_DESCRIPTION = "Spices, oregano, dried"
 	private const val PAPRIKA_DESCRIPTION = "Spices, paprika"
 	private const val PARMESAN_DESCRIPTION = "Cheese, parmesan, grated"
 	private const val PASTA_DESCRIPTION = "Pasta, dry, unenriched"
+	private const val POMEGRANATE_DESCRIPTION = "Pomegranates, raw"
 	private const val RICE_DESCRIPTION = "Rice, white, long grain, unenriched, raw"
 	private const val RICE_FALLBACK_DESCRIPTION = "Rice, white, long-grain, regular, raw, unenriched"
+	private const val ROMANO_DESCRIPTION = "Cheese, romano"
 	private const val SALT_DESCRIPTION = "Salt, table"
 	private const val SELF_RISING_FLOUR_DESCRIPTION = "Wheat flour, white, all-purpose, self-rising, enriched"
 	private const val SESAME_OIL_DESCRIPTION = "Oil, sesame, salad or cooking"
 	private const val SESAME_SEED_DESCRIPTION = "Seeds, sesame seeds, whole, dried"
+	private const val SHALLOT_DESCRIPTION = "Shallots, raw"
 	private const val SOY_SAUCE_DESCRIPTION = "Soy sauce made from soy and wheat (shoyu)"
 	private const val SPRING_ONION_DESCRIPTION = "Onions, spring or scallions (includes tops and bulb), raw"
 	private const val SUGAR_DESCRIPTION = "Sugars, granulated"
@@ -89,6 +101,7 @@ internal object NutritionSeedAliases {
 	private const val TURMERIC_DESCRIPTION = "Spices, turmeric, ground"
 	private const val VANILLA_DESCRIPTION = "Vanilla extract"
 	private const val VEGETABLE_BROTH_DESCRIPTION = "Soup, vegetable broth, ready to serve"
+	private const val WHITE_VINEGAR_DESCRIPTION = "Vinegar, distilled"
 	private const val WHITE_WINE_DESCRIPTION = "Alcoholic beverage, wine, table, white"
 
 	val aliases: List<NutritionSeedAlias> = listOf(
@@ -100,6 +113,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("basmati rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("bicarbonate of soda", BAKING_SODA_DESCRIPTION),
 		NutritionSeedAlias("black pepper", BLACK_PEPPER_DESCRIPTION),
+		NutritionSeedAlias("black peppercorns", BLACK_PEPPER_DESCRIPTION),
 		NutritionSeedAlias("breadcrumb", BREADCRUMB_DESCRIPTION),
 		NutritionSeedAlias("breadcrumbs", BREADCRUMB_DESCRIPTION),
 		NutritionSeedAlias("brown sugar", BROWN_SUGAR_DESCRIPTION, SUGAR_DESCRIPTION),
@@ -107,6 +121,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("cayenne pepper", CAYENNE_DESCRIPTION),
 		NutritionSeedAlias("cheddar cheese", CHEDDAR_DESCRIPTION),
 		NutritionSeedAlias("chestnut mushroom", MUSHROOM_DESCRIPTION),
+		NutritionSeedAlias("ciabatta", ITALIAN_BREAD_DESCRIPTION),
 		NutritionSeedAlias(
 			"chicken breast",
 			CHICKEN_BREAST_DESCRIPTION,
@@ -121,19 +136,23 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("chopped tomatoes", TOMATO_DICED_DESCRIPTION),
 		NutritionSeedAlias("cider vinegar", CIDER_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("clove garlic", GARLIC_DESCRIPTION),
+		NutritionSeedAlias("cloves", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("cocoa powder", COCOA_DESCRIPTION),
 		NutritionSeedAlias("cornflour", CORNSTARCH_DESCRIPTION),
 		NutritionSeedAlias("cornstarch", CORNSTARCH_DESCRIPTION),
 		NutritionSeedAlias("crushed red pepper flakes", CAYENNE_DESCRIPTION),
 		NutritionSeedAlias("cumin seed", CUMIN_DESCRIPTION),
 		NutritionSeedAlias("curry powder", CURRY_POWDER_DESCRIPTION),
+		NutritionSeedAlias("dark brown sugar", BROWN_SUGAR_DESCRIPTION, SUGAR_DESCRIPTION),
 		NutritionSeedAlias("dark soy sauce", SOY_SAUCE_DESCRIPTION),
 		NutritionSeedAlias("diamond crystal", SALT_DESCRIPTION),
 		NutritionSeedAlias("diamond crystal kosher salt", SALT_DESCRIPTION),
 		NutritionSeedAlias("dijon mustard", MUSTARD_DESCRIPTION),
+		NutritionSeedAlias("distilled white vinegar", WHITE_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("drained cooked chickpeas", CHICKPEA_DESCRIPTION),
 		NutritionSeedAlias("dried oregano", OREGANO_DESCRIPTION),
 		NutritionSeedAlias("dry white wine", WHITE_WINE_DESCRIPTION),
+		NutritionSeedAlias("dutch-process cocoa powder", COCOA_DESCRIPTION),
 		NutritionSeedAlias("egg", EGG_DESCRIPTION),
 		NutritionSeedAlias("egg noodle", EGG_NOODLE_DESCRIPTION),
 		NutritionSeedAlias("egg white", EGG_WHITE_DESCRIPTION, EGG_WHITE_FALLBACK_DESCRIPTION),
@@ -159,35 +178,54 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("grated parmesan", PARMESAN_DESCRIPTION),
 		NutritionSeedAlias("ground black pepper", BLACK_PEPPER_DESCRIPTION),
 		NutritionSeedAlias("ground cinnamon", CINNAMON_DESCRIPTION),
+		NutritionSeedAlias("ground clove", CLOVE_SPICE_DESCRIPTION),
+		NutritionSeedAlias("ground cloves", CLOVE_SPICE_DESCRIPTION),
 		NutritionSeedAlias("ground coriander", CORIANDER_SEED_DESCRIPTION),
 		NutritionSeedAlias("ground cumin", CUMIN_DESCRIPTION),
 		NutritionSeedAlias("ground ginger", GINGER_GROUND_DESCRIPTION),
 		NutritionSeedAlias("ground turmeric", TURMERIC_DESCRIPTION),
+		NutritionSeedAlias("halloumi", HALLOUMI_DESCRIPTION),
 		NutritionSeedAlias("heavy cream", CREAM_DESCRIPTION, CREAM_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("kalamata olives", OLIVE_DESCRIPTION),
 		NutritionSeedAlias("ketchup", KETCHUP_DESCRIPTION),
 		NutritionSeedAlias("kosher salt", SALT_DESCRIPTION),
+		NutritionSeedAlias("lemon", LEMON_DESCRIPTION),
+		NutritionSeedAlias("lemon juice", LEMON_JUICE_DESCRIPTION),
 		NutritionSeedAlias("light brown sugar", BROWN_SUGAR_DESCRIPTION, SUGAR_DESCRIPTION),
 		NutritionSeedAlias("light soy sauce", SOY_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("lime", LIME_DESCRIPTION),
 		NutritionSeedAlias("linguine", PASTA_DESCRIPTION),
 		NutritionSeedAlias("long grain rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("low-sodium chicken broth", CHICKEN_BROTH_DESCRIPTION),
+		NutritionSeedAlias("low-sodium chicken stock", CHICKEN_BROTH_DESCRIPTION),
 		NutritionSeedAlias("low-sodium soy sauce", SOY_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("maple syrup", MAPLE_SYRUP_DESCRIPTION),
 		NutritionSeedAlias("mint", MINT_DESCRIPTION),
+		NutritionSeedAlias("miso", MISO_DESCRIPTION),
+		NutritionSeedAlias("miso paste", MISO_DESCRIPTION),
 		NutritionSeedAlias("morton kosher salt", SALT_DESCRIPTION),
+		NutritionSeedAlias("oat milk", OAT_MILK_DESCRIPTION),
 		NutritionSeedAlias("olive oil", OLIVE_OIL_DESCRIPTION, OLIVE_OIL_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("onion", ONION_DESCRIPTION),
 		NutritionSeedAlias("orzo", PASTA_DESCRIPTION),
 		NutritionSeedAlias("panko breadcrumbs", BREADCRUMB_DESCRIPTION),
 		NutritionSeedAlias("paprika", PAPRIKA_DESCRIPTION),
 		NutritionSeedAlias("passata", TOMATO_CRUSHED_DESCRIPTION),
+		NutritionSeedAlias("pecorino romano", ROMANO_DESCRIPTION),
 		NutritionSeedAlias("penne pasta", PASTA_DESCRIPTION),
 		NutritionSeedAlias("plain flour", FLOUR_DESCRIPTION),
+		NutritionSeedAlias("pomegranate seeds", POMEGRANATE_DESCRIPTION),
+		NutritionSeedAlias("pure maple syrup", MAPLE_SYRUP_DESCRIPTION),
 		NutritionSeedAlias("pure vanilla extract", VANILLA_DESCRIPTION),
 		NutritionSeedAlias("red chilli flakes", CAYENNE_DESCRIPTION),
+		NutritionSeedAlias("red onion", ONION_DESCRIPTION),
+		NutritionSeedAlias("rice vinegar", WHITE_VINEGAR_DESCRIPTION, CIDER_VINEGAR_DESCRIPTION),
+		NutritionSeedAlias("rice wine vinegar", WHITE_VINEGAR_DESCRIPTION, CIDER_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("self raising flour", SELF_RISING_FLOUR_DESCRIPTION),
 		NutritionSeedAlias("self-raising flour", SELF_RISING_FLOUR_DESCRIPTION),
 		NutritionSeedAlias("sesame oil", SESAME_OIL_DESCRIPTION),
 		NutritionSeedAlias("sesame seeds", SESAME_SEED_DESCRIPTION),
+		NutritionSeedAlias("shallot", SHALLOT_DESCRIPTION),
 		NutritionSeedAlias(
 			"skinless chicken thigh",
 			CHICKEN_THIGH_DESCRIPTION,
@@ -197,16 +235,20 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("smoked paprika", PAPRIKA_DESCRIPTION),
 		NutritionSeedAlias("soft brown sugar", BROWN_SUGAR_DESCRIPTION, SUGAR_DESCRIPTION),
 		NutritionSeedAlias("spring onion", SPRING_ONION_DESCRIPTION),
+		NutritionSeedAlias("sweet paprika", PAPRIKA_DESCRIPTION),
 		NutritionSeedAlias("toasted sesame oil", SESAME_OIL_DESCRIPTION),
 		NutritionSeedAlias("tomato ketchup", KETCHUP_DESCRIPTION),
 		NutritionSeedAlias("tomato puree", TOMATO_PASTE_DESCRIPTION),
 		NutritionSeedAlias("tomato purée", TOMATO_PASTE_DESCRIPTION),
 		NutritionSeedAlias("turmeric", TURMERIC_DESCRIPTION),
 		NutritionSeedAlias("unsalted butter", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("vanilla bean paste", VANILLA_DESCRIPTION),
 		NutritionSeedAlias("vanilla extract", VANILLA_DESCRIPTION),
 		NutritionSeedAlias("vegetable broth", VEGETABLE_BROTH_DESCRIPTION),
 		NutritionSeedAlias("vegetable stock", VEGETABLE_BROTH_DESCRIPTION),
 		NutritionSeedAlias("white sugar", SUGAR_DESCRIPTION),
+		NutritionSeedAlias("whole black peppercorns", BLACK_PEPPER_DESCRIPTION),
+		NutritionSeedAlias("whole grain mustard", MUSTARD_DESCRIPTION),
 		NutritionSeedAlias("whole milk", MILK_DESCRIPTION),
 	)
 }

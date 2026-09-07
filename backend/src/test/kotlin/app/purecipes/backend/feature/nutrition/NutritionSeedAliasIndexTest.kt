@@ -62,6 +62,34 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergeAppliesFrequentUnmatchedNameAliases() {
+		val vanilla = food(
+			id = 21,
+			displayName = "Vanilla extract",
+			normalizedName = "vanilla extract",
+		)
+		val brownSugar = food(
+			id = 22,
+			displayName = "Sugars, brown",
+			normalizedName = "sugars brown",
+		)
+		val cloveSpice = food(
+			id = 23,
+			displayName = "Spices, cloves, ground",
+			normalizedName = "spices cloves ground",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(vanilla, brownSugar, cloveSpice),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["vanilla bean paste"] shouldBe 21
+		aliases["dark brown sugar"] shouldBe 22
+		aliases["ground clove"] shouldBe 23
+		aliases["clove"] shouldBe 23
+	}
+
+	@Test
 	fun mergePrefersSeedAliasesOverStoredRows() {
 		val unsalted = food(
 			id = 8,

@@ -43,4 +43,88 @@ class RecipeNutritionCalculatorTest {
 		result.totals?.calories shouldBe BigDecimal("727.56")
 		result.ingredientResults.single().gramsSource shouldBe GramWeightSource.MEASURE
 	}
+
+	@Test
+	fun calculateUsesGarlicCloveMeasureForBareCloveCounts() {
+		val lookupIndex = NutritionLookupIndex(
+			foodById = mapOf(
+				4 to NutritionFoodRecord(
+					id = 4,
+					displayName = "Garlic, raw",
+					normalizedName = "garlic raw",
+					nutrients = FdcNutrientsPer100g(
+						calories = BigDecimal("149"),
+						protein = BigDecimal("6.36"),
+						carbohydrates = BigDecimal("33.06"),
+						fat = BigDecimal("0.5"),
+						fiber = BigDecimal("2.1"),
+						sugar = BigDecimal("1"),
+						sodium = BigDecimal("17"),
+					),
+				),
+			),
+			foodIdByNormalizedAlias = mapOf("garlic" to 4),
+			measuresByFoodId = mapOf(4 to mapOf("clove" to BigDecimal("3"))),
+		)
+		val calculator = RecipeNutritionCalculator(lookupIndex)
+		val result = calculator.calculate(
+			listOf(
+				RecipeIngredientRow(ingredientId = 11, rawText = "8 cloves"),
+			),
+		)
+
+		result.ingredientResults.single().foodMatch?.foodId shouldBe 4
+		result.ingredientResults.single().grams shouldBe BigDecimal("24")
+		result.ingredientResults.single().gramsSource shouldBe GramWeightSource.MEASURE
+	}
+
+	@Test
+	fun calculateDoesNotUseGarlicGramsForGroundClove() {
+		val lookupIndex = NutritionLookupIndex(
+			foodById = mapOf(
+				4 to NutritionFoodRecord(
+					id = 4,
+					displayName = "Garlic, raw",
+					normalizedName = "garlic raw",
+					nutrients = FdcNutrientsPer100g(
+						calories = BigDecimal("149"),
+						protein = null,
+						carbohydrates = null,
+						fat = null,
+						fiber = null,
+						sugar = null,
+						sodium = null,
+					),
+				),
+				9 to NutritionFoodRecord(
+					id = 9,
+					displayName = "Spices, cloves, ground",
+					normalizedName = "spices cloves ground",
+					nutrients = FdcNutrientsPer100g(
+						calories = BigDecimal("274"),
+						protein = null,
+						carbohydrates = null,
+						fat = null,
+						fiber = null,
+						sugar = null,
+						sodium = null,
+					),
+				),
+			),
+			foodIdByNormalizedAlias = mapOf(
+				"garlic" to 4,
+				"ground clove" to 9,
+			),
+			measuresByFoodId = mapOf(4 to mapOf("clove" to BigDecimal("3"))),
+		)
+		val calculator = RecipeNutritionCalculator(lookupIndex)
+		val result = calculator.calculate(
+			listOf(
+				RecipeIngredientRow(ingredientId = 12, rawText = "1 clove, ground"),
+			),
+		)
+
+		result.ingredientResults.single().foodMatch?.foodId shouldBe 9
+		result.ingredientResults.single().grams shouldBe null
+	}
 }

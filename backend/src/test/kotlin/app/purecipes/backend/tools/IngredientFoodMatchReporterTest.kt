@@ -128,12 +128,10 @@ class IngredientFoodMatchReporterTest {
 		report.matchedCount shouldBe 2
 		report.measureGramCount shouldBe 1
 		report.densityGramCount shouldBe 1
-		report.weakMatchCount shouldBe 1
 		report.neverParsedNames.map { it.label } shouldContain "never parsed line"
 		report.notMeasurableNames.map { it.label } shouldContain "Salt to taste"
 		report.unmatchedNames.map { it.label } shouldContain "mystery spice"
 		report.unresolvedGramsNames.map { it.label } shouldContain "olive oil (cup)"
-		report.weakMatches.map { it.label } shouldContain "olive -> Oil, olive, extra virgin"
 		report.missingNutritionCount shouldBe 1
 	}
 
