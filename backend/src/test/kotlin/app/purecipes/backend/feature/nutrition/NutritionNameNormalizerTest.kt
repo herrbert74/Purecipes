@@ -16,5 +16,6 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("unsalted butter, room temperature") shouldBe "unsalted butter"
 		NutritionNameNormalizer.forLookup("homemade chicken stock") shouldBe "chicken stock"
 		NutritionNameNormalizer.forLookup("eggs, beaten") shouldBe "eggs"
+		NutritionNameNormalizer.forLookup("lime, juiced") shouldBe "lime"
 	}
 }

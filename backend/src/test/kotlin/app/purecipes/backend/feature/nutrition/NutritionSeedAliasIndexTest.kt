@@ -112,6 +112,34 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergeAppliesFrequentPantryAliases() {
+		val garlic = food(
+			id = 41,
+			displayName = "Garlic, raw",
+			normalizedName = "garlic raw",
+		)
+		val paste = food(
+			id = 42,
+			displayName = "Tomato products, canned, paste, without salt added " +
+				"(Includes foods for USDA's Food Distribution Program)",
+			normalizedName = "tomato products canned paste",
+		)
+		val cider = food(
+			id = 43,
+			displayName = "Vinegar, cider",
+			normalizedName = "vinegar cider",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(garlic, paste, cider),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["garlic cloves"] shouldBe 41
+		aliases["tomato paste"] shouldBe 42
+		aliases["apple cider vinegar"] shouldBe 43
+	}
+
+	@Test
 	fun mergePrefersSeedAliasesOverStoredRows() {
 		val unsalted = food(
 			id = 8,

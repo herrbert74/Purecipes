@@ -21,6 +21,7 @@ internal object NutritionNameNormalizer {
 		"ground",
 		"halved",
 		"homemade",
+		"juiced",
 		"large",
 		"lightly",
 		"medium",
