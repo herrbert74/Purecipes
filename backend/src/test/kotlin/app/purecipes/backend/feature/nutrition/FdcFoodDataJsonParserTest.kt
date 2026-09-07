@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import java.io.File
+import java.math.BigDecimal
 import kotlin.test.Test
 
 class FdcFoodDataJsonParserTest {
@@ -28,5 +29,11 @@ class FdcFoodDataJsonParserTest {
 
 		parseResult.dataset shouldBe FdcFoodDataset.SR_LEGACY
 		parseResult.foods.single().sourceName shouldBe FDC_SR_LEGACY_SOURCE_NAME
+		val pasta = parseResult.foods.single()
+		pasta.portions.map { portion -> portion.measureName } shouldBe listOf("cup", "tbsp")
+		pasta.portions.map { portion -> portion.gramsPerMeasure } shouldBe listOf(
+			BigDecimal("100.0000"),
+			BigDecimal("15.0000"),
+		)
 	}
 }

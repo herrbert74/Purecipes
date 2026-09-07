@@ -16,6 +16,7 @@ internal class RecipeNutritionService(
 	private val recipeNutritionRepository: RecipeNutritionRepository,
 	private val lookupRepository: NutritionLookupRepository,
 ) {
+
 	constructor(dataSource: DataSource) : this(
 		recipeNutritionRepository = RecipeNutritionRepository(dataSource),
 		lookupRepository = NutritionLookupRepository(dataSource),
@@ -64,12 +65,13 @@ internal class RecipeNutritionService(
 			}
 
 			val grams = result.grams
+			val gramsSource = result.gramsSource
 			val food = foodMatch?.foodId?.let(lookupIndex::food)
-			if (food != null && grams != null) {
+			if (food != null && grams != null && gramsSource != null) {
 				totalWeightGrams = totalWeightGrams.add(grams)
 				recipeNutritionRepository.upsertIngredientContribution(
 					ingredientId = result.ingredientId,
-					contribution = computeStoredIngredientNutrition(food, grams),
+					contribution = computeStoredIngredientNutrition(food, grams, gramsSource),
 				)
 			} else {
 				recipeNutritionRepository.deleteIngredientContribution(result.ingredientId)

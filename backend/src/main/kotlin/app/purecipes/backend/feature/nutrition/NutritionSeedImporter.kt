@@ -16,6 +16,7 @@ internal data class NutritionSeedImportResult(
 internal class NutritionSeedImporter(
 	private val repository: NutritionFoodSeedRepository,
 ) {
+
 	fun importFdcJson(
 		fdcJsonFile: File,
 		replaceExisting: Boolean,
@@ -31,6 +32,7 @@ internal class NutritionSeedImporter(
 				parsedFoods = parsedFoods,
 				seedCatalogueAliases = seedCatalogueAliases,
 			)
+
 			else -> importParsedFoods(
 				dataset = parseResult.dataset,
 				parsedFoods = parsedFoods,
@@ -49,6 +51,7 @@ internal class NutritionSeedImporter(
 		if (replaceExisting) {
 			repository.replaceSeedData()
 		}
+		repository.deleteUndeterminedMeasures()
 
 		var foodsImported = 0
 		var foodsSkipped = 0
@@ -192,7 +195,9 @@ internal class NutritionSeedImporter(
 		val extraAliasesImported: Int,
 		val unmatchedCatalogueNames: List<String>,
 	) {
+
 		companion object {
+
 			fun empty(): AliasSeedResult =
 				AliasSeedResult(
 					catalogueAliasesImported = 0,

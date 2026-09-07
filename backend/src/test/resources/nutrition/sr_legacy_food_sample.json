@@ -35,8 +35,22 @@
 			],
 			"foodPortions": [
 				{
-					"measureUnit": { "name": "cup" },
-					"gramWeight": 100
+					"measureUnit": { "name": "undetermined" },
+					"modifier": "cup",
+					"gramWeight": 100,
+					"amount": 1
+				},
+				{
+					"measureUnit": { "name": "undetermined" },
+					"modifier": "cake",
+					"gramWeight": 42,
+					"amount": 1
+				},
+				{
+					"measureUnit": { "name": "undetermined" },
+					"modifier": "tbsp",
+					"gramWeight": 30,
+					"amount": 2
 				}
 			]
 		}

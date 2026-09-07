@@ -10,6 +10,7 @@ import java.io.File
 import java.math.BigDecimal
 
 internal object FdcFoodDataJsonParser {
+
 	private val json = Json {
 		ignoreUnknownKeys = true
 	}
@@ -56,14 +57,19 @@ internal object FdcFoodDataJsonParser {
 
 	private fun JsonElement.toFoodPortionOrNull(): FdcFoodPortion? {
 		val portionObject = jsonObjectOrNull() ?: return null
-		val measureName = portionObject["measureUnit"]?.jsonObjectOrNull()?.stringValue("name")
-		val gramsPerMeasure = portionObject.decimalValue("gramWeight")
-		return if (measureName == null || gramsPerMeasure == null) {
+		val measureUnitName = portionObject["measureUnit"]?.jsonObjectOrNull()?.stringValue("name")
+		val modifier = portionObject.stringValue("modifier")
+		val measureName = NutritionMeasureNames.resolveImportedName(measureUnitName, modifier)
+		val gramWeight = portionObject.decimalValue("gramWeight")
+		return if (measureName == null || gramWeight == null) {
 			null
 		} else {
 			FdcFoodPortion(
-				measureName = NutritionMeasureNames.normalize(measureName),
-				gramsPerMeasure = gramsPerMeasure,
+				measureName = measureName,
+				gramsPerMeasure = NutritionMeasureNames.gramsPerSingleMeasure(
+					gramWeight = gramWeight,
+					amount = portionObject.decimalValue("amount"),
+				),
 			)
 		}
 	}

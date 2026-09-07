@@ -940,6 +940,7 @@ fun ensureSchema(connection: Connection) {
 	CREATE TABLE IF NOT EXISTS ingredient_nutrition_contributions (
 		ingredient_id INTEGER PRIMARY KEY REFERENCES ingredients(id) ON DELETE CASCADE,
 		grams_resolved DECIMAL(12,4),
+		grams_source VARCHAR(32),
 		calories DECIMAL(10,2),
 		protein DECIMAL(10,2),
 		carbohydrates DECIMAL(10,2),
@@ -957,6 +958,8 @@ fun ensureSchema(connection: Connection) {
 		uses_user_override BOOLEAN NOT NULL DEFAULT FALSE,
 		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 	);
+
+	ALTER TABLE ingredient_nutrition_contributions ADD COLUMN IF NOT EXISTS grams_source VARCHAR(32);
 
 	CREATE TABLE IF NOT EXISTS ingredient_nutrition_matches (
 		id SERIAL PRIMARY KEY,

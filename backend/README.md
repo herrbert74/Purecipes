@@ -1,6 +1,6 @@
 # Purecipes Backend
 
-What each database table and column is for: [`DATABASE.md`](DATABASE.md).
+What each database table and column is for: [`DATABASE.md`](DATABASE.md). USDA import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md).
 
 ## Gradle tasks: `run`, `build`, and `shadowJar`
 

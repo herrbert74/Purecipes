@@ -6,6 +6,7 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 private object IngredientMeasurementBindIndex {
+
 	const val INGREDIENT_ID = 1
 	const val RAW_TEXT = 2
 	const val QUANTITY = 3
@@ -15,6 +16,7 @@ private object IngredientMeasurementBindIndex {
 }
 
 private object IngredientMatchBindIndex {
+
 	const val INGREDIENT_ID = 1
 	const val RAW_TEXT = 2
 	const val QUANTITY = 3
@@ -26,6 +28,7 @@ private object IngredientMatchBindIndex {
 }
 
 private object RecipeNutritionBindIndex {
+
 	const val RECIPE_ID = 1
 	const val CALORIES = 2
 	const val PROTEIN = 3
@@ -44,15 +47,17 @@ private object RecipeNutritionBindIndex {
 }
 
 private object IngredientContributionBindIndex {
+
 	const val INGREDIENT_ID = 1
 	const val GRAMS = 2
-	const val CALORIES = 3
-	const val PROTEIN = 4
-	const val CARBOHYDRATES = 5
-	const val FAT = 6
-	const val FIBER = 7
-	const val SUGAR = 8
-	const val SODIUM = 9
+	const val GRAMS_SOURCE = 3
+	const val CALORIES = 4
+	const val PROTEIN = 5
+	const val CARBOHYDRATES = 6
+	const val FAT = 7
+	const val FIBER = 8
+	const val SUGAR = 9
+	const val SODIUM = 10
 }
 
 internal data class RecipeIngredientRow(
@@ -65,6 +70,7 @@ internal data class RecipeIngredientRow(
 internal class RecipeNutritionRepository(
 	private val dataSource: DataSource,
 ) {
+
 	fun loadRecipeIngredients(recipeId: Int): List<RecipeIngredientRow> =
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
@@ -229,6 +235,7 @@ internal class RecipeNutritionRepository(
 				INSERT INTO ingredient_nutrition_contributions (
 					ingredient_id,
 					grams_resolved,
+					grams_source,
 					calories,
 					protein,
 					carbohydrates,
@@ -237,9 +244,10 @@ internal class RecipeNutritionRepository(
 					sugar,
 					sodium,
 					updated_at
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
 				ON CONFLICT (ingredient_id) DO UPDATE SET
 					grams_resolved = EXCLUDED.grams_resolved,
+					grams_source = EXCLUDED.grams_source,
 					calories = EXCLUDED.calories,
 					protein = EXCLUDED.protein,
 					carbohydrates = EXCLUDED.carbohydrates,
@@ -252,6 +260,7 @@ internal class RecipeNutritionRepository(
 			).use { statement ->
 				statement.setInt(IngredientContributionBindIndex.INGREDIENT_ID, ingredientId)
 				statement.setBigDecimal(IngredientContributionBindIndex.GRAMS, contribution.grams)
+				statement.setString(IngredientContributionBindIndex.GRAMS_SOURCE, contribution.gramsSource)
 				statement.setBigDecimal(IngredientContributionBindIndex.CALORIES, contribution.calories)
 				statement.setBigDecimal(IngredientContributionBindIndex.PROTEIN, contribution.protein)
 				statement.setBigDecimal(IngredientContributionBindIndex.CARBOHYDRATES, contribution.carbohydrates)
@@ -348,6 +357,7 @@ internal class RecipeNutritionRepository(
 		}
 
 	private companion object {
+
 		const val CALCULATION_SOURCE = "calculated"
 		const val RECIPE_CONFIDENCE_COMPLETE = "complete"
 		const val RECIPE_CONFIDENCE_PARTIAL = "partial"

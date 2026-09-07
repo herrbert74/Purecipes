@@ -48,6 +48,9 @@ internal object NutritionSeedAliases {
 	private const val CURRY_POWDER_DESCRIPTION = "Spices, curry powder"
 	private const val EGG_DESCRIPTION = "Eggs, Grade A, Large, egg whole"
 	private const val EGG_NOODLE_DESCRIPTION = "Noodles, egg, dry, enriched"
+	private const val EGG_WHITE_DESCRIPTION = "Eggs, Grade A, Large, egg white"
+	private const val EGG_WHITE_FALLBACK_DESCRIPTION = "Egg, white, raw, fresh"
+	private const val EGG_YOLK_DESCRIPTION = "Eggs, Grade A, Large, egg yolk"
 	private const val FETA_DESCRIPTION = "Cheese, feta"
 	private const val FISH_SAUCE_DESCRIPTION = "Sauce, fish, ready-to-serve"
 	private const val FLOUR_DESCRIPTION = "Flour, wheat, all-purpose, enriched, unbleached"
@@ -125,6 +128,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("cumin seed", CUMIN_DESCRIPTION),
 		NutritionSeedAlias("curry powder", CURRY_POWDER_DESCRIPTION),
 		NutritionSeedAlias("dark soy sauce", SOY_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("diamond crystal", SALT_DESCRIPTION),
 		NutritionSeedAlias("diamond crystal kosher salt", SALT_DESCRIPTION),
 		NutritionSeedAlias("dijon mustard", MUSTARD_DESCRIPTION),
 		NutritionSeedAlias("drained cooked chickpeas", CHICKPEA_DESCRIPTION),
@@ -132,6 +136,10 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("dry white wine", WHITE_WINE_DESCRIPTION),
 		NutritionSeedAlias("egg", EGG_DESCRIPTION),
 		NutritionSeedAlias("egg noodle", EGG_NOODLE_DESCRIPTION),
+		NutritionSeedAlias("egg white", EGG_WHITE_DESCRIPTION, EGG_WHITE_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("egg whites", EGG_WHITE_DESCRIPTION, EGG_WHITE_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("egg yolk", EGG_YOLK_DESCRIPTION),
+		NutritionSeedAlias("egg yolks", EGG_YOLK_DESCRIPTION),
 		NutritionSeedAlias("eggs", EGG_DESCRIPTION),
 		NutritionSeedAlias("extra virgin olive oil", OLIVE_OIL_DESCRIPTION, OLIVE_OIL_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("extra-virgin olive oil", OLIVE_OIL_DESCRIPTION, OLIVE_OIL_FALLBACK_DESCRIPTION),
@@ -166,6 +174,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("low-sodium chicken broth", CHICKEN_BROTH_DESCRIPTION),
 		NutritionSeedAlias("low-sodium soy sauce", SOY_SAUCE_DESCRIPTION),
 		NutritionSeedAlias("mint", MINT_DESCRIPTION),
+		NutritionSeedAlias("morton kosher salt", SALT_DESCRIPTION),
 		NutritionSeedAlias("olive oil", OLIVE_OIL_DESCRIPTION, OLIVE_OIL_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("orzo", PASTA_DESCRIPTION),
 		NutritionSeedAlias("panko breadcrumbs", BREADCRUMB_DESCRIPTION),

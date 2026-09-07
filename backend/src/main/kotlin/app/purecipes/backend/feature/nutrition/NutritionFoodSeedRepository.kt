@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import javax.sql.DataSource
 
 private object UpsertFoodBindIndex {
+
 	const val SOURCE_NAME = 1
 	const val SOURCE_ID = 2
 	const val DISPLAY_NAME = 3
@@ -19,12 +20,14 @@ private object UpsertFoodBindIndex {
 }
 
 private object UpsertAliasBindIndex {
+
 	const val FOOD_ID = 1
 	const val ALIAS = 2
 	const val NORMALIZED_ALIAS = 3
 }
 
 private object UpsertMeasureBindIndex {
+
 	const val FOOD_ID = 1
 	const val MEASURE_NAME = 2
 	const val GRAMS_PER_MEASURE = 3
@@ -33,6 +36,7 @@ private object UpsertMeasureBindIndex {
 internal class NutritionFoodSeedRepository(
 	private val dataSource: DataSource,
 ) {
+
 	fun replaceSeedData() {
 		dataSource.connection.use { connection ->
 			connection.createStatement().use { statement ->
@@ -40,6 +44,14 @@ internal class NutritionFoodSeedRepository(
 				statement.execute("DELETE FROM nutrition_food_aliases")
 				statement.execute("DELETE FROM nutrition_food_measures")
 				statement.execute("DELETE FROM nutrition_foods")
+			}
+		}
+	}
+
+	fun deleteUndeterminedMeasures() {
+		dataSource.connection.use { connection ->
+			connection.createStatement().use { statement ->
+				statement.execute("DELETE FROM nutrition_food_measures WHERE measure_name = 'undetermined'")
 			}
 		}
 	}

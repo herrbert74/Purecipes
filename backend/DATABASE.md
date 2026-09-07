@@ -1,6 +1,6 @@
 # Purecipes database
 
-This is the product map of the PostgreSQL database the backend serves to the apps. It explains what each table is for and what each column means. It does not cover how to run SQL, how tables are created, or how the server is started — those live in [`README.md`](README.md).
+This is the product map of the PostgreSQL database the backend serves to the apps. It explains what each table is for and what each column means. It does not cover how to run SQL, how tables are created, or how the server is started — those live in [`README.md`](README.md). USDA import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches` live in [`NUTRITION.md`](NUTRITION.md).
 
 The phones, iOS app, and web app never talk to this database directly. They call the backend HTTP API. The backend reads and writes these tables.
 
@@ -30,7 +30,7 @@ A one-time / occasional import loads USDA FoodData Central foods into `nutrition
 - alternative names (`nutrition_food_aliases`)
 - household measures such as cup / tablespoon (`nutrition_food_measures`)
 
-This is the **food table**. Recipe ingredients are later matched *to* these rows.
+This is the **food table**. Recipe ingredients are later matched *to* these rows. How to run the importer is in [`NUTRITION.md`](NUTRITION.md).
 
 ### 3. Nutrition calculation
 
@@ -40,6 +40,8 @@ This is the **food table**. Recipe ingredients are later matched *to* these rows
 - the food match (`ingredient_nutrition_matches`)
 - per-ingredient calories (`ingredient_nutrition_contributions`)
 - recipe totals (`nutrition`), unless the recipe already has scraped website nutrition
+
+`./gradlew reportIngredientFoodMatches` reads those stored rows and prints a gap report to stdout. Pass `-Preport.output=/tmp/ingredient-food-match-report.txt` to also write a file. Commands are in [`NUTRITION.md`](NUTRITION.md).
 
 ### 4. Users and enrichment
 
@@ -204,7 +206,7 @@ Ordered cooking steps.
 
 ## Food catalogue (USDA) and recipe nutrition
 
-These tables are the calorie pipeline. They are **not** what pantry chips use.
+These tables are the calorie pipeline. They are **not** what pantry chips use. Import, backfill, and the matching report are documented in [`NUTRITION.md`](NUTRITION.md).
 
 Matching order at calculation time:
 
@@ -254,7 +256,11 @@ Catalogue names from the app pantry list are also seeded here during USDA import
 
 ### `nutrition_food_measures`
 
-How to turn “1 cup of this food” into grams. Needed whenever the recipe does not already use grams (or millilitres treated as grams).
+How to turn “1 cup of this food” into grams. Needed whenever the recipe does not already use a mass unit (g, kg, oz, lb). Those mass units convert with fixed factors and are not stored here.
+
+SR Legacy portions often have `measureUnit` set to `undetermined` and put the real unit in `modifier` (`cup`, `tbsp`, `egg`). The importer copies that unit when it is one the recipe parser uses (`tsp`, `tbsp`, `cup`, `ml`, `l`, `egg`, `clove`, `piece`) and drops everything else. Foundation portions already use a named `measureUnit`. After changing this import, re-run USDA seed import so existing `undetermined` rows are replaced.
+
+If there is still no named measure, calculation falls back to water density for volume units. The method used is stored on `ingredient_nutrition_contributions.grams_source`.
 
 | Column | Meaning |
 |--------|---------|
@@ -276,7 +282,7 @@ The parse of one recipe line. Written by nutrition calculation. This is “what 
 | `parsed_name` | Remainder after stripping quantity and unit, for example `olive oil`. This is what is looked up in the food table. |
 | `is_measurable` | True only when quantity and a known unit were both found. Unmeasurable lines never get a nutrition match. |
 
-Known units: g, kg, ml, l, tsp, tbsp, cup, oz, lb, egg, clove, piece.
+Known units: g, kg, ml, l, tsp, tbsp, cup, oz, lb, egg, clove, piece. Size words such as `large` are not units. The parser also reads unicode and mixed fractions (`1½`, `3 1/2`) and parenthetical weights (`(120 ml)`, `(2½ lb.)`).
 
 ### `ingredient_nutrition_matches`
 
@@ -305,6 +311,7 @@ Calories and macros for one matched line, after converting to grams.
 |--------|---------|
 | `ingredient_id` | The recipe line. One contribution per line. |
 | `grams_resolved` | Grams used in the arithmetic. |
+| `grams_source` | How those grams were chosen: `mass` (g/kg/oz/lb), `measure` (this food’s tsp/tbsp/cup/egg/clove), or `density` (water-density fallback: 1 g/ml, 5 g/tsp, 15 g/tbsp, 240 g/cup). This is separate from name-match `confidence`. |
 | `calories` … `sodium` | Calculated nutrients for this line. |
 | `override_calories` … `override_sodium` | Manual replacements, if a person later corrects a line. Unused in the current calculator path. |
 | `uses_user_override` | Whether those override columns are in effect. Currently always false. |
@@ -460,6 +467,6 @@ A name should not sit in both pantry and exclusions at once; the app keeps those
 ## Related reading
 
 - Running the backend: [`README.md`](README.md)
+- USDA import, nutrition backfill, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md)
 - Scraping and ingredient-line cleanup: [`../scripts/scraping/README.md`](../scripts/scraping/README.md)
-- USDA import and nutrition backfill: [`../docs/data-sources/fooddata-central.md`](../docs/data-sources/fooddata-central.md)
 - Filling cuisine / meal type / diet chips: [`../enrichment/README.md`](../enrichment/README.md)

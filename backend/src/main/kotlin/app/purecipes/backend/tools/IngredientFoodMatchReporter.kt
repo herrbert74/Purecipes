@@ -1,5 +1,6 @@
 package app.purecipes.backend.tools
 
+import app.purecipes.backend.feature.nutrition.GramWeightSource
 import app.purecipes.backend.feature.search.IngredientVocabulary
 import java.math.BigDecimal
 import java.sql.ResultSet
@@ -17,6 +18,9 @@ internal data class IngredientFoodMatchReportData(
 	val noFoodCount: Int,
 	val noGramsCount: Int,
 	val matchedCount: Int,
+	val massGramCount: Int,
+	val measureGramCount: Int,
+	val densityGramCount: Int,
 	val weakMatchCount: Int,
 	val neverParsedNames: List<FrequencyCount>,
 	val notMeasurableNames: List<FrequencyCount>,
@@ -39,13 +43,17 @@ internal class IngredientFoodMatchReporter(
 	fun collect(): IngredientFoodMatchReportData {
 		val classified = classifyIngredientRows(loadIngredientRows())
 		val recipes = loadRecipeNutritionRows()
+		val matched = classified.filter { line -> line.kind == IngredientFoodMatchGapKind.MATCHED }
 		return IngredientFoodMatchReportData(
 			countableLines = classified.size,
 			neverParsedCount = classified.count { it.kind == IngredientFoodMatchGapKind.NEVER_PARSED },
 			notMeasurableCount = classified.count { it.kind == IngredientFoodMatchGapKind.NOT_MEASURABLE },
 			noFoodCount = classified.count { it.kind == IngredientFoodMatchGapKind.NO_FOOD },
 			noGramsCount = classified.count { it.kind == IngredientFoodMatchGapKind.NO_GRAMS },
-			matchedCount = classified.count { it.kind == IngredientFoodMatchGapKind.MATCHED },
+			matchedCount = matched.size,
+			massGramCount = matched.count { it.gramsSource == GramWeightSource.MASS },
+			measureGramCount = matched.count { it.gramsSource == GramWeightSource.MEASURE },
+			densityGramCount = matched.count { it.gramsSource == GramWeightSource.DENSITY },
 			weakMatchCount = classified.count { it.isWeakMatch },
 			neverParsedNames = frequencyCounts(
 				classified,
@@ -88,6 +96,9 @@ internal class IngredientFoodMatchReporter(
 		appendLine("No food match: ${data.noFoodCount}")
 		appendLine("No gram weight: ${data.noGramsCount}")
 		appendLine("Matched: ${data.matchedCount}")
+		appendLine("  Gram source mass: ${data.massGramCount}")
+		appendLine("  Gram source measure: ${data.measureGramCount}")
+		appendLine("  Gram source density fallback: ${data.densityGramCount}")
 		appendLine("Weak (prefix) matches: ${data.weakMatchCount}")
 		appendLine()
 		appendLine("Recipes: ${data.totalRecipes}")
@@ -167,10 +178,12 @@ internal class IngredientFoodMatchReporter(
 			label = label,
 			isWeakMatch = isWeakMatch,
 			weakLabel = weakLabel,
+			gramsSource = row.gramsSource,
 		)
 	}
 
 	private companion object {
+
 		const val CALCULATION_SOURCE_CALCULATED = "calculated"
 		const val CALCULATION_SOURCE_SCRAPED = "scraped"
 
@@ -188,7 +201,8 @@ internal class IngredientFoodMatchReporter(
 				inm.confidence,
 				inm.match_source,
 				nf.display_name AS food_display_name,
-				inc.grams_resolved
+				inc.grams_resolved,
+				inc.grams_source
 			FROM recipes r
 			JOIN ingredient_groups ig ON ig.recipe_id = r.id
 			JOIN ingredients i ON i.ingredient_group_id = ig.id
@@ -239,6 +253,7 @@ private data class IngredientFoodMatchRow(
 	val matchSource: String?,
 	val foodDisplayName: String?,
 	val gramsResolved: BigDecimal?,
+	val gramsSource: String?,
 )
 
 private data class RecipeNutritionRow(
@@ -254,6 +269,7 @@ private data class ClassifiedIngredientLine(
 	val label: String,
 	val isWeakMatch: Boolean,
 	val weakLabel: String?,
+	val gramsSource: String?,
 )
 
 private fun countsTowardMatching(
@@ -344,6 +360,7 @@ private fun ResultSet.toIngredientFoodMatchRow(): IngredientFoodMatchRow {
 		matchSource = getNullableTrimmedString("match_source"),
 		foodDisplayName = getNullableTrimmedString("food_display_name"),
 		gramsResolved = getNullableBigDecimal("grams_resolved"),
+		gramsSource = getNullableTrimmedString("grams_source"),
 	)
 }
 

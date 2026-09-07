@@ -93,7 +93,7 @@ class IngredientFoodMatchReporterTest {
 				matchSource = "alias",
 			),
 		)
-		insertContribution(dataSource, ingredientIds[4], grams = BigDecimal("200"))
+		insertContribution(dataSource, ingredientIds[4], grams = BigDecimal("200"), gramsSource = "density")
 		insertMeasurement(
 			dataSource,
 			MeasurementInsert(
@@ -116,7 +116,7 @@ class IngredientFoodMatchReporterTest {
 				matchSource = "name",
 			),
 		)
-		insertContribution(dataSource, ingredientIds[5], grams = BigDecimal("14"))
+		insertContribution(dataSource, ingredientIds[5], grams = BigDecimal("14"), gramsSource = "measure")
 
 		val report = IngredientFoodMatchReporter(dataSource).collect()
 
@@ -126,6 +126,8 @@ class IngredientFoodMatchReporterTest {
 		report.noFoodCount shouldBe 1
 		report.noGramsCount shouldBe 1
 		report.matchedCount shouldBe 2
+		report.measureGramCount shouldBe 1
+		report.densityGramCount shouldBe 1
 		report.weakMatchCount shouldBe 1
 		report.neverParsedNames.map { it.label } shouldContain "never parsed line"
 		report.notMeasurableNames.map { it.label } shouldContain "Salt to taste"
@@ -186,7 +188,7 @@ class IngredientFoodMatchReporterTest {
 			IngredientFoodMatchReporter(db.dataSource).collect(),
 		)
 
-		text.lines().take(7) shouldBe listOf(
+		text.lines().take(10) shouldBe listOf(
 			"Ingredient food-table matching report",
 			"Countable ingredient lines: 0",
 			"Never parsed: 0",
@@ -194,6 +196,9 @@ class IngredientFoodMatchReporterTest {
 			"No food match: 0",
 			"No gram weight: 0",
 			"Matched: 0",
+			"  Gram source mass: 0",
+			"  Gram source measure: 0",
+			"  Gram source density fallback: 0",
 		)
 	}
 }
@@ -403,16 +408,18 @@ private fun insertContribution(
 	dataSource: DataSource,
 	ingredientId: Int,
 	grams: BigDecimal,
+	gramsSource: String? = null,
 ): Unit =
 	dataSource.connection.use { connection ->
 		connection.prepareStatement(
 			"""
-			INSERT INTO ingredient_nutrition_contributions (ingredient_id, grams_resolved)
-			VALUES (?, ?)
+			INSERT INTO ingredient_nutrition_contributions (ingredient_id, grams_resolved, grams_source)
+			VALUES (?, ?, ?)
 			""".trimIndent(),
 		).use { statement ->
 			statement.setInt(1, ingredientId)
 			statement.setBigDecimal(2, grams)
+			statement.setString(3, gramsSource)
 			statement.executeUpdate()
 		}
 	}

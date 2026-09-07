@@ -41,6 +41,27 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergePointsEggWhiteAtFoundationFood() {
+		val foundationWhite = food(
+			id = 11,
+			displayName = "Eggs, Grade A, Large, egg white",
+			normalizedName = "eggs grade a large egg white",
+		)
+		val legacyWhite = food(
+			id = 12,
+			displayName = "Egg, white, raw, fresh",
+			normalizedName = "egg white raw fresh",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(legacyWhite, foundationWhite),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["egg white"] shouldBe 11
+		aliases["egg whites"] shouldBe 11
+	}
+
+	@Test
 	fun mergePrefersSeedAliasesOverStoredRows() {
 		val unsalted = food(
 			id = 8,

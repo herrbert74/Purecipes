@@ -14,11 +14,13 @@ internal data class IngredientNutritionCalculationResult(
 	val parsed: ParsedIngredientLine,
 	val foodMatch: NutritionFoodMatch?,
 	val grams: BigDecimal?,
+	val gramsSource: String? = null,
 )
 
 internal class RecipeNutritionCalculator(
 	private val lookupIndex: NutritionLookupIndex,
 ) {
+
 	fun calculate(ingredients: List<RecipeIngredientRow>): RecipeNutritionCalculationResult {
 		val seenAlternativeKeys = mutableSetOf<Int>()
 		val ingredientResults = ingredients.map { ingredient ->
@@ -111,7 +113,7 @@ internal class RecipeNutritionCalculator(
 				grams = null,
 			)
 		} else {
-			val grams = IngredientGramWeightResolver.resolveGrams(
+			val resolved = IngredientGramWeightResolver.resolveGrams(
 				quantity = quantity,
 				unit = unit,
 				foodMeasures = lookupIndex.measuresForFood(foodMatch.foodId),
@@ -120,7 +122,8 @@ internal class RecipeNutritionCalculator(
 				ingredientId = ingredient.ingredientId,
 				parsed = parsed,
 				foodMatch = foodMatch,
-				grams = grams,
+				grams = resolved?.grams,
+				gramsSource = resolved?.source,
 			)
 		}
 	}
@@ -134,6 +137,7 @@ internal class RecipeNutritionCalculator(
 			val groupKey = ingredient.alternativeGroupKey ?: return true
 			seenAlternativeKeys.add(groupKey)
 		}
+
 		else -> true
 	}
 
@@ -150,6 +154,7 @@ internal class RecipeNutritionCalculator(
 	}
 
 	private companion object {
+
 		val GRAMS_PER_100 = BigDecimal("100")
 		const val NUTRIENT_SCALE = 2
 	}

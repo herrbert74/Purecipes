@@ -41,5 +41,6 @@ class RecipeNutritionCalculatorTest {
 		result.totals?.totalIngredientCount shouldBe 1
 		result.totals?.isComplete shouldBe true
 		result.totals?.calories shouldBe BigDecimal("727.56")
+		result.ingredientResults.single().gramsSource shouldBe GramWeightSource.MEASURE
 	}
 }
