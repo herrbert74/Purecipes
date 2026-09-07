@@ -136,6 +136,23 @@ class IngredientLineParserTest {
 		redOnion.quantity shouldBe BigDecimal.ONE
 		redOnion.unit shouldBe "piece"
 		redOnion.isMeasurable shouldBe true
+
+		val carrot = IngredientLineParser.parse("Carrot")
+		carrot.quantity shouldBe BigDecimal.ONE
+		carrot.unit shouldBe "piece"
+		carrot.isMeasurable shouldBe true
+
+		val bellPepper = IngredientLineParser.parse("Bell Pepper")
+		bellPepper.quantity shouldBe BigDecimal.ONE
+		bellPepper.unit shouldBe "piece"
+		bellPepper.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseLeavesJuiceAndZestLinesWithoutAmountsUnmeasurable() {
+		IngredientLineParser.parse("Juice of 1 lemon").isMeasurable shouldBe false
+		IngredientLineParser.parse("Lemon Juice").isMeasurable shouldBe false
+		IngredientLineParser.parse("zest of 1 lime").isMeasurable shouldBe false
 	}
 
 	@Test
@@ -143,5 +160,6 @@ class IngredientLineParserTest {
 		IngredientLineParser.parse("Salt").isMeasurable shouldBe false
 		IngredientLineParser.parse("Olive Oil").isMeasurable shouldBe false
 		IngredientLineParser.parse("Bunch Parsley").isMeasurable shouldBe false
+		IngredientLineParser.parse("Black Pepper").isMeasurable shouldBe false
 	}
 }

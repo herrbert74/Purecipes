@@ -258,7 +258,7 @@ Catalogue names from the app pantry list are also seeded here during USDA import
 
 How to turn “1 cup of this food” into grams. Needed whenever the recipe does not already use a mass unit (g, kg, oz, lb). Those mass units convert with fixed factors and are not stored here.
 
-SR Legacy portions often have `measureUnit` set to `undetermined` and put the real unit in `modifier` (`cup`, `tbsp`, `egg`). The importer copies that unit when it is one the recipe parser uses (`tsp`, `tbsp`, `cup`, `ml`, `l`, `egg`, `clove`, `piece`) and drops everything else. Count portions such as `fruit`, `whole`, `each`, and size words (`medium`, `large`, `small`) are stored as `piece`. Foundation portions already use a named `measureUnit`. After changing this import, re-run USDA seed import so existing `undetermined` rows are replaced.
+SR Legacy portions often have `measureUnit` set to `undetermined` and put the real unit in `modifier` (`cup`, `tbsp`, `egg`). The importer copies that unit when it is one the recipe parser uses (`tsp`, `tbsp`, `cup`, `ml`, `l`, `egg`, `clove`, `piece`) and drops everything else. Count portions such as `fruit`, `whole`, `each`, size words (`medium`, `large`, `small`), and named produce counts (`avocado`, `potato`, `cucumber`, `leek`) are stored as `piece`. Foundation portions already use a named `measureUnit`. After changing this import, re-run USDA seed import so existing `undetermined` rows are replaced.
 
 If there is still no named measure, calculation falls back to water density for volume units. The method used is stored on `ingredient_nutrition_contributions.grams_source`.
 

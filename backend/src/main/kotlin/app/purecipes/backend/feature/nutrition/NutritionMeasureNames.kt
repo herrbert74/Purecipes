@@ -62,7 +62,11 @@ internal object NutritionMeasureNames {
 			"clove", "cloves" -> "clove"
 			"piece", "pieces", "each", "item", "items",
 			"fruit", "fruits", "whole", "small", "medium", "large",
-			-> "piece"
+			"avocado", "avocados", "cucumber", "cucumbers",
+			"eggplant", "eggplants", "leek", "leeks",
+			"onion", "onions", "potato", "potatoes", "sweetpotato",
+				-> "piece"
+
 			else -> unit
 		}
 	}

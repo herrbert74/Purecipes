@@ -90,6 +90,28 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergeAppliesProduceCountAliases() {
+		val onion = food(
+			id = 31,
+			displayName = "Onions, raw",
+			normalizedName = "onions raw",
+		)
+		val avocado = food(
+			id = 32,
+			displayName = "Avocados, raw, all commercial varieties",
+			normalizedName = "avocados raw all commercial varieties",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(onion, avocado),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["onions"] shouldBe 31
+		aliases["white onion"] shouldBe 31
+		aliases["avocado"] shouldBe 32
+	}
+
+	@Test
 	fun mergePrefersSeedAliasesOverStoredRows() {
 		val unsalted = food(
 			id = 8,

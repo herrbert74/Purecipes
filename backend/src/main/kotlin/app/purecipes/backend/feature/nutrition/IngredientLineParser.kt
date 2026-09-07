@@ -96,14 +96,36 @@ internal object IngredientLineParser {
 	private val defaultSingleCountUnits = setOf("clove", "piece")
 
 	private val defaultOnePieceTokens = setOf(
+		"aubergine",
+		"aubergines",
+		"avocado",
+		"avocados",
+		"carrot",
+		"carrots",
+		"courgette",
+		"courgettes",
+		"cucumber",
+		"cucumbers",
+		"eggplant",
+		"eggplants",
+		"leek",
+		"leeks",
 		"lemon",
 		"lemons",
 		"lime",
 		"limes",
 		"onion",
 		"onions",
+		"orange",
+		"oranges",
+		"potato",
+		"potatoes",
 		"shallot",
 		"shallots",
+		"tomato",
+		"tomatoes",
+		"zucchini",
+		"zucchinis",
 	)
 
 	fun parse(rawLine: String): ParsedIngredientLine {
@@ -239,9 +261,13 @@ internal object IngredientLineParser {
 		val lookupTokens = NutritionNameNormalizer.forLookup(parsedName)
 			.split(' ')
 			.filter { token -> token.isNotEmpty() }
+		val isJuiceOrZest = lookupTokens.any { token -> token == "juice" || token == "zest" }
 		val isGarlicClove = lookupTokens.any { token -> token == "garlic" } &&
 			lookupTokens.any { token -> token.startsWith("clove") }
-		val isProduce = lookupTokens.any { token -> token in defaultOnePieceTokens }
+		val isBellPepper = lookupTokens.any { token -> token == "bell" } &&
+			lookupTokens.any { token -> token == "pepper" }
+		val isProduce = !isJuiceOrZest &&
+			(lookupTokens.any { token -> token in defaultOnePieceTokens } || isBellPepper)
 		return when {
 			first == "egg" || first == "clove" || first == "piece" -> first
 			isGarlicClove -> "clove"

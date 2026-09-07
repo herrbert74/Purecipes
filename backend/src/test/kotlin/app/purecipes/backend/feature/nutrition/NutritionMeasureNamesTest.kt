@@ -33,6 +33,14 @@ class NutritionMeasureNamesTest {
 			measureUnitName = "undetermined",
 			modifier = "fruit (2-3/8\" dia)",
 		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "avocado, NS as to Florida or California",
+		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "Potato medium (2-1/4\" to 3-1/4\" dia)",
+		) shouldBe "piece"
 	}
 
 	@Test
