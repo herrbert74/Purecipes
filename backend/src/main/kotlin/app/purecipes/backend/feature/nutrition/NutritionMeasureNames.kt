@@ -60,7 +60,9 @@ internal object NutritionMeasureNames {
 			"lb", "lbs", "pound", "pounds" -> "lb"
 			"egg", "eggs" -> "egg"
 			"clove", "cloves" -> "clove"
-			"piece", "pieces", "each" -> "piece"
+			"piece", "pieces", "each", "item", "items",
+			"fruit", "fruits", "whole", "small", "medium", "large",
+			-> "piece"
 			else -> unit
 		}
 	}

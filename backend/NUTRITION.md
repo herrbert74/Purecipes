@@ -49,7 +49,7 @@ Skip alias seeding on a large import (`-Pnutrition.skipAliases=true` or `--skip-
 
 The importer loads foods with energy (kcal) data, stores per-100g nutrients, imports household measures from FDC portions (plus a small supplemental list), and links pantry catalogue names and handwritten aliases to canonical foods.
 
-SR Legacy JSON sets `measureUnit` to `undetermined` and puts the unit in `modifier`. Import reads that modifier and stores only household units the recipe parser uses. Mass units and unusable portions (`cake`, `NLEA serving`) are dropped. After an importer change, re-run SR Legacy then Foundation import so `nutrition_food_measures` is rebuilt.
+SR Legacy JSON sets `measureUnit` to `undetermined` and puts the unit in `modifier`. Import reads that modifier and stores only household units the recipe parser uses, including count portions (`fruit`, `whole`, `each`, `medium`) as `piece`. Mass units and unusable portions (`cake`, `NLEA serving`, slices) are dropped. After an importer change, re-run SR Legacy then Foundation import so `nutrition_food_measures` is rebuilt.
 
 Handwritten aliases are also applied when calculating or estimating nutrition, so adding one in code takes effect on the next `calculateRecipeNutrition` run even if you do not re-import USDA JSON.
 

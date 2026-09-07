@@ -12,6 +12,7 @@ class NutritionMeasureNamesTest {
 		NutritionMeasureNames.resolveImportedName("cup", modifier = null) shouldBe "cup"
 		NutritionMeasureNames.resolveImportedName("teaspoon", modifier = null) shouldBe "tsp"
 		NutritionMeasureNames.resolveImportedName("each", modifier = null) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName("whole", modifier = null) shouldBe "piece"
 	}
 
 	@Test
@@ -24,6 +25,14 @@ class NutritionMeasureNamesTest {
 			measureUnitName = "undetermined",
 			modifier = "tablespoon",
 		) shouldBe "tbsp"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "medium (2-1/2\" dia)",
+		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "fruit (2-3/8\" dia)",
+		) shouldBe "piece"
 	}
 
 	@Test
@@ -31,6 +40,7 @@ class NutritionMeasureNamesTest {
 		NutritionMeasureNames.resolveImportedName("undetermined", modifier = "oz").shouldBeNull()
 		NutritionMeasureNames.resolveImportedName("g", modifier = null).shouldBeNull()
 		NutritionMeasureNames.resolveImportedName("undetermined", modifier = "cake").shouldBeNull()
+		NutritionMeasureNames.resolveImportedName("undetermined", modifier = "slice, medium").shouldBeNull()
 		NutritionMeasureNames.resolveImportedName("undetermined", modifier = null).shouldBeNull()
 	}
 
