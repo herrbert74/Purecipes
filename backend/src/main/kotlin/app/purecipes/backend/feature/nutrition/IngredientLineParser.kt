@@ -131,8 +131,15 @@ internal object IngredientLineParser {
 		"aubergines",
 		"avocado",
 		"avocados",
+		"broccoli",
+		"broccolis",
+		"cabbage",
+		"cabbages",
 		"carrot",
 		"carrots",
+		"cauliflower",
+		"cauliflowers",
+		"celery",
 		"courgette",
 		"courgettes",
 		"cucumber",
@@ -354,8 +361,10 @@ internal object IngredientLineParser {
 			lookupTokens.any { token -> token.startsWith("clove") }
 		val isBellPepper = lookupTokens.any { token -> token == "bell" } &&
 			lookupTokens.any { token -> token == "pepper" }
+		val isCornOnTheCob = lookupTokens.any { token -> token == "corn" } &&
+			lookupTokens.any { token -> token == "cob" }
 		val isProduce = !isJuiceOrZest &&
-			(lookupTokens.any { token -> token in defaultOnePieceTokens } || isBellPepper)
+			(lookupTokens.any { token -> token in defaultOnePieceTokens } || isBellPepper || isCornOnTheCob)
 		return when {
 			first == "egg" || first == "clove" || first == "piece" -> first
 			isGarlicClove -> "clove"

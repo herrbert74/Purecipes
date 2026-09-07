@@ -146,6 +146,31 @@ class IngredientLineParserTest {
 		bellPepper.quantity shouldBe BigDecimal.ONE
 		bellPepper.unit shouldBe "piece"
 		bellPepper.isMeasurable shouldBe true
+
+		val broccoli = IngredientLineParser.parse("Broccoli")
+		broccoli.quantity shouldBe BigDecimal.ONE
+		broccoli.unit shouldBe "piece"
+		broccoli.isMeasurable shouldBe true
+
+		val cabbage = IngredientLineParser.parse("Red Cabbage")
+		cabbage.quantity shouldBe BigDecimal.ONE
+		cabbage.unit shouldBe "piece"
+		cabbage.isMeasurable shouldBe true
+
+		val cauliflower = IngredientLineParser.parse("Cauliflower")
+		cauliflower.quantity shouldBe BigDecimal.ONE
+		cauliflower.unit shouldBe "piece"
+		cauliflower.isMeasurable shouldBe true
+
+		val celery = IngredientLineParser.parse("Stick Celery")
+		celery.quantity shouldBe BigDecimal.ONE
+		celery.unit shouldBe "piece"
+		celery.isMeasurable shouldBe true
+
+		val corn = IngredientLineParser.parse("Corn On The Cob")
+		corn.quantity shouldBe BigDecimal.ONE
+		corn.unit shouldBe "piece"
+		corn.isMeasurable shouldBe true
 	}
 
 	@Test
@@ -161,6 +186,8 @@ class IngredientLineParserTest {
 		IngredientLineParser.parse("Olive Oil").isMeasurable shouldBe false
 		IngredientLineParser.parse("Bunch Parsley").isMeasurable shouldBe false
 		IngredientLineParser.parse("Black Pepper").isMeasurable shouldBe false
+		IngredientLineParser.parse("Corn").isMeasurable shouldBe false
+		IngredientLineParser.parse("Butternut Squash").isMeasurable shouldBe false
 	}
 
 	@Test

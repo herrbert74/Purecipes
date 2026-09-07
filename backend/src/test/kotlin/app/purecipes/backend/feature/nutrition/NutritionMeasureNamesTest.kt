@@ -13,6 +13,9 @@ class NutritionMeasureNamesTest {
 		NutritionMeasureNames.resolveImportedName("teaspoon", modifier = null) shouldBe "tsp"
 		NutritionMeasureNames.resolveImportedName("each", modifier = null) shouldBe "piece"
 		NutritionMeasureNames.resolveImportedName("whole", modifier = null) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName("head", modifier = null) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName("ear", modifier = null) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName("stalk", modifier = null) shouldBe "piece"
 	}
 
 	@Test
@@ -41,6 +44,35 @@ class NutritionMeasureNamesTest {
 			measureUnitName = "undetermined",
 			modifier = "Potato medium (2-1/4\" to 3-1/4\" dia)",
 		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "head, medium (about 5-3/4\" dia)",
+		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "ear, medium (6-3/4\" to 7-1/2\" long) yields",
+		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "stalk, medium (7-1/2\" - 8\" long)",
+		) shouldBe "piece"
+		NutritionMeasureNames.resolveImportedName(
+			measureUnitName = "undetermined",
+			modifier = "pepper, large (3-3/4\" long, 3\" dia)",
+		) shouldBe "piece"
+	}
+
+	@Test
+	fun pieceImportPreferencePrefersMediumHeadsEarsAndStalks() {
+		NutritionMeasureNames.pieceImportPreference(
+			"head, medium (about 5-3/4\" dia)",
+		) shouldBe 100
+		NutritionMeasureNames.pieceImportPreference("head, large (about 7\" dia)") shouldBe 80
+		NutritionMeasureNames.pieceImportPreference(
+			"ear, medium (6-3/4\" to 7-1/2\" long) yields",
+		) shouldBe 100
+		NutritionMeasureNames.pieceImportPreference("stalk") shouldBe 60
+		NutritionMeasureNames.pieceImportPreference("cup, chopped") shouldBe 0
 	}
 
 	@Test

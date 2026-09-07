@@ -33,7 +33,12 @@ internal object FdcFoodDataJsonParser {
 			null
 		} else {
 			val nutrients = foodObject["foodNutrients"]?.jsonArray?.mapNotNull { it.toNutrientAmountOrNull() }.orEmpty()
-			val portions = foodObject["foodPortions"]?.jsonArray?.mapNotNull { it.toFoodPortionOrNull() }.orEmpty()
+			val portions = foodObject["foodPortions"]?.jsonArray
+				?.mapNotNull { element -> element.toRankedFoodPortionOrNull() }
+				.orEmpty()
+				.sortedByDescending { ranked -> ranked.preference }
+				.distinctBy { ranked -> ranked.portion.measureName }
+				.map { ranked -> ranked.portion }
 			FdcFoundationFood(
 				sourceName = sourceName,
 				fdcId = fdcId,
@@ -55,7 +60,7 @@ internal object FdcFoodDataJsonParser {
 		}
 	}
 
-	private fun JsonElement.toFoodPortionOrNull(): FdcFoodPortion? {
+	private fun JsonElement.toRankedFoodPortionOrNull(): RankedFoodPortion? {
 		val portionObject = jsonObjectOrNull() ?: return null
 		val measureUnitName = portionObject["measureUnit"]?.jsonObjectOrNull()?.stringValue("name")
 		val modifier = portionObject.stringValue("modifier")
@@ -64,11 +69,14 @@ internal object FdcFoodDataJsonParser {
 		return if (measureName == null || gramWeight == null) {
 			null
 		} else {
-			FdcFoodPortion(
-				measureName = measureName,
-				gramsPerMeasure = NutritionMeasureNames.gramsPerSingleMeasure(
-					gramWeight = gramWeight,
-					amount = portionObject.decimalValue("amount"),
+			RankedFoodPortion(
+				preference = NutritionMeasureNames.pieceImportPreference(modifier),
+				portion = FdcFoodPortion(
+					measureName = measureName,
+					gramsPerMeasure = NutritionMeasureNames.gramsPerSingleMeasure(
+						gramWeight = gramWeight,
+						amount = portionObject.decimalValue("amount"),
+					),
 				),
 			)
 		}
@@ -92,3 +100,8 @@ internal object FdcFoodDataJsonParser {
 	private fun JsonObject.decimalValue(key: String): BigDecimal? =
 		this[key]?.jsonPrimitive?.content?.toBigDecimalOrNull()
 }
+
+private data class RankedFoodPortion(
+	val preference: Int,
+	val portion: FdcFoodPortion,
+)

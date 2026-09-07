@@ -164,4 +164,41 @@ class RecipeNutritionCalculatorTest {
 		result.ingredientResults.single().grams shouldBe BigDecimal("400")
 		result.ingredientResults.single().gramsSource shouldBe GramWeightSource.MASS
 	}
+
+	@Test
+	fun calculateUsesSupplementalShallotPieceGrams() {
+		val shallot = NutritionFoodRecord(
+			id = 8,
+			displayName = "Shallots, raw",
+			normalizedName = "shallots raw",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal("72"),
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val lookupIndex = NutritionLookupIndex(
+			foodById = mapOf(8 to shallot),
+			foodIdByNormalizedAlias = mapOf("shallot" to 8),
+			measuresByFoodId = NutritionSupplementalMeasures.overlayMeasures(
+				foods = listOf(shallot),
+				storedMeasures = mapOf(8 to mapOf("tbsp" to BigDecimal("10"))),
+			),
+		)
+		val calculator = RecipeNutritionCalculator(lookupIndex)
+		val result = calculator.calculate(
+			listOf(
+				RecipeIngredientRow(ingredientId = 14, rawText = "Shallot"),
+			),
+		)
+
+		result.ingredientResults.single().parsed.unit shouldBe "piece"
+		result.ingredientResults.single().foodMatch?.foodId shouldBe 8
+		result.ingredientResults.single().grams shouldBe BigDecimal("10").multiply(BigDecimal("3"))
+		result.ingredientResults.single().gramsSource shouldBe GramWeightSource.MEASURE
+	}
 }

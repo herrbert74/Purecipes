@@ -49,9 +49,9 @@ Skip alias seeding on a large import (`-Pnutrition.skipAliases=true` or `--skip-
 
 The importer loads foods with energy (kcal) data, stores per-100g nutrients, imports household measures from FDC portions (plus a small supplemental list), and links pantry catalogue names and handwritten aliases to canonical foods.
 
-SR Legacy JSON sets `measureUnit` to `undetermined` and puts the unit in `modifier`. Import reads that modifier and stores only household units the recipe parser uses, including count portions (`fruit`, `whole`, `each`, `medium`, `avocado`, `potato`) as `piece`. Mass units and unusable portions (`cake`, `NLEA serving`, slices) are dropped. After an importer change, re-run SR Legacy then Foundation import so `nutrition_food_measures` is rebuilt.
+SR Legacy JSON sets `measureUnit` to `undetermined` and puts the unit in `modifier`. Import reads that modifier and stores only household units the recipe parser uses, including count portions (`fruit`, `whole`, `each`, `medium`, `head`, `ear`, `stalk`, `avocado`, `potato`) as `piece`. When several count portions exist, import keeps the medium head, ear, or stalk. Mass units and unusable portions (`cake`, `NLEA serving`, slices) are dropped. After an importer change, re-run SR Legacy then Foundation import so `nutrition_food_measures` is rebuilt.
 
-Handwritten aliases are also applied when calculating or estimating nutrition, so adding one in code takes effect on the next `calculateRecipeNutrition` run even if you do not re-import USDA JSON.
+Handwritten aliases and a small list of missing `piece` grams (USDA head/ear/stalk weights, plus 30 g per shallot from three USDA chopped tablespoons) are also applied when calculating nutrition, so they take effect on the next `calculateRecipeNutrition` run even if you do not re-import USDA JSON.
 
 If a matched food has no named household measure for the recipe unit, calculation uses water-density defaults for ml / tsp / tbsp / cup. The chosen method is stored as `ingredient_nutrition_contributions.grams_source` (`mass`, `measure`, or `density`). It does not change name-match confidence.
 

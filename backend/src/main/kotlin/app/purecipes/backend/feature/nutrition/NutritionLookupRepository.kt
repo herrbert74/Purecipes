@@ -14,7 +14,7 @@ internal class NutritionLookupRepository(
 		return NutritionLookupIndex(
 			foodById = foods.associateBy { it.id },
 			foodIdByNormalizedAlias = NutritionSeedAliasIndex.merge(foods, aliases),
-			measuresByFoodId = measures,
+			measuresByFoodId = NutritionSupplementalMeasures.overlayMeasures(foods, measures),
 		)
 	}
 
