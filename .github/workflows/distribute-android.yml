@@ -160,7 +160,7 @@ jobs:
             -Ppurecipes.revenueCatApiKey.release="${PURECIPES_REVENUECAT_API_KEY}"
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-release-${{ steps.version.outputs.semver }}
           path: |
