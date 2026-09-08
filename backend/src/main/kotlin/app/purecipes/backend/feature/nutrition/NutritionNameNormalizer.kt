@@ -8,12 +8,16 @@ internal object NutritionNameNormalizer {
 
 	private val preparationTokens = setOf(
 		"beaten",
+		"chilled",
 		"chopped",
 		"coarsely",
+		"cold",
 		"concentrated",
 		"cored",
 		"crushed",
 		"cubed",
+		"cut",
+		"deseeded",
 		"diced",
 		"divided",
 		"drained",
@@ -34,9 +38,11 @@ internal object NutritionNameNormalizer {
 		"minced",
 		"peeled",
 		"quartered",
+		"rinsed",
 		"room",
 		"roughly",
 		"seeded",
+		"separated",
 		"shredded",
 		"sliced",
 		"smashed",
@@ -82,6 +88,23 @@ internal object NutritionNameNormalizer {
 		"with",
 	)
 
+	private val fillerTokens = setOf(
+		"dredging",
+		"drizzling",
+		"dusting",
+		"for",
+		"frying",
+		"garnish",
+		"into",
+		"more",
+		"optional",
+		"pieces",
+		"serve",
+		"serving",
+		"surface",
+		"taste",
+	)
+
 	fun normalize(value: String): String =
 		NON_ALPHANUMERIC.replace(value.lowercase(), " ").trim()
 
@@ -92,7 +115,7 @@ internal object NutritionNameNormalizer {
 		val withoutClause = SUCH_AS_CLAUSE.replace(value.substringBefore(';').trim(), "").trim()
 		val normalized = normalize(withoutClause)
 		val lookupTokens = tokens(normalized).filterNot { token ->
-			token in preparationTokens || token in measureLeftoverTokens
+			token in preparationTokens || token in measureLeftoverTokens || token in fillerTokens
 		}
 		return lookupTokens.joinToString(" ").ifBlank { normalized }
 	}

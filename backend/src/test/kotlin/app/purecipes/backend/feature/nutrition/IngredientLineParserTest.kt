@@ -271,4 +271,142 @@ class IngredientLineParserTest {
 		parenthetical.parsedName shouldBe "Boneless chicken breasts"
 		parenthetical.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseTreatsCountNounsAsPieceWhenQuantityExists() {
+		val celeryStalks = IngredientLineParser.parse("3 celery stalks")
+		celeryStalks.quantity shouldBe BigDecimal("3")
+		celeryStalks.unit shouldBe "piece"
+		celeryStalks.parsedName shouldBe "celery"
+		celeryStalks.isMeasurable shouldBe true
+
+		val stalksCelery = IngredientLineParser.parse("2 stalks celery")
+		stalksCelery.quantity shouldBe BigDecimal("2")
+		stalksCelery.unit shouldBe "piece"
+		stalksCelery.parsedName shouldBe "celery"
+		stalksCelery.isMeasurable shouldBe true
+
+		val stalkCelery = IngredientLineParser.parse("1 stalk celery")
+		stalkCelery.quantity shouldBe BigDecimal("1")
+		stalkCelery.unit shouldBe "piece"
+		stalkCelery.parsedName shouldBe "celery"
+		stalkCelery.isMeasurable shouldBe true
+
+		val pieceGinger = IngredientLineParser.parse("1 piece ginger")
+		pieceGinger.quantity shouldBe BigDecimal("1")
+		pieceGinger.unit shouldBe "piece"
+		pieceGinger.parsedName shouldBe "ginger"
+		pieceGinger.isMeasurable shouldBe true
+
+		val piecesOfGinger = IngredientLineParser.parse("2 pieces of ginger")
+		piecesOfGinger.quantity shouldBe BigDecimal("2")
+		piecesOfGinger.unit shouldBe "piece"
+		piecesOfGinger.parsedName shouldBe "ginger"
+		piecesOfGinger.isMeasurable shouldBe true
+
+		val sprigsThyme = IngredientLineParser.parse("3 sprigs thyme")
+		sprigsThyme.quantity shouldBe BigDecimal("3")
+		sprigsThyme.unit shouldBe "piece"
+		sprigsThyme.parsedName shouldBe "thyme"
+		sprigsThyme.isMeasurable shouldBe true
+
+		val sprigRosemary = IngredientLineParser.parse("1 sprig rosemary")
+		sprigRosemary.quantity shouldBe BigDecimal("1")
+		sprigRosemary.unit shouldBe "piece"
+		sprigRosemary.parsedName shouldBe "rosemary"
+		sprigRosemary.isMeasurable shouldBe true
+
+		val knobGinger = IngredientLineParser.parse("1 knob ginger")
+		knobGinger.quantity shouldBe BigDecimal("1")
+		knobGinger.unit shouldBe "piece"
+		knobGinger.parsedName shouldBe "ginger"
+		knobGinger.isMeasurable shouldBe true
+
+		val bulbGarlic = IngredientLineParser.parse("1 bulb garlic")
+		bulbGarlic.quantity shouldBe BigDecimal("1")
+		bulbGarlic.unit shouldBe "piece"
+		bulbGarlic.parsedName shouldBe "garlic"
+		bulbGarlic.isMeasurable shouldBe true
+
+		val bunchParsley = IngredientLineParser.parse("1 bunch parsley")
+		bunchParsley.quantity shouldBe BigDecimal("1")
+		bunchParsley.unit shouldBe "piece"
+		bunchParsley.parsedName shouldBe "parsley"
+		bunchParsley.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseTreatsBayLeavesWithQuantityAsPiece() {
+		val plural = IngredientLineParser.parse("2 bay leaves")
+		plural.quantity shouldBe BigDecimal("2")
+		plural.unit shouldBe "piece"
+		plural.parsedName shouldBe "bay leaf"
+		plural.isMeasurable shouldBe true
+
+		val singular = IngredientLineParser.parse("1 bay leaf")
+		singular.quantity shouldBe BigDecimal("1")
+		singular.unit shouldBe "piece"
+		singular.parsedName shouldBe "bay leaf"
+		singular.isMeasurable shouldBe true
+
+		val wordQuantity = IngredientLineParser.parse("a bay leaf")
+		wordQuantity.quantity shouldBe BigDecimal.ONE
+		wordQuantity.unit shouldBe "piece"
+		wordQuantity.parsedName shouldBe "bay leaf"
+		wordQuantity.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseCountsChickenBreastsThighsRashersAndSausagesAsPiece() {
+		val breasts = IngredientLineParser.parse("2 chicken breasts")
+		breasts.quantity shouldBe BigDecimal("2")
+		breasts.unit shouldBe "piece"
+		breasts.parsedName shouldBe "chicken breasts"
+		breasts.isMeasurable shouldBe true
+
+		val boneless = IngredientLineParser.parse("2 boneless skinless chicken breasts")
+		boneless.quantity shouldBe BigDecimal("2")
+		boneless.unit shouldBe "piece"
+		boneless.parsedName shouldBe "boneless skinless chicken breasts"
+		boneless.isMeasurable shouldBe true
+
+		val thighs = IngredientLineParser.parse("4 chicken thighs")
+		thighs.quantity shouldBe BigDecimal("4")
+		thighs.unit shouldBe "piece"
+		thighs.parsedName shouldBe "chicken thighs"
+		thighs.isMeasurable shouldBe true
+
+		val rashers = IngredientLineParser.parse("4 rashers bacon")
+		rashers.quantity shouldBe BigDecimal("4")
+		rashers.unit shouldBe "piece"
+		rashers.parsedName shouldBe "bacon"
+		rashers.isMeasurable shouldBe true
+
+		val baconRashers = IngredientLineParser.parse("4 bacon rashers")
+		baconRashers.quantity shouldBe BigDecimal("4")
+		baconRashers.unit shouldBe "piece"
+		baconRashers.parsedName shouldBe "bacon"
+		baconRashers.isMeasurable shouldBe true
+
+		val sausages = IngredientLineParser.parse("2 sausages")
+		sausages.quantity shouldBe BigDecimal("2")
+		sausages.unit shouldBe "piece"
+		sausages.parsedName shouldBe "sausages"
+		sausages.isMeasurable shouldBe true
+
+		val porkSausage = IngredientLineParser.parse("1 pork sausage")
+		porkSausage.quantity shouldBe BigDecimal("1")
+		porkSausage.unit shouldBe "piece"
+		porkSausage.parsedName shouldBe "pork sausage"
+		porkSausage.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseLeavesBareMeatAndHerbLinesWithoutAmountsUnmeasurable() {
+		IngredientLineParser.parse("chicken breast").isMeasurable shouldBe false
+		IngredientLineParser.parse("sausage").isMeasurable shouldBe false
+		IngredientLineParser.parse("bay leaf").isMeasurable shouldBe false
+		IngredientLineParser.parse("Salt to taste").isMeasurable shouldBe false
+		IngredientLineParser.parse("Olive oil").isMeasurable shouldBe false
+	}
 }

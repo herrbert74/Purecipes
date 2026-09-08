@@ -129,7 +129,7 @@ class IngredientFoodMatchReporterTest {
 		report.measureGramCount shouldBe 1
 		report.densityGramCount shouldBe 1
 		report.neverParsedNames.map { it.label } shouldContain "never parsed line"
-		report.notMeasurableNames.map { it.label } shouldContain "salt taste"
+		report.notMeasurableNames.map { it.label } shouldContain "salt"
 		report.unmatchedNames.map { it.label } shouldContain "mystery spice"
 		report.unresolvedGramsNames.map { it.label } shouldContain "olive oil (cup)"
 		report.missingNutritionCount shouldBe 1

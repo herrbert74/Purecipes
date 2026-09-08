@@ -175,6 +175,74 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergeAppliesHighFrequencyUnmatchedPantryAliases() {
+		val parsley = food(
+			id = 61,
+			displayName = "Parsley, fresh",
+			normalizedName = "parsley fresh",
+		)
+		val celery = food(
+			id = 62,
+			displayName = "Celery, raw",
+			normalizedName = "celery raw",
+		)
+		val cabbage = food(
+			id = 63,
+			displayName = "Cabbage, green, raw",
+			normalizedName = "cabbage green raw",
+		)
+		val redWine = food(
+			id = 64,
+			displayName = "Alcoholic beverage, wine, table, red",
+			normalizedName = "alcoholic beverage wine table red",
+		)
+		val sourCream = food(
+			id = 65,
+			displayName = "Cream, sour, full fat",
+			normalizedName = "cream sour full fat",
+		)
+		val gruyere = food(
+			id = 66,
+			displayName = "Cheese, gruyere",
+			normalizedName = "cheese gruyere",
+		)
+		val peanutOil = food(
+			id = 67,
+			displayName = "Oil, peanut",
+			normalizedName = "oil peanut",
+		)
+		val yeast = food(
+			id = 68,
+			displayName = "Leavening agents, yeast, baker's, active dry",
+			normalizedName = "leavening agents yeast bakers active dry",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(
+				parsley,
+				celery,
+				cabbage,
+				redWine,
+				sourCream,
+				gruyere,
+				peanutOil,
+				yeast,
+			),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["flat leaf parsley"] shouldBe 61
+		aliases["celery stalks"] shouldBe 62
+		aliases["white cabbage"] shouldBe 63
+		aliases["dry red wine"] shouldBe 64
+		aliases["fra che"] shouldBe 65
+		aliases["creme fraiche"] shouldBe 65
+		aliases["gruy"] shouldBe 66
+		aliases["groundnut oil"] shouldBe 67
+		aliases["instant yeast"] shouldBe 68
+		aliases["lime wedges"].shouldBeNull()
+	}
+
+	@Test
 	fun mergePrefersSeedAliasesOverStoredRows() {
 		val unsalted = food(
 			id = 8,

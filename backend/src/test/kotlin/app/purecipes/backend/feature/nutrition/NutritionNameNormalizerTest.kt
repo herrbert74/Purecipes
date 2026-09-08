@@ -30,4 +30,31 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("cilantro leaves and tender stems") shouldBe "cilantro"
 		NutritionNameNormalizer.forLookup("bay leaves") shouldBe "bay"
 	}
+
+	@Test
+	fun forLookupStripsFillerAndInstructionLeftovers() {
+		NutritionNameNormalizer.forLookup("diamond crystal kosher salt more taste") shouldBe
+			"diamond crystal kosher salt"
+		NutritionNameNormalizer.forLookup("black pepper more taste") shouldBe "black pepper"
+		NutritionNameNormalizer.forLookup("kosher salt taste") shouldBe "kosher salt"
+		NutritionNameNormalizer.forLookup("unsalted butter cut into pieces") shouldBe "unsalted butter"
+		NutritionNameNormalizer.forLookup("chilled unsalted butter cut into pieces") shouldBe "unsalted butter"
+		NutritionNameNormalizer.forLookup("eggs separated") shouldBe "eggs"
+		NutritionNameNormalizer.forLookup("olive oil for serving") shouldBe "olive oil"
+		NutritionNameNormalizer.forLookup("parsley optional") shouldBe "parsley"
+		NutritionNameNormalizer.forLookup("flour for dusting surface") shouldBe "flour"
+		NutritionNameNormalizer.forLookup("oil for frying") shouldBe "oil"
+		NutritionNameNormalizer.forLookup("honey for drizzling") shouldBe "honey"
+		NutritionNameNormalizer.forLookup("breadcrumbs for dredging") shouldBe "breadcrumbs"
+		NutritionNameNormalizer.forLookup("cilantro for garnish") shouldBe "cilantro"
+		NutritionNameNormalizer.forLookup("tomatoes rinsed deseeded") shouldBe "tomatoes"
+		NutritionNameNormalizer.forLookup("cold water") shouldBe "water"
+	}
+
+	@Test
+	fun forLookupKeepsFoodMeaningfulTokens() {
+		NutritionNameNormalizer.forLookup("flat leaf parsley") shouldBe "flat leaf parsley"
+		NutritionNameNormalizer.forLookup("bay leaf") shouldBe "bay leaf"
+		NutritionNameNormalizer.forLookup("black pepper") shouldBe "black pepper"
+	}
 }

@@ -153,6 +153,39 @@ internal object IngredientLineParser {
 
 	private val defaultSingleCountUnits = setOf("clove", "piece")
 
+	private val countNounTokens = setOf(
+		"stalk",
+		"stalks",
+		"sprig",
+		"sprigs",
+		"leaf",
+		"leaves",
+		"knob",
+		"knobs",
+		"bulb",
+		"bulbs",
+		"rasher",
+		"rashers",
+		"stick",
+		"sticks",
+		"piece",
+		"pieces",
+		"bunch",
+		"bunches",
+	)
+
+	private val countableMeatTokens = setOf(
+		"breast",
+		"breasts",
+		"thigh",
+		"thighs",
+	)
+
+	private val countableSausageTokens = setOf(
+		"sausage",
+		"sausages",
+	)
+
 	private val defaultOnePieceTokens = setOf(
 		"aubergine",
 		"aubergines",
@@ -222,25 +255,12 @@ internal object IngredientLineParser {
 		rest = stripLeadingParenthetical(rest)
 		rest = stripContainerWords(rest)
 
+		val implied = resolveImpliedMeasure(quantity = quantity, unit = unit, rest = rest)
+		quantity = implied.quantity
+		unit = implied.unit
+		rest = implied.rest
 		if (unit == null) {
-			val parentheticalMeasure = findParentheticalMeasure(rest)
-			if (parentheticalMeasure != null) {
-				quantity = parentheticalMeasure.quantity
-				unit = parentheticalMeasure.unit
-				rest = parentheticalMeasure.parsedName
-			}
-		}
-		if (unit == null) {
-			val trailingMeasure = findTrailingAboutMeasure(rest)
-			if (trailingMeasure != null) {
-				quantity = trailingMeasure.quantity
-				unit = trailingMeasure.unit
-				rest = trailingMeasure.parsedName
-			}
-		}
-
-		if (unit == null) {
-			unit = inferCountUnit(rest)
+			unit = inferCountUnit(rest, hasQuantity = quantity != null)
 		}
 		if (quantity == null && unit in defaultSingleCountUnits) {
 			quantity = BigDecimal.ONE
@@ -444,7 +464,94 @@ internal object IngredientLineParser {
 		}
 	}
 
-	private fun inferCountUnit(parsedName: String): String? {
+	private fun resolveImpliedMeasure(
+		quantity: BigDecimal?,
+		unit: String?,
+		rest: String,
+	): LeadingAmount {
+		val parentheticalMeasure = if (unit == null) {
+			findParentheticalMeasure(rest)
+		} else {
+			null
+		}
+		val afterParenthetical = if (parentheticalMeasure != null) {
+			LeadingAmount(
+				quantity = parentheticalMeasure.quantity,
+				unit = parentheticalMeasure.unit,
+				rest = parentheticalMeasure.parsedName,
+			)
+		} else {
+			LeadingAmount(quantity = quantity, unit = unit, rest = rest)
+		}
+		val trailingMeasure = if (afterParenthetical.unit == null) {
+			findTrailingAboutMeasure(afterParenthetical.rest)
+		} else {
+			null
+		}
+		val afterTrailing = if (trailingMeasure != null) {
+			LeadingAmount(
+				quantity = trailingMeasure.quantity,
+				unit = trailingMeasure.unit,
+				rest = trailingMeasure.parsedName,
+			)
+		} else {
+			afterParenthetical
+		}
+		val countNounRest = if (afterTrailing.unit == null && afterTrailing.quantity != null) {
+			consumeCountNounAsPiece(afterTrailing.rest)
+		} else {
+			null
+		}
+		return if (countNounRest != null) {
+			LeadingAmount(
+				quantity = afterTrailing.quantity,
+				unit = "piece",
+				rest = countNounRest,
+			)
+		} else {
+			afterTrailing
+		}
+	}
+
+	private fun consumeCountNounAsPiece(value: String): String? {
+		val trimmed = value.trim()
+		return when {
+			trimmed.isEmpty() -> null
+			firstToken(trimmed).lowercase() in countNounTokens -> {
+				var rest = dropFirstWord(trimmed)
+				if (firstToken(rest).lowercase() == "of") {
+					rest = dropFirstWord(rest)
+				}
+				bayLeafName(rest)
+			}
+
+			else -> trailingCountNounAsPiece(trimmed)
+		}
+	}
+
+	private fun trailingCountNounAsPiece(value: String): String? {
+		val tokens = value.split(extraWhitespacePattern)
+		if (tokens.size < 2) {
+			return null
+		}
+		val trailing = tokens.last().lowercase().trimEnd(',', ';', '.')
+		return if (trailing in countNounTokens) {
+			bayLeafName(tokens.dropLast(1).joinToString(" "))
+		} else {
+			null
+		}
+	}
+
+	private fun bayLeafName(value: String): String {
+		val trimmed = value.trim()
+		return if (trimmed.equals("bay", ignoreCase = true)) {
+			"bay leaf"
+		} else {
+			trimmed
+		}
+	}
+
+	private fun inferCountUnit(parsedName: String, hasQuantity: Boolean): String? {
 		val first = normalizeUnit(firstToken(parsedName))
 		val lookupTokens = NutritionNameNormalizer.forLookup(parsedName)
 			.split(' ')
@@ -458,12 +565,23 @@ internal object IngredientLineParser {
 			lookupTokens.any { token -> token == "cob" }
 		val isProduce = !isJuiceOrZest &&
 			(lookupTokens.any { token -> token in defaultOnePieceTokens } || isBellPepper || isCornOnTheCob)
+		val isCountableMeat = hasQuantity && isCountableMeatName(lookupTokens)
 		return when {
 			first == "egg" || first == "clove" || first == "piece" -> first
 			isGarlicClove -> "clove"
 			isProduce -> "piece"
+			isCountableMeat -> "piece"
 			else -> null
 		}
+	}
+
+	private fun isCountableMeatName(lookupTokens: List<String>): Boolean {
+		if (lookupTokens.any { token -> token in countableSausageTokens }) {
+			return true
+		}
+		val hasChicken = lookupTokens.any { token -> token == "chicken" }
+		val hasBreastOrThigh = lookupTokens.any { token -> token in countableMeatTokens }
+		return hasChicken && hasBreastOrThigh
 	}
 
 	private fun parsedNameForUnit(unit: String?, rest: String, rawText: String): String {
