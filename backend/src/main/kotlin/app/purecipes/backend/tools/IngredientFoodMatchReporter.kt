@@ -136,7 +136,9 @@ internal class IngredientFoodMatchReporter(
 		val seenAlternativeKeysByRecipe = mutableMapOf<Int, MutableSet<Int>>()
 		return rows.mapNotNull { row ->
 			val seenKeys = seenAlternativeKeysByRecipe.getOrPut(row.recipeId) { mutableSetOf() }
+			val labelSource = row.parsedName?.trim().orEmpty().ifBlank { row.ingredientText }
 			val countable = !IngredientVocabulary.isIgnorableIngredientLine(row.ingredientText) &&
+				NutritionNameNormalizer.hasMeaningfulFoodName(labelSource) &&
 				countsTowardMatching(row.requirement, row.alternativeGroupKey, seenKeys)
 			when {
 				countable -> classifyLine(row)
@@ -256,9 +258,7 @@ private fun countsTowardMatching(
 }
 
 private fun groupedParsedName(parsedLabel: String): String =
-	NutritionNameNormalizer.forLookup(parsedLabel).ifBlank {
-		NutritionNameNormalizer.normalize(parsedLabel)
-	}.ifBlank { parsedLabel }
+	NutritionNameNormalizer.forLookup(parsedLabel).ifBlank { parsedLabel.trim() }
 
 private fun unresolvedGramsLabel(parsedName: String, unit: String?): String =
 	if (unit.isNullOrBlank()) {

@@ -27,9 +27,23 @@ class IngredientLineParserTest {
 
 	@Test
 	fun parseMarksUnstructuredLinesAsNotMeasurable() {
-		val parsed = IngredientLineParser.parse("Salt to taste")
+		val parsed = IngredientLineParser.parse("12 large")
 
 		parsed.isMeasurable shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName(parsed.parsedName) shouldBe false
+	}
+
+	@Test
+	fun parseDefaultsSaltAndOilWithoutAmounts() {
+		val salt = IngredientLineParser.parse("Salt to taste")
+		salt.quantity shouldBe BigDecimal.ONE
+		salt.unit shouldBe "tsp"
+		salt.isMeasurable shouldBe true
+
+		val oil = IngredientLineParser.parse("Olive Oil")
+		oil.quantity shouldBe BigDecimal.ONE
+		oil.unit shouldBe "tbsp"
+		oil.isMeasurable shouldBe true
 	}
 
 	@Test
@@ -174,20 +188,24 @@ class IngredientLineParserTest {
 	}
 
 	@Test
-	fun parseLeavesJuiceAndZestLinesWithoutAmountsUnmeasurable() {
-		IngredientLineParser.parse("Juice of 1 lemon").isMeasurable shouldBe false
-		IngredientLineParser.parse("Lemon Juice").isMeasurable shouldBe false
-		IngredientLineParser.parse("zest of 1 lime").isMeasurable shouldBe false
+	fun parseDefaultsJuiceAndZestLinesWithoutAmounts() {
+		val lemonJuice = IngredientLineParser.parse("Lemon Juice")
+		lemonJuice.quantity shouldBe BigDecimal.ONE
+		lemonJuice.unit shouldBe "tbsp"
+		lemonJuice.isMeasurable shouldBe true
+
+		val juiceOfLemon = IngredientLineParser.parse("Juice of 1 lemon")
+		juiceOfLemon.isMeasurable shouldBe true
 	}
 
 	@Test
-	fun parseLeavesSaltAndOilWithoutAmountsUnmeasurable() {
-		IngredientLineParser.parse("Salt").isMeasurable shouldBe false
-		IngredientLineParser.parse("Olive Oil").isMeasurable shouldBe false
-		IngredientLineParser.parse("Bunch Parsley").isMeasurable shouldBe false
-		IngredientLineParser.parse("Black Pepper").isMeasurable shouldBe false
+	fun parseDefaultsCommonPantryLinesWithoutAmounts() {
+		IngredientLineParser.parse("Salt").isMeasurable shouldBe true
+		IngredientLineParser.parse("Olive Oil").isMeasurable shouldBe true
+		IngredientLineParser.parse("Black Pepper").isMeasurable shouldBe true
+		IngredientLineParser.parse("Butternut Squash").isMeasurable shouldBe true
 		IngredientLineParser.parse("Corn").isMeasurable shouldBe false
-		IngredientLineParser.parse("Butternut Squash").isMeasurable shouldBe false
+		IngredientLineParser.parse("chicken breast").isMeasurable shouldBe false
 	}
 
 	@Test
@@ -306,13 +324,13 @@ class IngredientLineParserTest {
 
 		val sprigsThyme = IngredientLineParser.parse("3 sprigs thyme")
 		sprigsThyme.quantity shouldBe BigDecimal("3")
-		sprigsThyme.unit shouldBe "piece"
+		sprigsThyme.unit shouldBe "tsp"
 		sprigsThyme.parsedName shouldBe "thyme"
 		sprigsThyme.isMeasurable shouldBe true
 
 		val sprigRosemary = IngredientLineParser.parse("1 sprig rosemary")
 		sprigRosemary.quantity shouldBe BigDecimal("1")
-		sprigRosemary.unit shouldBe "piece"
+		sprigRosemary.unit shouldBe "tsp"
 		sprigRosemary.parsedName shouldBe "rosemary"
 		sprigRosemary.isMeasurable shouldBe true
 
@@ -330,28 +348,28 @@ class IngredientLineParserTest {
 
 		val bunchParsley = IngredientLineParser.parse("1 bunch parsley")
 		bunchParsley.quantity shouldBe BigDecimal("1")
-		bunchParsley.unit shouldBe "piece"
+		bunchParsley.unit shouldBe "tbsp"
 		bunchParsley.parsedName shouldBe "parsley"
 		bunchParsley.isMeasurable shouldBe true
 	}
 
 	@Test
-	fun parseTreatsBayLeavesWithQuantityAsPiece() {
+	fun parseTreatsBayLeavesWithQuantityAsTeaspoons() {
 		val plural = IngredientLineParser.parse("2 bay leaves")
 		plural.quantity shouldBe BigDecimal("2")
-		plural.unit shouldBe "piece"
+		plural.unit shouldBe "tsp"
 		plural.parsedName shouldBe "bay leaf"
 		plural.isMeasurable shouldBe true
 
 		val singular = IngredientLineParser.parse("1 bay leaf")
 		singular.quantity shouldBe BigDecimal("1")
-		singular.unit shouldBe "piece"
+		singular.unit shouldBe "tsp"
 		singular.parsedName shouldBe "bay leaf"
 		singular.isMeasurable shouldBe true
 
 		val wordQuantity = IngredientLineParser.parse("a bay leaf")
 		wordQuantity.quantity shouldBe BigDecimal.ONE
-		wordQuantity.unit shouldBe "piece"
+		wordQuantity.unit shouldBe "tsp"
 		wordQuantity.parsedName shouldBe "bay leaf"
 		wordQuantity.isMeasurable shouldBe true
 	}
@@ -402,11 +420,16 @@ class IngredientLineParserTest {
 	}
 
 	@Test
-	fun parseLeavesBareMeatAndHerbLinesWithoutAmountsUnmeasurable() {
+	fun parseLeavesBareMeatLinesWithoutAmountsUnmeasurable() {
 		IngredientLineParser.parse("chicken breast").isMeasurable shouldBe false
-		IngredientLineParser.parse("sausage").isMeasurable shouldBe false
-		IngredientLineParser.parse("bay leaf").isMeasurable shouldBe false
-		IngredientLineParser.parse("Salt to taste").isMeasurable shouldBe false
-		IngredientLineParser.parse("Olive oil").isMeasurable shouldBe false
+		IngredientLineParser.parse("Corn").isMeasurable shouldBe false
+	}
+
+	@Test
+	fun parseDefaultsBareSeasoningLinesWithoutAmounts() {
+		IngredientLineParser.parse("bay leaf").isMeasurable shouldBe true
+		IngredientLineParser.parse("Salt to taste").isMeasurable shouldBe true
+		IngredientLineParser.parse("Olive oil").isMeasurable shouldBe true
+		IngredientLineParser.parse("sausage").isMeasurable shouldBe true
 	}
 }

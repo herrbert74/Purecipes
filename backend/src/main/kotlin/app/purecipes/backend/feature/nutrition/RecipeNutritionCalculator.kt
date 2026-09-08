@@ -38,7 +38,8 @@ internal class RecipeNutritionCalculator(
 		}
 
 		val countableResults = ingredientResults.filter { result ->
-			!IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText)
+			!IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) &&
+				NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
 		}
 		if (countableResults.isEmpty()) {
 			return RecipeNutritionCalculationResult(totals = null, ingredientResults = ingredientResults)

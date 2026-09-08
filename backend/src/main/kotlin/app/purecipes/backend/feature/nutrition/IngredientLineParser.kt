@@ -81,6 +81,11 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val trailingMassAmountPattern = Regex(
+		"""\s+($QUANTITY_PATTERN)\s*(g|kg|ml|l|oz|lb|grams?|kilograms?|milliliters?|millilitres?|liters?|litres?|ounces?|pounds?)?\.?\s*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val wordQuantities = mapOf(
 		"a" to BigDecimal.ONE,
 		"an" to BigDecimal.ONE,
@@ -382,14 +387,14 @@ internal object IngredientLineParser {
 		val implied = resolveImpliedMeasure(quantity = quantity, unit = unit, rest = rest)
 		quantity = implied.quantity
 		unit = implied.unit
-		rest = implied.rest
+		rest = stripLeftoverAmounts(implied.rest, quantityAlreadySet = implied.quantity != null)
 		if (unit == null) {
 			unit = inferCountUnit(rest, hasQuantity = quantity != null)
 		}
 		val normalizedAmount = normalizeInformalUnits(quantity = quantity, unit = unit)
 		quantity = normalizedAmount.quantity
 		unit = normalizedAmount.unit
-		if (unit == null) {
+		if (unit == null && NutritionNameNormalizer.hasMeaningfulFoodName(rest)) {
 			val defaults = defaultUnquantifiedMeasure(rest)
 			if (defaults.unit != null) {
 				quantity = quantity ?: defaults.quantity
@@ -401,7 +406,10 @@ internal object IngredientLineParser {
 		}
 
 		val parsedName = parsedNameForUnit(unit = unit, rest = rest, rawText = rawText)
-		val isMeasurable = quantity != null && unit != null && unit in knownUnits
+		val isMeasurable = quantity != null &&
+			unit != null &&
+			unit in knownUnits &&
+			NutritionNameNormalizer.hasMeaningfulFoodName(parsedName)
 		return ParsedIngredientLine(
 			rawText = rawText,
 			quantity = quantity,
@@ -550,6 +558,36 @@ internal object IngredientLineParser {
 		}
 	}
 
+	private fun stripLeftoverAmounts(value: String, quantityAlreadySet: Boolean): String {
+		var rest = value.trim()
+		if (quantityAlreadySet) {
+			rest = stripLeadingBareNumber(rest)
+		}
+		return stripTrailingMassAmount(rest)
+	}
+
+	private fun stripLeadingBareNumber(value: String): String {
+		val match = leadingQuantityPattern.find(value.trim()) ?: return value.trim()
+		val afterNumber = value.trim().substring(match.range.last + 1).trim()
+		val next = firstToken(afterNumber).lowercase()
+		return if (afterNumber.isNotEmpty() && normalizeUnit(next) == null) {
+			afterNumber
+		} else {
+			value.trim()
+		}
+	}
+
+	private fun stripTrailingMassAmount(value: String): String {
+		val match = trailingMassAmountPattern.find(value.trim()) ?: return value.trim()
+		val unit = normalizeUnit(match.groupValues[2].ifBlank { null })
+		val bareNumber = match.groupValues[2].isBlank()
+		return if (bareNumber || unit in packUnits) {
+			value.trim().replaceRange(match.range, " ").replace(extraWhitespacePattern, " ").trim()
+		} else {
+			value.trim()
+		}
+	}
+
 	private fun stripLeadingParenthetical(value: String): String =
 		leadingParentheticalPattern.replaceFirst(value, "").trim()
 
@@ -618,7 +656,7 @@ internal object IngredientLineParser {
 			lookupTokens.any { token -> token in defaultOnePieceTokens } ->
 				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
 
-			else -> LeadingAmount(quantity = BigDecimal.ONE, unit = "tsp", rest = rest)
+			else -> LeadingAmount(quantity = null, unit = null, rest = rest)
 		}
 	}
 

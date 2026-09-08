@@ -1,56 +1,41 @@
 package app.purecipes.backend.feature.nutrition
 
+import java.text.Normalizer
+
 internal object NutritionNameNormalizer {
 
 	private val NON_ALPHANUMERIC = Regex("[^a-z0-9]+")
 
 	private val SUCH_AS_CLAUSE = Regex(""",?\s*such as\b.*""", RegexOption.IGNORE_CASE)
 
+	private val COMBINING_MARKS = Regex("\\p{M}+")
+
 	private val preparationTokens = setOf(
 		"beaten",
-		"block",
-		"bottle",
 		"chilled",
 		"chopped",
-		"chunks",
 		"coarsely",
 		"cold",
 		"concentrated",
 		"cored",
-		"crosswise",
 		"crushed",
 		"cubed",
 		"cut",
 		"deseeded",
-		"diameter",
 		"diced",
-		"discarded",
 		"divided",
 		"drained",
 		"dried",
-		"filets",
-		"fillets",
 		"finely",
 		"fresh",
 		"freshly",
-		"generous",
 		"grated",
 		"ground",
-		"half",
 		"halved",
-		"halves",
-		"handfuls",
-		"husked",
 		"homemade",
-		"inch",
-		"inches",
 		"juiced",
-		"knob",
-		"knobs",
 		"large",
 		"leaves",
-		"lengthways",
-		"lengthwise",
 		"lightly",
 		"medium",
 		"melted",
@@ -58,14 +43,10 @@ internal object NutritionNameNormalizer {
 		"needed",
 		"note",
 		"notes",
-		"package",
-		"packets",
-		"parts",
 		"peeled",
 		"pitted",
 		"preferably",
 		"quartered",
-		"removed",
 		"rinsed",
 		"room",
 		"roughly",
@@ -73,26 +54,20 @@ internal object NutritionNameNormalizer {
 		"see",
 		"seeded",
 		"separated",
-		"sheets",
 		"shredded",
-		"sized",
 		"sliced",
-		"slices",
 		"slightly",
 		"smashed",
 		"smoked",
 		"softened",
 		"squeezed",
-		"stalks",
+		"stemmed",
 		"stems",
 		"temperature",
-		"thick",
 		"thinly",
-		"thumb",
 		"torn",
 		"trimmed",
 		"unpeeled",
-		"whacked",
 		"zested",
 	)
 
@@ -147,8 +122,22 @@ internal object NutritionNameNormalizer {
 		"taste",
 	)
 
-	fun normalize(value: String): String =
-		NON_ALPHANUMERIC.replace(value.lowercase(), " ").trim()
+	private val sizeOnlyTokens = setOf(
+		"extra",
+		"extra-large",
+		"jumbo",
+		"large",
+		"medium",
+		"small",
+	)
+
+	fun normalize(value: String): String {
+		val ascii = COMBINING_MARKS.replace(
+			Normalizer.normalize(value.lowercase(), Normalizer.Form.NFKD),
+			"",
+		)
+		return NON_ALPHANUMERIC.replace(ascii, " ").trim()
+	}
 
 	fun tokens(normalized: String): List<String> =
 		normalized.split(' ').filter { token -> token.length >= MIN_TOKEN_LENGTH }
@@ -156,10 +145,21 @@ internal object NutritionNameNormalizer {
 	fun forLookup(value: String): String {
 		val withoutClause = SUCH_AS_CLAUSE.replace(value.substringBefore(';').trim(), "").trim()
 		val normalized = normalize(withoutClause)
-		val lookupTokens = tokens(normalized).filterNot { token ->
-			token in preparationTokens || token in measureLeftoverTokens || token in fillerTokens
+		return tokens(normalized).filterNot { token ->
+			token.all(Char::isDigit) ||
+				token in preparationTokens ||
+				token in measureLeftoverTokens ||
+				token in fillerTokens
+		}.joinToString(" ")
+	}
+
+	fun hasMeaningfulFoodName(value: String): Boolean {
+		val lookup = forLookup(value)
+		if (lookup.isNotBlank()) {
+			return true
 		}
-		return lookupTokens.joinToString(" ").ifBlank { normalized }
+		val normalizedTokens = tokens(normalize(value)).filterNot { token -> token.all(Char::isDigit) }
+		return normalizedTokens.any { token -> token !in sizeOnlyTokens && token !in preparationTokens }
 	}
 
 	private const val MIN_TOKEN_LENGTH = 3

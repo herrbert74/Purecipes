@@ -56,5 +56,25 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("flat leaf parsley") shouldBe "flat leaf parsley"
 		NutritionNameNormalizer.forLookup("bay leaf") shouldBe "bay leaf"
 		NutritionNameNormalizer.forLookup("black pepper") shouldBe "black pepper"
+		NutritionNameNormalizer.forLookup("sesame seeds") shouldBe "sesame seeds"
+	}
+
+	@Test
+	fun forLookupFoldsUnicodeAndDropsBareNumbers() {
+		NutritionNameNormalizer.forLookup("pickled jalapeño") shouldBe "pickled jalapeno"
+		NutritionNameNormalizer.forLookup("jalapeño peppers") shouldBe "jalapeno peppers"
+		NutritionNameNormalizer.forLookup("120 corn oil") shouldBe "corn oil"
+		NutritionNameNormalizer.forLookup("all purpose flour 125") shouldBe "all purpose flour"
+		NutritionNameNormalizer.forLookup("12 large") shouldBe ""
+		NutritionNameNormalizer.forLookup("5") shouldBe ""
+	}
+
+	@Test
+	fun hasMeaningfulFoodNameRejectsQuantityOnlyJunk() {
+		NutritionNameNormalizer.hasMeaningfulFoodName("12 large") shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName("2") shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName("5") shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName("corn oil") shouldBe true
+		NutritionNameNormalizer.hasMeaningfulFoodName("pickled jalapeño") shouldBe true
 	}
 }
