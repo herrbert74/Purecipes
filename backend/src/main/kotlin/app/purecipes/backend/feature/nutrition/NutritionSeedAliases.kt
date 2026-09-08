@@ -28,7 +28,9 @@ internal object NutritionSeedAliases {
 		"Leavening agents, baking powder, double-acting, sodium aluminum sulfate"
 	private const val BAKING_SODA_DESCRIPTION = "Leavening agents, baking soda"
 	private const val BALSAMIC_VINEGAR_DESCRIPTION = "Vinegar, balsamic"
+	private const val BAY_LEAF_DESCRIPTION = "Bay leaf, dried"
 	private const val BEANSPROUT_DESCRIPTION = "Mung beans, mature seeds, sprouted, raw"
+	private const val BEET_DESCRIPTION = "Beets, raw"
 	private const val BEER_DESCRIPTION = "Alcoholic beverage, beer, regular, all"
 	private const val BELL_PEPPER_DESCRIPTION = "Peppers, sweet, green, raw"
 	private const val BLACK_PEPPER_DESCRIPTION = "Spices, pepper, black"
@@ -267,6 +269,22 @@ internal object NutritionSeedAliases {
 	private const val YOGURT_DESCRIPTION = "Yogurt, plain, whole milk"
 	private const val ZUCCHINI_DESCRIPTION = "Squash, summer, zucchini, includes skin, raw"
 
+	private const val CLAM_JUICE_DESCRIPTION = "Soup, clam chowder, new england, canned, ready-to-serve"
+
+	private const val GRAHAM_DESCRIPTION = "Cookies, graham crackers, plain or honey (includes cinnamon)"
+
+	private const val GREEN_TEA_DESCRIPTION = "Beverages, tea, green, ready to drink, unsweetened"
+
+	private const val ORANGE_JUICE_DESCRIPTION = "Orange juice, raw"
+
+	private const val PARSNIP_DESCRIPTION = "Parsnips, raw"
+
+	private const val PICKLE_DESCRIPTION = "Pickles, cucumber, dill or kosher dill"
+
+	private const val PINEAPPLE_DESCRIPTION = "Pineapple, raw, all varieties"
+
+	private const val SALMON_DESCRIPTION = "Fish, salmon, Atlantic, farmed, raw"
+
 	val aliases: List<NutritionSeedAlias> = listOf(
 		NutritionSeedAlias("achiote paste", PAPRIKA_DESCRIPTION),
 		NutritionSeedAlias("agave nectar", AGAVE_SYRUP_DESCRIPTION),
@@ -287,7 +305,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("atar", OREGANO_DESCRIPTION),
 		NutritionSeedAlias("aubergine", EGGPLANT_DESCRIPTION),
 		NutritionSeedAlias("avocado", AVOCADO_DESCRIPTION),
-		NutritionSeedAlias("baby bok choy", BOK_CHOY_DESCRIPTION),
+		NutritionSeedAlias("baby bok choy", CABBAGE_GREEN_DESCRIPTION, CABBAGE_DESCRIPTION),
 		NutritionSeedAlias("bag baby salad greens", SPINACH_DESCRIPTION, ICEBERG_LETTUCE_DESCRIPTION),
 		NutritionSeedAlias("baby gem lettuce", ROMAINE_LETTUCE_DESCRIPTION),
 		NutritionSeedAlias("bacon lardons", BACON_UNPREPARED_DESCRIPTION, BACON_DESCRIPTION),
@@ -299,6 +317,8 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("basmati rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("bean sprouts", BEANSPROUT_DESCRIPTION),
 		NutritionSeedAlias("beansprouts", BEANSPROUT_DESCRIPTION),
+		NutritionSeedAlias("beetroot", BEET_DESCRIPTION),
+		NutritionSeedAlias("beets", BEET_DESCRIPTION),
 		NutritionSeedAlias("bell pepper", BELL_PEPPER_DESCRIPTION),
 		NutritionSeedAlias("bicarbonate of soda", BAKING_SODA_DESCRIPTION),
 		NutritionSeedAlias(
@@ -311,7 +331,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("black peppercorns", BLACK_PEPPER_DESCRIPTION),
 		NutritionSeedAlias("black pudding", BLOOD_SAUSAGE_DESCRIPTION),
 		NutritionSeedAlias("bleached cake flour", CAKE_FLOUR_DESCRIPTION, FLOUR_DESCRIPTION),
-		NutritionSeedAlias("bok choy", BOK_CHOY_DESCRIPTION),
+		NutritionSeedAlias("bok choy", CABBAGE_GREEN_DESCRIPTION, CABBAGE_DESCRIPTION),
 		NutritionSeedAlias(
 			"bone skin chicken thighs",
 			CHICKEN_THIGH_DESCRIPTION,
@@ -894,6 +914,21 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("yellow potatoes inch", POTATO_DESCRIPTION),
 		NutritionSeedAlias("za'atar", OREGANO_DESCRIPTION),
 		NutritionSeedAlias("zaatar", OREGANO_DESCRIPTION),
+		NutritionSeedAlias("block halloumi", HALLOUMI_DESCRIPTION),
+		NutritionSeedAlias("boneless skinless salmon filets", SALMON_DESCRIPTION),
+		NutritionSeedAlias("bottle clam juice", CLAM_JUICE_DESCRIPTION, FISH_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("coriander stalks", CILANTRO_DESCRIPTION),
+		NutritionSeedAlias("crumbled cotija cheese", QUESO_FRESCO_DESCRIPTION, FETA_DESCRIPTION),
+		NutritionSeedAlias("curry leaf", BAY_LEAF_DESCRIPTION, CURRY_POWDER_DESCRIPTION),
+		NutritionSeedAlias("gherkin", PICKLE_DESCRIPTION),
+		NutritionSeedAlias("graham cracker sheets", GRAHAM_DESCRIPTION),
+		NutritionSeedAlias("head garlic", GARLIC_DESCRIPTION),
+		NutritionSeedAlias("kaffir lime leaf", LIME_DESCRIPTION, BAY_LEAF_DESCRIPTION),
+		NutritionSeedAlias("matcha powder", GREEN_TEA_DESCRIPTION, INSTANT_COFFEE_DESCRIPTION),
+		NutritionSeedAlias("orange blossom water", ORANGE_JUICE_DESCRIPTION, ORANGE_DESCRIPTION),
+		NutritionSeedAlias("parsnips", PARSNIP_DESCRIPTION),
+		NutritionSeedAlias("parsnips half", PARSNIP_DESCRIPTION),
+		NutritionSeedAlias("pineapple chunks", PINEAPPLE_DESCRIPTION),
 		NutritionSeedAlias("zucchini", ZUCCHINI_DESCRIPTION),
 	)
 }
