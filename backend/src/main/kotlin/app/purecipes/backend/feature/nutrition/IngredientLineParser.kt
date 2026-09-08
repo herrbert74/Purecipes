@@ -179,6 +179,26 @@ internal object IngredientLineParser {
 		"pieces",
 		"bunch",
 		"bunches",
+		"cube",
+		"cubes",
+		"fillet",
+		"fillets",
+		"slice",
+		"slices",
+	)
+
+	private val teaspoonCountNounTokens = setOf(
+		"sprig",
+		"sprigs",
+		"leaf",
+		"leaves",
+	)
+
+	private val tablespoonCountNounTokens = setOf(
+		"bunch",
+		"bunches",
+		"handful",
+		"handfuls",
 	)
 
 	private val countableMeatTokens = setOf(
@@ -261,11 +281,36 @@ internal object IngredientLineParser {
 		"turmeric",
 		"cardamom",
 		"cloves",
+		"basil",
+		"parsley",
+		"cilantro",
+		"coriander",
+		"mint",
+		"rosemary",
+		"sage",
+		"tarragon",
+		"dill",
+		"chive",
+		"chives",
+		"bay",
+		"star",
+		"anise",
 	)
 
 	private val defaultTablespoonOilTokens = setOf(
 		"oil",
 		"oils",
+		"spray",
+	)
+
+	private val defaultCupPantryTokens = setOf(
+		"flour",
+		"chickpeas",
+		"chickpea",
+		"beans",
+		"bean",
+		"rice",
+		"sugar",
 	)
 
 	private val defaultPieceHerbTokens = setOf(
@@ -273,6 +318,21 @@ internal object IngredientLineParser {
 		"anchovy",
 		"anchovies",
 		"chorizo",
+		"bacon",
+		"sausage",
+		"sausages",
+		"scallion",
+		"scallions",
+		"apple",
+		"baguette",
+		"bun",
+		"buns",
+		"pitta",
+		"pita",
+		"egg",
+		"eggs",
+		"cube",
+		"cubes",
 	)
 
 	fun parse(rawLine: String): ParsedIngredientLine {
@@ -523,6 +583,9 @@ internal object IngredientLineParser {
 			isSpiceSeasoning(lookupTokens) ->
 				LeadingAmount(quantity = BigDecimal.ONE, unit = "tsp", rest = rest)
 
+			lookupTokens.any { token -> token in defaultCupPantryTokens } ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "cup", rest = rest)
+
 			lookupTokens.any { token -> token in defaultPieceHerbTokens } ->
 				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
 
@@ -618,50 +681,66 @@ internal object IngredientLineParser {
 		} else {
 			afterParenthetical
 		}
-		val countNounRest = if (afterTrailing.unit == null && afterTrailing.quantity != null) {
-			consumeCountNounAsPiece(afterTrailing.rest)
+		val countNoun = if (afterTrailing.unit == null && afterTrailing.quantity != null) {
+			consumeCountNounMeasure(afterTrailing.rest)
 		} else {
 			null
 		}
-		return if (countNounRest != null) {
+		return if (countNoun != null) {
 			LeadingAmount(
 				quantity = afterTrailing.quantity,
-				unit = "piece",
-				rest = countNounRest,
+				unit = countNoun.unit,
+				rest = countNoun.rest,
 			)
 		} else {
 			afterTrailing
 		}
 	}
 
-	private fun consumeCountNounAsPiece(value: String): String? {
+	private fun consumeCountNounMeasure(value: String): LeadingAmount? {
 		val trimmed = value.trim()
 		return when {
 			trimmed.isEmpty() -> null
 			firstToken(trimmed).lowercase() in countNounTokens -> {
+				val noun = firstToken(trimmed).lowercase()
 				var rest = dropFirstWord(trimmed)
 				if (firstToken(rest).lowercase() == "of") {
 					rest = dropFirstWord(rest)
 				}
-				bayLeafName(rest)
+				LeadingAmount(
+					quantity = null,
+					unit = unitForCountNoun(noun),
+					rest = bayLeafName(rest),
+				)
 			}
 
-			else -> trailingCountNounAsPiece(trimmed)
+			else -> trailingCountNounMeasure(trimmed)
 		}
 	}
 
-	private fun trailingCountNounAsPiece(value: String): String? {
+	private fun trailingCountNounMeasure(value: String): LeadingAmount? {
 		val tokens = value.split(extraWhitespacePattern)
 		if (tokens.size < 2) {
 			return null
 		}
 		val trailing = tokens.last().lowercase().trimEnd(',', ';', '.')
 		return if (trailing in countNounTokens) {
-			bayLeafName(tokens.dropLast(1).joinToString(" "))
+			LeadingAmount(
+				quantity = null,
+				unit = unitForCountNoun(trailing),
+				rest = bayLeafName(tokens.dropLast(1).joinToString(" ")),
+			)
 		} else {
 			null
 		}
 	}
+
+	private fun unitForCountNoun(noun: String): String =
+		when (noun) {
+			in teaspoonCountNounTokens -> "tsp"
+			in tablespoonCountNounTokens -> "tbsp"
+			else -> "piece"
+		}
 
 	private fun bayLeafName(value: String): String {
 		val trimmed = value.trim()

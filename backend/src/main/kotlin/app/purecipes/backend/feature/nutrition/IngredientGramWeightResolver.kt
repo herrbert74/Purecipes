@@ -12,6 +12,8 @@ internal object IngredientGramWeightResolver {
 	private val defaultGramsPerTeaspoon = BigDecimal("5")
 	private val defaultGramsPerTablespoon = BigDecimal("15")
 	private val defaultGramsPerCup = BigDecimal("240")
+	private val defaultGramsPerPiece = BigDecimal("10")
+	private val defaultGramsPerEgg = BigDecimal("50")
 
 	fun resolveGrams(
 		quantity: BigDecimal,
@@ -63,6 +65,8 @@ internal object IngredientGramWeightResolver {
 			"tsp" -> defaultGramsPerTeaspoon
 			"tbsp" -> defaultGramsPerTablespoon
 			"cup" -> defaultGramsPerCup
+			"piece" -> defaultGramsPerPiece
+			"egg" -> defaultGramsPerEgg
 			else -> null
 		}
 }
