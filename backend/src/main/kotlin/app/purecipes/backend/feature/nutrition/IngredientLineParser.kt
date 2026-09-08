@@ -313,6 +313,20 @@ internal object IngredientLineParser {
 		"sugar",
 	)
 
+	private val defaultTablespoonCreamTokens = setOf(
+		"cream",
+		"yoghurt",
+		"yogurt",
+		"milk",
+		"butter",
+		"mayo",
+		"mayonnaise",
+		"ketchup",
+		"mustard",
+		"salsa",
+		"chutney",
+	)
+
 	private val defaultPieceHerbTokens = setOf(
 		"ginger",
 		"anchovy",
@@ -375,10 +389,12 @@ internal object IngredientLineParser {
 		val normalizedAmount = normalizeInformalUnits(quantity = quantity, unit = unit)
 		quantity = normalizedAmount.quantity
 		unit = normalizedAmount.unit
-		if (quantity == null && unit == null) {
+		if (unit == null) {
 			val defaults = defaultUnquantifiedMeasure(rest)
-			quantity = defaults.quantity
-			unit = defaults.unit
+			if (defaults.unit != null) {
+				quantity = quantity ?: defaults.quantity
+				unit = defaults.unit
+			}
 		}
 		if (quantity == null && unit in defaultSingleCountUnits) {
 			quantity = BigDecimal.ONE
@@ -573,11 +589,21 @@ internal object IngredientLineParser {
 	}
 
 	private fun defaultUnquantifiedMeasure(rest: String): LeadingAmount {
-		val lookupTokens = NutritionNameNormalizer.forLookup(rest)
+		val lookup = NutritionNameNormalizer.forLookup(rest)
+		val lookupTokens = lookup
 			.split(' ')
 			.filter { token -> token.isNotEmpty() }
 		return when {
+			lookupTokens.isEmpty() ->
+				LeadingAmount(quantity = null, unit = null, rest = rest)
+
+			lookupTokens.any { token -> token == "juice" || token == "zest" } ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
+
 			lookupTokens.any { token -> token in defaultTablespoonOilTokens } ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
+
+			lookupTokens.any { token -> token in defaultTablespoonCreamTokens } ->
 				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
 
 			isSpiceSeasoning(lookupTokens) ->
@@ -589,7 +615,10 @@ internal object IngredientLineParser {
 			lookupTokens.any { token -> token in defaultPieceHerbTokens } ->
 				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
 
-			else -> LeadingAmount(quantity = null, unit = null, rest = rest)
+			lookupTokens.any { token -> token in defaultOnePieceTokens } ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
+
+			else -> LeadingAmount(quantity = BigDecimal.ONE, unit = "tsp", rest = rest)
 		}
 	}
 
