@@ -128,7 +128,14 @@ internal object IngredientLineParser {
 		"oz",
 		"lb",
 		"clove",
+		"pinch",
+		"dash",
+		"handful",
 	)
+
+	private val pinchUnits = setOf("pinch", "dash")
+
+	private val handfulUnits = setOf("handful")
 
 	private val packUnits = setOf(
 		"g",
@@ -193,6 +200,7 @@ internal object IngredientLineParser {
 		"avocados",
 		"broccoli",
 		"broccolis",
+		"butternut",
 		"cabbage",
 		"cabbages",
 		"carrot",
@@ -200,30 +208,71 @@ internal object IngredientLineParser {
 		"cauliflower",
 		"cauliflowers",
 		"celery",
+		"chilli",
+		"chillies",
+		"chili",
+		"chilies",
 		"courgette",
 		"courgettes",
 		"cucumber",
 		"cucumbers",
 		"eggplant",
 		"eggplants",
+		"jalapeno",
+		"jalapenos",
 		"leek",
 		"leeks",
 		"lemon",
 		"lemons",
+		"lettuce",
 		"lime",
 		"limes",
+		"mango",
 		"onion",
 		"onions",
 		"orange",
 		"oranges",
+		"plantain",
 		"potato",
 		"potatoes",
 		"shallot",
 		"shallots",
+		"squash",
 		"tomato",
 		"tomatoes",
+		"tortilla",
+		"tortillas",
 		"zucchini",
 		"zucchinis",
+	)
+
+	private val defaultTeaspoonSeasoningTokens = setOf(
+		"salt",
+		"peppercorns",
+		"cayenne",
+		"paprika",
+		"nutmeg",
+		"cinnamon",
+		"cumin",
+		"oregano",
+		"thyme",
+		"saffron",
+		"sumac",
+		"turmeric",
+		"cardamom",
+		"cloves",
+	)
+
+	private val defaultTablespoonOilTokens = setOf(
+		"oil",
+		"oils",
+	)
+
+	private val defaultPieceHerbTokens = setOf(
+		"ginger",
+		"anchovy",
+		"anchovies",
+		"chorizo",
 	)
 
 	fun parse(rawLine: String): ParsedIngredientLine {
@@ -252,6 +301,7 @@ internal object IngredientLineParser {
 				rest = consumed.second
 			}
 		}
+		rest = stripLeadingOf(rest)
 		rest = stripLeadingParenthetical(rest)
 		rest = stripContainerWords(rest)
 
@@ -261,6 +311,14 @@ internal object IngredientLineParser {
 		rest = implied.rest
 		if (unit == null) {
 			unit = inferCountUnit(rest, hasQuantity = quantity != null)
+		}
+		val normalizedAmount = normalizeInformalUnits(quantity = quantity, unit = unit)
+		quantity = normalizedAmount.quantity
+		unit = normalizedAmount.unit
+		if (quantity == null && unit == null) {
+			val defaults = defaultUnquantifiedMeasure(rest)
+			quantity = defaults.quantity
+			unit = defaults.unit
 		}
 		if (quantity == null && unit in defaultSingleCountUnits) {
 			quantity = BigDecimal.ONE
@@ -407,6 +465,15 @@ internal object IngredientLineParser {
 		}
 	}
 
+	private fun stripLeadingOf(value: String): String {
+		val trimmed = value.trim()
+		return if (firstToken(trimmed).lowercase() == "of") {
+			dropFirstWord(trimmed)
+		} else {
+			trimmed
+		}
+	}
+
 	private fun stripLeadingParenthetical(value: String): String =
 		leadingParentheticalPattern.replaceFirst(value, "").trim()
 
@@ -420,6 +487,60 @@ internal object IngredientLineParser {
 			rest = dropFirstWord(rest)
 		}
 		return rest
+	}
+
+	private fun normalizeInformalUnits(
+		quantity: BigDecimal?,
+		unit: String?,
+	): LeadingAmount {
+		val amount = quantity ?: BigDecimal.ONE
+		return when {
+			unit == null -> LeadingAmount(quantity = quantity, unit = null, rest = "")
+			unit in pinchUnits -> LeadingAmount(
+				quantity = amount.multiply(BigDecimal("0.25")),
+				unit = "tsp",
+				rest = "",
+			)
+
+			unit in handfulUnits -> LeadingAmount(
+				quantity = amount.multiply(BigDecimal("2")),
+				unit = "tbsp",
+				rest = "",
+			)
+
+			else -> LeadingAmount(quantity = quantity, unit = unit, rest = "")
+		}
+	}
+
+	private fun defaultUnquantifiedMeasure(rest: String): LeadingAmount {
+		val lookupTokens = NutritionNameNormalizer.forLookup(rest)
+			.split(' ')
+			.filter { token -> token.isNotEmpty() }
+		return when {
+			lookupTokens.any { token -> token in defaultTablespoonOilTokens } ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
+
+			isSpiceSeasoning(lookupTokens) ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "tsp", rest = rest)
+
+			lookupTokens.any { token -> token in defaultPieceHerbTokens } ->
+				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
+
+			else -> LeadingAmount(quantity = null, unit = null, rest = rest)
+		}
+	}
+
+	private fun isSpiceSeasoning(lookupTokens: List<String>): Boolean {
+		if (lookupTokens.any { token -> token in defaultTeaspoonSeasoningTokens }) {
+			return true
+		}
+		if (lookupTokens.none { token -> token == "pepper" }) {
+			return false
+		}
+		val spicePepperModifiers = setOf("black", "white", "ground", "flakes", "flake", "crushed")
+		return lookupTokens.size == 1 ||
+			lookupTokens.any { token -> token in spicePepperModifiers } ||
+			lookupTokens.any { token -> token == "salt" }
 	}
 
 	private fun findParentheticalMeasure(value: String): ParsedIngredientLine? {
@@ -561,10 +682,20 @@ internal object IngredientLineParser {
 			lookupTokens.any { token -> token.startsWith("clove") }
 		val isBellPepper = lookupTokens.any { token -> token == "bell" } &&
 			lookupTokens.any { token -> token == "pepper" }
+		val isColoredPepper = lookupTokens.any { token -> token == "pepper" } &&
+			lookupTokens.any { token -> token == "red" || token == "green" || token == "yellow" } &&
+			lookupTokens.none { token ->
+				token == "black" || token == "white" || token == "flakes" || token == "flake" || token == "crushed"
+			}
 		val isCornOnTheCob = lookupTokens.any { token -> token == "corn" } &&
 			lookupTokens.any { token -> token == "cob" }
 		val isProduce = !isJuiceOrZest &&
-			(lookupTokens.any { token -> token in defaultOnePieceTokens } || isBellPepper || isCornOnTheCob)
+			(
+				lookupTokens.any { token -> token in defaultOnePieceTokens } ||
+					isBellPepper ||
+					isColoredPepper ||
+					isCornOnTheCob
+				)
 		val isCountableMeat = hasQuantity && isCountableMeatName(lookupTokens)
 		return when {
 			first == "egg" || first == "clove" || first == "piece" -> first
@@ -646,6 +777,9 @@ internal object IngredientLineParser {
 			"egg", "eggs" -> "egg"
 			"clove", "cloves" -> "clove"
 			"piece", "pieces" -> "piece"
+			"pinch", "pinches" -> "pinch"
+			"dash", "dashes" -> "dash"
+			"handful", "handfuls" -> "handful"
 			else -> unit
 		}
 	}
