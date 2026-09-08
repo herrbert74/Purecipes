@@ -48,8 +48,9 @@ internal object FdcFoodMatcher {
 			}
 			.maxWithOrNull(
 				compareByDescending<Pair<NutritionFoodNameScore, FdcFoundationFood>> { it.first.score }
+					.thenBy { FdcFoodMatchingSupport.sourcePriority(it.second.sourceName) }
 					.thenBy { it.first.extraTokenCount }
-					.thenBy { FdcFoodMatchingSupport.sourcePriority(it.second.sourceName) },
+					.thenBy { it.second.description.length },
 			)
 			?.second
 	}

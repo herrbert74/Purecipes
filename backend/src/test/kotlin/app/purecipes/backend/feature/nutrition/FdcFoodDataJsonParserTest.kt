@@ -36,4 +36,41 @@ class FdcFoodDataJsonParserTest {
 			BigDecimal("15.0000"),
 		)
 	}
+
+	@Test
+	fun parseRejectsBrandedFoodsWithoutContiguousPhrase() {
+		val sampleFile = File("src/test/resources/nutrition/branded_food_sample.json")
+		val parseResult = FdcFoodDataJsonParser.parse(
+			file = sampleFile,
+			neededQueries = setOf("granola cinnamon"),
+		)
+
+		parseResult.foods shouldHaveSize 0
+		parseResult.neededNameMatches shouldBe emptyMap()
+	}
+
+	@Test
+	fun parseReadsBrandedFoodsAndKeepsOnlyNeededNames() {
+		val sampleFile = File("src/test/resources/nutrition/branded_food_sample.json")
+		val parseResult = FdcFoodDataJsonParser.parse(
+			file = sampleFile,
+			neededQueries = setOf("halloumi", "garam masala"),
+		)
+
+		parseResult.dataset shouldBe FdcFoodDataset.BRANDED
+		parseResult.foodsScanned shouldBe 3
+		parseResult.foods.map { food -> food.description }.toSet() shouldBe setOf(
+			"HALLOUMI CHEESE",
+			"GARAM MASALA",
+		)
+		parseResult.neededNameMatches shouldBe mapOf(
+			"halloumi" to "HALLOUMI CHEESE",
+			"garam masala" to "GARAM MASALA",
+		)
+		val garamMasala = parseResult.foods.single { food -> food.description == "GARAM MASALA" }
+		garamMasala.sourceName shouldBe FDC_BRANDED_SOURCE_NAME
+		garamMasala.nutrientsPer100g()?.sugar shouldBe BigDecimal("0")
+		garamMasala.portions.single().measureName shouldBe "tsp"
+		garamMasala.portions.single().gramsPerMeasure shouldBe BigDecimal("5.0000")
+	}
 }

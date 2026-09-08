@@ -225,7 +225,7 @@ Canonical foods, mostly from USDA FoodData Central. Nutrients are stored **per 1
 | Column | Meaning |
 |--------|---------|
 | `id` | Food id. Matches and aliases point here. |
-| `source_name` | Dataset, typically `Foundation` or `SR Legacy`. Foundation is preferred when both exist. |
+| `source_name` | Dataset key: `fdc_foundation`, `fdc_sr_legacy`, or `fdc_branded`. Foundation is preferred over SR Legacy, and both are preferred over branded products. |
 | `source_id` | USDA FDC id. Together with `source_name`, uniquely identifies the imported food. |
 | `display_name` | USDA description, for example `Oil, olive, extra virgin`. |
 | `normalized_name` | Lowercased, punctuation-stripped form used for matching. |

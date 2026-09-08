@@ -13,6 +13,7 @@ internal object NutritionMeasureNames {
 	private const val STALK_PREFERENCE = 60
 	private const val PEPPER_PREFERENCE = 55
 	private val parentheticalPattern = Regex("""\([^)]*\)""")
+	private val brandedHouseholdPattern = Regex("""^\s*(\d+(?:\.\d+)?)\s+([A-Za-z]+)\b""")
 	private val householdUnits = setOf(
 		"ml",
 		"l",
@@ -30,6 +31,46 @@ internal object NutritionMeasureNames {
 	fun gramsPerSingleMeasure(gramWeight: BigDecimal, amount: BigDecimal?): BigDecimal {
 		val divisor = amount?.takeIf { value -> value.signum() > 0 } ?: BigDecimal.ONE
 		return gramWeight.divide(divisor, GRAMS_SCALE, RoundingMode.HALF_UP)
+	}
+
+	fun brandedHouseholdPortion(
+		servingSize: BigDecimal?,
+		servingSizeUnit: String?,
+		householdServingFullText: String?,
+	): FdcFoodPortion? {
+		val grams = brandedServingGrams(servingSize, servingSizeUnit)
+		val householdMatch = brandedHouseholdMatch(householdServingFullText)
+		return if (grams == null || householdMatch == null) {
+			null
+		} else {
+			FdcFoodPortion(
+				measureName = householdMatch.measureName,
+				gramsPerMeasure = gramsPerSingleMeasure(grams, householdMatch.amount),
+			)
+		}
+	}
+
+	private fun brandedServingGrams(servingSize: BigDecimal?, servingSizeUnit: String?): BigDecimal? {
+		val hasPositiveGrams = servingSize != null &&
+			servingSize.signum() > 0 &&
+			canonicalize(servingSizeUnit) == "g"
+		return if (hasPositiveGrams) {
+			servingSize
+		} else {
+			null
+		}
+	}
+
+	private fun brandedHouseholdMatch(householdServingFullText: String?): BrandedHouseholdMatch? {
+		val household = householdServingFullText?.trim()?.takeIf { value -> value.isNotEmpty() }
+		val match = household?.let { text -> brandedHouseholdPattern.find(text) }
+		val amount = match?.groupValues?.get(1)?.toBigDecimalOrNull()?.takeIf { value -> value.signum() > 0 }
+		val measureName = match?.groupValues?.get(2)?.let { unit -> resolveImportedName(unit, null) }
+		return if (amount == null || measureName == null) {
+			null
+		} else {
+			BrandedHouseholdMatch(amount = amount, measureName = measureName)
+		}
 	}
 
 	fun pieceImportPreference(modifier: String?): Int {
@@ -95,3 +136,8 @@ internal object NutritionMeasureNames {
 		}
 	}
 }
+
+private data class BrandedHouseholdMatch(
+	val amount: BigDecimal,
+	val measureName: String,
+)

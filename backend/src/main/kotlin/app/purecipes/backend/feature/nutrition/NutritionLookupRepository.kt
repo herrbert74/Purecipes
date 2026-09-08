@@ -26,6 +26,7 @@ internal class NutritionLookupRepository(
 					id,
 					display_name,
 					normalized_name,
+					source_name,
 					calories_per_100g,
 					protein_per_100g,
 					carbohydrates_per_100g,
@@ -46,6 +47,7 @@ internal class NutritionLookupRepository(
 									id = resultSet.getInt("id"),
 									displayName = resultSet.getString("display_name"),
 									normalizedName = resultSet.getString("normalized_name"),
+									sourceName = resultSet.getString("source_name"),
 									nutrients = FdcNutrientsPer100g(
 										calories = calories,
 										protein = resultSet.getBigDecimal("protein_per_100g"),

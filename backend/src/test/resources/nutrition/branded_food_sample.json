@@ -1,0 +1,115 @@
+{
+	"BrandedFoods": [
+		{
+			"fdcId": 2000001,
+			"description":"HALLOUMI CHEESE",
+			"servingSize": 28.0,
+			"servingSizeUnit": "g",
+			"householdServingFullText": "1 oz",
+			"foodNutrients": [
+				{
+					"nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" },
+					"amount": 321
+				},
+				{
+					"nutrient": { "id": 1003, "name": "Protein", "unitName": "g" },
+					"amount": 21.4
+				},
+				{
+					"nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" },
+					"amount": 1.8
+				},
+				{
+					"nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" },
+					"amount": 25.0
+				},
+				{
+					"nutrient": { "id": 1079, "name": "Fiber, total dietary", "unitName": "g" },
+					"amount": 0
+				},
+				{
+					"nutrient": { "id": 2000, "name": "Total Sugars", "unitName": "g" },
+					"amount": 1.8
+				},
+				{
+					"nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" },
+					"amount": 1250
+				}
+			]
+		},
+		{
+			"fdcId": 2000002,
+			"description": "GRANOLA WITH CINNAMON",
+			"servingSize": 28.0,
+			"servingSizeUnit": "g",
+			"householdServingFullText": "0.25 cup",
+			"foodNutrients": [
+				{
+					"nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" },
+					"amount": 500
+				},
+				{
+					"nutrient": { "id": 1003, "name": "Protein", "unitName": "g" },
+					"amount": 10
+				},
+				{
+					"nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" },
+					"amount": 60
+				},
+				{
+					"nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" },
+					"amount": 20
+				},
+				{
+					"nutrient": { "id": 1079, "name": "Fiber, total dietary", "unitName": "g" },
+					"amount": 5
+				},
+				{
+					"nutrient": { "id": 2000, "name": "Total Sugars", "unitName": "g" },
+					"amount": 20
+				},
+				{
+					"nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" },
+					"amount": 100
+				}
+			]
+		},
+		{
+			"fdcId": 2000003,
+			"description": "GARAM MASALA",
+			"servingSize": 5.0,
+			"servingSizeUnit": "g",
+			"householdServingFullText": "1 tsp",
+			"foodNutrients": [
+				{
+					"nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" },
+					"amount": 300
+				},
+				{
+					"nutrient": { "id": 1003, "name": "Protein", "unitName": "g" },
+					"amount": 10
+				},
+				{
+					"nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" },
+					"amount": 50
+				},
+				{
+					"nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" },
+					"amount": 10
+				},
+				{
+					"nutrient": { "id": 1079, "name": "Fiber, total dietary", "unitName": "g" },
+					"amount": 20
+				},
+				{
+					"nutrient": { "id": 2000, "name": "Total Sugars", "unitName": "g" },
+					"amount": 0
+				},
+				{
+					"nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" },
+					"amount": 50
+				}
+			]
+		}
+	]
+}

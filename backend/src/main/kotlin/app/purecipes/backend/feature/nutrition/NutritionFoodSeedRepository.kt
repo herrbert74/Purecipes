@@ -48,6 +48,39 @@ internal class NutritionFoodSeedRepository(
 		}
 	}
 
+	fun deleteBrandedFoods() {
+		dataSource.connection.use { connection ->
+			connection.prepareStatement(
+				"""
+				DELETE FROM nutrition_food_aliases
+				WHERE food_id IN (
+					SELECT id FROM nutrition_foods WHERE source_name = ?
+				)
+				""".trimIndent(),
+			).use { statement ->
+				statement.setString(1, FDC_BRANDED_SOURCE_NAME)
+				statement.executeUpdate()
+			}
+			connection.prepareStatement(
+				"""
+				DELETE FROM nutrition_food_measures
+				WHERE food_id IN (
+					SELECT id FROM nutrition_foods WHERE source_name = ?
+				)
+				""".trimIndent(),
+			).use { statement ->
+				statement.setString(1, FDC_BRANDED_SOURCE_NAME)
+				statement.executeUpdate()
+			}
+			connection.prepareStatement(
+				"DELETE FROM nutrition_foods WHERE source_name = ?",
+			).use { statement ->
+				statement.setString(1, FDC_BRANDED_SOURCE_NAME)
+				statement.executeUpdate()
+			}
+		}
+	}
+
 	fun deleteUndeterminedMeasures() {
 		dataSource.connection.use { connection ->
 			connection.createStatement().use { statement ->
@@ -222,6 +255,32 @@ internal class NutritionFoodSeedRepository(
 				statement.executeQuery("SELECT COUNT(*) AS total FROM nutrition_food_aliases").use { resultSet ->
 					resultSet.next()
 					resultSet.getInt("total")
+				}
+			}
+		}
+
+	fun loadMeasurableUnmatchedParsedNames(): List<String> =
+		dataSource.connection.use { connection ->
+			connection.prepareStatement(
+				"""
+				SELECT im.parsed_name
+				FROM ingredient_measurements im
+				LEFT JOIN ingredient_nutrition_matches inm ON inm.ingredient_id = im.ingredient_id
+				WHERE im.is_measurable
+					AND im.parsed_name IS NOT NULL
+					AND TRIM(im.parsed_name) <> ''
+					AND inm.food_id IS NULL
+				""".trimIndent(),
+			).use { statement ->
+				statement.executeQuery().use { resultSet ->
+					buildList {
+						while (resultSet.next()) {
+							val parsedName = resultSet.getString("parsed_name")?.trim().orEmpty()
+							if (parsedName.isNotEmpty()) {
+								add(parsedName)
+							}
+						}
+					}
 				}
 			}
 		}

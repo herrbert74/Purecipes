@@ -107,6 +107,27 @@ class NutritionLookupIndexTest {
 		match.matchSource shouldBe "alias"
 	}
 
+	@Test
+	fun findFoodPrefersFoundationOverBrandedTokenMatch() {
+		val foundation = food(
+			id = 30,
+			displayName = "Cheese, mozzarella, whole milk",
+			normalizedName = "cheese mozzarella whole milk",
+			sourceName = FDC_FOUNDATION_SOURCE_NAME,
+		)
+		val branded = food(
+			id = 31,
+			displayName = "MOZZARELLA CHEESE",
+			normalizedName = "mozzarella cheese",
+			sourceName = FDC_BRANDED_SOURCE_NAME,
+		)
+		val index = lookupIndex(foundation, branded)
+
+		val match = index.findFood("mozzarella")
+		match.shouldNotBeNull()
+		match.foodId shouldBe 30
+	}
+
 	private fun lookupIndex(vararg foods: NutritionFoodRecord): NutritionLookupIndex =
 		NutritionLookupIndex(
 			foodById = foods.associateBy { food -> food.id },
@@ -114,11 +135,17 @@ class NutritionLookupIndexTest {
 			measuresByFoodId = emptyMap(),
 		)
 
-	private fun food(id: Int, displayName: String, normalizedName: String): NutritionFoodRecord =
+	private fun food(
+		id: Int,
+		displayName: String,
+		normalizedName: String,
+		sourceName: String = FDC_FOUNDATION_SOURCE_NAME,
+	): NutritionFoodRecord =
 		NutritionFoodRecord(
 			id = id,
 			displayName = displayName,
 			normalizedName = normalizedName,
+			sourceName = sourceName,
 			nutrients = FdcNutrientsPer100g(
 				calories = BigDecimal.ZERO,
 				protein = null,

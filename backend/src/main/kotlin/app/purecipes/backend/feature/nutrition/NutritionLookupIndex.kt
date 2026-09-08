@@ -7,6 +7,7 @@ internal data class NutritionFoodRecord(
 	val displayName: String,
 	val normalizedName: String,
 	val nutrients: FdcNutrientsPer100g,
+	val sourceName: String = FDC_FOUNDATION_SOURCE_NAME,
 )
 
 internal data class NutritionFoodMatch(
@@ -49,9 +50,12 @@ internal class NutritionLookupIndex(
 	}
 
 	private fun matchExactName(normalizedName: String): NutritionFoodMatch? {
-		val food = foodById.values.firstOrNull { candidate ->
+		val matches = foodById.values.filter { candidate ->
 			candidate.normalizedName == normalizedName
-		} ?: return null
+		}
+		val food = matches.firstOrNull { candidate -> !candidate.isBranded() }
+			?: matches.firstOrNull()
+			?: return null
 		return NutritionFoodMatch(
 			foodId = food.id,
 			matchSource = MATCH_SOURCE_NAME,
@@ -72,19 +76,27 @@ internal class NutritionLookupIndex(
 		if (queryNormalized.isBlank()) {
 			return null
 		}
-		return foodById.values
-			.mapNotNull { food ->
-				val scored = NutritionFoodNameScorer.score(queryNormalized, food.normalizedName)
-					?: return@mapNotNull null
-				scored to food
-			}
-			.maxWithOrNull(
-				compareByDescending<Pair<NutritionFoodNameScore, NutritionFoodRecord>> { it.first.score }
-					.thenBy { it.first.extraTokenCount }
-					.thenBy { it.second.normalizedName.length },
-			)
-			?.second
+		val scored = foodById.values.mapNotNull { food ->
+			val score = NutritionFoodNameScorer.score(queryNormalized, food.normalizedName)
+				?: return@mapNotNull null
+			score to food
+		}
+		return pickBestScoredFood(scored.filterNot { candidate -> candidate.second.isBranded() })
+			?: pickBestScoredFood(scored)
 	}
+
+	private fun pickBestScoredFood(
+		scored: List<Pair<NutritionFoodNameScore, NutritionFoodRecord>>,
+	): NutritionFoodRecord? =
+		scored.maxWithOrNull(
+			compareByDescending<Pair<NutritionFoodNameScore, NutritionFoodRecord>> { it.first.score }
+				.thenBy { FdcFoodMatchingSupport.sourcePriority(it.second.sourceName) }
+				.thenBy { it.first.extraTokenCount }
+				.thenBy { it.second.normalizedName.length },
+		)?.second
+
+	private fun NutritionFoodRecord.isBranded(): Boolean =
+		sourceName == FDC_BRANDED_SOURCE_NAME
 
 	companion object {
 

@@ -1,6 +1,7 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.feature.nutrition.GramWeightSource
+import app.purecipes.backend.feature.nutrition.NutritionNameNormalizer
 import app.purecipes.backend.feature.search.IngredientVocabulary
 import java.math.BigDecimal
 import java.sql.ResultSet
@@ -146,6 +147,7 @@ internal class IngredientFoodMatchReporter(
 
 	private fun classifyLine(row: IngredientFoodMatchRow): ClassifiedIngredientLine {
 		val parsedLabel = row.parsedName?.trim().orEmpty().ifBlank { row.ingredientText }
+		val groupedParsedLabel = groupedParsedName(parsedLabel)
 		val kind = when {
 			!row.hasMeasurement -> IngredientFoodMatchGapKind.NEVER_PARSED
 			!row.isMeasurable -> IngredientFoodMatchGapKind.NOT_MEASURABLE
@@ -155,8 +157,8 @@ internal class IngredientFoodMatchReporter(
 		}
 		val label = when (kind) {
 			IngredientFoodMatchGapKind.NEVER_PARSED -> row.ingredientText
-			IngredientFoodMatchGapKind.NO_GRAMS -> unresolvedGramsLabel(parsedLabel, row.unit)
-			else -> parsedLabel
+			IngredientFoodMatchGapKind.NO_GRAMS -> unresolvedGramsLabel(groupedParsedLabel, row.unit)
+			else -> groupedParsedLabel
 		}
 		return ClassifiedIngredientLine(
 			kind = kind,
@@ -252,6 +254,11 @@ private fun countsTowardMatching(
 	"ALTERNATIVE" -> alternativeGroupKey == null || seenAlternativeKeys.add(alternativeGroupKey)
 	else -> true
 }
+
+private fun groupedParsedName(parsedLabel: String): String =
+	NutritionNameNormalizer.forLookup(parsedLabel).ifBlank {
+		NutritionNameNormalizer.normalize(parsedLabel)
+	}.ifBlank { parsedLabel }
 
 private fun unresolvedGramsLabel(parsedName: String, unit: String?): String =
 	if (unit.isNullOrBlank()) {

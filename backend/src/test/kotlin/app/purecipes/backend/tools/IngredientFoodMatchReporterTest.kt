@@ -129,7 +129,7 @@ class IngredientFoodMatchReporterTest {
 		report.measureGramCount shouldBe 1
 		report.densityGramCount shouldBe 1
 		report.neverParsedNames.map { it.label } shouldContain "never parsed line"
-		report.notMeasurableNames.map { it.label } shouldContain "Salt to taste"
+		report.notMeasurableNames.map { it.label } shouldContain "salt taste"
 		report.unmatchedNames.map { it.label } shouldContain "mystery spice"
 		report.unresolvedGramsNames.map { it.label } shouldContain "olive oil (cup)"
 		report.missingNutritionCount shouldBe 1
@@ -177,6 +177,49 @@ class IngredientFoodMatchReporterTest {
 		report.scrapedNutritionCount shouldBe 1
 		report.scrapedRecipes.single() shouldBe "Recipe $recipeId: Scraped pie"
 		report.partialEstimateCount shouldBe 1
+	}
+
+	@Test
+	fun collectGroupsParsedNamesByNormalisedLookup() {
+		val db = createInMemoryDb("ingredient_food_match_normalised")
+		val dataSource = db.dataSource
+		val recipeId = insertRecipe(
+			dataSource = dataSource,
+			title = "Halloumi recipe",
+			ingredients = listOf(
+				ReportTestIngredient("100 g Halloumi"),
+				ReportTestIngredient("50 g halloumi"),
+			),
+		)
+		val ingredientIds = loadIngredientIds(dataSource, recipeId)
+		insertMeasurement(
+			dataSource,
+			MeasurementInsert(
+				ingredientId = ingredientIds[0],
+				rawText = "100 g Halloumi",
+				quantity = BigDecimal("100"),
+				unit = "g",
+				parsedName = "Halloumi",
+				isMeasurable = true,
+			),
+		)
+		insertMeasurement(
+			dataSource,
+			MeasurementInsert(
+				ingredientId = ingredientIds[1],
+				rawText = "50 g halloumi",
+				quantity = BigDecimal("50"),
+				unit = "g",
+				parsedName = "halloumi",
+				isMeasurable = true,
+			),
+		)
+
+		val report = IngredientFoodMatchReporter(dataSource).collect()
+
+		report.noFoodCount shouldBe 2
+		report.unmatchedNames.single().label shouldBe "halloumi"
+		report.unmatchedNames.single().count shouldBe 2
 	}
 
 	@Test

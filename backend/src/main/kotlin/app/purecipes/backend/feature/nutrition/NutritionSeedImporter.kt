@@ -11,6 +11,8 @@ internal data class NutritionSeedImportResult(
 	val catalogueAliasesImported: Int,
 	val extraAliasesImported: Int,
 	val unmatchedCatalogueNames: List<String>,
+	val foodsScanned: Int = foodsImported + foodsSkipped,
+	val neededNameMatches: Map<String, String> = emptyMap(),
 )
 
 internal class NutritionSeedImporter(
@@ -23,21 +25,52 @@ internal class NutritionSeedImporter(
 		dryRun: Boolean,
 		seedCatalogueAliases: Boolean,
 	): NutritionSeedImportResult {
-		val parseResult = FdcFoodDataJsonParser.parse(fdcJsonFile)
+		val dataset = FdcFoodDataJsonParser.peekDataset(fdcJsonFile)
+		if (dataset == FdcFoodDataset.BRANDED && replaceExisting) {
+			error("Do not use replace when importing Branded Foods; that would delete Foundation and SR Legacy foods.")
+		}
+		if (dataset == FdcFoodDataset.BRANDED && !dryRun) {
+			repository.deleteBrandedFoods()
+		}
+		val neededQueries = if (dataset == FdcFoodDataset.BRANDED) {
+			BrandedFoodNeedCollector.collect(repository)
+		} else {
+			null
+		}
+		if (dataset == FdcFoodDataset.BRANDED && neededQueries.isNullOrEmpty()) {
+			return NutritionSeedImportResult(
+				dataset = dataset,
+				foodsImported = 0,
+				foodsSkipped = 0,
+				measuresImported = 0,
+				catalogueAliasesImported = 0,
+				extraAliasesImported = 0,
+				unmatchedCatalogueNames = emptyList(),
+				foodsScanned = 0,
+			)
+		}
+		val parseResult = FdcFoodDataJsonParser.parse(fdcJsonFile, neededQueries)
 		val parsedFoods = parseResult.foods
+		val shouldSeedCatalogueAliases = seedCatalogueAliases && dataset != FdcFoodDataset.BRANDED
 		return when {
-			parsedFoods.isEmpty() -> emptyResult(parseResult.dataset, seedCatalogueAliases)
+			parsedFoods.isEmpty() && dataset != FdcFoodDataset.BRANDED ->
+				emptyResult(parseResult.dataset, shouldSeedCatalogueAliases)
+
 			dryRun -> dryRunImport(
 				dataset = parseResult.dataset,
 				parsedFoods = parsedFoods,
-				seedCatalogueAliases = seedCatalogueAliases,
+				seedCatalogueAliases = shouldSeedCatalogueAliases,
+				foodsScanned = parseResult.foodsScanned,
+				neededNameMatches = parseResult.neededNameMatches,
 			)
 
 			else -> importParsedFoods(
 				dataset = parseResult.dataset,
 				parsedFoods = parsedFoods,
 				replaceExisting = replaceExisting,
-				seedCatalogueAliases = seedCatalogueAliases,
+				seedCatalogueAliases = shouldSeedCatalogueAliases,
+				foodsScanned = parseResult.foodsScanned,
+				neededNameMatches = parseResult.neededNameMatches,
 			)
 		}
 	}
@@ -47,6 +80,8 @@ internal class NutritionSeedImporter(
 		parsedFoods: List<FdcFoundationFood>,
 		replaceExisting: Boolean,
 		seedCatalogueAliases: Boolean,
+		foodsScanned: Int,
+		neededNameMatches: Map<String, String>,
 	): NutritionSeedImportResult {
 		if (replaceExisting) {
 			repository.replaceSeedData()
@@ -94,6 +129,9 @@ internal class NutritionSeedImporter(
 		} else {
 			AliasSeedResult.empty()
 		}
+		if (dataset == FdcFoodDataset.BRANDED) {
+			seedNeededNameAliases(parsedFoods = parsedFoods, neededNameMatches = neededNameMatches)
+		}
 
 		return NutritionSeedImportResult(
 			dataset = dataset,
@@ -103,6 +141,8 @@ internal class NutritionSeedImporter(
 			catalogueAliasesImported = aliasResult.catalogueAliasesImported,
 			extraAliasesImported = aliasResult.extraAliasesImported,
 			unmatchedCatalogueNames = aliasResult.unmatchedCatalogueNames,
+			foodsScanned = foodsScanned,
+			neededNameMatches = neededNameMatches,
 		)
 	}
 
@@ -110,6 +150,8 @@ internal class NutritionSeedImporter(
 		dataset: FdcFoodDataset,
 		parsedFoods: List<FdcFoundationFood>,
 		seedCatalogueAliases: Boolean,
+		foodsScanned: Int,
+		neededNameMatches: Map<String, String>,
 	): NutritionSeedImportResult {
 		val foodsWithNutrients = parsedFoods.count { it.nutrientsPer100g() != null }
 		val aliasResult = if (seedCatalogueAliases) {
@@ -127,6 +169,8 @@ internal class NutritionSeedImporter(
 			catalogueAliasesImported = aliasResult.catalogueAliasesImported,
 			extraAliasesImported = aliasResult.extraAliasesImported,
 			unmatchedCatalogueNames = aliasResult.unmatchedCatalogueNames,
+			foodsScanned = foodsScanned,
+			neededNameMatches = neededNameMatches,
 		)
 	}
 
@@ -173,6 +217,18 @@ internal class NutritionSeedImporter(
 			extraAliasesImported = extraAliasesImported,
 			unmatchedCatalogueNames = unmatchedCatalogueNames,
 		)
+	}
+
+	private fun seedNeededNameAliases(
+		parsedFoods: List<FdcFoundationFood>,
+		neededNameMatches: Map<String, String>,
+	) {
+		val foodByDescription = parsedFoods.associateBy { food -> food.description }
+		neededNameMatches.forEach { (query, description) ->
+			val matchedFood = foodByDescription[description] ?: return@forEach
+			val foodId = repository.findFoodId(matchedFood.sourceName, matchedFood.fdcId) ?: return@forEach
+			repository.upsertAlias(foodId = foodId, alias = query)
+		}
 	}
 
 	private fun emptyResult(dataset: FdcFoodDataset, seedCatalogueAliases: Boolean): NutritionSeedImportResult =

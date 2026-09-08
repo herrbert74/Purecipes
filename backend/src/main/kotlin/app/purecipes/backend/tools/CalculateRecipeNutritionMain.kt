@@ -1,8 +1,8 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.db.Db
-import app.purecipes.backend.feature.nutrition.IngredientNutritionIssue
 import app.purecipes.backend.feature.nutrition.IngredientNutritionIssueKind
+import app.purecipes.backend.feature.nutrition.NutritionNameNormalizer
 import app.purecipes.backend.feature.nutrition.RecipeNutritionPersistResult
 import app.purecipes.backend.feature.nutrition.RecipeNutritionService
 
@@ -105,7 +105,7 @@ private fun printUnmatchedIngredientReport(results: List<RecipeNutritionPersistR
 	val unmatchedCounts = results
 		.flatMap(RecipeNutritionPersistResult::issues)
 		.filter { issue -> issue.kind == IngredientNutritionIssueKind.NO_FOOD_MATCH }
-		.groupingBy(IngredientNutritionIssue::parsedName)
+		.groupingBy { issue -> groupedParsedName(issue.parsedName) }
 		.eachCount()
 		.toList()
 		.sortedWith(compareByDescending<Pair<String, Int>> { it.second }.thenBy { it.first })
@@ -138,3 +138,8 @@ private fun readArgumentValue(args: Array<String>, key: String): String? {
 		.firstOrNull { it.first() == key }
 		?.last()
 }
+
+private fun groupedParsedName(parsedName: String): String =
+	NutritionNameNormalizer.forLookup(parsedName).ifBlank {
+		NutritionNameNormalizer.normalize(parsedName)
+	}.ifBlank { parsedName }

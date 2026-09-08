@@ -7,5 +7,6 @@ internal object FdcNutrientIds {
 	const val FAT = 1004
 	const val FIBER = 1079
 	const val SUGAR = 1063
+	const val TOTAL_SUGARS = 2000
 	const val SODIUM = 1093
 }
