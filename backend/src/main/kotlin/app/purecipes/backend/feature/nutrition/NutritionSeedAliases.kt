@@ -100,6 +100,8 @@ internal object NutritionSeedAliases {
 	private const val MUSTARD_DESCRIPTION = "Mustard, prepared, yellow"
 	private const val MUSHROOM_DESCRIPTION = "Mushrooms, white, raw"
 	private const val OAT_MILK_DESCRIPTION = "Oat milk, unsweetened, plain, refrigerated"
+	private const val OAT_MILK_SURVEY_DESCRIPTION = "Oat milk"
+	private const val COCONUT_YOGURT_DESCRIPTION = "Yogurt, coconut milk"
 	private const val OLIVE_OIL_DESCRIPTION = "Oil, olive, extra virgin"
 	private const val OLIVE_OIL_FALLBACK_DESCRIPTION = "Oil, olive, salad or cooking"
 	private const val OLIVE_DESCRIPTION = "Olives, ripe, canned (small-extra large)"
@@ -206,6 +208,8 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("cloves", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("cocoa powder", COCOA_DESCRIPTION),
 		NutritionSeedAlias("coconut milk", COCONUT_MILK_DESCRIPTION),
+		NutritionSeedAlias("coconut yoghurt", COCONUT_YOGURT_DESCRIPTION),
+		NutritionSeedAlias("coconut yogurt", COCONUT_YOGURT_DESCRIPTION),
 		NutritionSeedAlias("corn on the cob", CORN_COB_DESCRIPTION),
 		NutritionSeedAlias("cornflour", CORNSTARCH_DESCRIPTION),
 		NutritionSeedAlias("cornstarch", CORNSTARCH_DESCRIPTION),
@@ -292,7 +296,7 @@ internal object NutritionSeedAliases {
 		NutritionSeedAlias("miso paste", MISO_DESCRIPTION),
 		NutritionSeedAlias("morton kosher salt", SALT_DESCRIPTION),
 		NutritionSeedAlias("neutral oil", CANOLA_OIL_DESCRIPTION),
-		NutritionSeedAlias("oat milk", OAT_MILK_DESCRIPTION),
+		NutritionSeedAlias("oat milk", OAT_MILK_DESCRIPTION, OAT_MILK_SURVEY_DESCRIPTION),
 		NutritionSeedAlias("olive oil", OLIVE_OIL_DESCRIPTION, OLIVE_OIL_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("onion", ONION_DESCRIPTION),
 		NutritionSeedAlias("onions", ONION_DESCRIPTION),

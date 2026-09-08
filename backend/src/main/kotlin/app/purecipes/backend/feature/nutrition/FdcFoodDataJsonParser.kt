@@ -76,7 +76,8 @@ internal object FdcFoodDataJsonParser {
 	private fun datasetFromHeader(header: String): FdcFoodDataset =
 		FdcFoodDataset.entries.firstOrNull { dataset -> header.contains("\"${dataset.jsonRootKey}\"") }
 			?: error(
-				"Unrecognized FDC JSON file. Expected FoundationFoods, SRLegacyFoods, or BrandedFoods root array.",
+				"Unrecognized FDC JSON file. Expected FoundationFoods, SRLegacyFoods, " +
+					"SurveyFoods, or BrandedFoods root array.",
 			)
 
 	private fun JsonElement.toFoundationFoodOrNull(sourceName: String): FdcFoundationFood? {
@@ -129,23 +130,41 @@ internal object FdcFoodDataJsonParser {
 	}
 
 	private fun JsonElement.toRankedFoodPortionOrNull(): RankedFoodPortion? {
-		val portionObject = jsonObjectOrNull() ?: return null
+		val portionObject = jsonObjectOrNull()
+		if (portionObject == null) {
+			return null
+		}
 		val measureUnitName = portionObject["measureUnit"]?.jsonObjectOrNull()?.stringValue("name")
 		val modifier = portionObject.stringValue("modifier")
-		val measureName = NutritionMeasureNames.resolveImportedName(measureUnitName, modifier)
 		val gramWeight = portionObject.decimalValue("gramWeight")
-		return if (measureName == null || gramWeight == null) {
-			null
+		val measureName = NutritionMeasureNames.resolveImportedName(measureUnitName, modifier)
+		val surveyPortion = if (measureName == null) {
+			NutritionMeasureNames.surveyPortionFromDescription(
+				portionDescription = portionObject.stringValue("portionDescription"),
+				gramWeight = gramWeight,
+			)
 		} else {
-			RankedFoodPortion(
-				preference = NutritionMeasureNames.pieceImportPreference(modifier),
-				portion = FdcFoodPortion(
+			null
+		}
+		val portion = when {
+			measureName != null && gramWeight != null ->
+				FdcFoodPortion(
 					measureName = measureName,
 					gramsPerMeasure = NutritionMeasureNames.gramsPerSingleMeasure(
 						gramWeight = gramWeight,
 						amount = portionObject.decimalValue("amount"),
 					),
-				),
+				)
+
+			surveyPortion != null -> surveyPortion
+			else -> null
+		}
+		return portion?.let { resolved ->
+			RankedFoodPortion(
+				preference = NutritionMeasureNames.pieceImportPreference(modifier)
+					.takeIf { measureName != null }
+					?: NutritionMeasureNames.pieceImportPreference(resolved.measureName),
+				portion = resolved,
 			)
 		}
 	}

@@ -27,6 +27,7 @@ internal object NutritionNameNormalizer {
 		"homemade",
 		"juiced",
 		"large",
+		"leaves",
 		"lightly",
 		"medium",
 		"melted",
@@ -42,9 +43,43 @@ internal object NutritionNameNormalizer {
 		"smoked",
 		"softened",
 		"squeezed",
+		"stems",
 		"temperature",
 		"thinly",
 		"torn",
+	)
+
+	private val measureLeftoverTokens = setOf(
+		"about",
+		"and",
+		"approx",
+		"approximately",
+		"each",
+		"fluid",
+		"gram",
+		"grams",
+		"kilo",
+		"kilogram",
+		"kilograms",
+		"liter",
+		"liters",
+		"litre",
+		"litres",
+		"milliliter",
+		"milliliters",
+		"millilitre",
+		"millilitres",
+		"only",
+		"or",
+		"ounce",
+		"ounces",
+		"plus",
+		"pound",
+		"pounds",
+		"tender",
+		"total",
+		"weight",
+		"with",
 	)
 
 	fun normalize(value: String): String =
@@ -56,7 +91,9 @@ internal object NutritionNameNormalizer {
 	fun forLookup(value: String): String {
 		val withoutClause = SUCH_AS_CLAUSE.replace(value.substringBefore(';').trim(), "").trim()
 		val normalized = normalize(withoutClause)
-		val lookupTokens = tokens(normalized).filterNot { token -> token in preparationTokens }
+		val lookupTokens = tokens(normalized).filterNot { token ->
+			token in preparationTokens || token in measureLeftoverTokens
+		}
 		return lookupTokens.joinToString(" ").ifBlank { normalized }
 	}
 

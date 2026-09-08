@@ -21,6 +21,7 @@ For the seed importer (feature 14, step 4), download from FoodData Central:
 
 - **Foundation Foods** (preferred first subset)
 - **SR Legacy** (optional, for broader generic foods)
+- **Survey / FNDDS** (optional, useful recipe-style names such as oat milk)
 - **Branded Foods** (optional fallback for unmatched recipe names such as halloumi or garam masala)
 
 Keep only MVP nutrients: calories, protein, carbohydrates, fat, fibre, sugar, and sodium. Normalize to canonical foods per 100 g.
@@ -31,14 +32,15 @@ Downloads are not committed to the repository; the importer reads local JSON pat
 
 Run against a Postgres database configured with the usual `PURECIPES_DB_*` environment variables.
 
-The importer auto-detects `FoundationFoods`, `SRLegacyFoods`, or `BrandedFoods` from the JSON root key. Import **SR Legacy first**, then **Foundation** (do not use `-Pnutrition.replace=true` on the second run). Catalogue aliases are reseeded after each Foundation/SR import using all foods in the database; Foundation wins ties over SR Legacy for the same `fdcId`.
+The importer auto-detects `FoundationFoods`, `SRLegacyFoods`, `SurveyFoods`, or `BrandedFoods` from the JSON root key. Import **SR Legacy first**, then **Foundation**, then optional **Survey** (do not use `-Pnutrition.replace=true` after the first clear). Catalogue aliases are reseeded after each Foundation/SR/Survey import using all foods in the database; Foundation wins ties over SR Legacy, then Survey, then branded products.
 
 ```bash
 ./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.replace=true
 ./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_foundation_food_json_2026-04-30.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/surveyDownload.json
 ```
 
-The first command clears nutrition seed tables. The second adds Foundation foods and refreshes aliases.
+The first command clears nutrition seed tables. Later commands add foods and refresh aliases. Survey (FNDDS) is small enough to import in full; household measures are read from `portionDescription` values such as `1 cup` and `1 fl oz`.
 
 After recipe nutrition has been calculated at least once, import only the branded foods needed to fill remaining unmatched measurable names. The 3 GB branded dump is streamed; the importer does not load every branded product. Each branded import first removes previous `fdc_branded` rows, then keeps only close name matches (description starts with the needed name, contiguous multi-word phrases, and few extra description tokens):
 
@@ -106,6 +108,7 @@ Run `calculateRecipeNutrition` first when you want the report to reflect a fresh
 ```bash
 ./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.replace=true
 ./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_foundation_food_json_2026-04-30.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/surveyDownload.json
 ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
 ./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_branded_food_json_2026-04-30.json
 ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true

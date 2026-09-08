@@ -38,6 +38,20 @@ class FdcFoodDataJsonParserTest {
 	}
 
 	@Test
+	fun parseReadsSurveyFoodsAndPortionDescriptions() {
+		val sampleFile = File("src/test/resources/nutrition/survey_food_sample.json")
+		val parseResult = FdcFoodDataJsonParser.parse(sampleFile)
+
+		parseResult.dataset shouldBe FdcFoodDataset.SURVEY
+		parseResult.foods shouldHaveSize 2
+		val oatMilk = parseResult.foods.single { food -> food.description == "Oat milk" }
+		oatMilk.sourceName shouldBe FDC_SURVEY_SOURCE_NAME
+		oatMilk.portions.map { portion -> portion.measureName }.toSet() shouldBe setOf("cup", "ml")
+		oatMilk.portions.single { portion -> portion.measureName == "cup" }.gramsPerMeasure shouldBe
+			BigDecimal("240.0000")
+	}
+
+	@Test
 	fun parseRejectsBrandedFoodsWithoutContiguousPhrase() {
 		val sampleFile = File("src/test/resources/nutrition/branded_food_sample.json")
 		val parseResult = FdcFoodDataJsonParser.parse(

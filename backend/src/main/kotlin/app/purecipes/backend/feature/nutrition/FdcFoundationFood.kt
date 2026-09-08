@@ -4,6 +4,7 @@ import java.math.BigDecimal
 
 internal const val FDC_FOUNDATION_SOURCE_NAME = "fdc_foundation"
 internal const val FDC_SR_LEGACY_SOURCE_NAME = "fdc_sr_legacy"
+internal const val FDC_SURVEY_SOURCE_NAME = "fdc_survey"
 internal const val FDC_BRANDED_SOURCE_NAME = "fdc_branded"
 
 internal enum class FdcFoodDataset(
@@ -21,6 +22,11 @@ internal enum class FdcFoodDataset(
 		jsonRootKey = "SRLegacyFoods",
 		sourceName = FDC_SR_LEGACY_SOURCE_NAME,
 		sourceMetadata = """{"dataType":"SR Legacy"}""",
+	),
+	SURVEY(
+		jsonRootKey = "SurveyFoods",
+		sourceName = FDC_SURVEY_SOURCE_NAME,
+		sourceMetadata = """{"dataType":"Survey (FNDDS)"}""",
 	),
 	BRANDED(
 		jsonRootKey = "BrandedFoods",

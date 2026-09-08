@@ -235,4 +235,40 @@ class IngredientLineParserTest {
 		parsed.parsedName shouldBe "Plum Tomatoes"
 		parsed.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseReadsWordQuantityAndLabeledOuncePacks() {
+		val hyphenated = IngredientLineParser.parse("one 14-ounce can coconut milk")
+		hyphenated.quantity shouldBe BigDecimal("14")
+		hyphenated.unit shouldBe "oz"
+		hyphenated.parsedName shouldBe "coconut milk"
+		hyphenated.isMeasurable shouldBe true
+
+		val spaced = IngredientLineParser.parse("one 15 ounce can black beans")
+		spaced.quantity shouldBe BigDecimal("15")
+		spaced.unit shouldBe "oz"
+		spaced.parsedName shouldBe "black beans"
+		spaced.isMeasurable shouldBe true
+
+		val twoPacks = IngredientLineParser.parse("two 14-ounce cans chickpeas")
+		twoPacks.quantity shouldBe BigDecimal("28")
+		twoPacks.unit shouldBe "oz"
+		twoPacks.parsedName shouldBe "chickpeas"
+		twoPacks.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseReadsTrailingAndParentheticalAboutAmounts() {
+		val trailing = IngredientLineParser.parse("Yellow onion, about 8 ounces")
+		trailing.quantity shouldBe BigDecimal("8")
+		trailing.unit shouldBe "oz"
+		trailing.parsedName shouldBe "Yellow onion"
+		trailing.isMeasurable shouldBe true
+
+		val parenthetical = IngredientLineParser.parse("Boneless chicken breasts (about 12 ounces)")
+		parenthetical.quantity shouldBe BigDecimal("12")
+		parenthetical.unit shouldBe "oz"
+		parenthetical.parsedName shouldBe "Boneless chicken breasts"
+		parenthetical.isMeasurable shouldBe true
+	}
 }

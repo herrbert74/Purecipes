@@ -14,6 +14,8 @@ internal object NutritionMeasureNames {
 	private const val PEPPER_PREFERENCE = 55
 	private val parentheticalPattern = Regex("""\([^)]*\)""")
 	private val brandedHouseholdPattern = Regex("""^\s*(\d+(?:\.\d+)?)\s+([A-Za-z]+)\b""")
+	private val surveyPortionPattern = Regex("""^\s*(\d+(?:\.\d+)?)\s+(.+)$""")
+	private val flOzMl = BigDecimal("29.5735")
 	private val householdUnits = setOf(
 		"ml",
 		"l",
@@ -72,6 +74,64 @@ internal object NutritionMeasureNames {
 			BrandedHouseholdMatch(amount = amount, measureName = measureName)
 		}
 	}
+
+	fun surveyPortionFromDescription(
+		portionDescription: String?,
+		gramWeight: BigDecimal?,
+	): FdcFoodPortion? {
+		val parsed = parseSurveyPortion(portionDescription, gramWeight) ?: return null
+		val gramsPerMeasure = if (parsed.fluidOunce) {
+			gramWeight!!.divide(parsed.amount.multiply(flOzMl), GRAMS_SCALE, RoundingMode.HALF_UP)
+		} else {
+			gramsPerSingleMeasure(gramWeight!!, parsed.amount)
+		}
+		return FdcFoodPortion(measureName = parsed.measureName, gramsPerMeasure = gramsPerMeasure)
+	}
+
+	private fun parseSurveyPortion(
+		portionDescription: String?,
+		gramWeight: BigDecimal?,
+	): SurveyPortionParse? {
+		val hasWeight = gramWeight != null && gramWeight.signum() > 0
+		val raw = portionDescription?.trim()?.takeIf { value -> value.isNotEmpty() }
+		if (!hasWeight || raw == null || isIgnoredSurveyPortion(raw)) {
+			return null
+		}
+		val match = surveyPortionPattern.find(raw)
+		val amount = match?.groupValues?.get(1)?.toBigDecimalOrNull()?.takeIf { value -> value.signum() > 0 }
+		val measureText = match?.groupValues?.get(2)?.let(::normalizeSurveyMeasureText)
+		val fluidOunce = measureText != null && isFluidOunceMeasure(measureText)
+		val measureName = surveyMeasureName(measureText, fluidOunce)
+		return if (amount == null || measureName == null) {
+			null
+		} else {
+			SurveyPortionParse(
+				amount = amount,
+				measureName = measureName,
+				fluidOunce = fluidOunce,
+			)
+		}
+	}
+
+	private fun isIgnoredSurveyPortion(raw: String): Boolean =
+		raw.startsWith("Quantity not specified", ignoreCase = true) ||
+			raw.startsWith("Guideline", ignoreCase = true)
+
+	private fun normalizeSurveyMeasureText(text: String): String =
+		parentheticalPattern.replace(text, " ").substringBefore(',').trim().lowercase()
+
+	private fun isFluidOunceMeasure(measureText: String): Boolean =
+		measureText.startsWith("fl oz") ||
+			measureText.startsWith("fluid oz") ||
+			measureText.startsWith("fluid ounce")
+
+	private fun surveyMeasureName(measureText: String?, fluidOunce: Boolean): String? =
+		when {
+			measureText == null -> null
+			fluidOunce -> "ml"
+			else -> resolveImportedName(measureText.substringBefore(' '), null)
+				?: resolveImportedName(measureText, null)
+		}
 
 	fun pieceImportPreference(modifier: String?): Int {
 		val raw = modifier?.trim()?.lowercase().orEmpty()
@@ -140,4 +200,10 @@ internal object NutritionMeasureNames {
 private data class BrandedHouseholdMatch(
 	val amount: BigDecimal,
 	val measureName: String,
+)
+
+private data class SurveyPortionParse(
+	val amount: BigDecimal,
+	val measureName: String,
+	val fluidOunce: Boolean,
 )

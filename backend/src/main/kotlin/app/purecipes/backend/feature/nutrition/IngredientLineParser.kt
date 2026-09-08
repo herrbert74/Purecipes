@@ -61,6 +61,33 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val hyphenatedPackPattern = Regex(
+		"""^($QUANTITY_PATTERN)\s*-\s*(ounces?|oz|pounds?|lbs?)\b""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val spacedPackPattern = Regex(
+		"""^($QUANTITY_PATTERN)\s+(ounces?|oz|pounds?|lbs?)\b""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val aboutAmountPattern = Regex(
+		"""^(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val trailingAboutAmountPattern = Regex(
+		"""(?:,\s*)?(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val wordQuantities = mapOf(
+		"a" to BigDecimal.ONE,
+		"an" to BigDecimal.ONE,
+		"one" to BigDecimal.ONE,
+		"two" to BigDecimal("2"),
+	)
+
 	private val sizeTokens = setOf(
 		"large",
 		"small",
@@ -203,6 +230,14 @@ internal object IngredientLineParser {
 				rest = parentheticalMeasure.parsedName
 			}
 		}
+		if (unit == null) {
+			val trailingMeasure = findTrailingAboutMeasure(rest)
+			if (trailingMeasure != null) {
+				quantity = trailingMeasure.quantity
+				unit = trailingMeasure.unit
+				rest = trailingMeasure.parsedName
+			}
+		}
 
 		if (unit == null) {
 			unit = inferCountUnit(rest)
@@ -247,30 +282,67 @@ internal object IngredientLineParser {
 				rest = value.substring(leadingParenthetical.range.last + 1).trim(),
 			)
 		}
-		val leadingQuantity = leadingQuantityPattern.find(value)
-		val quantity = leadingQuantity?.let { match -> parseQuantity(match.groupValues[1]) }
+		val leadingWordQuantity = consumeLeadingWordQuantity(value)
+		val labeledPack = consumeLabeledPack(leadingWordQuantity.rest)
+		val leadingQuantity = leadingQuantityPattern.find(leadingWordQuantity.rest)
+		val digitQuantity = leadingQuantity?.let { match -> parseQuantity(match.groupValues[1]) }
+		val quantity = digitQuantity ?: leadingWordQuantity.quantity
 		val afterQuantity = if (leadingQuantity == null) {
-			value
+			leadingWordQuantity.rest
 		} else {
-			value.substring(leadingQuantity.range.last + 1).trim()
+			leadingWordQuantity.rest.substring(leadingQuantity.range.last + 1).trim()
 		}
-		val pack = consumePackQuantity(
+		val timesPack = consumePackQuantity(
 			value = afterQuantity,
 			allowImplicit = quantity != null,
 		)
-		return if (pack == null) {
-			LeadingAmount(
+		return when {
+			labeledPack != null -> LeadingAmount(
+				quantity = (leadingWordQuantity.quantity ?: BigDecimal.ONE).multiply(labeledPack.quantity),
+				unit = labeledPack.unit,
+				rest = labeledPack.rest,
+			)
+
+			timesPack != null -> LeadingAmount(
+				quantity = (quantity ?: BigDecimal.ONE).multiply(timesPack.quantity),
+				unit = timesPack.unit,
+				rest = timesPack.rest,
+			)
+
+			else -> LeadingAmount(
 				quantity = quantity,
 				unit = null,
 				rest = afterQuantity,
 			)
-		} else {
-			val packCount = quantity ?: BigDecimal.ONE
-			LeadingAmount(
-				quantity = packCount.multiply(pack.quantity),
-				unit = pack.unit,
-				rest = pack.rest,
+		}
+	}
+
+	private fun consumeLeadingWordQuantity(value: String): LeadingAmount {
+		val token = firstToken(value).lowercase()
+		val quantity = wordQuantities[token] ?: return LeadingAmount(
+			quantity = null,
+			unit = null,
+			rest = value,
+		)
+		return LeadingAmount(
+			quantity = quantity,
+			unit = null,
+			rest = dropFirstWord(value),
+		)
+	}
+
+	private fun consumeLabeledPack(value: String): PackQuantity? {
+		val match = hyphenatedPackPattern.find(value) ?: spacedPackPattern.find(value) ?: return null
+		val quantity = parseQuantity(match.groupValues[1])
+		val unit = normalizeUnit(match.groupValues[2])
+		return if (quantity != null && unit != null && unit in packUnits) {
+			PackQuantity(
+				quantity = quantity,
+				unit = unit,
+				rest = value.substring(match.range.last + 1).trim(),
 			)
+		} else {
+			null
 		}
 	}
 
@@ -333,7 +405,7 @@ internal object IngredientLineParser {
 	private fun findParentheticalMeasure(value: String): ParsedIngredientLine? {
 		parentheticalPattern.findAll(value).forEach { match ->
 			val inner = canonicalizeLine(match.groupValues[1])
-			val innerMatch = innerAmountPattern.find(inner) ?: return@forEach
+			val innerMatch = aboutAmountPattern.find(inner) ?: innerAmountPattern.find(inner) ?: return@forEach
 			val quantity = parseQuantity(innerMatch.groupValues[1]) ?: return@forEach
 			val unit = normalizeUnit(innerMatch.groupValues[2]) ?: return@forEach
 			if (unit !in consumedUnits && unit !in knownUnits) {
@@ -349,6 +421,27 @@ internal object IngredientLineParser {
 			)
 		}
 		return null
+	}
+
+	private fun findTrailingAboutMeasure(value: String): ParsedIngredientLine? {
+		val match = trailingAboutAmountPattern.find(value) ?: return null
+		val quantity = parseQuantity(match.groupValues[1])
+		val unit = normalizeUnit(match.groupValues[2])
+		val usable = quantity != null &&
+			unit != null &&
+			(unit in consumedUnits || unit in knownUnits)
+		return if (!usable) {
+			null
+		} else {
+			val parsedName = value.replaceRange(match.range, " ").replace(extraWhitespacePattern, " ").trim()
+			ParsedIngredientLine(
+				rawText = value,
+				quantity = quantity,
+				unit = unit,
+				parsedName = parsedName.ifBlank { value },
+				isMeasurable = true,
+			)
+		}
 	}
 
 	private fun inferCountUnit(parsedName: String): String? {

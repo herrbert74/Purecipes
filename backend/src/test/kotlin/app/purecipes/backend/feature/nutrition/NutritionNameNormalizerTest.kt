@@ -21,4 +21,13 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("double-concentrated tomato paste") shouldBe "double tomato paste"
 		NutritionNameNormalizer.forLookup("chickpeas, drained") shouldBe "chickpeas"
 	}
+
+	@Test
+	fun forLookupStripsMeasureLeftoversAndLeafStemWords() {
+		NutritionNameNormalizer.forLookup("yellow onion about 8 ounces") shouldBe "yellow onion"
+		NutritionNameNormalizer.forLookup("unsalted butter ounces") shouldBe "unsalted butter"
+		NutritionNameNormalizer.forLookup("parsley leaves") shouldBe "parsley"
+		NutritionNameNormalizer.forLookup("cilantro leaves and tender stems") shouldBe "cilantro"
+		NutritionNameNormalizer.forLookup("bay leaves") shouldBe "bay"
+	}
 }

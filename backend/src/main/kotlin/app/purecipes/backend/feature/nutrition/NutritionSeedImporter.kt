@@ -29,6 +29,9 @@ internal class NutritionSeedImporter(
 		if (dataset == FdcFoodDataset.BRANDED && replaceExisting) {
 			error("Do not use replace when importing Branded Foods; that would delete Foundation and SR Legacy foods.")
 		}
+		if (dataset == FdcFoodDataset.SURVEY && replaceExisting) {
+			error("Do not use replace when importing Survey foods; that would delete Foundation and SR Legacy foods.")
+		}
 		if (dataset == FdcFoodDataset.BRANDED && !dryRun) {
 			repository.deleteBrandedFoods()
 		}
