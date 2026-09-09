@@ -607,5 +607,393 @@ class IngredientLineParserTest {
 		cloveOnly.unit shouldBe "clove"
 		cloveOnly.parsedName shouldBe "garlic"
 		cloveOnly.isMeasurable shouldBe true
+
+		val graterCloves = IngredientLineParser.parse("4 cloves the small side of a box grater")
+		graterCloves.quantity shouldBe BigDecimal("4")
+		graterCloves.unit shouldBe "clove"
+		graterCloves.parsedName shouldBe "garlic"
+		graterCloves.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseKeepsWholeClovesAsSpiceInsteadOfOrphaningWhole() {
+		val counted = IngredientLineParser.parse("4 whole cloves")
+		counted.quantity shouldBe BigDecimal("4")
+		counted.unit shouldBe "tsp"
+		counted.parsedName shouldBe "whole cloves"
+		counted.isMeasurable shouldBe true
+
+		val bare = IngredientLineParser.parse("whole cloves")
+		bare.quantity shouldBe BigDecimal.ONE
+		bare.unit shouldBe "tsp"
+		bare.parsedName shouldBe "whole cloves"
+		bare.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseCountsWholeChickenLegsAndContainersAsPiece() {
+		val chicken = IngredientLineParser.parse("chicken")
+		chicken.quantity shouldBe BigDecimal.ONE
+		chicken.unit shouldBe "piece"
+		chicken.isMeasurable shouldBe true
+
+		val wholeChicken = IngredientLineParser.parse("whole chicken")
+		wholeChicken.unit shouldBe "piece"
+		wholeChicken.isMeasurable shouldBe true
+
+		val roasting = IngredientLineParser.parse("roasting chickens")
+		roasting.unit shouldBe "piece"
+		roasting.isMeasurable shouldBe true
+
+		val leg = IngredientLineParser.parse("chicken leg")
+		leg.unit shouldBe "piece"
+		leg.isMeasurable shouldBe true
+
+		val countedLegs = IngredientLineParser.parse("2 chicken legs")
+		countedLegs.quantity shouldBe BigDecimal("2")
+		countedLegs.unit shouldBe "piece"
+		countedLegs.isMeasurable shouldBe true
+
+		val mozzarella = IngredientLineParser.parse("ball mozzarella")
+		mozzarella.quantity shouldBe BigDecimal.ONE
+		mozzarella.unit shouldBe "piece"
+		mozzarella.parsedName shouldBe "mozzarella"
+		mozzarella.isMeasurable shouldBe true
+
+		val halloumi = IngredientLineParser.parse("1 block halloumi")
+		halloumi.quantity shouldBe BigDecimal("1")
+		halloumi.unit shouldBe "piece"
+		halloumi.parsedName shouldBe "halloumi"
+		halloumi.isMeasurable shouldBe true
+
+		val chocolate = IngredientLineParser.parse("bar bittersweet chocolate")
+		chocolate.unit shouldBe "piece"
+		chocolate.parsedName shouldBe "bittersweet chocolate"
+		chocolate.isMeasurable shouldBe true
+
+		val loaf = IngredientLineParser.parse("loaf challah")
+		loaf.unit shouldBe "piece"
+		loaf.parsedName shouldBe "challah"
+		loaf.isMeasurable shouldBe true
+
+		val artichoke = IngredientLineParser.parse("artichoke")
+		artichoke.unit shouldBe "piece"
+		artichoke.isMeasurable shouldBe true
+
+		val prawns = IngredientLineParser.parse("king prawns")
+		prawns.unit shouldBe "piece"
+		prawns.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseMapsSplashShotPintAndDropsToHouseholdUnits() {
+		val splash = IngredientLineParser.parse("splash of vanilla extract")
+		splash.quantity shouldBe BigDecimal.ONE
+		splash.unit shouldBe "tsp"
+		splash.parsedName shouldBe "vanilla extract"
+		splash.isMeasurable shouldBe true
+
+		val shot = IngredientLineParser.parse("shot brandy")
+		shot.quantity shouldBe BigDecimal.ONE
+		shot.unit shouldBe "tbsp"
+		shot.parsedName shouldBe "brandy"
+		shot.isMeasurable shouldBe true
+
+		val glass = IngredientLineParser.parse("glass dry white wine")
+		glass.unit shouldBe "cup"
+		glass.parsedName shouldBe "dry white wine"
+		glass.isMeasurable shouldBe true
+
+		val pint = IngredientLineParser.parse("pint blackberries")
+		pint.quantity shouldBe BigDecimal("2")
+		pint.unit shouldBe "cup"
+		pint.parsedName shouldBe "blackberries"
+		pint.isMeasurable shouldBe true
+
+		val drops = IngredientLineParser.parse("drops fish sauce")
+		drops.unit shouldBe "tsp"
+		drops.parsedName shouldBe "fish sauce"
+		drops.isMeasurable shouldBe true
+
+		val vodka = IngredientLineParser.parse("vodka")
+		vodka.quantity shouldBe BigDecimal.ONE
+		vodka.unit shouldBe "tbsp"
+		vodka.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseDefaultsSaucesYeastWaterAndBayleaves() {
+		val hotSauce = IngredientLineParser.parse("hot sauce")
+		hotSauce.unit shouldBe "tbsp"
+		hotSauce.isMeasurable shouldBe true
+
+		val garlicPaste = IngredientLineParser.parse("garlic paste")
+		garlicPaste.unit shouldBe "tbsp"
+		garlicPaste.isMeasurable shouldBe true
+
+		val yeast = IngredientLineParser.parse("active dry yeast")
+		yeast.unit shouldBe "tsp"
+		yeast.isMeasurable shouldBe true
+
+		val water = IngredientLineParser.parse("water")
+		water.unit shouldBe "cup"
+		water.isMeasurable shouldBe true
+
+		val bayleaves = IngredientLineParser.parse("bayleaves")
+		bayleaves.quantity shouldBe BigDecimal.ONE
+		bayleaves.unit shouldBe "tsp"
+		bayleaves.parsedName shouldBe "bay leaf"
+		bayleaves.isMeasurable shouldBe true
+
+		val fiveSpice = IngredientLineParser.parse("chinese five spice")
+		fiveSpice.unit shouldBe "tsp"
+		fiveSpice.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseLeavesOrphanModifiersAndAmbiguousLinesUnmeasurable() {
+		IngredientLineParser.parse("whole").isMeasurable shouldBe false
+		IngredientLineParser.parse("white").isMeasurable shouldBe false
+		IngredientLineParser.parse("yellow").isMeasurable shouldBe false
+		IngredientLineParser.parse("kosher").isMeasurable shouldBe false
+		IngredientLineParser.parse("soft").isMeasurable shouldBe false
+		IngredientLineParser.parse("toppings").isMeasurable shouldBe false
+		IngredientLineParser.parse("hot vegetable").isMeasurable shouldBe false
+		IngredientLineParser.parse("aromatic herbs vegetables your choosing").isMeasurable shouldBe false
+		IngredientLineParser.parse("chicken breast").isMeasurable shouldBe false
+		IngredientLineParser.parse("1 medium white").isMeasurable shouldBe false
+		IngredientLineParser.parse("1 yellow").isMeasurable shouldBe false
+		IngredientLineParser.parse("2 whole").isMeasurable shouldBe false
+		IngredientLineParser.parse("6 hard boiled").isMeasurable shouldBe false
+	}
+
+	@Test
+	fun parseRecoversPacksPiecesSeedsPeelAndNutsFromMeasurableLines() {
+		val crepes = IngredientLineParser.parse("crepes")
+		crepes.quantity shouldBe BigDecimal.ONE
+		crepes.unit shouldBe "piece"
+		crepes.isMeasurable shouldBe true
+
+		val vanilla = IngredientLineParser.parse("Seeds from 1 vanilla pod")
+		vanilla.quantity shouldBe BigDecimal.ONE
+		vanilla.unit shouldBe "tsp"
+		vanilla.parsedName shouldBe "vanilla"
+		vanilla.isMeasurable shouldBe true
+
+		val pouches = IngredientLineParser.parse("2 x Blue Dragon Satay Season & Stir Fry pouches")
+		pouches.quantity shouldBe BigDecimal("2")
+		pouches.unit shouldBe "piece"
+		pouches.isMeasurable shouldBe true
+
+		val cassava = IngredientLineParser.parse(
+			"1 1-lb. small cassava, peeled, woody center removed, cubed",
+		)
+		cassava.quantity shouldBe BigDecimal.ONE
+		cassava.unit shouldBe "lb"
+		cassava.isMeasurable shouldBe true
+
+		val morcilla = IngredientLineParser.parse("1 morcilla de burgos (Spanish black pudding)")
+		morcilla.quantity shouldBe BigDecimal.ONE
+		morcilla.unit shouldBe "piece"
+		morcilla.isMeasurable shouldBe true
+
+		val masala = IngredientLineParser.parse("3 heaped tsp East End Masala Mix of your choice")
+		masala.quantity shouldBe BigDecimal("3")
+		masala.unit shouldBe "tsp"
+		masala.isMeasurable shouldBe true
+
+		val karaage = IngredientLineParser.parse("1 recipe Japanese-style karaage")
+		karaage.quantity shouldBe BigDecimal.ONE
+		karaage.unit shouldBe "piece"
+		karaage.isMeasurable shouldBe true
+
+		val driedLimes = IngredientLineParser.parse(
+			"6 larger (total weight about 1 ounce; 28 g)",
+		)
+		driedLimes.quantity shouldBe BigDecimal.ONE
+		driedLimes.unit shouldBe "oz"
+		driedLimes.isMeasurable shouldBe true
+
+		val peel = IngredientLineParser.parse("Peel (without any pith) from a ripe lemon")
+		peel.quantity shouldBe BigDecimal.ONE
+		peel.unit shouldBe "tbsp"
+		peel.isMeasurable shouldBe true
+
+		val nuts = IngredientLineParser.parse("chopped walnuts, pecans,")
+		nuts.unit shouldBe "tbsp"
+		nuts.isMeasurable shouldBe true
+
+		val tapatio = IngredientLineParser.parse("Tapatío")
+		tapatio.unit shouldBe "tbsp"
+		tapatio.isMeasurable shouldBe true
+
+		val oniony = IngredientLineParser.parse("'Something oniony' such as 1 spring onion")
+		oniony.quantity shouldBe BigDecimal.ONE
+		oniony.unit shouldBe "piece"
+		oniony.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseUsesParentheticalPackWeightsAndQuantityRanges() {
+		val corn = IngredientLineParser.parse("1 (15.25 ounce) can whole kernel corn, drained")
+		corn.quantity shouldBe BigDecimal("15.25")
+		corn.unit shouldBe "oz"
+		corn.parsedName shouldBe "whole kernel corn, drained"
+		corn.isMeasurable shouldBe true
+
+		val pork = IngredientLineParser.parse("1 (5 pound) pork butt roast")
+		pork.quantity shouldBe BigDecimal("5")
+		pork.unit shouldBe "lb"
+		pork.parsedName shouldBe "pork butt roast"
+		pork.isMeasurable shouldBe true
+
+		val spaghetti = IngredientLineParser.parse("1 (410 g) box multigrain spaghetti")
+		spaghetti.quantity shouldBe BigDecimal("410")
+		spaghetti.unit shouldBe "g"
+		spaghetti.parsedName shouldBe "multigrain spaghetti"
+		spaghetti.isMeasurable shouldBe true
+
+		val verjus = IngredientLineParser.parse("2 to 3 tbsp. verjus")
+		verjus.quantity shouldBe BigDecimal("2")
+		verjus.unit shouldBe "tbsp"
+		verjus.parsedName shouldBe "verjus"
+		verjus.isMeasurable shouldBe true
+
+		val drippings = IngredientLineParser.parse("1–2 cups strained and skimmed roast turkey drippings")
+		drippings.quantity shouldBe BigDecimal("1")
+		drippings.unit shouldBe "cup"
+		drippings.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseDefaultsPreparedFoodsPacksAndCountedShells() {
+		val tacos = IngredientLineParser.parse("6 taco shells")
+		tacos.quantity shouldBe BigDecimal("6")
+		tacos.unit shouldBe "piece"
+		tacos.parsedName shouldBe "taco"
+		tacos.isMeasurable shouldBe true
+
+		val pastry = IngredientLineParser.parse("1 Pack Puff Pastry")
+		pastry.quantity shouldBe BigDecimal("1")
+		pastry.unit shouldBe "piece"
+		pastry.parsedName shouldBe "Puff Pastry"
+		pastry.isMeasurable shouldBe true
+
+		val scoops = IngredientLineParser.parse("2 scoops protein powder")
+		scoops.quantity shouldBe BigDecimal("2")
+		scoops.unit shouldBe "tbsp"
+		scoops.parsedName shouldBe "protein powder"
+		scoops.isMeasurable shouldBe true
+
+		val capsicum = IngredientLineParser.parse("1/2 red capsicum, diced")
+		capsicum.quantity shouldBe BigDecimal("0.5000")
+		capsicum.unit shouldBe "piece"
+		capsicum.isMeasurable shouldBe true
+
+		val chips = IngredientLineParser.parse("Corn chips")
+		chips.quantity shouldBe BigDecimal.ONE
+		chips.unit shouldBe "piece"
+		chips.isMeasurable shouldBe true
+
+		val yukon = IngredientLineParser.parse("2 small Yukon gold")
+		yukon.quantity shouldBe BigDecimal("2")
+		yukon.unit shouldBe "piece"
+		yukon.isMeasurable shouldBe true
+
+		val roast = IngredientLineParser.parse("1 small beef chuck roast, about 2 pounds total")
+		roast.quantity shouldBe BigDecimal("2")
+		roast.unit shouldBe "lb"
+		roast.parsedName shouldBe "beef chuck roast"
+		roast.isMeasurable shouldBe true
+
+		val cob = IngredientLineParser.parse("6 fresh sweetcorn cobs, husked")
+		cob.quantity shouldBe BigDecimal("6")
+		cob.unit shouldBe "piece"
+		cob.isMeasurable shouldBe true
+
+		val british = IngredientLineParser.parse("1 recipe British chips")
+		british.quantity shouldBe BigDecimal("1")
+		british.unit shouldBe "piece"
+		british.parsedName shouldBe "British chips"
+		british.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseReadsExtraWordQuantitiesForCountableFoods() {
+		val brioche = IngredientLineParser.parse("eight brioche")
+		brioche.quantity shouldBe BigDecimal("8")
+		brioche.unit shouldBe "piece"
+		brioche.parsedName shouldBe "brioche"
+		brioche.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseDefaultsProduceNutsBreadCheeseAndMidphraseCuts() {
+		val grapes = IngredientLineParser.parse("grapes")
+		grapes.unit shouldBe "piece"
+		grapes.isMeasurable shouldBe true
+
+		val apples = IngredientLineParser.parse("granny smith apples")
+		apples.unit shouldBe "piece"
+		apples.isMeasurable shouldBe true
+
+		val cashews = IngredientLineParser.parse("cashews")
+		cashews.unit shouldBe "tbsp"
+		cashews.isMeasurable shouldBe true
+
+		val feta = IngredientLineParser.parse("feta cheese")
+		feta.unit shouldBe "piece"
+		feta.isMeasurable shouldBe true
+
+		val bread = IngredientLineParser.parse("crusty bread")
+		bread.unit shouldBe "piece"
+		bread.isMeasurable shouldBe true
+
+		val tea = IngredientLineParser.parse("black tea")
+		tea.unit shouldBe "cup"
+		tea.isMeasurable shouldBe true
+
+		val espresso = IngredientLineParser.parse("brewed shot espresso")
+		espresso.unit shouldBe "tbsp"
+		espresso.parsedName shouldBe "brewed espresso"
+		espresso.isMeasurable shouldBe true
+
+		val catfish = IngredientLineParser.parse("catfish fillets along natural seam")
+		catfish.unit shouldBe "piece"
+		catfish.parsedName shouldBe "catfish"
+		catfish.isMeasurable shouldBe true
+
+		val filetMignon = IngredientLineParser.parse("center filets mignon")
+		filetMignon.unit shouldBe "piece"
+		filetMignon.parsedName shouldBe "filet mignon"
+		filetMignon.isMeasurable shouldBe true
+
+		val chickenBoiled = IngredientLineParser.parse("chicken boiled")
+		chickenBoiled.unit shouldBe "piece"
+		chickenBoiled.isMeasurable shouldBe true
+
+		val tenderloins = IngredientLineParser.parse("pork tenderloins")
+		tenderloins.unit shouldBe "piece"
+		tenderloins.isMeasurable shouldBe true
+
+		val ham = IngredientLineParser.parse("ham")
+		ham.unit shouldBe "piece"
+		ham.isMeasurable shouldBe true
+
+		val wholeClove = IngredientLineParser.parse("whole clove")
+		wholeClove.unit shouldBe "tsp"
+		wholeClove.isMeasurable shouldBe true
+
+		val allspice = IngredientLineParser.parse("whole allspice berries")
+		allspice.unit shouldBe "tsp"
+		allspice.isMeasurable shouldBe true
+
+		val couscous = IngredientLineParser.parse("couscous")
+		couscous.unit shouldBe "cup"
+		couscous.isMeasurable shouldBe true
+
+		val soda = IngredientLineParser.parse("soda water")
+		soda.unit shouldBe "cup"
+		soda.isMeasurable shouldBe true
 	}
 }

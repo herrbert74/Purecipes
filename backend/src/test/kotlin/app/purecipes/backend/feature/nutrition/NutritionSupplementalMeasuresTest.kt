@@ -190,4 +190,73 @@ class NutritionSupplementalMeasuresTest {
 		measures[21]?.get("piece") shouldBe BigDecimal("170")
 		measures[22]?.get("piece") shouldBe BigDecimal("12")
 	}
+
+	@Test
+	fun overlayMeasuresAddsPieceGramsForChickenMozzarellaArtichokeAndShrimp() {
+		val chicken = NutritionFoodRecord(
+			id = 30,
+			displayName = "Chicken, broilers or fryers, meat and skin, raw",
+			normalizedName = "chicken broilers or fryers meat and skin raw",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val mozzarella = NutritionFoodRecord(
+			id = 31,
+			displayName = "Cheese, mozzarella, whole milk",
+			normalizedName = "cheese mozzarella whole milk",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val artichoke = NutritionFoodRecord(
+			id = 32,
+			displayName = "Artichokes, (globe or french), raw",
+			normalizedName = "artichokes globe or french raw",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val shrimp = NutritionFoodRecord(
+			id = 33,
+			displayName = "Crustaceans, shrimp, mixed species, raw",
+			normalizedName = "crustaceans shrimp mixed species raw",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val measures = NutritionSupplementalMeasures.overlayMeasures(
+			foods = listOf(chicken, mozzarella, artichoke, shrimp),
+			storedMeasures = emptyMap(),
+		)
+
+		measures[30]?.get("piece") shouldBe BigDecimal("1400")
+		measures[31]?.get("piece") shouldBe BigDecimal("125")
+		measures[32]?.get("piece") shouldBe BigDecimal("128")
+		measures[33]?.get("piece") shouldBe BigDecimal("20")
+	}
 }

@@ -21,6 +21,7 @@ internal object NutritionSupplementalMeasures {
 	private const val YELLOW_ONION_FDC_ID = 790646L
 	private const val YELLOW_PEPPER_FDC_ID = 169383L
 
+	private const val ARTICHOKE_DESCRIPTION = "Artichokes, (globe or french), raw"
 	private const val BACON_COOKED_DESCRIPTION = "Pork, cured, bacon, cooked, baked"
 	private const val BACON_UNPREPARED_DESCRIPTION = "Pork, cured, bacon, unprepared"
 	private const val BANANA_DESCRIPTION = "Bananas, raw"
@@ -28,6 +29,7 @@ internal object NutritionSupplementalMeasures {
 	private const val BASIL_RAW_DESCRIPTION = "Basil, raw"
 	private const val BAY_LEAF_DESCRIPTION = "Spices, bay leaf"
 	private const val BEET_DESCRIPTION = "Beets, raw"
+	private const val BREAD_WHITE_DESCRIPTION = "Bread, white, commercially prepared (includes soft bread crumbs)"
 	private const val BROCCOLI_DESCRIPTION = "Broccoli, raw"
 	private const val BUTTERNUT_SQUASH_DESCRIPTION = "Squash, winter, butternut, raw"
 	private const val CABBAGE_DESCRIPTION = "Cabbage, raw"
@@ -35,9 +37,11 @@ internal object NutritionSupplementalMeasures {
 	private const val CELERIAC_DESCRIPTION = "Celeriac, raw"
 	private const val CELERY_DESCRIPTION = "Celery, raw"
 	private const val CHEDDAR_DESCRIPTION = "Cheese, cheddar"
+	private const val CHICKEN_WHOLE_DESCRIPTION = "Chicken, broilers or fryers, meat and skin, raw"
 	private const val CHICKEN_THIGH_DESCRIPTION = "Chicken, thigh, boneless, skinless, raw"
 	private const val CHICKEN_THIGH_FALLBACK_DESCRIPTION =
 		"Chicken, broilers or fryers, dark meat, thigh, meat only, raw"
+	private const val CHOCOLATE_SEMISWEET_DESCRIPTION = "Candies, semisweet chocolate"
 	private const val CHIVES_DESCRIPTION = "Chives, raw"
 	private const val CHORIZO_DESCRIPTION = "Sausage, pork, chorizo, link or ground, raw"
 	private const val CILANTRO_DESCRIPTION = "Coriander (cilantro) leaves, raw"
@@ -66,6 +70,7 @@ internal object NutritionSupplementalMeasures {
 	private const val KALE_DESCRIPTION = "Kale, raw"
 	private const val LEMONGRASS_DESCRIPTION = "Lemon grass (citronella), raw"
 	private const val MINT_DESCRIPTION = "Spearmint, fresh"
+	private const val MOZZARELLA_DESCRIPTION = "Cheese, mozzarella, whole milk"
 	private const val MUSHROOM_DESCRIPTION = "Mushrooms, white, raw"
 	private const val PARSLEY_DESCRIPTION = "Parsley, fresh"
 	private const val PARSLEY_FALLBACK_DESCRIPTION = "Parsley, raw"
@@ -86,6 +91,7 @@ internal object NutritionSupplementalMeasures {
 	private const val SALMON_DESCRIPTION = "Fish, salmon, Atlantic, farmed, raw"
 	private const val SERRANO_DESCRIPTION = "Peppers, serrano, raw"
 	private const val SHALLOT_DESCRIPTION = "Shallots, raw"
+	private const val SHRIMP_DESCRIPTION = "Crustaceans, shrimp, mixed species, raw"
 	private const val SPINACH_DESCRIPTION = "Spinach, raw"
 	private const val STRAWBERRY_DESCRIPTION = "Strawberries, raw"
 	private const val THYME_FRESH_DESCRIPTION = "Thyme, fresh"
@@ -98,6 +104,7 @@ internal object NutritionSupplementalMeasures {
 	private const val YELLOW_PEPPER_DESCRIPTION = "Peppers, sweet, yellow, raw"
 
 	private val pieceMeasuresByDisplayName: Map<String, List<SupplementalMeasure>> = mapOf(
+		ARTICHOKE_DESCRIPTION to pieceGrams("128"),
 		BACON_COOKED_DESCRIPTION to pieceGrams("8"),
 		BACON_UNPREPARED_DESCRIPTION to pieceGrams("28"),
 		BANANA_DESCRIPTION to pieceGrams("118"),
@@ -105,6 +112,7 @@ internal object NutritionSupplementalMeasures {
 		BASIL_RAW_DESCRIPTION to pieceGrams("2"),
 		BAY_LEAF_DESCRIPTION to pieceGrams("0.2"),
 		BEET_DESCRIPTION to pieceGrams("82"),
+		BREAD_WHITE_DESCRIPTION to pieceGrams("500"),
 		BROCCOLI_DESCRIPTION to pieceGrams("151"),
 		BUTTERNUT_SQUASH_DESCRIPTION to pieceGrams("1000"),
 		CABBAGE_DESCRIPTION to pieceGrams("908"),
@@ -115,8 +123,10 @@ internal object NutritionSupplementalMeasures {
 			SupplementalMeasure(measureName = "tbsp", gramsPerMeasure = BigDecimal("7")),
 			SupplementalMeasure(measureName = "piece", gramsPerMeasure = BigDecimal("28")),
 		),
+		CHICKEN_WHOLE_DESCRIPTION to pieceGrams("1400"),
 		CHICKEN_THIGH_DESCRIPTION to pieceGrams("116"),
 		CHICKEN_THIGH_FALLBACK_DESCRIPTION to pieceGrams("116"),
+		CHOCOLATE_SEMISWEET_DESCRIPTION to pieceGrams("100"),
 		CHIVES_DESCRIPTION to pieceGrams("1"),
 		CHORIZO_DESCRIPTION to pieceGrams("70"),
 		CILANTRO_DESCRIPTION to pieceGrams("2"),
@@ -149,6 +159,7 @@ internal object NutritionSupplementalMeasures {
 		KALE_DESCRIPTION to pieceGrams("10"),
 		LEMONGRASS_DESCRIPTION to pieceGrams("25"),
 		MINT_DESCRIPTION to pieceGrams("1"),
+		MOZZARELLA_DESCRIPTION to pieceGrams("125"),
 		MUSHROOM_DESCRIPTION to pieceGrams("18"),
 		PARSLEY_DESCRIPTION to pieceGrams("2"),
 		PARSLEY_FALLBACK_DESCRIPTION to pieceGrams("2"),
@@ -169,6 +180,7 @@ internal object NutritionSupplementalMeasures {
 		SALMON_DESCRIPTION to pieceGrams("170"),
 		SERRANO_DESCRIPTION to pieceGrams("6"),
 		SHALLOT_DESCRIPTION to pieceGrams("30"),
+		SHRIMP_DESCRIPTION to pieceGrams("20"),
 		SPINACH_DESCRIPTION to pieceGrams("142"),
 		STRAWBERRY_DESCRIPTION to pieceGrams("12"),
 		THYME_FRESH_DESCRIPTION to pieceGrams("1"),

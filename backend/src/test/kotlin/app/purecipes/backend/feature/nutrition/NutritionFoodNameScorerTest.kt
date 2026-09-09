@@ -43,4 +43,16 @@ class NutritionFoodNameScorerTest {
 			candidateNormalized = "onion yellow raw",
 		).shouldNotBeNull()
 	}
+
+	@Test
+	fun scoreRejectsInsufficientSoloQueryTokens() {
+		NutritionFoodNameScorer.score(
+			queryNormalized = "side",
+			candidateNormalized = "bacon or side pork fresh cooked",
+		).shouldBeNull()
+		NutritionFoodNameScorer.score(
+			queryNormalized = "box",
+			candidateNormalized = "box grater",
+		).shouldBeNull()
+	}
 }

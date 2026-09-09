@@ -9,6 +9,393 @@ internal object IngredientLineParser {
 	private const val QUANTITY_PATTERN = """\d+\s+\d+\s*/\s*\d+|\d+\s*/\s*\d+|\d+(?:\.\d+)?|\.\d+"""
 	private const val QUANTITY_SCALE = 4
 
+	private val extraWordQuantities = mapOf(
+		"three" to BigDecimal("3"),
+		"four" to BigDecimal("4"),
+		"five" to BigDecimal("5"),
+		"six" to BigDecimal("6"),
+		"eight" to BigDecimal("8"),
+	)
+
+	private val extraCountNounTokens = setOf(
+		"ball",
+		"balls",
+		"bar",
+		"bars",
+		"block",
+		"blocks",
+		"chop",
+		"chops",
+		"cutlet",
+		"cutlets",
+		"drop",
+		"drops",
+		"drumstick",
+		"drumsticks",
+		"gallon",
+		"gallons",
+		"glass",
+		"glasses",
+		"jigger",
+		"jiggers",
+		"leg",
+		"legs",
+		"loaf",
+		"loaves",
+		"pack",
+		"packs",
+		"packet",
+		"packets",
+		"pint",
+		"pints",
+		"pod",
+		"pods",
+		"pouch",
+		"pouches",
+		"quart",
+		"quarts",
+		"rack",
+		"racks",
+		"sachet",
+		"sachets",
+		"scoop",
+		"scoops",
+		"shell",
+		"shells",
+		"shot",
+		"shots",
+		"splash",
+		"splashes",
+		"steak",
+		"steaks",
+		"tub",
+		"tubs",
+		"wing",
+		"wings",
+	)
+
+	private val teaspoonExtraCountNounTokens = setOf(
+		"drop",
+		"drops",
+		"pod",
+		"pods",
+		"splash",
+		"splashes",
+	)
+
+	private val tablespoonExtraCountNounTokens = setOf(
+		"jigger",
+		"jiggers",
+		"scoop",
+		"scoops",
+		"shot",
+		"shots",
+	)
+
+	private val cupExtraCountNounTokens = setOf(
+		"glass",
+		"glasses",
+	)
+
+	private val extraCountableMeatTokens = setOf(
+		"chop",
+		"chops",
+		"cutlet",
+		"cutlets",
+		"drumstick",
+		"drumsticks",
+		"filet",
+		"filets",
+		"fillet",
+		"fillets",
+		"leg",
+		"legs",
+		"paillard",
+		"paillards",
+		"steak",
+		"steaks",
+		"supreme",
+		"supremes",
+		"tenderloin",
+		"tenderloins",
+		"wing",
+		"wings",
+	)
+
+	private val cutCountNounTokens = setOf(
+		"chop",
+		"chops",
+		"cutlet",
+		"cutlets",
+		"drumstick",
+		"drumsticks",
+		"filet",
+		"filets",
+		"fillet",
+		"fillets",
+		"leg",
+		"legs",
+		"paillard",
+		"paillards",
+		"steak",
+		"steaks",
+		"supreme",
+		"supremes",
+		"tenderloin",
+		"tenderloins",
+		"wing",
+		"wings",
+	)
+
+	private val volumeCountNounTokens = setOf(
+		"drop",
+		"drops",
+		"glass",
+		"glasses",
+		"jigger",
+		"jiggers",
+		"shot",
+		"shots",
+		"splash",
+		"splashes",
+	)
+
+	private val poultryPrepModifierTokens = setOf(
+		"boiled",
+		"cooked",
+		"eighths",
+		"free",
+		"fryer",
+		"low",
+		"range",
+		"raw",
+		"roasting",
+		"rotisserie",
+		"sodium",
+		"whole",
+	)
+
+	private val countablePoultryTokens = setOf(
+		"chicken",
+		"chickens",
+		"duck",
+		"ducks",
+	)
+
+	private val wholeBirdTokens = setOf(
+		"fryer",
+		"roasting",
+		"rotisserie",
+		"whole",
+	)
+
+	private val bareBreastOrThighTokens = setOf(
+		"breast",
+		"breasts",
+		"thigh",
+		"thighs",
+	)
+
+	private val defaultPieceProteinTokens = setOf(
+		"artichoke",
+		"artichokes",
+		"ham",
+		"oyster",
+		"oysters",
+		"prawn",
+		"prawns",
+		"prosciutto",
+		"shrimp",
+		"shrimps",
+		"squid",
+	)
+
+	private val defaultPieceCheeseTokens = setOf(
+		"burrata",
+		"cheese",
+		"cotija",
+		"feta",
+		"halloumi",
+		"mascarpone",
+		"mozzarella",
+	)
+
+	private val defaultPieceBreadTokens = setOf(
+		"baguette",
+		"baguettes",
+		"bap",
+		"baps",
+		"biscuit",
+		"biscuits",
+		"bread",
+		"brioche",
+		"challah",
+		"ciabatta",
+		"cookie",
+		"cookies",
+		"crepe",
+		"crepes",
+		"crostini",
+		"croissant",
+		"croissants",
+		"crumpet",
+		"crumpets",
+		"ladyfinger",
+		"ladyfingers",
+		"oreo",
+		"oreos",
+		"pancake",
+		"pancakes",
+		"pita",
+		"pitas",
+		"roll",
+		"rolls",
+		"wonton",
+		"wontons",
+	)
+
+	private val defaultTablespoonNutSeedTokens = setOf(
+		"almond",
+		"almonds",
+		"cashew",
+		"cashews",
+		"peanut",
+		"peanuts",
+		"pecan",
+		"pecans",
+		"pistachio",
+		"pistachios",
+		"sesame",
+		"walnut",
+		"walnuts",
+	)
+
+	private val defaultPiecePepperTokens = setOf(
+		"habanero",
+		"habaneros",
+		"poblano",
+		"poblanos",
+		"scotch",
+	)
+
+	private val defaultTablespoonSauceTokens = setOf(
+		"brine",
+		"chimichurri",
+		"chocolate",
+		"crema",
+		"fat",
+		"glaze",
+		"gochujang",
+		"guacamole",
+		"marinade",
+		"marinara",
+		"miso",
+		"paste",
+		"sauce",
+		"sriracha",
+		"syrup",
+		"tapatio",
+		"verjus",
+		"vinegar",
+	)
+
+	private val defaultTablespoonDrinkTokens = setOf(
+		"ale",
+		"brandy",
+		"lager",
+		"prosecco",
+		"tequila",
+		"vodka",
+		"whiskey",
+		"whisky",
+		"wine",
+	)
+
+	private val defaultTeaspoonPantryTokens = setOf(
+		"dust",
+		"glitter",
+		"powder",
+		"seasoning",
+		"spice",
+		"spices",
+		"yeast",
+	)
+
+	private val defaultCupLiquidTokens = setOf(
+		"espresso",
+		"ice",
+		"soda",
+		"tea",
+		"water",
+	)
+
+	private val defaultCupGrainBeanTokens = setOf(
+		"butterbeans",
+		"cannellini",
+		"couscous",
+		"drippings",
+		"hominy",
+		"okra",
+		"spaghetti",
+	)
+
+	private val defaultPiecePreparedTokens = setOf(
+		"cane",
+		"canes",
+		"capsicum",
+		"capsicums",
+		"cherry",
+		"cherries",
+		"chip",
+		"chips",
+		"coleslaw",
+		"crust",
+		"dough",
+		"flower",
+		"flowers",
+		"hash",
+		"karaage",
+		"morcilla",
+		"pastry",
+		"quesadilla",
+		"quesadillas",
+		"salad",
+		"taco",
+		"tacos",
+		"tzatziki",
+	)
+
+	private val countableMeatCutTokens = setOf(
+		"brisket",
+		"butt",
+		"chuck",
+		"ribeye",
+		"roast",
+		"shoulder",
+		"tongue",
+	)
+
+	private val orphanModifierOnlyTokens = setOf(
+		"bone",
+		"frozen",
+		"hot",
+		"kosher",
+		"larger",
+		"peel",
+		"red",
+		"sandwich",
+		"soft",
+		"splash",
+		"square",
+		"topping",
+		"toppings",
+		"vegetable",
+		"very",
+		"white",
+		"whole",
+		"yellow",
+	)
+
 	private val unicodeFractions = mapOf(
 		'¼' to "1/4",
 		'½' to "1/2",
@@ -32,7 +419,7 @@ internal object IngredientLineParser {
 	)
 
 	private val leadingParentheticalAmountPattern = Regex(
-		"""^\(($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\s*\)""",
+		"""^\(($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:;[^)]*)?\)""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -41,7 +428,12 @@ internal object IngredientLineParser {
 	private val parentheticalPattern = Regex("""\(([^)]+)\)""")
 
 	private val innerAmountPattern = Regex(
-		"""^($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*$""",
+		"""^($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:;.*)?$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val innerRangeAmountPattern = Regex(
+		"""^($QUANTITY_PATTERN)\s*(?:to|-)\s*(?:$QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*$""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -50,6 +442,11 @@ internal object IngredientLineParser {
 	private val simpleFractionPattern = Regex("""^(\d+)\s*/\s*(\d+)$""")
 
 	private val extraWhitespacePattern = Regex("""\s+""")
+
+	private val quantityRangeTailPattern = Regex(
+		"""^(?:to|-)\s*(?:$QUANTITY_PATTERN)\s+""",
+		RegexOption.IGNORE_CASE,
+	)
 
 	private val packTimesPattern = Regex(
 		"""^[x×*]\s*($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)""",
@@ -72,12 +469,14 @@ internal object IngredientLineParser {
 	)
 
 	private val aboutAmountPattern = Regex(
-		"""^(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:each)?\s*$""",
+		"""^(?:total\s+weight\s+)?(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*-?\s*""" +
+			"""([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:each|total)?\s*$""",
 		RegexOption.IGNORE_CASE,
 	)
 
 	private val trailingAboutAmountPattern = Regex(
-		"""(?:,\s*)?(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*$""",
+		"""(?:,\s*)?(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*-?\s*""" +
+			"""([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:total)?\s*$""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -85,6 +484,21 @@ internal object IngredientLineParser {
 		"""\s+($QUANTITY_PATTERN)\s*(${IngredientLineParserLexicon.TRAILING_MASS_UNITS})?\.?\s*$""",
 		RegexOption.IGNORE_CASE,
 	)
+
+	private val seedsFromVanillaPodPattern = Regex(
+		"""^seeds\s+from\s+($QUANTITY_PATTERN)\s+vanilla\s+pods?\b.*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val peelFromCitrusPattern = Regex(
+		"""(?i)^peel\b.*\bfrom\b.*\b(lemon|lime|orange|grapefruit)s?\b.*$""",
+	)
+
+	private val suchAsClausePattern = Regex(
+		"""(?i)^.*\bsuch as\s+(.+)$""",
+	)
+
+	private val timesMarkerTokens = setOf("x", "×", "*")
 
 	fun parse(rawLine: String): ParsedIngredientLine {
 		val rawText = rawLine.trim()
@@ -98,13 +512,14 @@ internal object IngredientLineParser {
 			)
 		}
 
-		var rest = canonicalizeLine(rawText)
+		var rest = canonicalizeLine(rewriteSpecialPhrases(rawText))
 		val leadingAmount = consumeLeadingQuantityAndPack(rest)
 		var quantity = leadingAmount.quantity
 		var unit = leadingAmount.unit
 		rest = leadingAmount.rest
 
 		rest = skipSizeTokens(rest)
+		rest = skipRecipeToken(rest)
 		if (unit == null) {
 			val consumed = consumeUnit(rest)
 			if (consumed != null) {
@@ -113,14 +528,14 @@ internal object IngredientLineParser {
 			}
 		}
 		rest = stripLeadingOf(rest)
-		rest = stripLeadingParenthetical(rest)
-		rest = stripContainerWords(rest)
-
 		val implied = resolveImpliedMeasure(quantity = quantity, unit = unit, rest = rest)
 		quantity = implied.quantity
 		unit = implied.unit
-		rest = stripLeftoverAmounts(implied.rest, quantityAlreadySet = implied.quantity != null)
+		rest = stripLeadingParenthetical(implied.rest)
+		rest = stripContainerWords(rest)
+		rest = stripLeftoverAmounts(rest, quantityAlreadySet = quantity != null)
 		rest = stripOrphanUnitTokens(rest)
+		rest = recoverFoodNameIfOrphanCollapsed(rest, rawText)
 		if (unit == null) {
 			unit = inferCountUnit(rest, hasQuantity = quantity != null)
 		}
@@ -138,6 +553,7 @@ internal object IngredientLineParser {
 			quantity = BigDecimal.ONE
 		}
 
+		rest = bayLeafName(rest)
 		val parsedName = parsedNameForUnit(unit = unit, rest = rest, rawText = rawText)
 		val isMeasurable = quantity != null &&
 			unit != null &&
@@ -152,16 +568,42 @@ internal object IngredientLineParser {
 		)
 	}
 
+	private fun rewriteSpecialPhrases(value: String): String {
+		val trimmed = value.trim()
+		val seeds = seedsFromVanillaPodPattern.matchEntire(trimmed)
+		val peel = peelFromCitrusPattern.find(trimmed)
+		val suchAs = suchAsClausePattern.find(trimmed)
+		return when {
+			seeds != null -> "${seeds.groupValues[1]} vanilla pod"
+			peel != null -> "${peel.groupValues[1]} peel"
+			suchAs != null && looksLikeVagueLeadIn(value) -> suchAs.groupValues[1].trim()
+			else -> value
+		}
+	}
+
+	private fun looksLikeVagueLeadIn(value: String): Boolean {
+		val lower = value.lowercase()
+		return lower.contains("something ") ||
+			lower.contains("oniony") ||
+			lower.contains("of your choosing") ||
+			lower.contains("of your choice")
+	}
+
 	private fun canonicalizeLine(value: String): String {
 		val replaced = buildString {
 			value.forEach { character ->
-				val fraction = unicodeFractions[character]
-				if (fraction == null) {
-					append(character)
-				} else {
-					append(' ')
-					append(fraction)
-					append(' ')
+				when {
+					character == '–' || character == '—' -> append('-')
+					else -> {
+						val fraction = unicodeFractions[character]
+						if (fraction == null) {
+							append(character)
+						} else {
+							append(' ')
+							append(fraction)
+							append(' ')
+						}
+					}
 				}
 			}
 		}
@@ -187,8 +629,9 @@ internal object IngredientLineParser {
 		} else {
 			leadingWordQuantity.rest.substring(leadingQuantity.range.last + 1).trim()
 		}
+		val afterRange = stripLeadingTimesMarker(stripQuantityRangeTail(afterQuantity))
 		val timesPack = consumePackQuantity(
-			value = afterQuantity,
+			value = afterRange,
 			allowImplicit = quantity != null,
 		)
 		return when {
@@ -207,18 +650,35 @@ internal object IngredientLineParser {
 			else -> LeadingAmount(
 				quantity = quantity,
 				unit = null,
-				rest = afterQuantity,
+				rest = afterRange,
 			)
+		}
+	}
+
+	private fun stripQuantityRangeTail(value: String): String {
+		val match = quantityRangeTailPattern.find(value.trim()) ?: return value.trim()
+		return value.trim().substring(match.range.last + 1).trim()
+	}
+
+	private fun stripLeadingTimesMarker(value: String): String {
+		val trimmed = value.trim()
+		val token = firstToken(trimmed).lowercase()
+		return if (token in timesMarkerTokens) {
+			dropFirstWord(trimmed)
+		} else {
+			trimmed
 		}
 	}
 
 	private fun consumeLeadingWordQuantity(value: String): LeadingAmount {
 		val token = firstToken(value).lowercase()
-		val quantity = IngredientLineParserLexicon.wordQuantities[token] ?: return LeadingAmount(
-			quantity = null,
-			unit = null,
-			rest = value,
-		)
+		val quantity = IngredientLineParserLexicon.wordQuantities[token]
+			?: extraWordQuantities[token]
+			?: return LeadingAmount(
+				quantity = null,
+				unit = null,
+				rest = value,
+			)
 		return LeadingAmount(
 			quantity = quantity,
 			unit = null,
@@ -242,22 +702,23 @@ internal object IngredientLineParser {
 	}
 
 	private fun consumePackQuantity(value: String, allowImplicit: Boolean): PackQuantity? {
+		val labeled = consumeLabeledPack(value)
 		val match = packTimesPattern.find(value)
 			?: if (allowImplicit) implicitPackPattern.find(value) else null
-		if (match == null) {
-			return null
-		}
-		val quantity = parseQuantity(match.groupValues[1])
-		val unit = normalizeUnit(match.groupValues[2])
-		return if (quantity != null && unit != null && unit in IngredientLineParserLexicon.packUnits) {
+		val quantity = match?.let { parseQuantity(it.groupValues[1]) }
+		val resolvedUnit = match
+			?.let { normalizeUnit(it.groupValues[2]) }
+			?.takeIf { unit -> unit in IngredientLineParserLexicon.packUnits }
+		val fromPattern = if (match != null && quantity != null && resolvedUnit != null) {
 			PackQuantity(
 				quantity = quantity,
-				unit = unit,
+				unit = resolvedUnit,
 				rest = value.substring(match.range.last + 1).trim(),
 			)
 		} else {
 			null
 		}
+		return labeled ?: fromPattern
 	}
 
 	private fun skipSizeTokens(value: String): String {
@@ -270,6 +731,15 @@ internal object IngredientLineParser {
 			rest = dropFirstWord(rest)
 		}
 		return rest
+	}
+
+	private fun skipRecipeToken(value: String): String {
+		val token = firstToken(value).lowercase()
+		return if (token == "recipe") {
+			dropFirstWord(value)
+		} else {
+			value.trim()
+		}
 	}
 
 	private fun consumeUnit(value: String): Pair<String, String>? {
@@ -345,8 +815,10 @@ internal object IngredientLineParser {
 	}
 
 	private fun isOrphanMeasureUnit(token: String): Boolean {
-		val unit = normalizeUnit(token) ?: return false
-		return unit in IngredientLineParserLexicon.consumedUnits || unit in IngredientLineParserLexicon.packUnits
+		val unit = normalizeUnit(token)
+		return unit != null &&
+			unit != "clove" &&
+			(unit in IngredientLineParserLexicon.consumedUnits || unit in IngredientLineParserLexicon.packUnits)
 	}
 
 	private fun stripLeadingParenthetical(value: String): String =
@@ -383,50 +855,144 @@ internal object IngredientLineParser {
 				rest = "",
 			)
 
+			unit == "pint" -> LeadingAmount(
+				quantity = amount.multiply(BigDecimal("2")),
+				unit = "cup",
+				rest = "",
+			)
+
+			unit == "quart" -> LeadingAmount(
+				quantity = amount.multiply(BigDecimal("4")),
+				unit = "cup",
+				rest = "",
+			)
+
+			unit == "gallon" -> LeadingAmount(
+				quantity = amount.multiply(BigDecimal("16")),
+				unit = "cup",
+				rest = "",
+			)
+
 			else -> LeadingAmount(quantity = quantity, unit = unit, rest = "")
 		}
 	}
 
 	private fun defaultUnquantifiedMeasure(rest: String): LeadingAmount {
-		val lookup = NutritionNameNormalizer.forLookup(rest)
-		val lookupTokens = lookup
+		val lookupTokens = NutritionNameNormalizer.forLookup(rest)
 			.split(' ')
 			.filter { token -> token.isNotEmpty() }
-		return when {
-			lookupTokens.isEmpty() ->
-				LeadingAmount(quantity = null, unit = null, rest = rest)
-
-			lookupTokens.any { token -> token == "juice" || token == "zest" } ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
-
-			isFreshGarlic(lookupTokens) ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "clove", rest = rest)
-
-			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultTablespoonOilTokens } ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
-
-			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultTablespoonCreamTokens } ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "tbsp", rest = rest)
-
-			isSpiceSeasoning(lookupTokens) ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "tsp", rest = rest)
-
-			isCupOfStockOrBroth(lookupTokens) ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "cup", rest = rest)
-
-			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultCupPantryTokens } ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "cup", rest = rest)
-
-			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultPieceHerbTokens } || isHotDog(
-				lookupTokens
-			) ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
-
-			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultOnePieceTokens } ->
-				LeadingAmount(quantity = BigDecimal.ONE, unit = "piece", rest = rest)
-
-			else -> LeadingAmount(quantity = null, unit = null, rest = rest)
+		if (lookupTokens.isEmpty() || isOrphanModifierName(lookupTokens)) {
+			return LeadingAmount(quantity = null, unit = null, rest = rest)
 		}
+		val unit = defaultUnquantifiedUnit(rest = rest, lookupTokens = lookupTokens)
+		return if (unit == null) {
+			LeadingAmount(quantity = null, unit = null, rest = rest)
+		} else {
+			val measuredRest = if (unit == "tsp" && isBayLeafName(rest, lookupTokens)) {
+				bayLeafName(rest)
+			} else {
+				rest
+			}
+			LeadingAmount(quantity = BigDecimal.ONE, unit = unit, rest = measuredRest)
+		}
+	}
+
+	private fun defaultUnquantifiedUnit(rest: String, lookupTokens: List<String>): String? = when {
+		isBayLeafName(rest, lookupTokens) -> "tsp"
+		lookupTokens.any { token -> token == "juice" || token == "zest" || token == "peel" } -> "tbsp"
+		isFreshGarlic(lookupTokens) -> "clove"
+		isDefaultTablespoonFood(lookupTokens) -> "tbsp"
+		isSpiceSeasoning(lookupTokens) ||
+			lookupTokens.any { token -> token in defaultTeaspoonPantryTokens } -> "tsp"
+
+		isCupOfStockOrBroth(lookupTokens) || isDefaultCupFood(lookupTokens) -> "cup"
+		isDefaultPieceFood(lookupTokens) -> "piece"
+		else -> null
+	}
+
+	private fun isDefaultTablespoonFood(lookupTokens: List<String>): Boolean =
+		lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultTablespoonOilTokens } ||
+			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultTablespoonCreamTokens } ||
+			lookupTokens.any { token -> token in defaultTablespoonSauceTokens } ||
+			lookupTokens.any { token -> token in defaultTablespoonDrinkTokens } ||
+			lookupTokens.any { token -> token in defaultTablespoonNutSeedTokens }
+
+	private fun isDefaultCupFood(lookupTokens: List<String>): Boolean =
+		lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultCupPantryTokens } ||
+			lookupTokens.any { token -> token in defaultCupGrainBeanTokens } ||
+			isBareCupLiquid(lookupTokens)
+
+	private fun isDefaultPieceFood(lookupTokens: List<String>): Boolean =
+		lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultPieceHerbTokens } ||
+			isHotDog(lookupTokens) ||
+			isDefaultablePoultry(lookupTokens) ||
+			isCountableMeatName(lookupTokens) ||
+			isBellPepper(lookupTokens) ||
+			isColoredOrSweetPepper(lookupTokens) ||
+			isCornOnTheCob(lookupTokens) ||
+			lookupTokens.any { token -> token in defaultPieceProteinTokens } ||
+			lookupTokens.any { token -> token in defaultPieceCheeseTokens } ||
+			(
+				lookupTokens.any { token -> token in defaultPieceBreadTokens } &&
+					lookupTokens.none { token -> token == "garlic" }
+				) ||
+			lookupTokens.any { token -> token in defaultPiecePepperTokens } ||
+			lookupTokens.any { token -> token in defaultPiecePreparedTokens } ||
+			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultOnePieceTokens }
+
+	private fun isOrphanModifierName(lookupTokens: List<String>): Boolean =
+		lookupTokens.isNotEmpty() && lookupTokens.all { token -> token in orphanModifierOnlyTokens }
+
+	private fun recoverFoodNameIfOrphanCollapsed(rest: String, rawText: String): String {
+		val restTokens = NutritionNameNormalizer.forLookup(rest)
+			.split(' ')
+			.filter { token -> token.isNotEmpty() }
+		if (!isOrphanModifierName(restTokens)) {
+			return rest
+		}
+		val rawLookup = NutritionNameNormalizer.forLookup(rawText)
+		val rawTokens = rawLookup
+			.split(' ')
+			.filter { token -> token.isNotEmpty() }
+		return if (rawTokens.isEmpty() || isOrphanModifierName(rawTokens)) {
+			rest
+		} else {
+			rawLookup
+		}
+	}
+
+	private fun isBareCupLiquid(lookupTokens: List<String>): Boolean {
+		if (lookupTokens.isEmpty()) {
+			return false
+		}
+		val liquidTokens = lookupTokens.filter { token -> token in defaultCupLiquidTokens }
+		val nonLiquid = lookupTokens.filterNot { token ->
+			token in defaultCupLiquidTokens || token == "shaking" || token == "brewed" || token == "black"
+		}
+		return liquidTokens.isNotEmpty() && nonLiquid.isEmpty()
+	}
+
+	private fun isBayLeafName(rest: String, lookupTokens: List<String>): Boolean {
+		val compact = rest.lowercase().replace(" ", "")
+		val hasBayLeafTokens = lookupTokens.any { token -> token == "bay" } &&
+			lookupTokens.any { token -> token == "leaf" || token == "leaves" }
+		return compact == "bayleaf" || compact == "bayleaves" || hasBayLeafTokens
+	}
+
+	private fun isDefaultablePoultry(lookupTokens: List<String>): Boolean {
+		val hasPoultry = lookupTokens.any { token -> token in countablePoultryTokens }
+		val hasBareCut = lookupTokens.any { token -> token in bareBreastOrThighTokens }
+		val foodTokens = lookupTokens.filterNot { token -> token in poultryPrepModifierTokens }
+		val isWholeOrCutPiece = foodTokens.size == 1 ||
+			lookupTokens.any { token -> token in wholeBirdTokens } ||
+			lookupTokens.any { token -> token in extraCountableMeatTokens } ||
+			(
+				hasPoultry &&
+					foodTokens.all { token ->
+						token in countablePoultryTokens || token in poultryPrepModifierTokens
+					}
+				)
+		return hasPoultry && !hasBareCut && isWholeOrCutPiece
 	}
 
 	private fun isSpiceSeasoning(lookupTokens: List<String>): Boolean {
@@ -434,15 +1000,41 @@ internal object IngredientLineParser {
 		val spicePepperModifiers = setOf("black", "white", "ground", "flakes", "flake", "crushed")
 		val hasSeasoningToken =
 			lookupTokens.any { token -> token in IngredientLineParserLexicon.defaultTeaspoonSeasoningTokens }
+		val hasWholeCloveSpice = isWholeCloveSpice(lookupTokens)
 		val hasSpicePowder = lookupTokens.any { token -> token == "powder" } &&
 			lookupTokens.any { token -> token in spicePowderBases }
-		val hasPepper = lookupTokens.any { token -> token == "pepper" || token == "peppers" }
-		val isPepperSeasoning = hasPepper && (
-			lookupTokens.size == 1 ||
-				lookupTokens.any { token -> token in spicePepperModifiers } ||
-				lookupTokens.any { token -> token == "salt" }
+		val isPepperSeasoning = isPepperSeasoning(lookupTokens, spicePepperModifiers)
+		val hasAllspice = lookupTokens.any { token -> token == "allspice" }
+		val hasCurry = lookupTokens.any { token -> token == "curry" }
+		return hasSeasoningToken ||
+			hasWholeCloveSpice ||
+			hasSpicePowder ||
+			isPepperSeasoning ||
+			hasAllspice ||
+			hasCurry
+	}
+
+	private fun isWholeCloveSpice(lookupTokens: List<String>): Boolean {
+		val hasClove = lookupTokens.any { token -> token == "clove" || token == "cloves" }
+		val hasGarlic = lookupTokens.any { token -> token == "garlic" }
+		val onlyCloveSpiceTokens = lookupTokens.all { token ->
+			token == "clove" || token == "cloves" || token == "whole" || token == "ground"
+		}
+		return hasClove && !hasGarlic && (
+			lookupTokens.any { token -> token == "whole" } || onlyCloveSpiceTokens
 			)
-		return hasSeasoningToken || hasSpicePowder || isPepperSeasoning
+	}
+
+	private fun isPepperSeasoning(
+		lookupTokens: List<String>,
+		spicePepperModifiers: Set<String>,
+	): Boolean {
+		val hasPepper = lookupTokens.any { token -> token == "pepper" || token == "peppers" }
+		val producePepper = isBellPepper(lookupTokens) || isColoredOrSweetPepper(lookupTokens)
+		val hasSpiceCue = lookupTokens.size == 1 ||
+			lookupTokens.any { token -> token in spicePepperModifiers } ||
+			lookupTokens.any { token -> token == "salt" }
+		return hasPepper && (!producePepper || hasSpiceCue)
 	}
 
 	private fun isFreshGarlic(lookupTokens: List<String>): Boolean {
@@ -480,23 +1072,48 @@ internal object IngredientLineParser {
 			if (inner.contains("each", ignoreCase = true)) {
 				return@forEach
 			}
-			val innerMatch = aboutAmountPattern.find(inner) ?: innerAmountPattern.find(inner) ?: return@forEach
-			val quantity = parseQuantity(innerMatch.groupValues[1]) ?: return@forEach
-			val unit = normalizeUnit(innerMatch.groupValues[2]) ?: return@forEach
-			if (unit !in IngredientLineParserLexicon.consumedUnits && unit !in IngredientLineParserLexicon.knownUnits) {
-				return@forEach
-			}
+			val amount = parseParentheticalAmount(inner) ?: return@forEach
 			val parsedName = value.replaceRange(match.range, " ").replace(extraWhitespacePattern, " ").trim()
 			return ParsedIngredientLine(
 				rawText = value,
-				quantity = quantity,
-				unit = unit,
+				quantity = amount.quantity,
+				unit = amount.unit,
 				parsedName = parsedName.ifBlank { value },
 				isMeasurable = true,
 			)
 		}
 		return null
 	}
+
+	private fun parseParentheticalAmount(inner: String): LeadingAmount? {
+		val semicolonInner = inner.substringBefore(';').trim()
+		val aboutCandidate = if (semicolonInner.startsWith("total weight", ignoreCase = true)) {
+			semicolonInner
+		} else {
+			inner
+		}
+		val match = aboutAmountPattern.find(aboutCandidate)
+			?: innerRangeAmountPattern.find(inner)
+			?: innerAmountPattern.find(inner)
+			?: rangeOrAmountAfterSemicolon(inner, semicolonInner)
+		val quantity = match?.let { parseQuantity(it.groupValues[1]) }
+		val unit = match?.let { normalizeUnit(it.groupValues[2]) }
+		val usable = quantity != null &&
+			unit != null &&
+			(unit in IngredientLineParserLexicon.consumedUnits || unit in IngredientLineParserLexicon.knownUnits)
+		return if (usable) {
+			LeadingAmount(quantity = quantity, unit = unit, rest = "")
+		} else {
+			null
+		}
+	}
+
+	private fun rangeOrAmountAfterSemicolon(inner: String, semicolonInner: String): MatchResult? =
+		if (semicolonInner != inner) {
+			innerRangeAmountPattern.find(semicolonInner) ?: innerAmountPattern.find(semicolonInner)
+		} else {
+			null
+		}
 
 	private fun stripParentheticalClauses(value: String): String =
 		extraWhitespacePattern.replace(parentheticalPattern.replace(value, " "), " ").trim()
@@ -560,7 +1177,9 @@ internal object IngredientLineParser {
 			afterTrailing.quantity != null -> consumeCountNounMeasure(stripParentheticalClauses(afterTrailing.rest))
 			else -> {
 				val withoutParentheticals = stripParentheticalClauses(afterTrailing.rest)
-				leadingCountNounMeasure(withoutParentheticals) ?: trailingCountNounMeasure(withoutParentheticals)
+				leadingCountNounMeasure(withoutParentheticals)
+					?: trailingCountNounMeasure(withoutParentheticals)
+					?: internalCountNounMeasure(withoutParentheticals)
 			}
 		}
 		return if (countNoun != null) {
@@ -576,10 +1195,10 @@ internal object IngredientLineParser {
 
 	private fun leadingCountNounMeasure(value: String): LeadingAmount? {
 		val trimmed = value.trim()
-		if (trimmed.isEmpty() || firstToken(trimmed).lowercase() !in IngredientLineParserLexicon.countNounTokens) {
+		val noun = firstToken(trimmed).lowercase()
+		if (trimmed.isEmpty() || noun !in allCountNounTokens()) {
 			return null
 		}
-		val noun = firstToken(trimmed).lowercase()
 		var rest = dropFirstWord(trimmed)
 		if (firstToken(rest).lowercase() == "of") {
 			rest = dropFirstWord(rest)
@@ -595,11 +1214,11 @@ internal object IngredientLineParser {
 		val trimmed = value.trim()
 		return when {
 			trimmed.isEmpty() -> null
-			firstToken(trimmed).lowercase() in IngredientLineParserLexicon.countNounTokens -> leadingCountNounMeasure(
+			firstToken(trimmed).lowercase() in allCountNounTokens() -> leadingCountNounMeasure(
 				trimmed
 			)
 
-			else -> trailingCountNounMeasure(trimmed)
+			else -> trailingCountNounMeasure(trimmed) ?: internalCountNounMeasure(trimmed)
 		}
 	}
 
@@ -609,7 +1228,7 @@ internal object IngredientLineParser {
 			return null
 		}
 		val trailing = tokens.last().lowercase().trimEnd(',', ';', '.')
-		return if (trailing in IngredientLineParserLexicon.countNounTokens) {
+		return if (trailing in allCountNounTokens()) {
 			LeadingAmount(
 				quantity = null,
 				unit = unitForCountNoun(trailing),
@@ -620,19 +1239,84 @@ internal object IngredientLineParser {
 		}
 	}
 
+	private fun internalCountNounMeasure(value: String): LeadingAmount? {
+		val tokens = value.split(extraWhitespacePattern)
+		val countNouns = allCountNounTokens()
+		val index = tokens.indexOfLast { token ->
+			token.lowercase().trimEnd(',', ';', '.') in countNouns
+		}
+		val nounInMiddle = tokens.size >= MIN_INTERNAL_COUNT_NOUN_TOKENS &&
+			index > 0 &&
+			index < tokens.lastIndex
+		val noun = if (nounInMiddle) {
+			tokens[index].lowercase().trimEnd(',', ';', '.')
+		} else {
+			null
+		}
+		val rest = noun?.let { countNoun ->
+			countNounFoodName(
+				noun = countNoun,
+				before = tokens.take(index),
+				after = tokens.drop(index + 1),
+			).takeIf { foodName -> foodName.isNotBlank() }
+		}
+		return rest?.let { foodName ->
+			LeadingAmount(
+				quantity = null,
+				unit = unitForCountNoun(noun.orEmpty()),
+				rest = bayLeafName(foodName),
+			)
+		}
+	}
+
+	private fun countNounFoodName(
+		noun: String,
+		before: List<String>,
+		after: List<String>,
+	): String {
+		val afterHasMignon = after.any { token -> token.equals("mignon", ignoreCase = true) }
+		return when {
+			afterHasMignon -> listOf("filet", "mignon").joinToString(" ")
+			noun in volumeCountNounTokens -> (before + after).joinToString(" ")
+			noun in cutCountNounTokens ||
+				noun == "stalk" ||
+				noun == "stalks" ||
+				noun == "sheet" ||
+				noun == "sheets" -> before.joinToString(" ")
+
+			before.isNotEmpty() && after.isNotEmpty() -> (before + after).joinToString(" ")
+			before.isNotEmpty() -> before.joinToString(" ")
+			else -> after.joinToString(" ")
+		}
+	}
+
+	private fun allCountNounTokens(): Set<String> =
+		IngredientLineParserLexicon.countNounTokens + extraCountNounTokens
+
 	private fun unitForCountNoun(noun: String): String =
 		when (noun) {
-			in IngredientLineParserLexicon.teaspoonCountNounTokens -> "tsp"
-			in IngredientLineParserLexicon.tablespoonCountNounTokens -> "tbsp"
+			in IngredientLineParserLexicon.teaspoonCountNounTokens,
+			in teaspoonExtraCountNounTokens,
+				-> "tsp"
+
+			in IngredientLineParserLexicon.tablespoonCountNounTokens,
+			in tablespoonExtraCountNounTokens,
+				-> "tbsp"
+
+			in cupExtraCountNounTokens -> "cup"
+			"pint", "pints" -> "pint"
+			"quart", "quarts" -> "quart"
+			"gallon", "gallons" -> "gallon"
 			else -> "piece"
 		}
 
 	private fun bayLeafName(value: String): String {
 		val trimmed = value.trim()
-		return if (trimmed.equals("bay", ignoreCase = true)) {
-			"bay leaf"
-		} else {
-			trimmed
+		val compact = trimmed.lowercase().replace(" ", "")
+		return when {
+			trimmed.equals("bay", ignoreCase = true) -> "bay leaf"
+			compact == "bayleaf" || compact == "bayleaves" -> "bay leaf"
+			else -> trimmed
 		}
 	}
 
@@ -643,14 +1327,32 @@ internal object IngredientLineParser {
 			.filter { token -> token.isNotEmpty() }
 		val isGarlicClove = lookupTokens.any { token -> token == "garlic" } &&
 			lookupTokens.any { token -> token.startsWith("clove") }
-		val isCountableMeat = hasQuantity && isCountableMeatName(lookupTokens)
-		return when {
+		val garlicOrCloveUnit = when {
 			first == "egg" || first == "clove" || first == "piece" -> first
 			isGarlicClove || isFreshGarlic(lookupTokens) -> "clove"
-			isCountableProduce(lookupTokens) -> "piece"
-			isCountableMeat -> "piece"
 			else -> null
 		}
+		return garlicOrCloveUnit
+			?: if (hasQuantity && isPieceCountFood(lookupTokens)) "piece" else null
+	}
+
+	private fun isPieceCountFood(lookupTokens: List<String>): Boolean {
+		val isCountedPoultryBreastOrThigh =
+			lookupTokens.any { token -> token in countablePoultryTokens } &&
+				lookupTokens.any { token -> token in bareBreastOrThighTokens }
+		return isCountableProduce(lookupTokens) ||
+			isCountableMeatName(lookupTokens) ||
+			isDefaultablePoultry(lookupTokens) ||
+			isCountedPoultryBreastOrThigh ||
+			lookupTokens.any { token -> token in defaultPieceProteinTokens } ||
+			lookupTokens.any { token -> token in defaultPieceCheeseTokens } ||
+			(
+				lookupTokens.any { token -> token in defaultPieceBreadTokens } &&
+					lookupTokens.none { token -> token == "garlic" }
+				) ||
+			lookupTokens.any { token -> token in defaultPiecePepperTokens } ||
+			lookupTokens.any { token -> token in defaultPiecePreparedTokens } ||
+			lookupTokens.any { token -> token == "chocolate" }
 	}
 
 	private fun isCountableProduce(lookupTokens: List<String>): Boolean {
@@ -680,17 +1382,44 @@ internal object IngredientLineParser {
 		return hasPepper && hasColor && !isSpicePepper
 	}
 
-	private fun isCornOnTheCob(lookupTokens: List<String>): Boolean =
-		lookupTokens.any { token -> token == "corn" } &&
-			lookupTokens.any { token -> token == "cob" }
+	private fun isCornOnTheCob(lookupTokens: List<String>): Boolean {
+		val hasCorn = lookupTokens.any { token ->
+			token == "corn" || token == "sweetcorn"
+		}
+		val hasCob = lookupTokens.any { token -> token == "cob" || token == "cobs" }
+		return hasCorn && hasCob
+	}
+
+	private val countableMeatAnimalTokens = setOf(
+		"beef",
+		"duck",
+		"ham",
+		"lamb",
+		"pig",
+		"pork",
+		"salmon",
+		"tuna",
+		"turkey",
+	)
 
 	private fun isCountableMeatName(lookupTokens: List<String>): Boolean {
-		if (lookupTokens.any { token -> token in IngredientLineParserLexicon.countableSausageTokens }) {
-			return true
+		val hasSausage = lookupTokens.any { token ->
+			token in IngredientLineParserLexicon.countableSausageTokens
 		}
-		val hasChicken = lookupTokens.any { token -> token == "chicken" }
-		val hasBreastOrThigh = lookupTokens.any { token -> token in IngredientLineParserLexicon.countableMeatTokens }
-		return hasChicken && hasBreastOrThigh
+		val hasPoultry = lookupTokens.any { token -> token in countablePoultryTokens }
+		val hasNonBareCut = lookupTokens.any { token -> token in extraCountableMeatTokens }
+		val hasWholeBird = lookupTokens.any { token -> token in wholeBirdTokens }
+		val hasCountedAnimalCut = lookupTokens.any { token ->
+			token in extraCountableMeatTokens || token in countableMeatCutTokens
+		} && lookupTokens.any { token -> token in countableMeatAnimalTokens }
+		val hasNamedMeatCut = lookupTokens.any { token -> token in countableMeatCutTokens }
+		val hasHam = lookupTokens.any { token -> token == "ham" }
+		return hasSausage ||
+			hasHam ||
+			(hasPoultry && hasNonBareCut) ||
+			(hasPoultry && hasWholeBird) ||
+			hasCountedAnimalCut ||
+			hasNamedMeatCut
 	}
 
 	private fun parsedNameForUnit(unit: String?, rest: String, rawText: String): String {
@@ -702,7 +1431,20 @@ internal object IngredientLineParser {
 			trimmed.isEmpty() -> "garlic"
 			trimmed.equals("clove", ignoreCase = true) || trimmed.equals("cloves", ignoreCase = true) -> "garlic"
 			trimmed.equals("ground", ignoreCase = true) -> "ground clove"
-			else -> trimmed
+			isGarlicOrCloveSpiceName(trimmed) -> trimmed
+			else -> "garlic"
+		}
+	}
+
+	private fun isGarlicOrCloveSpiceName(rest: String): Boolean {
+		val lookupTokens = NutritionNameNormalizer.forLookup(rest)
+			.split(' ')
+			.filter { token -> token.isNotEmpty() }
+		return lookupTokens.any { token ->
+			token == "garlic" ||
+				token == "clove" ||
+				token == "cloves" ||
+				token == "ground"
 		}
 	}
 
@@ -774,4 +1516,6 @@ internal object IngredientLineParser {
 		val unit: String,
 		val rest: String,
 	)
+
+	private const val MIN_INTERNAL_COUNT_NOUN_TOKENS = 3
 }

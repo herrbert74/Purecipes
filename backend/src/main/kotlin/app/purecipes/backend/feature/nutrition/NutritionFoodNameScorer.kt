@@ -48,6 +48,11 @@ internal object NutritionFoodNameScorer {
 		"butterbur",
 	)
 
+	private val insufficientSoloQueryTokens = setOf(
+		"box",
+		"side",
+	)
+
 	fun score(queryNormalized: String, candidateNormalized: String): NutritionFoodNameScore? {
 		val queryTokens = NutritionNameNormalizer.tokens(queryNormalized)
 		val queryCanonical = queryTokens.flatMap(::expandPlural).toSet()
@@ -56,6 +61,7 @@ internal object NutritionFoodNameScorer {
 		val tokenScore = queryTokens.size * TOKEN_MATCH_SCORE + extraTokenAdjustment(extraTokens)
 		return when {
 			queryTokens.isEmpty() -> null
+			queryTokens.size == 1 && queryTokens.first() in insufficientSoloQueryTokens -> null
 			!hasAllQueryTokens(queryTokens, candidateTokens) -> null
 			extraTokens.any { token -> token in conflictTokens } -> null
 			tokenScore < MINIMUM_MATCH_SCORE -> null
