@@ -14,7 +14,6 @@ internal object IngredientGramWeightResolver {
 	private val defaultGramsPerCup = BigDecimal("240")
 	private val defaultGramsPerPiece = BigDecimal("10")
 	private val defaultGramsPerEgg = BigDecimal("50")
-	private val defaultGramsPerClove = BigDecimal("3")
 
 	fun resolveGrams(
 		quantity: BigDecimal,
@@ -68,7 +67,6 @@ internal object IngredientGramWeightResolver {
 			"cup" -> defaultGramsPerCup
 			"piece" -> defaultGramsPerPiece
 			"egg" -> defaultGramsPerEgg
-			"clove" -> defaultGramsPerClove
 			else -> null
 		}
 }

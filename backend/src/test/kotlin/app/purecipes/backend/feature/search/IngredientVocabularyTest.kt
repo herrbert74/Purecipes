@@ -18,6 +18,12 @@ class IngredientVocabularyTest {
 	}
 
 	@Test
+	fun `food sheet counts are not treated as equipment`() {
+		IngredientVocabulary.isIgnorableIngredientLine("graham cracker sheets") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("baking sheet") shouldBe true
+	}
+
+	@Test
 	fun `treats default pantry staples as covered`() {
 		IngredientVocabulary.isCoveredByAvailableIngredients(
 			ingredientLine = "salt and pepper",

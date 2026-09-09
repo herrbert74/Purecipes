@@ -90,6 +90,193 @@ class NutritionSeedAliasIndexTest {
 	}
 
 	@Test
+	fun mergeAppliesCurrentLeftoverUnmatchedAliases() {
+		val chickenBreast = food(
+			id = 71,
+			displayName = "Chicken, breast, boneless, skinless, raw",
+			normalizedName = "chicken breast boneless skinless raw",
+		)
+		val peas = food(
+			id = 72,
+			displayName = "Peas, green, raw",
+			normalizedName = "peas green raw",
+		)
+		val blueberries = food(
+			id = 73,
+			displayName = "Blueberries, raw",
+			normalizedName = "blueberries raw",
+		)
+		val kale = food(
+			id = 74,
+			displayName = "Kale, raw",
+			normalizedName = "kale raw",
+		)
+		val brownRice = food(
+			id = 75,
+			displayName = "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
+			normalizedName = "rice brown long grain raw includes foods for usdas food distribution program",
+		)
+		val flour = food(
+			id = 76,
+			displayName = "Flour, wheat, all-purpose, enriched, unbleached",
+			normalizedName = "flour wheat all purpose enriched unbleached",
+		)
+		val passata = food(
+			id = 77,
+			displayName = "Tomatoes, crushed, canned",
+			normalizedName = "tomatoes crushed canned",
+		)
+		val lemonJuice = food(
+			id = 78,
+			displayName = "Lemon juice, raw",
+			normalizedName = "lemon juice raw",
+		)
+		val limeJuice = food(
+			id = 79,
+			displayName = "Lime juice, raw",
+			normalizedName = "lime juice raw",
+		)
+		val pumpkin = food(
+			id = 80,
+			displayName = "Pumpkin, canned, without salt",
+			normalizedName = "pumpkin canned without salt",
+		)
+		val garlic = food(
+			id = 81,
+			displayName = "Garlic, raw",
+			normalizedName = "garlic raw",
+		)
+		val bacon = food(
+			id = 82,
+			displayName = "Pork, cured, bacon, unprepared",
+			normalizedName = "pork cured bacon unprepared",
+		)
+		val filo = food(
+			id = 83,
+			displayName = "Puff pastry, frozen, ready-to-bake",
+			normalizedName = "puff pastry frozen ready to bake",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(
+				chickenBreast,
+				peas,
+				blueberries,
+				kale,
+				brownRice,
+				flour,
+				passata,
+				lemonJuice,
+				limeJuice,
+				pumpkin,
+				garlic,
+				bacon,
+				filo,
+			),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["boneless skinless chicken breast halves"] shouldBe 71
+		aliases["frozen peas"] shouldBe 72
+		aliases["frozen blueberries"] shouldBe 73
+		aliases["lacinato kale"] shouldBe 74
+		aliases["long grain brown rice"] shouldBe 75
+		aliases["high protein all purpose flour"] shouldBe 76
+		aliases["passata pomodoro"] shouldBe 77
+		aliases["store bought passata pomodoro"] shouldBe 77
+		aliases["zest juice lemon"] shouldBe 78
+		aliases["lime juice from limes"] shouldBe 79
+		aliases["pumpkin puree"] shouldBe 80
+		aliases["garlic whole"] shouldBe 81
+		aliases["garlic"] shouldBe 81
+		aliases["bacon"] shouldBe 82
+		aliases["slices bacon"] shouldBe 82
+		aliases["filo pastry"] shouldBe 83
+	}
+
+	@Test
+	fun mergeAppliesHighConfidenceUnmatchedReportAliases() {
+		val celery = food(
+			id = 91,
+			displayName = "Celery, raw",
+			normalizedName = "celery raw",
+		)
+		val greenChile = food(
+			id = 92,
+			displayName = "Peppers, hot chili, green, raw",
+			normalizedName = "peppers hot chili green raw",
+		)
+		val whiteBread = food(
+			id = 93,
+			displayName = "Bread, white, commercially prepared (includes soft bread crumbs)",
+			normalizedName = "bread white commercially prepared includes soft bread crumbs",
+		)
+		val chickenBreast = food(
+			id = 94,
+			displayName = "Chicken, breast, boneless, skinless, raw",
+			normalizedName = "chicken breast boneless skinless raw",
+		)
+		val flour = food(
+			id = 95,
+			displayName = "Flour, wheat, all-purpose, enriched, unbleached",
+			normalizedName = "flour wheat all purpose enriched unbleached",
+		)
+		val oliveOil = food(
+			id = 96,
+			displayName = "Oil, olive, extra virgin",
+			normalizedName = "oil olive extra virgin",
+		)
+		val salt = food(
+			id = 97,
+			displayName = "Salt, table",
+			normalizedName = "salt table",
+		)
+		val almond = food(
+			id = 98,
+			displayName = "Nuts, almonds",
+			normalizedName = "nuts almonds",
+		)
+		val mayo = food(
+			id = 99,
+			displayName = "Mayonnaise, regular",
+			normalizedName = "mayonnaise regular",
+		)
+		val yoghurt = food(
+			id = 100,
+			displayName = "Yogurt, plain, whole milk",
+			normalizedName = "yogurt plain whole milk",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(
+				celery,
+				greenChile,
+				whiteBread,
+				chickenBreast,
+				flour,
+				oliveOil,
+				salt,
+				almond,
+				mayo,
+				yoghurt,
+			),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["celery sticks"] shouldBe 91
+		aliases["mild green chiles"] shouldBe 92
+		aliases["green chiles"] shouldBe 92
+		aliases["white sandwich bread"] shouldBe 93
+		aliases["white sandwich bread crusts"] shouldBe 93
+		aliases["skinless boneless chicken breast pounded"] shouldBe 94
+		aliases["all purpose flour"] shouldBe 95
+		aliases["soft wheat all purpose flour"] shouldBe 95
+		aliases["extra virgin olive oil turns the pan"] shouldBe 96
+		aliases["salt sprinkling"] shouldBe 97
+		aliases["slivered almonds"] shouldBe 98
+		aliases["mayonnaise"] shouldBe 99
+		aliases["yoghurt"] shouldBe 100
+	}
+
+	@Test
 	fun mergeAppliesProduceCountAliases() {
 		val onion = food(
 			id = 31,

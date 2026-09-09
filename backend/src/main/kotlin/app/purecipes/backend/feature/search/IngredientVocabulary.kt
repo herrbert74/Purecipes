@@ -46,7 +46,6 @@ internal object IngredientVocabulary {
 		"pot",
 		"pressure cooker",
 		"saucepan",
-		"sheet",
 		"skewer",
 		"slotted spoon",
 		"spoon",
@@ -104,9 +103,9 @@ internal object IngredientVocabulary {
 		val hasDigit = lower.any(Char::isDigit)
 		val headingLike =
 			lower.endsWith(':') ||
-			ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
-			ignorableLineExactFilters.contains(lower) ||
-			lower.contains("recipe follows")
+				ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
+				ignorableLineExactFilters.contains(lower) ||
+				lower.contains("recipe follows")
 		val normalized = IngredientNameMatching.normalizeIngredientText(trimmed)
 		val equipmentLike = !hasDigit && ignorableEquipmentKeywords.any { keyword -> normalized.contains(keyword) }
 

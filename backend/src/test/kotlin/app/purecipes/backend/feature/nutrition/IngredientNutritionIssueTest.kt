@@ -23,7 +23,7 @@ class IngredientNutritionIssueTest {
 	fun collectIngredientIssuesFlagsUnmeasurableLine() {
 		val calculation = RecipeNutritionCalculator(NutritionLookupIndex.EMPTY).calculate(
 			listOf(
-				RecipeIngredientRow(ingredientId = 2, rawText = "Salt to taste"),
+				RecipeIngredientRow(ingredientId = 2, rawText = "chicken breast"),
 			),
 		)
 

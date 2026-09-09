@@ -432,4 +432,168 @@ class IngredientLineParserTest {
 		IngredientLineParser.parse("Olive oil").isMeasurable shouldBe true
 		IngredientLineParser.parse("sausage").isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseDefaultsBareGarlicToOneClove() {
+		val garlic = IngredientLineParser.parse("garlic")
+		garlic.quantity shouldBe BigDecimal.ONE
+		garlic.unit shouldBe "clove"
+		garlic.parsedName shouldBe "garlic"
+		garlic.isMeasurable shouldBe true
+
+		val minced = IngredientLineParser.parse("garlic, minced")
+		minced.quantity shouldBe BigDecimal.ONE
+		minced.unit shouldBe "clove"
+		minced.isMeasurable shouldBe true
+
+		val counted = IngredientLineParser.parse("2 garlic")
+		counted.quantity shouldBe BigDecimal("2")
+		counted.unit shouldBe "clove"
+		counted.isMeasurable shouldBe true
+
+		val powder = IngredientLineParser.parse("garlic powder")
+		powder.quantity shouldBe BigDecimal.ONE
+		powder.unit shouldBe "tsp"
+		powder.isMeasurable shouldBe true
+
+		IngredientLineParser.parse("garlic bread").isMeasurable shouldBe false
+	}
+
+	@Test
+	fun parseDefaultsMoreWholeProduceAndPantryLines() {
+		val radish = IngredientLineParser.parse("radish")
+		radish.quantity shouldBe BigDecimal.ONE
+		radish.unit shouldBe "piece"
+		radish.isMeasurable shouldBe true
+
+		val mushrooms = IngredientLineParser.parse("mushrooms")
+		mushrooms.unit shouldBe "piece"
+		mushrooms.isMeasurable shouldBe true
+
+		val redPeppers = IngredientLineParser.parse("2 red peppers")
+		redPeppers.quantity shouldBe BigDecimal("2")
+		redPeppers.unit shouldBe "piece"
+		redPeppers.isMeasurable shouldBe true
+
+		val honey = IngredientLineParser.parse("honey")
+		honey.quantity shouldBe BigDecimal.ONE
+		honey.unit shouldBe "tbsp"
+		honey.isMeasurable shouldBe true
+
+		val parmesan = IngredientLineParser.parse("parmesan")
+		parmesan.unit shouldBe "tbsp"
+		parmesan.isMeasurable shouldBe true
+
+		val stock = IngredientLineParser.parse("chicken stock")
+		stock.unit shouldBe "cup"
+		stock.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseTreatsLeadingHeadsHandfulsAndSlicesWithoutQuantity() {
+		val headGarlic = IngredientLineParser.parse("head garlic")
+		headGarlic.quantity shouldBe BigDecimal.ONE
+		headGarlic.unit shouldBe "piece"
+		headGarlic.parsedName shouldBe "garlic"
+		headGarlic.isMeasurable shouldBe true
+
+		val handfuls = IngredientLineParser.parse("generous handfuls parmigiano reggiano")
+		handfuls.quantity shouldBe BigDecimal("2")
+		handfuls.unit shouldBe "tbsp"
+		handfuls.parsedName shouldBe "parmigiano reggiano"
+		handfuls.isMeasurable shouldBe true
+
+		val slices = IngredientLineParser.parse("thin slices prosciutto")
+		slices.quantity shouldBe BigDecimal.ONE
+		slices.unit shouldBe "piece"
+		slices.parsedName shouldBe "prosciutto"
+		slices.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseStripsExpandedContainersAndOrphanUnits() {
+		val canned = IngredientLineParser.parse("1 can pumpkin puree")
+		canned.quantity shouldBe BigDecimal.ONE
+		canned.unit shouldBe "piece"
+		canned.parsedName shouldBe "pumpkin puree"
+		canned.isMeasurable shouldBe true
+
+		val bagged = IngredientLineParser.parse("1 bag baby spinach")
+		bagged.parsedName shouldBe "baby spinach"
+
+		val trailingUnit = IngredientLineParser.parse("olive oil tbsp")
+		trailingUnit.unit shouldBe "tbsp"
+		trailingUnit.parsedName shouldBe "olive oil"
+		trailingUnit.isMeasurable shouldBe true
+
+		val leadingUnit = IngredientLineParser.parse("tbsp olive oil")
+		leadingUnit.unit shouldBe "tbsp"
+		leadingUnit.parsedName shouldBe "olive oil"
+		leadingUnit.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseReadsFewDashesAsPinchTeaspoons() {
+		val dashes = IngredientLineParser.parse("few dashes hot sauce")
+		dashes.quantity shouldBe BigDecimal("0.75")
+		dashes.unit shouldBe "tsp"
+		dashes.parsedName shouldBe "hot sauce"
+		dashes.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseTreatsTrailingFiletsAndSheetsWithoutQuantityAsPiece() {
+		val salmon = IngredientLineParser.parse("boneless skinless salmon filets")
+		salmon.quantity shouldBe BigDecimal.ONE
+		salmon.unit shouldBe "piece"
+		salmon.parsedName shouldBe "boneless skinless salmon"
+		salmon.isMeasurable shouldBe true
+
+		val counted = IngredientLineParser.parse("2 boneless skinless salmon filets")
+		counted.quantity shouldBe BigDecimal("2")
+		counted.unit shouldBe "piece"
+		counted.parsedName shouldBe "boneless skinless salmon"
+		counted.isMeasurable shouldBe true
+
+		val sheets = IngredientLineParser.parse("graham cracker sheets")
+		sheets.quantity shouldBe BigDecimal.ONE
+		sheets.unit shouldBe "piece"
+		sheets.parsedName shouldBe "graham cracker"
+		sheets.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseDefaultsCheeseGelatinChestnutsGreensAndBurgers() {
+		val cheddar = IngredientLineParser.parse("cheddar cheese")
+		cheddar.quantity shouldBe BigDecimal.ONE
+		cheddar.unit shouldBe "tbsp"
+		cheddar.isMeasurable shouldBe true
+
+		val gelatin = IngredientLineParser.parse("unflavored gelatin")
+		gelatin.quantity shouldBe BigDecimal.ONE
+		gelatin.unit shouldBe "piece"
+		gelatin.isMeasurable shouldBe true
+
+		val chestnuts = IngredientLineParser.parse("water chestnuts")
+		chestnuts.unit shouldBe "piece"
+		chestnuts.isMeasurable shouldBe true
+
+		val radicchio = IngredientLineParser.parse("radicchio")
+		radicchio.unit shouldBe "piece"
+		radicchio.isMeasurable shouldBe true
+
+		val greens = IngredientLineParser.parse("baby salad greens")
+		greens.unit shouldBe "piece"
+		greens.isMeasurable shouldBe true
+
+		val burger = IngredientLineParser.parse("plant based burger")
+		burger.unit shouldBe "piece"
+		burger.isMeasurable shouldBe true
+
+		val cloveOnly = IngredientLineParser.parse("1 clove")
+		cloveOnly.quantity shouldBe BigDecimal.ONE
+		cloveOnly.unit shouldBe "clove"
+		cloveOnly.parsedName shouldBe "garlic"
+		cloveOnly.isMeasurable shouldBe true
+	}
 }

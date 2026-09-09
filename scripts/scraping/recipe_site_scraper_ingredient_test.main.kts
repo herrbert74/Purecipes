@@ -207,6 +207,31 @@ val normalizeTextCases = listOf(
 		input = "For the sauce:",
 		expected = "For the sauce:",
 	),
+	IngredientTestCase(
+		description = "strips trailing Sainsbury's brand",
+		input = "250g bag young spinach by Sainsbury's",
+		expected = "250 g bag young spinach",
+	),
+	IngredientTestCase(
+		description = "strips curly-apostrophe Sainsbury’s brand",
+		input = "250 g pack closed cup chestnut mushrooms by Sainsbury’s, quartered",
+		expected = "250 g pack closed cup chestnut mushrooms, quartered",
+	),
+	IngredientTestCase(
+		description = "leaves trailing list commas untouched without brands",
+		input = "14 ounces similar dark greens, such as beet greens, swiss chard,",
+		expected = "14 ounces similar dark greens, such as beet greens, swiss chard,",
+	),
+	IngredientTestCase(
+		description = "strips Tesco brand suffix",
+		input = "1 tin chopped tomatoes Tesco",
+		expected = "1 tin chopped tomatoes",
+	),
+	IngredientTestCase(
+		description = "strips bare Sainsbury leftover token",
+		input = "extra virgin olive oil sainsbury",
+		expected = "extra virgin olive oil",
+	),
 )
 
 val splitCases = listOf(
