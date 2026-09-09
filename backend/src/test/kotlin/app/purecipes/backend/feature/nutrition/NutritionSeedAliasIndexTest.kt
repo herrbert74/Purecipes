@@ -86,7 +86,7 @@ class NutritionSeedAliasIndexTest {
 		aliases["vanilla bean paste"] shouldBe 21
 		aliases["dark brown sugar"] shouldBe 22
 		aliases["ground clove"] shouldBe 23
-		aliases["clove"] shouldBe 23
+		aliases["ground cloves"] shouldBe 23
 	}
 
 	@Test

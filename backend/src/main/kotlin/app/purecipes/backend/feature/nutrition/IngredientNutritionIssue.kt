@@ -17,7 +17,8 @@ internal data class IngredientNutritionIssue(
 
 internal fun RecipeNutritionCalculationResult.collectIngredientIssues(): List<IngredientNutritionIssue> =
 	ingredientResults.mapNotNull { result ->
-		if (IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) ||
+		if (!result.countsTowardTotals ||
+			IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) ||
 			!NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
 		) {
 			return@mapNotNull null

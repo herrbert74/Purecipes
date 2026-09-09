@@ -15,6 +15,7 @@ internal data class IngredientNutritionCalculationResult(
 	val foodMatch: NutritionFoodMatch?,
 	val grams: BigDecimal?,
 	val gramsSource: String? = null,
+	val countsTowardTotals: Boolean = true,
 )
 
 internal class RecipeNutritionCalculator(
@@ -24,21 +25,13 @@ internal class RecipeNutritionCalculator(
 	fun calculate(ingredients: List<RecipeIngredientRow>): RecipeNutritionCalculationResult {
 		val seenAlternativeKeys = mutableSetOf<Int>()
 		val ingredientResults = ingredients.map { ingredient ->
-			if (countsTowardNutritionTotals(ingredient, seenAlternativeKeys)) {
-				calculateIngredient(ingredient)
-			} else {
-				val parsed = IngredientLineParser.parse(ingredient.rawText)
-				IngredientNutritionCalculationResult(
-					ingredientId = ingredient.ingredientId,
-					parsed = parsed,
-					foodMatch = null,
-					grams = null,
-				)
-			}
+			val countsTowardTotals = countsTowardNutritionTotals(ingredient, seenAlternativeKeys)
+			calculateIngredient(ingredient).copy(countsTowardTotals = countsTowardTotals)
 		}
 
 		val countableResults = ingredientResults.filter { result ->
-			!IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) &&
+			result.countsTowardTotals &&
+				!IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) &&
 				NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
 		}
 		if (countableResults.isEmpty()) {

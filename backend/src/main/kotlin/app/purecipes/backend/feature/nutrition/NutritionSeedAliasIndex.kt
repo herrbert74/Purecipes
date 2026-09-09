@@ -12,15 +12,12 @@ internal object NutritionSeedAliasIndex {
 				val foodId = seedAlias.preferredDescriptions.firstNotNullOfOrNull { description ->
 					foodIdByDisplayName[description]
 				} ?: return@forEach
-				aliasKeys(seedAlias.alias).forEach { key -> put(key, foodId) }
+				val key = NutritionNameNormalizer.normalize(seedAlias.alias)
+				if (key.isNotBlank() && key !in this) {
+					put(key, foodId)
+				}
 			}
 		}
 		return storedAliases + seedAliases
 	}
-
-	private fun aliasKeys(alias: String): List<String> =
-		listOf(
-			NutritionNameNormalizer.normalize(alias),
-			NutritionNameNormalizer.forLookup(alias),
-		).distinct().filter { key -> key.isNotBlank() }
 }
