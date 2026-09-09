@@ -110,8 +110,22 @@ class NutritionSupplementalMeasuresTest {
 				sodium = null,
 			),
 		)
+		val groundClove = NutritionFoodRecord(
+			id = 14,
+			displayName = "Spices, cloves, ground",
+			normalizedName = "spices cloves ground",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
 		val measures = NutritionSupplementalMeasures.overlayMeasures(
-			foods = listOf(banana, radish, garlic, cheddar),
+			foods = listOf(banana, radish, garlic, cheddar, groundClove),
 			storedMeasures = emptyMap(),
 		)
 
@@ -120,6 +134,7 @@ class NutritionSupplementalMeasuresTest {
 		measures[12]?.get("clove") shouldBe BigDecimal("3")
 		measures[12]?.get("piece") shouldBe BigDecimal("3")
 		measures[13]?.get("tbsp") shouldBe BigDecimal("7")
+		measures[14]?.get("clove") shouldBe BigDecimal("0.1")
 	}
 
 	@Test

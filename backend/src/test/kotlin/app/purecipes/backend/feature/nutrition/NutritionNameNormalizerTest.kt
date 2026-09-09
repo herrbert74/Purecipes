@@ -124,6 +124,14 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup(
 			"instant ramen noodles seasoning packets discarded",
 		) shouldBe "instant ramen noodles seasoning"
+		NutritionNameNormalizer.forLookup("envelope instant yeast") shouldBe "instant yeast"
+		NutritionNameNormalizer.forLookup("chilli powder palmfuls") shouldBe "chilli powder"
+		NutritionNameNormalizer.forLookup("tomatillos husk") shouldBe "tomatillos"
+		NutritionNameNormalizer.forLookup("operative british chicken breast fillets") shouldBe
+			"british chicken breast fillets"
+		NutritionNameNormalizer.forLookup(
+			"seeds cardamom pods using pestle mortar",
+		) shouldBe "seeds cardamom pods"
 	}
 
 	@Test

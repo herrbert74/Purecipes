@@ -1,6 +1,7 @@
 package app.purecipes.backend.feature.nutrition
 
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import java.math.BigDecimal
 import kotlin.test.Test
@@ -98,13 +99,13 @@ class NutritionSeedAliasIndexTest {
 		)
 		val peas = food(
 			id = 72,
-			displayName = "Peas, green, raw",
-			normalizedName = "peas green raw",
+			displayName = "Peas, green, frozen, unprepared (Includes foods for USDA's Food Distribution Program)",
+			normalizedName = "peas green frozen unprepared",
 		)
 		val blueberries = food(
 			id = 73,
-			displayName = "Blueberries, raw",
-			normalizedName = "blueberries raw",
+			displayName = "Blueberries, frozen, unsweetened (Includes foods for USDA's Food Distribution Program)",
+			normalizedName = "blueberries frozen unsweetened",
 		)
 		val kale = food(
 			id = 74,
@@ -156,23 +157,35 @@ class NutritionSeedAliasIndexTest {
 			displayName = "Puff pastry, frozen, ready-to-bake",
 			normalizedName = "puff pastry frozen ready to bake",
 		)
+		val cranberries = food(
+			id = 84,
+			displayName = "Cranberries, raw",
+			normalizedName = "cranberries raw",
+		)
+		val foods = listOf(
+			chickenBreast,
+			peas,
+			blueberries,
+			kale,
+			brownRice,
+			flour,
+			passata,
+			lemonJuice,
+			limeJuice,
+			pumpkin,
+			garlic,
+			bacon,
+			filo,
+			cranberries,
+		)
 		val aliases = NutritionSeedAliasIndex.merge(
-			foods = listOf(
-				chickenBreast,
-				peas,
-				blueberries,
-				kale,
-				brownRice,
-				flour,
-				passata,
-				lemonJuice,
-				limeJuice,
-				pumpkin,
-				garlic,
-				bacon,
-				filo,
-			),
+			foods = foods,
 			storedAliases = emptyMap(),
+		)
+		val index = NutritionLookupIndex(
+			foodById = foods.associateBy { food -> food.id },
+			foodIdByNormalizedAlias = aliases,
+			measuresByFoodId = emptyMap(),
 		)
 
 		aliases["boneless skinless chicken breast halves"] shouldBe 71
@@ -183,6 +196,7 @@ class NutritionSeedAliasIndexTest {
 		aliases["high protein all purpose flour"] shouldBe 76
 		aliases["passata pomodoro"] shouldBe 77
 		aliases["store bought passata pomodoro"] shouldBe 77
+		aliases["frozen cranberries"] shouldBe 84
 		aliases["zest juice lemon"] shouldBe 78
 		aliases["lime juice from limes"] shouldBe 79
 		aliases["pumpkin puree"] shouldBe 80
@@ -191,6 +205,24 @@ class NutritionSeedAliasIndexTest {
 		aliases["bacon"] shouldBe 82
 		aliases["slices bacon"] shouldBe 82
 		aliases["filo pastry"] shouldBe 83
+
+		listOf(
+			"frozen peas",
+			"frozen blueberries",
+			"long grain brown rice",
+			"passata pomodoro",
+			"store-bought passata di pomodoro",
+			"frozen cranberries",
+		).forEach { query ->
+			val lookupKey = NutritionNameNormalizer.forLookup(query)
+			val foodId = aliases[lookupKey]
+			foodId.shouldNotBeNull()
+			val match = index.findFood(query)
+			match.shouldNotBeNull()
+			match.foodId shouldBe foodId
+			match.matchSource shouldBe "alias"
+			foods.any { food -> food.id == foodId } shouldBe true
+		}
 	}
 
 	@Test

@@ -555,11 +555,23 @@ class IngredientLineParserTest {
 		counted.parsedName shouldBe "boneless skinless salmon"
 		counted.isMeasurable shouldBe true
 
+		val countedWithEach = IngredientLineParser.parse("4 boneless skinless salmon filets (about 6 ounces each)")
+		countedWithEach.quantity shouldBe BigDecimal("4")
+		countedWithEach.unit shouldBe "piece"
+		countedWithEach.parsedName shouldBe "boneless skinless salmon"
+		countedWithEach.isMeasurable shouldBe true
+
 		val sheets = IngredientLineParser.parse("graham cracker sheets")
 		sheets.quantity shouldBe BigDecimal.ONE
 		sheets.unit shouldBe "piece"
 		sheets.parsedName shouldBe "graham cracker"
 		sheets.isMeasurable shouldBe true
+
+		val countedSheets = IngredientLineParser.parse("9 graham cracker sheets (about 5 oz.; 1 sleeve)")
+		countedSheets.quantity shouldBe BigDecimal("9")
+		countedSheets.unit shouldBe "piece"
+		countedSheets.parsedName shouldBe "graham cracker"
+		countedSheets.isMeasurable shouldBe true
 	}
 
 	@Test

@@ -42,6 +42,7 @@ internal object NutritionSupplementalMeasures {
 	private const val CHORIZO_DESCRIPTION = "Sausage, pork, chorizo, link or ground, raw"
 	private const val CILANTRO_DESCRIPTION = "Coriander (cilantro) leaves, raw"
 	private const val CINNAMON_DESCRIPTION = "Spices, cinnamon, ground"
+	private const val CLOVE_SPICE_DESCRIPTION = "Spices, cloves, ground"
 	private const val CORN_DESCRIPTION = "Corn, sweet, yellow, raw"
 	private const val CORN_TORTILLA_DESCRIPTION = "Tortillas, ready-to-bake or -fry, corn"
 	private const val DILL_FRESH_DESCRIPTION = "Dill weed, fresh"
@@ -121,6 +122,9 @@ internal object NutritionSupplementalMeasures {
 		CILANTRO_DESCRIPTION to pieceGrams("2"),
 		CINNAMON_DESCRIPTION to listOf(
 			SupplementalMeasure(measureName = "tsp", gramsPerMeasure = BigDecimal("2.6")),
+		),
+		CLOVE_SPICE_DESCRIPTION to listOf(
+			SupplementalMeasure(measureName = "clove", gramsPerMeasure = BigDecimal("0.1")),
 		),
 		CORN_DESCRIPTION to pieceGrams("102"),
 		CORN_TORTILLA_DESCRIPTION to pieceGrams("26"),

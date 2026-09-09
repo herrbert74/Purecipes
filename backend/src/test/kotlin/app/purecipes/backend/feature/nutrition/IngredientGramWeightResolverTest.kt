@@ -89,4 +89,17 @@ class IngredientGramWeightResolverTest {
 		resolved.grams shouldBe BigDecimal("6")
 		resolved.source shouldBe GramWeightSource.MEASURE
 	}
+
+	@Test
+	fun resolveGramsUsesCloveMeasureForGroundCloveSpiceCounts() {
+		val resolved = IngredientGramWeightResolver.resolveGrams(
+			quantity = BigDecimal("8"),
+			unit = "clove",
+			foodMeasures = mapOf("clove" to BigDecimal("0.1")),
+		)
+
+		resolved.shouldNotBeNull()
+		resolved.grams shouldBe BigDecimal("0.8")
+		resolved.source shouldBe GramWeightSource.MEASURE
+	}
 }

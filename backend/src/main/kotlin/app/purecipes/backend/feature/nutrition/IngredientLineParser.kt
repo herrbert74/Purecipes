@@ -72,7 +72,7 @@ internal object IngredientLineParser {
 	)
 
 	private val aboutAmountPattern = Regex(
-		"""^(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*$""",
+		"""^(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:each)?\s*$""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -477,6 +477,9 @@ internal object IngredientLineParser {
 	private fun findParentheticalMeasure(value: String): ParsedIngredientLine? {
 		parentheticalPattern.findAll(value).forEach { match ->
 			val inner = canonicalizeLine(match.groupValues[1])
+			if (inner.contains("each", ignoreCase = true)) {
+				return@forEach
+			}
 			val innerMatch = aboutAmountPattern.find(inner) ?: innerAmountPattern.find(inner) ?: return@forEach
 			val quantity = parseQuantity(innerMatch.groupValues[1]) ?: return@forEach
 			val unit = normalizeUnit(innerMatch.groupValues[2]) ?: return@forEach
@@ -494,6 +497,9 @@ internal object IngredientLineParser {
 		}
 		return null
 	}
+
+	private fun stripParentheticalClauses(value: String): String =
+		extraWhitespacePattern.replace(parentheticalPattern.replace(value, " "), " ").trim()
 
 	private fun findTrailingAboutMeasure(value: String): ParsedIngredientLine? {
 		val match = trailingAboutAmountPattern.find(value) ?: return null
@@ -551,8 +557,11 @@ internal object IngredientLineParser {
 		}
 		val countNoun = when {
 			afterTrailing.unit != null -> null
-			afterTrailing.quantity != null -> consumeCountNounMeasure(afterTrailing.rest)
-			else -> leadingCountNounMeasure(afterTrailing.rest) ?: trailingCountNounMeasure(afterTrailing.rest)
+			afterTrailing.quantity != null -> consumeCountNounMeasure(stripParentheticalClauses(afterTrailing.rest))
+			else -> {
+				val withoutParentheticals = stripParentheticalClauses(afterTrailing.rest)
+				leadingCountNounMeasure(withoutParentheticals) ?: trailingCountNounMeasure(withoutParentheticals)
+			}
 		}
 		return if (countNoun != null) {
 			LeadingAmount(
