@@ -731,6 +731,12 @@ class IngredientLineParserTest {
 		garlicPaste.unit shouldBe "tbsp"
 		garlicPaste.isMeasurable shouldBe true
 
+		val zhug = IngredientLineParser.parse("zhug")
+		zhug.quantity shouldBe BigDecimal.ONE
+		zhug.unit shouldBe "tbsp"
+		zhug.parsedName.lowercase() shouldBe "zhug"
+		zhug.isMeasurable shouldBe true
+
 		val yeast = IngredientLineParser.parse("active dry yeast")
 		yeast.unit shouldBe "tsp"
 		yeast.isMeasurable shouldBe true
@@ -754,6 +760,10 @@ class IngredientLineParserTest {
 	fun parseLeavesOrphanModifiersAndAmbiguousLinesUnmeasurable() {
 		IngredientLineParser.parse("whole").isMeasurable shouldBe false
 		IngredientLineParser.parse("white").isMeasurable shouldBe false
+		IngredientLineParser.parse("vegetable").isMeasurable shouldBe false
+		IngredientLineParser.parse("one").isMeasurable shouldBe false
+		IngredientLineParser.parse("warm").isMeasurable shouldBe false
+		IngredientLineParser.parse("store-bought").isMeasurable shouldBe false
 		IngredientLineParser.parse("yellow").isMeasurable shouldBe false
 		IngredientLineParser.parse("kosher").isMeasurable shouldBe false
 		IngredientLineParser.parse("soft").isMeasurable shouldBe false
@@ -765,6 +775,13 @@ class IngredientLineParserTest {
 		IngredientLineParser.parse("1 yellow").isMeasurable shouldBe false
 		IngredientLineParser.parse("2 whole").isMeasurable shouldBe false
 		IngredientLineParser.parse("6 hard boiled").isMeasurable shouldBe false
+		IngredientLineParser.parse("1/2 a large white (see above)").isMeasurable shouldBe false
+		IngredientLineParser.parse("Vegetable fat, for frying").isMeasurable shouldBe false
+		IngredientLineParser.parse("One 14-ounce can (see notes)").isMeasurable shouldBe false
+		IngredientLineParser.parse("5 tbsp vegetable").isMeasurable shouldBe false
+		IngredientLineParser.parse("Vegetable oil").isMeasurable shouldBe true
+		IngredientLineParser.parse("white rice").isMeasurable shouldBe true
+		IngredientLineParser.parse("one egg").isMeasurable shouldBe true
 	}
 
 	@Test
@@ -810,9 +827,7 @@ class IngredientLineParserTest {
 		val driedLimes = IngredientLineParser.parse(
 			"6 larger (total weight about 1 ounce; 28 g)",
 		)
-		driedLimes.quantity shouldBe BigDecimal.ONE
-		driedLimes.unit shouldBe "oz"
-		driedLimes.isMeasurable shouldBe true
+		driedLimes.isMeasurable shouldBe false
 
 		val peel = IngredientLineParser.parse("Peel (without any pith) from a ripe lemon")
 		peel.quantity shouldBe BigDecimal.ONE
@@ -831,6 +846,106 @@ class IngredientLineParserTest {
 		oniony.quantity shouldBe BigDecimal.ONE
 		oniony.unit shouldBe "piece"
 		oniony.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseRecoversPuffPastryCoupleRosemaryChickenAndPlusClauses() {
+		val pastry = IngredientLineParser.parse("One 9-inch square sheet frozen puff pastry, thawed")
+		pastry.quantity shouldBe BigDecimal.ONE
+		pastry.unit shouldBe "piece"
+		pastry.parsedName.lowercase().contains("puff pastry") shouldBe true
+		pastry.isMeasurable shouldBe true
+
+		val rosemary = IngredientLineParser.parse("A couple of stalks of rosemary")
+		rosemary.quantity shouldBe BigDecimal("2")
+		rosemary.unit shouldBe "piece"
+		rosemary.parsedName.lowercase().contains("rosemary") shouldBe true
+		rosemary.isMeasurable shouldBe true
+
+		val chicken = IngredientLineParser.parse("1 (1.8 kg chicken) cut into 12 pieces")
+		chicken.quantity shouldBe BigDecimal("1.8")
+		chicken.unit shouldBe "kg"
+		chicken.parsedName.lowercase().contains("chicken") shouldBe true
+		chicken.isMeasurable shouldBe true
+
+		val sugar = IngredientLineParser.parse(
+			"3 Tbsp. plus ½ cup (packed; 138 g) dark brown sugar, divided",
+		)
+		sugar.unit shouldBe "g"
+		sugar.quantity shouldBe BigDecimal("138")
+		sugar.parsedName.lowercase().contains("sugar") shouldBe true
+		sugar.isMeasurable shouldBe true
+
+		val bottle = IngredientLineParser.parse("1 (350 ml) bottle")
+		bottle.isMeasurable shouldBe false
+
+		val teaspoon = IngredientLineParser.parse("1/2 teaspoon")
+		teaspoon.isMeasurable shouldBe false
+
+		val head = IngredientLineParser.parse("1 large head")
+		head.isMeasurable shouldBe false
+	}
+
+	@Test
+	fun parseRecoversPackFoodsPoppySeedsAndCenterCutRanges() {
+		val broth = IngredientLineParser.parse("1 (10.5 ounce can) low-sodium beef broth")
+		broth.quantity shouldBe BigDecimal("10.5")
+		broth.unit shouldBe "oz"
+		broth.parsedName.lowercase().contains("beef broth") shouldBe true
+		broth.isMeasurable shouldBe true
+
+		val condensed = IngredientLineParser.parse(
+			"1 (14-oz. can) sweetened condensed milk, unopened, label removed",
+		)
+		condensed.quantity shouldBe BigDecimal("14")
+		condensed.unit shouldBe "oz"
+		condensed.parsedName.lowercase().contains("condensed milk") shouldBe true
+		condensed.parsedName.lowercase().contains("unopened") shouldBe false
+		condensed.isMeasurable shouldBe true
+
+		val pastry = IngredientLineParser.parse(
+			"1 sheet puff pastry from 1 (14-ounce package) frozen puff pastry, thawed " +
+				"(such as Dufour or Pepperidge Farm)",
+		)
+		pastry.quantity shouldBe BigDecimal.ONE
+		pastry.unit shouldBe "piece"
+		pastry.parsedName.lowercase() shouldBe "puff pastry"
+		pastry.isMeasurable shouldBe true
+
+		val poppy = IngredientLineParser.parse("poppy seeds, optional")
+		poppy.quantity shouldBe BigDecimal.ONE
+		poppy.unit shouldBe "tbsp"
+		poppy.parsedName.lowercase().contains("poppy") shouldBe true
+		poppy.isMeasurable shouldBe true
+
+		val filets = IngredientLineParser.parse(
+			"Two 6- to 8-ounce center-cut filets mignon, 1 1/2 to 2 inches thick, trimmed (see notes)",
+		)
+		filets.quantity shouldBe BigDecimal("12")
+		filets.unit shouldBe "oz"
+		filets.parsedName.lowercase().contains("mignon") shouldBe true
+		filets.parsedName.lowercase().contains("- to 8-ounce") shouldBe false
+		filets.isMeasurable shouldBe true
+
+		val potatoes = IngredientLineParser.parse(
+			"2 large yellow potatoes (1 pound total), cut into 1 1/2-inch pieces",
+		)
+		potatoes.quantity shouldBe BigDecimal.ONE
+		potatoes.unit shouldBe "lb"
+		potatoes.parsedName.lowercase().contains("potato") shouldBe true
+		potatoes.parsedName.lowercase().contains("total") shouldBe false
+		potatoes.isMeasurable shouldBe true
+
+		val cube = IngredientLineParser.parse(
+			"1 3/8 kg cube steak (tenderized round steak that's been extra tenderized)",
+		)
+		cube.unit shouldBe "kg"
+		cube.parsedName.lowercase().contains("cube steak") shouldBe true
+		cube.parsedName.lowercase().contains("been") shouldBe false
+		cube.isMeasurable shouldBe true
+
+		val white = IngredientLineParser.parse("1 Tbsp. white")
+		white.isMeasurable shouldBe false
 	}
 
 	@Test

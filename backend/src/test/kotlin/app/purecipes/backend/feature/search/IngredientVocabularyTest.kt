@@ -55,10 +55,46 @@ class IngredientVocabularyTest {
 		IngredientVocabulary.isIgnorableIngredientLine("Vegetable") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("Red") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("white") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("very large") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("hard boiled") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 medium white") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 yellow") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("2 whole") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("6 hard boiled") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1/2 teaspoon") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 large head") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 (350 ml) bottle") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 Tbsp. white") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("frozen") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("total") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("warm") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("two") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("one") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("quart") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("quarts") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("store-bought") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("store bought") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("285 g store-bought") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("2 fresh, frozen") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Oil, for griddle") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Ice, for shaking") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Oil, enough for deep-frying") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Vegetable fat, for frying") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1/2 a large white (see above)") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("One 14-ounce can (see notes)") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1–1.2 litres hot vegetable") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("5 tbsp vegetable") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("Kosher salt") shouldBe false
 		IngredientVocabulary.isIgnorableIngredientLine("Vegetable oil") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("white rice") shouldBe false
 		IngredientVocabulary.isIgnorableIngredientLine("Red onion") shouldBe false
-		IngredientVocabulary.isIgnorableIngredientLine("1 medium white") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("whole milk") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("poppy seeds") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("low sodium beef broth") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("store-bought pie crust") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("A couple of stalks of rosemary") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("one egg") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("One 14-ounce can coconut milk") shouldBe false
 	}
 
 	@Test
@@ -107,5 +143,32 @@ class IngredientVocabularyTest {
 			ingredientLine = "salt and pepper",
 			availableIngredients = emptyList(),
 		) shouldBe true
+	}
+
+	@Test
+	fun `marks decorative processing and junk non foods as ignorable`() {
+		IngredientVocabulary.isIgnorableIngredientLine("Edible gold dust") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Edible gold glitter") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 tsp edible gold dust") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("sausage casings") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Sausage casing") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("natural sausage casings") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 package sausage casings") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("food grade lye crystals") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1/4 tsp food grade lye") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("bread butter table") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("bread and butter table") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Bread and butter for the table") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("something crunchy") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Something crunchy") shouldBe true
+	}
+
+	@Test
+	fun `does not ignore prague powder or real foods near non food phrases`() {
+		IngredientVocabulary.isIgnorableIngredientLine("prague powder") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("1 teaspoon prague powder") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("mild italian sausage casings") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("gold potatoes") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("lye rolls") shouldBe false
 	}
 }

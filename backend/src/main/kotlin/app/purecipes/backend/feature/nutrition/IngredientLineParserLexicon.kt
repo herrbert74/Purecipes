@@ -33,6 +33,8 @@ internal object IngredientLineParserLexicon {
 		"thin",
 		"thick",
 		"generous",
+		"square",
+		"rectangular",
 	)
 
 	val knownUnits = setOf(

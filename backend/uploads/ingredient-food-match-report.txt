@@ -1,163 +1,46 @@
 Ingredient food-table matching report
-Countable ingredient lines: 12572
+Countable ingredient lines: 12543
 Never parsed: 0
-Not measurable: 18
-No food match: 138
+Not measurable: 0
+No food match: 27
 No gram weight: 0
-Matched: 12416
-  Gram source mass: 2761
-  Gram source measure: 7335
-  Gram source density fallback: 2320
+Matched: 12516
+  Gram source mass: 2815
+  Gram source measure: 7356
+  Gram source density fallback: 2345
 
 Recipes: 1007
 Calculated nutrition: 806
 Scraped nutrition: 201
-Complete estimates: 735
-Partial estimates: 272
+Complete estimates: 793
+Partial estimates: 214
 Without nutrition row: 0
 
-Not measurable parsed names (11 unique)
-  4 x white
-  4 x yellow
-  2 x whole
-  1 x bone
-  1 x frozen
-  1 x hard boiled
-  1 x red yellow
-  1 x square
-  1 x topping
-  1 x toppings
-  1 x very large
-
-Unmatched parsed names (130 unique)
-  3 x seeds cardamom
-  2 x bread butter table
-  2 x british chicken breast
-  2 x edible gold dust
-  2 x edible gold glitter
-  2 x green cardamom
+Unmatched parsed names (26 unique)
   2 x prague powder
-  1 x 1 (350 ml) bottle
-  1 x 1 large head
-  1 x 1/2 teaspoon
-  1 x 6 larger (total weight about 1 ounce; 28 g)
-  1 x all seasoning blend
-  1 x apricots raisin
-  1 x aromatic herbs vegetables white onion garlic carrot celery scallion ginger parsley
-  1 x assorted fruit kiwi strawberries blueberries canned mandarin oranges
-  1 x baking powder baking soda
-  1 x beefsteak tomato seeds
+  1 x assorted fruit
   1 x blue dragon satay season stir fry
   1 x blue dragon stir fry chow mein sauce
-  1 x boneless center salmon
-  1 x bread sauce mix
-  1 x butter chicken
-  1 x cassareep
-  1 x cassava woody center
-  1 x cheddar provolone monterey jack muenster cheese
-  1 x chicken giblets stock
-  1 x chilli con carne sauce
-  1 x chilli paste soybean oil
-  1 x chimichurri
-  1 x chimichurri sauce
-  1 x chinese duck marinade
-  1 x chinese light soy sauce chinese dark soy sauce
-  1 x chinese stir fry vegetables
-  1 x chu hou sauce
-  1 x cocoa krispies
-  1 x confectioner sugar cinnamon
-  1 x corn chex
-  1 x couple of
   1 x cow foot
-  1 x crusty bread couscous
-  1 x cuban black beans rice
-  1 x cube round that been
-  1 x cut into
-  1 x dill parsley
   1 x east end fried onion curry base
   1 x east end masala mix
   1 x east end nishaan ginger garlic
-  1 x egg yolk milk any fat
-  1 x fish mint
-  1 x food grade lye crystals
-  1 x ginger garlic paste cloves garlic thumb ginger
-  1 x ginger garlic paste ginger cloves garlic put garlic press
-  1 x ginger sliced3 star anise
-  1 x grachai
-  1 x granulated sugar light brown sugar
   1 x heinz creationz mexican beanz
-  1 x henderson relish
-  1 x herb oil
-  1 x herb spice blend
-  1 x herbs mix
-  1 x herbs oregano thyme
-  1 x hoisin garlic stir fry sauce
-  1 x hot vegetable
-  1 x ice shaking
-  1 x japanese karaage
-  1 x lawry herb garlic marinade lemon juice
-  1 x lime zest limes are used syrup
-  1 x loaf challah
-  1 x loved british beef mince fat
-  1 x masala paste below
   1 x mastic crystals
   1 x milk vegetable oil
-  1 x mint basil
-  1 x mixed berries taken straight fridge
-  1 x morcilla burgos spanish black pudding
   1 x nigella seed
   1 x nigella seeds
-  1 x nutritional yeast flakes soy sauce
   1 x oil chicken
-  1 x oil enough
-  1 x oil griddle
-  1 x other neutral oil
   1 x patak tikka masala sauce
-  1 x pecan peanut
-  1 x peri peri rice
   1 x perilla
-  1 x pickled apple brine
   1 x pickled turnips pickled mixed vegetables tahini sauce garlic lemon
-  1 x pickling spice tied cheesecloth
-  1 x pie dough crust pie
-  1 x plus 1/2 cup (packed; 138 g) dark brown sugar, divided
-  1 x quart
-  1 x quarts
-  1 x radicchio frisee either
   1 x raw sesame seeds parmesan furikake everything bagel seasoning poppy seeds
-  1 x red plums apricots
-  1 x reshampatti
-  1 x rice chex
-  1 x salsa add drops sauce give smoky twist
-  1 x salt fish
-  1 x sausage casings
-  1 x sazon sin achiote seasoning
-  1 x simple pork
-  1 x skinless cod
-  1 x skirt whole skirt
-  1 x something crunchy celery apple radish sweet pickle
-  1 x square sheet frozen puff pastry
-  1 x stonemill chilli powder
-  1 x stonemill paprika
-  1 x sweet sour mix
-  1 x tajin kosher salt rims
-  1 x tapatio
-  1 x thai basil off
-  1 x thai fish sauce low sodium soy sauce
-  1 x thyme shallots
+  1 x sour cream radishes guacamole
   1 x tomato cucumber lettuce red onion plain yogurt
-  1 x tomato oil anchovy
-  1 x tomatoes cucumbers
   1 x tomatoes onions middle eastern cucumber pickles
-  1 x tuscan kale
-  1 x two
   1 x unsalted beef chicken
   1 x unsweetened blueberries raisins currents figs
   1 x unsweetened creamy sunflower butter peanut butter almond butter
-  1 x walnuts pecans
-  1 x warm
-  1 x wheat chex
-  1 x white fleshed fish
   1 x white wine vinegar extra virgin olive oil
   1 x yellow food colouring
 
