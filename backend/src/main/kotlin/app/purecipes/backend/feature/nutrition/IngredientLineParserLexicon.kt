@@ -286,6 +286,8 @@ internal object IngredientLineParserLexicon {
 		"tomatoes",
 		"tortilla",
 		"tortillas",
+		"turnip",
+		"turnips",
 		"yukon",
 		"zucchini",
 		"zucchinis",

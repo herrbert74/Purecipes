@@ -970,6 +970,10 @@ class NutritionSeedAliasIndexWaveLeftoversTest {
 		aliases["hoisin garlic stir fry sauce"] shouldBe 1209
 		aliases["cuban black beans rice"] shouldBe 1210
 		aliases["cheddar provolone monterey jack muenster cheese"] shouldBe 1211
+		aliases["blue dragon stir fry chow mein sauce"] shouldBe 1208
+		aliases["stir fry chow mein sauce"] shouldBe 1208
+		aliases["tomato cucumber lettuce red onion plain yogurt"] shouldBe 1202
+		aliases["tomatoes onions middle eastern cucumber pickles"] shouldBe 1202
 		aliases["prague powder"].shouldBeNull()
 		aliases["cow foot"].shouldBeNull()
 		aliases["mastic crystals"].shouldBeNull()
@@ -986,18 +990,188 @@ class NutritionSeedAliasIndexWaveLeftoversTest {
 			.shouldBeNull()
 		aliases["pickled turnips pickled mixed vegetables tahini sauce garlic lemon"].shouldBeNull()
 		aliases["sour cream radishes guacamole"].shouldBeNull()
-		aliases["tomato cucumber lettuce red onion plain yogurt"].shouldBeNull()
 		aliases["something crunchy"].shouldBeNull()
 		aliases["yellow food colouring"].shouldBeNull()
 		aliases["blue dragon satay season stir fry"].shouldBeNull()
-		aliases["blue dragon stir fry chow mein sauce"].shouldBeNull()
 		aliases["east end fried onion curry base"].shouldBeNull()
 		aliases["east end masala mix"].shouldBeNull()
 		aliases["east end nishaan ginger garlic"].shouldBeNull()
 		aliases["heinz creationz mexican beanz"].shouldBeNull()
 		aliases["patak tikka masala sauce"].shouldBeNull()
 		aliases["assorted fruit"].shouldBeNull()
-		aliases["tomatoes onions middle eastern cucumber pickles"].shouldBeNull()
+	}
+
+	@Test
+	fun mergeAppliesWave12BrandStripFirstFoodLeftoverAliases() {
+		val satay = food(
+			id = 1301,
+			displayName = "SATAY SAUCE",
+			normalizedName = "satay sauce",
+		)
+		val soySauce = food(
+			id = 1302,
+			displayName = "Soy sauce made from soy and wheat (shoyu)",
+			normalizedName = "soy sauce made from soy and wheat shoyu",
+		)
+		val onion = food(
+			id = 1303,
+			displayName = "Onions, raw",
+			normalizedName = "onions raw",
+		)
+		val garamMasala = food(
+			id = 1304,
+			displayName = "GARAM MASALA",
+			normalizedName = "garam masala",
+		)
+		val ginger = food(
+			id = 1305,
+			displayName = "Ginger root, raw",
+			normalizedName = "ginger root raw",
+		)
+		val bakedBeans = food(
+			id = 1306,
+			displayName = "Beans, baked, canned, plain or vegetarian",
+			normalizedName = "beans baked canned plain or vegetarian",
+		)
+		val tikkaSauce = food(
+			id = 1307,
+			displayName = "TIKKA MASALA SAUCE, TIKKA MASALA",
+			normalizedName = "tikka masala sauce tikka masala",
+		)
+		val milk = food(
+			id = 1308,
+			displayName = "Milk, whole, 3.25% milkfat, with added vitamin D",
+			normalizedName = "milk whole 3 25 milkfat with added vitamin d",
+		)
+		val soybeanOil = food(
+			id = 1309,
+			displayName = "Oil, soybean, salad or cooking",
+			normalizedName = "oil soybean salad or cooking",
+		)
+		val beef = food(
+			id = 1310,
+			displayName = "Beef, stew meat",
+			normalizedName = "beef stew meat",
+		)
+		val whiteVinegar = food(
+			id = 1311,
+			displayName = "Vinegar, distilled",
+			normalizedName = "vinegar distilled",
+		)
+		val sunflowerButter = food(
+			id = 1312,
+			displayName = "Seeds, sunflower seed butter, without salt",
+			normalizedName = "seeds sunflower seed butter without salt",
+		)
+		val blueberry = food(
+			id = 1313,
+			displayName = "Blueberries, raw",
+			normalizedName = "blueberries raw",
+		)
+		val sesame = food(
+			id = 1314,
+			displayName = "Seeds, sesame seeds, whole, dried",
+			normalizedName = "seeds sesame seeds whole dried",
+		)
+		val turnip = food(
+			id = 1315,
+			displayName = "Turnips, raw",
+			normalizedName = "turnips raw",
+		)
+		val sourCream = food(
+			id = 1316,
+			displayName = "Cream, sour, full fat",
+			normalizedName = "cream sour full fat",
+		)
+		val tomato = food(
+			id = 1317,
+			displayName = "Tomatoes, red, ripe, raw, year round average",
+			normalizedName = "tomatoes red ripe raw year round average",
+		)
+		val creamOfMushroom = food(
+			id = 1318,
+			displayName = "Soup, cream of mushroom, canned, condensed",
+			normalizedName = "soup cream of mushroom canned condensed",
+		)
+		val creamOfChicken = food(
+			id = 1319,
+			displayName = "Soup, cream of chicken, canned, condensed",
+			normalizedName = "soup cream of chicken canned condensed",
+		)
+		val oxtail = food(
+			id = 1320,
+			displayName = "Beef, oxtails",
+			normalizedName = "beef oxtails",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(
+				satay,
+				soySauce,
+				onion,
+				garamMasala,
+				ginger,
+				bakedBeans,
+				tikkaSauce,
+				milk,
+				soybeanOil,
+				beef,
+				whiteVinegar,
+				sunflowerButter,
+				blueberry,
+				sesame,
+				turnip,
+				sourCream,
+				tomato,
+				creamOfMushroom,
+				creamOfChicken,
+				oxtail,
+			),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["satay season stir fry"] shouldBe 1301
+		aliases["blue dragon satay season stir fry"] shouldBe 1301
+		aliases["stir fry chow mein sauce"] shouldBe 1302
+		aliases["blue dragon stir fry chow mein sauce"] shouldBe 1302
+		aliases["fried onion curry base"] shouldBe 1303
+		aliases["east end fried onion curry base"] shouldBe 1303
+		aliases["masala mix"] shouldBe 1304
+		aliases["east end masala mix"] shouldBe 1304
+		aliases["nishaan ginger garlic"] shouldBe 1305
+		aliases["east end nishaan ginger garlic"] shouldBe 1305
+		aliases["mexican beanz"] shouldBe 1306
+		aliases["heinz creationz mexican beanz"] shouldBe 1306
+		aliases["tikka masala sauce"] shouldBe 1307
+		aliases["patak tikka masala sauce"] shouldBe 1307
+		aliases["milk vegetable oil"] shouldBe 1308
+		aliases["oil chicken"] shouldBe 1309
+		aliases["unsalted beef chicken"] shouldBe 1310
+		aliases["white wine vinegar extra virgin olive oil"] shouldBe 1311
+		aliases["sunflower butter"] shouldBe 1312
+		aliases["unsweetened creamy sunflower butter peanut butter almond butter"] shouldBe 1312
+		aliases["blueberries"] shouldBe 1313
+		aliases["unsweetened blueberries"] shouldBe 1313
+		aliases["unsweetened blueberries raisins currents figs"] shouldBe 1313
+		aliases["raw sesame seeds parmesan furikake everything bagel seasoning poppy seeds"] shouldBe 1314
+		aliases["pickled turnips"] shouldBe 1315
+		aliases["pickled turnips pickled mixed vegetables tahini sauce garlic lemon"] shouldBe 1315
+		aliases["sour cream radishes guacamole"] shouldBe 1316
+		aliases["tomato cucumber lettuce red onion plain yogurt"] shouldBe 1317
+		aliases["tomatoes onions middle eastern cucumber pickles"] shouldBe 1317
+		aliases["condensed cream"] shouldBe 1318
+		aliases["condensed cream of mushroom"] shouldBe 1318
+		aliases["condensed cream of mushroom soup"] shouldBe 1318
+		aliases["condensed cream of chicken soup"] shouldBe 1319
+		aliases["msg neutral oil"] shouldBe 1309
+		aliases["cow foot"] shouldBe 1320
+		aliases["cow feet"] shouldBe 1320
+		aliases["prague powder"].shouldBeNull()
+		aliases["mastic crystals"].shouldBeNull()
+		aliases["nigella seed"].shouldBeNull()
+		aliases["nigella seeds"].shouldBeNull()
+		aliases["perilla"].shouldBeNull()
+		aliases["yellow food colouring"].shouldBeNull()
+		aliases["assorted fruit"].shouldBeNull()
 	}
 
 	private fun food(id: Int, displayName: String, normalizedName: String): NutritionFoodRecord =

@@ -1,48 +1,20 @@
 Ingredient food-table matching report
-Countable ingredient lines: 12543
+Countable ingredient lines: 12535
 Never parsed: 0
 Not measurable: 0
-No food match: 27
+No food match: 0
 No gram weight: 0
-Matched: 12516
-  Gram source mass: 2815
-  Gram source measure: 7356
-  Gram source density fallback: 2345
+Matched: 12535
+  Gram source mass: 2819
+  Gram source measure: 7368
+  Gram source density fallback: 2348
 
 Recipes: 1007
 Calculated nutrition: 806
 Scraped nutrition: 201
-Complete estimates: 793
-Partial estimates: 214
+Complete estimates: 806
+Partial estimates: 201
 Without nutrition row: 0
-
-Unmatched parsed names (26 unique)
-  2 x prague powder
-  1 x assorted fruit
-  1 x blue dragon satay season stir fry
-  1 x blue dragon stir fry chow mein sauce
-  1 x cow foot
-  1 x east end fried onion curry base
-  1 x east end masala mix
-  1 x east end nishaan ginger garlic
-  1 x heinz creationz mexican beanz
-  1 x mastic crystals
-  1 x milk vegetable oil
-  1 x nigella seed
-  1 x nigella seeds
-  1 x oil chicken
-  1 x patak tikka masala sauce
-  1 x perilla
-  1 x pickled turnips pickled mixed vegetables tahini sauce garlic lemon
-  1 x raw sesame seeds parmesan furikake everything bagel seasoning poppy seeds
-  1 x sour cream radishes guacamole
-  1 x tomato cucumber lettuce red onion plain yogurt
-  1 x tomatoes onions middle eastern cucumber pickles
-  1 x unsalted beef chicken
-  1 x unsweetened blueberries raisins currents figs
-  1 x unsweetened creamy sunflower butter peanut butter almond butter
-  1 x white wine vinegar extra virgin olive oil
-  1 x yellow food colouring
 
 Scraped nutrition recipes (201)
   Recipe 785: Mocha Tres Leches Cake

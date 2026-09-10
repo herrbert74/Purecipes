@@ -209,7 +209,7 @@ class NutritionNameNormalizerTest {
 		) shouldBe "diamond crystal kosher salt"
 		NutritionNameNormalizer.forLookup(
 			"white wine vinegar extra virgin olive oil dressing",
-		) shouldBe "white wine vinegar extra virgin olive oil"
+		) shouldBe "white wine vinegar"
 		NutritionNameNormalizer.forLookup("ranch dressing") shouldBe "ranch dressing"
 		NutritionNameNormalizer.forLookup("ranch dressing bottled") shouldBe "ranch dressing"
 		NutritionNameNormalizer.forLookup("flaky sea salt topping") shouldBe "flaky sea salt"
@@ -334,7 +334,7 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("thyme shallots") shouldBe "thyme shallots"
 		NutritionNameNormalizer.forLookup(
 			"white wine vinegar extra virgin olive oil",
-		) shouldBe "white wine vinegar extra virgin olive oil"
+		) shouldBe "white wine vinegar"
 		NutritionNameNormalizer.forLookup(
 			"ginger garlic paste cloves garlic thumb ginger",
 		) shouldBe "ginger garlic paste"
@@ -490,7 +490,7 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("flaky sea salt") shouldBe "flaky sea salt"
 		NutritionNameNormalizer.forLookup("long grain rice") shouldBe "long grain rice"
 		NutritionNameNormalizer.forLookup("white wine vinegar extra virgin olive oil") shouldBe
-			"white wine vinegar extra virgin olive oil"
+			"white wine vinegar"
 	}
 
 	@Test
@@ -514,6 +514,79 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("lime juice from limes") shouldBe "lime juice limes"
 		NutritionNameNormalizer.forLookup("green beans") shouldBe "green beans"
 		NutritionNameNormalizer.forLookup("baking soda") shouldBe "baking soda"
+	}
+
+	@Test
+	fun forLookupStripsWave12BrandAndFirstFoodLeftovers() {
+		NutritionNameNormalizer.forLookup("blue dragon satay season stir fry") shouldBe
+			"satay season stir fry"
+		NutritionNameNormalizer.forLookup("blue dragon stir fry chow mein sauce") shouldBe
+			"stir fry chow mein sauce"
+		NutritionNameNormalizer.forLookup("east end fried onion curry base") shouldBe
+			"fried onion curry base"
+		NutritionNameNormalizer.forLookup("east end masala mix") shouldBe "masala mix"
+		NutritionNameNormalizer.forLookup("east end nishaan ginger garlic") shouldBe
+			"nishaan ginger garlic"
+		NutritionNameNormalizer.forLookup("heinz creationz mexican beanz") shouldBe "mexican beanz"
+		NutritionNameNormalizer.forLookup("patak tikka masala sauce") shouldBe "tikka masala sauce"
+		NutritionNameNormalizer.forLookup("milk vegetable oil") shouldBe "milk"
+		NutritionNameNormalizer.forLookup("oil chicken") shouldBe "oil"
+		NutritionNameNormalizer.forLookup("unsalted beef chicken") shouldBe "unsalted beef"
+		NutritionNameNormalizer.forLookup("white wine vinegar extra virgin olive oil") shouldBe
+			"white wine vinegar"
+		NutritionNameNormalizer.forLookup(
+			"unsweetened creamy sunflower butter peanut butter almond butter",
+		) shouldBe "unsweetened creamy sunflower butter"
+		NutritionNameNormalizer.forLookup(
+			"unsweetened blueberries raisins currents figs",
+		) shouldBe "blueberries"
+		NutritionNameNormalizer.forLookup(
+			"tomato cucumber lettuce red onion plain yogurt",
+		) shouldBe "tomato"
+		NutritionNameNormalizer.forLookup(
+			"tomatoes onions middle eastern cucumber pickles",
+		) shouldBe "tomatoes"
+		NutritionNameNormalizer.forLookup("sour cream radishes guacamole") shouldBe "sour cream"
+		NutritionNameNormalizer.forLookup(
+			"pickled turnips pickled mixed vegetables tahini sauce garlic lemon",
+		) shouldBe "pickled turnips"
+		NutritionNameNormalizer.forLookup(
+			"raw sesame seeds parmesan furikake everything bagel seasoning poppy seeds",
+		) shouldBe "raw sesame seeds"
+		NutritionNameNormalizer.forLookup("extra virgin olive oil") shouldBe "extra virgin olive oil"
+		NutritionNameNormalizer.forLookup("peanut butter") shouldBe "peanut butter"
+		NutritionNameNormalizer.forLookup("split peas") shouldBe "split peas"
+		NutritionNameNormalizer.forLookup("yellow split peas") shouldBe "yellow split peas"
+		NutritionNameNormalizer.forLookup("protein powder") shouldBe "protein powder"
+		NutritionNameNormalizer.forLookup("egg whites") shouldBe "egg whites"
+		NutritionNameNormalizer.forLookup("flaky sea salt") shouldBe "flaky sea salt"
+		NutritionNameNormalizer.forLookup("long grain rice") shouldBe "long grain rice"
+	}
+
+	@Test
+	fun forLookupStripsWave13CreamOfMsgAndUnsweetenedLeftovers() {
+		NutritionNameNormalizer.forLookup("condensed cream of mushroom soup") shouldBe
+			"condensed cream of mushroom soup"
+		NutritionNameNormalizer.forLookup("condensed cream of chicken soup") shouldBe
+			"condensed cream of chicken soup"
+		NutritionNameNormalizer.forLookup("cream of celery soup") shouldBe "cream of celery soup"
+		NutritionNameNormalizer.forLookup("sour cream radishes guacamole") shouldBe "sour cream"
+		NutritionNameNormalizer.forLookup("milk vegetable oil") shouldBe "milk"
+		NutritionNameNormalizer.forLookup("msg neutral oil") shouldBe "neutral oil"
+		NutritionNameNormalizer.forLookup("msg") shouldBe "msg"
+		NutritionNameNormalizer.forLookup("unsweetened blueberries") shouldBe "blueberries"
+		NutritionNameNormalizer.forLookup(
+			"unsweetened blueberries raisins currents figs",
+		) shouldBe "blueberries"
+		NutritionNameNormalizer.forLookup(
+			"unsweetened creamy sunflower butter peanut butter almond butter",
+		) shouldBe "unsweetened creamy sunflower butter"
+		NutritionNameNormalizer.forLookup("split peas") shouldBe "split peas"
+		NutritionNameNormalizer.forLookup("yellow split peas") shouldBe "yellow split peas"
+		NutritionNameNormalizer.forLookup("protein powder") shouldBe "protein powder"
+		NutritionNameNormalizer.forLookup("egg whites") shouldBe "egg whites"
+		NutritionNameNormalizer.forLookup("flaky sea salt") shouldBe "flaky sea salt"
+		NutritionNameNormalizer.forLookup("long grain rice") shouldBe "long grain rice"
 	}
 
 	@Test

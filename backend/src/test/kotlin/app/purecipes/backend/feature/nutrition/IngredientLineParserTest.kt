@@ -185,6 +185,11 @@ class IngredientLineParserTest {
 		corn.quantity shouldBe BigDecimal.ONE
 		corn.unit shouldBe "piece"
 		corn.isMeasurable shouldBe true
+
+		val pickledTurnips = IngredientLineParser.parse("Pickled turnips")
+		pickledTurnips.quantity shouldBe BigDecimal.ONE
+		pickledTurnips.unit shouldBe "piece"
+		pickledTurnips.isMeasurable shouldBe true
 	}
 
 	@Test

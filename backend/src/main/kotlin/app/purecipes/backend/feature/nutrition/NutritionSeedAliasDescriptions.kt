@@ -527,4 +527,31 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val SWEET_AND_SOUR_SAUCE_FALLBACK_DESCRIPTION = "Sweet and sour sauce"
 
 	internal const val DUCK_DESCRIPTION = "Duck, domesticated, meat only, raw"
+
+	internal const val BAKED_BEANS_DESCRIPTION = "Beans, baked, canned, plain or vegetarian"
+
+	internal const val CURRY_PASTE_DESCRIPTION = "CURRY PASTE"
+
+	internal const val GARAM_MASALA_DESCRIPTION = "GARAM MASALA"
+
+	internal const val PEANUT_SAUCE_DESCRIPTION =
+		"Sauce, peanut, made from peanut butter, water, soy sauce"
+
+	internal const val SATAY_SAUCE_DESCRIPTION = "SATAY SAUCE"
+
+	internal const val STIR_FRY_SAUCE_DESCRIPTION = "STIR FRY SAUCE"
+
+	internal const val SUNFLOWER_BUTTER_DESCRIPTION = "Seeds, sunflower seed butter, without salt"
+
+	internal const val TIKKA_MASALA_DESCRIPTION = "TIKKA MASALA"
+
+	internal const val TIKKA_MASALA_SAUCE_DESCRIPTION = "TIKKA MASALA SAUCE, TIKKA MASALA"
+
+	internal const val TURNIP_DESCRIPTION = "Turnips, raw"
+
+	internal const val CREAM_OF_CHICKEN_SOUP_DESCRIPTION =
+		"Soup, cream of chicken, canned, condensed"
+
+	internal const val CREAM_OF_MUSHROOM_SOUP_DESCRIPTION =
+		"Soup, cream of mushroom, canned, condensed"
 }

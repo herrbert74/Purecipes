@@ -147,6 +147,8 @@ internal object IngredientVocabulary {
 		"cans",
 		"cup",
 		"cups",
+		"drop",
+		"drops",
 		"g",
 		"gram",
 		"grams",
@@ -170,6 +172,8 @@ internal object IngredientVocabulary {
 		"package",
 		"packages",
 		"packs",
+		"pinch",
+		"pinches",
 		"pound",
 		"pounds",
 		"quart",
@@ -190,14 +194,22 @@ internal object IngredientVocabulary {
 	)
 
 	private val ignorableNonFoodPhrases = setOf(
+		"assorted fruit",
 		"bread butter table",
 		"edible gold dust",
 		"edible gold glitter",
 		"food grade lye",
 		"food grade lye crystals",
+		"mastic crystals",
+		"nigella seed",
+		"nigella seeds",
+		"perilla",
+		"prague powder",
 		"sausage casing",
 		"sausage casings",
 		"something crunchy",
+		"yellow food colouring",
+		"yellow food coloring",
 	)
 
 	private val ignorableEquipmentKeywords = listOf(

@@ -156,19 +156,32 @@ class IngredientVocabularyTest {
 		IngredientVocabulary.isIgnorableIngredientLine("1 package sausage casings") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("food grade lye crystals") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("1/4 tsp food grade lye") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("prague powder") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 teaspoon prague powder") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("assorted fruit") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Assorted fruit") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("bread butter table") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("bread and butter table") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("Bread and butter for the table") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("something crunchy") shouldBe true
 		IngredientVocabulary.isIgnorableIngredientLine("Something crunchy") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("yellow food colouring") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("5 drops yellow food colouring") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("mastic crystals") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Pinch mastic crystals, optional") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("nigella seed") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1/2 tsp Nigella Seed") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("nigella seeds") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("1 teaspoon nigella seeds, optional") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("perilla") shouldBe true
 	}
 
 	@Test
-	fun `does not ignore prague powder or real foods near non food phrases`() {
-		IngredientVocabulary.isIgnorableIngredientLine("prague powder") shouldBe false
-		IngredientVocabulary.isIgnorableIngredientLine("1 teaspoon prague powder") shouldBe false
+	fun `does not ignore real foods near non food phrases`() {
 		IngredientVocabulary.isIgnorableIngredientLine("mild italian sausage casings") shouldBe false
 		IngredientVocabulary.isIgnorableIngredientLine("gold potatoes") shouldBe false
 		IngredientVocabulary.isIgnorableIngredientLine("lye rolls") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("assorted fruit salad") shouldBe false
+		IngredientVocabulary.isIgnorableIngredientLine("pickled turnips") shouldBe false
 	}
 }

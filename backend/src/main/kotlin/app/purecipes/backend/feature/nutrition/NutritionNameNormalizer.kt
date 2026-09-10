@@ -60,6 +60,14 @@ internal object NutritionNameNormalizer {
 
 	private val FOR_CAKE_PANS_PHRASE = Regex("""(?i)\bfor\s+cake\s+pans?\b""")
 
+	private val CREAM_OF_PHRASE = Regex("""(?i)\bcream\s+of\b""")
+
+	private val BLUE_DRAGON_BRAND = Regex("""(?i)\bblue\s+dragon\b""")
+
+	private val EAST_END_BRAND = Regex("""(?i)\beast\s+end\b""")
+
+	private val HEINZ_CREATIONZ_BRAND = Regex("""(?i)\bheinz\s+creationz\b""")
+
 	private val TEMPERATURE_LEFTOVER = Regex("""^\d+o(?:f)?$""")
 
 	private val COMBINING_MARKS = Regex("\\p{M}+")
@@ -469,9 +477,11 @@ internal object NutritionNameNormalizer {
 		"cape",
 		"coop",
 		"cooperative",
+		"creationz",
 		"estate",
 		"fairtrade",
 		"ghirardelli",
+		"heinz",
 		"hellmann",
 		"hellmanns",
 		"knorr",
@@ -485,6 +495,7 @@ internal object NutritionNameNormalizer {
 		"morrison",
 		"morrisons",
 		"operative",
+		"patak",
 		"philadelphia",
 		"sainsbury",
 		"sainsburys",
@@ -544,6 +555,7 @@ internal object NutritionNameNormalizer {
 		"flesh",
 		"half",
 		"meat",
+		"msg",
 		"one",
 		"open",
 		"pit",
@@ -552,6 +564,10 @@ internal object NutritionNameNormalizer {
 		"steak",
 		"steaks",
 		"tail",
+	)
+
+	private val unsweetenedStripTokens = setOf(
+		"unsweetened",
 	)
 
 	private val gluedOnPrefixKeepWhole = setOf(
@@ -896,12 +912,17 @@ internal object NutritionNameNormalizer {
 		"carrots",
 		"cucumber",
 		"cucumbers",
+		"currant",
+		"currants",
+		"currents",
 		"fig",
 		"figs",
 		"grape",
 		"grapes",
 		"lemon",
 		"lemons",
+		"lettuce",
+		"lettuces",
 		"lime",
 		"limes",
 		"mango",
@@ -915,6 +936,8 @@ internal object NutritionNameNormalizer {
 		"peaches",
 		"pear",
 		"pears",
+		"pickle",
+		"pickles",
 		"plum",
 		"plums",
 		"radish",
@@ -925,6 +948,44 @@ internal object NutritionNameNormalizer {
 		"strawberries",
 		"tomato",
 		"tomatoes",
+		"turnip",
+		"turnips",
+	)
+
+	private val proteinFoodHeads = setOf(
+		"beef",
+		"chicken",
+		"lamb",
+		"pork",
+		"turkey",
+		"veal",
+	)
+
+	private val productCloserTokens = setOf(
+		"butter",
+		"cream",
+		"oil",
+		"seed",
+		"seeds",
+		"vinegar",
+	)
+
+	private val secondaryFoodHints = setOf(
+		"bagel",
+		"furikake",
+		"garlic",
+		"guacamole",
+		"parmesan",
+		"seasoning",
+		"tahini",
+		"vegetables",
+		"yogurt",
+		"yoghurt",
+	)
+
+	private val standaloneFirstFoods = setOf(
+		"milk",
+		"oil",
 	)
 
 	fun normalize(value: String): String {
@@ -942,6 +1003,7 @@ internal object NutritionNameNormalizer {
 		val withoutClause = stripLookupClauses(value.substringBefore(';').trim())
 		val normalized = normalize(withoutClause)
 		val rawTokens = tokens(normalized)
+		val hadCreamOf = CREAM_OF_PHRASE.containsMatchIn(normalized)
 		val hadGrinder = "grinder" in rawTokens
 		val hadStewing = "stewing" in rawTokens
 		val hadTips = "tips" in rawTokens
@@ -975,7 +1037,7 @@ internal object NutritionNameNormalizer {
 		} else {
 			withoutWingTips
 		}
-		return postFilterLookupTokens(withoutStemEnd).joinToString(" ")
+		return postFilterLookupTokens(withoutStemEnd, hadCreamOf).joinToString(" ")
 	}
 
 	fun hasMeaningfulFoodName(value: String): Boolean {
@@ -1015,11 +1077,15 @@ internal object NutritionNameNormalizer {
 		result = FOR_FLOURING_PHRASE.replace(result, "")
 		result = FOR_SHAPING_PHRASE.replace(result, "")
 		result = FOR_CAKE_PANS_PHRASE.replace(result, "")
+		result = BLUE_DRAGON_BRAND.replace(result, " ")
+		result = EAST_END_BRAND.replace(result, " ")
+		result = HEINZ_CREATIONZ_BRAND.replace(result, " ")
 		return result.trim()
 	}
 
-	private fun postFilterLookupTokens(tokens: List<String>): List<String> {
+	private fun postFilterLookupTokens(tokens: List<String>, hadCreamOf: Boolean): List<String> {
 		var result = rewriteLookupTokens(tokens)
+		result = restoreCreamOfConnector(result, hadCreamOf)
 		result = stripGluedPrepAndFollowing(result)
 		result = collapseRepeatedPhrase(result)
 		result = dedupeAdjacentExceptHalf(result)
@@ -1050,6 +1116,8 @@ internal object NutritionNameNormalizer {
 		result = stripBakingLeavenerPair(result)
 		result = stripAfterBreadPair(result)
 		result = stripSecondaryProduce(result)
+		result = stripUnsweetenedProduce(result)
+		result = keepFirstCoherentFood(result)
 		result = dedupeWhenSkirt(result)
 		result = stripTrailingCakePans(result)
 		result = stripTrailingWhenOthersRemain(result, trailingStripTokens)
@@ -1073,6 +1141,18 @@ internal object NutritionNameNormalizer {
 				else -> listOf(token)
 			}
 		}
+
+	private fun restoreCreamOfConnector(tokens: List<String>, hadCreamOf: Boolean): List<String> {
+		val creamIndex = tokens.indexOfFirst { token -> token == "cream" }
+		val canRestore = hadCreamOf &&
+			creamIndex in 0 until tokens.lastIndex &&
+			tokens[creamIndex + 1] != "of"
+		return if (canRestore) {
+			tokens.subList(0, creamIndex + 1) + "of" + tokens.subList(creamIndex + 1, tokens.size)
+		} else {
+			tokens
+		}
+	}
 
 	private fun collapseRepeatedPhrase(tokens: List<String>): List<String> {
 		if (tokens.size < MIN_REPEATED_PHRASE_TOKENS || tokens.size % 2 != 0) {
@@ -1309,12 +1389,57 @@ internal object NutritionNameNormalizer {
 		}
 		val firstIndex = headIndexes.first()
 		val firstHead = tokens[firstIndex]
-		val afterFirst = tokens.subList(firstIndex + 1, tokens.size)
-		val canStrip = headIndexes.drop(1).none { index -> sameFoodStem(firstHead, tokens[index]) } &&
-			afterFirst.isNotEmpty() &&
-			afterFirst.all { token -> token in producePairTokens }
+		val canStrip = headIndexes.drop(1).none { index -> sameFoodStem(firstHead, tokens[index]) }
 		return if (canStrip) tokens.subList(0, firstIndex + 1) else tokens
 	}
+
+	private fun stripUnsweetenedProduce(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			tokens.any { token -> token in producePairTokens }
+		return if (canStrip) stripWhenOthersRemain(tokens, unsweetenedStripTokens) else tokens
+	}
+
+	private fun keepFirstCoherentFood(tokens: List<String>): List<String> {
+		val cutIndex = firstCoherentFoodCutIndex(tokens)
+		return if (cutIndex != null) tokens.subList(0, cutIndex + 1) else tokens
+	}
+
+	private fun firstCoherentFoodCutIndex(tokens: List<String>): Int? {
+		if (tokens.size < 2) {
+			return null
+		}
+		val candidates = ArrayList<Int>(4)
+		val proteinIndexes = tokens.mapIndexedNotNull { index, token ->
+			if (token in proteinFoodHeads) index else null
+		}
+		if (proteinIndexes.size >= 2) {
+			candidates.add(proteinIndexes.first())
+		}
+		val closerIndex = tokens.indexOfFirst { token -> token in productCloserTokens }
+		val creamOfCloser = closerIndex in 0 until tokens.lastIndex &&
+			tokens[closerIndex] == "cream" &&
+			tokens[closerIndex + 1] == "of"
+		val canCutAtCloser = closerIndex in 0 until tokens.lastIndex && !creamOfCloser
+		if (canCutAtCloser && looksLikeFoodProduct(tokens.subList(closerIndex + 1, tokens.size))) {
+			candidates.add(closerIndex)
+		}
+		val standaloneIndex = tokens.indexOfFirst { token -> token in standaloneFirstFoods }
+		if (standaloneIndex >= 0 && standaloneIndex < tokens.lastIndex &&
+			looksLikeFoodProduct(tokens.subList(standaloneIndex + 1, tokens.size))
+		) {
+			candidates.add(standaloneIndex)
+		}
+		return candidates.minOrNull()
+	}
+
+	private fun looksLikeFoodProduct(tokens: List<String>): Boolean =
+		tokens.any { token ->
+			token in productCloserTokens ||
+				token in producePairTokens ||
+				token in proteinFoodHeads ||
+				token in secondaryFoodHints ||
+				token in standaloneFirstFoods
+		}
 
 	private fun sameFoodStem(left: String, right: String): Boolean {
 		if (left == right) {
