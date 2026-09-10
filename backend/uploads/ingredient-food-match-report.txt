@@ -1,0 +1,220 @@
+Ingredient food-table matching report
+Countable ingredient lines: 12535
+Never parsed: 0
+Not measurable: 0
+No food match: 0
+No gram weight: 0
+Matched: 12535
+  Gram source mass: 2819
+  Gram source measure: 7368
+  Gram source density fallback: 2348
+
+Recipes: 1007
+Calculated nutrition: 806
+Scraped nutrition: 201
+Complete estimates: 806
+Partial estimates: 201
+Without nutrition row: 0
+
+Scraped nutrition recipes (201)
+  Recipe 785: Mocha Tres Leches Cake
+  Recipe 786: Easy Slow-Cooker Pork Ragù
+  Recipe 787: Arakas (Greek Peas With Potatoes and Carrots)
+  Recipe 788: 12-Minute Salmon and Asparagus Packet Dinner
+  Recipe 789: Spanakorizo (Greek Spinach and Rice)
+  Recipe 790: Bacon, Lettuce, and Avocado Sandwich With Herb Aioli
+  Recipe 791: This Centuries-Old Indian Spice Mix Adds Instant Depth to Any Dish
+  Recipe 792: Homemade Matzo
+  Recipe 793: Deviled Egg Potato Salad
+  Recipe 794: Chicken Francese (Rochester-Style Chicken Cutlets With Lemon Pan Sauce)
+  Recipe 795: French Sablé Cookies
+  Recipe 796: Midwestern Potato Lefse (Norwegian-American Potato Flatbread)
+  Recipe 797: Creamy English Pea Salad with Bacon
+  Recipe 798: Goetta (German-American Breakfast Sausage)
+  Recipe 799: Slow-Roasted Fresh Ham With Maple-Bourbon Glaze
+  Recipe 800: Ham and Cheese Breakfast Casserole
+  Recipe 801: Lamb and Prune Tagine
+  Recipe 802: Cheesy Sausage Breakfast Casserole
+  Recipe 803: Cream Cheese and Pepper Jelly Puff Pastry Tart
+  Recipe 804: Mock Turtle Soup
+  Recipe 805: Mustardy Salmon and Asparagus Packet Dinner
+  Recipe 806: Arakas (Greek Peas With Potatoes and Carrots)
+  Recipe 807: Lemony Pasta With Cauliflower, Capers, and Crispy Pancetta
+  Recipe 808: Crispy Smashed Taco-Loaded Potatoes
+  Recipe 809: Classic Southern Spoonbread
+  Recipe 810: Creamy Shrimp Dip
+  Recipe 811: Caramelized Banana Pudding Bars
+  Recipe 812: Crispy Chicken Thighs With White Beans, Chorizo, and Kale
+  Recipe 813: 15-Minute Miso Butter Ramen
+  Recipe 814: Slow-Cooker Corned Beef and Cabbage (Irish Boiled Dinner)
+  Recipe 815: Karawya (Caraway-Cinnamon Rice Pudding)
+  Recipe 816: Irish Chicken Fillet Roll
+  Recipe 817: Chocolate Guinness Brownies
+  Recipe 818: 15-Minute Creamy Chipotle–Gorgonzola Sauce
+  Recipe 819: Chocolate Chunk Banana Coconut Cake With Ganache
+  Recipe 820: Pasteis de Nata (Portuguese Custard Tarts)
+  Recipe 821: Chorba Frik (Freekeh and Chickpea Soup With Beef or Lamb)
+  Recipe 822: Coconut-Parsnip Soup with Lemongrass and Ginger
+  Recipe 823: Peanut Butter Banana Pudding
+  Recipe 824: Slow-Cooker White Chicken Chili
+  Recipe 825: Qatayef (Stuffed and Fried Pancakes)
+  Recipe 826: Cabbage Carbonara
+  Recipe 827: Pistachio Baklava
+  Recipe 828: Classic Rugelach
+  Recipe 829: Loubia (Moroccan Stewed White Beans With Lamb)
+  Recipe 831: Spanakorizo (Greek Spinach and Rice)
+  Recipe 832: German Chocolate Cake
+  Recipe 833: 5-Minute Chocolate Raspberry Mug Cake for Two
+  Recipe 834: Butter Mochi
+  Recipe 835: Crispy Air Fryer Halloumi Bites Recipe
+  Recipe 836: Balti-Style Eggs (Hard-Boiled Eggs in Coconut Milk Sauce)
+  Recipe 837: Lasagna Beans (Cheesy White Bean-Tomato Bake)
+  Recipe 838: No-Knead Whole Wheat Bread
+  Recipe 839: Catfish Po' Boys
+  Recipe 840: Easy Mexican Fried Rice With Chorizo and Pickled Jalapeños
+  Recipe 842: Slow Cooker Salsa Verde Chicken Tacos
+  Recipe 843: 15-Minute Miso Butter Ramen
+  Recipe 844: Shorabet Adas (Lentil Soup)
+  Recipe 845: Creole Gumbo With Shrimp, Chicken, and Andouille
+  Recipe 846: Hearty Lentil French Onion Soup With Melty Gruyère
+  Recipe 847: Black Forest Cake
+  Recipe 848: Cardamom-Rosewater Shortbread Cookies
+  Recipe 849: Easy Slow-Cooker Pork Ragù
+  Recipe 850: Mala-Spiced Chex Mix
+  Recipe 851: Canadian Butter Tarts
+  Recipe 852: Classic Steak Tartare
+  Recipe 853: Armenian-Style Rice Pilaf
+  Recipe 854: Cincinnati Chili
+  Recipe 855: Shepherd's Pie Baked Potatoes
+  Recipe 856: Roasted Sweet Potato Soup
+  Recipe 857: Perfect Steak Frites
+  Recipe 858: Pozole Rojo
+  Recipe 859: Nigerian Meat Pie
+  Recipe 860: Moong Dal
+  Recipe 861: Bastila (Moroccan Chicken Pie)
+  Recipe 862: Classic Pound Cake
+  Recipe 863: Sole Meunière
+  Recipe 864: Dubai Chocolate Tart
+  Recipe 865: Crispy Southern Fried Shrimp
+  Recipe 866: Waldorf Salad
+  Recipe 867: Khoresh-é-Ghormeh-Sabzi (Persian Braised Meat)
+  Recipe 868: Eggs in Purgatory
+  Recipe 869: Palomilla (Cuban Steak and Onions)
+  Recipe 870: Pad Kee Mao (Thai Drunken Noodles)
+  Recipe 871: Ohio Shredded Chicken Sandwich
+  Recipe 872: Lemon Drizzle Cake
+  Recipe 873: How to Roast a Perfect Chicken
+  Recipe 874: Toor Dal (Indian Pigeon Peas)
+  Recipe 875: Laugenbrezel (Bavarian-Style Soft Pretzels)
+  Recipe 876: Bacon, Egg, and Cheese Sandwich
+  Recipe 877: Daube de Boeuf à la Gasconne (Gascogne-Style Beef Stew)
+  Recipe 878: Singaporean Fudge Cake
+  Recipe 879: Lemon Pound Cake
+  Recipe 880: Foolproof Juicy Poached Chicken
+  Recipe 881: Rösti (Swiss Potato Cake)
+  Recipe 882: Edible Cookie Dough
+  Recipe 883: Corned Beef Hash
+  Recipe 884: Butternut Squash Purée
+  Recipe 885: 5-Ingredient British Banoffee Pie
+  Recipe 886: Steak Diane
+  Recipe 887: Classic British Fish and Chips
+  Recipe 888: Zuppa Toscana
+  Recipe 889: Iowa Loose Meat Sandwich
+  Recipe 890: Boxty (Irish Potato Pancakes)
+  Recipe 891: Morning Glory Muffins
+  Recipe 892: Chicken Saltimbocca
+  Recipe 893: Perfect Cacio e Pepe
+  Recipe 894: Mozzarella in Carrozza (Italian Fried Mozzarella Sandwiches)
+  Recipe 895: Lemon Ricotta Cake
+  Recipe 896: Crispy Baked Potato Wedges
+  Recipe 897: Sherry-Braised Chicken With Chickpeas, Chorizo, and Fennel
+  Recipe 898: Strawberry Rhubarb Pie
+  Recipe 899: Butter Swim Biscuits
+  Recipe 900: St. Louis Pork Steaks
+  Recipe 901: Creamy Chicken and Wild Rice Soup
+  Recipe 902: White Chocolate Cheesecake
+  Recipe 903: Pastel Azteca
+  Recipe 904: Make-Ahead Bacon and Cheese Egg Bites
+  Recipe 905: 50/50 Margarita
+  Recipe 906: Lemony Orzo Pasta Salad
+  Recipe 907: Carne Asada Fries With Sliced Steak and Chile Butter Sauce
+  Recipe 908: Marbled Ganache for Easy Chocolate-Covered Strawberries
+  Recipe 909: Peanut Butter Noodles (Ban Mian) Recipe
+  Recipe 910: Brooklyn Blackout Cake
+  Recipe 911: Buffalo Blue Cheese Deviled Eggs
+  Recipe 912: Crispy Miso-Caramel Oven-Fried Chicken Wings
+  Recipe 913: Northern Italian Barley and Cranberry Bean Soup
+  Recipe 914: Akron White French Dressing
+  Recipe 915: Baked Jalapeño Popper Dip
+  Recipe 916: 30-Minute Sausage and Lentil Stew With Escarole
+  Recipe 917: Juicy Less-Meat Meatloaf
+  Recipe 918: Labneh Dip
+  Recipe 919: Broccoli Salad With Bacon and Cheddar
+  Recipe 920: 15-Minute Honey-Mustard Salmon Recipe
+  Recipe 921: Okinawan Taco Rice
+  Recipe 922: Moroccan Egg Drop Harira (Vegetable and Legume Soup)
+  Recipe 923: Easy One-Pot Black-Eyed Pea Stew With Swiss Chard and Dill
+  Recipe 924: Panuchos (Yucatán-Style Bean-Stuffed Tortillas)
+  Recipe 925: Salmoriglio
+  Recipe 926: Garlic-Parmesan Air-Fryer Chicken Wings
+  Recipe 927: 30-Minute White Bean and Kale Soup With Fire-Roasted Tomatoes
+  Recipe 928: Bacon and Date Salad
+  Recipe 929: Spice Bag
+  Recipe 930: Rich and Creamy Slow-Cooker Beef Stroganoff
+  Recipe 931: Soubise (French Onion Sauce)
+  Recipe 932: Chocolate Pot de Crèmes
+  Recipe 933: Alabama Lane Cake
+  Recipe 935: Espresso Tonic
+  Recipe 936: Beef Tongue Tacos With Consomé (Tacos de Lengua y Consomé)
+  Recipe 937: Law Bok Gow (Chinese Turnip Cake)
+  Recipe 938: Fried Mozzarella Stick Dip
+  Recipe 939: Crispy Air-Fryer French Fries
+  Recipe 940: Caesar BLT
+  Recipe 941: 5-Ingredient Black Bean Soup
+  Recipe 942: Kenyan Chapati (Kenyan Flatbread)
+  Recipe 943: Hummus B'Tahini (Hummus With Tahini)
+  Recipe 944: Sheet-Pan Chicken and Vegetables With Thai Red Curry and Peanut-Lime Sauce
+  Recipe 945: Homemade Phyllo Dough Recipe
+  Recipe 946: Sopa de Albóndigas de Pollo (Nicaraguan Chicken Meatball Soup)
+  Recipe 947: Brown Bag Microwave Popcorn
+  Recipe 948: Binakol na Manok (Filipino Chicken and Coconut Soup)
+  Recipe 949: Smash Falafel Pitas
+  Recipe 950: Hot Milk Cake
+  Recipe 951: Cabbage Soup With Cauliflower, Chickpeas, and Coconut Milk
+  Recipe 952: Scottish-Style Oatmeal
+  Recipe 953: 5-Ingredient Greek Chickpea Stew (Revithia)
+  Recipe 954: Breakfast Bars
+  Recipe 955: Crepes Suzette
+  Recipe 958: Beef Wellington Sandwich
+  Recipe 959: Matcha Chiffon Cake
+  Recipe 961: Orange and Saffron Flan
+  Recipe 962: Gochujang Scallion Cornbread With Honey Butter Glaze
+  Recipe 963: Creamy Eggless Chocolate Frosting
+  Recipe 964: Roasted Oysters With Bacon and Parmesan
+  Recipe 965: Kimchi Jam
+  Recipe 966: Malted Cocoa Rice Krispies Treats
+  Recipe 968: Espresso Martini
+  Recipe 969: Hot-Water Pie Crust
+  Recipe 970: Guyanese Pepperpot
+  Recipe 971: Bún Chả Hanoi
+  Recipe 972: Pad See Ew (Thai Stir-Fried Noodles)
+  Recipe 973: Ham and Cheese Sliders
+  Recipe 974: Zuppa di Pesce (Hearty Italian Seafood Stew)
+  Recipe 975: Sweet and Salty Puppy Chow Recipe (Chocolate Peanut Butter Snack Mix)
+  Recipe 976: Coquito (Creamy Puerto Rican Spiced Coconut Drink)
+  Recipe 977: Million Dollar Spaghetti
+  Recipe 978: Whipped Ricotta With Caramelized Shallots and Herbs
+  Recipe 979: Classic Southern Cheese Straws
+  Recipe 980: Salmon Wellington (Salmon en Croûte With Mushroom Duxelles)
+  Recipe 981: Hong Kong Milk Tea
+  Recipe 982: Sahlab (A Creamy Levantine Winter Drink)
+  Recipe 983: Beef Bourguignon Pot Pie
+  Recipe 984: Italian-American Beef Braciole
+  Recipe 985: Fried Pickle Dip
+  Recipe 986: Churrasco Steak
+  Recipe 987: Scottish Oatcakes
+  Recipe 988: Garlic Scape Compound Butter
+  Recipe 989: Creamed Kale
+  Recipe 990: Fudgy Spicy Brownies
+  Recipe 991: Roasted Kale With Tahini Sauce
+  Recipe 992: Green Tea Smoked Duck

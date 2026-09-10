@@ -7,6 +7,7 @@ internal data class NutritionFoodRecord(
 	val displayName: String,
 	val normalizedName: String,
 	val nutrients: FdcNutrientsPer100g,
+	val sourceName: String = FDC_FOUNDATION_SOURCE_NAME,
 )
 
 internal data class NutritionFoodMatch(
@@ -20,15 +21,19 @@ internal class NutritionLookupIndex(
 	private val foodIdByNormalizedAlias: Map<String, Int>,
 	private val measuresByFoodId: Map<Int, Map<String, BigDecimal>>,
 ) {
+
 	fun findFood(parsedName: String): NutritionFoodMatch? {
-		val normalizedName = NutritionNameNormalizer.normalize(parsedName)
-		if (normalizedName.isBlank()) {
+		val lookupQueries = listOf(
+			NutritionNameNormalizer.normalize(parsedName),
+			NutritionNameNormalizer.forLookup(parsedName),
+		).distinct().filter { query -> query.isNotBlank() }
+		if (lookupQueries.isEmpty()) {
 			return null
 		}
 
-		return matchAlias(normalizedName)
-			?: matchExactName(normalizedName)
-			?: matchBestPrefix(normalizedName)
+		return lookupQueries.firstNotNullOfOrNull { query ->
+			matchAlias(query) ?: matchExactName(query)
+		} ?: matchBestTokenScore(NutritionNameNormalizer.forLookup(parsedName))
 	}
 
 	fun food(foodId: Int): NutritionFoodRecord? = foodById[foodId]
@@ -45,9 +50,12 @@ internal class NutritionLookupIndex(
 	}
 
 	private fun matchExactName(normalizedName: String): NutritionFoodMatch? {
-		val food = foodById.values.firstOrNull { candidate ->
+		val matches = foodById.values.filter { candidate ->
 			candidate.normalizedName == normalizedName
-		} ?: return null
+		}
+		val food = matches.firstOrNull { candidate -> !candidate.isBranded() }
+			?: matches.firstOrNull()
+			?: return null
 		return NutritionFoodMatch(
 			foodId = food.id,
 			matchSource = MATCH_SOURCE_NAME,
@@ -55,22 +63,43 @@ internal class NutritionLookupIndex(
 		)
 	}
 
-	private fun matchBestPrefix(normalizedName: String): NutritionFoodMatch? {
-		val bestPrefixMatch = foodById.values
-			.filter { food ->
-				food.normalizedName.startsWith(normalizedName) ||
-					normalizedName.startsWith(food.normalizedName)
-			}
-			.maxByOrNull { food -> food.normalizedName.length }
-			?: return null
-		return NutritionFoodMatch(
-			foodId = bestPrefixMatch.id,
-			matchSource = MATCH_SOURCE_NAME,
-			confidence = PREFIX_MATCH_CONFIDENCE,
-		)
+	private fun matchBestTokenScore(queryNormalized: String): NutritionFoodMatch? =
+		bestTokenMatch(queryNormalized)?.let { food ->
+			NutritionFoodMatch(
+				foodId = food.id,
+				matchSource = MATCH_SOURCE_TOKENS,
+				confidence = TOKEN_MATCH_CONFIDENCE,
+			)
+		}
+
+	private fun bestTokenMatch(queryNormalized: String): NutritionFoodRecord? {
+		if (queryNormalized.isBlank()) {
+			return null
+		}
+		val scored = foodById.values.mapNotNull { food ->
+			val score = NutritionFoodNameScorer.score(queryNormalized, food.normalizedName)
+				?: return@mapNotNull null
+			score to food
+		}
+		return pickBestScoredFood(scored.filterNot { candidate -> candidate.second.isBranded() })
+			?: pickBestScoredFood(scored)
 	}
 
+	private fun pickBestScoredFood(
+		scored: List<Pair<NutritionFoodNameScore, NutritionFoodRecord>>,
+	): NutritionFoodRecord? =
+		scored.maxWithOrNull(
+			compareByDescending<Pair<NutritionFoodNameScore, NutritionFoodRecord>> { it.first.score }
+				.thenBy { FdcFoodMatchingSupport.sourcePriority(it.second.sourceName) }
+				.thenBy { it.first.extraTokenCount }
+				.thenBy { it.second.normalizedName.length },
+		)?.second
+
+	private fun NutritionFoodRecord.isBranded(): Boolean =
+		sourceName == FDC_BRANDED_SOURCE_NAME
+
 	companion object {
+
 		val EMPTY = NutritionLookupIndex(
 			foodById = emptyMap(),
 			foodIdByNormalizedAlias = emptyMap(),
@@ -79,8 +108,9 @@ internal class NutritionLookupIndex(
 
 		private const val MATCH_SOURCE_ALIAS = "alias"
 		private const val MATCH_SOURCE_NAME = "name"
+		private const val MATCH_SOURCE_TOKENS = "tokens"
 		private val ALIAS_MATCH_CONFIDENCE = BigDecimal("1.00")
 		private val NAME_MATCH_CONFIDENCE = BigDecimal("0.90")
-		private val PREFIX_MATCH_CONFIDENCE = BigDecimal("0.75")
+		private val TOKEN_MATCH_CONFIDENCE = BigDecimal("0.80")
 	}
 }

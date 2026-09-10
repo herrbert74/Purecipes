@@ -176,6 +176,14 @@ tasks.register<JavaExec>("reportRecipeVisibility") {
 	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
 }
 
+tasks.register<JavaExec>("reportIngredientFoodMatches") {
+	group = "verification"
+	description = "Reports ingredient lines missing food-table matches or gram weights"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientFoodMatchReportKt")
+	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
+}
+
 tasks.register<JavaExec>("calculateRecipeNutrition") {
 	group = "application"
 	description = "Calculates and stores recipe nutrition from parsed ingredients"

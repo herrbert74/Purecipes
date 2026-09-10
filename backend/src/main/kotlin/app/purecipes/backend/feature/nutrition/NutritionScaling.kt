@@ -35,11 +35,13 @@ internal fun NutritionSummary.scale(factor: Double): NutritionSummary {
 internal fun computeStoredIngredientNutrition(
 	food: NutritionFoodRecord,
 	grams: BigDecimal,
+	gramsSource: String,
 ): StoredIngredientNutrition {
 	val factor = grams.divide(GRAMS_PER_100, NUTRIENT_SCALE, RoundingMode.HALF_UP)
 	val nutrients = food.nutrients
 	return StoredIngredientNutrition(
 		grams = grams.setScale(NUTRIENT_SCALE, RoundingMode.HALF_UP),
+		gramsSource = gramsSource,
 		calories = nutrients.calories.multiply(factor).setScale(NUTRIENT_SCALE, RoundingMode.HALF_UP),
 		protein = nutrients.protein?.multiply(factor)?.setScale(NUTRIENT_SCALE, RoundingMode.HALF_UP),
 		carbohydrates = nutrients.carbohydrates?.multiply(factor)?.setScale(NUTRIENT_SCALE, RoundingMode.HALF_UP),

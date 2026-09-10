@@ -19,6 +19,7 @@ internal data class IngredientNutritionContribution(
 
 internal data class StoredIngredientNutrition(
 	val grams: BigDecimal,
+	val gramsSource: String,
 	val calories: BigDecimal,
 	val protein: BigDecimal?,
 	val carbohydrates: BigDecimal?,

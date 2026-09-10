@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.SectionHeader
+import app.purecipes.shared.ui.component.USDA_NUTRITION_ATTRIBUTION
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.coroutines.launch
@@ -150,6 +151,21 @@ internal fun AboutScreenContent(
 					showChevron = true,
 					onClick = onOpenLicenses,
 					modifier = Modifier.testTag(ABOUT_OSS_ROW_TAG),
+				)
+			}
+		}
+		Surface(
+			modifier = Modifier.fillMaxWidth(),
+			shape = PurecipesTheme.shapes.large,
+			tonalElevation = PurecipesTheme.space.quark,
+		) {
+			Column(
+				modifier = Modifier.padding(PurecipesTheme.space.m),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			) {
+				SectionHeader(
+					title = "Nutrition data",
+					subtitle = USDA_NUTRITION_ATTRIBUTION,
 				)
 			}
 		}

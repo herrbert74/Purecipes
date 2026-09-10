@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "generic-units-v6"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "retailer-brands-v9"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -153,6 +153,13 @@ val quantityWithoutSpaceBeforeUnitRegex = Regex(
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 
+private val retailerBrandPhraseRegex = Regex(
+	pattern =
+		"""(?:,?\s*)?\b(?:by\s+)?(?:sainsbury(?:['’]s|s)?|tesco(?:['’]s)?|waitrose|asda|aldi|lidl|""" +
+			"""morrisons?|m\s*&\s*s|marks\s*(?:&\s*|and\s+)?spencer)(?![\p{L}])""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
 const val MAX_PUNCTUATION_BOUND_UNIT_LENGTH = 4
 
 fun allowsPunctuationAfterUnit(unit: String): Boolean =
@@ -169,12 +176,30 @@ fun addSpaceBetweenQuantityAndUnit(ingredient: String): String =
 		"$qty $unit"
 	}
 
+fun stripRetailerBrands(ingredient: String): String {
+	val stripped = retailerBrandPhraseRegex.replace(ingredient, " ")
+	if (stripped == ingredient) {
+		return ingredient
+	}
+	return stripped
+		.replace(Regex("""\s*,\s*,"""), ",")
+		.replace(Regex("""\s{2,}"""), " ")
+		.replace(Regex("""\s+,"""), ",")
+		.trim()
+		.trimStart(',', ';', '.')
+		.trimEnd(',', ';', '.')
+		.replace(Regex("""\s{2,}"""), " ")
+		.trim()
+}
+
 fun normalizeIngredientText(raw: String): String {
 	val normalizedWhitespace = raw.trim().removePrefix("-").removePrefix("*").trim()
 	if (normalizedWhitespace.isBlank()) {
 		return raw
 	}
-	val transformed = restoreFractionalQuantities(addSpaceBetweenQuantityAndUnit(normalizedWhitespace))
+	val transformed = stripRetailerBrands(
+		restoreFractionalQuantities(addSpaceBetweenQuantityAndUnit(normalizedWhitespace)),
+	)
 	return if (transformed.length <= MAX_INGREDIENT_LENGTH) {
 		transformed
 	} else {

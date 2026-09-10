@@ -31,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.purecipes.shared.domain.model.IngredientNutritionLine
-import app.purecipes.shared.domain.model.NutritionCalculationSource
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeNutrition
 import app.purecipes.shared.domain.model.hasMacroNutrients
@@ -130,7 +129,8 @@ fun NutritionFactsDialog(
 					val summary = nutrition.summaryForBasis(basis)
 					NutritionFactsLabelContent(
 						summary = summary,
-						coverageText = nutrition.recipeTotals.coverageText(),
+						coverageText = nutrition.recipeTotals.coverageCopy(),
+						showUsdaAttribution = nutrition.recipeTotals.shouldShowUsdaAttribution(),
 						servingDescription = when (basis) {
 							NutritionFactsBasis.PER_SERVING -> nutrition.servingDescription
 							else -> null
@@ -177,6 +177,7 @@ private fun NutritionFactsBasisSelector(
 private fun NutritionFactsLabelContent(
 	summary: NutritionSummary,
 	coverageText: String?,
+	showUsdaAttribution: Boolean,
 	servingDescription: String?,
 	basisLabel: String,
 ) {
@@ -199,6 +200,13 @@ private fun NutritionFactsLabelContent(
 		coverageText?.let { coverage ->
 			Text(
 				text = coverage,
+				style = PurecipesTheme.typography.bodySmall,
+				color = PurecipesTheme.colorScheme.onSurfaceVariant,
+			)
+		}
+		if (showUsdaAttribution) {
+			Text(
+				text = USDA_NUTRITION_ATTRIBUTION,
 				style = PurecipesTheme.typography.bodySmall,
 				color = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)
@@ -375,24 +383,6 @@ private fun NutritionFactsBasis.displayLabel(): String =
 
 private fun IngredientNutritionLine.displayName(): String =
 	parsedName?.takeIf { name -> name.isNotBlank() } ?: rawText
-
-private fun NutritionSummary.coverageText(): String? {
-	val matched = matchedIngredientCount
-	val totalCount = totalIngredientCount
-	if (matched == null || totalCount == null || totalCount <= 0) {
-		return if (calculationSource == NutritionCalculationSource.SCRAPED) {
-			"Imported nutrition values"
-		} else {
-			null
-		}
-	}
-
-	return when {
-		matched == 0 -> "No ingredients matched yet"
-		isComplete -> "Estimated from all $totalCount ingredients"
-		else -> "Estimated from $matched of $totalCount ingredients"
-	}
-}
 
 private fun Double.roundToDisplay(): String {
 	val rounded = (this * NUTRIENT_DISPLAY_SCALE).roundToInt() / NUTRIENT_DISPLAY_SCALE

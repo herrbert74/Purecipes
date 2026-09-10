@@ -17,7 +17,10 @@ internal data class IngredientNutritionIssue(
 
 internal fun RecipeNutritionCalculationResult.collectIngredientIssues(): List<IngredientNutritionIssue> =
 	ingredientResults.mapNotNull { result ->
-		if (IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText)) {
+		if (!result.countsTowardTotals ||
+			IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) ||
+			!NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
+		) {
 			return@mapNotNull null
 		}
 
@@ -29,18 +32,21 @@ internal fun RecipeNutritionCalculationResult.collectIngredientIssues(): List<In
 				parsedName = parsed.parsedName,
 				kind = IngredientNutritionIssueKind.NOT_MEASURABLE,
 			)
+
 			result.foodMatch == null -> IngredientNutritionIssue(
 				ingredientId = result.ingredientId,
 				rawText = parsed.rawText,
 				parsedName = parsed.parsedName,
 				kind = IngredientNutritionIssueKind.NO_FOOD_MATCH,
 			)
+
 			result.grams == null -> IngredientNutritionIssue(
 				ingredientId = result.ingredientId,
 				rawText = parsed.rawText,
 				parsedName = parsed.parsedName,
 				kind = IngredientNutritionIssueKind.UNRESOLVED_GRAMS,
 			)
+
 			else -> null
 		}
 	}

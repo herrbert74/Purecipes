@@ -4,12 +4,15 @@ import java.math.BigDecimal
 
 internal const val FDC_FOUNDATION_SOURCE_NAME = "fdc_foundation"
 internal const val FDC_SR_LEGACY_SOURCE_NAME = "fdc_sr_legacy"
+internal const val FDC_SURVEY_SOURCE_NAME = "fdc_survey"
+internal const val FDC_BRANDED_SOURCE_NAME = "fdc_branded"
 
 internal enum class FdcFoodDataset(
 	val jsonRootKey: String,
 	val sourceName: String,
 	val sourceMetadata: String,
 ) {
+
 	FOUNDATION(
 		jsonRootKey = "FoundationFoods",
 		sourceName = FDC_FOUNDATION_SOURCE_NAME,
@@ -19,6 +22,16 @@ internal enum class FdcFoodDataset(
 		jsonRootKey = "SRLegacyFoods",
 		sourceName = FDC_SR_LEGACY_SOURCE_NAME,
 		sourceMetadata = """{"dataType":"SR Legacy"}""",
+	),
+	SURVEY(
+		jsonRootKey = "SurveyFoods",
+		sourceName = FDC_SURVEY_SOURCE_NAME,
+		sourceMetadata = """{"dataType":"Survey (FNDDS)"}""",
+	),
+	BRANDED(
+		jsonRootKey = "BrandedFoods",
+		sourceName = FDC_BRANDED_SOURCE_NAME,
+		sourceMetadata = """{"dataType":"Branded"}""",
 	),
 }
 
@@ -39,6 +52,7 @@ internal data class FdcFoundationFood(
 	val nutrients: List<FdcNutrientAmount>,
 	val portions: List<FdcFoodPortion>,
 ) {
+
 	val normalizedDescription: String = NutritionNameNormalizer.normalize(description)
 
 	fun nutrientsPer100g(): FdcNutrientsPer100g? {
@@ -50,7 +64,7 @@ internal data class FdcFoundationFood(
 			carbohydrates = byId[FdcNutrientIds.CARBOHYDRATES],
 			fat = byId[FdcNutrientIds.FAT],
 			fiber = byId[FdcNutrientIds.FIBER],
-			sugar = byId[FdcNutrientIds.SUGAR],
+			sugar = byId[FdcNutrientIds.SUGAR] ?: byId[FdcNutrientIds.TOTAL_SUGARS],
 			sodium = byId[FdcNutrientIds.SODIUM],
 		)
 	}
@@ -69,4 +83,6 @@ internal data class FdcNutrientsPer100g(
 internal data class FdcFoodDataParseResult(
 	val dataset: FdcFoodDataset,
 	val foods: List<FdcFoundationFood>,
+	val foodsScanned: Int = foods.size,
+	val neededNameMatches: Map<String, String> = emptyMap(),
 )

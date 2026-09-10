@@ -1,0 +1,96 @@
+{
+	"SurveyFoods": [
+		{
+			"fdcId": 2706001,
+			"description": "Oat milk",
+			"foodNutrients": [
+				{
+					"nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" },
+					"amount": 45
+				},
+				{
+					"nutrient": { "id": 1003, "name": "Protein", "unitName": "g" },
+					"amount": 1.5
+				},
+				{
+					"nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" },
+					"amount": 7.0
+				},
+				{
+					"nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" },
+					"amount": 1.5
+				},
+				{
+					"nutrient": { "id": 1079, "name": "Fiber, total dietary", "unitName": "g" },
+					"amount": 0.8
+				},
+				{
+					"nutrient": { "id": 2000, "name": "Total Sugars", "unitName": "g" },
+					"amount": 2.5
+				},
+				{
+					"nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" },
+					"amount": 40
+				}
+			],
+			"foodPortions": [
+				{
+					"measureUnit": { "name": "undetermined" },
+					"portionDescription": "1 cup",
+					"gramWeight": 240
+				},
+				{
+					"measureUnit": { "name": "undetermined" },
+					"portionDescription": "1 fl oz",
+					"gramWeight": 30
+				},
+				{
+					"measureUnit": { "name": "undetermined" },
+					"portionDescription": "Quantity not specified",
+					"gramWeight": 240
+				}
+			]
+		},
+		{
+			"fdcId": 2706002,
+			"description": "Yogurt, coconut milk",
+			"foodNutrients": [
+				{
+					"nutrient": { "id": 1008, "name": "Energy", "unitName": "kcal" },
+					"amount": 108
+				},
+				{
+					"nutrient": { "id": 1003, "name": "Protein", "unitName": "g" },
+					"amount": 1.0
+				},
+				{
+					"nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "g" },
+					"amount": 12.0
+				},
+				{
+					"nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "g" },
+					"amount": 6.0
+				},
+				{
+					"nutrient": { "id": 1079, "name": "Fiber, total dietary", "unitName": "g" },
+					"amount": 0
+				},
+				{
+					"nutrient": { "id": 2000, "name": "Total Sugars", "unitName": "g" },
+					"amount": 8.0
+				},
+				{
+					"nutrient": { "id": 1093, "name": "Sodium, Na", "unitName": "mg" },
+					"amount": 20
+				}
+			],
+			"foodPortions": [
+				{
+					"measureUnit": { "name": "undetermined" },
+					"portionDescription": "1 tablespoon",
+					"gramWeight": 15
+				}
+			]
+		}
+	]
+}

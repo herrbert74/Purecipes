@@ -1,6 +1,7 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.db.Db
+import app.purecipes.backend.feature.nutrition.FdcFoodDataset
 import app.purecipes.backend.feature.nutrition.NutritionFoodSeedRepository
 import app.purecipes.backend.feature.nutrition.NutritionSeedImporter
 import java.io.File
@@ -32,13 +33,24 @@ fun main(args: Array<String>) {
 	)
 
 	println("Nutrition seed import${if (dryRun) " (dry run)" else ""} [${result.dataset.name}]")
+	if (result.dataset == FdcFoodDataset.BRANDED) {
+		println("Branded foods scanned: ${result.foodsScanned}")
+		println("Needed names matched: ${result.neededNameMatches.size}")
+	}
 	println("Foods imported: ${result.foodsImported}")
 	println("Foods skipped (missing energy): ${result.foodsSkipped}")
 	println("Measures imported: ${result.measuresImported}")
 	println("Catalogue aliases imported: ${result.catalogueAliasesImported}")
 	println("Extra aliases imported: ${result.extraAliasesImported}")
 	println("Unmatched catalogue names: ${result.unmatchedCatalogueNames.size}")
-	if (result.unmatchedCatalogueNames.isNotEmpty()) {
+	if (result.neededNameMatches.isNotEmpty()) {
+		println()
+		println("Branded matches for unmatched recipe names (${result.neededNameMatches.size})")
+		result.neededNameMatches.toList().sortedBy { (query, _) -> query }.forEach { (query, description) ->
+			println("- $query -> $description")
+		}
+	}
+	if (result.unmatchedCatalogueNames.isNotEmpty() && result.dataset != FdcFoodDataset.BRANDED) {
 		println()
 		result.unmatchedCatalogueNames.forEach { catalogueName ->
 			println("- $catalogueName")

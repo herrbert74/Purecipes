@@ -76,6 +76,8 @@ Use USDA FoodData Central downloadable data as the first source of truth.
 For today's implementation, prefer a small seed import over a full provider-sync pipeline:
 
 - Download/import Foundation Foods and optionally SR Legacy from FoodData Central.
+- Optionally import Survey (FNDDS) foods for recipe-style names missing from Foundation/SR Legacy.
+- Optionally import matching Branded Foods rows only for unmatched recipe names (do not load the full branded dump).
 - Keep only the nutrients needed for the MVP: calories, protein, carbohydrates, fat, fibre, sugar, and sodium.
 - Create canonical food rows with names and nutrients per 100g.
 - Use the existing ingredient catalogue from `IngredientFilterSection` as the initial coverage checklist.

@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import app.purecipes.shared.domain.model.NutritionCalculationSource
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlin.math.roundToInt
@@ -46,14 +45,16 @@ fun NutritionSummaryCard(
 					CircularProgressIndicator(
 						strokeWidth = PurecipesTheme.space.quark,
 					)
+
 				nutrition == null || !nutrition.hasDisplayableNutrients() ->
 					Text(
 						text = "Add measurable ingredients with amounts and units to see an estimate.",
 						style = PurecipesTheme.typography.bodyMedium,
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
+
 				else -> {
-					nutrition.coverageText()?.let { coverage ->
+					nutrition.coverageCopy()?.let { coverage ->
 						Text(
 							text = coverage,
 							style = PurecipesTheme.typography.bodyMedium,
@@ -61,6 +62,13 @@ fun NutritionSummaryCard(
 						)
 					}
 					NutritionSummaryNutrientRows(nutrition = nutrition)
+					if (nutrition.shouldShowUsdaAttribution()) {
+						Text(
+							text = USDA_NUTRITION_ATTRIBUTION,
+							style = PurecipesTheme.typography.bodySmall,
+							color = PurecipesTheme.colorScheme.onSurfaceVariant,
+						)
+					}
 				}
 			}
 		}
@@ -114,24 +122,6 @@ private fun NutritionSummary.hasDisplayableNutrients(): Boolean {
 		sodium,
 	).any { value -> value != null } ||
 		(matchedIngredientCount != null && totalCount != null && totalCount > 0)
-}
-
-private fun NutritionSummary.coverageText(): String? {
-	val matched = matchedIngredientCount
-	val totalCount = totalIngredientCount
-	if (matched == null || totalCount == null || totalCount <= 0) {
-		return if (calculationSource == NutritionCalculationSource.SCRAPED) {
-			"Imported nutrition values"
-		} else {
-			null
-		}
-	}
-
-	return when {
-		matched == 0 -> "No ingredients matched yet"
-		isComplete -> "Estimated from all $totalCount ingredients"
-		else -> "Estimated from $matched of $totalCount ingredients"
-	}
 }
 
 private fun Double.roundToDisplay(): String {
