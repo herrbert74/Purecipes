@@ -584,10 +584,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3",
-            "artifactVersion": "1.5.0-alpha26",
+            "artifactVersion": "1.5.0-alpha27",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha27",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -609,10 +609,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-adaptive-navigation-suite",
-            "artifactVersion": "1.5.0-alpha26",
+            "artifactVersion": "1.5.0-alpha27",
             "name": "Material Adaptive Navigation Suite",
             "description": "Compose Material Design Adaptive Navigation Suite Library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha27",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -634,10 +634,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-ripple",
-            "artifactVersion": "1.5.0-alpha26",
+            "artifactVersion": "1.5.0-alpha27",
             "name": "Compose Material3 Ripple",
             "description": "Building block APIs to build ripples that follow a Material 3 specification.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha26",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha27",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -3160,7 +3160,7 @@
         },
         {
             "uniqueId": "com.diamondedge:logging",
-            "artifactVersion": "2.1.1",
+            "artifactVersion": "2.1.2",
             "name": "KmLogging: Kotlin Multiplatform Logging",
             "description": "KmLogging is a high performance, extensible and easy to use logging library for Kotlin Multiplatform development",
             "website": "https://github.com/DiamondEdge1/KmLogging",
@@ -4481,7 +4481,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-core",
-            "artifactVersion": "15.1.1",
+            "artifactVersion": "15.2.0",
             "name": "AboutLibraries Compose UI Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4504,7 +4504,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-compose-m3",
-            "artifactVersion": "15.1.1",
+            "artifactVersion": "15.2.0",
             "name": "AboutLibraries Compose Material 3 Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4527,7 +4527,7 @@
         },
         {
             "uniqueId": "com.mikepenz:aboutlibraries-core",
-            "artifactVersion": "15.1.1",
+            "artifactVersion": "15.2.0",
             "name": "AboutLibraries Core Library",
             "description": "AboutLibraries automatically detects all dependencies of a project and collects their information including the license. Optionally visualising it via the provided ui components.",
             "website": "https://github.com/mikepenz/AboutLibraries",
@@ -4550,7 +4550,7 @@
         },
         {
             "uniqueId": "com.mixpanel.android:mixpanel-android",
-            "artifactVersion": "8.9.0",
+            "artifactVersion": "8.10.0",
             "name": "analytics",
             "description": "Official Mixpanel tracking library for Android http://mixpanel.com/",
             "website": "https://github.com/mixpanel/mixpanel-android",
@@ -4596,7 +4596,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases",
-            "artifactVersion": "10.16.2",
+            "artifactVersion": "10.19.1",
             "name": "purchases-android",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-android",
@@ -4619,7 +4619,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-core",
-            "artifactVersion": "3.5.1",
+            "artifactVersion": "3.7.0",
             "name": "purchases-kmp-(core)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4642,7 +4642,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-mappings",
-            "artifactVersion": "3.5.1",
+            "artifactVersion": "3.7.0",
             "name": "purchases-kmp-(mappings)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4665,7 +4665,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-models",
-            "artifactVersion": "3.5.1",
+            "artifactVersion": "3.7.0",
             "name": "purchases-kmp-(models)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4729,6 +4729,29 @@
             ]
         },
         {
+            "uniqueId": "com.squareup.curtains:curtains",
+            "artifactVersion": "1.2.5",
+            "name": "Curtains",
+            "description": "Spy on your Android windows",
+            "website": "https://github.com/square/curtains/",
+            "developers": [
+                {
+                    "name": "Square, Inc."
+                }
+            ],
+            "scm": {
+                "connection": "scm:git:git://github.com/square/curtains.git",
+                "developerConnection": "scm:git:ssh://git@github.com/square/curtains.git",
+                "url": "https://github.com/square/curtains/"
+            },
+            "licenses": [
+                "Apache-2.0"
+            ],
+            "funding": [
+                
+            ]
+        },
+        {
             "uniqueId": "com.squareup.okhttp3:okhttp",
             "artifactVersion": "5.3.2",
             "name": "okhttp",
@@ -4753,19 +4776,19 @@
         },
         {
             "uniqueId": "com.squareup.okio:okio",
-            "artifactVersion": "3.17.0",
+            "artifactVersion": "3.18.1",
             "name": "okio",
             "description": "A modern I/O library for Android, Java, and Kotlin Multiplatform.",
-            "website": "https://github.com/square/okio/",
+            "website": "https://github.com/lysine-dev/okio/",
             "developers": [
                 {
                     "name": "Square, Inc."
                 }
             ],
             "scm": {
-                "connection": "scm:git:git://github.com/square/okio.git",
-                "developerConnection": "scm:git:ssh://git@github.com/square/okio.git",
-                "url": "https://github.com/square/okio/"
+                "connection": "scm:git:git://github.com/lysine-dev/okio.git",
+                "developerConnection": "scm:git:ssh://git@github.com/lysine-dev/okio.git",
+                "url": "https://github.com/lysine-dev/okio/"
             },
             "licenses": [
                 "Apache-2.0"
@@ -4914,7 +4937,7 @@
         },
         {
             "uniqueId": "dev.drewhamilton.poko:poko-annotations",
-            "artifactVersion": "0.17.2",
+            "artifactVersion": "0.22.0",
             "name": "Poko Annotations",
             "description": "A Kotlin compiler plugin for generating equals, hashCode, and toString for plain old Kotlin objects.",
             "website": "https://github.com/drewhamilton/Poko",
@@ -4937,7 +4960,7 @@
         },
         {
             "uniqueId": "dev.gitlive:firebase-app",
-            "artifactVersion": "3.0.0-alpha01",
+            "artifactVersion": "3.0.0-alpha02",
             "name": "firebase-kotlin-sdk",
             "description": "The Firebase Kotlin SDK is a Kotlin-first SDK for Firebase. It's API is similar to the Firebase Android SDK Kotlin Extensions but also supports multiplatform projects, enabling you to use Firebase directly from your common source targeting iOS, Android or JS.",
             "website": "https://github.com/GitLiveApp/firebase-kotlin-sdk",
@@ -4960,7 +4983,7 @@
         },
         {
             "uniqueId": "dev.gitlive:firebase-auth",
-            "artifactVersion": "3.0.0-alpha01",
+            "artifactVersion": "3.0.0-alpha02",
             "name": "firebase-kotlin-sdk",
             "description": "The Firebase Kotlin SDK is a Kotlin-first SDK for Firebase. It's API is similar to the Firebase Android SDK Kotlin Extensions but also supports multiplatform projects, enabling you to use Firebase directly from your common source targeting iOS, Android or JS.",
             "website": "https://github.com/GitLiveApp/firebase-kotlin-sdk",
@@ -4983,7 +5006,7 @@
         },
         {
             "uniqueId": "dev.gitlive:firebase-common",
-            "artifactVersion": "3.0.0-alpha01",
+            "artifactVersion": "3.0.0-alpha02",
             "name": "firebase-kotlin-sdk",
             "description": "The Firebase Kotlin SDK is a Kotlin-first SDK for Firebase. It's API is similar to the Firebase Android SDK Kotlin Extensions but also supports multiplatform projects, enabling you to use Firebase directly from your common source targeting iOS, Android or JS.",
             "website": "https://github.com/GitLiveApp/firebase-kotlin-sdk",
@@ -5075,7 +5098,7 @@
         },
         {
             "uniqueId": "io.coil-kt.coil3:coil",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.6.2",
             "name": "coil",
             "description": "An image loading library for Android and Compose Multiplatform.",
             "website": "https://github.com/coil-kt/coil",
@@ -5098,7 +5121,7 @@
         },
         {
             "uniqueId": "io.coil-kt.coil3:coil-compose",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.6.2",
             "name": "coil-compose",
             "description": "An image loading library for Android and Compose Multiplatform.",
             "website": "https://github.com/coil-kt/coil",
@@ -5121,7 +5144,7 @@
         },
         {
             "uniqueId": "io.coil-kt.coil3:coil-compose-core",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.6.2",
             "name": "coil-compose-core",
             "description": "An image loading library for Android and Compose Multiplatform.",
             "website": "https://github.com/coil-kt/coil",
@@ -5144,7 +5167,7 @@
         },
         {
             "uniqueId": "io.coil-kt.coil3:coil-core",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.6.2",
             "name": "coil-core",
             "description": "An image loading library for Android and Compose Multiplatform.",
             "website": "https://github.com/coil-kt/coil",
@@ -5167,7 +5190,7 @@
         },
         {
             "uniqueId": "io.coil-kt.coil3:coil-network-core",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.6.2",
             "name": "coil-network-core",
             "description": "An image loading library for Android and Compose Multiplatform.",
             "website": "https://github.com/coil-kt/coil",
@@ -5190,7 +5213,7 @@
         },
         {
             "uniqueId": "io.coil-kt.coil3:coil-network-ktor3",
-            "artifactVersion": "3.5.0",
+            "artifactVersion": "3.6.2",
             "name": "coil-network-ktor3",
             "description": "An image loading library for Android and Compose Multiplatform.",
             "website": "https://github.com/coil-kt/coil",
@@ -5236,7 +5259,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpauth-apple",
-            "artifactVersion": "3.0.5",
+            "artifactVersion": "3.0.6",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -5258,7 +5281,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpauth-core",
-            "artifactVersion": "3.0.5",
+            "artifactVersion": "3.0.6",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -5280,7 +5303,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpauth-facebook",
-            "artifactVersion": "3.0.5",
+            "artifactVersion": "3.0.6",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -5302,7 +5325,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpauth-firebase",
-            "artifactVersion": "3.0.5",
+            "artifactVersion": "3.0.6",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -5324,7 +5347,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpauth-google",
-            "artifactVersion": "3.0.5",
+            "artifactVersion": "3.0.6",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -5346,7 +5369,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpauth-uihelper",
-            "artifactVersion": "3.0.5",
+            "artifactVersion": "3.0.6",
             "name": "KMPAuth",
             "description": "Kotlin Multiplatform Authentication Library targeting ios and android",
             "website": "https://github.com/mirzemehdi/KMPAuth/",
@@ -6817,7 +6840,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-collections-immutable",
-            "artifactVersion": "0.5.1",
+            "artifactVersion": "0.5.2",
             "name": "kotlinx-collections-immutable",
             "description": "Kotlin Immutable Collections multiplatform library",
             "website": "https://github.com/Kotlin/kotlinx.collections.immutable",
