@@ -4,6 +4,17 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.12.0] - 2026-09-12
+
+### Changed
+
+- Recipe nutrition: ingredient matches raised from about 13% to above 99%.
+- Nutrition cards show which USDA food each estimate uses.
+
+### Fixed
+
+- Create recipe: Add step stays visible above the keyboard.
+
 ## [0.11.0] - 2026-08-29
 
 ### Added
