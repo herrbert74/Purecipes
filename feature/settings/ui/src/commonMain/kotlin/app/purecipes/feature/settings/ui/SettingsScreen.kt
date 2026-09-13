@@ -40,6 +40,7 @@ fun SettingsScreen(
 	onBack: () -> Unit,
 	onOpenPaywall: () -> Unit,
 	onOpenAbout: () -> Unit,
+	onOpenFeatureRequests: () -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: SettingsViewModel = metroViewModel(),
 ) {
@@ -107,6 +108,7 @@ fun SettingsScreen(
 				onPreferencesChange = viewModel::onNotificationPreferencesChange,
 				onSendTestNotification = viewModel::onSendTestNotification,
 			)
+			FeatureRequestsSettingsPanel(onOpenFeatureRequests = onOpenFeatureRequests)
 			AboutSettingsPanel(onOpenAbout = onOpenAbout)
 			LegalSettingsPanel(
 				onOpenPrivacyPolicy = { uriHandler.openUri(PRIVACY_POLICY_URL) },

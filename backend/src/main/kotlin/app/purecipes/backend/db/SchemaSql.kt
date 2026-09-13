@@ -254,6 +254,53 @@ internal const val COOKBOOK_SHARE_IMPORTS_TABLE_SQL = """
 	)
 """
 
+internal const val FEATURE_REQUESTS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS feature_requests (
+		id SERIAL PRIMARY KEY,
+		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
+		title TEXT NOT NULL,
+		description TEXT NOT NULL,
+		status VARCHAR(32) NOT NULL DEFAULT 'OPEN',
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val FEATURE_REQUESTS_STATUS_CREATED_AT_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_feature_requests_status_created_at
+	ON feature_requests (status, created_at DESC)
+"""
+
+internal const val FEATURE_REQUEST_VOTES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS feature_request_votes (
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		request_id INTEGER NOT NULL REFERENCES feature_requests(id) ON DELETE CASCADE,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (user_id, request_id)
+	)
+"""
+
+internal const val FEATURE_REQUEST_VOTES_REQUEST_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_feature_request_votes_request
+	ON feature_request_votes (request_id)
+"""
+
+internal const val FEATURE_REQUEST_COMMENTS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS feature_request_comments (
+		id SERIAL PRIMARY KEY,
+		request_id INTEGER NOT NULL REFERENCES feature_requests(id) ON DELETE CASCADE,
+		user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
+		author_display_name TEXT NOT NULL,
+		body TEXT NOT NULL,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val FEATURE_REQUEST_COMMENTS_REQUEST_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_feature_request_comments_request
+	ON feature_request_comments (request_id, created_at)
+"""
+
 internal const val NUTRITION_FOODS_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS nutrition_foods (
 		id SERIAL PRIMARY KEY,
