@@ -72,10 +72,13 @@ fun RegistrationScreen(
 					emailError = viewModel.emailError,
 					password = viewModel.password,
 					passwordError = viewModel.passwordError,
+					confirmPassword = viewModel.confirmPassword,
+					confirmPasswordError = viewModel.confirmPasswordError,
 					isBusy = viewModel.isBusy,
 					onDisplayNameChange = viewModel::onDisplayNameChange,
 					onEmailChange = viewModel::onEmailChange,
 					onPasswordChange = viewModel::onPasswordChange,
+					onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
 					onSubmit = { viewModel.submitRegistration(onRegistrationSuccess) },
 				)
 			}

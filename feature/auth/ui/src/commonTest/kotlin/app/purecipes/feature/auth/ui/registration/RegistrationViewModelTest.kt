@@ -4,6 +4,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsAuthMethod
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
+import app.purecipes.shared.domain.model.PASSWORD_CONFIRMATION_MISMATCH_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_UPPERCASE_MESSAGE
@@ -62,6 +63,20 @@ class RegistrationViewModelTest {
 	}
 
 	@Test
+	fun `register with mismatched passwords shows confirm password error`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onDisplayNameChange("Taylor Baker")
+		viewModel.onEmailChange("taylor@example.com")
+		viewModel.onPasswordChange("ValidPass12")
+		viewModel.onConfirmPasswordChange("ValidPass13")
+		viewModel.submitRegistration { }
+
+		viewModel.confirmPasswordError shouldBe PASSWORD_CONFIRMATION_MISMATCH_MESSAGE
+		viewModel.passwordError shouldBe null
+	}
+
+	@Test
 	fun `successful registration invokes callback with email`() = runViewModelTest {
 		val viewModel = createViewModel()
 		var registeredEmail: String? = null
@@ -69,6 +84,7 @@ class RegistrationViewModelTest {
 		viewModel.onDisplayNameChange("Taylor Baker")
 		viewModel.onEmailChange("taylor@example.com")
 		viewModel.onPasswordChange("ValidPass12")
+		viewModel.onConfirmPasswordChange("ValidPass12")
 		viewModel.submitRegistration { registeredEmail = it }
 
 		advanceUntilIdle()
@@ -84,6 +100,7 @@ class RegistrationViewModelTest {
 		viewModel.onDisplayNameChange("Taylor Baker")
 		viewModel.onEmailChange("taylor@example.com")
 		viewModel.onPasswordChange("ValidPass12")
+		viewModel.onConfirmPasswordChange("ValidPass12")
 		viewModel.submitRegistration { }
 
 		advanceUntilIdle()

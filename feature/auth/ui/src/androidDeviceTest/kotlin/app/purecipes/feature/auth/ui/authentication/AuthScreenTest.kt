@@ -28,6 +28,8 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
 import app.purecipes.feature.auth.ui.profile.DELETE_ACCOUNT_BUTTON_TAG
 import app.purecipes.feature.auth.ui.profile.DELETE_ACCOUNT_DIALOG_TAG
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_CONFIRM_PASSWORD_ERROR_TAG
+import app.purecipes.feature.auth.ui.registration.REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_EMAIL_FIELD_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_ERROR_TAG
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_FIELD_TAG
@@ -35,6 +37,7 @@ import app.purecipes.feature.auth.ui.registration.REGISTRATION_PASSWORD_POLICY_S
 import app.purecipes.feature.auth.ui.registration.REGISTRATION_SUBMIT_TAG
 import app.purecipes.feature.auth.ui.registration.RegistrationScreen
 import app.purecipes.feature.auth.ui.registration.RegistrationViewModel
+import app.purecipes.shared.domain.model.PASSWORD_CONFIRMATION_MISMATCH_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_LOWERCASE_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_MISSING_NUMBER_MESSAGE
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
@@ -122,6 +125,38 @@ class AuthScreenTest {
 		assertPolicyError(PASSWORD_MISSING_NUMBER_MESSAGE)
 	}
 
+	@Test
+	fun registerWithMismatchedPasswordsShowsConfirmPasswordError() = runRecompositionTrackingUiTest {
+		showRegisterEmailForm()
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("ValidPass12")
+		onNodeWithTag(REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG)
+			.performScrollTo()
+			.performTextInput("ValidPass13")
+		submitRegisterForm()
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(REGISTRATION_CONFIRM_PASSWORD_ERROR_TAG, useUnmergedTree = true)
+				.fetchSemanticsNodes()
+				.isNotEmpty()
+		}
+		onNodeWithTag(REGISTRATION_CONFIRM_PASSWORD_ERROR_TAG, useUnmergedTree = true)
+			.performScrollTo()
+			.assertIsDisplayed()
+			.assertTextEquals(PASSWORD_CONFIRMATION_MISMATCH_MESSAGE)
+	}
+
+	@Test
+	fun registerWithMatchingPasswordsInvokesSuccess() = runRecompositionTrackingUiTest {
+		var registeredEmail: String? = null
+		showRegisterEmailForm(onRegistrationSuccess = { registeredEmail = it })
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("ValidPass12")
+		onNodeWithTag(REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG)
+			.performScrollTo()
+			.performTextInput("ValidPass12")
+		submitRegisterForm()
+		waitUntil(timeoutMillis = 5_000) { registeredEmail == "taylor@example.com" }
+		assertEquals("taylor@example.com", registeredEmail)
+	}
+
 	private fun ComposeUiTest.showSignedOutAccountScreen(
 		onNavigateToEmailRegistration: () -> Unit = {},
 		onNavigateToSignIn: () -> Unit = {},
@@ -187,7 +222,9 @@ class AuthScreenTest {
 		}
 	}
 
-	private fun ComposeUiTest.showRegisterEmailForm() {
+	private fun ComposeUiTest.showRegisterEmailForm(
+		onRegistrationSuccess: (email: String) -> Unit = {},
+	) {
 		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
 		val trackEvent = TrackEventUseCase(FakeAnalyticsRepository())
 		setTrackedContent {
@@ -200,7 +237,7 @@ class AuthScreenTest {
 			PurecipesTheme {
 				RegistrationScreen(
 					onBack = {},
-					onRegistrationSuccess = {},
+					onRegistrationSuccess = onRegistrationSuccess,
 					viewModel = viewModel,
 				)
 			}
