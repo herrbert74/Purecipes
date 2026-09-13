@@ -3,6 +3,7 @@ package app.purecipes.feature.library.ui
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
@@ -11,6 +12,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseC
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
@@ -77,6 +79,7 @@ class LibraryViewModelTest {
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
@@ -102,6 +105,7 @@ class LibraryViewModelTest {
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
@@ -142,6 +146,7 @@ class LibraryViewModelTest {
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
@@ -163,6 +168,48 @@ class LibraryViewModelTest {
 
 		kotlin.test.assertEquals(emptyList(), viewModel.savedRecipes.toList())
 		kotlin.test.assertEquals(0, viewModel.totalSavedMatches)
+	}
+
+	@Test
+	fun `cookbook membership event reloads cookbooks`() = runViewModelTest {
+		val cookbook = CookbookSummary(
+			id = 10,
+			name = "Weeknight Dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModel(cookbooksRepository = cookbooksRepository)
+
+		viewModel.loadLibrary()
+		advanceUntilIdle()
+		kotlin.test.assertEquals(listOf(cookbook), viewModel.cookbooks.toList())
+
+		val updatedCookbook = cookbook.copy(recipeCount = 2)
+		cookbooksRepository.cookbooksPageResult = Ok(
+			CookbookListPage(
+				items = listOf(updatedCookbook),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 1,
+			),
+		)
+		cookbooksRepository.emitCookbookMembershipEvent(
+			CookbookMembershipEvent.Added(recipeId = 42, cookbookId = cookbook.id),
+		)
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(listOf(updatedCookbook), viewModel.cookbooks.toList())
+		kotlin.test.assertEquals(2, viewModel.cookbooks.single().recipeCount)
 	}
 
 	@Test
@@ -403,6 +450,7 @@ class LibraryViewModelTest {
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		importCookbookShare = importCookbookShare,
+		observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		sessionKey = sessionKey,
