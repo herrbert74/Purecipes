@@ -1,7 +1,6 @@
 package app.purecipes.feature.library.ui.myrecipes
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,10 +19,6 @@ internal fun MyRecipesTabContent(
 	modifier: Modifier = Modifier,
 	viewModel: MyRecipesViewModel = metroViewModel(),
 ) {
-	LaunchedEffect(Unit) {
-		viewModel.reload()
-	}
-
 	MyRecipesContent(
 		isLoading = viewModel.isLoading,
 		errorMessage = viewModel.errorMessage,

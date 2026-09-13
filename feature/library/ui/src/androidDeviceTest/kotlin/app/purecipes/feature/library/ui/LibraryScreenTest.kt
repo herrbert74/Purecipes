@@ -1,8 +1,14 @@
 package app.purecipes.feature.library.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -25,6 +31,7 @@ import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.library.ui.cookbooks.CREATE_COOKBOOK_DIALOG_INPUT_TAG
+import app.purecipes.feature.library.ui.cookbooks.CreateCookbookDialog
 import app.purecipes.feature.library.ui.cookbooks.DELETE_COOKBOOK_BUTTON_PREFIX
 import app.purecipes.feature.library.ui.cookbooks.DELETE_COOKBOOK_DIALOG_CONFIRM_TAG
 import app.purecipes.shared.domain.model.CookbookListPage
@@ -42,6 +49,7 @@ import com.github.michaelbull.result.Ok
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -64,6 +72,87 @@ class LibraryScreenTest {
 		}
 		onNodeWithText("Favorites").assertIsDisplayed()
 		onNodeWithTag(LIBRARY_TITLE_TAG).assertStable()
+	}
+
+	@Test
+	fun libraryScreenRetainsFavoritesAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModelForTest(favoritesRepository = favoritesRepo)
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					LibraryScreen(
+						sessionKey = "session",
+						viewModel = viewModel,
+						onRecipeSelect = {},
+					)
+				}
+			}
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText("Tomato Pasta").assertIsDisplayed()
+		runOnIdle {
+			favoritesRepo.getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = emptyList(),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 0,
+				),
+			)
+		}
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithText("Tomato Pasta").assertIsDisplayed()
+	}
+
+	@Test
+	fun createCookbookDialogRetainsNameAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		var name by mutableStateOf("")
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					CreateCookbookDialog(
+						existingCookbookNames = persistentListOf(),
+						name = name,
+						isLoading = false,
+						errorMessage = null,
+						onNameChange = { name = it },
+						onDismiss = {},
+						onConfirm = {},
+					)
+				}
+			}
+		}
+
+		onNodeWithTag(CREATE_COOKBOOK_DIALOG_INPUT_TAG).performTextInput("Weekend")
+		compositionGeneration += 1
+		waitForIdle()
+		onNodeWithTag(CREATE_COOKBOOK_DIALOG_INPUT_TAG).assertTextContains("Weekend")
 	}
 
 	@Test

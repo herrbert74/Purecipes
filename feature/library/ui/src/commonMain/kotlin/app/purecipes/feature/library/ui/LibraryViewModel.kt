@@ -65,6 +65,9 @@ class LibraryViewModel(
 
 	private var activeSessionKey: String? = sessionKey
 	private var favoriteEventsJob: Job? = null
+	private var hasLoadedLibraryForCurrentSession = false
+	private var hasConsumedOpenMyRecipes = false
+	private var consumedCookbookShareToken: String? = null
 
 	init {
 		startFavoriteEventsCollection()
@@ -98,6 +101,9 @@ class LibraryViewModel(
 		private set
 
 	var isCreatingCookbook by mutableStateOf(false)
+		private set
+
+	var createCookbookName by mutableStateOf("")
 		private set
 
 	var deleteCookbookError by mutableStateOf<String?>(null)
@@ -144,15 +150,32 @@ class LibraryViewModel(
 			return
 		}
 		activeSessionKey = sessionKey
+		hasLoadedLibraryForCurrentSession = false
 		favoriteEventsJob?.cancel()
 		favoriteEventsJob = null
 		startFavoriteEventsCollection()
 	}
 
+	fun consumeOpenMyRecipes(openMyRecipes: Boolean) {
+		if (!openMyRecipes || hasConsumedOpenMyRecipes) {
+			return
+		}
+		hasConsumedOpenMyRecipes = true
+		onTabSelected(LibraryTab.MyRecipes)
+	}
+
 	fun loadLibrary() {
+		if (activeSessionKey == null || hasLoadedLibraryForCurrentSession) {
+			return
+		}
+		refreshLibrary()
+	}
+
+	private fun refreshLibrary() {
 		if (activeSessionKey == null) {
 			return
 		}
+		hasLoadedLibraryForCurrentSession = true
 		viewModelScope.launch {
 			isInitialLoading = true
 			savedErrorMessage = null
@@ -175,7 +198,7 @@ class LibraryViewModel(
 		}
 		favoriteEventsJob = viewModelScope.launch {
 			observeFavoriteEvents().collect {
-				loadLibrary()
+				refreshLibrary()
 			}
 		}
 	}
@@ -184,9 +207,10 @@ class LibraryViewModel(
 		shareToken: String,
 		onImported: (cookbookId: Int, name: String, recipeCount: Int) -> Unit = { _, _, _ -> },
 	) {
-		if (activeSessionKey == null) {
+		if (activeSessionKey == null || shareToken == consumedCookbookShareToken) {
 			return
 		}
+		consumedCookbookShareToken = shareToken
 		viewModelScope.launch {
 			isImportingSharedCookbook = true
 			sharedCookbookImportErrorMessage = null
@@ -237,6 +261,15 @@ class LibraryViewModel(
 		}
 	}
 
+	fun onCreateCookbookNameChange(name: String) {
+		createCookbookName = name
+	}
+
+	fun clearCreateCookbookDraft() {
+		createCookbookName = ""
+		createCookbookError = null
+	}
+
 	fun createCookbookFromName(name: String, onDone: (Boolean) -> Unit) {
 		val trimmed = name.trim()
 		if (trimmed.isEmpty()) {
@@ -263,6 +296,7 @@ class LibraryViewModel(
 				cookbooksPaginationState.refresh(initialPageKey = FIRST_PAGE_NUMBER)
 				loadCookbooksPage(FIRST_PAGE_NUMBER)
 				selectedTab = LibraryTab.Cookbooks
+				createCookbookName = ""
 				isCreatingCookbook = false
 				onDone(true)
 			} else {

@@ -1,9 +1,14 @@
 package app.purecipes.feature.auth.ui.authentication
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -120,6 +125,39 @@ class AuthScreenTest {
 		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performTextInput("ValidPasswd")
 		submitRegisterForm()
 		assertPolicyError(PASSWORD_MISSING_NUMBER_MESSAGE)
+	}
+
+	@Test
+	fun registerScreenRetainsFieldsAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
+		val viewModel = RegistrationViewModel(
+			registerWithEmail = RegisterWithEmailUseCase(authRepo),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					RegistrationScreen(
+						onBack = {},
+						onRegistrationSuccess = {},
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		onNodeWithText("Display name").performTextInput("Taylor Baker")
+		onNodeWithTag(REGISTRATION_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).performScrollTo().performTextInput("ValidPass12")
+		waitForIdle()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithText("Taylor Baker").assertIsDisplayed()
+		onNodeWithTag(REGISTRATION_EMAIL_FIELD_TAG).assertTextContains("taylor@example.com")
+		onNodeWithTag(REGISTRATION_PASSWORD_FIELD_TAG).assertTextContains("ValidPass12")
 	}
 
 	private fun ComposeUiTest.showSignedOutAccountScreen(

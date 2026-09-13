@@ -3,6 +3,7 @@ package app.purecipes.feature.newrecipe.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
@@ -271,6 +272,35 @@ class CreateRecipeScreenTest {
 		onNodeWithTag("createRecipeIngredientNameField0").performScrollTo().assertTextContains("carrots")
 		selectCreateRecipeSection(CreateRecipeSection.Steps)
 		onNodeWithTag("createRecipeStepField0").performScrollTo().assertTextContains("Trim the carrots")
+	}
+
+	@Test
+	fun createRecipePasteDialogRetainsTextAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val viewModel = createRecipeViewModelForTest()
+		setTrackedContent {
+			val saveableStateHolder = rememberSaveableStateHolder()
+			PurecipesTheme {
+				key(compositionGeneration) {
+					saveableStateHolder.SaveableStateProvider("createRecipe") {
+						CreateRecipeScreen(
+							canUploadRecipes = true,
+							viewModel = viewModel,
+						)
+					}
+				}
+			}
+		}
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		onNodeWithTag(INGREDIENTS_PASTE_BUTTON_TAG).performClick()
+		onNodeWithTag(INGREDIENTS_PASTE_FIELD_TAG).performTextInput("2 carrots")
+		waitForIdle()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithTag(INGREDIENTS_PASTE_FIELD_TAG).assertTextContains("2 carrots")
 	}
 
 	@Test

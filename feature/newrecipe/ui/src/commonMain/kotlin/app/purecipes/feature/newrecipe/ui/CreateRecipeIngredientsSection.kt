@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,7 +71,8 @@ internal fun CreateRecipeIngredientsSection(
 	onRemoveAlternativeClick: (Int, Int) -> Unit,
 	onPasteLines: (String) -> Unit,
 ) {
-	var showPasteDialog by remember { mutableStateOf(false) }
+	var showPasteDialog by rememberSaveable { mutableStateOf(false) }
+	var pasteText by rememberSaveable { mutableStateOf("") }
 	val addButtonBringIntoViewRequester = remember { BringIntoViewRequester() }
 	var previousRowCount by remember { mutableIntStateOf(ingredientRows.items.size) }
 	val expandedRows = remember { mutableStateMapOf(0 to true) }
@@ -144,10 +146,16 @@ internal fun CreateRecipeIngredientsSection(
 
 	if (showPasteDialog) {
 		PasteIngredientsDialog(
-			onDismiss = { showPasteDialog = false },
+			pasteText = pasteText,
+			onPasteTextChange = { pasteText = it },
+			onDismiss = {
+				showPasteDialog = false
+				pasteText = ""
+			},
 			onConfirm = { pasted ->
 				onPasteLines(pasted)
 				showPasteDialog = false
+				pasteText = ""
 			},
 		)
 	}
@@ -384,10 +392,11 @@ private fun IngredientPartFields(
 
 @Composable
 private fun PasteIngredientsDialog(
+	pasteText: String,
+	onPasteTextChange: (String) -> Unit,
 	onDismiss: () -> Unit,
 	onConfirm: (String) -> Unit,
 ) {
-	var pasteText by remember { mutableStateOf("") }
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
@@ -407,7 +416,7 @@ private fun PasteIngredientsDialog(
 		text = {
 			OutlinedTextField(
 				value = pasteText,
-				onValueChange = { pasteText = it },
+				onValueChange = onPasteTextChange,
 				modifier = Modifier
 					.fillMaxWidth()
 					.testTag(INGREDIENTS_PASTE_FIELD_TAG),

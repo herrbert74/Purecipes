@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
@@ -55,8 +56,8 @@ fun StepByStepCookingRoute(
 			create(recipeId = recipeId, sessionKey = sessionKey)
 		},
 ) {
-	var showCookbookSheet by remember { mutableStateOf(false) }
-	var newCookbookName by remember { mutableStateOf("") }
+	var showCookbookSheet by rememberSaveable { mutableStateOf(false) }
+	var newCookbookName by rememberSaveable { mutableStateOf("") }
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
