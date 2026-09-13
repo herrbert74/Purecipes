@@ -18,6 +18,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseC
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -59,18 +60,20 @@ class LibraryViewModel(
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val importCookbookShare: ImportCookbookShareUseCase,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
+	private val observeCookbookMembershipEvents: ObserveCookbookMembershipEventsUseCase,
 	private val trackEvent: TrackEventUseCase,
 	@Assisted sessionKey: String?,
 ) : ViewModel() {
 
 	private var activeSessionKey: String? = sessionKey
 	private var favoriteEventsJob: Job? = null
+	private var cookbookMembershipEventsJob: Job? = null
 	private var hasLoadedLibraryForCurrentSession = false
 	private var hasConsumedOpenMyRecipes = false
 	private var consumedCookbookShareToken: String? = null
 
 	init {
-		startFavoriteEventsCollection()
+		startLibraryEventsCollection()
 	}
 
 	var selectedTab by mutableStateOf(LibraryTab.Favorites)
@@ -153,7 +156,9 @@ class LibraryViewModel(
 		hasLoadedLibraryForCurrentSession = false
 		favoriteEventsJob?.cancel()
 		favoriteEventsJob = null
-		startFavoriteEventsCollection()
+		cookbookMembershipEventsJob?.cancel()
+		cookbookMembershipEventsJob = null
+		startLibraryEventsCollection()
 	}
 
 	fun consumeOpenMyRecipes(openMyRecipes: Boolean) {
@@ -192,12 +197,28 @@ class LibraryViewModel(
 		}
 	}
 
+	private fun startLibraryEventsCollection() {
+		startFavoriteEventsCollection()
+		startCookbookMembershipEventsCollection()
+	}
+
 	private fun startFavoriteEventsCollection() {
 		if (activeSessionKey == null) {
 			return
 		}
 		favoriteEventsJob = viewModelScope.launch {
 			observeFavoriteEvents().collect {
+				refreshLibrary()
+			}
+		}
+	}
+
+	private fun startCookbookMembershipEventsCollection() {
+		if (activeSessionKey == null) {
+			return
+		}
+		cookbookMembershipEventsJob = viewModelScope.launch {
+			observeCookbookMembershipEvents().collect {
 				refreshLibrary()
 			}
 		}

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 class FakeCookbooksRepository(
-	private val cookbooksPageResult: Outcome<CookbookListPage> = Ok(
+	var cookbooksPageResult: Outcome<CookbookListPage> = Ok(
 		CookbookListPage(
 			items = emptyList(),
 			pageNumber = 1,
@@ -53,6 +53,9 @@ class FakeCookbooksRepository(
 	var deleteCookbookCallCount: Int = 0
 		private set
 
+	var getCookbooksPageCallCount: Int = 0
+		private set
+
 	var removeRecipeFromCookbookCallCount: Int = 0
 		private set
 
@@ -70,8 +73,10 @@ class FakeCookbooksRepository(
 		cookbookMembershipEvents.tryEmit(event)
 	}
 
-	override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> =
-		cookbooksPageResult
+	override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> {
+		getCookbooksPageCallCount += 1
+		return cookbooksPageResult
+	}
 
 	override suspend fun createCookbook(name: String): Outcome<CookbookSummary> {
 		createCookbookCallCount += 1
