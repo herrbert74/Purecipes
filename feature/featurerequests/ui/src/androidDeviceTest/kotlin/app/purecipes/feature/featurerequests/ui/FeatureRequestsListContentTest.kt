@@ -69,8 +69,13 @@ class FeatureRequestsListContentTest {
 			}
 		}
 
-		onNodeWithTag(FEATURE_REQUEST_SORT_CHIP_TAG_PREFIX + FeatureRequestSort.NEWEST.name).performClick()
-		onNodeWithTag(FEATURE_REQUEST_STATUS_CHIP_TAG_PREFIX + FeatureRequestStatus.DONE.name).performClick()
+		onNodeWithTag(FEATURE_REQUEST_SORT_CHIP_TAG_PREFIX + FeatureRequestSort.NEWEST.name)
+			.performScrollTo()
+			.performClick()
+		onNodeWithTag(FEATURE_REQUEST_STATUS_CHIP_TAG_PREFIX + FeatureRequestStatus.DONE.name)
+			.performScrollTo()
+			.performClick()
+		waitForIdle()
 
 		assertEquals(FeatureRequestSort.NEWEST, selectedSort)
 		assertEquals(FeatureRequestStatus.DONE, selectedStatus)
