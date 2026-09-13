@@ -1,5 +1,9 @@
 package app.purecipes.feature.cooking.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -189,6 +193,41 @@ class StepByStepCookingRouteTest {
 		onNodeWithText("Finish cooking").performClick()
 
 		onAllNodesWithTag(COOKING_ADD_TO_COOKBOOK_BUTTON_TAG).assertCountEquals(0)
+	}
+
+	@Test
+	fun cookingRouteRetainsCurrentStepAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val viewModel = stepByStepCookingViewModelForTest(
+			recipeId = 9,
+			recipeDetailsRepository = roastedCarrotsRepository(),
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					StepByStepCookingRoute(
+						recipeId = 9,
+						canManageFavorites = true,
+						onBack = {},
+						onFindMoreRecipes = {},
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		onNodeWithText("Trim the carrots").assertIsDisplayed()
+		onNodeWithText("Trim the carrots").performTouchInput {
+			swipeLeft()
+		}
+		onNodeWithText("Step 2 of 2").assertIsDisplayed()
+		onNodeWithText("Roast until tender").assertIsDisplayed()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithText("Step 2 of 2").assertIsDisplayed()
+		onNodeWithText("Roast until tender").assertIsDisplayed()
 	}
 }
 

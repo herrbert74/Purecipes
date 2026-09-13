@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -50,9 +51,9 @@ fun RecipeDetailsScreen(
 		create(recipeId = recipeId, sessionKey = sessionKey, origin = origin)
 	},
 ) {
-	var showCookbookSheet by remember { mutableStateOf(false) }
+	var showCookbookSheet by rememberSaveable { mutableStateOf(false) }
 	var showNutritionDialog by remember { mutableStateOf(false) }
-	var newCookbookName by remember { mutableStateOf("") }
+	var newCookbookName by rememberSaveable { mutableStateOf("") }
 	val showBackNavigation = rememberShowRecipeDetailsBackNavigation()
 
 	LaunchedEffect(sessionKey) {

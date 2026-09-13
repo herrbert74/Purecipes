@@ -1,8 +1,14 @@
 package app.purecipes.feature.search.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -12,6 +18,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
@@ -726,6 +733,60 @@ class RecipeSearchScreenTest {
 		runOnIdle { viewModel.onKeyIngredientsChange(setOf("Tomato")) }
 		waitForIdle()
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	fun searchScreenRetainsQueryAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val viewModel = recipeSearchViewModelForTest()
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					RecipeSearchScreen(
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).assertIsDisplayed()
+		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
+		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).performTextInput("Pasta")
+		waitForIdle()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).assertTextContains("Pasta")
+	}
+
+	@Test
+	fun filterSheetRetainsSelectedTabAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val viewModel = recipeSearchViewModelForTest(initialShowFilterSheet = true)
+		setTrackedContent {
+			val saveableStateHolder = rememberSaveableStateHolder()
+			PurecipesTheme {
+				key(compositionGeneration) {
+					saveableStateHolder.SaveableStateProvider("recipeSearch") {
+						RecipeSearchScreen(
+							isSignedIn = true,
+							viewModel = viewModel,
+						)
+					}
+				}
+			}
+		}
+
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG).assertIsDisplayed()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG).assertIsDisplayed()
 	}
 
 }

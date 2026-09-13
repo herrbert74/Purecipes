@@ -31,6 +31,7 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.search.ui.filter.FilterTab
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.IngredientCatalogue
@@ -93,6 +94,8 @@ class RecipeSearchViewModel(
 
 	var isFilterSheetVisible by mutableStateOf(false)
 		private set
+
+	var selectedFilterTab by mutableStateOf(FilterTab.Pantry)
 
 	var isPremium by mutableStateOf(false)
 		private set

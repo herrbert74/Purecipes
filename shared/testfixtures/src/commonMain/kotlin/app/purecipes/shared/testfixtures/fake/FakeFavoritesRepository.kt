@@ -25,6 +25,8 @@ class FakeFavoritesRepository(
 
 	val addedRecipeIds = mutableListOf<Int>()
 	val removedRecipeIds = mutableListOf<Int>()
+	var getFavoriteRecipesPageCallCount: Int = 0
+		private set
 
 	private val favoriteEvents = MutableSharedFlow<FavoriteEvent>(extraBufferCapacity = 1)
 
@@ -37,8 +39,10 @@ class FakeFavoritesRepository(
 		}
 	}
 
-	override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int): Outcome<SearchResultsPage> =
-		getFavoriteRecipesPageResult
+	override suspend fun getFavoriteRecipesPage(pageNumber: Int, pageSize: Int): Outcome<SearchResultsPage> {
+		getFavoriteRecipesPageCallCount += 1
+		return getFavoriteRecipesPageResult
+	}
 
 	override suspend fun removeFavorite(recipeId: Int): Outcome<Unit> {
 		removedRecipeIds += recipeId

@@ -14,10 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -31,12 +28,13 @@ internal const val CREATE_COOKBOOK_DIALOG_INPUT_TAG = "createCookbookDialogInput
 @Composable
 internal fun CreateCookbookDialog(
 	existingCookbookNames: ImmutableList<String>,
+	name: String,
 	isLoading: Boolean,
 	errorMessage: String?,
+	onNameChange: (String) -> Unit,
 	onDismiss: () -> Unit,
 	onConfirm: (String) -> Unit,
 ) {
-	var nameField by remember { mutableStateOf("") }
 	val existingCookbookNamesNormalized = remember(existingCookbookNames) {
 		existingCookbookNames
 			.map { it.trim().lowercase() }
@@ -51,8 +49,8 @@ internal fun CreateCookbookDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
 			Button(
-				onClick = { onConfirm(nameField) },
-				enabled = !isLoading && nameField.trim().isNotEmpty(),
+				onClick = { onConfirm(name) },
+				enabled = !isLoading && name.trim().isNotEmpty(),
 			) {
 				Text(text = "Create")
 			}
@@ -72,14 +70,14 @@ internal fun CreateCookbookDialog(
 					items(suggestionNames, key = { it }) { suggestion ->
 						FilterChip(
 							selected = false,
-							onClick = { nameField = suggestion },
+							onClick = { onNameChange(suggestion) },
 							label = { Text(text = suggestion) },
 						)
 					}
 				}
 				OutlinedTextField(
-					value = nameField,
-					onValueChange = { nameField = it },
+					value = name,
+					onValueChange = onNameChange,
 					modifier = Modifier
 						.fillMaxWidth()
 						.testTag(CREATE_COOKBOOK_DIALOG_INPUT_TAG),

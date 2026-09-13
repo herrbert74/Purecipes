@@ -19,10 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -61,11 +57,6 @@ internal const val FILTER_BOTTOM_SHEET_PANTRY_INTRO_TAG = "filterBottomSheetPant
 internal const val FILTER_BOTTOM_SHEET_RECIPE_FILTERS_INTRO_TAG = "filterBottomSheetRecipeFiltersIntro"
 internal const val FILTER_BOTTOM_SHEET_SCROLL_TAG = "filterBottomSheetScroll"
 
-private enum class FilterTab {
-	Pantry,
-	RecipeFilters,
-}
-
 @Composable
 internal fun FilterBottomSheet(
 	filters: SearchFilters,
@@ -87,6 +78,8 @@ internal fun FilterBottomSheet(
 	onAddIngredient: (String) -> Unit,
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
+	selectedTab: FilterTab = FilterTab.Pantry,
+	onSelectedTabChange: (FilterTab) -> Unit = {},
 	isPremium: Boolean = false,
 	onOpenPaywall: (String) -> Unit = {},
 ) {
@@ -112,6 +105,8 @@ internal fun FilterBottomSheet(
 			onAddIngredient = onAddIngredient,
 			onClearIngredientMatchPreview = onClearIngredientMatchPreview,
 			onRequestLogIn = onRequestLogIn,
+			selectedTab = selectedTab,
+			onSelectedTabChange = onSelectedTabChange,
 			isPremium = isPremium,
 			onOpenPaywall = onOpenPaywall,
 		)
@@ -137,13 +132,14 @@ private fun FilterBottomSheetContent(
 	onAddIngredient: (String) -> Unit,
 	onClearIngredientMatchPreview: () -> Unit,
 	onRequestLogIn: () -> Unit,
+	selectedTab: FilterTab,
+	onSelectedTabChange: (FilterTab) -> Unit,
 	isPremium: Boolean,
 	onOpenPaywall: (String) -> Unit,
 ) {
 	if (!isSignedIn) {
 		FilterLoginRequiredContent(onRequestLogIn = onRequestLogIn)
 	} else {
-		var selectedTab by remember { mutableStateOf(FilterTab.Pantry) }
 		BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
 			val sheetHeightFraction = if (maxHeight < FILTER_TAB_CONTENT_SMALL_SCREEN_HEIGHT_DP.dp) {
 				FILTER_TAB_CONTENT_HEIGHT_FRACTION_SMALL
@@ -163,13 +159,13 @@ private fun FilterBottomSheetContent(
 				PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
 					Tab(
 						selected = selectedTab == FilterTab.Pantry,
-						onClick = { selectedTab = FilterTab.Pantry },
+						onClick = { onSelectedTabChange(FilterTab.Pantry) },
 						modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG),
 						text = { Text(text = "Pantry") },
 					)
 					Tab(
 						selected = selectedTab == FilterTab.RecipeFilters,
-						onClick = { selectedTab = FilterTab.RecipeFilters },
+						onClick = { onSelectedTabChange(FilterTab.RecipeFilters) },
 						modifier = Modifier.testTag(FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG),
 						text = { Text(text = "Recipe filters") },
 					)
@@ -201,7 +197,7 @@ private fun FilterBottomSheetContent(
 							isPremium = isPremium,
 							onFiltersChange = onFiltersChange,
 							onKeyIngredientsChange = onKeyIngredientsChange,
-							onGoToPantry = { selectedTab = FilterTab.Pantry },
+							onGoToPantry = { onSelectedTabChange(FilterTab.Pantry) },
 							onOpenPaywall = onOpenPaywall,
 						)
 					}
@@ -546,6 +542,8 @@ private fun FilterBottomSheetPreviewContent(
 				onAddIngredient = {},
 				onClearIngredientMatchPreview = {},
 				onRequestLogIn = {},
+				selectedTab = FilterTab.Pantry,
+				onSelectedTabChange = {},
 				isPremium = true,
 				onOpenPaywall = {},
 			)

@@ -274,6 +274,38 @@ class CreateRecipeScreenTest {
 	}
 
 	@Test
+	fun createRecipePasteDialogRetainsTextAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val viewModel = createRecipeViewModelForTest()
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					CreateRecipeScreen(
+						canUploadRecipes = true,
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
+		onNodeWithTag(INGREDIENTS_PASTE_BUTTON_TAG).performScrollTo().performClick()
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(INGREDIENTS_PASTE_FIELD_TAG).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(INGREDIENTS_PASTE_FIELD_TAG).performTextInput("2 carrots")
+		waitForIdle()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(INGREDIENTS_PASTE_FIELD_TAG).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithTag(INGREDIENTS_PASTE_FIELD_TAG).assertTextContains("2 carrots")
+	}
+
+	@Test
 	fun createRecipeScreenMovesStepUpWithButton() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {

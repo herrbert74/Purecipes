@@ -17,9 +17,14 @@ class FakeCreatedRecipeRepository(
 
 	val savedRequests = mutableListOf<SaveCreatedRecipeRequest>()
 	val deletedRecipeIds = mutableListOf<Int>()
+	var getCreatedRecipesCallCount: Int = 0
+		private set
 	var deleteCreatedRecipeCallCount: Int = 0
 
-	override suspend fun getCreatedRecipes(): Outcome<List<RecipeDetails>> = Ok(storedRecipes.toList())
+	override suspend fun getCreatedRecipes(): Outcome<List<RecipeDetails>> {
+		getCreatedRecipesCallCount += 1
+		return Ok(storedRecipes.toList())
+	}
 
 	override suspend fun saveCreatedRecipe(request: SaveCreatedRecipeRequest): Outcome<RecipeDetails> {
 		savedRequests += request

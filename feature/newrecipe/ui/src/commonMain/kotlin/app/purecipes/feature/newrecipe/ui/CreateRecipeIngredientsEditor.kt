@@ -1,10 +1,17 @@
 package app.purecipes.feature.newrecipe.ui
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class CreateRecipeIngredientsEditor {
 
 	val rows = mutableStateListOf(IngredientRowInput())
+
+	var showPasteDialog by mutableStateOf(false)
+
+	var pasteText by mutableStateOf("")
 
 	fun onRowChange(index: Int, row: IngredientRowInput) {
 		if (index !in rows.indices) {
@@ -53,9 +60,23 @@ class CreateRecipeIngredientsEditor {
 		rows.addAll(IngredientRowComposer.fromPasteText(text))
 	}
 
+	fun openPasteDialog() {
+		showPasteDialog = true
+	}
+
+	fun onPasteTextChange(value: String) {
+		pasteText = value
+	}
+
+	fun dismissPasteDialog() {
+		showPasteDialog = false
+		pasteText = ""
+	}
+
 	fun reset() {
 		rows.clear()
 		rows.add(IngredientRowInput())
+		dismissPasteDialog()
 	}
 
 	fun replaceFromEditableLines(lines: List<String>) {
