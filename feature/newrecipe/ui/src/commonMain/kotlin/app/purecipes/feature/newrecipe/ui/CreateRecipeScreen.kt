@@ -176,6 +176,8 @@ fun CreateRecipeScreen(
 						imageUrlInput = viewModel.imageUrlInput,
 						ingredientRows = IngredientRowsState(items = viewModel.ingredientsEditor.rows.toList()),
 						suggestedUnits = viewModel.suggestedUnits,
+						showPasteDialog = viewModel.ingredientsEditor.showPasteDialog,
+						pasteText = viewModel.ingredientsEditor.pasteText,
 						isNutritionEstimateLoading = viewModel.isNutritionEstimateLoading,
 						isSaving = viewModel.isSaving,
 						nutritionEstimate = viewModel.nutritionEstimate,
@@ -218,6 +220,9 @@ fun CreateRecipeScreen(
 							viewModel.ingredientsEditor.pasteLines(text)
 							viewModel.onIngredientsEdited()
 						},
+						onShowPasteDialog = viewModel.ingredientsEditor::openPasteDialog,
+						onPasteTextChange = viewModel.ingredientsEditor::onPasteTextChange,
+						onDismissPasteDialog = viewModel.ingredientsEditor::dismissPasteDialog,
 						onAddStepClick = viewModel::addStep,
 						onMoveStep = viewModel::moveStep,
 						onMoveStepUp = viewModel::moveStepUp,

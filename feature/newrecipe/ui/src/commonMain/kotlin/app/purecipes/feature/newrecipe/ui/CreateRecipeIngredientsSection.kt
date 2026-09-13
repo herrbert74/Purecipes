@@ -38,9 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,15 +62,18 @@ internal fun CreateRecipeIngredientsSection(
 	ingredientRows: IngredientRowsState,
 	suggestedUnits: SuggestedIngredientUnits,
 	fieldErrors: CreateRecipeFieldErrors,
+	showPasteDialog: Boolean,
+	pasteText: String,
 	onRowChange: (Int, IngredientRowInput) -> Unit,
 	onAddRowClick: () -> Unit,
 	onRemoveRowClick: (Int) -> Unit,
 	onAddAlternativeClick: (Int) -> Unit,
 	onRemoveAlternativeClick: (Int, Int) -> Unit,
 	onPasteLines: (String) -> Unit,
+	onShowPasteDialog: () -> Unit,
+	onPasteTextChange: (String) -> Unit,
+	onDismissPasteDialog: () -> Unit,
 ) {
-	var showPasteDialog by rememberSaveable { mutableStateOf(false) }
-	var pasteText by rememberSaveable { mutableStateOf("") }
 	val addButtonBringIntoViewRequester = remember { BringIntoViewRequester() }
 	var previousRowCount by remember { mutableIntStateOf(ingredientRows.items.size) }
 	val expandedRows = remember { mutableStateMapOf(0 to true) }
@@ -102,7 +103,7 @@ internal fun CreateRecipeIngredientsSection(
 				style = PurecipesTheme.typography.titleMedium,
 			)
 			TextButton(
-				onClick = { showPasteDialog = true },
+				onClick = onShowPasteDialog,
 				modifier = Modifier.testTag(INGREDIENTS_PASTE_BUTTON_TAG),
 			) {
 				Text(text = "Paste list")
@@ -147,15 +148,11 @@ internal fun CreateRecipeIngredientsSection(
 	if (showPasteDialog) {
 		PasteIngredientsDialog(
 			pasteText = pasteText,
-			onPasteTextChange = { pasteText = it },
-			onDismiss = {
-				showPasteDialog = false
-				pasteText = ""
-			},
+			onPasteTextChange = onPasteTextChange,
+			onDismiss = onDismissPasteDialog,
 			onConfirm = { pasted ->
 				onPasteLines(pasted)
-				showPasteDialog = false
-				pasteText = ""
+				onDismissPasteDialog()
 			},
 		)
 	}
@@ -456,12 +453,17 @@ private fun CreateRecipeIngredientsSectionPreview() {
 				items = listOf("g", "kg", "ml", "l"),
 			),
 			fieldErrors = CreateRecipeFieldErrors(),
+			showPasteDialog = false,
+			pasteText = "",
 			onRowChange = { _, _ -> },
 			onAddRowClick = {},
 			onRemoveRowClick = {},
 			onAddAlternativeClick = {},
 			onRemoveAlternativeClick = { _, _ -> },
 			onPasteLines = {},
+			onShowPasteDialog = {},
+			onPasteTextChange = {},
+			onDismissPasteDialog = {},
 		)
 	}
 }

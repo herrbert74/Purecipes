@@ -3,7 +3,6 @@ package app.purecipes.feature.newrecipe.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
@@ -279,27 +278,30 @@ class CreateRecipeScreenTest {
 		var compositionGeneration by mutableIntStateOf(0)
 		val viewModel = createRecipeViewModelForTest()
 		setTrackedContent {
-			val saveableStateHolder = rememberSaveableStateHolder()
 			PurecipesTheme {
 				key(compositionGeneration) {
-					saveableStateHolder.SaveableStateProvider("createRecipe") {
-						CreateRecipeScreen(
-							canUploadRecipes = true,
-							viewModel = viewModel,
-						)
-					}
+					CreateRecipeScreen(
+						canUploadRecipes = true,
+						viewModel = viewModel,
+					)
 				}
 			}
 		}
 
 		selectCreateRecipeSection(CreateRecipeSection.Ingredients)
-		onNodeWithTag(INGREDIENTS_PASTE_BUTTON_TAG).performClick()
+		onNodeWithTag(INGREDIENTS_PASTE_BUTTON_TAG).performScrollTo().performClick()
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(INGREDIENTS_PASTE_FIELD_TAG).fetchSemanticsNodes().isNotEmpty()
+		}
 		onNodeWithTag(INGREDIENTS_PASTE_FIELD_TAG).performTextInput("2 carrots")
 		waitForIdle()
 
 		compositionGeneration += 1
 		waitForIdle()
 
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(INGREDIENTS_PASTE_FIELD_TAG).fetchSemanticsNodes().isNotEmpty()
+		}
 		onNodeWithTag(INGREDIENTS_PASTE_FIELD_TAG).assertTextContains("2 carrots")
 	}
 

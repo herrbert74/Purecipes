@@ -151,6 +151,18 @@ class CreateRecipeViewModelTest {
 	}
 
 	@Test
+	fun `start new recipe dismisses the paste ingredients dialog`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.ingredientsEditor.openPasteDialog()
+		viewModel.ingredientsEditor.onPasteTextChange("2 carrots")
+		viewModel.startNewRecipe()
+
+		viewModel.ingredientsEditor.showPasteDialog shouldBe false
+		viewModel.ingredientsEditor.pasteText shouldBe ""
+	}
+
+	@Test
 	fun `save uploads a new recipe and signals completion`() = runViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val repository = FakeCreatedRecipeRepository()
