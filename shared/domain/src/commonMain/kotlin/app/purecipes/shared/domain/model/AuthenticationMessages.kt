@@ -27,7 +27,8 @@ const val PASSWORD_RESET_EMAIL_SENT_MESSAGE =
 	"Password reset email sent. Check your inbox, and your spam folder if it doesn't arrive."
 
 const val REGISTRATION_SUCCESS_MESSAGE =
-	"Registration successful. Please check your email to verify your account, and your spam folder if it doesn't arrive."
+	"Registration successful. Please check your email to verify your account, " +
+		"and your spam folder if it doesn't arrive."
 
 const val VERIFICATION_EMAIL_SENT_MESSAGE =
 	"Verification email sent. Check your inbox, and your spam folder if it doesn't arrive."
