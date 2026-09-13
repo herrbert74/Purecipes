@@ -96,7 +96,6 @@ class RecipeSearchViewModel(
 		private set
 
 	var selectedFilterTab by mutableStateOf(FilterTab.Pantry)
-		private set
 
 	var isPremium by mutableStateOf(false)
 		private set
@@ -239,10 +238,6 @@ class RecipeSearchViewModel(
 
 	fun onFilterButtonClick() {
 		isFilterSheetVisible = true
-	}
-
-	fun onFilterTabSelected(tab: FilterTab) {
-		selectedFilterTab = tab
 	}
 
 	fun onNavigateToPaywall() {

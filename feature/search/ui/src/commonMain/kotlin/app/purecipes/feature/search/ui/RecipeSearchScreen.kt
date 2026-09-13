@@ -79,7 +79,9 @@ fun RecipeSearchScreen(
 				onRequestLogInForFilters()
 			},
 			selectedTab = viewModel.selectedFilterTab,
-			onSelectedTabChange = viewModel::onFilterTabSelected,
+			onSelectedTabChange = { tab ->
+				viewModel.selectedFilterTab = tab
+			},
 			isPremium = viewModel.isPremium,
 			onOpenPaywall = { feature ->
 				viewModel.onPremiumFeatureBlocked(feature)
