@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -152,6 +153,8 @@ class AuthScreenTest {
 		onNodeWithTag(REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG)
 			.performScrollTo()
 			.performTextInput("ValidPass12")
+		onNodeWithTag(REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG).performImeAction()
+		waitForIdle()
 		submitRegisterForm()
 		waitUntil(timeoutMillis = 5_000) { registeredEmail == "taylor@example.com" }
 		assertEquals("taylor@example.com", registeredEmail)
