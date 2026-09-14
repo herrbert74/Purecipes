@@ -287,6 +287,7 @@ internal fun favoritesViewModelForDeviceTest(): LibraryViewModel = LibraryViewMo
 		},
 	),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	sessionKey = "hardware-back-test",
 )

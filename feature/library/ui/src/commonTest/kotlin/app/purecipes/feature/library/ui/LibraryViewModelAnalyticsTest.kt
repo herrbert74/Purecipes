@@ -12,6 +12,7 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseC
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
@@ -181,6 +182,7 @@ class LibraryViewModelAnalyticsTest {
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		importCookbookShare = importCookbookShare,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+		observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		sessionKey = "session",
 	)

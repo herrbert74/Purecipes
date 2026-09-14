@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,7 +62,7 @@ fun LibraryScreen(
 			create(sessionKey = sessionKey)
 		},
 ) {
-	var showCreateCookbookDialog by remember { mutableStateOf(false) }
+	var showCreateCookbookDialog by rememberSaveable { mutableStateOf(false) }
 	var pendingDeleteCookbook by remember { mutableStateOf<CookbookSummary?>(null) }
 	val snackbarHostState = remember { SnackbarHostState() }
 	val currentOnCookbookImportSuccess by rememberUpdatedState(onCookbookImportSuccess)
@@ -83,9 +84,7 @@ fun LibraryScreen(
 	}
 
 	LaunchedEffect(openMyRecipes) {
-		if (openMyRecipes) {
-			viewModel.onTabSelected(LibraryTab.MyRecipes)
-		}
+		viewModel.consumeOpenMyRecipes(openMyRecipes)
 	}
 
 	LaunchedEffect(recipeSaveMessage) {
@@ -200,10 +199,13 @@ fun LibraryScreen(
 		if (showCreateCookbookDialog) {
 			CreateCookbookDialog(
 				existingCookbookNames = viewModel.cookbooks.map { it.name }.toImmutableList(),
+				name = viewModel.createCookbookName,
 				isLoading = viewModel.isCreatingCookbook,
 				errorMessage = viewModel.createCookbookError,
+				onNameChange = viewModel::onCreateCookbookNameChange,
 				onDismiss = {
 					showCreateCookbookDialog = false
+					viewModel.clearCreateCookbookDraft()
 				},
 				onConfirm = { name ->
 					viewModel.createCookbookFromName(name) { ok ->

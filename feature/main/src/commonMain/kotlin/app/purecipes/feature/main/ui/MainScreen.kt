@@ -19,6 +19,8 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
+import app.purecipes.feature.featurerequests.ui.navigation.FeatureRequestsDestination
+import app.purecipes.feature.featurerequests.ui.navigation.installFeatureRequestsFlow
 import app.purecipes.feature.library.ui.navigation.installCookbookDetailFlow
 import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
@@ -192,6 +194,14 @@ private fun MainScreenContent(
 								)
 								installSettingsFlow(
 									navigator = viewModel.navigator,
+									onOpenFeatureRequests = {
+										viewModel.navigator.push(FeatureRequestsDestination)
+									},
+								)
+								installFeatureRequestsFlow(
+									navigator = viewModel.navigator,
+									sessionKey = sessionKey,
+									onRequestLogIn = { viewModel.onOpenEmailSignIn() },
 								)
 								installSubscriptionFlow(
 									navigator = viewModel.navigator,

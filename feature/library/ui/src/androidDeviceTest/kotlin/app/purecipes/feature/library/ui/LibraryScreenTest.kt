@@ -1,8 +1,14 @@
 package app.purecipes.feature.library.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -22,9 +28,11 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseC
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.library.ui.cookbooks.CREATE_COOKBOOK_DIALOG_INPUT_TAG
+import app.purecipes.feature.library.ui.cookbooks.CreateCookbookDialog
 import app.purecipes.feature.library.ui.cookbooks.DELETE_COOKBOOK_BUTTON_PREFIX
 import app.purecipes.feature.library.ui.cookbooks.DELETE_COOKBOOK_DIALOG_CONFIRM_TAG
 import app.purecipes.shared.domain.model.CookbookListPage
@@ -42,6 +50,7 @@ import com.github.michaelbull.result.Ok
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -64,6 +73,238 @@ class LibraryScreenTest {
 		}
 		onNodeWithText("Favorites").assertIsDisplayed()
 		onNodeWithTag(LIBRARY_TITLE_TAG).assertStable()
+	}
+
+	@Test
+	fun libraryScreenRetainsFavoritesAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModelForTest(favoritesRepository = favoritesRepo)
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					LibraryScreen(
+						sessionKey = "session",
+						viewModel = viewModel,
+						onRecipeSelect = {},
+					)
+				}
+			}
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText("Tomato Pasta").assertIsDisplayed()
+		runOnIdle {
+			favoritesRepo.getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = emptyList(),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 0,
+				),
+			)
+		}
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithText("Tomato Pasta").assertIsDisplayed()
+	}
+
+	@Test
+	fun libraryScreenRemovesFavoriteAfterFavoriteEvent() = runRecompositionTrackingUiTest {
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModelForTest(favoritesRepository = favoritesRepo)
+		setTrackedContent {
+			PurecipesTheme {
+				LibraryScreen(
+					sessionKey = "session",
+					viewModel = viewModel,
+					onRecipeSelect = {},
+				)
+			}
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isNotEmpty()
+		}
+
+		runOnIdle {
+			favoritesRepo.getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = emptyList(),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 0,
+				),
+			)
+			favoritesRepo.emitFavoriteEvent(FavoriteEvent.Removed(recipeId = recipe.id))
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isEmpty()
+		}
+		onNodeWithText("No favorites yet").assertIsDisplayed()
+	}
+
+	@Test
+	fun libraryScreenAddsFavoriteAfterFavoriteEvent() = runRecompositionTrackingUiTest {
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository()
+		val viewModel = favoritesViewModelForTest(favoritesRepository = favoritesRepo)
+		setTrackedContent {
+			PurecipesTheme {
+				LibraryScreen(
+					sessionKey = "session",
+					viewModel = viewModel,
+					onRecipeSelect = {},
+				)
+			}
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("No favorites yet").fetchSemanticsNodes().isNotEmpty()
+		}
+
+		runOnIdle {
+			favoritesRepo.getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			)
+			favoritesRepo.emitFavoriteEvent(FavoriteEvent.Added(recipeId = recipe.id))
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText("Tomato Pasta").assertIsDisplayed()
+	}
+
+	@Test
+	fun libraryScreenUpdatesCookbookAfterMembershipEvent() = runRecompositionTrackingUiTest {
+		val cookbook = CookbookSummary(
+			id = 10,
+			name = "Weeknight Dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepo = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo)
+		setTrackedContent {
+			PurecipesTheme {
+				LibraryScreen(
+					sessionKey = "session",
+					viewModel = viewModel,
+					onRecipeSelect = {},
+				)
+			}
+		}
+
+		onNodeWithText("Cookbooks").performClick()
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("1 recipes").fetchSemanticsNodes().isNotEmpty()
+		}
+
+		runOnIdle {
+			cookbooksRepo.cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook.copy(recipeCount = 2)),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			)
+			cookbooksRepo.emitCookbookMembershipEvent(
+				CookbookMembershipEvent.Added(recipeId = 42, cookbookId = cookbook.id),
+			)
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText("2 recipes").fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText("2 recipes").assertIsDisplayed()
+	}
+
+	@Test
+	fun createCookbookDialogRetainsNameAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		var name by mutableStateOf("")
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					CreateCookbookDialog(
+						existingCookbookNames = persistentListOf(),
+						name = name,
+						isLoading = false,
+						errorMessage = null,
+						onNameChange = { name = it },
+						onDismiss = {},
+						onConfirm = {},
+					)
+				}
+			}
+		}
+
+		onNodeWithTag(CREATE_COOKBOOK_DIALOG_INPUT_TAG).performTextInput("Weekend")
+		compositionGeneration += 1
+		waitForIdle()
+		onNodeWithTag(CREATE_COOKBOOK_DIALOG_INPUT_TAG).assertTextContains("Weekend")
 	}
 
 	@Test
@@ -338,6 +579,7 @@ private fun favoritesViewModelForTest(
 	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
 	importCookbookShare = unusedImportCookbookShareUseCase(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+	observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	sessionKey = sessionKey,
 )

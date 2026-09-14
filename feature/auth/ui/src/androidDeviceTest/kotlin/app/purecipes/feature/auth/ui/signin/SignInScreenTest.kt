@@ -1,9 +1,14 @@
 package app.purecipes.feature.auth.ui.signin
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -98,6 +103,44 @@ class SignInScreenTest {
 		onNodeWithTag(SIGN_IN_EMAIL_ERROR_TAG, useUnmergedTree = true)
 			.assertIsDisplayed()
 			.assertTextEquals(EMAIL_REQUIRED_MESSAGE)
+	}
+
+	@Test
+	fun signInScreenRetainsCredentialsAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val repository = FakeAuthenticationRepository()
+		val viewModel = SignInViewModel(
+			signInWithEmail = SignInWithEmailUseCase(repository),
+			resendEmailVerification = ResendEmailVerificationUseCase(repository),
+			sendPasswordResetEmail = SendPasswordResetEmailUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			initialEmail = "",
+			showRegistrationSuccessMessage = false,
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					SignInScreen(
+						initialEmail = "",
+						showRegistrationSuccessMessage = false,
+						onBack = {},
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		onNodeWithTag(SIGN_IN_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
+		onNodeWithTag(SIGN_IN_PASSWORD_FIELD_TAG).performTextInput("Secret123")
+		waitForIdle()
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithTag(SIGN_IN_EMAIL_FIELD_TAG).assertTextContains("taylor@example.com")
+		onNodeWithTag(SIGN_IN_PASSWORD_FIELD_TAG).assertTextContains("Secret123")
 	}
 
 	private fun ComposeUiTest.setSignInScreen(

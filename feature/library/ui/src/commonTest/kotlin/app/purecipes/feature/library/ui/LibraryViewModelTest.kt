@@ -1,7 +1,9 @@
 package app.purecipes.feature.library.ui
 
 import app.purecipes.base.kotlin.result.Failure
+import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
@@ -10,8 +12,11 @@ import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseC
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbooksPageUseCase
 import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
+import app.purecipes.shared.domain.model.CookbookImportResult
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.Cuisine
@@ -74,6 +79,7 @@ class LibraryViewModelTest {
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
@@ -99,6 +105,7 @@ class LibraryViewModelTest {
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
@@ -139,6 +146,7 @@ class LibraryViewModelTest {
 			getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 			importCookbookShare = unusedImportCookbookShareUseCase(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepo),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			sessionKey = "session",
 		)
@@ -160,6 +168,48 @@ class LibraryViewModelTest {
 
 		kotlin.test.assertEquals(emptyList(), viewModel.savedRecipes.toList())
 		kotlin.test.assertEquals(0, viewModel.totalSavedMatches)
+	}
+
+	@Test
+	fun `cookbook membership event reloads cookbooks`() = runViewModelTest {
+		val cookbook = CookbookSummary(
+			id = 10,
+			name = "Weeknight Dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbooksPageResult = Ok(
+				CookbookListPage(
+					items = listOf(cookbook),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModel(cookbooksRepository = cookbooksRepository)
+
+		viewModel.loadLibrary()
+		advanceUntilIdle()
+		kotlin.test.assertEquals(listOf(cookbook), viewModel.cookbooks.toList())
+
+		val updatedCookbook = cookbook.copy(recipeCount = 2)
+		cookbooksRepository.cookbooksPageResult = Ok(
+			CookbookListPage(
+				items = listOf(updatedCookbook),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 1,
+			),
+		)
+		cookbooksRepository.emitCookbookMembershipEvent(
+			CookbookMembershipEvent.Added(recipeId = 42, cookbookId = cookbook.id),
+		)
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(listOf(updatedCookbook), viewModel.cookbooks.toList())
+		kotlin.test.assertEquals(2, viewModel.cookbooks.single().recipeCount)
 	}
 
 	@Test
@@ -290,6 +340,102 @@ class LibraryViewModelTest {
 		kotlin.test.assertEquals(1, cookbooksRepository.deleteCookbookCallCount)
 	}
 
+	@Test
+	fun `load library for same session does not clear or reload`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 42,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 25,
+			isFavorite = true,
+		)
+		val favoritesRepo = FakeFavoritesRepository(
+			getFavoriteRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = favoritesViewModel(favoritesRepository = favoritesRepo)
+
+		viewModel.loadLibrary()
+		advanceUntilIdle()
+		val callsAfterFirstLoad = favoritesRepo.getFavoriteRecipesPageCallCount
+		kotlin.test.assertEquals(listOf(recipe), viewModel.savedRecipes.toList())
+
+		favoritesRepo.getFavoriteRecipesPageResult = Ok(
+			SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 0,
+			),
+		)
+		viewModel.loadLibrary()
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(listOf(recipe), viewModel.savedRecipes.toList())
+		kotlin.test.assertEquals(1, viewModel.totalSavedMatches)
+		kotlin.test.assertEquals(callsAfterFirstLoad, favoritesRepo.getFavoriteRecipesPageCallCount)
+	}
+
+	@Test
+	fun `import shared cookbook is idempotent for the same token`() = runViewModelTest {
+		val importedCookbook = CookbookSummary(
+			id = 33,
+			name = "Imported",
+			recipeCount = 2,
+			updatedAtEpochMillis = 0L,
+		)
+		var importShareCallCount = 0
+		val importUseCase = ImportCookbookShareUseCase(
+			object : CookbookShareRepository {
+				override suspend fun createShare(cookbookId: Int) =
+					Err(Failure.ServerError("unused"))
+
+				override suspend fun importShare(token: String): Outcome<CookbookImportResult> {
+					importShareCallCount += 1
+					return Ok(
+						CookbookImportResult(
+							cookbook = importedCookbook,
+							recipesImported = 2,
+							recipesSkipped = 0,
+							alreadyImported = false,
+						),
+					)
+				}
+			},
+		)
+		val viewModel = favoritesViewModel(importCookbookShare = importUseCase)
+
+		viewModel.importSharedCookbook("share-token")
+		advanceUntilIdle()
+		viewModel.importSharedCookbook("share-token")
+		advanceUntilIdle()
+
+		kotlin.test.assertEquals(1, importShareCallCount)
+		kotlin.test.assertEquals(LibraryTab.Cookbooks, viewModel.selectedTab)
+	}
+
+	@Test
+	fun `open my recipes is applied once`() = runViewModelTest {
+		val viewModel = favoritesViewModel()
+
+		viewModel.consumeOpenMyRecipes(false)
+		kotlin.test.assertEquals(LibraryTab.Favorites, viewModel.selectedTab)
+
+		viewModel.consumeOpenMyRecipes(true)
+		kotlin.test.assertEquals(LibraryTab.MyRecipes, viewModel.selectedTab)
+
+		viewModel.onTabSelected(LibraryTab.Favorites)
+		viewModel.consumeOpenMyRecipes(true)
+		kotlin.test.assertEquals(LibraryTab.Favorites, viewModel.selectedTab)
+	}
+
 	private fun favoritesViewModel(
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
@@ -304,6 +450,7 @@ class LibraryViewModelTest {
 		getCookbookRecipesPage = GetCookbookRecipesPageUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		importCookbookShare = importCookbookShare,
+		observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		sessionKey = sessionKey,

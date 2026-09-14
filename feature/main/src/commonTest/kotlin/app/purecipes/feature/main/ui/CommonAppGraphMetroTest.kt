@@ -2,6 +2,8 @@ package app.purecipes.feature.main.ui
 
 import androidx.lifecycle.viewmodel.CreationExtras
 import app.purecipes.feature.ads.ui.BannerAdViewModel
+import app.purecipes.feature.featurerequests.ui.FeatureRequestDetailViewModel
+import app.purecipes.feature.featurerequests.ui.FeatureRequestsViewModel
 import app.purecipes.feature.search.ui.RecipeSearchViewModel
 import app.purecipes.feature.subscription.ui.PaywallViewModel
 import dev.zacsweers.metro.createGraph
@@ -34,6 +36,24 @@ class CommonAppGraphMetroTest {
 		val graph = createGraph<TestAppGraph>()
 		val factoryProvider = graph.metroViewModelFactory.createManuallyAssistedFactory(
 			RecipeSearchViewModel.Factory::class,
+		)
+		factoryProvider().shouldNotBeNull()
+	}
+
+	@Test
+	fun metroViewModelFactoryIncludesFeatureRequestsManualAssistedFactory() {
+		val graph = createGraph<TestAppGraph>()
+		val factoryProvider = graph.metroViewModelFactory.createManuallyAssistedFactory(
+			FeatureRequestsViewModel.Factory::class,
+		)
+		factoryProvider().shouldNotBeNull()
+	}
+
+	@Test
+	fun metroViewModelFactoryIncludesFeatureRequestDetailManualAssistedFactory() {
+		val graph = createGraph<TestAppGraph>()
+		val factoryProvider = graph.metroViewModelFactory.createManuallyAssistedFactory(
+			FeatureRequestDetailViewModel.Factory::class,
 		)
 		factoryProvider().shouldNotBeNull()
 	}
