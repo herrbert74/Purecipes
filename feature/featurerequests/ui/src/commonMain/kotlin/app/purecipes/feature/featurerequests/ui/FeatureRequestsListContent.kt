@@ -64,13 +64,17 @@ internal fun FeatureRequestsListContent(
 				EmptyStateContent(
 					icon = Icons.Filled.Lightbulb,
 					iconContentDescription = "Feature requests",
-					title = "No requests yet",
-					description = "Tell us what would make Purecipes better and other cooks can vote for it.",
-					action = {
-						PurecipesButton(
-							text = "Request a feature",
-							onClick = callbacks.onCreateClick,
-						)
+					title = featureRequestsEmptyTitle(state.statusFilter),
+					description = featureRequestsEmptyDescription(state.statusFilter),
+					action = if (state.statusFilter == null) {
+						{
+							PurecipesButton(
+								text = "Request a feature",
+								onClick = callbacks.onCreateClick,
+							)
+						}
+					} else {
+						null
 					},
 				)
 			}
@@ -100,6 +104,44 @@ internal fun FeatureRequestsListContent(
 
 @Preview(showBackground = true)
 @Composable
+private fun FeatureRequestsListContentEmptyPreview() {
+	PurecipesPreviewScaffold {
+		FeatureRequestsListContent(
+			state = FeatureRequestsListState(
+				featureRequests = persistentListOf(),
+				sort = FeatureRequestSort.TOP_VOTES,
+				statusFilter = null,
+				totalMatches = 0,
+				errorMessage = null,
+				isLoading = false,
+			),
+			paginationState = PaginationState(initialPageKey = 1, onRequestPage = {}),
+			callbacks = previewListCallbacks(),
+		)
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FeatureRequestsListContentFilteredEmptyPreview() {
+	PurecipesPreviewScaffold {
+		FeatureRequestsListContent(
+			state = FeatureRequestsListState(
+				featureRequests = persistentListOf(),
+				sort = FeatureRequestSort.TOP_VOTES,
+				statusFilter = FeatureRequestStatus.PLANNED,
+				totalMatches = 0,
+				errorMessage = null,
+				isLoading = false,
+			),
+			paginationState = PaginationState(initialPageKey = 1, onRequestPage = {}),
+			callbacks = previewListCallbacks(),
+		)
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
 private fun FeatureRequestsListContentPreview() {
 	PurecipesPreviewScaffold {
 		FeatureRequestsListContent(
@@ -112,16 +154,18 @@ private fun FeatureRequestsListContentPreview() {
 				isLoading = false,
 			),
 			paginationState = PaginationState(initialPageKey = 1, onRequestPage = {}),
-			callbacks = FeatureRequestsListCallbacks(
-				onSortSelected = {},
-				onStatusFilterSelected = {},
-				onFeatureRequestSelect = {},
-				onToggleVote = {},
-				onCreateClick = {},
-			),
+			callbacks = previewListCallbacks(),
 		)
 	}
 }
+
+private fun previewListCallbacks(): FeatureRequestsListCallbacks = FeatureRequestsListCallbacks(
+	onSortSelected = {},
+	onStatusFilterSelected = {},
+	onFeatureRequestSelect = {},
+	onToggleVote = {},
+	onCreateClick = {},
+)
 
 private fun previewFeatureRequests(): ImmutableList<FeatureRequest> = persistentListOf(
 	FeatureRequest(

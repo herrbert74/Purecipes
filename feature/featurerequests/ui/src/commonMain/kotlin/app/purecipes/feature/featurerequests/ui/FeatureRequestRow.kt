@@ -25,6 +25,8 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val FEATURE_REQUEST_ROW_TAG_PREFIX = "featureRequestRow:"
 
+internal const val FEATURE_REQUEST_COMMENT_COUNT_TAG_PREFIX = "featureRequestCommentCount:"
+
 private const val FEATURE_REQUEST_DESCRIPTION_MAX_LINES = 2
 
 @Composable
@@ -79,6 +81,9 @@ internal fun FeatureRequestRow(
 					)
 					Text(
 						text = featureRequest.commentCount.toString(),
+						modifier = Modifier.testTag(
+							"$FEATURE_REQUEST_COMMENT_COUNT_TAG_PREFIX${featureRequest.id}",
+						),
 						style = PurecipesTheme.typography.labelMedium,
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)

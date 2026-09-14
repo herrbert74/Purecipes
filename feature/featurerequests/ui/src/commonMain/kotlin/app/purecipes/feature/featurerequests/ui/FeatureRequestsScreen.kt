@@ -47,6 +47,7 @@ fun FeatureRequestsScreen(
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
+		viewModel.refresh()
 	}
 
 	val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(

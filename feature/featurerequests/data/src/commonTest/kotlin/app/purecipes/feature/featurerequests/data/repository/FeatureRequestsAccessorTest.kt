@@ -1,6 +1,7 @@
 package app.purecipes.feature.featurerequests.data.repository
 
 import app.purecipes.feature.featurerequests.data.datasource.FeatureRequestsRemoteDataSource
+import app.purecipes.feature.featurerequests.domain.model.FeatureRequestEvent
 import app.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestSort
@@ -8,9 +9,15 @@ import app.purecipes.shared.domain.model.FeatureRequestStatus
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FeatureRequestsAccessorTest {
 
 	@Test
@@ -88,6 +95,19 @@ class FeatureRequestsAccessorTest {
 
 		added.getError() shouldBe null
 		comments.get()?.map { it.body } shouldBe listOf("Yes please")
+	}
+
+	@Test
+	fun `adding a comment emits a comment added event`() = runTest {
+		val accessor = FeatureRequestsAccessor(
+			FeatureRequestsRemoteDataSource(FakePurecipesApi(initialFeatureRequests = featureRequests())),
+		)
+		val event = async { accessor.observeFeatureRequestEvents().take(1).single() }
+		runCurrent()
+
+		accessor.addFeatureRequestComment(requestId = 1, body = "Yes please")
+
+		event.await() shouldBe FeatureRequestEvent.CommentAdded(requestId = 1)
 	}
 
 	@Test

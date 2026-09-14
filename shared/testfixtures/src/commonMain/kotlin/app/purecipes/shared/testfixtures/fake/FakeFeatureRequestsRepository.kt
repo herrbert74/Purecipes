@@ -2,6 +2,7 @@ package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.featurerequests.domain.model.FeatureRequestEvent
 import app.purecipes.feature.featurerequests.domain.repository.FeatureRequestsRepository
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
@@ -10,6 +11,9 @@ import app.purecipes.shared.domain.model.FeatureRequestSort
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class FakeFeatureRequestsRepository(
 	initialFeatureRequests: List<FeatureRequest> = emptyList(),
@@ -19,6 +23,7 @@ class FakeFeatureRequestsRepository(
 
 	private val featureRequests = initialFeatureRequests.toMutableList()
 	private val comments = initialComments.toMutableList()
+	private val featureRequestEvents = MutableSharedFlow<FeatureRequestEvent>(extraBufferCapacity = 1)
 	private var nextFeatureRequestId = (initialFeatureRequests.maxOfOrNull { it.id } ?: 0) + 1
 	private var nextCommentId = (initialComments.maxOfOrNull { it.id } ?: 0) + 1
 
@@ -27,6 +32,10 @@ class FakeFeatureRequestsRepository(
 	val createdTitles = mutableListOf<String>()
 	val toggledVoteIds = mutableListOf<Int>()
 	val addedCommentBodies = mutableListOf<String>()
+
+	fun emitFeatureRequestEvent(event: FeatureRequestEvent) {
+		featureRequestEvents.tryEmit(event)
+	}
 
 	override suspend fun getFeatureRequestsPage(
 		sort: FeatureRequestSort,
@@ -115,6 +124,14 @@ class FakeFeatureRequestsRepository(
 			createdAtEpochMillis = 0L,
 		)
 		comments += comment
+		val index = featureRequests.indexOfFirst { it.id == requestId }
+		if (index >= 0) {
+			val current = featureRequests[index]
+			featureRequests[index] = current.copy(commentCount = current.commentCount + 1)
+		}
+		featureRequestEvents.tryEmit(FeatureRequestEvent.CommentAdded(requestId))
 		return Ok(comment)
 	}
+
+	override fun observeFeatureRequestEvents(): Flow<FeatureRequestEvent> = featureRequestEvents.asSharedFlow()
 }

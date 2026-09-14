@@ -1,11 +1,13 @@
 package app.purecipes.feature.featurerequests.domain.repository
 
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.featurerequests.domain.model.FeatureRequestEvent
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestListPage
 import app.purecipes.shared.domain.model.FeatureRequestSort
 import app.purecipes.shared.domain.model.FeatureRequestStatus
+import kotlinx.coroutines.flow.Flow
 
 interface FeatureRequestsRepository {
 
@@ -25,4 +27,6 @@ interface FeatureRequestsRepository {
 	suspend fun getFeatureRequestComments(requestId: Int): Outcome<List<FeatureRequestComment>>
 
 	suspend fun addFeatureRequestComment(requestId: Int, body: String): Outcome<FeatureRequestComment>
+
+	fun observeFeatureRequestEvents(): Flow<FeatureRequestEvent>
 }

@@ -135,9 +135,42 @@ class FeatureRequestsListContentTest {
 		}
 
 		onNodeWithText("No requests yet").assertIsDisplayed()
+		onNodeWithText("Tell us what would make Purecipes better and other cooks can vote for it.")
+			.assertIsDisplayed()
 		onNodeWithText("Request a feature").performClick()
 
 		assertEquals(true, createClicked)
+	}
+
+	@Test
+	fun filteredEmptyStateExplainsMissingRequestsInThatStage() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				FeatureRequestsListContent(
+					state = FeatureRequestsListState(
+						featureRequests = persistentListOf(),
+						sort = FeatureRequestSort.TOP_VOTES,
+						statusFilter = FeatureRequestStatus.PLANNED,
+						totalMatches = 0,
+						errorMessage = null,
+						isLoading = false,
+					),
+					paginationState = PaginationState(initialPageKey = 1, onRequestPage = {}),
+					callbacks = FeatureRequestsListCallbacks(
+						onSortSelected = {},
+						onStatusFilterSelected = {},
+						onFeatureRequestSelect = {},
+						onToggleVote = {},
+						onCreateClick = {},
+					),
+				)
+			}
+		}
+
+		onNodeWithText("Nothing in this stage yet").assertIsDisplayed()
+		onNodeWithText("Nothing has made it into Planned at the moment.").assertIsDisplayed()
+		onNodeWithText("No requests yet").assertDoesNotExist()
+		onNodeWithText("Request a feature").assertDoesNotExist()
 	}
 
 	private fun listState(): FeatureRequestsListState = FeatureRequestsListState(

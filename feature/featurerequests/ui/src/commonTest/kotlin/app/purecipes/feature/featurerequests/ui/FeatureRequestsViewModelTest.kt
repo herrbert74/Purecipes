@@ -1,13 +1,16 @@
 package app.purecipes.feature.featurerequests.ui
 
+import app.purecipes.feature.featurerequests.domain.usecase.AddFeatureRequestCommentUseCase
 import app.purecipes.feature.featurerequests.domain.usecase.CreateFeatureRequestUseCase
 import app.purecipes.feature.featurerequests.domain.usecase.GetFeatureRequestsPageUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.ObserveFeatureRequestEventsUseCase
 import app.purecipes.feature.featurerequests.domain.usecase.ToggleFeatureRequestVoteUseCase
 import app.purecipes.shared.domain.model.FeatureRequestSort
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.testfixtures.fake.FakeFeatureRequestsRepository
 import app.purecipes.shared.testfixtures.fake.fakeFeatureRequest
 import app.purecipes.shared.testfixtures.runViewModelTest
+import com.github.michaelbull.result.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
@@ -128,6 +131,22 @@ class FeatureRequestsViewModelTest {
 		assertEquals(false, viewModel.isLoading)
 	}
 
+	@Test
+	fun `comment added from detail updates the list comment count`() = runViewModelTest {
+		val repository = FakeFeatureRequestsRepository(
+			initialFeatureRequests = listOf(fakeFeatureRequest(id = 1, commentCount = 0)),
+		)
+		val viewModel = featureRequestsViewModel(repository)
+		advanceUntilIdle()
+		assertEquals(0, viewModel.featureRequests.single().commentCount)
+
+		val added = AddFeatureRequestCommentUseCase(repository)(requestId = 1, body = "Ship it")
+		advanceUntilIdle()
+
+		assertEquals("Ship it", added.get()?.body)
+		assertEquals(1, viewModel.featureRequests.single().commentCount)
+	}
+
 	private fun featureRequests() = listOf(
 		fakeFeatureRequest(
 			id = 1,
@@ -152,6 +171,7 @@ class FeatureRequestsViewModelTest {
 		getFeatureRequestsPage = GetFeatureRequestsPageUseCase(repository),
 		createFeatureRequest = CreateFeatureRequestUseCase(repository),
 		toggleFeatureRequestVote = ToggleFeatureRequestVoteUseCase(repository),
+		observeFeatureRequestEvents = ObserveFeatureRequestEventsUseCase(repository),
 		sessionKey = sessionKey,
 	)
 }

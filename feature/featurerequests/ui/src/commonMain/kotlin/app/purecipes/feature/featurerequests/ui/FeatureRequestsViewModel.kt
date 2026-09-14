@@ -7,8 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.purecipes.feature.featurerequests.domain.model.FeatureRequestEvent
 import app.purecipes.feature.featurerequests.domain.usecase.CreateFeatureRequestUseCase
 import app.purecipes.feature.featurerequests.domain.usecase.GetFeatureRequestsPageUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.ObserveFeatureRequestEventsUseCase
 import app.purecipes.feature.featurerequests.domain.usecase.ToggleFeatureRequestVoteUseCase
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestSort
@@ -23,6 +25,7 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private const val FIRST_PAGE_NUMBER = 1
@@ -34,10 +37,12 @@ class FeatureRequestsViewModel(
 	private val getFeatureRequestsPage: GetFeatureRequestsPageUseCase,
 	private val createFeatureRequest: CreateFeatureRequestUseCase,
 	private val toggleFeatureRequestVote: ToggleFeatureRequestVoteUseCase,
+	private val observeFeatureRequestEvents: ObserveFeatureRequestEventsUseCase,
 	@Assisted sessionKey: String?,
 ) : ViewModel() {
 
 	private var activeSessionKey: String? = sessionKey
+	private var featureRequestEventsJob: Job? = null
 
 	var sort by mutableStateOf(FeatureRequestSort.TOP_VOTES)
 		private set
@@ -72,6 +77,7 @@ class FeatureRequestsViewModel(
 	)
 
 	init {
+		startFeatureRequestEventsCollection()
 		refresh()
 	}
 
@@ -80,6 +86,9 @@ class FeatureRequestsViewModel(
 			return
 		}
 		activeSessionKey = sessionKey
+		featureRequestEventsJob?.cancel()
+		featureRequestEventsJob = null
+		startFeatureRequestEventsCollection()
 		refresh()
 	}
 
@@ -150,6 +159,27 @@ class FeatureRequestsViewModel(
 					featureRequests[index] = updated
 				}
 			}
+		}
+	}
+
+	private fun startFeatureRequestEventsCollection() {
+		if (activeSessionKey == null) {
+			return
+		}
+		featureRequestEventsJob = viewModelScope.launch {
+			observeFeatureRequestEvents().collect { event ->
+				when (event) {
+					is FeatureRequestEvent.CommentAdded -> applyCommentAdded(event.requestId)
+				}
+			}
+		}
+	}
+
+	private fun applyCommentAdded(requestId: Int) {
+		val index = featureRequests.indexOfFirst { it.id == requestId }
+		if (index >= 0) {
+			val current = featureRequests[index]
+			featureRequests[index] = current.copy(commentCount = current.commentCount + 1)
 		}
 	}
 
