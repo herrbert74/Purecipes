@@ -12,6 +12,13 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.FacebookSignInRequest
+import app.purecipes.shared.domain.model.FeatureRequest
+import app.purecipes.shared.domain.model.FeatureRequestComment
+import app.purecipes.shared.domain.model.FeatureRequestCommentCreateRequest
+import app.purecipes.shared.domain.model.FeatureRequestCreateRequest
+import app.purecipes.shared.domain.model.FeatureRequestListPage
+import app.purecipes.shared.domain.model.FeatureRequestSort
+import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -31,6 +38,7 @@ class FakePurecipesApi(
 	var searchResult: List<RecipeSummary> = emptyList(),
 	var favoriteRecipes: List<RecipeSummary> = emptyList(),
 	initialCookbooks: List<CookbookSummary> = emptyList(),
+	initialFeatureRequests: List<FeatureRequest> = emptyList(),
 	initialRecipeDetails: List<RecipeDetails> = emptyList(),
 	initialMeasurementPreferences: MeasurementPreferences = MeasurementPreferences(
 		preferredSystem = MeasurementSystem.METRIC,
@@ -45,7 +53,11 @@ class FakePurecipesApi(
 	private val cookbookRecipeIds = mutableMapOf<Int, MutableSet<Int>>()
 	private val cookbookShares = mutableMapOf<String, Int>()
 	private val cookbookShareImports = mutableMapOf<Pair<String, String>, Int>()
+	private val featureRequests = initialFeatureRequests.toMutableList()
+	private val featureRequestComments = mutableMapOf<Int, MutableList<FeatureRequestComment>>()
 	private var nextCookbookId: Int = (initialCookbooks.maxOfOrNull { it.id } ?: 0) + 1
+	private var nextFeatureRequestId: Int = (initialFeatureRequests.maxOfOrNull { it.id } ?: 0) + 1
+	private var nextFeatureRequestCommentId: Int = 1
 
 	init {
 		for (c in initialCookbooks) {
@@ -64,6 +76,8 @@ class FakePurecipesApi(
 
 	val addedFavoriteIds = mutableListOf<Int>()
 	val removedFavoriteIds = mutableListOf<Int>()
+	val createdFeatureRequests = mutableListOf<FeatureRequestCreateRequest>()
+	val toggledFeatureRequestVoteIds = mutableListOf<Int>()
 	val createdRecipeRequests = mutableListOf<RecipeWriteRequest>()
 	val updatedRecipeRequests = mutableListOf<Pair<Int, RecipeWriteRequest>>()
 	val deletedRecipeIds = mutableListOf<Int>()
@@ -278,6 +292,88 @@ class FakePurecipesApi(
 			recipesSkipped = 0,
 			alreadyImported = false,
 		)
+	}
+
+	override suspend fun getFeatureRequests(
+		sort: String,
+		status: String?,
+		pageNumber: Int,
+		pageSize: Int,
+	): FeatureRequestListPage {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceAtLeast(1)
+		val offset = (normalizedPageNumber - 1) * normalizedPageSize
+		val filtered = featureRequests.filter { status == null || it.status.name == status }
+		val sorted = when (sort) {
+			FeatureRequestSort.NEWEST.name -> filtered.sortedByDescending { it.createdAtEpochMillis }
+			else -> filtered.sortedWith(
+				compareByDescending<FeatureRequest> { it.voteCount }
+					.thenByDescending { it.createdAtEpochMillis },
+			)
+		}
+		return FeatureRequestListPage(
+			items = sorted.drop(offset).take(normalizedPageSize),
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+			totalMatches = sorted.size,
+		)
+	}
+
+	override suspend fun createFeatureRequest(request: FeatureRequestCreateRequest): FeatureRequest {
+		createdFeatureRequests += request
+		val created = FeatureRequest(
+			id = nextFeatureRequestId++,
+			title = request.title.trim(),
+			description = request.description.trim(),
+			status = FeatureRequestStatus.OPEN,
+			voteCount = 0,
+			commentCount = 0,
+			createdAtEpochMillis = Clock.System.now().toEpochMilliseconds(),
+			votedByCurrentUser = false,
+		)
+		featureRequests += created
+		return created
+	}
+
+	override suspend fun getFeatureRequest(requestId: Int): FeatureRequest {
+		return featureRequests.firstOrNull { it.id == requestId }
+			?: error("No feature request found for id $requestId")
+	}
+
+	override suspend fun toggleFeatureRequestVote(requestId: Int): FeatureRequest {
+		toggledFeatureRequestVoteIds += requestId
+		val index = featureRequests.indexOfFirst { it.id == requestId }
+		check(index >= 0) { "No feature request found for id $requestId" }
+		val current = featureRequests[index]
+		val voted = !current.votedByCurrentUser
+		val updated = current.copy(
+			voteCount = if (voted) current.voteCount + 1 else (current.voteCount - 1).coerceAtLeast(0),
+			votedByCurrentUser = voted,
+		)
+		featureRequests[index] = updated
+		return updated
+	}
+
+	override suspend fun getFeatureRequestComments(requestId: Int): List<FeatureRequestComment> =
+		featureRequestComments[requestId].orEmpty().toList()
+
+	override suspend fun addFeatureRequestComment(
+		requestId: Int,
+		request: FeatureRequestCommentCreateRequest,
+	): FeatureRequestComment {
+		val index = featureRequests.indexOfFirst { it.id == requestId }
+		check(index >= 0) { "No feature request found for id $requestId" }
+		val comment = FeatureRequestComment(
+			id = nextFeatureRequestCommentId++,
+			requestId = requestId,
+			authorDisplayName = session.user.displayName,
+			body = request.body.trim(),
+			createdAtEpochMillis = Clock.System.now().toEpochMilliseconds(),
+		)
+		featureRequestComments.getOrPut(requestId) { mutableListOf() } += comment
+		val current = featureRequests[index]
+		featureRequests[index] = current.copy(commentCount = current.commentCount + 1)
+		return comment
 	}
 
 	override suspend fun getMeasurementPreferences(): MeasurementPreferences = measurementPreferences

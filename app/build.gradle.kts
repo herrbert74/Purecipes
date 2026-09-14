@@ -163,6 +163,7 @@ dependencies {
 	implementation(project(":feature:analytics:ui"))
 	implementation(project(":feature:auth:ui"))
 	implementation(project(":feature:cooking:ui"))
+	implementation(project(":feature:featurerequests:ui"))
 	implementation(project(":feature:library:ui"))
 	implementation(project(":feature:newrecipe:ui"))
 	implementation(project(":feature:recipedetails:ui"))

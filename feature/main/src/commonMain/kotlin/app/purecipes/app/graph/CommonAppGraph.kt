@@ -21,6 +21,12 @@ import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.AddFeatureRequestCommentUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.CreateFeatureRequestUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.GetFeatureRequestCommentsUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.GetFeatureRequestUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.GetFeatureRequestsPageUseCase
+import app.purecipes.feature.featurerequests.domain.usecase.ToggleFeatureRequestVoteUseCase
 import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
 import app.purecipes.feature.library.domain.usecase.CreateCookbookUseCase
@@ -109,6 +115,18 @@ interface CommonAppGraph :
 	val deleteAccountUseCase: DeleteAccountUseCase
 
 	val signOutUseCase: SignOutUseCase
+
+	val getFeatureRequestsPageUseCase: GetFeatureRequestsPageUseCase
+
+	val getFeatureRequestUseCase: GetFeatureRequestUseCase
+
+	val createFeatureRequestUseCase: CreateFeatureRequestUseCase
+
+	val toggleFeatureRequestVoteUseCase: ToggleFeatureRequestVoteUseCase
+
+	val getFeatureRequestCommentsUseCase: GetFeatureRequestCommentsUseCase
+
+	val addFeatureRequestCommentUseCase: AddFeatureRequestCommentUseCase
 
 	val addFavoriteRecipeUseCase: AddFavoriteRecipeUseCase
 

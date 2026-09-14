@@ -2,6 +2,7 @@ package app.purecipes.feature.main.ui
 
 import app.purecipes.feature.auth.ui.navigation.authNavigationSerializersModule
 import app.purecipes.feature.cooking.ui.navigation.cookingNavigationSerializersModule
+import app.purecipes.feature.featurerequests.ui.navigation.featureRequestsNavigationSerializersModule
 import app.purecipes.feature.library.ui.navigation.libraryNavigationSerializersModule
 import app.purecipes.feature.newrecipe.ui.navigation.createNavigationSerializersModule
 import app.purecipes.feature.recipedetails.ui.navigation.recipeDetailsNavigationSerializersModule
@@ -19,4 +20,5 @@ internal fun mainNavigationSerializersModule(): SerializersModule = SerializersM
 	include(authNavigationSerializersModule())
 	include(settingsNavigationSerializersModule())
 	include(subscriptionNavigationSerializersModule())
+	include(featureRequestsNavigationSerializersModule())
 }

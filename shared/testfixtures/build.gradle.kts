@@ -13,6 +13,7 @@ kotlin {
 				api(project(":base:kotlin"))
 				api(project(":feature:analytics:domain"))
 				api(project(":feature:auth:domain"))
+				api(project(":feature:featurerequests:domain"))
 				api(project(":feature:library:domain"))
 				api(project(":feature:newrecipe:domain"))
 				api(project(":feature:onboarding:domain"))

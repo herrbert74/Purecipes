@@ -7,6 +7,7 @@ import app.purecipes.backend.auth.SessionService
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.authenticationRoutes
 import app.purecipes.backend.feature.deeplink.deepLinkRoutes
+import app.purecipes.backend.feature.featurerequests.featureRequestRoutes
 import app.purecipes.backend.feature.ingredient.IngredientMatchCorpusCache
 import app.purecipes.backend.feature.ingredient.ingredientRoutes
 import app.purecipes.backend.feature.library.cookbookRoutes
@@ -101,6 +102,7 @@ fun Application.module(
 		favoriteRoutes(sessionService) { db }
 		cookbookRoutes(sessionService) { db }
 		cookbookShareRoutes(sessionService) { db }
+		featureRequestRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)
 		recipeRoutes(sessionService, { db }, corpusCache)
 		ingredientRoutes(sessionService, corpusCache)

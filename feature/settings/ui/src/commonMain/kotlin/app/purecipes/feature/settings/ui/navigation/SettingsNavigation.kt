@@ -17,6 +17,7 @@ import kotlinx.serialization.modules.subclass
 
 fun EntryProviderScope<NavKey>.installSettingsFlow(
 	navigator: Navigator,
+	onOpenFeatureRequests: () -> Unit,
 ) {
 	entry<AccountSettingsDestination> {
 		SettingsScreen(
@@ -30,6 +31,7 @@ fun EntryProviderScope<NavKey>.installSettingsFlow(
 				)
 			},
 			onOpenAbout = { navigator.push(AboutDestination) },
+			onOpenFeatureRequests = onOpenFeatureRequests,
 			modifier = Modifier.fillMaxSize(),
 		)
 	}

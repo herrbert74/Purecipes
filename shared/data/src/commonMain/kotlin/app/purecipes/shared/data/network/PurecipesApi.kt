@@ -10,6 +10,11 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
 import app.purecipes.shared.domain.model.FacebookSignInRequest
+import app.purecipes.shared.domain.model.FeatureRequest
+import app.purecipes.shared.domain.model.FeatureRequestComment
+import app.purecipes.shared.domain.model.FeatureRequestCommentCreateRequest
+import app.purecipes.shared.domain.model.FeatureRequestCreateRequest
+import app.purecipes.shared.domain.model.FeatureRequestListPage
 import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -131,6 +136,34 @@ interface PurecipesApi {
 
 	@POST("cookbook-shares/{token}/import")
 	suspend fun importCookbookShare(@Path("token") token: String): CookbookImportResult
+
+	@GET("feature-requests")
+	suspend fun getFeatureRequests(
+		@Query("sort") sort: String,
+		@Query("status") status: String? = null,
+		@Query("pageNumber") pageNumber: Int = 1,
+		@Query("pageSize") pageSize: Int = 20,
+	): FeatureRequestListPage
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("feature-requests")
+	suspend fun createFeatureRequest(@Body request: FeatureRequestCreateRequest): FeatureRequest
+
+	@GET("feature-requests/{id}")
+	suspend fun getFeatureRequest(@Path("id") requestId: Int): FeatureRequest
+
+	@POST("feature-requests/{id}/vote")
+	suspend fun toggleFeatureRequestVote(@Path("id") requestId: Int): FeatureRequest
+
+	@GET("feature-requests/{id}/comments")
+	suspend fun getFeatureRequestComments(@Path("id") requestId: Int): List<FeatureRequestComment>
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("feature-requests/{id}/comments")
+	suspend fun addFeatureRequestComment(
+		@Path("id") requestId: Int,
+		@Body request: FeatureRequestCommentCreateRequest,
+	): FeatureRequestComment
 
 	@GET("settings/measurement")
 	suspend fun getMeasurementPreferences(): MeasurementPreferences
