@@ -24,7 +24,8 @@ const val PASSWORD_POLICY_SUPPORTING_TEXT =
 	"At least 10 characters with one uppercase letter, one lowercase letter, and one number."
 
 const val PASSWORD_RESET_EMAIL_SENT_MESSAGE =
-	"Password reset email sent. Check your inbox, and your spam folder if it doesn't arrive."
+	"If there's an account with this email, we sent a password reset. " +
+		"Check your inbox, and your spam folder if it doesn't arrive."
 
 const val REGISTRATION_SUCCESS_MESSAGE =
 	"Registration successful. Please check your email to verify your account, " +
