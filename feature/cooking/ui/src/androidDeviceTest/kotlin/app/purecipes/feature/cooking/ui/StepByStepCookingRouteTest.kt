@@ -43,7 +43,7 @@ import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
-import dejavu.assertStable
+import dejavu.assertRecompositions
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import org.junit.Assert.assertTrue
@@ -82,7 +82,7 @@ class StepByStepCookingRouteTest {
 		onNodeWithText("Step 2 of 2").assertIsDisplayed()
 		onNodeWithText("Roast until tender").assertIsDisplayed()
 		onNodeWithText("Finish cooking").assertIsDisplayed()
-		onNodeWithTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG).assertStable()
+		onNodeWithTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG).assertRecompositions(exactly = 1)
 	}
 
 	@Test
