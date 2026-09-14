@@ -41,15 +41,20 @@ internal fun RegistrationForm(
 	emailError: String?,
 	password: String,
 	passwordError: String?,
+	confirmPassword: String,
+	confirmPasswordError: String?,
 	isBusy: Boolean,
 	onDisplayNameChange: (String) -> Unit,
 	onEmailChange: (String) -> Unit,
 	onPasswordChange: (String) -> Unit,
+	onConfirmPasswordChange: (String) -> Unit,
 	onSubmit: () -> Unit,
 ) {
 	var isPasswordVisible by remember { mutableStateOf(false) }
+	var isConfirmPasswordVisible by remember { mutableStateOf(false) }
 	val emailFocusRequester = remember { FocusRequester() }
 	val passwordFocusRequester = remember { FocusRequester() }
+	val confirmPasswordFocusRequester = remember { FocusRequester() }
 	val focusManager = LocalFocusManager.current
 	Surface(
 		modifier = Modifier.fillMaxWidth(),
@@ -103,9 +108,9 @@ internal fun RegistrationForm(
 					.testTag(REGISTRATION_PASSWORD_FIELD_TAG),
 				label = { Text("Password") },
 				singleLine = true,
-				keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+				keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
 				keyboardActions = KeyboardActions(
-					onDone = { focusManager.clearFocus() },
+					onNext = { confirmPasswordFocusRequester.requestFocus() },
 				),
 				isError = passwordError != null,
 				supportingText = when {
@@ -144,6 +149,50 @@ internal fun RegistrationForm(
 								"Hide password"
 							} else {
 								"Show password"
+							},
+						)
+					}
+				},
+			)
+			OutlinedTextField(
+				value = confirmPassword,
+				onValueChange = onConfirmPasswordChange,
+				modifier = Modifier
+					.fillMaxWidth()
+					.focusRequester(confirmPasswordFocusRequester)
+					.testTag(REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG),
+				label = { Text("Confirm password") },
+				singleLine = true,
+				keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+				keyboardActions = KeyboardActions(
+					onDone = { focusManager.clearFocus() },
+				),
+				isError = confirmPasswordError != null,
+				supportingText = confirmPasswordError?.let { error ->
+					{
+						Text(
+							text = error,
+							modifier = Modifier.testTag(REGISTRATION_CONFIRM_PASSWORD_ERROR_TAG),
+						)
+					}
+				},
+				visualTransformation = if (isConfirmPasswordVisible) {
+					VisualTransformation.None
+				} else {
+					PasswordVisualTransformation()
+				},
+				trailingIcon = {
+					IconButton(onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }) {
+						Icon(
+							imageVector = if (isConfirmPasswordVisible) {
+								Icons.Filled.VisibilityOff
+							} else {
+								Icons.Filled.Visibility
+							},
+							contentDescription = if (isConfirmPasswordVisible) {
+								"Hide confirm password"
+							} else {
+								"Show confirm password"
 							},
 						)
 					}

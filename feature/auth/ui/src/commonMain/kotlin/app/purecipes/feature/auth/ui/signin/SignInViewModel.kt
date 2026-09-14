@@ -15,9 +15,13 @@ import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.validateEmail
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
+import app.purecipes.shared.domain.model.REGISTRATION_SUCCESS_MESSAGE
+import app.purecipes.shared.domain.model.VERIFICATION_EMAIL_SENT_MESSAGE
 import com.github.michaelbull.result.getError
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
@@ -54,7 +58,7 @@ class SignInViewModel(
 
 	var infoMessage by mutableStateOf(
 		if (showRegistrationSuccessMessage) {
-			"Registration successful. Please check your email to verify your account."
+			REGISTRATION_SUCCESS_MESSAGE
 		} else {
 			null
 		},
@@ -64,17 +68,20 @@ class SignInViewModel(
 	var showResendVerificationEmail by mutableStateOf(showRegistrationSuccessMessage)
 		private set
 
+	var showForgotPasswordConfirmDialog by mutableStateOf(false)
+		private set
+
 	var isBusy by mutableStateOf(false)
 		private set
 
 	fun onEmailChange(value: String) {
 		email = value
-		clearErrors()
+		clearFieldErrors()
 	}
 
 	fun onPasswordChange(value: String) {
 		password = value
-		clearErrors()
+		clearFieldErrors()
 	}
 
 	fun submitSignIn() {
@@ -100,7 +107,7 @@ class SignInViewModel(
 			isBusy = true
 			val result = resendEmailVerification(email, password)
 			if (result.getError() == null) {
-				infoMessage = "Verification email sent. Please check your inbox."
+				infoMessage = VERIFICATION_EMAIL_SENT_MESSAGE
 				emailError = null
 				passwordError = null
 				showResendVerificationEmail = true
@@ -111,12 +118,30 @@ class SignInViewModel(
 		}
 	}
 
-	fun sendPasswordResetEmail() {
+	fun requestPasswordReset() {
+		val validationError = validateEmail(email)
+		if (validationError != null) {
+			emailError = validationError
+			passwordError = null
+			showForgotPasswordConfirmDialog = false
+			return
+		}
+		emailError = null
+		passwordError = null
+		showForgotPasswordConfirmDialog = true
+	}
+
+	fun dismissPasswordResetConfirmation() {
+		showForgotPasswordConfirmDialog = false
+	}
+
+	fun confirmPasswordReset() {
+		showForgotPasswordConfirmDialog = false
 		viewModelScope.launch {
 			isBusy = true
 			val result = sendPasswordResetEmail(email)
 			if (result.getError() == null) {
-				infoMessage = "Password reset email sent. Please check your inbox."
+				infoMessage = PASSWORD_RESET_EMAIL_SENT_MESSAGE
 				emailError = null
 				passwordError = null
 			} else {
@@ -126,10 +151,9 @@ class SignInViewModel(
 		}
 	}
 
-	private fun clearErrors() {
+	private fun clearFieldErrors() {
 		emailError = null
 		passwordError = null
-		infoMessage = null
 	}
 
 	private fun setSignInError(errorMessage: String?) {

@@ -17,6 +17,9 @@ import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
 import app.purecipes.shared.domain.model.INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 import app.purecipes.shared.domain.model.INVALID_EMAIL_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
+import app.purecipes.shared.domain.model.REGISTRATION_SUCCESS_MESSAGE
+import app.purecipes.shared.domain.model.VERIFICATION_EMAIL_SENT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
@@ -158,24 +161,77 @@ class SignInViewModelTest {
 			showRegistrationSuccessMessage = true,
 		)
 
-		viewModel.infoMessage shouldBe "Registration successful. Please check your email to verify your account."
+		viewModel.infoMessage shouldBe REGISTRATION_SUCCESS_MESSAGE
 		viewModel.showResendVerificationEmail shouldBe true
 	}
 
 	@Test
-	fun `forgot password with valid email shows success message`() = runViewModelTest {
+	fun `resend verification email shows success message`() = runViewModelTest {
+		val viewModel = createViewModel(FakeAuthenticationRepository())
+
+		viewModel.onPasswordChange("secret")
+		viewModel.resendVerificationEmail()
+
+		advanceUntilIdle()
+
+		viewModel.infoMessage shouldBe VERIFICATION_EMAIL_SENT_MESSAGE
+	}
+
+	@Test
+	fun `forgot password with valid email shows confirmation dialog`() = runViewModelTest {
+		var sendCount = 0
+		val repository = FakeAuthenticationRepository(
+			sendPasswordResetEmailHandler = {
+				sendCount++
+				Ok(Unit)
+			},
+		)
+		val viewModel = createViewModel(repository)
+
+		viewModel.requestPasswordReset()
+
+		viewModel.showForgotPasswordConfirmDialog shouldBe true
+		viewModel.emailError shouldBe null
+		sendCount shouldBe 0
+	}
+
+	@Test
+	fun `confirming forgot password sends email and shows success message`() = runViewModelTest {
 		val repository = FakeAuthenticationRepository(
 			sendPasswordResetEmailHandler = { Ok(Unit) },
 		)
 		val viewModel = createViewModel(repository)
 
-		viewModel.sendPasswordResetEmail()
+		viewModel.requestPasswordReset()
+		viewModel.confirmPasswordReset()
 
 		advanceUntilIdle()
 
-		viewModel.infoMessage shouldBe "Password reset email sent. Please check your inbox."
+		viewModel.infoMessage shouldBe PASSWORD_RESET_EMAIL_SENT_MESSAGE
 		viewModel.emailError shouldBe null
 		viewModel.passwordError shouldBe null
+		viewModel.showForgotPasswordConfirmDialog shouldBe false
+	}
+
+	@Test
+	fun `dismissing forgot password confirmation does not send email`() = runViewModelTest {
+		var sendCount = 0
+		val repository = FakeAuthenticationRepository(
+			sendPasswordResetEmailHandler = {
+				sendCount++
+				Ok(Unit)
+			},
+		)
+		val viewModel = createViewModel(repository)
+
+		viewModel.requestPasswordReset()
+		viewModel.dismissPasswordResetConfirmation()
+
+		advanceUntilIdle()
+
+		sendCount shouldBe 0
+		viewModel.showForgotPasswordConfirmDialog shouldBe false
+		viewModel.infoMessage shouldBe null
 	}
 
 	@Test
@@ -185,12 +241,39 @@ class SignInViewModelTest {
 			initialEmail = "",
 		)
 
-		viewModel.sendPasswordResetEmail()
-
-		advanceUntilIdle()
+		viewModel.requestPasswordReset()
 
 		viewModel.emailError shouldBe EMAIL_REQUIRED_MESSAGE
 		viewModel.infoMessage shouldBe null
+		viewModel.showForgotPasswordConfirmDialog shouldBe false
+	}
+
+	@Test
+	fun `forgot password with invalid email shows email field error`() = runViewModelTest {
+		val viewModel = createViewModel(
+			repository = FakeAuthenticationRepository(),
+			initialEmail = "not-an-email",
+		)
+
+		viewModel.requestPasswordReset()
+
+		viewModel.emailError shouldBe INVALID_EMAIL_MESSAGE
+		viewModel.showForgotPasswordConfirmDialog shouldBe false
+	}
+
+	@Test
+	fun `password change does not clear password reset success message`() = runViewModelTest {
+		val repository = FakeAuthenticationRepository(
+			sendPasswordResetEmailHandler = { Ok(Unit) },
+		)
+		val viewModel = createViewModel(repository)
+
+		viewModel.requestPasswordReset()
+		viewModel.confirmPasswordReset()
+		advanceUntilIdle()
+		viewModel.onPasswordChange("secret")
+
+		viewModel.infoMessage shouldBe PASSWORD_RESET_EMAIL_SENT_MESSAGE
 	}
 
 	private fun createViewModel(

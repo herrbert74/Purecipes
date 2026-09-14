@@ -10,6 +10,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -22,6 +23,7 @@ import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.shared.domain.model.EMAIL_REQUIRED_MESSAGE
+import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
@@ -29,6 +31,7 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -44,17 +47,51 @@ class SignInScreenTest {
 	}
 
 	@Test
-	fun forgotPasswordWithValidEmailShowsSuccessMessage() = runRecompositionTrackingUiTest {
+	fun forgotPasswordWithValidEmailShowsConfirmationDialog() = runRecompositionTrackingUiTest {
+		setSignInScreen()
+		onNodeWithTag(SIGN_IN_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_TAG).performClick()
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_TAG).assertIsDisplayed()
+		onNodeWithText("Reset password?").assertIsDisplayed()
+		onNodeWithText("Send a password reset email to taylor@example.com?").assertIsDisplayed()
+	}
+
+	@Test
+	fun forgotPasswordConfirmSendsEmailAndShowsSuccessMessage() = runRecompositionTrackingUiTest {
 		val repository = FakeAuthenticationRepository(
 			sendPasswordResetEmailHandler = { Ok(Unit) },
 		)
 		setSignInScreen(repository)
 		onNodeWithTag(SIGN_IN_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
 		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_TAG).performClick()
-		waitForIdle()
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_CONFIRM_TAG).performClick()
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithTag(SIGN_IN_INFO_MESSAGE_TAG)
+				.fetchSemanticsNodes()
+				.isNotEmpty()
+		}
 		onNodeWithTag(SIGN_IN_INFO_MESSAGE_TAG)
 			.assertIsDisplayed()
-			.assertTextEquals("Password reset email sent. Please check your inbox.")
+			.assertTextEquals(PASSWORD_RESET_EMAIL_SENT_MESSAGE)
+	}
+
+	@Test
+	fun forgotPasswordCancelDoesNotSendEmail() = runRecompositionTrackingUiTest {
+		var sendCount = 0
+		val repository = FakeAuthenticationRepository(
+			sendPasswordResetEmailHandler = {
+				sendCount++
+				Ok(Unit)
+			},
+		)
+		setSignInScreen(repository)
+		onNodeWithTag(SIGN_IN_EMAIL_FIELD_TAG).performTextInput("taylor@example.com")
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_TAG).performClick()
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_DISMISS_TAG).performClick()
+		waitForIdle()
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_TAG).assertDoesNotExist()
+		onNodeWithTag(SIGN_IN_INFO_MESSAGE_TAG).assertDoesNotExist()
+		assertEquals(0, sendCount)
 	}
 
 	@Test
@@ -62,6 +99,7 @@ class SignInScreenTest {
 		setSignInScreen()
 		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_TAG).performClick()
 		waitForIdle()
+		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_TAG).assertDoesNotExist()
 		onNodeWithTag(SIGN_IN_EMAIL_ERROR_TAG, useUnmergedTree = true)
 			.assertIsDisplayed()
 			.assertTextEquals(EMAIL_REQUIRED_MESSAGE)
