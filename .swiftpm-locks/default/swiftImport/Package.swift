@@ -35,11 +35,11 @@ let package = Package(
     .package(path: "subpackages/_shared_data"),
     .package(path: "subpackages/_shared_dataTestFixtures"),
     .package(path: "subpackages/_umbrella"),
-    .package(path: "subpackages/dev_gitlive_firebase_app_3_0_0_alpha01"),
-    .package(path: "subpackages/dev_gitlive_firebase_auth_3_0_0_alpha01"),
-    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_facebook_3_0_5"),
-    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_firebase_3_0_5"),
-    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_google_3_0_5"),
+    .package(path: "subpackages/dev_gitlive_firebase_app_3_0_0_alpha02"),
+    .package(path: "subpackages/dev_gitlive_firebase_auth_3_0_0_alpha02"),
+    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_facebook_3_0_6"),
+    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_firebase_3_0_6"),
+    .package(path: "subpackages/io_github_mirzemehdi_kmpauth_google_3_0_6"),
     .package(path: "subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_1")
   ],
   targets: [
@@ -68,11 +68,11 @@ let package = Package(
         .product(name: "_shared_data", package: "_shared_data"),
         .product(name: "_shared_dataTestFixtures", package: "_shared_dataTestFixtures"),
         .product(name: "_umbrella", package: "_umbrella"),
-        .product(name: "dev_gitlive_firebase_app_3_0_0_alpha01", package: "dev_gitlive_firebase_app_3_0_0_alpha01"),
-        .product(name: "dev_gitlive_firebase_auth_3_0_0_alpha01", package: "dev_gitlive_firebase_auth_3_0_0_alpha01"),
-        .product(name: "io_github_mirzemehdi_kmpauth_facebook_3_0_5", package: "io_github_mirzemehdi_kmpauth_facebook_3_0_5"),
-        .product(name: "io_github_mirzemehdi_kmpauth_firebase_3_0_5", package: "io_github_mirzemehdi_kmpauth_firebase_3_0_5"),
-        .product(name: "io_github_mirzemehdi_kmpauth_google_3_0_5", package: "io_github_mirzemehdi_kmpauth_google_3_0_5"),
+        .product(name: "dev_gitlive_firebase_app_3_0_0_alpha02", package: "dev_gitlive_firebase_app_3_0_0_alpha02"),
+        .product(name: "dev_gitlive_firebase_auth_3_0_0_alpha02", package: "dev_gitlive_firebase_auth_3_0_0_alpha02"),
+        .product(name: "io_github_mirzemehdi_kmpauth_facebook_3_0_6", package: "io_github_mirzemehdi_kmpauth_facebook_3_0_6"),
+        .product(name: "io_github_mirzemehdi_kmpauth_firebase_3_0_6", package: "io_github_mirzemehdi_kmpauth_firebase_3_0_6"),
+        .product(name: "io_github_mirzemehdi_kmpauth_google_3_0_6", package: "io_github_mirzemehdi_kmpauth_google_3_0_6"),
         .product(name: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_1", package: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_1")
       ]
     )
