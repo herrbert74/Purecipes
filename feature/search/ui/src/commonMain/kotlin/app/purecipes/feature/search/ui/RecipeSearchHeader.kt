@@ -11,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"
-internal const val RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG = "recipeSearchOpenFiltersButton"
 internal const val RECIPE_SEARCH_COLLAPSED_BAR_TAG = "recipeSearchCollapsedBar"
 
 internal const val RECIPE_SEARCH_TITLE = "Search in recipe titles"
@@ -79,20 +77,10 @@ internal fun RecipeSearchHeader(
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		verticalAlignment = Alignment.CenterVertically,
 	) {
-		IconButton(
+		RecipeSearchOpenFiltersButton(
+			hasActiveFilters = hasActiveFilters,
 			onClick = onFilterClick,
-			modifier = Modifier.testTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG),
-		) {
-			Icon(
-				imageVector = Icons.Default.FilterList,
-				contentDescription = "Open filters",
-				tint = if (hasActiveFilters) {
-					PurecipesTheme.colorScheme.primary
-				} else {
-					PurecipesTheme.colorScheme.onSurfaceVariant
-				},
-			)
-		}
+		)
 		if (isSearchBarActive) {
 			Surface(
 				modifier = Modifier.weight(1f),

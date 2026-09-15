@@ -13,6 +13,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
@@ -46,6 +48,25 @@ fun RecipeSearchScreen(
 		)
 	},
 ) {
+	val currentCloseScreen = rememberUpdatedState(closeScreen)
+	val onFilterClick = remember(viewModel) { viewModel::onFilterButtonClick }
+	val onSearchQueryChange = remember(viewModel) { viewModel::onSearchQueryChange }
+	val onSearchImeSearch = remember(viewModel) { viewModel::searchNow }
+	val onExpandSearch = remember(viewModel) {
+		{ viewModel.onSearchBarExpandedChange(true) }
+	}
+	val onCloseSearch = remember(viewModel) {
+		{
+			viewModel.onSearchBarExpandedChange(false)
+			currentCloseScreen.value()
+		}
+	}
+	val onClearSearchText = remember(viewModel) {
+		{
+			viewModel.onSearchQueryChange("")
+			viewModel.searchNow()
+		}
+	}
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
 	}
@@ -117,18 +138,12 @@ fun RecipeSearchScreen(
 				isSearchBarActive = viewModel.isSearchBarActive,
 				searchQuery = viewModel.searchQuery,
 				hasActiveFilters = !viewModel.activeFilters.isEmpty || viewModel.keyIngredients.isNotEmpty(),
-				onFilterClick = viewModel::onFilterButtonClick,
-				onExpandSearch = { viewModel.onSearchBarExpandedChange(true) },
-				onCloseSearch = {
-					viewModel.onSearchBarExpandedChange(false)
-					closeScreen()
-				},
-				onSearchQueryChange = viewModel::onSearchQueryChange,
-				onSearchImeSearch = viewModel::searchNow,
-				onClearSearchText = {
-					viewModel.onSearchQueryChange("")
-					viewModel.searchNow()
-				},
+				onFilterClick = onFilterClick,
+				onExpandSearch = onExpandSearch,
+				onCloseSearch = onCloseSearch,
+				onSearchQueryChange = onSearchQueryChange,
+				onSearchImeSearch = onSearchImeSearch,
+				onClearSearchText = onClearSearchText,
 			)
 			if (viewModel.isSearchBarActive) {
 				Text(
