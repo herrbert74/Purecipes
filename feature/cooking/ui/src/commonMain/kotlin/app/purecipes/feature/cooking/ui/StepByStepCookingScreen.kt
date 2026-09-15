@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -156,10 +157,18 @@ internal fun StepByStepCookingScreen(
 	val isFinishPage = currentPageIndex >= recipe.steps.size
 	val finishPageIndex = recipe.steps.size
 	var activeTimer by remember { mutableStateOf<CookingTimerState?>(null) }
+	val onDurationClick = remember {
+		{ duration: CookingStepHighlight.Duration ->
+			activeTimer = CookingTimerState.fromDuration(duration)
+		}
+	}
+	val onDismissTimer = remember {
+		{ activeTimer = null }
+	}
 
-	LaunchedEffect(pagerState.currentPage) {
-		if (pagerState.currentPage != currentPageIndex) {
-			currentOnPageChange(pagerState.currentPage)
+	LaunchedEffect(pagerState) {
+		snapshotFlow { pagerState.currentPage }.collect { page ->
+			currentOnPageChange(page)
 		}
 	}
 
@@ -219,13 +228,13 @@ internal fun StepByStepCookingScreen(
 					step = recipe.steps[page],
 					isLastStep = page == recipe.steps.lastIndex,
 					timer = activeTimer.takeIf { page == pagerState.currentPage },
-					onDismissTimer = { activeTimer = null },
-					onDurationClick = { duration ->
-						activeTimer = CookingTimerState.fromDuration(duration)
-					},
-					onPrimaryAction = {
-						pagerScope.launch {
-							pagerState.animateScrollToPage(page + 1)
+					onDismissTimer = onDismissTimer,
+					onDurationClick = onDurationClick,
+					onPrimaryAction = remember(page) {
+						{
+							pagerScope.launch {
+								pagerState.animateScrollToPage(page + 1)
+							}
 						}
 					},
 				)
