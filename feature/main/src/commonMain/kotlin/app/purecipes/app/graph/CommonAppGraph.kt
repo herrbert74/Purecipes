@@ -11,7 +11,6 @@ import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackScreenViewUseCase
-import app.purecipes.feature.auth.data.repository.AuthenticationDataModule
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
@@ -74,13 +73,9 @@ import app.purecipes.feature.subscription.domain.usecase.PurchaseSubscriptionUse
 import app.purecipes.feature.subscription.domain.usecase.RestorePurchasesUseCase
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
-import app.purecipes.shared.data.network.DataNetworkModule
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 
-interface CommonAppGraph :
-	AuthenticationDataModule,
-	DataNetworkModule,
-	ViewModelGraph {
+interface CommonAppGraph : ViewModelGraph {
 
 	val purecipesConfig: PurecipesConfig
 

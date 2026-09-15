@@ -5,11 +5,13 @@ import app.purecipes.feature.auth.data.datasource.AuthenticationStoreHolder
 import app.purecipes.feature.auth.domain.model.toAuthenticationState
 import app.purecipes.shared.data.session.SessionTokenStore
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 
 @ContributesTo(AppScope::class)
-interface AuthenticationDataModule {
+@BindingContainer
+object AuthenticationDataModule {
 
 	@Provides
 	fun provideAuthenticationStore(sessionTokenStore: SessionTokenStore): AuthenticationStore {

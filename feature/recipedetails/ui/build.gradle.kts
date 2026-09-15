@@ -15,6 +15,10 @@ kotlin {
 		}
 	}
 
+	compilerOptions.freeCompilerArgs.add(
+		"-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
+	)
+
 	sourceSets {
 		commonMain {
 			dependencies {
