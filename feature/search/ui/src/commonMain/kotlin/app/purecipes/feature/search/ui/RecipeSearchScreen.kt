@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -75,7 +74,7 @@ fun RecipeSearchScreen(
 	}
 
 	if (viewModel.isFilterSheetVisible) {
-		val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+		val sheetState = rememberFilterSheetState()
 		FilterBottomSheet(
 			filters = viewModel.activeFilters,
 			isSignedIn = isSignedIn,

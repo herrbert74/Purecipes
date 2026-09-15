@@ -3,11 +3,13 @@ package app.purecipes.feature.main.ui
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 
 @ContributesTo(AppScope::class)
-internal interface DeviceTestPurecipesConfigModule {
+@BindingContainer
+internal object DeviceTestPurecipesConfigModule {
 
 	@Provides
 	fun providePurecipesConfig(): PurecipesConfig = object : PurecipesConfig {

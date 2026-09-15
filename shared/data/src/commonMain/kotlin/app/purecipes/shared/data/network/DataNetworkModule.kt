@@ -8,6 +8,7 @@ import com.diamondedge.logging.Logger
 import com.diamondedge.logging.logging
 import de.jensklingenberg.ktorfit.Ktorfit
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 import io.ktor.client.HttpClient
@@ -20,7 +21,8 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 @ContributesTo(AppScope::class)
-interface DataNetworkModule {
+@BindingContainer
+object DataNetworkModule {
 
 	@Provides
 	fun provideHttpClient(

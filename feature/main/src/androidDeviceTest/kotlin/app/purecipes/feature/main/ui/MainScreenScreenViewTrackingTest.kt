@@ -149,8 +149,7 @@ class MainScreenScreenViewTrackingTest {
 					backStackDepth = tabBackStack.size,
 					onBack = {
 						if (!mainViewModel.onBack() && mainViewModel.shouldExit()) {
-							@Suppress("UnusedExpression")
-							Unit
+							return@NavigationBackHandler
 						}
 					},
 				)

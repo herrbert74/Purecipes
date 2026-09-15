@@ -3,11 +3,13 @@ package app.purecipes
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.data.config.purecipesBuildType
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 
 @ContributesTo(AppScope::class)
-interface AndroidPurecipesConfigModule {
+@BindingContainer
+object AndroidPurecipesConfigModule {
 
 	@Provides
 	fun providePurecipesConfig(): PurecipesConfig {
