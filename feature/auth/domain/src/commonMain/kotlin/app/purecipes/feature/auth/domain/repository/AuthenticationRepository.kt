@@ -1,6 +1,7 @@
 package app.purecipes.feature.auth.domain.repository
 
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -23,6 +24,8 @@ interface AuthenticationRepository {
 	suspend fun resendEmailVerification(email: String, password: String): Outcome<Unit>
 
 	suspend fun sendPasswordResetEmail(email: String): Outcome<Unit>
+
+	suspend fun signInWithApple(profile: AppleAuthenticationProfile): Outcome<AuthUser>
 
 	suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser>
 

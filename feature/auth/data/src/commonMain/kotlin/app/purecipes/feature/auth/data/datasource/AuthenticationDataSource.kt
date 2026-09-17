@@ -9,6 +9,7 @@ import app.purecipes.feature.auth.domain.model.toAuthUser
 import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.data.session.SessionTokenStore
 import app.purecipes.shared.data.util.runCatchingApi
+import app.purecipes.shared.domain.model.AppleSignInRequest
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.EMAIL_NOT_VERIFIED_MESSAGE
 import app.purecipes.shared.domain.model.EmailSignInRequest
@@ -52,6 +53,8 @@ interface AuthenticationDataSource {
 
 	interface Remote {
 
+		suspend fun signInWithApple(idToken: String): Outcome<AuthenticatedSession>
+
 		suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession>
 
 		suspend fun signInWithFacebook(idToken: String): Outcome<AuthenticatedSession>
@@ -71,6 +74,10 @@ interface AuthenticationDataSource {
 class AuthenticationRemoteDataSource(
 	private val api: PurecipesApi,
 ) : AuthenticationDataSource.Remote {
+
+	override suspend fun signInWithApple(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {
+		api.signInWithApple(AppleSignInRequest(idToken = idToken.trim()))
+	}
 
 	override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = runCatchingApi {
 		api.signInWithGoogle(GoogleSignInRequest(idToken = idToken.trim()))

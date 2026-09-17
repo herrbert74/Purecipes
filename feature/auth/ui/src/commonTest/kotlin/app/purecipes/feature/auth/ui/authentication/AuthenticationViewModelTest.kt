@@ -8,13 +8,12 @@ import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.auth.domain.model.AuthProvider
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthenticationState
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
+import app.purecipes.feature.auth.domain.usecase.SignInWithAppleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithFacebookUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
@@ -33,10 +32,10 @@ import kotlin.test.Test
 class AuthenticationViewModelTest {
 
 	@Test
-	fun `external provider cancellation exposes a message`() = runViewModelTest {
+	fun `blank apple result shows cancellation message`() = runViewModelTest {
 		val viewModel = createViewModel()
 
-		viewModel.onExternalProviderSignInResult(AuthProvider.APPLE, Result.success(null))
+		viewModel.onAppleSignInResult(Result.success(null))
 
 		viewModel.message shouldBe "Apple sign-in was cancelled."
 	}
@@ -95,14 +94,34 @@ class AuthenticationViewModelTest {
 		val analyticsRepository = FakeAnalyticsRepository()
 		val viewModel = createViewModel(analyticsRepository = analyticsRepository)
 
-		viewModel.onExternalProviderSignInResult(
-			AuthProvider.APPLE,
+		viewModel.onAppleSignInResult(
 			Result.success(
-				ExternalAuthenticationProfile(
-					provider = AuthProvider.APPLE,
-					id = "apple-id",
+				AppleAuthenticationProfile(
+					idToken = "token",
 					email = "user@example.com",
 					displayName = "User",
+					profileImageUrl = null,
+				),
+			),
+		)
+		advanceUntilIdle()
+
+		analyticsRepository.trackedEvents shouldBe listOf(
+			AnalyticsEvent.SignInCompleted(method = AnalyticsAuthMethod.APPLE),
+		)
+	}
+
+	@Test
+	fun `apple sign in without email still tracks sign in completed`() = runViewModelTest {
+		val analyticsRepository = FakeAnalyticsRepository()
+		val viewModel = createViewModel(analyticsRepository = analyticsRepository)
+
+		viewModel.onAppleSignInResult(
+			Result.success(
+				AppleAuthenticationProfile(
+					idToken = "token",
+					email = null,
+					displayName = "",
 					profileImageUrl = null,
 				),
 			),
@@ -138,7 +157,7 @@ class AuthenticationViewModelTest {
 		val consentRepository = FakeConsentRepository(ConsentState.OBTAINED)
 		return AuthenticationViewModel(
 			observeAuthenticationState = ObserveAuthenticationStateUseCase(repository),
-			signInWithExternalProvider = SignInWithExternalProviderUseCase(repository),
+			signInWithApple = SignInWithAppleUseCase(repository),
 			signInWithFacebook = SignInWithFacebookUseCase(repository),
 			signInWithGoogle = SignInWithGoogleUseCase(repository),
 			deleteAccount = DeleteAccountUseCase(repository),

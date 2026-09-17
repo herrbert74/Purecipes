@@ -59,18 +59,22 @@ class JdbcSessionService(
 		familyName: String?,
 		profileImageUrl: String?,
 	): AuthenticatedSession {
+		val providerName = provider.trim().uppercase()
+		val normalizedEmail = email.trim().lowercase()
 		val normalizedRequest = NormalizedSessionRequest(
-			provider = provider.trim().uppercase(),
+			provider = providerName,
 			externalUserId = externalUserId.trim(),
-			email = email.trim().lowercase(),
+			email = normalizedEmail,
 			displayName = displayName.trim().ifBlank {
-				email.trim().lowercase().substringBefore('@').replaceFirstChar {
-					if (it.isLowerCase()) it.titlecase() else it.toString()
-				}
+				resolvedFirebaseUserDisplayName(
+					signInProvider = signInProviderForSession(providerName),
+					name = null,
+					email = normalizedEmail,
+				)
 			},
-			firstName = firstName,
-			familyName = familyName,
-			profileImageUrl = profileImageUrl,
+			firstName = firstName?.trim()?.takeIf { it.isNotBlank() },
+			familyName = familyName?.trim()?.takeIf { it.isNotBlank() },
+			profileImageUrl = profileImageUrl?.trim()?.takeIf { it.isNotBlank() },
 		)
 		val accessToken = generateAccessToken()
 		val accessTokenHash = accessToken.sha256()
@@ -80,11 +84,11 @@ class JdbcSessionService(
 			connection.autoCommit = false
 			var committed = false
 			try {
-				val userId = connection.findOrCreateUser(normalizedRequest)
-				connection.createSessionRecord(userId, accessTokenHash, expiresAt)
+				val storedUser = connection.findOrCreateUser(normalizedRequest)
+				connection.createSessionRecord(storedUser.userId, accessTokenHash, expiresAt)
 				connection.commit()
 				committed = true
-				return createAuthenticatedSession(accessToken, expiresAt, userId, normalizedRequest)
+				return createAuthenticatedSession(accessToken, expiresAt, storedUser.userId, storedUser.request)
 			} finally {
 				if (!committed) {
 					connection.rollback()
@@ -118,15 +122,38 @@ class JdbcSessionService(
 		}
 	}
 
-	private fun Connection.findOrCreateUser(request: NormalizedSessionRequest): Long {
+	private fun Connection.findOrCreateUser(request: NormalizedSessionRequest): StoredSessionUser {
 		prepareStatement(FIND_USER_SQL).use { statement ->
 			statement.setString(INDEX_FIRST, request.provider)
 			statement.setString(INDEX_SECOND, request.externalUserId)
 			statement.executeQuery().use { resultSet ->
 				if (resultSet.next()) {
 					val userId = resultSet.getLong("id")
-					updateUser(userId, request)
-					return userId
+					val storedProfile = SessionUserProfile(
+						email = request.email,
+						displayName = request.displayName,
+						firstName = request.firstName,
+						familyName = request.familyName,
+						profileImageUrl = request.profileImageUrl,
+					).mergedWithExisting(
+						externalUserId = request.externalUserId,
+						existing = SessionUserProfile(
+							email = resultSet.getString("email").orEmpty(),
+							displayName = resultSet.getString("display_name").orEmpty(),
+							firstName = resultSet.getString("first_name"),
+							familyName = resultSet.getString("family_name"),
+							profileImageUrl = resultSet.getString("profile_image_url"),
+						),
+					)
+					val storedRequest = request.copy(
+						email = storedProfile.email,
+						displayName = storedProfile.displayName,
+						firstName = storedProfile.firstName,
+						familyName = storedProfile.familyName,
+						profileImageUrl = storedProfile.profileImageUrl,
+					)
+					updateUser(userId, storedRequest)
+					return StoredSessionUser(userId = userId, request = storedRequest)
 				}
 			}
 		}
@@ -141,7 +168,7 @@ class JdbcSessionService(
 			statement.setString(INDEX_SEVENTH, request.profileImageUrl)
 			statement.executeQuery().use { resultSet ->
 				resultSet.next()
-				return resultSet.getLong(INDEX_FIRST)
+				return StoredSessionUser(userId = resultSet.getLong(INDEX_FIRST), request = request)
 			}
 		}
 	}
@@ -228,7 +255,7 @@ class JdbcSessionService(
 		private const val INDEX_SEVENTH = 7
 
 		private const val FIND_USER_SQL = """
-			SELECT id
+			SELECT id, email, display_name, first_name, family_name, profile_image_url
 			FROM app_users
 			WHERE provider = ? AND external_user_id = ?
 		"""
@@ -277,6 +304,11 @@ class JdbcSessionService(
 	}
 }
 
+private data class StoredSessionUser(
+	val userId: Long,
+	val request: NormalizedSessionRequest,
+)
+
 private data class NormalizedSessionRequest(
 	val provider: String,
 	val externalUserId: String,
@@ -286,6 +318,10 @@ private data class NormalizedSessionRequest(
 	val familyName: String?,
 	val profileImageUrl: String?,
 )
+
+private fun signInProviderForSession(provider: String): String? {
+	return if (provider == "APPLE") APPLE_SIGN_IN_PROVIDER else null
+}
 
 private fun generateAccessToken(): String {
 	val bytes = ByteArray(TOKEN_BYTE_LENGTH)

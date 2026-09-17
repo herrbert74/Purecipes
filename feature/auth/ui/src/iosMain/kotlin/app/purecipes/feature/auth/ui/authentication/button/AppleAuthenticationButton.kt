@@ -3,24 +3,25 @@ package app.purecipes.feature.auth.ui.authentication.button
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.apple.rememberAppleAuthState
 import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
+import kotlinx.coroutines.launch
 
 @Composable
 internal actual fun AppleAuthenticationButton(
-	onResult: (Result<ExternalAuthenticationProfile?>) -> Unit,
+	onAppleSignInResult: (Result<AppleAuthenticationProfile?>) -> Unit,
 ) {
+	val coroutineScope = rememberCoroutineScope()
 	val appleAuth = rememberAppleAuthState(
 		linkAccount = false,
 		onResult = { result ->
-			val mapped: Result<ExternalAuthenticationProfile?> = result.map { user ->
-				user.toExternalAuthenticationProfile(AuthProvider.APPLE)
+			coroutineScope.launch {
+				onAppleSignInResult(result.toAppleAuthenticationProfileResult())
 			}
-			onResult(mapped)
 		},
 	)
 	AppleSignInButton(

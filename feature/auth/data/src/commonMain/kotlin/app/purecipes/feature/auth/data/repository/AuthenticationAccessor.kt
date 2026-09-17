@@ -3,6 +3,7 @@ package app.purecipes.feature.auth.data.repository
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.feature.auth.data.datasource.AuthenticationDataSource
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
@@ -56,6 +57,12 @@ class AuthenticationAccessor(
 		localDataSource.sendPasswordResetEmail(email)
 			.mapFailureUserMessage()
 			.map { }
+
+	override suspend fun signInWithApple(profile: AppleAuthenticationProfile): Outcome<AuthUser> =
+		remoteDataSource.signInWithApple(profile.idToken)
+			.andThen { session ->
+				localDataSource.signInWithBackendSession(session)
+			}
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> =
 		remoteDataSource.signInWithGoogle(profile.idToken)

@@ -1,9 +1,9 @@
 package app.purecipes.feature.auth.ui.authentication.button
 
 import androidx.compose.runtime.Composable
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 
 @Composable
 internal expect fun AppleAuthenticationButton(
-	onResult: (Result<ExternalAuthenticationProfile?>) -> Unit,
+	onAppleSignInResult: (Result<AppleAuthenticationProfile?>) -> Unit,
 )

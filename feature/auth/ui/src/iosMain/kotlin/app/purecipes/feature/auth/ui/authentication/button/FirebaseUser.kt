@@ -1,11 +1,23 @@
 package app.purecipes.feature.auth.ui.authentication.button
 
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import com.mmk.kmpauth.core.auth.KMPAuthUser
 import dev.gitlive.firebase.auth.FirebaseUser
+
+internal suspend fun Result<KMPAuthUser>.toAppleAuthenticationProfileResult(): Result<AppleAuthenticationProfile?> {
+	return fold(
+		onSuccess = { user ->
+			val firebaseUser = user.raw as? FirebaseUser
+				?: return@fold Result.failure(
+					IllegalStateException("Apple sign-in did not return a Firebase user."),
+				)
+			Result.success(firebaseUser.toAppleAuthenticationProfile())
+		},
+		onFailure = { error -> Result.failure(error) },
+	)
+}
 
 internal suspend fun Result<KMPAuthUser>.toGoogleAuthenticationProfileResult(): Result<GoogleAuthenticationProfile?> {
 	return fold(
@@ -34,13 +46,13 @@ internal suspend fun Result<KMPAuthUser>.toFacebookAuthenticationProfileResult()
 	)
 }
 
-internal fun KMPAuthUser.toExternalAuthenticationProfile(provider: AuthProvider): ExternalAuthenticationProfile {
-	return ExternalAuthenticationProfile(
-		provider = provider,
-		id = uid,
+internal suspend fun FirebaseUser.toAppleAuthenticationProfile(): AppleAuthenticationProfile? {
+	val idToken = getIdToken(forceRefresh = true) ?: return null
+	return AppleAuthenticationProfile(
+		idToken = idToken,
 		email = email,
-		displayName = displayName,
-		profileImageUrl = photoUrl,
+		displayName = displayName.orEmpty(),
+		profileImageUrl = photoURL,
 	)
 }
 

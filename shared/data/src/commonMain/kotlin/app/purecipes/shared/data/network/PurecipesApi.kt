@@ -1,21 +1,17 @@
 package app.purecipes.shared.data.network
 
-import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.CookbookCreateRequest
 import app.purecipes.shared.domain.model.CookbookImportResult
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookShareToken
 import app.purecipes.shared.domain.model.CookbookSummary
-import app.purecipes.shared.domain.model.EmailSignInRequest
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
-import app.purecipes.shared.domain.model.FacebookSignInRequest
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestCommentCreateRequest
 import app.purecipes.shared.domain.model.FeatureRequestCreateRequest
 import app.purecipes.shared.domain.model.FeatureRequestListPage
-import app.purecipes.shared.domain.model.GoogleSignInRequest
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
@@ -36,7 +32,7 @@ import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
 
-interface PurecipesApi {
+interface PurecipesApi : PurecipesAuthApi {
 
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("recipes/search")
@@ -62,27 +58,6 @@ interface PurecipesApi {
 
 	@DELETE("recipes/{id}")
 	suspend fun deleteRecipe(@Path("id") recipeId: Int)
-
-	@Headers("Accept: application/json", "Content-Type: application/json")
-	@POST("auth/facebook")
-	suspend fun signInWithFacebook(@Body request: FacebookSignInRequest): AuthenticatedSession
-
-	@Headers("Accept: application/json", "Content-Type: application/json")
-	@POST("auth/google")
-	suspend fun signInWithGoogle(@Body request: GoogleSignInRequest): AuthenticatedSession
-
-	@Headers("Accept: application/json", "Content-Type: application/json")
-	@POST("auth/email")
-	suspend fun signInWithEmail(@Body request: EmailSignInRequest): AuthenticatedSession
-
-	@GET("auth/session")
-	suspend fun getCurrentSession(): AuthenticatedSession
-
-	@POST("auth/sign-out")
-	suspend fun signOut()
-
-	@DELETE("auth/account")
-	suspend fun deleteAccount()
 
 	@GET("favorites")
 	suspend fun getFavoriteRecipesPage(

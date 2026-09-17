@@ -87,6 +87,22 @@ class FirebaseJwtClaimsTest {
 				),
 			),
 		)
+		assertFalse(
+			requiresVerifiedEmail(
+				FirebaseJwtClaims(
+					issuer = null,
+					audiences = emptyList(),
+					emailVerified = false,
+					signInProvider = APPLE_SIGN_IN_PROVIDER,
+					subject = null,
+					email = null,
+					name = null,
+					givenName = null,
+					familyName = null,
+					picture = null,
+				),
+			),
+		)
 	}
 
 	@Test

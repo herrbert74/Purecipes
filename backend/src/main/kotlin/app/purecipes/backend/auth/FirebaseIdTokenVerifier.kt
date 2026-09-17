@@ -199,7 +199,11 @@ private fun FirebaseTokenInfoResponse.toVerificationResult(
 	configuredProjectNumber: String?,
 ): GoogleIdTokenVerificationResult {
 	val resolvedSubject = jwtClaims?.subject ?: subject.asOptionalField() ?: userId.asOptionalField()
-	val resolvedEmail = jwtClaims?.email ?: email.asOptionalField()
+	val resolvedEmail = resolvedFirebaseUserEmail(
+		signInProvider = jwtClaims?.signInProvider,
+		email = jwtClaims?.email ?: email.asOptionalField(),
+		subject = resolvedSubject.orEmpty(),
+	)
 	val resolvedName = jwtClaims?.name ?: name.asOptionalField()
 	val resolvedGivenName = jwtClaims?.givenName ?: givenName.asOptionalField()
 	val resolvedFamilyName = jwtClaims?.familyName ?: familyName.asOptionalField()
@@ -233,8 +237,12 @@ private fun FirebaseTokenInfoResponse.toVerificationResult(
 	return GoogleIdTokenVerificationResult.Success(
 		user = VerifiedGoogleUser(
 			id = resolvedSubject.orEmpty(),
-			email = resolvedEmail.orEmpty().lowercase(),
-			displayName = resolvedName ?: resolvedEmail.orEmpty().fallbackDisplayName(),
+			email = resolvedEmail.orEmpty(),
+			displayName = resolvedFirebaseUserDisplayName(
+				signInProvider = jwtClaims?.signInProvider,
+				name = resolvedName,
+				email = resolvedEmail.orEmpty(),
+			),
 			firstName = resolvedGivenName,
 			familyName = resolvedFamilyName,
 			profileImageUrl = resolvedPicture,
@@ -277,8 +285,4 @@ private fun FirebaseTokenInfoResponse.isEmailVerified(jwtClaims: FirebaseJwtClai
 
 internal fun requiresVerifiedEmail(jwtClaims: FirebaseJwtClaims?): Boolean {
 	return jwtClaims?.signInProvider == "password"
-}
-
-private fun String.fallbackDisplayName(): String {
-	return substringBefore('@').replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
