@@ -9,6 +9,7 @@ import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.AppleAuthenticationButton
 import app.purecipes.feature.auth.ui.authentication.button.FacebookAuthenticationButton
 import app.purecipes.feature.auth.ui.authentication.button.GoogleAuthenticationButton
+import app.purecipes.feature.auth.ui.authentication.button.isAppleSignInAvailable
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -29,9 +30,11 @@ internal fun AuthenticationProviderButtons(
 			onGoogleSignInResult = onGoogleSignInResult,
 			onUnavailable = onGoogleUnavailableClick,
 		)
-		AppleAuthenticationButton(
-			onAppleSignInResult = onAppleSignInResult,
-		)
+		if (isAppleSignInAvailable) {
+			AppleAuthenticationButton(
+				onAppleSignInResult = onAppleSignInResult,
+			)
+		}
 		FacebookAuthenticationButton(
 			onFacebookSignInResult = onFacebookSignInResult,
 		)
