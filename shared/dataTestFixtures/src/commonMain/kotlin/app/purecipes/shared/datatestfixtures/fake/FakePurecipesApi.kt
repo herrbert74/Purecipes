@@ -1,6 +1,7 @@
 package app.purecipes.shared.datatestfixtures.fake
 
 import app.purecipes.shared.data.network.PurecipesApi
+import app.purecipes.shared.domain.model.AppleSignInRequest
 import app.purecipes.shared.domain.model.AuthenticatedBackendUser
 import app.purecipes.shared.domain.model.AuthenticatedSession
 import app.purecipes.shared.domain.model.CookbookCreateRequest
@@ -140,6 +141,8 @@ class FakePurecipesApi(
 		createdRecipes.removeAll { it.id == recipeId }
 		recipeDetailsById.remove(recipeId)
 	}
+
+	override suspend fun signInWithApple(request: AppleSignInRequest): AuthenticatedSession = session
 
 	override suspend fun signInWithFacebook(request: FacebookSignInRequest): AuthenticatedSession = session
 

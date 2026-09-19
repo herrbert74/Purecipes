@@ -5,17 +5,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import com.mmk.kmpauth.apple.rememberAppleAuthState
 import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
+import kotlinx.coroutines.launch
 
 @Composable
 internal actual fun AppleAuthenticationButton(
-	onResult: (Result<ExternalAuthenticationProfile?>) -> Unit,
+	onAppleSignInResult: (Result<AppleAuthenticationProfile?>) -> Unit,
 ) {
 	if (LocalInspectionMode.current) {
 		OutlinedButton(
@@ -29,13 +30,13 @@ internal actual fun AppleAuthenticationButton(
 		}
 		return
 	}
+	val coroutineScope = rememberCoroutineScope()
 	val appleAuth = rememberAppleAuthState(
 		linkAccount = false,
 		onResult = { result ->
-			val mapped: Result<ExternalAuthenticationProfile?> = result.map { user ->
-				user.toExternalAuthenticationProfile(AuthProvider.APPLE)
+			coroutineScope.launch {
+				onAppleSignInResult(result.toAppleAuthenticationProfileResult())
 			}
-			onResult(mapped)
 		},
 	)
 	AppleSignInButton(

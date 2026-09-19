@@ -16,6 +16,7 @@ import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCa
 import app.purecipes.feature.auth.domain.usecase.RegisterWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.ResendEmailVerificationUseCase
 import app.purecipes.feature.auth.domain.usecase.SendPasswordResetEmailUseCase
+import app.purecipes.feature.auth.domain.usecase.SignInWithAppleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithEmailUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
@@ -102,6 +103,8 @@ interface CommonAppGraph : ViewModelGraph {
 	val sendPasswordResetEmailUseCase: SendPasswordResetEmailUseCase
 
 	val signInWithEmailUseCase: SignInWithEmailUseCase
+
+	val signInWithAppleUseCase: SignInWithAppleUseCase
 
 	val signInWithExternalProviderUseCase: SignInWithExternalProviderUseCase
 

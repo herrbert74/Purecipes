@@ -2,6 +2,7 @@ package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthUser
 import app.purecipes.feature.auth.domain.model.AuthenticationState
@@ -50,6 +51,17 @@ class FakeAuthenticationRepository(
 		)
 	},
 	private val sendPasswordResetEmailHandler: suspend (String) -> Outcome<Unit> = { Ok(Unit) },
+	private val signInWithAppleHandler: suspend (AppleAuthenticationProfile) -> Outcome<AuthUser> = { profile ->
+		Ok(
+			fakeAuthUser(
+				id = profile.idToken,
+				email = profile.email.orEmpty(),
+				displayName = profile.displayName,
+				profileImageUrl = profile.profileImageUrl,
+				provider = AuthProvider.APPLE,
+			),
+		)
+	},
 	private val signInWithExternalProviderHandler: suspend (
 		ExternalAuthenticationProfile,
 	) -> Outcome<AuthUser> = { profile ->
@@ -93,6 +105,10 @@ class FakeAuthenticationRepository(
 
 	override suspend fun sendPasswordResetEmail(email: String): Outcome<Unit> {
 		return sendPasswordResetEmailHandler(email)
+	}
+
+	override suspend fun signInWithApple(profile: AppleAuthenticationProfile): Outcome<AuthUser> {
+		return signInWithAppleHandler(profile).also(::updateAuthenticationState)
 	}
 
 	override suspend fun signInWithGoogle(profile: GoogleAuthenticationProfile): Outcome<AuthUser> {

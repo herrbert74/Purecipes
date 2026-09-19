@@ -3,6 +3,11 @@ package app.purecipes.shared.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class AppleSignInRequest(
+	val idToken: String,
+)
+
+@Serializable
 data class GoogleSignInRequest(
 	val idToken: String,
 )

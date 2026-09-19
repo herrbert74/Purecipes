@@ -21,6 +21,63 @@ import kotlin.test.Test
 class AuthenticationRouteTest {
 
 	@Test
+	fun `blank apple token yields 400`() = testApplication {
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Invalid("Should not be called"),
+				),
+			)
+		}
+
+		val response = client.post("/auth/apple") {
+			contentType(ContentType.Application.Json)
+			setBody("""{"idToken":"   "}""")
+		}
+
+		response.status shouldBe HttpStatusCode.BadRequest
+		response.bodyAsText() shouldBe """{"message":"Invalid request","detail":"Apple id token is required"}"""
+	}
+
+	@Test
+	fun `verified apple token returns user`() = testApplication {
+		val sessionService = FakeSessionService()
+		application {
+			module(
+				db = createInMemoryDb("authentication_route"),
+				firebaseIdTokenVerifier = FakeFirebaseIdTokenVerifier(
+					result = GoogleIdTokenVerificationResult.Success(
+						VerifiedGoogleUser(
+							id = "apple-subject",
+							email = "taylor@example.com",
+							displayName = "Taylor Baker",
+							firstName = "Taylor",
+							familyName = "Baker",
+							profileImageUrl = "https://example.com/avatar.png",
+						),
+					),
+				),
+				sessionService = sessionService,
+			)
+		}
+
+		val response = client.post("/auth/apple") {
+			contentType(ContentType.Application.Json)
+			setBody("""{"idToken":"verified-id-token"}""")
+		}
+
+		response.status shouldBe HttpStatusCode.OK
+		val expectedAppleAuthResponse = listOf(
+			"""{"accessToken":"session-token-1","expiresAtEpochSeconds":4102444800,"user":{""",
+			""""id":"1","email":"taylor@example.com","displayName":"Taylor Baker",""",
+			""""firstName":"Taylor","familyName":"Baker",""",
+			""""profileImageUrl":"https://example.com/avatar.png","provider":"APPLE"}}""",
+		).joinToString(separator = "")
+		response.bodyAsText() shouldBe expectedAppleAuthResponse
+	}
+
+	@Test
 	fun `blank facebook token yields 400`() = testApplication {
 		application {
 			module(

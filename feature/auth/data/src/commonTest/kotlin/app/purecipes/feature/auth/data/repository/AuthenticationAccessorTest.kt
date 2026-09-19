@@ -7,6 +7,7 @@ import app.purecipes.feature.auth.data.datasource.AuthenticationStore
 import app.purecipes.feature.auth.data.datasource.FakeFirebaseEmailPasswordAuth
 import app.purecipes.feature.auth.data.datasource.FirebaseAuthenticationLocalDataSource
 import app.purecipes.feature.auth.data.datasource.InMemoryAuthenticationLocalDataSource
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
@@ -106,6 +107,46 @@ class AuthenticationAccessorTest {
 
 		result.getError()?.message shouldBe INCORRECT_EMAIL_OR_PASSWORD_MESSAGE
 		accessor.authenticationState.value.shouldBeInstanceOf<AuthenticationState.SignedOut>()
+	}
+
+	@Test
+	fun `apple sign in uses backend verified user`() = runTest {
+		val sessionTokenStore = FakeSessionTokenStore()
+		val accessor = AuthenticationAccessor(
+			localDataSource = InMemoryAuthenticationLocalDataSource(AuthenticationStore(), sessionTokenStore),
+			remoteDataSource = FakeAuthenticationRemoteDataSource(
+				result = Ok(
+					AuthenticatedSession(
+						accessToken = "session-token",
+						expiresAtEpochSeconds = 4_000_000_000,
+						user = AuthenticatedBackendUser(
+							id = "41",
+							email = "taylor@example.com",
+							displayName = "Taylor Baker",
+							firstName = "Taylor",
+							familyName = "Baker",
+							profileImageUrl = "https://example.com/avatar.png",
+							provider = "APPLE",
+						),
+					),
+				),
+			),
+		)
+
+		val user = accessor.signInWithApple(
+			AppleAuthenticationProfile(
+				idToken = "verified-id-token",
+				email = "taylor@example.com",
+				displayName = "Ignored Client Name",
+				profileImageUrl = "https://example.com/ignored-avatar.png",
+			),
+		).get()
+
+		user?.provider shouldBe AuthProvider.APPLE
+		user?.id shouldBe "41"
+		user?.displayName shouldBe "Taylor Baker"
+		user?.profileImageUrl shouldBe "https://example.com/avatar.png"
+		sessionTokenStore.currentAccessToken() shouldBe "session-token"
 	}
 
 	@Test
@@ -370,6 +411,8 @@ class AuthenticationAccessorTest {
 
 		var getCurrentSessionCallCount = 0
 			private set
+
+		override suspend fun signInWithApple(idToken: String): Outcome<AuthenticatedSession> = result
 
 		override suspend fun signInWithGoogle(idToken: String): Outcome<AuthenticatedSession> = result
 

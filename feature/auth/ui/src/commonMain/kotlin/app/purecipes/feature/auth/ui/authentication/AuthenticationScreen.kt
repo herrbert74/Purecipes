@@ -22,9 +22,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
-import app.purecipes.feature.auth.domain.model.AuthProvider
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthenticationState
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.InitializeGoogleAuthenticationProvider
 import app.purecipes.feature.auth.ui.profile.SignedInContent
@@ -44,20 +43,20 @@ fun AuthenticationScreen(
 		{ InitializeGoogleAuthenticationProvider(it) },
 	authenticationProviderButtons: @Composable (
 		isGoogleConfigured: Boolean,
-		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+		onAppleSignInResult: (Result<AppleAuthenticationProfile?>) -> Unit,
 		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
 	) -> Unit = {
 			isGoogleConfigured,
-			onExternalProviderSignInResult,
+			onAppleSignInResult,
 			onFacebookSignInResult,
 			onGoogleSignInResult,
 			onGoogleUnavailableClick,
 		->
 		AuthenticationProviderButtons(
 			isGoogleConfigured = isGoogleConfigured,
-			onExternalProviderSignInResult = onExternalProviderSignInResult,
+			onAppleSignInResult = onAppleSignInResult,
 			onFacebookSignInResult = onFacebookSignInResult,
 			onGoogleSignInResult = onGoogleSignInResult,
 			onGoogleUnavailableClick = onGoogleUnavailableClick,
@@ -104,7 +103,7 @@ fun AuthenticationScreen(
 						isGoogleConfigured = !googleWebClientId.isNullOrBlank(),
 						onEmailRegistrationClick = onNavigateToEmailRegistration,
 						onSignInClick = onNavigateToSignIn,
-						onExternalProviderSignInResult = viewModel::onExternalProviderSignInResult,
+						onAppleSignInResult = viewModel::onAppleSignInResult,
 						onFacebookSignInResult = viewModel::onFacebookSignInResult,
 						onGoogleSignInResult = viewModel::onGoogleSignInResult,
 						onManagePrivacySettings = viewModel::onManagePrivacySettingsClick,
@@ -155,21 +154,21 @@ private fun AuthenticationScreenErrorPreview() {
 					isGoogleConfigured = false,
 					onEmailRegistrationClick = {},
 					onSignInClick = {},
-					onExternalProviderSignInResult = { _, _ -> },
+					onAppleSignInResult = {},
 					onFacebookSignInResult = { _, _, _, _ -> },
 					onGoogleSignInResult = {},
 					onManagePrivacySettings = {},
 					onGoogleUnavailableClick = {},
 					authenticationProviderButtons = {
 							configured,
-							onExternal,
+							onApple,
 							onFacebook,
 							onGoogle,
 							onUnavailable,
 						->
 						AuthenticationProviderButtons(
 							isGoogleConfigured = configured,
-							onExternalProviderSignInResult = onExternal,
+							onAppleSignInResult = onApple,
 							onFacebookSignInResult = onFacebook,
 							onGoogleSignInResult = onGoogle,
 							onGoogleUnavailableClick = onUnavailable,

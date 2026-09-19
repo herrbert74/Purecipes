@@ -16,14 +16,13 @@ import app.purecipes.feature.analytics.domain.usecase.ObserveConsentStateUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.ShowConsentFormUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.auth.domain.model.AuthProvider
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.AuthenticationState
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.FacebookAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.domain.usecase.DeleteAccountUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
-import app.purecipes.feature.auth.domain.usecase.SignInWithExternalProviderUseCase
+import app.purecipes.feature.auth.domain.usecase.SignInWithAppleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithFacebookUseCase
 import app.purecipes.feature.auth.domain.usecase.SignInWithGoogleUseCase
 import app.purecipes.feature.auth.domain.usecase.SignOutUseCase
@@ -40,7 +39,7 @@ import kotlinx.coroutines.launch
 @ContributesIntoMap(AppScope::class)
 class AuthenticationViewModel(
 	private val observeAuthenticationState: ObserveAuthenticationStateUseCase,
-	private val signInWithExternalProvider: SignInWithExternalProviderUseCase,
+	private val signInWithApple: SignInWithAppleUseCase,
 	private val signInWithFacebook: SignInWithFacebookUseCase,
 	private val signInWithGoogle: SignInWithGoogleUseCase,
 	private val deleteAccount: DeleteAccountUseCase,
@@ -128,23 +127,22 @@ class AuthenticationViewModel(
 		}
 	}
 
-	fun onExternalProviderSignInResult(provider: AuthProvider, result: Result<ExternalAuthenticationProfile?>) {
+	fun onAppleSignInResult(result: Result<AppleAuthenticationProfile?>) {
 		val failure = result.exceptionOrNull()
 		if (failure != null) {
-			message = failure.message ?: "${provider.providerDisplayName()} sign-in failed."
+			message = failure.message ?: "Apple sign-in failed."
 			return
 		}
 		val profile = result.getOrNull()
-		if (profile == null) {
-			message = "${provider.providerDisplayName()} sign-in was cancelled."
+		if (profile == null || profile.idToken.isBlank()) {
+			message = "Apple sign-in was cancelled."
 			return
 		}
 		viewModelScope.launch {
 			isBusy = true
-			val method = provider.toAnalyticsAuthMethod()
-			logBreadcrumb(CrashBreadcrumb.signInAttempted(method))
-			val signInResult = signInWithExternalProvider(profile)
-			reportSignInOutcome(signInResult.getError(), method)
+			logBreadcrumb(CrashBreadcrumb.signInAttempted(AnalyticsAuthMethod.APPLE))
+			val signInResult = signInWithApple(profile)
+			reportSignInOutcome(signInResult.getError(), AnalyticsAuthMethod.APPLE)
 			isBusy = false
 		}
 	}
@@ -179,22 +177,4 @@ class AuthenticationViewModel(
 		}
 	}
 
-}
-
-private fun AuthProvider.providerDisplayName(): String {
-	return when (this) {
-		AuthProvider.EMAIL -> "Email"
-		AuthProvider.GOOGLE -> "Google"
-		AuthProvider.APPLE -> "Apple"
-		AuthProvider.FACEBOOK -> "Facebook"
-	}
-}
-
-private fun AuthProvider.toAnalyticsAuthMethod(): String {
-	return when (this) {
-		AuthProvider.EMAIL -> AnalyticsAuthMethod.EMAIL
-		AuthProvider.GOOGLE -> AnalyticsAuthMethod.GOOGLE
-		AuthProvider.APPLE -> AnalyticsAuthMethod.APPLE
-		AuthProvider.FACEBOOK -> AnalyticsAuthMethod.FACEBOOK
-	}
 }

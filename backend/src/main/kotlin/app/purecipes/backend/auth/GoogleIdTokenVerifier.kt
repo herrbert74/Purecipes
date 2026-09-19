@@ -148,7 +148,3 @@ private fun GoogleTokenInfoResponse.toVerificationResult(configuredAudience: Str
 private fun String?.asOptionalField(): String? = this?.trim()?.takeIf { it.isNotBlank() }
 
 private fun String?.isVerifiedGoogleEmail(): Boolean = this.equals("true", ignoreCase = true)
-
-private fun String.fallbackDisplayName(): String {
-	return substringBefore('@').replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-}

@@ -15,8 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
-import app.purecipes.feature.auth.domain.model.AuthProvider
-import app.purecipes.feature.auth.domain.model.ExternalAuthenticationProfile
+import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.profile.PrivacySettingsContent
 import app.purecipes.shared.ui.component.BrandMomentHeader
@@ -28,14 +27,14 @@ internal fun SignedOutContent(
 	isGoogleConfigured: Boolean,
 	onEmailRegistrationClick: () -> Unit,
 	onSignInClick: () -> Unit,
-	onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+	onAppleSignInResult: (Result<AppleAuthenticationProfile?>) -> Unit,
 	onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 	onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 	onManagePrivacySettings: () -> Unit,
 	onGoogleUnavailableClick: () -> Unit,
 	authenticationProviderButtons: @Composable (
 		isGoogleConfigured: Boolean,
-		onExternalProviderSignInResult: (AuthProvider, Result<ExternalAuthenticationProfile?>) -> Unit,
+		onAppleSignInResult: (Result<AppleAuthenticationProfile?>) -> Unit,
 		onFacebookSignInResult: (String?, String?, String, String?) -> Unit,
 		onGoogleSignInResult: (Result<GoogleAuthenticationProfile?>) -> Unit,
 		onGoogleUnavailableClick: () -> Unit,
@@ -50,7 +49,7 @@ internal fun SignedOutContent(
 		)
 		authenticationProviderButtons(
 			isGoogleConfigured,
-			onExternalProviderSignInResult,
+			onAppleSignInResult,
 			onFacebookSignInResult,
 			onGoogleSignInResult,
 			onGoogleUnavailableClick,
@@ -92,21 +91,21 @@ private fun SignedOutContentLightPreview() {
 					isGoogleConfigured = true,
 					onEmailRegistrationClick = {},
 					onSignInClick = {},
-					onExternalProviderSignInResult = { _, _ -> },
+					onAppleSignInResult = {},
 					onFacebookSignInResult = { _, _, _, _ -> },
 					onGoogleSignInResult = {},
 					onManagePrivacySettings = {},
 					onGoogleUnavailableClick = {},
 					authenticationProviderButtons = {
 							configured,
-							onExternal,
+							onApple,
 							onFacebook,
 							onGoogle,
 							onUnavailable,
 						->
 						AuthenticationProviderButtons(
 							isGoogleConfigured = configured,
-							onExternalProviderSignInResult = onExternal,
+							onAppleSignInResult = onApple,
 							onFacebookSignInResult = onFacebook,
 							onGoogleSignInResult = onGoogle,
 							onGoogleUnavailableClick = onUnavailable,
