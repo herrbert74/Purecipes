@@ -6,6 +6,7 @@ on:
       - 'iosApp/**'
       - 'umbrella/**'
       - 'feature/ads/**'
+      - 'scripts/ios/**'
       - 'gradle/libs.versions.toml'
       - '.github/workflows/build-ios.yml'
   workflow_dispatch:
@@ -31,6 +32,15 @@ jobs:
 
       - name: Show Xcode version
         run: xcodebuild -version
+
+      - name: Cache Usercentrics XCFrameworks
+        uses: actions/cache@v6
+        with:
+          path: iosApp/PurecipesIOSApp/LocalPackages/XCFrameworks
+          key: usercentrics-${{ hashFiles('scripts/ios/fetch-usercentrics-xcframeworks.sh') }}
+
+      - name: Fetch Usercentrics XCFrameworks
+        run: ./scripts/ios/fetch-usercentrics-xcframeworks.sh
 
       - name: Sync iOS marketing version
         run: ./gradlew :umbrella:syncIosVersion

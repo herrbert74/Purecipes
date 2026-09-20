@@ -112,6 +112,15 @@ jobs:
           printf '%s\n' "${APP_STORE_CONNECT_API_KEY_P8}" > "${KEY_PATH}"
           echo "APP_STORE_CONNECT_API_KEY_PATH=${KEY_PATH}" >> "${GITHUB_ENV}"
 
+      - name: Cache Usercentrics XCFrameworks
+        uses: actions/cache@v6
+        with:
+          path: iosApp/PurecipesIOSApp/LocalPackages/XCFrameworks
+          key: usercentrics-${{ hashFiles('scripts/ios/fetch-usercentrics-xcframeworks.sh') }}
+
+      - name: Fetch Usercentrics XCFrameworks
+        run: ./scripts/ios/fetch-usercentrics-xcframeworks.sh
+
       - name: Sync iOS marketing version
         run: ./gradlew :umbrella:syncIosVersion
 
