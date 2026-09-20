@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
 	id("convention.domain")
 	id("convention.common-test")
@@ -9,6 +11,9 @@ kotlin {
 	}
 
 	compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
+	targets.withType<KotlinNativeTarget>().configureEach {
+		compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+	}
 
 	sourceSets {
 		commonMain {

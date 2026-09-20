@@ -15,13 +15,14 @@
 /captures
 app/app-release.apk
 app/release
-*.xcworkspace
 xcuserdata
+*.xcworkspace
 *.xcodeproj/*
-*.xcodeproj/project.pbxproj
-*.xcworkspace/contents.xcworkspacedata
-**/GoogleService-Info.plist
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/xcshareddata/**
 /iosApp/PurecipesIOSApp/LocalPackages/XCFrameworks/
+**/include/module.modulemap
 
 # Build outputs
 /backend/bin/

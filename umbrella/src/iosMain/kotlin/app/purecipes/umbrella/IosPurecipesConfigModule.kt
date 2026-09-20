@@ -43,6 +43,18 @@ object IosPurecipesConfigModule {
 			override fun revenueCatApiKey(): String? {
 				return BuildKonfig.purecipesRevenueCatApiKey.takeIf { it.isNotBlank() }
 			}
+
+			override fun adMobAppId(): String? {
+				return BuildKonfig.purecipesAdMobAppId.takeIf { it.isNotBlank() }
+			}
+
+			override fun adMobBannerAdUnitId(): String? {
+				return BuildKonfig.purecipesAdMobBannerAdUnitId.takeIf { it.isNotBlank() }
+			}
+
+			override fun adMobInterstitialAdUnitId(): String? {
+				return BuildKonfig.purecipesAdMobInterstitialAdUnitId.takeIf { it.isNotBlank() }
+			}
 		}
 	}
 }

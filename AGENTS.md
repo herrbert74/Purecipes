@@ -22,6 +22,8 @@ Keep detailed, tool-agnostic guidance under:
 
 Agents should treat those files as extensions of this document when the task matches them.
 
+For iOS TestFlight / store preparation, also follow [`.agents/instructions/ios-release.md`](.agents/instructions/ios-release.md) and [`docs/releases/ios-app-distribution.md`](docs/releases/ios-app-distribution.md).
+
 For scraping, PostgreSQL maintenance, and deleting imported recipes by site, also follow [`scripts/scraping/AGENTS.md`](scripts/scraping/AGENTS.md) (including local `psql` via `sudo -u postgres`).
 
 ---
@@ -52,7 +54,7 @@ For scraping, PostgreSQL maintenance, and deleting imported recipes by site, als
 
 `feature:analytics:data` imports **Firebase Analytics** via Kotlin **SwiftPM import** (`swiftPMDependencies {}` in its `build.gradle.kts`). **Usercentrics**, **Mixpanel**, and **Google Sign-In** are wired from Swift only (`IosAnalyticsNativeBridge` + Swift packages on the iOS app target); Kotlin no longer uses the CocoaPods Gradle plugin for analytics.
 
-The umbrella module uses **direct integration**: Xcode runs `:umbrella:embedAndSignAppleFrameworkForXcode` and links the generated local package `KotlinMultiplatformLinkedPackage` (from `integrateLinkagePackage`). Commit `.swiftpm-locks/` and `iosApp/PurecipesIOSApp/KotlinMultiplatformLinkedPackage/` when SwiftPM dependencies change. Keep only subpackages listed in the current `Package.swift`; delete stale versioned Firebase/KMPAuth folders instead of accumulating them. Do not commit generated `include/module.modulemap` stubs.
+The umbrella module uses **direct integration**: Xcode runs `:umbrella:embedAndSignAppleFrameworkForXcode` and links the generated local package `KotlinMultiplatformLinkedPackage` (from `integrateLinkagePackage`). Commit `.swiftpm-locks/` and `iosApp/PurecipesIOSApp/KotlinMultiplatformLinkedPackage/` when SwiftPM dependencies change. Keep only subpackages listed in the current `Package.swift`; delete stale versioned Firebase/KMPAuth folders instead of accumulating them. Do **not** commit generated `include/module.modulemap` stubs, and do **not** remove `**/include/module.modulemap` from `.gitignore`. Gradle rewrites `.swiftpm-locks/default/.gitignore` on iOS/Xcode tasks; the root `.gitignore` rule is the durable ignore. Kotlin may recommend committing those stubs; this repo ignores them on purpose.
 
 The iOS app uses **Swift Package Manager** for native SDKs: `GoogleSignIn`, `Mixpanel`, `Usercentrics`/`UsercentricsUI`, and `facebook-ios-sdk` (products **FacebookCore** and **FacebookLogin**). Usercentrics ships as local SPM wrappers under `iosApp/PurecipesIOSApp/LocalPackages/` (Bitbucket binary downloads are fetched by `scripts/ios/fetch-usercentrics-xcframeworks.sh` during the Xcode build). Open **`PurecipesIOSApp.xcodeproj`** directly (no CocoaPods workspace).
 

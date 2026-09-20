@@ -2,7 +2,7 @@
 
 Kotlin scripts for changelog, versioning, Firebase App Distribution release notes, and opening a release PR.
 
-Full distribution setup: [`docs/releases/android-app-distribution.md`](../../docs/releases/android-app-distribution.md).
+Full distribution setup: [`docs/releases/android-app-distribution.md`](../../docs/releases/android-app-distribution.md). iOS TestFlight setup: [`docs/releases/ios-app-distribution.md`](../../docs/releases/ios-app-distribution.md).
 
 Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md).
 
@@ -10,7 +10,8 @@ Agent workflow (GitHub MCP, local only): [`.agents/instructions/android-release.
 
 | Script | Role |
 |--------|------|
-| [`bump_android_version.main.kts`](bump_android_version.main.kts) | Set `versionName` / increment `versionCode` in `gradle/libs.versions.toml` |
+| [`bump_android_version.main.kts`](bump_android_version.main.kts) | Set `versionName` / increment `versionCode` in `gradle/libs.versions.toml` and rewrite `iosApp/PurecipesIOSApp/Config/Versions.xcconfig` |
+| [`write_ios_versions_xcconfig.main.kts`](write_ios_versions_xcconfig.main.kts) | Rewrite the iOS xcconfig from the current catalog (also `:umbrella:syncIosVersion`) |
 | [`open_android_release_pr.main.kts`](open_android_release_pr.main.kts) | Validate changelog, bump versions, regenerate open source license definitions, commit, and push branch `release/v<version>-changelog` (open PR via GitHub MCP) |
 | [`extract_release_notes.main.kts`](extract_release_notes.main.kts) | Extract a version section from `CHANGELOG.md` → `build/release-notes.txt` (CI on tag) |
 

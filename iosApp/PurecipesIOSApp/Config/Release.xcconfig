@@ -1,0 +1,4 @@
+#include "Versions.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS = Config/Release.entitlements
+PURECIPES_ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511

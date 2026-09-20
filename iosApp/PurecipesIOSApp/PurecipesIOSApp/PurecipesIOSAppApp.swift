@@ -46,6 +46,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         IosSubscriptionInitializer.shared.initialize()
 
+        IosAdsController.shared.registerWithKotlinBridge()
         IosAdsInitializer.shared.initialize()
 
         installAnalyticsBridges()
