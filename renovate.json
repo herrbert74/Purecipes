@@ -15,6 +15,12 @@
       "allowedVersions": "!/(SNAPSHOT|\\+dev|\\+snapshot)/i"
     },
     {
+      "description": "Java is pinned to JDK 25 LTS; bump manually on the next LTS",
+      "matchDatasources": ["java-version"],
+      "matchPackageNames": ["java", "java-jdk", "java-jre"],
+      "enabled": false
+    },
+    {
       "matchPackageNames": ["org.jetbrains.kotlinx:kotlinx-datetime"],
       "allowedVersions": "!/\\.x-compat$/"
     },
