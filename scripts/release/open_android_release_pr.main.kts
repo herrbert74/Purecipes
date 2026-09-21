@@ -96,7 +96,21 @@ fun bumpVersion(versionsFile: File, version: String, bumpCode: Boolean) {
 		}
 	}
 	versionsFile.writeText(lines.joinToString("\n") + "\n")
-	println("Set versionName=$version versionCode=$newCode (bump_code=$bumpCode)")
+	val catalogCode = if (bumpCode) newCode else currentCode
+	writeIosVersionsXcconfig(repoRoot(), version, catalogCode.toString())
+	println("Set versionName=$version versionCode=$catalogCode (bump_code=$bumpCode)")
+}
+
+fun writeIosVersionsXcconfig(repoRoot: File, versionName: String, versionCode: String) {
+	val xcconfig = File(repoRoot, "iosApp/PurecipesIOSApp/Config/Versions.xcconfig")
+	xcconfig.parentFile.mkdirs()
+	xcconfig.writeText(
+		"MARKETING_VERSION = $versionName\nCURRENT_PROJECT_VERSION = $versionCode\n",
+	)
+	println(
+		"Wrote ${xcconfig.relativeTo(repoRoot)} " +
+			"(MARKETING_VERSION=$versionName CURRENT_PROJECT_VERSION=$versionCode)",
+	)
 }
 
 fun main(args: Array<String>) {
@@ -136,6 +150,7 @@ fun main(args: Array<String>) {
 		"add",
 		"CHANGELOG.md",
 		"gradle/libs.versions.toml",
+		"iosApp/PurecipesIOSApp/Config/Versions.xcconfig",
 		*licenseDefinitionFiles.toTypedArray(),
 	)
 	if (runCommandCapture(root, "git", "diff", "--cached", "--name-only").isBlank()) {

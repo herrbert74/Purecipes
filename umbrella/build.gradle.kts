@@ -48,12 +48,41 @@ private fun Project.usercentricsSettingsId(): String {
 }
 
 private fun Project.revenueCatApiKey(buildType: String = currentPurecipesBuildType()): String {
-	return providers.gradleProperty("purecipes.revenueCatApiKey.$buildType")
+	return providers.gradleProperty("purecipes.revenueCatApiKey.ios")
+		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_IOS_API_KEY"))
+		.orElse(providers.gradleProperty("purecipes.revenueCatApiKey.$buildType"))
 		.orElse(providers.gradleProperty("purecipes.revenueCatApiKey"))
 		.orElse(providers.gradleProperty("PURECIPES_REVENUECAT_API_KEY"))
 		.orElse(providers.environmentVariable("PURECIPES_REVENUECAT_API_KEY"))
 		.orNull
 		.orEmpty()
+}
+
+private fun Project.admobIosAppId(): String {
+	return providers.gradleProperty("purecipes.adMobIosAppId")
+		.orElse(providers.gradleProperty("PURECIPES_ADMOB_IOS_APP_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_ADMOB_IOS_APP_ID"))
+		.orNull
+		.orEmpty()
+		.ifBlank { "ca-app-pub-3940256099942544~1458002511" }
+}
+
+private fun Project.admobIosBannerAdUnitId(): String {
+	return providers.gradleProperty("purecipes.adMobIosBannerAdUnitId")
+		.orElse(providers.gradleProperty("PURECIPES_ADMOB_IOS_BANNER_AD_UNIT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_ADMOB_IOS_BANNER_AD_UNIT_ID"))
+		.orNull
+		.orEmpty()
+		.ifBlank { "ca-app-pub-3940256099942544/2934735716" }
+}
+
+private fun Project.admobIosInterstitialAdUnitId(): String {
+	return providers.gradleProperty("purecipes.adMobIosInterstitialAdUnitId")
+		.orElse(providers.gradleProperty("PURECIPES_ADMOB_IOS_INTERSTITIAL_AD_UNIT_ID"))
+		.orElse(providers.environmentVariable("PURECIPES_ADMOB_IOS_INTERSTITIAL_AD_UNIT_ID"))
+		.orNull
+		.orEmpty()
+		.ifBlank { "ca-app-pub-3940256099942544/4411468910" }
 }
 
 private fun Project.currentPurecipesBuildType(): String {
@@ -104,6 +133,9 @@ buildkonfig {
 		buildConfigField(STRING, "purecipesMixpanelProjectToken", mixpanelProjectToken())
 		buildConfigField(STRING, "purecipesUsercentricsSettingsId", usercentricsSettingsId())
 		buildConfigField(STRING, "purecipesRevenueCatApiKey", revenueCatApiKey())
+		buildConfigField(STRING, "purecipesAdMobAppId", admobIosAppId())
+		buildConfigField(STRING, "purecipesAdMobBannerAdUnitId", admobIosBannerAdUnitId())
+		buildConfigField(STRING, "purecipesAdMobInterstitialAdUnitId", admobIosInterstitialAdUnitId())
 	}
 }
 
@@ -219,5 +251,28 @@ kotlin {
 				implementation(libs.ktor.serializationKotlinxJson)
 			}
 		}
+	}
+}
+
+val syncIosVersion = tasks.register("syncIosVersion") {
+	group = "ios"
+	description = "Write MARKETING_VERSION and CURRENT_PROJECT_VERSION from the version catalog into Versions.xcconfig"
+	val versionName = libs.versions.versionName.get()
+	val versionCode = libs.versions.versionCode.get()
+	val outputFile = rootProject.layout.projectDirectory.file("iosApp/PurecipesIOSApp/Config/Versions.xcconfig")
+	inputs.property("versionName", versionName)
+	inputs.property("versionCode", versionCode)
+	doLast {
+		val xcconfig = outputFile.asFile
+		xcconfig.parentFile.mkdirs()
+		xcconfig.writeText(
+			"MARKETING_VERSION = $versionName\nCURRENT_PROJECT_VERSION = $versionCode\n",
+		)
+	}
+}
+
+tasks.configureEach {
+	if (name == "embedAndSignAppleFrameworkForXcode") {
+		dependsOn(syncIosVersion)
 	}
 }

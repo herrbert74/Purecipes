@@ -1,0 +1,57 @@
+name: Build iOS
+
+on:
+  pull_request:
+    paths:
+      - 'iosApp/**'
+      - 'umbrella/**'
+      - 'feature/ads/**'
+      - 'scripts/ios/**'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/build-ios.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Simulator build
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Cache Usercentrics XCFrameworks
+        uses: actions/cache@v6
+        with:
+          path: iosApp/PurecipesIOSApp/LocalPackages/XCFrameworks
+          key: usercentrics-${{ hashFiles('scripts/ios/fetch-usercentrics-xcframeworks.sh') }}
+
+      - name: Fetch Usercentrics XCFrameworks
+        run: ./scripts/ios/fetch-usercentrics-xcframeworks.sh
+
+      - name: Sync iOS marketing version
+        run: ./gradlew :umbrella:syncIosVersion
+
+      - name: Build iOS app for simulator
+        run: |
+          xcodebuild \
+            -project iosApp/PurecipesIOSApp/PurecipesIOSApp.xcodeproj \
+            -scheme PurecipesIOSApp \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            build

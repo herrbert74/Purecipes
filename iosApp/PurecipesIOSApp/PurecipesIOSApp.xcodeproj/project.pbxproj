@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1231900A872268EA538D1B1C /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C0CE4ADC6976485BAB17898C /* GoogleSignIn */; };
 		13DDDCE651ECC0E47EE4DEB4 /* Usercentrics in Frameworks */ = {isa = PBXBuildFile; productRef = 8ACD4077E5416A05E3EE7A27 /* Usercentrics */; };
+		1477FE19B058AA02536E135C /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = DA1391BC752721BE9166CF8F /* GoogleMobileAds */; };
 		A0761A06B27D99AF03EDE904 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = D516662A00304CA0143C8447 /* Mixpanel */; };
 		AF64C489AC9632B6B0BDCDC7 /* UsercentricsUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8B899F62C6ED245F84128657 /* UsercentricsUI */; };
 		BCCCFCB761629324C9932B83 /* KotlinMultiplatformLinkedPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */; };
@@ -18,6 +19,9 @@
 
 /* Begin PBXFileReference section */
 		B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurecipesIOSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1D2E3F4A5B6789012345C10 /* Versions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Versions.xcconfig; sourceTree = "<group>"; };
+		C1D2E3F4A5B6789012345C11 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		C1D2E3F4A5B6789012345C12 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,6 +44,7 @@
 				A0761A06B27D99AF03EDE904 /* Mixpanel in Frameworks */,
 				13DDDCE651ECC0E47EE4DEB4 /* Usercentrics in Frameworks */,
 				AF64C489AC9632B6B0BDCDC7 /* UsercentricsUI in Frameworks */,
+				1477FE19B058AA02536E135C /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,6 +54,7 @@
 		B3BF5EB12F4E482900ADA5FD = {
 			isa = PBXGroup;
 			children = (
+				C1D2E3F4A5B6789012345C13 /* Config */,
 				B3BF5EBC2F4E482900ADA5FD /* PurecipesIOSApp */,
 				B3BF5EBB2F4E482900ADA5FD /* Products */,
 			);
@@ -60,6 +66,16 @@
 				B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C1D2E3F4A5B6789012345C13 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				C1D2E3F4A5B6789012345C10 /* Versions.xcconfig */,
+				C1D2E3F4A5B6789012345C11 /* Debug.xcconfig */,
+				C1D2E3F4A5B6789012345C12 /* Release.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -74,6 +90,7 @@
 				B3BF5EB62F4E482900ADA5FD /* Sources */,
 				B3BF5EB72F4E482900ADA5FD /* Frameworks */,
 				B3BF5EB82F4E482900ADA5FD /* Resources */,
+				C1D2E3F4A5B6789012345C14 /* Upload Crashlytics dSYMs */,
 			);
 			buildRules = (
 			);
@@ -91,6 +108,7 @@
 				D516662A00304CA0143C8447 /* Mixpanel */,
 				8ACD4077E5416A05E3EE7A27 /* Usercentrics */,
 				8B899F62C6ED245F84128657 /* UsercentricsUI */,
+				DA1391BC752721BE9166CF8F /* GoogleMobileAds */,
 			);
 			productName = PurecipesIOSApp;
 			productReference = B3BF5EBA2F4E482900ADA5FD /* PurecipesIOSApp.app */;
@@ -132,8 +150,9 @@
 				F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 				A9C63FA9BC6BE0B9B64D1406 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				5A99350683F31775B3596324 /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
-				C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "usercentrics-spm-sdk" */,
-				D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "usercentrics-spm-ui" */,
+				DE6983330A48FCEEE9E74E25 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "LocalPackages/usercentrics-spm-sdk" */,
+				D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "LocalPackages/usercentrics-spm-ui" */,
 				A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -157,6 +176,44 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		B3BF5ED62F4E54C300ADA5FD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/umbrella.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/../../scripts/ios/embed-kotlin-framework.sh\"\n";
+		};
+		C1D2E3F4A5B6789012345C14 /* Upload Crashlytics dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/PurecipesIOSApp/GoogleService-Info.plist",
+			);
+			name = "Upload Crashlytics dSYMs";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/../../scripts/ios/upload-crashlytics-symbols.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		E5F6A7B8C9D0123456789A03 /* Fetch Usercentrics XCFrameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -176,24 +233,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/../../scripts/ios/fetch-usercentrics-xcframeworks.sh\"\ntouch \"$DERIVED_FILE_DIR/usercentrics-xcframeworks.stamp\"\n";
 			showEnvVarsInLog = 0;
-		};
-		B3BF5ED62F4E54C300ADA5FD /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/umbrella.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT/../../scripts/ios/embed-kotlin-framework.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -329,12 +368,12 @@
 		};
 		B3BF5EC62F4E482B00ADA5FD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C1D2E3F4A5B6789012345C11 /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Debug";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Config/PurecipesIOSApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = HJF4M2LB4N;
 				ENABLE_PREVIEWS = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -343,7 +382,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.purecipes.PurecipesIOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PURECIPES_FACEBOOK_APP_ID = 1740550936936015;
@@ -364,12 +406,12 @@
 		};
 		B3BF5EC72F4E482B00ADA5FD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C1D2E3F4A5B6789012345C12 /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Config/PurecipesIOSApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = HJF4M2LB4N;
 				ENABLE_PREVIEWS = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -378,7 +420,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = app.purecipes.PurecipesIOSApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PURECIPES_FACEBOOK_APP_ID = 1740550936936015;
@@ -425,13 +470,13 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = KotlinMultiplatformLinkedPackage;
 		};
-		C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "usercentrics-spm-sdk" */ = {
+		C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "LocalPackages/usercentrics-spm-sdk" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = LocalPackages/usercentrics-spm-sdk;
+			relativePath = "LocalPackages/usercentrics-spm-sdk";
 		};
-		D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "usercentrics-spm-ui" */ = {
+		D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "LocalPackages/usercentrics-spm-ui" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = LocalPackages/usercentrics-spm-ui;
+			relativePath = "LocalPackages/usercentrics-spm-ui";
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -452,6 +497,14 @@
 				minimumVersion = 9.1.0;
 			};
 		};
+		DE6983330A48FCEEE9E74E25 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.9.0;
+			};
+		};
 		F1A2B3C4D5E6789012345A01 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
@@ -465,14 +518,17 @@
 /* Begin XCSwiftPackageProductDependency section */
 		51C0C0D019062C48A43FCB66 /* KotlinMultiplatformLinkedPackage */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = A4805AE8B0BA593A3BAA4E38 /* XCLocalSwiftPackageReference "KotlinMultiplatformLinkedPackage" */;
 			productName = KotlinMultiplatformLinkedPackage;
 		};
 		8ACD4077E5416A05E3EE7A27 /* Usercentrics */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = C3D4E5F6A7B8901234567A01 /* XCLocalSwiftPackageReference "LocalPackages/usercentrics-spm-sdk" */;
 			productName = Usercentrics;
 		};
 		8B899F62C6ED245F84128657 /* UsercentricsUI */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = D4E5F6A7B8C9012345678A02 /* XCLocalSwiftPackageReference "LocalPackages/usercentrics-spm-ui" */;
 			productName = UsercentricsUI;
 		};
 		A1B2C3D4E5F6789012345A02 /* FacebookCore */ = {
@@ -494,6 +550,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5A99350683F31775B3596324 /* XCRemoteSwiftPackageReference "mixpanel-swift" */;
 			productName = Mixpanel;
+		};
+		DA1391BC752721BE9166CF8F /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DE6983330A48FCEEE9E74E25 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

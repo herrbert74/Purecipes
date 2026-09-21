@@ -13,6 +13,18 @@ fun repoRoot(): File {
 	error("Could not find repository root (settings.gradle.kts)")
 }
 
+fun writeIosVersionsXcconfig(repoRoot: File, versionName: String, versionCode: String) {
+	val xcconfig = File(repoRoot, "iosApp/PurecipesIOSApp/Config/Versions.xcconfig")
+	xcconfig.parentFile.mkdirs()
+	xcconfig.writeText(
+		"MARKETING_VERSION = $versionName\nCURRENT_PROJECT_VERSION = $versionCode\n",
+	)
+	println(
+		"Wrote ${xcconfig.relativeTo(repoRoot)} " +
+			"(MARKETING_VERSION=$versionName CURRENT_PROJECT_VERSION=$versionCode)",
+	)
+}
+
 fun main(args: Array<String>) {
 	if (args.isEmpty()) {
 		System.err.println("Usage: kotlin scripts/release/bump_android_version.main.kts <version> [bump_version_code]")
@@ -47,7 +59,9 @@ fun main(args: Array<String>) {
 	}
 
 	versionsFile.writeText(lines.joinToString("\n") + "\n")
-	println("Set versionName=$version versionCode=$newCode (bump_code=$bumpCode)")
+	val catalogCode = if (bumpCode) newCode else currentCode
+	writeIosVersionsXcconfig(repoRoot(), version, catalogCode.toString())
+	println("Set versionName=$version versionCode=$catalogCode (bump_code=$bumpCode)")
 }
 
 main(args)

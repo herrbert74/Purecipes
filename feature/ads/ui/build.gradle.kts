@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
 	id("convention.ui")
 	id("convention.common-test")
@@ -42,4 +44,7 @@ kotlin {
 	}
 
 	compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+	targets.withType<KotlinNativeTarget>().configureEach {
+		compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+	}
 }
