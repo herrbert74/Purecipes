@@ -4,6 +4,22 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.13.0] - 2026-09-22
+
+### Added
+
+- Feature requests in Settings: vote, comment, and filter by status.
+
+### Changed
+
+- Password reset confirms your email, then reminds you to check spam.
+- Create account asks you to confirm your password.
+
+### Fixed
+
+- Library, filters, and paste-ingredient text stay put when you rotate the screen.
+- Favourites and cookbooks refresh when you save a recipe or change a cookbook.
+
 ## [0.12.0] - 2026-09-12
 
 ### Changed
