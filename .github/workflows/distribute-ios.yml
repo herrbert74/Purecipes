@@ -144,11 +144,11 @@ jobs:
             -archivePath "${ARCHIVE_PATH}" \
             -skipPackagePluginValidation \
             -allowProvisioningUpdates \
+            -authenticationKeyPath "${APP_STORE_CONNECT_API_KEY_PATH}" \
+            -authenticationKeyID "${APP_STORE_CONNECT_API_KEY_ID}" \
+            -authenticationKeyIssuerID "${APP_STORE_CONNECT_ISSUER_ID}" \
             DEVELOPMENT_TEAM="${PURECIPES_IOS_DEVELOPMENT_TEAM}" \
             PURECIPES_ADMOB_APP_ID="${PURECIPES_ADMOB_IOS_APP_ID}" \
-            AUTHENTICATION_KEY_PATH="${APP_STORE_CONNECT_API_KEY_PATH}" \
-            AUTHENTICATION_KEY_ID="${APP_STORE_CONNECT_API_KEY_ID}" \
-            AUTHENTICATION_KEY_ISSUER_ID="${APP_STORE_CONNECT_ISSUER_ID}" \
             archive
 
       - name: Export IPA
@@ -182,9 +182,9 @@ jobs:
             -exportPath "${EXPORT_DIR}" \
             -exportOptionsPlist "${EXPORT_PLIST}" \
             -allowProvisioningUpdates \
-            AUTHENTICATION_KEY_PATH="${APP_STORE_CONNECT_API_KEY_PATH}" \
-            AUTHENTICATION_KEY_ID="${APP_STORE_CONNECT_API_KEY_ID}" \
-            AUTHENTICATION_KEY_ISSUER_ID="${APP_STORE_CONNECT_ISSUER_ID}"
+            -authenticationKeyPath "${APP_STORE_CONNECT_API_KEY_PATH}" \
+            -authenticationKeyID "${APP_STORE_CONNECT_API_KEY_ID}" \
+            -authenticationKeyIssuerID "${APP_STORE_CONNECT_ISSUER_ID}"
           IPA_PATH="$(ls "${EXPORT_DIR}"/*.ipa | head -n 1)"
           echo "IPA_PATH=${IPA_PATH}" >> "${GITHUB_ENV}"
 
