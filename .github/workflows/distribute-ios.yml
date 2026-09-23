@@ -21,6 +21,9 @@ jobs:
   distribute:
     name: Archive and upload to TestFlight
     runs-on: macos-latest
+    env:
+      XCODE_DERIVED_DATA_PATH: ${{ runner.temp }}/PurecipesDerivedData
+      XCODE_SOURCE_PACKAGES_PATH: ${{ runner.temp }}/SourcePackages
 
     steps:
       - uses: actions/checkout@v7
@@ -68,12 +71,29 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+        run: |
+          missing=0
+          for name in APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_API_KEY_P8; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::${name} repository secret is required for iOS TestFlight uploads." >&2
+              missing=1
+            fi
+          done
+          if [[ "${missing}" -ne 0 ]]; then
+            exit 1
+          fi
+
+      - name: Require iOS distribution signing assets
+        env:
+          IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          IOS_APP_STORE_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 }}
           PURECIPES_IOS_DEVELOPMENT_TEAM: ${{ secrets.PURECIPES_IOS_DEVELOPMENT_TEAM }}
         run: |
           missing=0
-          for name in APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_API_KEY_P8 PURECIPES_IOS_DEVELOPMENT_TEAM; do
+          for name in IOS_DISTRIBUTION_CERTIFICATE_BASE64 IOS_DISTRIBUTION_CERTIFICATE_PASSWORD IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 PURECIPES_IOS_DEVELOPMENT_TEAM; do
             if [[ -z "${!name}" ]]; then
-              echo "::error::${name} repository secret is required for iOS TestFlight uploads." >&2
+              echo "::error::${name} repository secret is required for iOS release signing." >&2
               missing=1
             fi
           done
@@ -112,6 +132,69 @@ jobs:
           printf '%s\n' "${APP_STORE_CONNECT_API_KEY_P8}" > "${KEY_PATH}"
           echo "APP_STORE_CONNECT_API_KEY_PATH=${KEY_PATH}" >> "${GITHUB_ENV}"
 
+      - name: Install iOS distribution signing assets
+        env:
+          IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          IOS_APP_STORE_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 }}
+          PURECIPES_IOS_DEVELOPMENT_TEAM: ${{ secrets.PURECIPES_IOS_DEVELOPMENT_TEAM }}
+        run: |
+          CERTIFICATE_PATH="${RUNNER_TEMP}/distribution.p12"
+          DOWNLOADED_PROFILE_PATH="${RUNNER_TEMP}/app-store.mobileprovision"
+          PROFILE_PLIST_PATH="${RUNNER_TEMP}/app-store-profile.plist"
+          KEYCHAIN_PATH="${RUNNER_TEMP}/app-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
+
+          printf '%s' "${IOS_DISTRIBUTION_CERTIFICATE_BASE64}" | base64 -D > "${CERTIFICATE_PATH}"
+          printf '%s' "${IOS_APP_STORE_PROVISIONING_PROFILE_BASE64}" | base64 -D > "${DOWNLOADED_PROFILE_PATH}"
+
+          security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
+          security unlock-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security import "${CERTIFICATE_PATH}" \
+            -P "${IOS_DISTRIBUTION_CERTIFICATE_PASSWORD}" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "${KEYCHAIN_PATH}"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "${KEYCHAIN_PASSWORD}" \
+            "${KEYCHAIN_PATH}"
+          security list-keychains -d user -s "${KEYCHAIN_PATH}"
+
+          if ! security find-identity -v -p codesigning "${KEYCHAIN_PATH}" | grep -q '"Apple Distribution:'; then
+            echo "::error::The certificate secret does not contain an Apple Distribution identity with its private key." >&2
+            exit 1
+          fi
+
+          security cms -D -i "${DOWNLOADED_PROFILE_PATH}" > "${PROFILE_PLIST_PATH}"
+          PROFILE_UUID="$(plutil -extract UUID raw "${PROFILE_PLIST_PATH}")"
+          PROFILE_TEAM_ID="$(plutil -extract TeamIdentifier.0 raw "${PROFILE_PLIST_PATH}")"
+          PROFILE_APP_IDENTIFIER="$(plutil -extract Entitlements.application-identifier raw "${PROFILE_PLIST_PATH}")"
+          PROFILE_BUNDLE_ID="${PROFILE_APP_IDENTIFIER#*.}"
+
+          if [[ "${PROFILE_TEAM_ID}" != "${PURECIPES_IOS_DEVELOPMENT_TEAM}" ]]; then
+            echo "::error::The provisioning profile belongs to team ${PROFILE_TEAM_ID}, not ${PURECIPES_IOS_DEVELOPMENT_TEAM}." >&2
+            exit 1
+          fi
+          if [[ "${PROFILE_BUNDLE_ID}" != "app.purecipes.PurecipesIOSApp" ]]; then
+            echo "::error::The provisioning profile is for ${PROFILE_BUNDLE_ID}, not app.purecipes.PurecipesIOSApp." >&2
+            exit 1
+          fi
+          if /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "${PROFILE_PLIST_PATH}" >/dev/null 2>&1; then
+            echo "::error::The provisioning profile is for registered devices, not App Store distribution." >&2
+            exit 1
+          fi
+
+          INSTALLED_PROFILE_PATH="${HOME}/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+          mkdir -p "$(dirname "${INSTALLED_PROFILE_PATH}")"
+          cp "${DOWNLOADED_PROFILE_PATH}" "${INSTALLED_PROFILE_PATH}"
+          echo "IOS_PROVISIONING_PROFILE_UUID=${PROFILE_UUID}" >> "${GITHUB_ENV}"
+          echo "IOS_INSTALLED_PROFILE_PATH=${INSTALLED_PROFILE_PATH}" >> "${GITHUB_ENV}"
+          echo "IOS_SIGNING_KEYCHAIN_PATH=${KEYCHAIN_PATH}" >> "${GITHUB_ENV}"
+
       - name: Cache Usercentrics XCFrameworks
         uses: actions/cache@v6
         with:
@@ -120,6 +203,29 @@ jobs:
 
       - name: Fetch Usercentrics XCFrameworks
         run: ./scripts/ios/fetch-usercentrics-xcframeworks.sh
+
+      - name: Resolve Xcode cache version
+        id: xcode
+        run: |
+          XCODE_VERSION="$(xcodebuild -version | awk '/^Xcode / { print $2 }')"
+          XCODE_BUILD_VERSION="$(xcodebuild -version | awk '/^Build version / { print $3 }')"
+          echo "cache-version=${XCODE_VERSION}-${XCODE_BUILD_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Cache Swift packages
+        id: swift-package-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.XCODE_SOURCE_PACKAGES_PATH }}
+          key: xcode-source-packages-v1-${{ runner.os }}-${{ steps.xcode.outputs.cache-version }}-${{ hashFiles('.swiftpm-locks/**/Package.resolved', 'iosApp/**/Package.resolved', 'iosApp/**/Package.swift', 'iosApp/**/*.pbxproj') }}
+
+      - name: Cache Xcode DerivedData
+        id: derived-data-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.XCODE_DERIVED_DATA_PATH }}
+          key: xcode-derived-data-v1-${{ runner.os }}-${{ steps.xcode.outputs.cache-version }}-${{ hashFiles('.swiftpm-locks/**/Package.resolved', 'iosApp/**/Package.resolved', 'iosApp/**/Package.swift', 'iosApp/**/*.pbxproj', '**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}-${{ github.sha }}
+          restore-keys: |
+            xcode-derived-data-v1-${{ runner.os }}-${{ steps.xcode.outputs.cache-version }}-${{ hashFiles('.swiftpm-locks/**/Package.resolved', 'iosApp/**/Package.resolved', 'iosApp/**/Package.swift', 'iosApp/**/*.pbxproj', '**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}-
 
       - name: Sync iOS marketing version
         run: ./gradlew :umbrella:syncIosVersion
@@ -131,8 +237,6 @@ jobs:
           PURECIPES_ADMOB_IOS_BANNER_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_IOS_BANNER_AD_UNIT_ID }}
           PURECIPES_ADMOB_IOS_INTERSTITIAL_AD_UNIT_ID: ${{ secrets.PURECIPES_ADMOB_IOS_INTERSTITIAL_AD_UNIT_ID }}
           PURECIPES_IOS_DEVELOPMENT_TEAM: ${{ secrets.PURECIPES_IOS_DEVELOPMENT_TEAM }}
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
           ARCHIVE_PATH="${RUNNER_TEMP}/PurecipesIOSApp.xcarchive"
           echo "ARCHIVE_PATH=${ARCHIVE_PATH}" >> "${GITHUB_ENV}"
@@ -142,20 +246,34 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "${ARCHIVE_PATH}" \
+            -derivedDataPath "${XCODE_DERIVED_DATA_PATH}" \
+            -clonedSourcePackagesDirPath "${XCODE_SOURCE_PACKAGES_PATH}" \
             -skipPackagePluginValidation \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "${APP_STORE_CONNECT_API_KEY_PATH}" \
-            -authenticationKeyID "${APP_STORE_CONNECT_API_KEY_ID}" \
-            -authenticationKeyIssuerID "${APP_STORE_CONNECT_ISSUER_ID}" \
+            -showBuildTimingSummary \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM="${PURECIPES_IOS_DEVELOPMENT_TEAM}" \
+            PROVISIONING_PROFILE_SPECIFIER="${IOS_PROVISIONING_PROFILE_UUID}" \
             PURECIPES_ADMOB_APP_ID="${PURECIPES_ADMOB_IOS_APP_ID}" \
             archive
+
+      - name: Save Swift package cache
+        if: ${{ steps.swift-package-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.XCODE_SOURCE_PACKAGES_PATH }}
+          key: ${{ steps.swift-package-cache.outputs.cache-primary-key }}
+
+      - name: Save Xcode DerivedData cache
+        if: ${{ steps.derived-data-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.XCODE_DERIVED_DATA_PATH }}
+          key: ${{ steps.derived-data-cache.outputs.cache-primary-key }}
 
       - name: Export IPA
         env:
           PURECIPES_IOS_DEVELOPMENT_TEAM: ${{ secrets.PURECIPES_IOS_DEVELOPMENT_TEAM }}
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
           EXPORT_DIR="${RUNNER_TEMP}/ios-export"
           EXPORT_PLIST="${RUNNER_TEMP}/exportOptions.plist"
@@ -165,14 +283,21 @@ jobs:
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-          	<key>method</key>
-          	<string>app-store-connect</string>
-          	<key>destination</key>
-          	<string>export</string>
-          	<key>signingStyle</key>
-          	<string>automatic</string>
-          	<key>teamID</key>
-          	<string>${PURECIPES_IOS_DEVELOPMENT_TEAM}</string>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>destination</key>
+            <string>export</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
+            <key>teamID</key>
+            <string>${PURECIPES_IOS_DEVELOPMENT_TEAM}</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>app.purecipes.PurecipesIOSApp</key>
+              <string>${IOS_PROVISIONING_PROFILE_UUID}</string>
+            </dict>
           </dict>
           </plist>
           EOF
@@ -180,11 +305,7 @@ jobs:
             -exportArchive \
             -archivePath "${ARCHIVE_PATH}" \
             -exportPath "${EXPORT_DIR}" \
-            -exportOptionsPlist "${EXPORT_PLIST}" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "${APP_STORE_CONNECT_API_KEY_PATH}" \
-            -authenticationKeyID "${APP_STORE_CONNECT_API_KEY_ID}" \
-            -authenticationKeyIssuerID "${APP_STORE_CONNECT_ISSUER_ID}"
+            -exportOptionsPlist "${EXPORT_PLIST}"
           IPA_PATH="$(ls "${EXPORT_DIR}"/*.ipa | head -n 1)"
           echo "IPA_PATH=${IPA_PATH}" >> "${GITHUB_ENV}"
 
@@ -228,3 +349,13 @@ jobs:
             --groups alpha-testers \
             --release-notes-file "${GITHUB_WORKSPACE}/build/release-notes.txt" \
             --project purecipes-50e5c
+
+      - name: Clean up iOS distribution signing assets
+        if: ${{ always() }}
+        run: |
+          if [[ -n "${IOS_SIGNING_KEYCHAIN_PATH:-}" ]]; then
+            security delete-keychain "${IOS_SIGNING_KEYCHAIN_PATH}"
+          fi
+          if [[ -n "${IOS_INSTALLED_PROFILE_PATH:-}" ]]; then
+            rm -f "${IOS_INSTALLED_PROFILE_PATH}"
+          fi

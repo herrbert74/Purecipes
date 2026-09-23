@@ -71,7 +71,35 @@ This is the iOS equivalent of `PLAY_SERVICE_ACCOUNT_JSON`.
    | `APP_STORE_CONNECT_API_KEY_P8` | Full contents of the `.p8` file |
    | `PURECIPES_IOS_DEVELOPMENT_TEAM` | Same 10-character Team ID as step 1 |
 
-Xcode on CI uses **Automatic Signing** with that API key (`-allowProvisioningUpdates`). You do **not** need to export a `.p12` certificate if this works. If archive fails on signing, export an Apple Distribution certificate from Xcode → Settings → Accounts → Manage Certificates and we can add it as a secret later.
+The API key uploads the finished IPA to App Store Connect. Release signing uses an explicit Apple Distribution certificate and App Store provisioning profile so a clean CI runner does not depend on automatic signing.
+
+### 3a. Apple Distribution signing assets
+
+1. In Keychain Access, find the **Apple Distribution** certificate created for the Purecipes team. It must have its private key nested beneath it.
+2. Export the certificate and private key together as a password-protected `.p12` file.
+3. Download the App Store provisioning profile for `app.purecipes.PurecipesIOSApp` from Apple Developer → Certificates, Identifiers & Profiles → Profiles.
+4. Convert both binary files to single-line Base64 values:
+
+   ```bash
+   base64 -i PurecipesDistribution.p12 | tr -d '\n'
+   base64 -i Purecipes_App_Store.mobileprovision | tr -d '\n'
+   ```
+
+5. Add these GitHub repository secrets:
+
+   | Secret | Value |
+   |--------|--------|
+   | `IOS_DISTRIBUTION_CERTIFICATE_BASE64` | Single-line Base64 output for the `.p12` file |
+   | `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password chosen while exporting the `.p12` file |
+   | `IOS_APP_STORE_PROVISIONING_PROFILE_BASE64` | Single-line Base64 output for the `.mobileprovision` file |
+
+The workflow imports these assets into a temporary keychain, verifies the profile team and bundle ID before starting the archive, and deletes the temporary keychain and installed profile at the end of the job. Never commit either signing file to the repository.
+
+### CI build caches
+
+The distribution workflow caches Swift package checkouts by Xcode and dependency version. It also caches Xcode DerivedData by Xcode version, dependency configuration, and commit, with a dependency-compatible fallback to the previous commit. The first archive after an Xcode or dependency change remains a cold build; later archives can reuse compatible package and compilation outputs.
+
+The archive command prints Xcode's build timing summary so cache effectiveness and remaining bottlenecks are visible in the GitHub Actions log. If a cached build behaves unexpectedly, increment the `v1` cache-key prefix in `.github/workflows/distribute-ios.yml` to invalidate both Xcode caches.
 
 ### 4. RevenueCat App Store key
 
