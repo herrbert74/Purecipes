@@ -21,9 +21,6 @@ jobs:
   distribute:
     name: Archive and upload to TestFlight
     runs-on: macos-latest
-    env:
-      XCODE_DERIVED_DATA_PATH: ${{ runner.temp }}/PurecipesDerivedData
-      XCODE_SOURCE_PACKAGES_PATH: ${{ runner.temp }}/SourcePackages
 
     steps:
       - uses: actions/checkout@v7
@@ -215,14 +212,14 @@ jobs:
         id: swift-package-cache
         uses: actions/cache/restore@v6
         with:
-          path: ${{ env.XCODE_SOURCE_PACKAGES_PATH }}
+          path: ${{ runner.temp }}/SourcePackages
           key: xcode-source-packages-v1-${{ runner.os }}-${{ steps.xcode.outputs.cache-version }}-${{ hashFiles('.swiftpm-locks/**/Package.resolved', 'iosApp/**/Package.resolved', 'iosApp/**/Package.swift', 'iosApp/**/*.pbxproj') }}
 
       - name: Cache Xcode DerivedData
         id: derived-data-cache
         uses: actions/cache/restore@v6
         with:
-          path: ${{ env.XCODE_DERIVED_DATA_PATH }}
+          path: ${{ runner.temp }}/PurecipesDerivedData
           key: xcode-derived-data-v1-${{ runner.os }}-${{ steps.xcode.outputs.cache-version }}-${{ hashFiles('.swiftpm-locks/**/Package.resolved', 'iosApp/**/Package.resolved', 'iosApp/**/Package.swift', 'iosApp/**/*.pbxproj', '**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}-${{ github.sha }}
           restore-keys: |
             xcode-derived-data-v1-${{ runner.os }}-${{ steps.xcode.outputs.cache-version }}-${{ hashFiles('.swiftpm-locks/**/Package.resolved', 'iosApp/**/Package.resolved', 'iosApp/**/Package.swift', 'iosApp/**/*.pbxproj', '**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}-
@@ -246,8 +243,8 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "${ARCHIVE_PATH}" \
-            -derivedDataPath "${XCODE_DERIVED_DATA_PATH}" \
-            -clonedSourcePackagesDirPath "${XCODE_SOURCE_PACKAGES_PATH}" \
+            -derivedDataPath "${RUNNER_TEMP}/PurecipesDerivedData" \
+            -clonedSourcePackagesDirPath "${RUNNER_TEMP}/SourcePackages" \
             -skipPackagePluginValidation \
             -showBuildTimingSummary \
             CODE_SIGN_STYLE=Manual \
@@ -261,14 +258,14 @@ jobs:
         if: ${{ steps.swift-package-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6
         with:
-          path: ${{ env.XCODE_SOURCE_PACKAGES_PATH }}
+          path: ${{ runner.temp }}/SourcePackages
           key: ${{ steps.swift-package-cache.outputs.cache-primary-key }}
 
       - name: Save Xcode DerivedData cache
         if: ${{ steps.derived-data-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6
         with:
-          path: ${{ env.XCODE_DERIVED_DATA_PATH }}
+          path: ${{ runner.temp }}/PurecipesDerivedData
           key: ${{ steps.derived-data-cache.outputs.cache-primary-key }}
 
       - name: Export IPA
