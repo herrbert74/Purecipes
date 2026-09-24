@@ -278,10 +278,9 @@ jobs:
             -skipPackagePluginValidation \
             -showBuildTimingSummary \
             DEVELOPMENT_TEAM="${PURECIPES_IOS_DEVELOPMENT_TEAM}" \
-            "PurecipesIOSApp:CODE_SIGN_STYLE=Manual" \
-            "PurecipesIOSApp:CODE_SIGN_IDENTITY=Apple Distribution" \
-            "PurecipesIOSApp:DEVELOPMENT_TEAM=${PURECIPES_IOS_DEVELOPMENT_TEAM}" \
-            "PurecipesIOSApp:PROVISIONING_PROFILE_SPECIFIER=${IOS_PROVISIONING_PROFILE_UUID}" \
+            PURECIPES_CODE_SIGN_STYLE=Manual \
+            "PURECIPES_CODE_SIGN_IDENTITY=Apple Distribution" \
+            PURECIPES_PROVISIONING_PROFILE_SPECIFIER="${IOS_PROVISIONING_PROFILE_UUID}" \
             PURECIPES_ADMOB_APP_ID="${PURECIPES_ADMOB_IOS_APP_ID}" \
             archive
 
