@@ -85,7 +85,26 @@ The API key uploads the finished IPA to App Store Connect. Release signing uses 
    base64 -i Purecipes_App_Store.mobileprovision | tr -d '\n'
    ```
 
-5. Add these GitHub repository secrets:
+5. Validate the original files and their Base64 round trips before updating GitHub:
+
+   ```bash
+   openssl pkcs12 -in PurecipesDistribution.p12 -noout
+   security cms -D -i Purecipes_App_Store.mobileprovision | plutil -lint -
+
+   certificate_copy="$(mktemp)"
+   base64 -i PurecipesDistribution.p12 | tr -d '[:space:]' | base64 -D > "${certificate_copy}"
+   cmp PurecipesDistribution.p12 "${certificate_copy}"
+   rm -f "${certificate_copy}"
+
+   profile_copy="$(mktemp)"
+   base64 -i Purecipes_App_Store.mobileprovision | tr -d '[:space:]' | base64 -D > "${profile_copy}"
+   cmp Purecipes_App_Store.mobileprovision "${profile_copy}"
+   rm -f "${profile_copy}"
+   ```
+
+   `openssl` prompts for the `.p12` password. Each `cmp` succeeds silently when the decoded file exactly matches the original.
+
+6. Add these GitHub repository secrets:
 
    | Secret | Value |
    |--------|--------|

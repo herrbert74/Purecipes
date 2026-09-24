@@ -142,8 +142,43 @@ jobs:
           KEYCHAIN_PATH="${RUNNER_TEMP}/app-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -hex 32)"
 
-          printf '%s' "${IOS_DISTRIBUTION_CERTIFICATE_BASE64}" | base64 -D > "${CERTIFICATE_PATH}"
-          printf '%s' "${IOS_APP_STORE_PROVISIONING_PROFILE_BASE64}" | base64 -D > "${DOWNLOADED_PROFILE_PATH}"
+          decode_base64_secret() {
+            local secret_name="$1"
+            local secret_value="$2"
+            local output_path="$3"
+
+            if ! printf '%s' "${secret_value}" | tr -d '[:space:]' | base64 -D > "${output_path}"; then
+              echo "::error::${secret_name} is not valid Base64." >&2
+              rm -f "${output_path}"
+              return 1
+            fi
+            if [[ ! -s "${output_path}" ]]; then
+              echo "::error::${secret_name} decoded to an empty file." >&2
+              rm -f "${output_path}"
+              return 1
+            fi
+          }
+
+          decode_base64_secret \
+            IOS_DISTRIBUTION_CERTIFICATE_BASE64 \
+            "${IOS_DISTRIBUTION_CERTIFICATE_BASE64}" \
+            "${CERTIFICATE_PATH}"
+          decode_base64_secret \
+            IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 \
+            "${IOS_APP_STORE_PROVISIONING_PROFILE_BASE64}" \
+            "${DOWNLOADED_PROFILE_PATH}"
+
+          if ! openssl pkcs12 \
+            -in "${CERTIFICATE_PATH}" \
+            -passin env:IOS_DISTRIBUTION_CERTIFICATE_PASSWORD \
+            -noout >/dev/null 2>&1; then
+            echo "::error::IOS_DISTRIBUTION_CERTIFICATE_BASE64 is not a valid PKCS#12 file, or IOS_DISTRIBUTION_CERTIFICATE_PASSWORD is incorrect." >&2
+            exit 1
+          fi
+          if ! security cms -D -i "${DOWNLOADED_PROFILE_PATH}" > "${PROFILE_PLIST_PATH}"; then
+            echo "::error::IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 is not a valid provisioning profile." >&2
+            exit 1
+          fi
 
           security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
           security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
@@ -166,7 +201,6 @@ jobs:
             exit 1
           fi
 
-          security cms -D -i "${DOWNLOADED_PROFILE_PATH}" > "${PROFILE_PLIST_PATH}"
           PROFILE_UUID="$(plutil -extract UUID raw "${PROFILE_PLIST_PATH}")"
           PROFILE_TEAM_ID="$(plutil -extract TeamIdentifier.0 raw "${PROFILE_PLIST_PATH}")"
           PROFILE_APP_IDENTIFIER="$(plutil -extract Entitlements.application-identifier raw "${PROFILE_PLIST_PATH}")"
