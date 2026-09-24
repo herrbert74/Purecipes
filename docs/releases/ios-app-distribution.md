@@ -88,7 +88,7 @@ The API key uploads the finished IPA to App Store Connect. Release signing uses 
 5. Validate the original files and their Base64 round trips before updating GitHub:
 
    ```bash
-   openssl pkcs12 -in PurecipesDistribution.p12 -noout
+   openssl pkcs12 -legacy -in PurecipesDistribution.p12 -noout
    security cms -D -i Purecipes_App_Store.mobileprovision | plutil -lint -
 
    certificate_copy="$(mktemp)"
@@ -102,7 +102,7 @@ The API key uploads the finished IPA to App Store Connect. Release signing uses 
    rm -f "${profile_copy}"
    ```
 
-   `openssl` prompts for the `.p12` password. Each `cmp` succeeds silently when the decoded file exactly matches the original.
+   `openssl` prompts for the `.p12` password. `-legacy` enables the RC2 cipher commonly used by Keychain Access when exporting a `.p12`; needing it does not mean the file is invalid. Each `cmp` succeeds silently when the decoded file exactly matches the original.
 
 6. Add these GitHub repository secrets:
 

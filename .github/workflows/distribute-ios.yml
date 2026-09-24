@@ -168,13 +168,6 @@ jobs:
             "${IOS_APP_STORE_PROVISIONING_PROFILE_BASE64}" \
             "${DOWNLOADED_PROFILE_PATH}"
 
-          if ! openssl pkcs12 \
-            -in "${CERTIFICATE_PATH}" \
-            -passin env:IOS_DISTRIBUTION_CERTIFICATE_PASSWORD \
-            -noout >/dev/null 2>&1; then
-            echo "::error::IOS_DISTRIBUTION_CERTIFICATE_BASE64 is not a valid PKCS#12 file, or IOS_DISTRIBUTION_CERTIFICATE_PASSWORD is incorrect." >&2
-            exit 1
-          fi
           if ! security cms -D -i "${DOWNLOADED_PROFILE_PATH}" > "${PROFILE_PLIST_PATH}"; then
             echo "::error::IOS_APP_STORE_PROVISIONING_PROFILE_BASE64 is not a valid provisioning profile." >&2
             exit 1
@@ -183,12 +176,15 @@ jobs:
           security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
           security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
           security unlock-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
-          security import "${CERTIFICATE_PATH}" \
+          if ! security import "${CERTIFICATE_PATH}" \
             -P "${IOS_DISTRIBUTION_CERTIFICATE_PASSWORD}" \
             -A \
             -t cert \
             -f pkcs12 \
-            -k "${KEYCHAIN_PATH}"
+            -k "${KEYCHAIN_PATH}"; then
+            echo "::error::IOS_DISTRIBUTION_CERTIFICATE_BASE64 is not a valid PKCS#12 file, or IOS_DISTRIBUTION_CERTIFICATE_PASSWORD is incorrect." >&2
+            exit 1
+          fi
           security set-key-partition-list \
             -S apple-tool:,apple: \
             -s \
