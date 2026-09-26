@@ -1,10 +1,12 @@
 package app.purecipes.feature.library.ui
 
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.model.CookbookMembershipEvent
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
@@ -141,6 +143,108 @@ class CookbookDetailViewModelTest {
 		assertEquals(0, viewModel.totalMatches)
 	}
 
+	@Test
+	fun `cookbook membership event refreshes matching cookbook detail`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 77,
+			title = "Creamy tomato pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 30,
+			isFavorite = true,
+		)
+		val addedRecipe = recipe.copy(id = 78, title = "Garlic bread")
+		val cookbook = CookbookSummary(
+			id = 23,
+			name = "Weeknight dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbookRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = cookbookDetailViewModel(
+			cookbookId = cookbook.id,
+			name = cookbook.name,
+			cookbooksRepository = cookbooksRepository,
+		)
+		advanceUntilIdle()
+		assertEquals(listOf(recipe), viewModel.recipes.toList())
+
+		cookbooksRepository.cookbookRecipesPageResult = Ok(
+			SearchResultsPage(
+				items = listOf(recipe, addedRecipe),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 2,
+			),
+		)
+		cookbooksRepository.emitCookbookMembershipEvent(
+			CookbookMembershipEvent.Added(recipeId = addedRecipe.id, cookbookId = cookbook.id),
+		)
+		advanceUntilIdle()
+
+		assertEquals(listOf(recipe, addedRecipe), viewModel.recipes.toList())
+		assertEquals(2, viewModel.totalMatches)
+	}
+
+	@Test
+	fun `cookbook membership event for another cookbook leaves detail unchanged`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 77,
+			title = "Creamy tomato pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 30,
+			isFavorite = true,
+		)
+		val cookbook = CookbookSummary(
+			id = 23,
+			name = "Weeknight dinners",
+			recipeCount = 1,
+			updatedAtEpochMillis = 0L,
+		)
+		val cookbooksRepository = FakeCookbooksRepository(
+			cookbookRecipesPageResult = Ok(
+				SearchResultsPage(
+					items = listOf(recipe),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+		val viewModel = cookbookDetailViewModel(
+			cookbookId = cookbook.id,
+			name = cookbook.name,
+			cookbooksRepository = cookbooksRepository,
+		)
+		advanceUntilIdle()
+
+		cookbooksRepository.cookbookRecipesPageResult = Ok(
+			SearchResultsPage(
+				items = emptyList(),
+				pageNumber = 1,
+				pageSize = 20,
+				totalMatches = 0,
+			),
+		)
+		cookbooksRepository.emitCookbookMembershipEvent(
+			CookbookMembershipEvent.Added(recipeId = 99, cookbookId = cookbook.id + 1),
+		)
+		advanceUntilIdle()
+
+		assertEquals(listOf(recipe), viewModel.recipes.toList())
+		assertEquals(1, viewModel.totalMatches)
+	}
+
 	private val getCookbookCoverImageUrl = GetCookbookCoverImageUrlUseCase(
 		repository = object : CookbookCoverRepository {
 			override fun getCookbookCoverImageUrl(
@@ -162,6 +266,7 @@ class CookbookDetailViewModelTest {
 		removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+		observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 		shareCookbook = unusedShareCookbookUseCase(),
 		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		cookbookId = cookbookId,
