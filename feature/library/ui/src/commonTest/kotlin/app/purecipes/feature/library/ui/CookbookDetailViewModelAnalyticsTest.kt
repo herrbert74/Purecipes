@@ -7,6 +7,7 @@ import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
@@ -120,6 +121,7 @@ class CookbookDetailViewModelAnalyticsTest {
 		removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 		getCookbookCoverImageUrl = getCookbookCoverImageUrl,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+		observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 		shareCookbook = shareCookbook,
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		cookbookId = 10,

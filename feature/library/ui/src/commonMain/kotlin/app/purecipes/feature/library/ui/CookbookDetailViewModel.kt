@@ -12,6 +12,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbookCoverImageUrlUseCase
 import app.purecipes.feature.library.domain.usecase.GetCookbookRecipesPageUseCase
+import app.purecipes.feature.library.domain.usecase.ObserveCookbookMembershipEventsUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveRecipeFromCookbookUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
@@ -43,6 +44,7 @@ class CookbookDetailViewModel(
 	private val removeRecipeFromCookbookUseCase: RemoveRecipeFromCookbookUseCase,
 	private val getCookbookCoverImageUrl: GetCookbookCoverImageUrlUseCase,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
+	private val observeCookbookMembershipEvents: ObserveCookbookMembershipEventsUseCase,
 	private val shareCookbook: ShareCookbookUseCase,
 	private val trackEvent: TrackEventUseCase,
 	@Assisted private val cookbookId: Int,
@@ -52,6 +54,7 @@ class CookbookDetailViewModel(
 
 	private var activeSessionKey: String? = sessionKey
 	private var favoriteEventsJob: Job? = null
+	private var cookbookMembershipEventsJob: Job? = null
 	private var hasTrackedOpen = false
 
 	val title: String get() = initialName
@@ -77,7 +80,7 @@ class CookbookDetailViewModel(
 	)
 
 	init {
-		startFavoriteEventsCollection()
+		startDetailEventsCollection()
 		viewModelScope.launch {
 			loadPage(FIRST_PAGE_NUMBER)
 		}
@@ -90,7 +93,9 @@ class CookbookDetailViewModel(
 		activeSessionKey = sessionKey
 		favoriteEventsJob?.cancel()
 		favoriteEventsJob = null
-		startFavoriteEventsCollection()
+		cookbookMembershipEventsJob?.cancel()
+		cookbookMembershipEventsJob = null
+		startDetailEventsCollection()
 	}
 
 	fun loadCookbookCover() {
@@ -148,6 +153,11 @@ class CookbookDetailViewModel(
 		}
 	}
 
+	private fun startDetailEventsCollection() {
+		startFavoriteEventsCollection()
+		startCookbookMembershipEventsCollection()
+	}
+
 	private fun startFavoriteEventsCollection() {
 		if (activeSessionKey == null) {
 			return
@@ -155,6 +165,19 @@ class CookbookDetailViewModel(
 		favoriteEventsJob = viewModelScope.launch {
 			observeFavoriteEvents().collect {
 				refreshDetail()
+			}
+		}
+	}
+
+	private fun startCookbookMembershipEventsCollection() {
+		if (activeSessionKey == null) {
+			return
+		}
+		cookbookMembershipEventsJob = viewModelScope.launch {
+			observeCookbookMembershipEvents().collect { event ->
+				if (event.cookbookId == cookbookId) {
+					refreshDetail()
+				}
 			}
 		}
 	}
