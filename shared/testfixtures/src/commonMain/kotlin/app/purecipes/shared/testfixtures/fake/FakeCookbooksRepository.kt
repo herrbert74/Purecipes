@@ -8,6 +8,7 @@ import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
 import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -111,6 +112,17 @@ class FakeCookbooksRepository(
 		lastRemovedRecipeId = recipeId
 		return removeRecipeFromCookbookResult.also { outcome ->
 			if (outcome.getError() == null) {
+				cookbookRecipesPageResult.get()?.let { page ->
+					val remainingItems = page.items.filterNot { it.id == recipeId }
+					if (remainingItems.size != page.items.size) {
+						cookbookRecipesPageResult = Ok(
+							page.copy(
+								items = remainingItems,
+								totalMatches = (page.totalMatches - 1).coerceAtLeast(0),
+							),
+						)
+					}
+				}
 				cookbookMembershipEvents.tryEmit(
 					CookbookMembershipEvent.Removed(recipeId = recipeId, cookbookId = cookbookId),
 				)

@@ -51,7 +51,8 @@ import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -440,6 +441,57 @@ class LibraryScreenTest {
 	}
 
 	@Test
+	fun cookbookDetailRefreshAddsRecipeAfterMembershipEvent() = runRecompositionTrackingUiTest {
+		val cookbooksRepo = MutableCookbooksRepository()
+		val addedRecipe = RecipeSummary(
+			id = 78,
+			title = "Garlic bread",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 15,
+			isFavorite = true,
+		)
+		val viewModel = cookbookDetailViewModelForTest(cookbooksRepository = cookbooksRepo)
+		setTrackedContent {
+			PurecipesTheme {
+				CookbookDetailScreen(
+					cookbookId = TEST_COOKBOOK_ID,
+					name = TEST_COOKBOOK_NAME,
+					sessionKey = "session",
+					onBack = {},
+					onRecipeSelect = {},
+					viewModel = viewModel,
+				)
+			}
+		}
+		onNodeWithText("1 recipes").assertIsDisplayed()
+
+		runOnIdle {
+			cookbooksRepo.setCookbookRecipes(
+				listOf(
+					RecipeSummary(
+						id = TEST_RECIPE_ID,
+						title = TEST_RECIPE_TITLE,
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 30,
+						isFavorite = true,
+					),
+					addedRecipe,
+				),
+			)
+			cookbooksRepo.emitCookbookMembershipEvent(
+				CookbookMembershipEvent.Added(recipeId = addedRecipe.id, cookbookId = TEST_COOKBOOK_ID),
+			)
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText(addedRecipe.title).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText("2 recipes").assertIsDisplayed()
+	}
+
+	@Test
 	fun cookbookDetailRemoveRecipeInvokesRemoveUseCase() = runRecompositionTrackingUiTest {
 		val cookbooksRepo = MutableCookbooksRepository()
 		val viewModel = cookbookDetailViewModelForTest(cookbooksRepository = cookbooksRepo)
@@ -503,6 +555,8 @@ class LibraryScreenTest {
 		var removeRecipeFromCookbookCallCount: Int = 0
 			private set
 
+		private val cookbookMembershipEvents = MutableSharedFlow<CookbookMembershipEvent>(extraBufferCapacity = 1)
+
 		override suspend fun getCookbooksPage(pageNumber: Int, pageSize: Int): Outcome<CookbookListPage> {
 			val summary = cookbook.copy(recipeCount = cookbookRecipes.size)
 			return Ok(
@@ -544,7 +598,11 @@ class LibraryScreenTest {
 
 		override suspend fun getRecipeCookbooks(recipeId: Int): Outcome<List<CookbookRef>> = Ok(emptyList())
 
-		override fun observeCookbookMembershipEvents() = emptyFlow<CookbookMembershipEvent>()
+		override fun observeCookbookMembershipEvents() = cookbookMembershipEvents.asSharedFlow()
+
+		fun emitCookbookMembershipEvent(event: CookbookMembershipEvent) {
+			cookbookMembershipEvents.tryEmit(event)
+		}
 
 		fun setCookbookRecipes(recipes: List<RecipeSummary>) {
 			cookbookRecipes = recipes
@@ -592,6 +650,7 @@ private fun cookbookDetailViewModelForTest(
 	removeRecipeFromCookbookUseCase = RemoveRecipeFromCookbookUseCase(cookbooksRepository),
 	getCookbookCoverImageUrl = testCookbookCoverImageUrl,
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+	observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(cookbooksRepository),
 	shareCookbook = unusedShareCookbookUseCase(),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	cookbookId = TEST_COOKBOOK_ID,
