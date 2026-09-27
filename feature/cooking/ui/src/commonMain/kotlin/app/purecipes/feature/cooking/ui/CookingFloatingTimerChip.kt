@@ -14,10 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -29,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -88,7 +85,7 @@ internal fun CookingFloatingTimerChip(
 				label = "timerIcon",
 			) { complete ->
 				Icon(
-					imageVector = if (complete) Icons.Filled.Check else Icons.Filled.Timer,
+					imageVector = if (complete) AppIcons.Check else AppIcons.Timer,
 					contentDescription = null,
 					tint = contentColor,
 					modifier = Modifier.size(TIMER_ICON_SIZE),
@@ -105,7 +102,7 @@ internal fun CookingFloatingTimerChip(
 			)
 			IconButton(onClick = onDismiss) {
 				Icon(
-					imageVector = Icons.Filled.Close,
+					imageVector = AppIcons.Close,
 					contentDescription = "Dismiss timer",
 					tint = contentColor,
 				)

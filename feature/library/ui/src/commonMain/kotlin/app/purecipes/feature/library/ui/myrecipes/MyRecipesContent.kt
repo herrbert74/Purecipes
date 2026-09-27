@@ -12,9 +12,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +29,7 @@ import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.VerticalScrollbar
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 
@@ -54,7 +52,7 @@ internal fun MyRecipesContent(
 			isLoading && recipes.isEmpty() -> RecipeCardSkeletonGrid()
 
 			errorMessage != null && recipes.isEmpty() -> EmptyStateContent(
-				icon = Icons.Filled.Warning,
+				icon = AppIcons.Warning,
 				iconContentDescription = "Error",
 				title = "Couldn't load recipes",
 				description = errorMessage,
@@ -67,7 +65,7 @@ internal fun MyRecipesContent(
 			)
 
 			recipes.isEmpty() -> EmptyStateContent(
-				icon = Icons.Filled.Add,
+				icon = AppIcons.Add,
 				iconContentDescription = "My recipes",
 				title = "No recipes uploaded yet",
 				description = "Create your own recipes, then edit them any time from here.",

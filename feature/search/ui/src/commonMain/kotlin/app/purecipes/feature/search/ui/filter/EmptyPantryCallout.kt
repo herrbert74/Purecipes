@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val FILTER_KEY_INGREDIENTS_EMPTY_PANTRY_TAG = "filterKeyIngredientsEmptyPantry"
@@ -48,7 +47,7 @@ internal fun EmptyPantryCallout(
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Icon(
-				imageVector = Icons.Default.Info,
+				imageVector = AppIcons.Info,
 				contentDescription = null,
 				modifier = Modifier.size(20.dp),
 				tint = PurecipesTheme.colorScheme.onSurfaceVariant,

@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.SectionHeader
 import app.purecipes.shared.ui.component.USDA_NUTRITION_ATTRIBUTION
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.coroutines.launch
@@ -60,7 +58,7 @@ fun AboutScreen(
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = AppIcons.ArrowBack,
 							contentDescription = "Back",
 						)
 					}
@@ -212,7 +210,7 @@ private fun AboutRow(
 		}
 		if (showChevron) {
 			Icon(
-				imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+				imageVector = AppIcons.KeyboardArrowRight,
 				contentDescription = null,
 				tint = PurecipesTheme.colorScheme.onSurfaceVariant,
 			)

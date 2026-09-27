@@ -18,9 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -47,6 +44,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val INGREDIENTS_ADD_BUTTON_TAG = "createRecipeAddIngredientButton"
@@ -201,7 +199,7 @@ private fun IngredientRowEditor(
 						contentAlignment = Alignment.Center,
 					) {
 						Icon(
-							imageVector = Icons.Filled.ExpandMore,
+							imageVector = AppIcons.ExpandMore,
 							contentDescription = if (expanded) {
 								"Collapse ingredient ${index + 1}"
 							} else {
@@ -213,7 +211,7 @@ private fun IngredientRowEditor(
 					if (canRemove) {
 						IconButton(onClick = onRemoveRowClick) {
 							Icon(
-								imageVector = Icons.Filled.Delete,
+								imageVector = AppIcons.Delete,
 								contentDescription = "Remove ingredient ${index + 1}",
 							)
 						}
@@ -311,7 +309,7 @@ private fun IngredientExpandedEditor(
 				trailing = {
 					IconButton(onClick = { onRemoveAlternativeClick(altIndex) }) {
 						Icon(
-							imageVector = Icons.Filled.Delete,
+							imageVector = AppIcons.Delete,
 							contentDescription = "Remove alternative",
 						)
 					}

@@ -10,10 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
@@ -88,7 +85,7 @@ fun RecipeCard(
 					) {
 						if (recipe.isFavorite) {
 							Icon(
-								imageVector = Icons.Filled.Favorite,
+								imageVector = AppIcons.Favorite,
 								contentDescription = "Favorited",
 								tint = Color.White,
 								modifier = Modifier
@@ -102,7 +99,7 @@ fun RecipeCard(
 								modifier = Modifier.testTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX${recipe.id}"),
 							) {
 								Icon(
-									imageVector = Icons.Filled.Edit,
+									imageVector = AppIcons.Edit,
 									contentDescription = "Edit recipe",
 									tint = Color.White,
 								)
@@ -114,7 +111,7 @@ fun RecipeCard(
 								modifier = Modifier.testTag("$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX${recipe.id}"),
 							) {
 								Icon(
-									imageVector = Icons.Filled.Delete,
+									imageVector = AppIcons.Delete,
 									contentDescription = deleteContentDescription,
 									tint = Color.White,
 								)

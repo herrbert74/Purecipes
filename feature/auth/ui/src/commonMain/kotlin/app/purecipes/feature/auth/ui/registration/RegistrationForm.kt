@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -32,6 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -141,9 +139,9 @@ internal fun RegistrationForm(
 					IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
 						Icon(
 							imageVector = if (isPasswordVisible) {
-								Icons.Filled.VisibilityOff
+								AppIcons.VisibilityOff
 							} else {
-								Icons.Filled.Visibility
+								AppIcons.Visibility
 							},
 							contentDescription = if (isPasswordVisible) {
 								"Hide password"
@@ -185,9 +183,9 @@ internal fun RegistrationForm(
 					IconButton(onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible }) {
 						Icon(
 							imageVector = if (isConfirmPasswordVisible) {
-								Icons.Filled.VisibilityOff
+								AppIcons.VisibilityOff
 							} else {
-								Icons.Filled.Visibility
+								AppIcons.Visibility
 							},
 							contentDescription = if (isConfirmPasswordVisible) {
 								"Hide confirm password"

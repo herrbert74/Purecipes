@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,6 +20,7 @@ import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -50,7 +49,7 @@ internal fun CookbooksTabContent(
 		}
 
 		cookbooks.isEmpty() && totalMatches == 0 -> EmptyStateContent(
-			icon = Icons.AutoMirrored.Filled.MenuBook,
+			icon = AppIcons.MenuBook,
 			iconContentDescription = "Cookbooks",
 			title = "No cookbooks yet",
 			description = "Organize saved recipes into cookbooks.",

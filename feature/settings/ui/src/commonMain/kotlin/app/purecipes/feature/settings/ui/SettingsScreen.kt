@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +26,7 @@ import app.purecipes.feature.subscription.ui.GoPremiumSettingsPanel
 import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.NotificationPreferences
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 
@@ -68,7 +67,7 @@ fun SettingsScreen(
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = AppIcons.ArrowBack,
 							contentDescription = "Back",
 						)
 					}

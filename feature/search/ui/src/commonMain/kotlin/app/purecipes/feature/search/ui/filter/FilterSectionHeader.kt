@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -20,6 +17,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal fun filterSectionSubtitleTag(title: String): String =
@@ -71,7 +69,7 @@ internal fun FilterSectionHeader(
 		}
 		if (isLocked) {
 			Icon(
-				imageVector = Icons.Default.Lock,
+				imageVector = AppIcons.Lock,
 				contentDescription = "$title is a premium filter",
 				tint = if (titleColor == Color.Unspecified) {
 					PurecipesTheme.colorScheme.onSurfaceVariant
@@ -83,7 +81,7 @@ internal fun FilterSectionHeader(
 		} else if (onToggleCollapse != null) {
 			IconButton(onClick = onToggleCollapse) {
 				Icon(
-					imageVector = Icons.Default.ExpandMore,
+					imageVector = AppIcons.ExpandMore,
 					contentDescription = if (isCollapsed) "Expand $title" else "Collapse $title",
 					modifier = Modifier.rotate(chevronRotation),
 				)

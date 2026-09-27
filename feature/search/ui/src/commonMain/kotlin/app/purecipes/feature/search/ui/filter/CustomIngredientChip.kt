@@ -1,8 +1,6 @@
 package app.purecipes.feature.search.ui.filter
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -11,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CUSTOM_INGREDIENT_REMOVE_BUTTON_TAG_PREFIX = "customIngredientRemove"
@@ -54,7 +53,7 @@ internal fun CustomIngredientChip(
 					.testTag(customIngredientRemoveTag(item)),
 			) {
 				Icon(
-					imageVector = Icons.Filled.Close,
+					imageVector = AppIcons.Close,
 					contentDescription = "Remove $item",
 					modifier = Modifier.size(InputChipDefaults.IconSize),
 				)

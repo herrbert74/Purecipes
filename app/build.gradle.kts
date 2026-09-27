@@ -200,7 +200,6 @@ dependencies {
 	screenshotTestImplementation(platform(libs.androidx.composeBom))
 	screenshotTestImplementation(libs.androidx.composeFoundation)
 	screenshotTestImplementation(libs.androidx.composeMaterial3)
-	screenshotTestImplementation(libs.androidx.composeMaterialIconsExtended)
 	screenshotTestImplementation(libs.androidx.composeUiTooling)
 	screenshotTestImplementation(libs.androidx.core)
 	screenshotTestImplementation(libs.coil.compose)

@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -28,6 +26,7 @@ import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.InitializeGoogleAuthenticationProvider
 import app.purecipes.feature.auth.ui.profile.SignedInContent
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 
@@ -74,7 +73,7 @@ fun AuthenticationScreen(
 				actions = {
 					IconButton(onClick = onOpenSettings) {
 						Icon(
-							imageVector = Icons.Filled.Settings,
+							imageVector = AppIcons.Settings,
 							contentDescription = "Open settings",
 						)
 					}

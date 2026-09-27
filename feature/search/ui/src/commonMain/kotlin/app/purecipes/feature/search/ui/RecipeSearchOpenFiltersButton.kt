@@ -1,8 +1,6 @@
 package app.purecipes.feature.search.ui
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -11,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG = "recipeSearchOpenFiltersButton"
@@ -25,7 +24,7 @@ internal fun RecipeSearchOpenFiltersButton(
 		modifier = Modifier.testTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG),
 	) {
 		Icon(
-			imageVector = Icons.Default.FilterList,
+			imageVector = AppIcons.FilterList,
 			contentDescription = "Open filters",
 			tint = if (hasActiveFilters) {
 				PurecipesTheme.colorScheme.primary

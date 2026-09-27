@@ -1,8 +1,6 @@
 package app.purecipes.feature.newrecipe.ui
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.SegmentedListItem
@@ -14,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CREATE_RECIPE_PRIVACY_SWITCH_TAG = "createRecipePrivacySwitch"
@@ -46,7 +45,7 @@ internal fun CreateRecipePrivacySection(
 			Row(verticalAlignment = Alignment.CenterVertically) {
 				if (!canMakePrivate) {
 					Icon(
-						imageVector = Icons.Filled.Lock,
+						imageVector = AppIcons.Lock,
 						contentDescription = "Private recipes are a premium feature",
 					)
 				}

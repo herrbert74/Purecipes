@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -34,6 +32,7 @@ import app.purecipes.shared.domain.model.IngredientNutritionLine
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeNutrition
 import app.purecipes.shared.domain.model.hasMacroNutrients
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlin.math.roundToInt
 
@@ -97,7 +96,7 @@ fun NutritionFactsDialog(
 					)
 					IconButton(onClick = onDismiss) {
 						Icon(
-							imageVector = Icons.Filled.Close,
+							imageVector = AppIcons.Close,
 							contentDescription = "Close nutrition facts",
 						)
 					}

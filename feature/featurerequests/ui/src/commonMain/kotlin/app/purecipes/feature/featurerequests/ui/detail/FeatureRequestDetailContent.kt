@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -30,6 +28,7 @@ import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -53,7 +52,7 @@ internal fun FeatureRequestDetailContent(
 				navigationIcon = {
 					IconButton(onClick = callbacks.onBack) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = AppIcons.ArrowBack,
 							contentDescription = "Back",
 						)
 					}

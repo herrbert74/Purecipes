@@ -2,8 +2,6 @@ package app.purecipes.feature.library.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -13,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -21,7 +20,7 @@ internal fun LibrarySignedOutContent(
 	modifier: Modifier = Modifier,
 ) {
 	EmptyStateContent(
-		icon = Icons.Filled.Favorite,
+		icon = AppIcons.Favorite,
 		iconContentDescription = "Favorites",
 		title = "Sign in to view favorites",
 		description = "Favorites are tied to your session, so each account keeps its own saved recipes.",

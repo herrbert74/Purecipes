@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +21,7 @@ import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -62,7 +61,7 @@ internal fun FeatureRequestsListContent(
 		} else if (state.featureRequests.isEmpty() && state.totalMatches == 0) {
 			Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
 				EmptyStateContent(
-					icon = Icons.Filled.Lightbulb,
+					icon = AppIcons.Lightbulb,
 					iconContentDescription = "Feature requests",
 					title = featureRequestsEmptyTitle(state.statusFilter),
 					description = featureRequestsEmptyDescription(state.statusFilter),

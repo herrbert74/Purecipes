@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
@@ -25,6 +21,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
@@ -117,7 +114,7 @@ internal fun CreateRecipeAboutSection(
 				colors = colors,
 				trailingContent = {
 					Icon(
-						imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+						imageVector = AppIcons.KeyboardArrowRight,
 						contentDescription = null,
 					)
 				},
@@ -203,9 +200,9 @@ private fun ExpandableMetadataField(
 			trailingContent = {
 				Icon(
 					imageVector = if (expanded) {
-						Icons.Filled.ExpandLess
+						AppIcons.ExpandLess
 					} else {
-						Icons.Filled.ExpandMore
+						AppIcons.ExpandMore
 					},
 					contentDescription = if (expanded) {
 						"Collapse $label"

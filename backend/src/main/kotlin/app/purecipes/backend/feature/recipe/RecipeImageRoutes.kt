@@ -14,7 +14,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import io.ktor.utils.io.readRemaining
+import io.ktor.utils.io.readBuffer
 import kotlinx.io.readByteArray
 
 private const val MAX_RECIPE_IMAGE_BYTES = 5 * 1024 * 1024
@@ -33,7 +33,7 @@ fun Route.recipeImageRoutes(
 
 			call.receiveMultipart().forEachPart { part ->
 				if (part is PartData.FileItem && part.name == "image" && imageBytes == null) {
-					imageBytes = part.provider().readRemaining().readByteArray()
+					imageBytes = part.provider().readBuffer().readByteArray()
 					originalFileName = part.originalFileName
 					contentType = part.contentType
 				}

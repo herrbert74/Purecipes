@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +32,7 @@ import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.component.staggeredAppear
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -59,7 +58,7 @@ internal fun SearchResultsContent(
 		isSearching -> RecipeCardSkeletonGrid(modifier = modifier)
 
 		errorMessage != null -> EmptyStateContent(
-			icon = Icons.Filled.Warning,
+			icon = AppIcons.Warning,
 			iconContentDescription = "Error",
 			title = errorMessage,
 			description = "Check your connection, then try again.",

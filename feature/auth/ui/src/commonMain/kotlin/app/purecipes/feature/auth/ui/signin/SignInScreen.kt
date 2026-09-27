@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -24,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
 import app.purecipes.shared.domain.model.REGISTRATION_SUCCESS_MESSAGE
 import app.purecipes.shared.ui.component.BrandMomentHeader
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
@@ -94,7 +92,7 @@ internal fun SignInScreenContent(
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = AppIcons.ArrowBack,
 							contentDescription = "Back",
 						)
 					}
@@ -112,7 +110,7 @@ internal fun SignInScreenContent(
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				BrandMomentHeader(
-					icon = Icons.Filled.Person,
+					icon = AppIcons.Person,
 					iconContentDescription = "Sign in",
 					title = "Welcome back",
 					description = "Sign in with your email to pick up where you left off.",

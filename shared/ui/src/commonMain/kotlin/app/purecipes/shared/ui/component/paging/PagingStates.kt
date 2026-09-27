@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
+import app.purecipes.shared.ui.icon.AppIcons
 
 /**
  * Copied from: [https://github.com/Ahmad-Hamwi/lazy-pagination-compose]
@@ -49,7 +48,7 @@ fun FirstPageErrorIndicator(
 	onRetryClick: () -> Unit = {},
 ) {
 	EmptyStateContent(
-		icon = Icons.Filled.Warning,
+		icon = AppIcons.Warning,
 		iconContentDescription = "Error",
 		title = exception.message ?: "Something went wrong",
 		description = "Check your connection, then try again.",
