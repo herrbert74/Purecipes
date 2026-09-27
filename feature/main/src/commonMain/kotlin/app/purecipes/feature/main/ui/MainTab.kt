@@ -1,10 +1,5 @@
 package app.purecipes.feature.main.ui
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
@@ -12,6 +7,7 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
+import app.purecipes.shared.ui.icon.AppIcons
 
 internal enum class MainTabStackId {
 	Search,
@@ -71,9 +67,9 @@ internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = when (desti
 
 internal val MainTab.icon: ImageVector
 	get() = when (destination) {
-		is SearchDestination -> Icons.Filled.Home
-		is LibraryDestination -> Icons.AutoMirrored.Filled.LibraryBooks
-		CreateDestination -> Icons.Filled.Add
-		AccountDestination -> Icons.Filled.Person
+		is SearchDestination -> AppIcons.Home
+		is LibraryDestination -> AppIcons.LibraryBooks
+		CreateDestination -> AppIcons.Add
+		AccountDestination -> AppIcons.Person
 		else -> error("$destination is not a tab destination")
 	}

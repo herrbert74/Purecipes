@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -67,7 +66,7 @@ private fun EmptyStateContentLightPreview() {
 	PurecipesTheme(darkTheme = false) {
 		Surface {
 			EmptyStateContent(
-				icon = Icons.Filled.Favorite,
+				icon = AppIcons.Favorite,
 				iconContentDescription = "Favorites",
 				title = "No favorites yet",
 				description = "Add recipes from the details screen and they will appear here.",
@@ -82,7 +81,7 @@ private fun EmptyStateContentDarkPreview() {
 	PurecipesTheme(darkTheme = true) {
 		Surface {
 			EmptyStateContent(
-				icon = Icons.Filled.Favorite,
+				icon = AppIcons.Favorite,
 				iconContentDescription = "Favorites",
 				title = "No favorites yet",
 				description = "Add recipes from the details screen and they will appear here.",
@@ -97,7 +96,7 @@ private fun EmptyStateContentWithActionPreview() {
 	PurecipesTheme(darkTheme = false) {
 		Surface {
 			EmptyStateContent(
-				icon = Icons.Filled.Favorite,
+				icon = AppIcons.Favorite,
 				iconContentDescription = "Favorites",
 				title = "Sign in to view favorites",
 				description = "Favorites are tied to your session, so each account keeps its own saved recipes.",

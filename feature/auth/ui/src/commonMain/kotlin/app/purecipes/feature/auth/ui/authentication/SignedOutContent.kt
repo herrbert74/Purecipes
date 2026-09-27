@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -19,6 +17,7 @@ import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.profile.PrivacySettingsContent
 import app.purecipes.shared.ui.component.BrandMomentHeader
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -42,7 +41,7 @@ internal fun SignedOutContent(
 ) {
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m)) {
 		BrandMomentHeader(
-			icon = Icons.Filled.Favorite,
+			icon = AppIcons.Favorite,
 			iconContentDescription = "Account",
 			title = "Your kitchen, saved",
 			description = "Sign in or create an account.",

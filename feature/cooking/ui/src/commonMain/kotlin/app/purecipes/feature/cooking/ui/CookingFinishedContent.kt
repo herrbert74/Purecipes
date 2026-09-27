@@ -20,9 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -48,6 +45,7 @@ import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.PurecipesButtonDefaults
 import app.purecipes.shared.ui.component.PurecipesOutlinedButton
 import app.purecipes.shared.ui.component.colorFamily
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val COOKING_FINISHED_CONTENT_TAG = "cookingFinishedContent"
@@ -122,7 +120,7 @@ internal fun CookingFinishedContent(
 						shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
 					) {
 						Icon(
-							imageVector = Icons.Filled.Share,
+							imageVector = AppIcons.Share,
 							contentDescription = null,
 							modifier = Modifier.size(ButtonDefaults.IconSize),
 						)
@@ -141,7 +139,7 @@ internal fun CookingFinishedContent(
 					shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
 				) {
 					Icon(
-						imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+						imageVector = AppIcons.MenuBookOutlined,
 						contentDescription = null,
 						modifier = Modifier.size(ButtonDefaults.IconSize),
 					)

@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -16,6 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import app.purecipes.shared.ui.component.FavoriteHeartIcon
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PreviewScreenSizes
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -50,7 +49,7 @@ internal fun RecipeDetailsTopBarActions(
 			label = { Text(text = "Cookbook") },
 			leadingIcon = {
 				Icon(
-					imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+					imageVector = AppIcons.MenuBookOutlined,
 					contentDescription = null,
 				)
 			},

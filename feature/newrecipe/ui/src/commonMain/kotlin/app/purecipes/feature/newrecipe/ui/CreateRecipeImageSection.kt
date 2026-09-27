@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -33,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
@@ -190,7 +189,7 @@ private fun EmptyImageDropzone(
 			modifier = Modifier.padding(PurecipesTheme.space.m),
 		) {
 			Icon(
-				imageVector = Icons.Filled.AddAPhoto,
+				imageVector = AppIcons.AddAPhoto,
 				contentDescription = null,
 				modifier = Modifier.size(40.dp),
 				tint = PurecipesTheme.colorScheme.primary,

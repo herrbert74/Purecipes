@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -19,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.ui.component.BrandMomentHeader
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 
@@ -42,7 +40,7 @@ fun RegistrationScreen(
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = AppIcons.ArrowBack,
 							contentDescription = "Back",
 						)
 					}
@@ -60,7 +58,7 @@ fun RegistrationScreen(
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				BrandMomentHeader(
-					icon = Icons.Filled.Person,
+					icon = AppIcons.Person,
 					iconContentDescription = "Create account",
 					title = "Join Purecipes",
 					description = "Register with your email. Your display name is shown on your profile.",

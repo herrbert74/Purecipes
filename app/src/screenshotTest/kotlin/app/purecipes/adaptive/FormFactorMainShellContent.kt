@@ -1,11 +1,6 @@
 package app.purecipes.adaptive
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -15,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import app.purecipes.feature.search.ui.RecipeSearchScreenContent
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 
@@ -24,10 +20,10 @@ private data class FormFactorMainTab(
 )
 
 private val formFactorMainTabs = listOf(
-	FormFactorMainTab(label = "Home", icon = Icons.Filled.Home),
-	FormFactorMainTab(label = "Library", icon = Icons.AutoMirrored.Filled.LibraryBooks),
-	FormFactorMainTab(label = "Create", icon = Icons.Filled.Add),
-	FormFactorMainTab(label = "Account", icon = Icons.Filled.Person),
+	FormFactorMainTab(label = "Home", icon = AppIcons.Home),
+	FormFactorMainTab(label = "Library", icon = AppIcons.LibraryBooks),
+	FormFactorMainTab(label = "Create", icon = AppIcons.Add),
+	FormFactorMainTab(label = "Account", icon = AppIcons.Person),
 )
 
 @Composable

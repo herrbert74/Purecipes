@@ -4,15 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val MIN_SELECTED_COUNT_FOR_CLEAR_ALL = 2
@@ -42,7 +40,7 @@ internal fun FilterBulkActionChips(
 			label = { Text(text = "Select all") },
 			leadingIcon = {
 				Icon(
-					imageVector = Icons.Default.DoneAll,
+					imageVector = AppIcons.DoneAll,
 					contentDescription = null,
 				)
 			},
@@ -54,7 +52,7 @@ internal fun FilterBulkActionChips(
 				label = { Text(text = "Clear all") },
 				leadingIcon = {
 					Icon(
-						imageVector = Icons.Default.Clear,
+						imageVector = AppIcons.Clear,
 						contentDescription = null,
 					)
 				},
@@ -86,7 +84,7 @@ internal fun FilterClearActionChip(
 			label = { Text(text = "Clear all") },
 			leadingIcon = {
 				Icon(
-					imageVector = Icons.Default.Clear,
+					imageVector = AppIcons.Clear,
 					contentDescription = null,
 				)
 			},

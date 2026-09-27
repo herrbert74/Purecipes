@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import app.purecipes.shared.ui.component.SectionHeader
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SETTINGS_PRIVACY_POLICY_ROW_TAG = "settings_privacy_policy_row"
@@ -78,7 +77,7 @@ private fun LegalSettingsRow(
 			modifier = Modifier.weight(1f),
 		)
 		Icon(
-			imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+			imageVector = AppIcons.KeyboardArrowRight,
 			contentDescription = null,
 			tint = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)

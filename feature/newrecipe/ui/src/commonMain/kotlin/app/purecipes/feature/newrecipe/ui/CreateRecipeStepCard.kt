@@ -13,15 +13,6 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
@@ -46,6 +37,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.delay
 
@@ -106,7 +98,7 @@ internal fun CreateRecipeStepCard(
 				trailingContent = {
 					Row(verticalAlignment = Alignment.CenterVertically) {
 						Icon(
-							imageVector = Icons.Filled.ExpandLess,
+							imageVector = AppIcons.ExpandLess,
 							contentDescription = "Collapse step $stepNumber",
 						)
 						StepDragHandle(
@@ -121,7 +113,7 @@ internal fun CreateRecipeStepCard(
 								modifier = Modifier.testTag("$STEP_REMOVE_BUTTON_TAG_PREFIX$index"),
 							) {
 								Icon(
-									imageVector = Icons.Filled.Delete,
+									imageVector = AppIcons.Delete,
 									contentDescription = "Remove step $stepNumber",
 								)
 							}
@@ -145,7 +137,7 @@ internal fun CreateRecipeStepCard(
 						modifier = Modifier.testTag("$STEP_MOVE_UP_BUTTON_TAG_PREFIX$index"),
 					) {
 						Icon(
-							imageVector = Icons.Filled.KeyboardArrowUp,
+							imageVector = AppIcons.KeyboardArrowUp,
 							contentDescription = "Move step $stepNumber up",
 						)
 					}
@@ -155,7 +147,7 @@ internal fun CreateRecipeStepCard(
 						modifier = Modifier.testTag("$STEP_MOVE_DOWN_BUTTON_TAG_PREFIX$index"),
 					) {
 						Icon(
-							imageVector = Icons.Filled.KeyboardArrowDown,
+							imageVector = AppIcons.KeyboardArrowDown,
 							contentDescription = "Move step $stepNumber down",
 						)
 					}
@@ -205,7 +197,7 @@ internal fun CreateRecipeStepCard(
 			trailingContent = {
 				Row(verticalAlignment = Alignment.CenterVertically) {
 					Icon(
-						imageVector = Icons.Filled.ExpandMore,
+						imageVector = AppIcons.ExpandMore,
 						contentDescription = "Expand step $stepNumber",
 					)
 					StepDragHandle(
@@ -220,7 +212,7 @@ internal fun CreateRecipeStepCard(
 							modifier = Modifier.testTag("$STEP_REMOVE_BUTTON_TAG_PREFIX$index"),
 						) {
 							Icon(
-								imageVector = Icons.Filled.Delete,
+								imageVector = AppIcons.Delete,
 								contentDescription = "Remove step $stepNumber",
 							)
 						}
@@ -246,9 +238,9 @@ private fun StepFieldActionChips(
 		"Next step"
 	}
 	val stepActionIcon = if (isLastStep) {
-		Icons.Filled.Add
+		AppIcons.Add
 	} else {
-		Icons.AutoMirrored.Filled.KeyboardArrowRight
+		AppIcons.KeyboardArrowRight
 	}
 	val stepActionTestTag = if (isLastStep) {
 		STEP_ADD_BUTTON_TAG
@@ -339,7 +331,7 @@ private fun StepDragHandle(
 				},
 		)
 		Icon(
-			imageVector = Icons.Filled.DragHandle,
+			imageVector = AppIcons.DragHandle,
 			contentDescription = "Reorder step ${index + 1}",
 			tint = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)

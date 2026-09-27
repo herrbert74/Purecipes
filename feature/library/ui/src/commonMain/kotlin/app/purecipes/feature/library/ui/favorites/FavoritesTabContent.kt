@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -22,6 +20,7 @@ import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -45,7 +44,7 @@ internal fun FavoritesTabContent(
 		}
 
 		recipes.isEmpty() && totalMatches == 0 -> EmptyStateContent(
-			icon = Icons.Filled.Favorite,
+			icon = AppIcons.Favorite,
 			iconContentDescription = "Favorites",
 			title = "No favorites yet",
 			description = "Add recipes from the details screen and they will appear here.",

@@ -8,10 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -35,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"
@@ -100,7 +97,7 @@ internal fun RecipeSearchHeader(
 						onClick = onCloseSearch,
 					) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							imageVector = AppIcons.ArrowBack,
 							contentDescription = "Close title search",
 						)
 					}
@@ -131,7 +128,7 @@ internal fun RecipeSearchHeader(
 							if (searchQuery.isNotEmpty()) {
 								IconButton(onClick = onClearSearchText) {
 									Icon(
-										imageVector = Icons.Default.Clear,
+										imageVector = AppIcons.Clear,
 										contentDescription = "Clear search text",
 									)
 								}
@@ -152,7 +149,7 @@ internal fun RecipeSearchHeader(
 					},
 			) {
 				Icon(
-					imageVector = Icons.Default.Search,
+					imageVector = AppIcons.Search,
 					contentDescription = null,
 					tint = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)

@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -15,6 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -49,7 +48,7 @@ private fun BrandMomentIllustrationLightPreview() {
 	PurecipesTheme(darkTheme = false) {
 		Surface(color = PurecipesTheme.colorScheme.primaryContainer) {
 			BrandMomentIllustration(
-				icon = Icons.Filled.Favorite,
+				icon = AppIcons.Favorite,
 				contentDescription = "Favorites",
 			)
 		}
@@ -62,7 +61,7 @@ private fun BrandMomentIllustrationDarkPreview() {
 	PurecipesTheme(darkTheme = true) {
 		Surface(color = PurecipesTheme.colorScheme.primaryContainer) {
 			BrandMomentIllustration(
-				icon = Icons.Filled.Favorite,
+				icon = AppIcons.Favorite,
 				contentDescription = "Favorites",
 			)
 		}
