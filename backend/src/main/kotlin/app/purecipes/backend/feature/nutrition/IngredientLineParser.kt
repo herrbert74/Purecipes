@@ -13,6 +13,8 @@ internal object IngredientLineParser {
 	private const val REGEX_GROUP_THIRD = 3
 	private const val REGEX_GROUP_FOURTH = 4
 	private const val COUPLE_COUNT = 2
+	private val smallSugarDiamondGrams = BigDecimal("2")
+	private val largeSugarDiamondGrams = BigDecimal("4")
 
 	private val unicodeFractions = mapOf(
 		'¼' to "1/4",
@@ -170,6 +172,13 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val sugarDiamondPattern = Regex(
+		"""^($QUANTITY_PATTERN)\s+(small|large)\s+sugar\s+diamonds?$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val attachedLengthUnitPattern = Regex("""^\d+(?:\.\d+)?-?(?:cm|mm)$""")
+
 	private val parentheticalFoodAmountPattern = Regex(
 		"""^($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s+(.+)$""",
 		RegexOption.IGNORE_CASE,
@@ -212,6 +221,7 @@ internal object IngredientLineParser {
 		rest = stripContainerWords(rest)
 		rest = stripLeftoverAmounts(rest, quantityAlreadySet = quantity != null)
 		rest = stripOrphanUnitTokens(rest)
+		rest = stripLengthUnits(rest)
 		rest = stripParentheticalClauses(rest)
 		rest = stripUnopenedLabelNoise(rest)
 		rest = stripRedundantFromClause(rest)
@@ -250,6 +260,10 @@ internal object IngredientLineParser {
 
 	private fun rewriteSpecialPhrases(value: String): String {
 		val trimmed = value.trim()
+		val sugarDiamonds = rewriteSugarDiamonds(trimmed)
+		if (sugarDiamonds != null) {
+			return sugarDiamonds
+		}
 		val seeds = seedsFromVanillaPodPattern.matchEntire(trimmed)
 		val peel = peelFromCitrusPattern.find(trimmed)
 		val suchAs = suchAsClausePattern.find(trimmed)
@@ -269,6 +283,19 @@ internal object IngredientLineParser {
 			couple != null -> "$COUPLE_COUNT ${couple.groupValues[REGEX_GROUP_FIRST].trim()}"
 			suchAs != null && looksLikeVagueLeadIn(value) -> suchAs.groupValues[REGEX_GROUP_FIRST].trim()
 			else -> value
+		}
+	}
+
+	private fun rewriteSugarDiamonds(value: String): String? {
+		val match = sugarDiamondPattern.matchEntire(value) ?: return null
+		val count = parseQuantity(match.groupValues[REGEX_GROUP_FIRST])
+		val gramsEach = if (match.groupValues[REGEX_GROUP_SECOND].equals("large", ignoreCase = true)) {
+			largeSugarDiamondGrams
+		} else {
+			smallSugarDiamondGrams
+		}
+		return count?.multiply(gramsEach)?.stripTrailingZeros()?.toPlainString()?.let { grams ->
+			"$grams g sugar diamonds"
 		}
 	}
 
@@ -519,6 +546,17 @@ internal object IngredientLineParser {
 		} else {
 			value.trim()
 		}
+	}
+
+	private fun stripLengthUnits(value: String): String =
+		value.split(extraWhitespacePattern)
+			.filterNot { token -> isLengthUnitToken(token) }
+			.joinToString(" ")
+			.trim()
+
+	private fun isLengthUnitToken(token: String): Boolean {
+		val cleaned = token.lowercase().trimEnd(',', ';', '.')
+		return cleaned == "cm" || cleaned == "mm" || attachedLengthUnitPattern.matches(cleaned)
 	}
 
 	private fun stripOrphanUnitTokens(value: String): String {

@@ -124,6 +124,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.OL
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ONION_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ORANGE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ORANGE_JUICE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PANEER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PAPRIKA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PARMESAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PASTA_DESCRIPTION
@@ -440,6 +441,7 @@ internal object NutritionSeedAliasesPart3 {
 		),
 		NutritionSeedAlias(
 			"hard paneer",
+			PANEER_DESCRIPTION,
 			HALLOUMI_DESCRIPTION,
 			TOFU_DESCRIPTION
 		),

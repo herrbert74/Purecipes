@@ -90,4 +90,28 @@ class FdcFoodMatcherTest {
 			listOf(chickenBreast, chickenSoup),
 		)?.description shouldBe "Chicken, breast, boneless, skinless, raw"
 	}
+
+	@Test
+	fun matchSearchTermPrefersHigherScoreOverLongerCookedName() {
+		val raw = FdcFoundationFood(
+			sourceName = FDC_SR_LEGACY_SOURCE_NAME,
+			fdcId = 15L,
+			description = "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val braised = FdcFoundationFood(
+			sourceName = FDC_SR_LEGACY_SOURCE_NAME,
+			fdcId = 16L,
+			description = "Chicken, broiler or fryers, breast, skinless, boneless, meat only, " +
+				"with added solution, cooked, braised",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+
+		FdcFoodMatcher.matchCatalogueName(
+			"boneless, skinless chicken breasts",
+			listOf(braised, raw),
+		)?.description shouldBe raw.description
+	}
 }

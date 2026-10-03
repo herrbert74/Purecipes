@@ -800,6 +800,17 @@ internal object NutritionNameNormalizer {
 		"zest",
 	)
 
+	private val citrusNameTokens = setOf(
+		"grapefruit",
+		"grapefruits",
+		"lemon",
+		"lemons",
+		"lime",
+		"limes",
+		"orange",
+		"oranges",
+	)
+
 	private val primarySeasoningTokens = setOf(
 		"tajin",
 	)
@@ -1170,7 +1181,15 @@ internal object NutritionNameNormalizer {
 		if (productIndexes.size < 2) {
 			return tokens
 		}
-		return tokens.subList(0, productIndexes.first() + 1)
+		val zestBeforeJuice = "zest" in tokens &&
+			"juice" in tokens &&
+			tokens.indexOf("zest") < tokens.indexOf("juice")
+		val citrus = tokens.firstOrNull { token -> token in citrusNameTokens }
+		return if (zestBeforeJuice && citrus != null) {
+			listOf(singularCitrus(citrus), "juice")
+		} else {
+			tokens.subList(0, productIndexes.first() + 1)
+		}
 	}
 
 	private fun stripTrailingCakePans(tokens: List<String>): List<String> {
@@ -1267,12 +1286,37 @@ internal object NutritionNameNormalizer {
 
 	private fun stripAfterProductNoun(tokens: List<String>): List<String> {
 		val cutIndex = tokens.indexOfFirst { token -> token in productNounCutTokens }
-		return if (cutIndex >= 0 && cutIndex < tokens.lastIndex) {
-			tokens.subList(0, cutIndex + 1)
-		} else {
+		val canCut = cutIndex in 0 until tokens.lastIndex
+		return if (!canCut) {
 			tokens
+		} else if (tokens[cutIndex] == "zest") {
+			keepCitrusAfterZest(tokens, cutIndex)
+		} else {
+			tokens.subList(0, cutIndex + 1)
 		}
 	}
+
+	private fun keepCitrusAfterZest(tokens: List<String>, cutIndex: Int): List<String> {
+		val head = tokens.subList(0, cutIndex + 1)
+		val citrus = tokens.subList(cutIndex + 1, tokens.size).firstOrNull { token ->
+			token in citrusNameTokens
+		}
+		val kept = if (citrus != null && citrus !in head) head + citrus else head
+		return if ("juice" in kept) kept else citrusThenZest(kept)
+	}
+
+	private fun citrusThenZest(tokens: List<String>): List<String> {
+		val citrus = tokens.firstOrNull { token -> token in citrusNameTokens } ?: return tokens
+		val rest = tokens.filter { token -> token != "zest" && token !in citrusNameTokens }
+		return listOf(singularCitrus(citrus), "zest") + rest
+	}
+
+	private fun singularCitrus(token: String): String =
+		if (token.endsWith("s") && !token.endsWith("ss") && token.length > MIN_TOKEN_LENGTH) {
+			token.removeSuffix("s")
+		} else {
+			token
+		}
 
 	private fun stripToPrimarySeasoning(tokens: List<String>): List<String> {
 		val primary = tokens.firstOrNull { token -> token in primarySeasoningTokens }

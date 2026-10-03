@@ -6,6 +6,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.AN
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ANCHOVY_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ANCHO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ANISE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.APPLE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ARUGULA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ASPARAGUS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.AVOCADO_DESCRIPTION
@@ -17,6 +18,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BALSAMIC_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BASIL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BASIL_FALLBACK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BAY_LEAF_SPICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEANSPROUT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_CHUCK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEER_DESCRIPTION
@@ -74,6 +76,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CL
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COCOA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COCONUT_MILK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COCONUT_YOGURT_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COOKED_RICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COOKING_SPRAY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORIANDER_SEED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORNSTARCH_DESCRIPTION
@@ -133,6 +136,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.IT
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.JALAPENO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.KALE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.KETCHUP_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LAMB_CHOP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LAMB_MINCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LEEK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LEMONGRASS_DESCRIPTION
@@ -165,14 +169,17 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ON
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ONION_POWDER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ORANGE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ORANGE_JUICE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ORANGE_PEEL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.OREGANO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.OYSTER_SAUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.OYSTER_SAUCE_FALLBACK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PANEER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PAPRIKA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PARMESAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PARSLEY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PARSLEY_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PASTA_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PEANUTS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PEANUT_OIL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PEANUT_OIL_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PECAN_DESCRIPTION
@@ -195,10 +202,12 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RI
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_NOODLE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_WINE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROASTED_SALTED_PEANUTS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROMAINE_LETTUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROMANO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROSEMARY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALAMI_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALMON_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SELF_RISING_FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SERRANO_DESCRIPTION
@@ -212,12 +221,14 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SO
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SOY_SAUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPINACH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPRING_ONION_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SRIRACHA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.STRAWBERRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SUGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SWEET_POTATO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TAHINI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TAMARIND_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TAMARIND_FALLBACK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TARRAGON_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TOFU_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TOMATILLO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TOMATILLO_FALLBACK_DESCRIPTION
@@ -236,6 +247,8 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WATER_CHESTNUT_RAW_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WATER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WATER_FALLBACK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WHISKEY_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WHISKEY_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WHITE_BREAD_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WHITE_BREAD_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WHITE_PEPPER_DESCRIPTION
@@ -592,6 +605,7 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("garlic microplane", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("garlic powder", GARLIC_POWDER_DESCRIPTION),
 		NutritionSeedAlias("garlic powder palmful", GARLIC_POWDER_DESCRIPTION),
+		NutritionSeedAlias("garlic roasted", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("garlic tablespoon", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("ginger", GINGER_FRESH_DESCRIPTION),
 		NutritionSeedAlias(
@@ -669,12 +683,15 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("kosher salt pepper", SALT_DESCRIPTION),
 		NutritionSeedAlias("lacinato", KALE_DESCRIPTION),
 		NutritionSeedAlias("lacinato kale", KALE_DESCRIPTION),
+		NutritionSeedAlias("lamb", LAMB_CHOP_DESCRIPTION),
 		NutritionSeedAlias("lamb mince", LAMB_MINCE_DESCRIPTION),
+		NutritionSeedAlias("lamb shoulder", LAMB_CHOP_DESCRIPTION),
 		NutritionSeedAlias("leek", LEEK_DESCRIPTION),
 		NutritionSeedAlias("leftover turkey", TURKEY_DESCRIPTION, TURKEY_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("lemon", LEMON_DESCRIPTION),
 		NutritionSeedAlias("lemon juice", LEMON_JUICE_DESCRIPTION),
 		NutritionSeedAlias("lemon twists", LEMON_DESCRIPTION),
+		NutritionSeedAlias("lemon zest", LEMON_PEEL_DESCRIPTION),
 		NutritionSeedAlias("lemon wedges", LEMON_DESCRIPTION),
 		NutritionSeedAlias("lemon zest lemon juice lemon", LEMON_JUICE_DESCRIPTION, LEMON_PEEL_DESCRIPTION),
 		NutritionSeedAlias("lemon zest tablespoon lemon juice from lemon", LEMON_JUICE_DESCRIPTION),
@@ -750,6 +767,7 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("pak choi", BOK_CHOY_DESCRIPTION),
 		NutritionSeedAlias("pancetta italian bacon", BACON_UNPREPARED_DESCRIPTION, BACON_DESCRIPTION),
 		NutritionSeedAlias("panko breadcrumbs", BREADCRUMB_DESCRIPTION),
+		NutritionSeedAlias("paneer", PANEER_DESCRIPTION),
 		NutritionSeedAlias("paprika", PAPRIKA_DESCRIPTION),
 		NutritionSeedAlias("parmesan cheese cup packed", PARMESAN_DESCRIPTION),
 		NutritionSeedAlias("parmesan cups", PARMESAN_DESCRIPTION),
@@ -806,6 +824,7 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("rice noodle sheets", RICE_NOODLE_DESCRIPTION),
 		NutritionSeedAlias("rice vinegar", WHITE_VINEGAR_DESCRIPTION, CIDER_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("rice wine vinegar", WHITE_VINEGAR_DESCRIPTION, CIDER_VINEGAR_DESCRIPTION),
+		NutritionSeedAlias("roasted garlic", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("ripe avocado", AVOCADO_DESCRIPTION),
 		NutritionSeedAlias("ripe tomato", TOMATO_RAW_DESCRIPTION),
 		NutritionSeedAlias("rocket", ARUGULA_DESCRIPTION, SPINACH_DESCRIPTION),
@@ -972,7 +991,10 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("vine tomato", TOMATO_RAW_DESCRIPTION),
 		NutritionSeedAlias("vine tomatoes", TOMATO_RAW_DESCRIPTION),
 		NutritionSeedAlias("walnuts toasted", WALNUT_DESCRIPTION),
+		NutritionSeedAlias("boiling water", WATER_DESCRIPTION, WATER_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("cold water", WATER_DESCRIPTION, WATER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("warm water", WATER_DESCRIPTION, WATER_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("water", WATER_DESCRIPTION, WATER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("white cabbage", CABBAGE_GREEN_DESCRIPTION, CABBAGE_DESCRIPTION),
 		NutritionSeedAlias("white miso", MISO_DESCRIPTION),
 		NutritionSeedAlias("white miso paste", MISO_DESCRIPTION),
@@ -1000,6 +1022,59 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("yellow potatoes inch", POTATO_DESCRIPTION),
 		NutritionSeedAlias("za'atar", OREGANO_DESCRIPTION),
 		NutritionSeedAlias("zaatar", OREGANO_DESCRIPTION),
+		NutritionSeedAlias("aleppo pepper", CAYENNE_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
+		NutritionSeedAlias("apple", APPLE_DESCRIPTION),
+		NutritionSeedAlias("baby spinach", SPINACH_DESCRIPTION),
+		NutritionSeedAlias("bay", BAY_LEAF_SPICE_DESCRIPTION),
+		NutritionSeedAlias("bourbon", WHISKEY_DESCRIPTION, WHISKEY_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("butter", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias(
+			"chicken breast",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"cooked rice",
+			COOKED_RICE_DESCRIPTION,
+			RICE_DESCRIPTION,
+			RICE_FALLBACK_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"dark chocolate",
+			DARK_CHOCOLATE_DESCRIPTION,
+			DARK_CHOCOLATE_FALLBACK_DESCRIPTION,
+		),
+		NutritionSeedAlias("dill", DILL_DESCRIPTION),
+		NutritionSeedAlias("dried bay", BAY_LEAF_SPICE_DESCRIPTION),
+		NutritionSeedAlias("fresh bay", BAY_LEAF_SPICE_DESCRIPTION),
+		NutritionSeedAlias("fresh lemongrass", LEMONGRASS_DESCRIPTION),
+		NutritionSeedAlias("hot sauce", HOT_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("lemongrass", LEMONGRASS_DESCRIPTION),
+		NutritionSeedAlias("lime zest", LEMON_PEEL_DESCRIPTION),
+		NutritionSeedAlias("orange zest", ORANGE_PEEL_DESCRIPTION),
+		NutritionSeedAlias("peanut", PEANUTS_DESCRIPTION),
+		NutritionSeedAlias("peanuts", PEANUTS_DESCRIPTION),
+		NutritionSeedAlias("rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias(
+			"roasted salted peanuts",
+			ROASTED_SALTED_PEANUTS_DESCRIPTION,
+			PEANUTS_DESCRIPTION,
+		),
+		NutritionSeedAlias("salmon", SALMON_DESCRIPTION),
+		NutritionSeedAlias(
+			"salted roasted peanut",
+			ROASTED_SALTED_PEANUTS_DESCRIPTION,
+			PEANUTS_DESCRIPTION,
+		),
+		NutritionSeedAlias("sausage", PORK_SAUSAGE_DESCRIPTION),
+		NutritionSeedAlias("seasoned salt", SALT_DESCRIPTION),
+		NutritionSeedAlias("sherry", DESSERT_WINE_DRY_DESCRIPTION),
+		NutritionSeedAlias("soy sauce", SOY_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("sourdough", BAGUETTE_DESCRIPTION),
+		NutritionSeedAlias("spinach", SPINACH_DESCRIPTION),
+		NutritionSeedAlias("sriracha", SRIRACHA_DESCRIPTION, HOT_SAUCE_DESCRIPTION),
+		NutritionSeedAlias("tarragon", TARRAGON_DESCRIPTION),
+		NutritionSeedAlias("white wine", WHITE_WINE_DESCRIPTION),
 		NutritionSeedAlias("zest juice lemon", LEMON_JUICE_DESCRIPTION, LEMON_PEEL_DESCRIPTION),
 		NutritionSeedAlias("zest juice orange", ORANGE_JUICE_DESCRIPTION, ORANGE_DESCRIPTION),
 	)

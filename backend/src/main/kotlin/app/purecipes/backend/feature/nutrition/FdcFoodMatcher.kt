@@ -46,7 +46,7 @@ internal object FdcFoodMatcher {
 					?: return@mapNotNull null
 				scored to food
 			}
-			.maxWithOrNull(
+			.minWithOrNull(
 				compareByDescending<Pair<NutritionFoodNameScore, FdcFoundationFood>> { it.first.score }
 					.thenBy { FdcFoodMatchingSupport.sourcePriority(it.second.sourceName) }
 					.thenBy { it.first.extraTokenCount }
