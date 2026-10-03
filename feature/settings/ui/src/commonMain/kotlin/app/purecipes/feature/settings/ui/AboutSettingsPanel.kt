@@ -36,7 +36,7 @@ internal fun AboutSettingsPanel(
 		) {
 			SectionHeader(
 				title = "About",
-				subtitle = "App version and legal information.",
+				subtitle = "App version and licenses.",
 			)
 			Row(
 				modifier = Modifier

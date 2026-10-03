@@ -62,6 +62,9 @@ class SettingsViewModel(
 	val monetisationDebugOverrides: Flow<MonetisationDebugOverrides> =
 		observeMonetisationDebugOverrides()
 
+	var settingsScrollOffset: Int = 0
+		private set
+
 	init {
 		viewModelScope.launch {
 			syncMeasurementPreferences()
@@ -108,6 +111,10 @@ class SettingsViewModel(
 
 	fun onAdsDisplayOverrideChange(override: AdsDisplayOverride) {
 		setAdsDisplayOverride(override)
+	}
+
+	fun onSettingsScrollOffsetChange(offset: Int) {
+		settingsScrollOffset = offset
 	}
 
 	private companion object {

@@ -43,31 +43,12 @@ class AboutScreenTest {
 	}
 
 	@Test
-	fun placeholderRowShowsComingSoonSnackbar() = runRecompositionTrackingUiTest {
-		setTrackedContent {
-			PurecipesTheme {
-				AboutScreen(
-					onBack = {},
-					onOpenLicenses = {},
-					viewModel = aboutViewModel(),
-				)
-			}
-		}
-
-		onNodeWithTag(ABOUT_TERMS_ROW_TAG).performClick()
-		waitForIdle()
-
-		onNodeWithText("Coming soon").assertIsDisplayed()
-	}
-
-	@Test
 	fun openSourceLicensesRowInvokesOpenLicensesCallback() = runRecompositionTrackingUiTest {
 		var openedLicenses = false
 		setTrackedContent {
 			PurecipesTheme {
 				AboutScreenContent(
 					versionText = "Version 1.2.3 (42)",
-					onPlaceholderClick = {},
 					onVersionClick = {},
 					onOpenLicenses = { openedLicenses = true },
 				)

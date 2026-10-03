@@ -36,8 +36,6 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.coroutines.launch
 
 internal const val ABOUT_VERSION_ROW_TAG = "about_version_row"
-internal const val ABOUT_TERMS_ROW_TAG = "about_terms_row"
-internal const val ABOUT_PRIVACY_ROW_TAG = "about_privacy_row"
 internal const val ABOUT_OSS_ROW_TAG = "about_oss_row"
 
 @Composable
@@ -69,11 +67,6 @@ fun AboutScreen(
 	) { innerPadding ->
 		AboutScreenContent(
 			versionText = viewModel.versionText,
-			onPlaceholderClick = {
-				scope.launch {
-					snackbarHostState.showSnackbar(COMING_SOON_MESSAGE)
-				}
-			},
 			onVersionClick = {
 				if (viewModel.onVersionTapped()) {
 					scope.launch {
@@ -93,7 +86,6 @@ fun AboutScreen(
 @Composable
 internal fun AboutScreenContent(
 	versionText: String,
-	onPlaceholderClick: () -> Unit,
 	onVersionClick: () -> Unit,
 	onOpenLicenses: () -> Unit,
 	modifier: Modifier = Modifier,
@@ -113,7 +105,7 @@ internal fun AboutScreenContent(
 			) {
 				SectionHeader(
 					title = "App information",
-					subtitle = "Version and legal information about Purecipes.",
+					subtitle = "Version and licenses for Purecipes.",
 				)
 				Text(
 					text = versionText,
@@ -128,20 +120,6 @@ internal fun AboutScreenContent(
 						)
 						.padding(vertical = PurecipesTheme.space.xs)
 						.testTag(ABOUT_VERSION_ROW_TAG),
-				)
-				HorizontalDivider()
-				AboutRow(
-					label = "Terms & Conditions",
-					showChevron = true,
-					onClick = onPlaceholderClick,
-					modifier = Modifier.testTag(ABOUT_TERMS_ROW_TAG),
-				)
-				HorizontalDivider()
-				AboutRow(
-					label = "Privacy Policy",
-					showChevron = true,
-					onClick = onPlaceholderClick,
-					modifier = Modifier.testTag(ABOUT_PRIVACY_ROW_TAG),
 				)
 				HorizontalDivider()
 				AboutRow(
@@ -218,7 +196,6 @@ private fun AboutRow(
 	}
 }
 
-private const val COMING_SOON_MESSAGE = "Coming soon"
 private const val ONBOARDING_RESET_MESSAGE = "Onboarding will show the next time you open the app"
 
 @Preview(
@@ -232,7 +209,6 @@ private fun AboutScreenLightPreview() {
 	PurecipesTheme(darkTheme = false) {
 		AboutScreenContent(
 			versionText = "Version 0.4.0 (7)",
-			onPlaceholderClick = {},
 			onVersionClick = {},
 			onOpenLicenses = {},
 			modifier = Modifier
@@ -253,7 +229,6 @@ private fun AboutScreenDarkPreview() {
 	PurecipesTheme(darkTheme = true) {
 		AboutScreenContent(
 			versionText = "Version 0.4.0 (7)",
-			onPlaceholderClick = {},
 			onVersionClick = {},
 			onOpenLicenses = {},
 			modifier = Modifier
