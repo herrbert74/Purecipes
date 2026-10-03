@@ -108,14 +108,10 @@ class RecipeDetailsScreenTest {
 			.performScrollToNode(hasText("- 6 carrots"))
 		composeRule.onNodeWithText("- 6 carrots").assertIsDisplayed()
 		composeRule.onNodeWithTag(RecipeDetailsSection.Method.testTag).performClick()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
-			.performScrollToNode(hasText("Roast until tender"))
+		composeRule.onNodeWithText("Trim the carrots").assertIsDisplayed()
 		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
-			.performScrollToNode(hasTestTag(RecipeDetailsSection.Nutrition.testTag))
 		composeRule.onNodeWithTag(RecipeDetailsSection.Nutrition.testTag).performClick()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
-			.performScrollToNode(hasTestTag(NUTRITION_FACTS_BUTTON_TAG))
+		composeRule.onNodeWithText("Nutrition estimate").assertIsDisplayed()
 		composeRule.onNodeWithTag(NUTRITION_FACTS_BUTTON_TAG).assertIsDisplayed()
 	}
 }

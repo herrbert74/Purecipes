@@ -9,14 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -43,8 +47,11 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
 
 const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
+
+private const val RECIPE_DETAILS_SECTION_CONTROL_KEY = "recipeDetailsSectionControl"
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -79,10 +86,13 @@ internal fun RecipeDetailsContent(
 		RecipeDetailsSection.Ingredients
 	}
 	val cookbookRefs = recipeCookbooks.items
+	val listState = rememberLazyListState()
+	val coroutineScope = rememberCoroutineScope()
 	LazyColumn(
 		modifier = modifier
 			.fillMaxSize()
 			.testTag(RECIPE_DETAILS_CONTENT_TAG),
+		state = listState,
 		contentPadding = PaddingValues(
 			start = PurecipesTheme.space.m,
 			top = PurecipesTheme.space.m,
@@ -164,11 +174,16 @@ internal fun RecipeDetailsContent(
 			)
 		}
 
-		item {
+		item(key = RECIPE_DETAILS_SECTION_CONTROL_KEY) {
 			RecipeSectionSegmentedControl(
 				sections = sections,
 				selectedSection = activeSection,
-				onSectionChange = { section -> selectedSection = section },
+				onSectionChange = { section ->
+					selectedSection = section
+					coroutineScope.launch {
+						listState.animateScrollToSectionControl()
+					}
+				},
 			)
 		}
 
@@ -200,6 +215,15 @@ internal fun RecipeDetailsContent(
 			}
 		}
 	}
+}
+
+private suspend fun LazyListState.animateScrollToSectionControl() {
+	withFrameNanos { }
+	val sectionIndex = layoutInfo.visibleItemsInfo
+		.firstOrNull { it.key == RECIPE_DETAILS_SECTION_CONTROL_KEY }
+		?.index
+		?: return
+	animateScrollToItem(sectionIndex)
 }
 
 private val previewRecipeDetails = RecipeDetails(
