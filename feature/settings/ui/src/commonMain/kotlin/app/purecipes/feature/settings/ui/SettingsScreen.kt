@@ -15,8 +15,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
@@ -25,10 +27,14 @@ import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverride
 import app.purecipes.feature.subscription.ui.GoPremiumSettingsPanel
 import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
+import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NotificationPreferences
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 
 private const val PRIVACY_POLICY_URL = "https://purecipes.app/privacy"
 private const val TERMS_OF_SERVICE_URL = "https://purecipes.app/terms"
@@ -44,14 +50,36 @@ fun SettingsScreen(
 	viewModel: SettingsViewModel = metroViewModel(),
 ) {
 	val notificationPreferences by viewModel.notificationPreferences.collectAsState(
-		initial = NotificationPreferences(),
+		initial = viewModel.notificationPreferences.retainedValue(NotificationPreferences()),
 	)
-	val searchPreferences by viewModel.searchPreferences.collectAsState(initial = SearchPreferences())
-	val measurementPreferences by viewModel.measurementPreferences.collectAsState(initial = null)
+	val searchPreferences by viewModel.searchPreferences.collectAsState(
+		initial = viewModel.searchPreferences.retainedValue(SearchPreferences()),
+	)
+	val measurementPreferences by viewModel.measurementPreferences.collectAsState(
+		initial = viewModel.measurementPreferences.retainedValue(
+			MeasurementPreferences(preferredSystem = MeasurementSystem.METRIC),
+		),
+	)
 	val monetisationDebugOverrides by viewModel.monetisationDebugOverrides.collectAsState(
-		initial = MonetisationDebugOverrides(),
+		initial = viewModel.monetisationDebugOverrides.retainedValue(MonetisationDebugOverrides()),
 	)
 	val uriHandler = LocalUriHandler.current
+	val scrollState = rememberScrollState(viewModel.settingsScrollOffset)
+	LaunchedEffect(scrollState) {
+		val targetOffset = viewModel.settingsScrollOffset
+		snapshotFlow { scrollState.maxValue }
+			.first { maxValue -> maxValue != Int.MAX_VALUE && maxValue > 0 }
+		val target = targetOffset.coerceAtMost(scrollState.maxValue)
+		if (scrollState.value != target) {
+			scrollState.scrollTo(target)
+		}
+		snapshotFlow { scrollState.value to scrollState.maxValue }
+			.collect { (offset, maxValue) ->
+				if (maxValue > 0) {
+					viewModel.onSettingsScrollOffsetChange(offset)
+				}
+			}
+	}
 
 	val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
 		rememberTopAppBarState(),
@@ -78,7 +106,7 @@ fun SettingsScreen(
 		Column(
 			modifier = Modifier
 				.fillMaxSize()
-				.verticalScroll(rememberScrollState())
+				.verticalScroll(scrollState)
 				.padding(innerPadding)
 				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
@@ -91,13 +119,11 @@ fun SettingsScreen(
 					onAdsDisplayChange = viewModel::onAdsDisplayOverrideChange,
 				)
 			}
-			measurementPreferences?.let { preferences ->
-				MeasurementPreferencesSection(
-					preferences = preferences,
-					onPreferencesChange = viewModel::onMeasurementPreferencesChange,
-					onReset = viewModel::onResetMeasurementPreferences,
-				)
-			}
+			MeasurementPreferencesSection(
+				preferences = measurementPreferences,
+				onPreferencesChange = viewModel::onMeasurementPreferencesChange,
+				onReset = viewModel::onResetMeasurementPreferences,
+			)
 			SearchPreferencesSection(
 				preferences = searchPreferences,
 				onPreferencesChange = viewModel::onSearchPreferencesChange,
@@ -116,6 +142,8 @@ fun SettingsScreen(
 		}
 	}
 }
+
+private fun <T> Flow<T>.retainedValue(fallback: T): T = (this as? StateFlow<T>)?.value ?: fallback
 
 @Composable
 private fun NotificationPreferencesSection(

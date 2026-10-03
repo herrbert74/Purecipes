@@ -63,6 +63,15 @@ class SettingsViewModelTest {
 	}
 
 	@Test
+	fun `settings scroll offset is retained`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onSettingsScrollOffsetChange(1_280)
+
+		viewModel.settingsScrollOffset shouldBe 1_280
+	}
+
+	@Test
 	fun `search preference change is saved`() = runViewModelTest {
 		val searchPreferencesRepository = FakeSearchPreferencesRepository()
 		val viewModel = createViewModel(searchPreferencesRepository = searchPreferencesRepository)
