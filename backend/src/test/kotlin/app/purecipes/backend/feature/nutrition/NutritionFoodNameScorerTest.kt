@@ -45,6 +45,34 @@ class NutritionFoodNameScorerTest {
 	}
 
 	@Test
+	fun scoreRejectsIncidentalMentionsThatAreNotTheFood() {
+		NutritionFoodNameScorer.score(
+			queryNormalized = "water",
+			candidateNormalized = "cream of wheat regular or quick made with water no added fat",
+		).shouldBeNull()
+		NutritionFoodNameScorer.score(
+			queryNormalized = "butter",
+			candidateNormalized = "potato roasted from fresh peel not eaten made with butter",
+		).shouldBeNull()
+		NutritionFoodNameScorer.score(
+			queryNormalized = "lemon zest",
+			candidateNormalized = "lemon zest sparkling natural mineral water lemon zest",
+		).shouldBeNull()
+	}
+
+	@Test
+	fun scoreKeepsGenericFoodsWhoseNameStartsWithTheQuery() {
+		NutritionFoodNameScorer.score(
+			queryNormalized = "water",
+			candidateNormalized = "water tap",
+		).shouldNotBeNull()
+		NutritionFoodNameScorer.score(
+			queryNormalized = "coriander",
+			candidateNormalized = "spices coriander seed",
+		).shouldNotBeNull()
+	}
+
+	@Test
 	fun scoreRejectsInsufficientSoloQueryTokens() {
 		NutritionFoodNameScorer.score(
 			queryNormalized = "side",

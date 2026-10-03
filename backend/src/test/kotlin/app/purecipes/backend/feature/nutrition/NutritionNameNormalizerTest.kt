@@ -402,6 +402,9 @@ class NutritionNameNormalizerTest {
 			"french puy lentils"
 		NutritionNameNormalizer.forLookup("orange juice orange zest") shouldBe "orange juice"
 		NutritionNameNormalizer.forLookup("juice zest") shouldBe "juice"
+		NutritionNameNormalizer.forLookup("zest of 1 lemon") shouldBe "lemon zest"
+		NutritionNameNormalizer.forLookup("finely grated lemon zest") shouldBe "lemon zest"
+		NutritionNameNormalizer.forLookup("zest and juice of 1/2 lemon") shouldBe "lemon juice"
 		NutritionNameNormalizer.forLookup("vine ripened tomatoes") shouldBe "tomatoes"
 		NutritionNameNormalizer.forLookup("bleached cake flour for flouring") shouldBe
 			"bleached cake flour"

@@ -44,6 +44,7 @@ internal object NutritionFoodNameScorer {
 		"candy",
 		"pudding",
 		"sandwich",
+		"sparkling",
 		"butter",
 		"butterbur",
 	)
@@ -63,9 +64,20 @@ internal object NutritionFoodNameScorer {
 			queryTokens.isEmpty() -> null
 			queryTokens.size == 1 && queryTokens.first() in insufficientSoloQueryTokens -> null
 			!hasAllQueryTokens(queryTokens, candidateTokens) -> null
+			!queryTokensAreInFoodHead(queryTokens, candidateNormalized) -> null
 			extraTokens.any { token -> token in conflictTokens } -> null
 			tokenScore < MINIMUM_MATCH_SCORE -> null
 			else -> NutritionFoodNameScore(score = tokenScore, extraTokenCount = extraTokens.size)
+		}
+	}
+
+	private fun queryTokensAreInFoodHead(queryTokens: List<String>, candidateNormalized: String): Boolean {
+		val headTokens = NutritionNameNormalizer.tokens(candidateNormalized)
+			.take(queryTokens.size + FOOD_HEAD_SLACK)
+			.flatMap(::expandPlural)
+			.toSet()
+		return queryTokens.all { token ->
+			expandPlural(token).any { variant -> variant in headTokens }
 		}
 	}
 
@@ -96,6 +108,7 @@ internal object NutritionFoodNameScorer {
 		return listOfNotNull(token, singular)
 	}
 
+	private const val FOOD_HEAD_SLACK = 2
 	private const val MINIMUM_MATCH_SCORE = 15
 	private const val TOKEN_MATCH_SCORE = 15
 	private const val PENALTY_SCORE = 20

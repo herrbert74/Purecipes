@@ -12,6 +12,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BASIL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BASIL_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BAY_LEAF_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BAY_LEAF_SPICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEANSPROUT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_CHUCK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEER_DESCRIPTION
@@ -247,7 +248,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("ancho chiles seeds", ANCHO_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
 		NutritionSeedAlias("asparagus ends thirds", ASPARAGUS_DESCRIPTION),
 		NutritionSeedAlias("bacon cooked until crispy", BACON_DESCRIPTION, BACON_UNPREPARED_DESCRIPTION),
-		NutritionSeedAlias("bay leaf", BAY_LEAF_DESCRIPTION),
+		NutritionSeedAlias("bay leaf", BAY_LEAF_SPICE_DESCRIPTION, BAY_LEAF_DESCRIPTION),
 		NutritionSeedAlias("beefsteak tomato", TOMATO_RAW_DESCRIPTION),
 		NutritionSeedAlias("bone beef chuck", BEEF_CHUCK_DESCRIPTION),
 		NutritionSeedAlias(

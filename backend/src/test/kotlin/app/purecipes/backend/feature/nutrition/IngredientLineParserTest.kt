@@ -1116,4 +1116,33 @@ class IngredientLineParserTest {
 		soda.unit shouldBe "cup"
 		soda.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseDropsCentimetresFromGinger() {
+		val ginger = IngredientLineParser.parse("3 cm Ginger")
+
+		ginger.quantity shouldBe BigDecimal("3")
+		ginger.unit shouldBe "piece"
+		ginger.parsedName shouldBe "Ginger"
+		ginger.isMeasurable shouldBe true
+
+		val fresh = IngredientLineParser.parse("2 cm Fresh Ginger")
+		fresh.parsedName shouldBe "Fresh Ginger"
+		fresh.quantity shouldBe BigDecimal("2")
+	}
+
+	@Test
+	fun parseCountsSugarDiamondsAsAFewGramsEach() {
+		val small = IngredientLineParser.parse("120 small sugar diamonds")
+		small.quantity shouldBe BigDecimal("240")
+		small.unit shouldBe "g"
+		small.parsedName shouldBe "sugar diamonds"
+		small.isMeasurable shouldBe true
+
+		val large = IngredientLineParser.parse("24 large sugar diamonds")
+		large.quantity shouldBe BigDecimal("96")
+		large.unit shouldBe "g"
+		large.parsedName shouldBe "sugar diamonds"
+		large.isMeasurable shouldBe true
+	}
 }

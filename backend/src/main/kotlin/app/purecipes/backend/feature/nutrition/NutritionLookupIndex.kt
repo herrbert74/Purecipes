@@ -88,7 +88,7 @@ internal class NutritionLookupIndex(
 	private fun pickBestScoredFood(
 		scored: List<Pair<NutritionFoodNameScore, NutritionFoodRecord>>,
 	): NutritionFoodRecord? =
-		scored.maxWithOrNull(
+		scored.minWithOrNull(
 			compareByDescending<Pair<NutritionFoodNameScore, NutritionFoodRecord>> { it.first.score }
 				.thenBy { FdcFoodMatchingSupport.sourcePriority(it.second.sourceName) }
 				.thenBy { it.first.extraTokenCount }

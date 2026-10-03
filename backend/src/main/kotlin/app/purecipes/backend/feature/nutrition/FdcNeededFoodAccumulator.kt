@@ -64,7 +64,7 @@ internal class FdcNeededFoodAccumulator(
 		}
 		val candidate = ScoredFood(score = scored, food = food)
 		val current = bestByQueryIndex[queryIndex]
-		if (current == null || FOOD_COMPARATOR.compare(candidate, current) > 0) {
+		if (current == null || FOOD_COMPARATOR.compare(candidate, current) < 0) {
 			bestByQueryIndex[queryIndex] = candidate
 		}
 	}
@@ -135,16 +135,25 @@ internal class FdcNeededFoodAccumulator(
 		private val BRANDED_CONFLICT_EXTRA_TOKENS = setOf(
 			"bar",
 			"bars",
+			"brittle",
 			"cake",
+			"calamari",
 			"candy",
 			"chocolate",
+			"cocoa",
 			"cookie",
 			"cookies",
 			"drink",
 			"ice",
 			"juice",
+			"lobster",
+			"mineral",
+			"pickle",
 			"pizza",
 			"soda",
+			"sparkling",
+			"tortelloni",
+			"water",
 		)
 	}
 }
