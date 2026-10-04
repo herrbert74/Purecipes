@@ -584,10 +584,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3",
-            "artifactVersion": "1.5.0-alpha28",
+            "artifactVersion": "1.5.0-alpha29",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha28",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha29",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -609,10 +609,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-adaptive-navigation-suite",
-            "artifactVersion": "1.5.0-alpha28",
+            "artifactVersion": "1.5.0-alpha29",
             "name": "Material Adaptive Navigation Suite",
             "description": "Compose Material Design Adaptive Navigation Suite Library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha28",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha29",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -634,10 +634,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-ripple",
-            "artifactVersion": "1.5.0-alpha28",
+            "artifactVersion": "1.5.0-alpha29",
             "name": "Compose Material3 Ripple",
             "description": "Building block APIs to build ripples that follow a Material 3 specification.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha28",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha29",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -663,56 +663,6 @@
             "name": "Compose Material Components",
             "description": "Compose Material Design Components library",
             "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.12.1",
-            "developers": [
-                {
-                    "name": "The Android Open Source Project"
-                }
-            ],
-            "organization": {
-                "name": "The Android Open Source Project"
-            },
-            "scm": {
-                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
-                "url": "https://cs.android.com/androidx/platform/frameworks/support"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
-            "uniqueId": "androidx.compose.material:material-icons-core",
-            "artifactVersion": "1.7.8",
-            "name": "Compose Material Icons Core",
-            "description": "Compose Material Design core icons. This module contains the most commonly used set of Material icons.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.7.8",
-            "developers": [
-                {
-                    "name": "The Android Open Source Project"
-                }
-            ],
-            "organization": {
-                "name": "The Android Open Source Project"
-            },
-            "scm": {
-                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
-                "url": "https://cs.android.com/androidx/platform/frameworks/support"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
-            "uniqueId": "androidx.compose.material:material-icons-extended",
-            "artifactVersion": "1.7.8",
-            "name": "Compose Material Icons Extended",
-            "description": "Compose Material Design extended icons. This module contains all Material icons. It is a very large dependency and should not be included directly.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material#1.7.8",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1160,10 +1110,10 @@
         },
         {
             "uniqueId": "androidx.core:core",
-            "artifactVersion": "1.19.0",
+            "artifactVersion": "1.19.1",
             "name": "Core",
             "description": "Provides backward-compatible implementations of Android platform APIs and features.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/core#1.19.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/core#1.19.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1185,10 +1135,10 @@
         },
         {
             "uniqueId": "androidx.core:core-ktx",
-            "artifactVersion": "1.19.0",
+            "artifactVersion": "1.19.1",
             "name": "Core Kotlin Extensions",
             "description": "Kotlin extensions for 'core' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/core#1.19.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/core#1.19.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1686,10 +1636,10 @@
         },
         {
             "uniqueId": "androidx.fragment:fragment",
-            "artifactVersion": "1.9.0",
+            "artifactVersion": "1.9.1",
             "name": "fragment",
             "description": "The Support Library is a static library that you can add to your Android application in order to use APIs that are either not available for older platform versions or utility APIs that aren't a part of the framework APIs. Compatible on devices running API 14 or later.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.9.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.9.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2265,10 +2215,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-runtime",
-            "artifactVersion": "1.1.1",
+            "artifactVersion": "1.1.7",
             "name": "Androidx Navigation 3 Runtime",
             "description": "Provides the building blocks for a Compose first Navigation solution that easily supports extensions.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.1",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.7",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2290,10 +2240,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.1.1",
+            "artifactVersion": "1.1.7",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.1",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.7",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2315,10 +2265,10 @@
         },
         {
             "uniqueId": "androidx.navigationevent:navigationevent",
-            "artifactVersion": "1.0.2",
+            "artifactVersion": "1.1.2",
             "name": "Navigation Event",
             "description": "Provides APIs to easily intercept platform navigation events, including swipes and clicks, to provide a consistent API surface for handling these events.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.0.2",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.1.2",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2340,10 +2290,10 @@
         },
         {
             "uniqueId": "androidx.navigationevent:navigationevent-compose",
-            "artifactVersion": "1.0.2",
+            "artifactVersion": "1.1.2",
             "name": "NavigationEvent Compose",
             "description": "Compose integration with NavigationEvent",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.0.2",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.1.2",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -3013,10 +2963,10 @@
         },
         {
             "uniqueId": "androidx.work:work-runtime",
-            "artifactVersion": "2.11.2",
+            "artifactVersion": "2.12.0",
             "name": "WorkManager Runtime",
             "description": "Android WorkManager runtime library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/work#2.11.2",
+            "website": "https://developer.android.com/jetpack/androidx/releases/work#2.12.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -3944,7 +3894,7 @@
         },
         {
             "uniqueId": "com.google.crypto.tink:tink-android",
-            "artifactVersion": "1.8.0",
+            "artifactVersion": "1.10.0",
             "name": "Tink Cryptography API for Android",
             "description": "Tink is a small cryptographic library that provides a safe, simple, agile and fast way to accomplish some common cryptographic tasks.",
             "website": "http://github.com/tink-crypto/tink-java",
@@ -4619,7 +4569,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases",
-            "artifactVersion": "10.21.1",
+            "artifactVersion": "10.22.1",
             "name": "purchases-android",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-android",
@@ -4642,7 +4592,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-core",
-            "artifactVersion": "3.9.0",
+            "artifactVersion": "3.10.1",
             "name": "purchases-kmp-(core)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4665,7 +4615,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-mappings",
-            "artifactVersion": "3.9.0",
+            "artifactVersion": "3.10.1",
             "name": "purchases-kmp-(mappings)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -4688,7 +4638,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-models",
-            "artifactVersion": "3.9.0",
+            "artifactVersion": "3.10.1",
             "name": "purchases-kmp-(models)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -5052,7 +5002,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel",
-            "artifactVersion": "1.4.4",
+            "artifactVersion": "1.4.5",
             "name": "Metrox ViewModel",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -5075,7 +5025,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-compose",
-            "artifactVersion": "1.4.4",
+            "artifactVersion": "1.4.5",
             "name": "Metrox ViewModel Compose",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -5098,7 +5048,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:runtime",
-            "artifactVersion": "1.4.4",
+            "artifactVersion": "1.4.5",
             "name": "Metro Runtime",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -6100,7 +6050,7 @@
         },
         {
             "uniqueId": "org.jetbrains.androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.1.1",
+            "artifactVersion": "1.1.2",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6124,10 +6074,10 @@
         },
         {
             "uniqueId": "org.jetbrains.androidx.navigationevent:navigationevent-compose",
-            "artifactVersion": "1.0.1",
+            "artifactVersion": "1.1.0",
             "name": "NavigationEvent Compose",
             "description": "Compose integration with NavigationEvent",
-            "website": "https://github.com/JetBrains/compose-jb",
+            "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
                     "name": "Compose Multiplatform Team",
@@ -6135,9 +6085,9 @@
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
+                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
+                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
+                "url": "https://github.com/JetBrains/compose-multiplatform"
             },
             "licenses": [
                 "Apache-2.0"
@@ -6220,7 +6170,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.animation:animation",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Animation",
             "description": "Compose animation library",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6244,7 +6194,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.animation:animation-core",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Animation Core",
             "description": "Animation engine and animation primitives that are the building blocks of the Compose animation library",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6268,7 +6218,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.components:components-resources",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Resources for Compose JB",
             "description": "Resources for Compose JB",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6292,7 +6242,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.foundation:foundation",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Foundation",
             "description": "Higher level abstractions of the Compose UI primitives. This library is design system agnostic, providing the high-level building blocks for both application and design-system developers",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6316,7 +6266,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.foundation:foundation-layout",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Layouts",
             "description": "Compose layout implementations",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6340,20 +6290,18 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.material3.adaptive:adaptive",
-            "artifactVersion": "1.3.0-rc01",
+            "artifactVersion": "1.3.0-rc02.test",
             "name": "Material Adaptive",
             "description": "Compose Material Design Adaptive Library",
             "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
+                    "name": "The Android Open Source Project"
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "url": "https://github.com/JetBrains/compose-multiplatform"
+                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
+                "url": "https://cs.android.com/androidx/platform/frameworks/support"
             },
             "licenses": [
                 "Apache-2.0"
@@ -6364,20 +6312,18 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.material3.adaptive:adaptive-layout",
-            "artifactVersion": "1.3.0-rc01",
+            "artifactVersion": "1.3.0-rc02.test",
             "name": "Material Adaptive",
             "description": "Compose Material Design Adaptive Library",
             "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
+                    "name": "The Android Open Source Project"
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "url": "https://github.com/JetBrains/compose-multiplatform"
+                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
+                "url": "https://cs.android.com/androidx/platform/frameworks/support"
             },
             "licenses": [
                 "Apache-2.0"
@@ -6388,20 +6334,18 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.material3.adaptive:adaptive-navigation",
-            "artifactVersion": "1.3.0-rc01",
+            "artifactVersion": "1.3.0-rc02.test",
             "name": "Material Adaptive",
             "description": "Compose Material Design Adaptive Library",
             "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
+                    "name": "The Android Open Source Project"
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "url": "https://github.com/JetBrains/compose-multiplatform"
+                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
+                "url": "https://cs.android.com/androidx/platform/frameworks/support"
             },
             "licenses": [
                 "Apache-2.0"
@@ -6412,20 +6356,18 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.material3.adaptive:adaptive-navigation3",
-            "artifactVersion": "1.3.0-rc01",
+            "artifactVersion": "1.3.0-rc02.test",
             "name": "Material Adaptive",
             "description": "Compose Material Design Adaptive Library",
             "website": "https://github.com/JetBrains/compose-multiplatform",
             "developers": [
                 {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
+                    "name": "The Android Open Source Project"
                 }
             ],
             "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-multiplatform.git",
-                "url": "https://github.com/JetBrains/compose-multiplatform"
+                "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
+                "url": "https://cs.android.com/androidx/platform/frameworks/support"
             },
             "licenses": [
                 "Apache-2.0"
@@ -6507,54 +6449,6 @@
             ]
         },
         {
-            "uniqueId": "org.jetbrains.compose.material:material-icons-core",
-            "artifactVersion": "1.7.3",
-            "name": "Compose Material Icons Core",
-            "description": "Compose Material Design core icons. This module contains the most commonly used set of Material icons.",
-            "website": "https://github.com/JetBrains/compose-jb",
-            "developers": [
-                {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
-            "uniqueId": "org.jetbrains.compose.material:material-icons-extended",
-            "artifactVersion": "1.7.3",
-            "name": "Compose Material Icons Extended",
-            "description": "Compose Material Design extended icons. This module contains all Material icons. It is a very large dependency and should not be included directly.",
-            "website": "https://github.com/JetBrains/compose-jb",
-            "developers": [
-                {
-                    "name": "Compose Multiplatform Team",
-                    "organisationUrl": "https://www.jetbrains.com"
-                }
-            ],
-            "scm": {
-                "connection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "developerConnection": "scm:git:https://github.com/JetBrains/compose-jb.git",
-                "url": "https://github.com/JetBrains/compose-jb"
-            },
-            "licenses": [
-                "Apache-2.0"
-            ],
-            "funding": [
-                
-            ]
-        },
-        {
             "uniqueId": "org.jetbrains.compose.material:material-ripple",
             "artifactVersion": "1.12.0-beta01",
             "name": "Compose Material Ripple",
@@ -6580,7 +6474,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.runtime:runtime",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Runtime",
             "description": "Tree composition support for code generated by the Compose compiler plugin and corresponding public API",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6604,7 +6498,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.runtime:runtime-saveable",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Saveable",
             "description": "Compose components that allow saving and restoring the local ui state",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6628,7 +6522,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose UI",
             "description": "Compose UI primitives. This library contains the primitives that form the Compose UI Toolkit, such as drawing, measurement and layout.",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6652,7 +6546,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui-geometry",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Geometry",
             "description": "Compose classes related to dimensions without units",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6676,7 +6570,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui-graphics",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Graphics",
             "description": "Compose graphics",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6700,7 +6594,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui-text",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose UI Text",
             "description": "Compose Text primitives and utilities",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6724,7 +6618,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui-tooling-preview",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose UI Preview Tooling",
             "description": "Compose tooling library API. This library provides the API required to declare @Preview composables in user apps.",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6748,7 +6642,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui-unit",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Unit",
             "description": "Compose classes for simple units",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -6772,7 +6666,7 @@
         },
         {
             "uniqueId": "org.jetbrains.compose.ui:ui-util",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.12.1",
             "name": "Compose Util",
             "description": "Internal Compose utilities used by other modules",
             "website": "https://github.com/JetBrains/compose-multiplatform",
