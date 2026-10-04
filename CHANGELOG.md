@@ -4,6 +4,20 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.0] - 2026-10-04
+
+### Changed
+
+- Icons use Material Symbols.
+
+### Fixed
+
+- Tapping Ingredients, Method, or Nutrition scrolls the recipe to that section.
+- Nutrition prefers the plain food, such as water or lemon, over a prepared dish that mentions it.
+- About no longer repeats Privacy and Terms; they stay under Legal.
+- An open cookbook updates when you add a recipe from favourites.
+- Settings stays where you scrolled.
+
 ## [0.13.0] - 2026-09-22
 
 ### Added
