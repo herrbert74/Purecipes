@@ -11,12 +11,14 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.home.ui.HomeListDetailPlaceholder
+import app.purecipes.feature.home.ui.HomeScreen
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
@@ -55,6 +57,7 @@ class MainScreenRecipeSelectionTest {
 
 	private fun setUpHarness(environment: RecipeSelectionTestEnvironment) {
 		val mainViewModel = environment.mainViewModel
+		val homeViewModel = homeViewModelForDeviceTest()
 		val searchViewModel = environment.searchViewModel
 		composeRule.setContent {
 			CompositionLocalProvider(
@@ -77,6 +80,20 @@ class MainScreenRecipeSelectionTest {
 							modifier = Modifier.fillMaxSize(),
 							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
+								entry<HomeDestination>(
+									metadata = ListDetailSceneStrategy.listPane(
+										detailPlaceholder = { HomeListDetailPlaceholder() },
+									),
+								) {
+									HomeScreen(
+										modifier = Modifier.fillMaxSize(),
+										onRecipeSelect = mainViewModel::onRecipeSelected,
+										onOpenSearch = { _, _ ->
+											mainViewModel.navigator.replaceTabRoot(SearchDestination())
+										},
+										viewModel = homeViewModel,
+									)
+								}
 								entry<SearchDestination>(
 									metadata = ListDetailSceneStrategy.listPane(
 										detailPlaceholder = { SearchListDetailPlaceholder() },
@@ -104,7 +121,9 @@ class MainScreenRecipeSelectionTest {
 			}
 		}
 		composeRule.waitForIdle()
-		composeRule.onNodeWithContentDescription("Search in recipe titles").performClick()
+		composeRule.runOnIdle {
+			mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		}
 		composeRule.waitForIdle()
 		composeRule.onNodeWithText("2 recipes found").assertIsDisplayed()
 	}

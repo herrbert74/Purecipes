@@ -18,6 +18,10 @@ import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
+import app.purecipes.feature.home.domain.readiness.HomeFeedRefreshCoordinator
+import app.purecipes.feature.home.domain.usecase.GetHomeFeedUseCase
+import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
+import app.purecipes.feature.home.ui.HomeViewModel
 import app.purecipes.feature.library.domain.repository.CookbookCoverRepository
 import app.purecipes.feature.library.domain.usecase.AddFavoriteRecipeUseCase
 import app.purecipes.feature.library.domain.usecase.AddRecipeToCookbookUseCase
@@ -41,10 +45,6 @@ import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
-import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
-import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
-import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -56,6 +56,7 @@ import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.RecipeSearchViewModel
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
@@ -69,6 +70,7 @@ import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUse
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
@@ -101,6 +103,7 @@ internal const val HARDWARE_BACK_TEST_RECIPE_DESCRIPTION = "Sweet and savory sid
 
 internal data class HardwareBackTestEnvironment(
 	val mainViewModel: MainViewModel,
+	val homeViewModel: HomeViewModel,
 	val searchViewModel: RecipeSearchViewModel,
 	val recipeDetailsViewModel: RecipeDetailsViewModel,
 	val libraryViewModel: LibraryViewModel,
@@ -114,6 +117,7 @@ internal fun hardwareBackTestEnvironment(
 	val recipeId = HARDWARE_BACK_TEST_RECIPE_ID
 	return HardwareBackTestEnvironment(
 		mainViewModel = mainViewModelForDeviceTest(analyticsRepository = analyticsRepository),
+		homeViewModel = homeViewModelForDeviceTest(),
 		searchViewModel = recipeSearchViewModelForDeviceTest(
 			searchRepository = FakeRecipeSearchRepository(
 				result = Ok(
@@ -210,14 +214,21 @@ internal fun mainViewModelForDeviceTest(
 	).also { it.initializeTabBackStacksForTest() }
 }
 
+internal fun homeViewModelForDeviceTest(): HomeViewModel = HomeViewModel(
+	getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
+	getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
+	homeFeedRefresh = HomeFeedRefreshCoordinator(),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	searchReadiness = SearchReadinessCoordinator(),
+	sessionKey = null,
+)
+
 internal fun recipeSearchViewModelForDeviceTest(
 	searchRepository: FakeRecipeSearchRepository = FakeRecipeSearchRepository(),
 ): RecipeSearchViewModel = RecipeSearchViewModel(
 	filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 	getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 	searchRecipes = SearchRecipesUseCase(searchRepository),
-	getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
-	getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
 	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
@@ -232,13 +243,12 @@ internal fun recipeSearchViewModelForDeviceTest(
 	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
 	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
-	homeFeedRefresh = HomeFeedRefreshCoordinator(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 	observePremiumStatus = ObservePremiumStatusUseCase(
 		FakeSubscriptionRepository(),
 		FakeMonetisationDebugOverridesRepository(),
 	),
-	initialShowFilterSheet = false,
+	launch = SearchDestination(),
 	sessionKey = null,
 )
 

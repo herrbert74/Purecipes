@@ -7,12 +7,8 @@ import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
-import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
-import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -23,13 +19,14 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
-import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -54,16 +51,12 @@ internal object RecipeSearchViewModelTestSupport {
 		subscriptionRepository: FakeSubscriptionRepository = FakeSubscriptionRepository(),
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
-		homeFeedRepository: FakeHomeFeedRepository = FakeHomeFeedRepository(),
-		homeFeedRefresh: HomeFeedRefreshCoordinator = HomeFeedRefreshCoordinator(),
 		searchPreferencesRepository: FakeSearchPreferencesRepository = FakeSearchPreferencesRepository(),
 		sessionKey: String? = null,
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
-		getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
-		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
@@ -78,13 +71,12 @@ internal object RecipeSearchViewModelTestSupport {
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = searchReadiness,
-		homeFeedRefresh = homeFeedRefresh,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		observePremiumStatus = ObservePremiumStatusUseCase(
 			subscriptionRepository,
 			FakeMonetisationDebugOverridesRepository(),
 		),
-		initialShowFilterSheet = false,
+		launch = SearchDestination(),
 		sessionKey = sessionKey,
 	)
 

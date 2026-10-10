@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -21,9 +20,12 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.search.ui.filter.FilterBottomSheet
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.ui.component.browseTiles
+import app.purecipes.shared.ui.component.toggleBrowseTile
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.persistentListOf
@@ -33,18 +35,17 @@ import kotlinx.collections.immutable.toImmutableSet
 @Composable
 fun RecipeSearchScreen(
 	modifier: Modifier = Modifier,
-	initialShowFilterSheet: Boolean = false,
+	launch: SearchDestination = SearchDestination(),
 	isSignedIn: Boolean = true,
 	onRecipeSelect: (Int) -> Unit = {},
 	onRequestLogInForFilters: () -> Unit = {},
 	onOpenPaywall: (String) -> Unit = {},
-	onOpenFeatureRequests: () -> Unit = {},
 	closeScreen: () -> Unit = {},
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: RecipeSearchViewModel = assistedMetroViewModel<RecipeSearchViewModel, RecipeSearchViewModel.Factory> {
 		create(
-			initialShowFilterSheet = initialShowFilterSheet,
+			launch = launch,
 			sessionKey = sessionKey,
 		)
 	},
@@ -57,10 +58,7 @@ fun RecipeSearchScreen(
 		{ viewModel.onSearchBarExpandedChange(true) }
 	}
 	val onCloseSearch = remember(viewModel) {
-		{
-			viewModel.onSearchBarExpandedChange(false)
-			currentCloseScreen.value()
-		}
+		{ currentCloseScreen.value() }
 	}
 	val onClearSearchText = remember(viewModel) {
 		{
@@ -74,7 +72,6 @@ fun RecipeSearchScreen(
 	LaunchedEffect(Unit) {
 		viewModel.onSearchContentVisible()
 	}
-	val homeListState = rememberLazyListState()
 
 	if (viewModel.isFilterSheetVisible) {
 		val sheetState = rememberFilterSheetState()
@@ -126,16 +123,6 @@ fun RecipeSearchScreen(
 			),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
-			if (!viewModel.isSearchBarActive) {
-				viewModel.searchFilterNote?.let { note ->
-					Text(
-						text = note,
-						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-						style = PurecipesTheme.typography.bodyMedium,
-						color = PurecipesTheme.colorScheme.onSurfaceVariant,
-					)
-				}
-			}
 			RecipeSearchHeader(
 				isSearchBarActive = viewModel.isSearchBarActive,
 				searchQuery = viewModel.searchQuery,
@@ -154,59 +141,36 @@ fun RecipeSearchScreen(
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
+			viewModel.searchFilterNote?.let { note ->
+				Text(
+					text = note,
+					modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
+				)
+			}
 		}
-		if (viewModel.showsHomeFeed) {
-			HomeFeedContent(
-				isLoading = viewModel.isHomeLoading,
-				errorMessage = viewModel.homeErrorMessage,
-				homeFeed = viewModel.homeFeed,
-				shelfPagination = viewModel.shelfPagination,
-				browseTiles = searchBrowseTiles(viewModel.activeFilters),
-				onBrowseTileClick = { tile ->
-					viewModel.onFiltersChange(
-						filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
-						search = true,
-					)
-				},
-				onRecipeSelect = onRecipeSelect,
-				onSeeAll = { shelf ->
-					viewModel.onFiltersChange(
-						filters = shelf.filters,
-						search = true,
-						seeAllShelf = shelf.id,
-					)
-				},
-				onFeatureRequestClick = onOpenFeatureRequests,
-				onRetry = viewModel.reloadHomeFeed,
-				bannerAdViewModel = bannerAdViewModel,
-				listState = homeListState,
-				modifier = Modifier
-					.weight(1f)
-					.padding(top = PurecipesTheme.space.s),
-			)
-		} else {
-			SearchResultsContent(
-				isSearching = viewModel.isSearching,
-				errorMessage = viewModel.errorMessage,
-				totalMatches = viewModel.totalMatches,
-				paginationState = viewModel.paginationState,
-				recipes = viewModel.recipes,
-				nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
-				browseTiles = searchBrowseTiles(viewModel.activeFilters),
-				onBrowseTileClick = { tile ->
-					viewModel.onFiltersChange(
-						filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
-						search = true,
-					)
-				},
-				onRecipeSelect = onRecipeSelect,
-				onRetryClick = viewModel::searchNow,
-				bannerAdViewModel = bannerAdViewModel,
-				modifier = Modifier
-					.weight(1f)
-					.padding(top = PurecipesTheme.space.s),
-			)
-		}
+		SearchResultsContent(
+			isSearching = viewModel.isSearching,
+			errorMessage = viewModel.errorMessage,
+			totalMatches = viewModel.totalMatches,
+			paginationState = viewModel.paginationState,
+			recipes = viewModel.recipes,
+			nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
+			browseTiles = browseTiles(viewModel.activeFilters),
+			onBrowseTileClick = { tile ->
+				viewModel.onFiltersChange(
+					filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
+					search = true,
+				)
+			},
+			onRecipeSelect = onRecipeSelect,
+			onRetryClick = viewModel::searchNow,
+			bannerAdViewModel = bannerAdViewModel,
+			modifier = Modifier
+				.weight(1f)
+				.padding(top = PurecipesTheme.space.s),
+		)
 	}
 }
 

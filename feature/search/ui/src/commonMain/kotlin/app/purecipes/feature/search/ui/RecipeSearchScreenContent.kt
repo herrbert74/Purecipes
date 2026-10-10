@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.testTag
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.shared.ui.component.browseTiles
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -48,16 +49,6 @@ fun RecipeSearchScreenContent(
 				),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
-				if (!isSearchExpanded) {
-					searchFilterNote?.let { note ->
-						Text(
-							text = note,
-							modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-							style = PurecipesTheme.typography.bodyMedium,
-							color = PurecipesTheme.colorScheme.onSurfaceVariant,
-						)
-					}
-				}
 				RecipeSearchHeader(
 					isSearchBarActive = isSearchExpanded,
 					searchQuery = searchQuery,
@@ -73,6 +64,14 @@ fun RecipeSearchScreenContent(
 					Text(
 						text = RECIPE_SEARCH_HELPER,
 						style = PurecipesTheme.typography.labelMedium,
+						color = PurecipesTheme.colorScheme.onSurfaceVariant,
+					)
+				}
+				searchFilterNote?.let { note ->
+					Text(
+						text = note,
+						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+						style = PurecipesTheme.typography.bodyMedium,
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
 				}
@@ -97,7 +96,7 @@ fun RecipeSearchScreenContent(
 				paginationState = paginationState,
 				recipes = recipeList,
 				onRecipeSelect = {},
-				browseTiles = searchBrowseTiles(SearchFilters.default()),
+				browseTiles = browseTiles(SearchFilters.default()),
 				modifier = Modifier
 					.weight(1f)
 					.padding(top = PurecipesTheme.space.s),

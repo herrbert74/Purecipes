@@ -1,24 +1,24 @@
 package app.purecipes.shared.testfixtures.fake
 
-import app.purecipes.feature.search.domain.repository.HomeFeedRepository
-import app.purecipes.feature.search.domain.repository.SearchOutcome
+import app.purecipes.base.kotlin.result.Outcome
+import app.purecipes.feature.home.domain.repository.HomeFeedRepository
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.SearchResultsPage
 import com.github.michaelbull.result.Ok
 
 class FakeHomeFeedRepository(
-	var result: SearchOutcome<HomeFeed> = Ok(HomeFeed()),
+	var result: Outcome<HomeFeed> = Ok(HomeFeed()),
 ) : HomeFeedRepository {
 
 	var calls: Int = 0
 		private set
 
-	var shelfPages: Map<HomeShelfId, SearchOutcome<SearchResultsPage>> = emptyMap()
+	var shelfPages: Map<HomeShelfId, Outcome<SearchResultsPage>> = emptyMap()
 
 	val shelfPageCalls = mutableListOf<HomeShelfId>()
 
-	override suspend fun getHomeFeed(): SearchOutcome<HomeFeed> {
+	override suspend fun getHomeFeed(): Outcome<HomeFeed> {
 		calls += 1
 		return result
 	}
@@ -27,7 +27,7 @@ class FakeHomeFeedRepository(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		pageSize: Int,
-	): SearchOutcome<SearchResultsPage> {
+	): Outcome<SearchResultsPage> {
 		shelfPageCalls += shelfId
 		return shelfPages[shelfId] ?: Ok(
 			SearchResultsPage(

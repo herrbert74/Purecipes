@@ -2,6 +2,7 @@ package app.purecipes.feature.search.ui.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -19,24 +20,26 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 	onRecipeSelect: (Int) -> Unit,
 	onRequestLogInForFilters: () -> Unit,
 	onOpenPaywall: (String) -> Unit,
-	onOpenFeatureRequests: () -> Unit,
+	onCloseSearch: () -> Unit,
 ) {
 	entry<SearchDestination>(
 		metadata = ListDetailSceneStrategy.listPane(
 			detailPlaceholder = { SearchListDetailPlaceholder() },
 		),
 	) { destination ->
-		RecipeSearchScreen(
-			initialShowFilterSheet = destination.openFiltersOnStart,
-			isSignedIn = isSignedIn,
-			modifier = Modifier.fillMaxSize(),
-			onRecipeSelect = onRecipeSelect,
-			onRequestLogInForFilters = onRequestLogInForFilters,
-			onOpenPaywall = onOpenPaywall,
-			onOpenFeatureRequests = onOpenFeatureRequests,
-			sessionKey = sessionKey,
-			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
-		)
+		key(destination.launchId) {
+			RecipeSearchScreen(
+				launch = destination,
+				isSignedIn = isSignedIn,
+				modifier = Modifier.fillMaxSize(),
+				onRecipeSelect = onRecipeSelect,
+				onRequestLogInForFilters = onRequestLogInForFilters,
+				onOpenPaywall = onOpenPaywall,
+				closeScreen = onCloseSearch,
+				sessionKey = sessionKey,
+				bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
+			)
+		}
 	}
 }
 

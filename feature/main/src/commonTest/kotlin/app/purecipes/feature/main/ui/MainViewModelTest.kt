@@ -7,15 +7,17 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.runUnconfinedViewModelTest
 import app.purecipes.shared.ui.navigation.PostLoginAction
@@ -37,7 +39,7 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `should exit only on search root`() {
+	fun `should exit only on home root`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.shouldExit() shouldBe true
 		viewModel.onRecipeSelected(42)
@@ -54,13 +56,13 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `selecting search tab clears pending post login origin and resets open filters destination`() {
+	fun `selecting home tab clears pending post login origin`() {
 		val viewModel = mainViewModelForTest()
 
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Account })
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Home })
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(HomeDestination)
 		viewModel.takePendingPostLoginAction() shouldBe null
 	}
 
@@ -71,28 +73,31 @@ class MainViewModelTest {
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(LibraryDestination())
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Home })
 
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(42))
+		viewModel.peekBackStack() shouldBe listOf(
+			HomeDestination,
+			RecipeDetailsDestination(42, origin = AnalyticsOrigin.HOME.value),
+		)
 	}
 
 	@Test
 	fun `re tapping active tab pops to tab root`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onRecipeSelected(42)
-		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Home })
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(HomeDestination)
 	}
 
 	@Test
-	fun `back at non search tab root switches to search`() {
+	fun `back at non home tab root switches to home`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
 
 		viewModel.onBack() shouldBe true
 
-		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+		viewModel.peekBackStack() shouldBe listOf<NavKey>(HomeDestination)
 	}
 
 	@Test
@@ -122,7 +127,7 @@ class MainViewModelTest {
 		viewModel.onDeepLink(PurecipesLink.Recipe(99))
 
 		viewModel.peekBackStack() shouldBe listOf(
-			SearchDestination(),
+			HomeDestination,
 			RecipeDetailsDestination(99, origin = AnalyticsOrigin.DEEP_LINK.value),
 		)
 		analyticsRepository.trackedEvents.filterIsInstance<AnalyticsEvent.DeepLinkOpened>() shouldBe listOf(
@@ -172,7 +177,7 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `onBack at search root returns false`() {
+	fun `onBack at home root returns false`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onBack() shouldBe false
 	}
@@ -198,7 +203,10 @@ class MainViewModelTest {
 		viewModel.onRecipeSelected(42)
 		viewModel.onRecipeSelected(99)
 
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(99))
+		viewModel.peekBackStack() shouldBe listOf(
+			HomeDestination,
+			RecipeDetailsDestination(99, origin = AnalyticsOrigin.HOME.value),
+		)
 	}
 
 	@Test
@@ -208,7 +216,10 @@ class MainViewModelTest {
 		viewModel.onStartCooking(42)
 		viewModel.onBack()
 
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), RecipeDetailsDestination(42))
+		viewModel.peekBackStack() shouldBe listOf(
+			HomeDestination,
+			RecipeDetailsDestination(42, origin = AnalyticsOrigin.HOME.value),
+		)
 	}
 
 	@Test
@@ -234,6 +245,48 @@ class MainViewModelTest {
 
 		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
 		viewModel.peekBackStack() shouldBe listOf<NavKey>(SearchDestination())
+	}
+
+	@Test
+	fun `returning to search keeps the open recipe`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		viewModel.onRecipeSelected(42)
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Library })
+
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+
+		viewModel.peekBackStack() shouldBe listOf(
+			SearchDestination(),
+			RecipeDetailsDestination(42),
+		)
+	}
+
+	@Test
+	fun `re tapping search tab starts a fresh search`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		viewModel.onRecipeSelected(42)
+
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(launchId = 1))
+	}
+
+	@Test
+	fun `opening search from home replaces the search stack`() {
+		val viewModel = mainViewModelForTest()
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+		viewModel.onRecipeSelected(42)
+
+		viewModel.navigator.replaceTabRoot(
+			SearchDestination(seeAllShelf = HomeShelfId.NEW),
+		)
+
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
+		viewModel.peekBackStack() shouldBe listOf(
+			SearchDestination(seeAllShelf = HomeShelfId.NEW, launchId = 1),
+		)
 	}
 
 	@Test

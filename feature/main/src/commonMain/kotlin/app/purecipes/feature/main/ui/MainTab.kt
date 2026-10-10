@@ -4,12 +4,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.shared.ui.icon.AppIcons
 
 internal enum class MainTabStackId {
+	Home,
 	Search,
 	Library,
 	Create,
@@ -18,6 +20,7 @@ internal enum class MainTabStackId {
 
 internal val MainTab.stackId: MainTabStackId
 	get() = when (destination) {
+		is HomeDestination -> MainTabStackId.Home
 		is SearchDestination -> MainTabStackId.Search
 		is LibraryDestination -> MainTabStackId.Library
 		CreateDestination -> MainTabStackId.Create
@@ -26,9 +29,14 @@ internal val MainTab.stackId: MainTabStackId
 	}
 
 internal val MainTabStackId.saveStateKey: String
-	get() = "main_tab_back_stack_$name"
+	get() = when (this) {
+		MainTabStackId.Home -> "main_tab_back_stack_Search"
+		MainTabStackId.Search -> "main_tab_back_stack_RecipeSearch"
+		else -> "main_tab_back_stack_$name"
+	}
 
 internal fun MainTabStackId.toAnalyticsActiveTab(): String = when (this) {
+	MainTabStackId.Home -> AnalyticsActiveTab.HOME
 	MainTabStackId.Search -> AnalyticsActiveTab.SEARCH
 	MainTabStackId.Library -> AnalyticsActiveTab.FAVORITES
 	MainTabStackId.Create -> AnalyticsActiveTab.CREATE
@@ -42,8 +50,12 @@ internal data class MainTab(
 
 internal val mainTabs = listOf(
 	MainTab(
-		destination = SearchDestination(),
+		destination = HomeDestination,
 		label = "Home",
+	),
+	MainTab(
+		destination = SearchDestination(),
+		label = "Search",
 	),
 	MainTab(
 		destination = LibraryDestination(),
@@ -60,6 +72,7 @@ internal val mainTabs = listOf(
 )
 
 internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = when (destination) {
+	is HomeDestination -> rootDestination is HomeDestination
 	is SearchDestination -> rootDestination is SearchDestination
 	is LibraryDestination -> rootDestination is LibraryDestination
 	else -> rootDestination == destination
@@ -67,7 +80,8 @@ internal fun MainTab.isSelected(rootDestination: NavKey?): Boolean = when (desti
 
 internal val MainTab.icon: ImageVector
 	get() = when (destination) {
-		is SearchDestination -> AppIcons.Home
+		is HomeDestination -> AppIcons.Home
+		is SearchDestination -> AppIcons.Search
 		is LibraryDestination -> AppIcons.LibraryBooks
 		CreateDestination -> AppIcons.Add
 		AccountDestination -> AppIcons.Person

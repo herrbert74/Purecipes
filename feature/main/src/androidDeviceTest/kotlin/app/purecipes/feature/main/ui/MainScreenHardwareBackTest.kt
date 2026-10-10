@@ -11,15 +11,16 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.home.ui.HomeListDetailPlaceholder
+import app.purecipes.feature.home.ui.HomeScreen
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.LibraryListDetailPlaceholder
 import app.purecipes.feature.library.ui.LibraryScreen
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
@@ -80,7 +81,7 @@ class MainScreenHardwareBackTest {
 	}
 
 	@Test
-	fun hardwareBackFromFavoritesRootReturnsToSearch() {
+	fun hardwareBackFromFavoritesRootReturnsToHome() {
 		val environment = hardwareBackTestEnvironment()
 		setUpHarness(environment)
 
@@ -88,11 +89,12 @@ class MainScreenHardwareBackTest {
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
 		pressHardwareBack()
 
-		assertSearchResultsCountDisplayed()
+		composeRule.onNodeWithText("Suggest a feature").assertIsDisplayed()
 	}
 
 	private fun setUpHarness(environment: HardwareBackTestEnvironment) {
 		val mainViewModel = environment.mainViewModel
+		val homeViewModel = environment.homeViewModel
 		val searchViewModel = environment.searchViewModel
 		val recipeDetailsViewModel = environment.recipeDetailsViewModel
 		val favoritesViewModel = environment.libraryViewModel
@@ -127,6 +129,20 @@ class MainScreenHardwareBackTest {
 							modifier = Modifier.fillMaxSize(),
 							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
+								entry<HomeDestination>(
+									metadata = ListDetailSceneStrategy.listPane(
+										detailPlaceholder = { HomeListDetailPlaceholder() },
+									),
+								) {
+									HomeScreen(
+										modifier = Modifier.fillMaxSize(),
+										onRecipeSelect = mainViewModel::onRecipeSelected,
+										onOpenSearch = { _, _ ->
+											mainViewModel.navigator.replaceTabRoot(SearchDestination())
+										},
+										viewModel = homeViewModel,
+									)
+								}
 								entry<SearchDestination>(
 									metadata = ListDetailSceneStrategy.listPane(
 										detailPlaceholder = { SearchListDetailPlaceholder() },
@@ -171,8 +187,7 @@ class MainScreenHardwareBackTest {
 			}
 		}
 		composeRule.waitForIdle()
-		composeRule.onNodeWithContentDescription("Search in recipe titles").performClick()
-		composeRule.waitForIdle()
+		selectMainTab(environment, MainTabStackId.Search)
 		assertSearchResultsCountDisplayed()
 	}
 

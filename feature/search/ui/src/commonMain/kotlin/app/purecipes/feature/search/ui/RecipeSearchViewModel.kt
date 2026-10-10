@@ -21,10 +21,6 @@ import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
 import app.purecipes.feature.search.domain.model.SearchPreferences
-import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
-import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
-import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -36,11 +32,10 @@ import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.search.ui.filter.FilterTab
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
-import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
-import app.purecipes.shared.domain.model.HomeFeed
-import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchResponse
@@ -59,9 +54,6 @@ import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactory
 import dev.zacsweers.metrox.viewmodel.ManualViewModelAssistedFactoryKey
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,8 +67,6 @@ class RecipeSearchViewModel(
 	private val filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val searchRecipes: SearchRecipesUseCase,
-	private val getHomeFeed: GetHomeFeedUseCase,
-	private val getHomeShelfPage: GetHomeShelfPageUseCase,
 	private val getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	private val trackEvent: TrackEventUseCase,
 	private val logBreadcrumb: LogBreadcrumbUseCase,
@@ -91,10 +81,9 @@ class RecipeSearchViewModel(
 	private val updateUserExcludedIngredients: UpdateUserExcludedIngredientsUseCase,
 	private val matchIngredientInRecipes: MatchIngredientInRecipesUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
-	private val homeFeedRefresh: HomeFeedRefreshCoordinator,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	observePremiumStatus: ObservePremiumStatusUseCase,
-	@Assisted initialShowFilterSheet: Boolean,
+	@Assisted private val launch: SearchDestination,
 	@Assisted private val sessionKey: String?,
 ) : ViewModel() {
 
@@ -104,21 +93,7 @@ class RecipeSearchViewModel(
 	var isSearching by mutableStateOf(false)
 		private set
 
-	var homeFeed by mutableStateOf(HomeFeed())
-		private set
-
-	var shelfPagination by mutableStateOf<ImmutableMap<HomeShelfId, PaginationState<Int, RecipeSummary>>>(
-		persistentMapOf(),
-	)
-		private set
-
-	var isHomeLoading by mutableStateOf(false)
-		private set
-
-	var homeErrorMessage by mutableStateOf<String?>(null)
-		private set
-
-	var isSearchBarActive by mutableStateOf(false)
+	var isSearchBarActive by mutableStateOf(true)
 		private set
 
 	var isFilterSheetVisible by mutableStateOf(false)
@@ -159,9 +134,6 @@ class RecipeSearchViewModel(
 	private var isSeeAllActive by mutableStateOf(false)
 	private var showsFavoritesResults by mutableStateOf(false)
 	private var showsIngredientResults by mutableStateOf(false)
-
-	val showsHomeFeed: Boolean
-		get() = searchEntryIsIdle() && filtersAreIdle()
 
 	private var ingredientMatchJob: Job? = null
 	private var favoriteEventsJob: Job? = null
@@ -208,33 +180,26 @@ class RecipeSearchViewModel(
 			reloadSessionState(sessionKey)
 			loadedSessionKey = sessionKey
 			searchPreferences = getSearchPreferences()
-			if (initialShowFilterSheet) {
+			if (launch.openFiltersOnStart) {
 				isFilterSheetVisible = true
 			}
-			if (showsHomeFeed) {
-				loadHome()
+			if (launch.seeAllShelf != null || !launch.initialFilters.isEmpty) {
+				onFiltersChange(
+					filters = launch.initialFilters,
+					search = true,
+					seeAllShelf = launch.seeAllShelf,
+				)
 			} else {
 				doSearch()
 			}
 			observeSearchPreferences().collect { preferences ->
 				if (preferences != searchPreferences) {
 					searchPreferences = preferences
-					if (showsHomeFeed) {
-						refreshSearchFilterNote()
-					} else {
-						doSearch()
-					}
+					doSearch()
 				}
 			}
 		}
 		startFavoriteEventsCollection(sessionKey)
-		viewModelScope.launch {
-			homeFeedRefresh.revision.collect { revision ->
-				if (revision > 0) {
-					refreshHomeFeatureRequest()
-				}
-			}
-		}
 	}
 
 	fun onSessionKeyChanged(sessionKey: String?) {
@@ -243,11 +208,7 @@ class RecipeSearchViewModel(
 			reloadSessionState(sessionKey)
 			loadedSessionKey = sessionKey
 			startFavoriteEventsCollection(sessionKey)
-			if (showsHomeFeed) {
-				loadHome()
-			} else {
-				doSearch()
-			}
+			doSearch()
 		}
 	}
 
@@ -281,29 +242,6 @@ class RecipeSearchViewModel(
 				)
 			}
 		}
-		val updatedShelves = homeFeed.shelves.map { shelf ->
-			val updatedRecipes = shelf.recipes.map { recipe ->
-				if (recipe.id == event.recipeId && recipe.isFavorite != isFavorite) {
-					recipe.copy(isFavorite = isFavorite)
-				} else {
-					recipe
-				}
-			}
-			if (updatedRecipes == shelf.recipes) shelf else shelf.copy(recipes = updatedRecipes)
-		}
-		if (updatedShelves != homeFeed.shelves) {
-			homeFeed = homeFeed.copy(shelves = updatedShelves)
-		}
-		val favorite = isFavorite
-		shelfPagination.values.forEach { state ->
-			state.mapItems { recipe ->
-				if (recipe.id == event.recipeId && recipe.isFavorite != favorite) {
-					recipe.copy(isFavorite = favorite)
-				} else {
-					recipe
-				}
-			}
-		}
 	}
 
 	fun onSearchQueryChange(query: String) {
@@ -311,6 +249,7 @@ class RecipeSearchViewModel(
 	}
 
 	fun onSearchBarExpandedChange(expanded: Boolean) {
+		if (expanded == isSearchBarActive) return
 		if (expanded) {
 			isSeeAllActive = false
 			showsFavoritesResults = false
@@ -322,9 +261,7 @@ class RecipeSearchViewModel(
 			isSeeAllActive = false
 			showsFavoritesResults = false
 			showsIngredientResults = false
-			if (!showsHomeFeed) {
-				viewModelScope.launch { doSearch() }
-			}
+			viewModelScope.launch { doSearch() }
 		}
 	}
 
@@ -422,15 +359,10 @@ class RecipeSearchViewModel(
 			if (excludedChanged) {
 				saveErrorMessage = persistExcludedIngredientChanges() ?: saveErrorMessage
 			}
-			if (shouldRestoreHomeFeed(pantryChanged, excludedChanged)) {
-				showsIngredientResults = false
-				loadHome()
-			} else {
-				if (pantryChanged || excludedChanged) {
-					showsIngredientResults = true
-				}
-				doSearch()
+			if (pantryChanged || excludedChanged) {
+				showsIngredientResults = true
 			}
+			doSearch()
 			if (saveErrorMessage != null) {
 				errorMessage = saveErrorMessage
 			}
@@ -533,10 +465,6 @@ class RecipeSearchViewModel(
 		viewModelScope.launch { doSearch() }
 	}
 
-	val reloadHomeFeed: () -> Unit = {
-		viewModelScope.launch { loadHome() }
-	}
-
 	private fun customIngredientsFromSession(
 		pantry: Set<String>,
 		excluded: Set<String>,
@@ -553,78 +481,6 @@ class RecipeSearchViewModel(
 		lastSavedPantry = pantryIngredients
 		lastSavedExcludedIngredients = excludedIngredients
 	}
-
-	private suspend fun loadHome() {
-		isHomeLoading = true
-		homeErrorMessage = null
-		val outcome = getHomeFeed()
-		val feed = outcome.get()
-		if (feed != null) {
-			shelfPagination = feed.shelves.associate { shelf ->
-				shelf.id to newShelfPagination(shelf)
-			}.toImmutableMap()
-			homeFeed = feed
-		} else {
-			homeErrorMessage = outcome.getError()?.message
-		}
-		refreshSearchFilterNote()
-		isHomeLoading = false
-		searchReadiness.reportReady()
-	}
-
-	private suspend fun refreshHomeFeatureRequest() {
-		val feed = getHomeFeed().get() ?: return
-		homeFeed = homeFeed.copy(featureRequest = feed.featureRequest)
-	}
-
-	private fun newShelfPagination(shelf: HomeShelf): PaginationState<Int, RecipeSummary> {
-		val state = PaginationState<Int, RecipeSummary>(
-			initialPageKey = FIRST_PAGE_NUMBER,
-			onRequestPage = { pageKey ->
-				viewModelScope.launch {
-					loadShelfPage(shelf.id, pageKey)
-				}
-			},
-		)
-		state.appendPage(
-			pageKey = FIRST_PAGE_NUMBER,
-			items = shelf.recipes,
-			nextPageKey = FIRST_PAGE_NUMBER + 1,
-			isLastPage = shelf.recipes.size < HOME_SHELF_PAGE_SIZE,
-		)
-		return state
-	}
-
-	private suspend fun loadShelfPage(shelfId: HomeShelfId, pageNumber: Int) {
-		val state = shelfPagination[shelfId] ?: return
-		val outcome = getHomeShelfPage(
-			shelfId = shelfId,
-			pageNumber = pageNumber,
-			pageSize = HOME_SHELF_PAGE_SIZE,
-		)
-		val page = outcome.get()
-		if (page == null) {
-			state.setError(IllegalStateException(outcome.getError()?.message ?: "Couldn't load recipes"))
-			return
-		}
-		state.appendPage(
-			pageKey = page.pageNumber,
-			items = page.items,
-			nextPageKey = page.pageNumber + 1,
-			isLastPage = page.pageNumber * page.pageSize >= page.totalMatches,
-		)
-	}
-
-	private fun searchEntryIsIdle(): Boolean = !isSearchBarActive && searchQuery.isBlank()
-
-	private fun filtersAreIdle(): Boolean {
-		val filtersAreClear = activeFilters.isEmpty && keyIngredients.isEmpty()
-		val resultsModeIsClear = !isSeeAllActive && !showsIngredientResults
-		return filtersAreClear && resultsModeIsClear
-	}
-
-	private fun shouldRestoreHomeFeed(pantryChanged: Boolean, excludedChanged: Boolean): Boolean =
-		showsHomeFeed && !pantryChanged && !excludedChanged
 
 	private suspend fun doSearch() {
 		isSearching = true
@@ -752,6 +608,6 @@ class RecipeSearchViewModel(
 	@ContributesIntoMap(AppScope::class)
 	interface Factory : ManualViewModelAssistedFactory {
 
-		fun create(initialShowFilterSheet: Boolean, sessionKey: String?): RecipeSearchViewModel
+		fun create(launch: SearchDestination, sessionKey: String?): RecipeSearchViewModel
 	}
 }

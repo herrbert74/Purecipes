@@ -9,16 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.AnalyticsScreenName
+import app.purecipes.feature.home.ui.HomeListDetailPlaceholder
+import app.purecipes.feature.home.ui.HomeScreen
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.LibraryListDetailPlaceholder
 import app.purecipes.feature.library.ui.LibraryScreen
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
@@ -51,7 +51,7 @@ class MainScreenScreenViewTrackingTest {
 
 		composeRule.runOnIdle {
 			assertEquals(
-				listOf(AnalyticsScreenName.SEARCH),
+				listOf(AnalyticsScreenName.HOME),
 				analyticsRepository.trackedScreenViews.map { it.screenName },
 			)
 		}
@@ -65,7 +65,7 @@ class MainScreenScreenViewTrackingTest {
 		composeRule.runOnIdle {
 			assertEquals(
 				listOf(
-					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.HOME,
 					AnalyticsScreenName.RECIPE_DETAILS,
 				),
 				analyticsRepository.trackedScreenViews.map { it.screenName },
@@ -81,7 +81,7 @@ class MainScreenScreenViewTrackingTest {
 		composeRule.runOnIdle {
 			assertEquals(
 				listOf(
-					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.HOME,
 					AnalyticsScreenName.RECIPE_DETAILS,
 					AnalyticsScreenName.FAVORITES,
 				),
@@ -90,7 +90,7 @@ class MainScreenScreenViewTrackingTest {
 		}
 
 		composeRule.runOnIdle {
-			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
+			environment.mainViewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Home })
 		}
 		composeRule.waitForIdle()
 		assertRecipeDetailsScreenDisplayed()
@@ -98,7 +98,7 @@ class MainScreenScreenViewTrackingTest {
 		composeRule.runOnIdle {
 			assertEquals(
 				listOf(
-					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.HOME,
 					AnalyticsScreenName.RECIPE_DETAILS,
 					AnalyticsScreenName.FAVORITES,
 					AnalyticsScreenName.RECIPE_DETAILS,
@@ -111,18 +111,16 @@ class MainScreenScreenViewTrackingTest {
 			composeRule.activity.onBackPressedDispatcher.onBackPressed()
 		}
 		composeRule.waitForIdle()
-		composeRule.onNodeWithText("1 recipes found")
-			.performScrollTo()
-			.assertIsDisplayed()
+		composeRule.onNodeWithText("Suggest a feature").assertIsDisplayed()
 
 		composeRule.runOnIdle {
 			assertEquals(
 				listOf(
-					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.HOME,
 					AnalyticsScreenName.RECIPE_DETAILS,
 					AnalyticsScreenName.FAVORITES,
 					AnalyticsScreenName.RECIPE_DETAILS,
-					AnalyticsScreenName.SEARCH,
+					AnalyticsScreenName.HOME,
 				),
 				analyticsRepository.trackedScreenViews.map { it.screenName },
 			)
@@ -131,6 +129,7 @@ class MainScreenScreenViewTrackingTest {
 
 	private fun setUpHarness(environment: HardwareBackTestEnvironment) {
 		val mainViewModel = environment.mainViewModel
+		val homeViewModel = environment.homeViewModel
 		val searchViewModel = environment.searchViewModel
 		val recipeDetailsViewModel = environment.recipeDetailsViewModel
 		val favoritesViewModel = environment.libraryViewModel
@@ -165,6 +164,17 @@ class MainScreenScreenViewTrackingTest {
 							modifier = Modifier.fillMaxSize(),
 							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
+								entry<HomeDestination>(
+									metadata = ListDetailSceneStrategy.listPane(
+										detailPlaceholder = { HomeListDetailPlaceholder() },
+									),
+								) {
+									HomeScreen(
+										modifier = Modifier.fillMaxSize(),
+										onRecipeSelect = mainViewModel::onRecipeSelected,
+										viewModel = homeViewModel,
+									)
+								}
 								entry<SearchDestination>(
 									metadata = ListDetailSceneStrategy.listPane(
 										detailPlaceholder = { SearchListDetailPlaceholder() },
@@ -209,11 +219,6 @@ class MainScreenScreenViewTrackingTest {
 			}
 		}
 		composeRule.waitForIdle()
-		composeRule.onNodeWithContentDescription("Search in recipe titles").performClick()
-		composeRule.waitForIdle()
-		composeRule.onNodeWithText("1 recipes found")
-			.performScrollTo()
-			.assertIsDisplayed()
 	}
 
 	private fun assertRecipeDetailsScreenDisplayed() {

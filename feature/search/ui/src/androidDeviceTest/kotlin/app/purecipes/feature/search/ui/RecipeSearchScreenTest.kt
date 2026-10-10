@@ -31,10 +31,6 @@ import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCas
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
-import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
-import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -67,10 +63,12 @@ import app.purecipes.feature.search.ui.filter.filterSectionToggleTag
 import app.purecipes.feature.search.ui.filter.ingredientTriStateChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientChipTag
 import app.purecipes.feature.search.ui.filter.keyIngredientPantryQuickPickTag
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.search.ui.result.SEARCH_RESULTS_LIST_TAG
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -78,7 +76,6 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
-import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -115,8 +112,7 @@ class RecipeSearchScreenTest {
 			}
 		}
 		waitForIdle()
-		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).assertIsDisplayed()
-		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
+		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).assertIsDisplayed()
 		runOnIdle { viewModel.onSearchQueryChange("Pas") }
 		onNodeWithTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG).assertStable()
 	}
@@ -757,8 +753,7 @@ class RecipeSearchScreenTest {
 			}
 		}
 
-		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).assertIsDisplayed()
-		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
+		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).assertIsDisplayed()
 		onNodeWithTag(RECIPE_SEARCH_INPUT_TAG).performTextInput("Pasta")
 		waitForIdle()
 
@@ -801,7 +796,6 @@ class RecipeSearchScreenTest {
 
 @OptIn(ExperimentalTestApi::class)
 private fun ComposeUiTest.openTitleSearch(viewModel: RecipeSearchViewModel) {
-	onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
 	try {
 		waitUntil(timeoutMillis = 5_000) {
 			viewModel.hasTitleSearchOutcome()
@@ -809,7 +803,7 @@ private fun ComposeUiTest.openTitleSearch(viewModel: RecipeSearchViewModel) {
 	} catch (error: ComposeTimeoutException) {
 		throw AssertionError(
 			"Title search did not finish. searching=${viewModel.isSearching} " +
-				"home=${viewModel.showsHomeFeed} bar=${viewModel.isSearchBarActive} " +
+				"bar=${viewModel.isSearchBarActive} " +
 				"matches=${viewModel.totalMatches} recipes=${viewModel.recipes.size} " +
 				"nearMiss=${viewModel.nearMissRecipes.size} error=${viewModel.errorMessage}",
 			error,
@@ -842,8 +836,6 @@ private fun recipeSearchViewModelForTest(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
-		getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
-		getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
 		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
@@ -858,7 +850,6 @@ private fun recipeSearchViewModelForTest(
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = SearchReadinessCoordinator(),
-		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 		observePremiumStatus = ObservePremiumStatusUseCase(
 			FakeSubscriptionRepository(
@@ -875,7 +866,7 @@ private fun recipeSearchViewModelForTest(
 			),
 			FakeMonetisationDebugOverridesRepository(),
 		),
-		initialShowFilterSheet = initialShowFilterSheet,
+		launch = SearchDestination(openFiltersOnStart = initialShowFilterSheet),
 		sessionKey = sessionKey,
 	)
 }

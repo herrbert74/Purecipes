@@ -9,6 +9,7 @@ import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.featurerequests.ui.navigation.FeatureRequestsDestination
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
@@ -64,7 +65,10 @@ class MainViewModelStartTest {
 		)
 
 		viewModel.authenticationState shouldBe AuthenticationState.SignedIn(sampleUser)
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(openFiltersOnStart = true))
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
+		viewModel.peekBackStack() shouldBe listOf(
+			SearchDestination(openFiltersOnStart = true, launchId = 1),
+		)
 	}
 
 	@Test
@@ -78,8 +82,8 @@ class MainViewModelStartTest {
 		viewModel.start()
 		authenticationRepository.signInWithGoogle(sampleGoogleProfile())
 
-		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), FeatureRequestsDestination)
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Home
+		viewModel.peekBackStack() shouldBe listOf(HomeDestination, FeatureRequestsDestination)
 	}
 
 	@Test
@@ -168,7 +172,7 @@ class MainViewModelStartTest {
 		links.emit(PurecipesLink.Recipe(77))
 
 		viewModel.peekBackStack() shouldBe listOf(
-			SearchDestination(),
+			HomeDestination,
 			RecipeDetailsDestination(77, origin = AnalyticsOrigin.DEEP_LINK.value),
 		)
 	}
@@ -246,7 +250,9 @@ class MainViewModelStartTest {
 				profileImageUrl = sampleUser.profileImageUrl,
 			),
 		)
-		viewModel.peekBackStack() shouldBe listOf(SearchDestination(openFiltersOnStart = true))
+		viewModel.peekBackStack() shouldBe listOf(
+			SearchDestination(openFiltersOnStart = true, launchId = 1),
+		)
 
 		authenticationRepository.signOut()
 

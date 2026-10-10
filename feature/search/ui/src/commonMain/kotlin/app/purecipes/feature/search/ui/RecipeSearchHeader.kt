@@ -16,6 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +55,9 @@ internal fun RecipeSearchHeader(
 	onSearchImeSearch: () -> Unit,
 	onClearSearchText: () -> Unit,
 ) {
-	val focusRequester = remember { FocusRequester() }
+	val searchFocusRequester = remember { FocusRequester() }
+	val filterFocusRequester = remember { FocusRequester() }
+	val hasAppliedInitialFocus = remember { mutableStateOf(false) }
 	val searchPillShape = RoundedCornerShape(PurecipesTheme.space.l)
 	val pillFieldColors = OutlinedTextFieldDefaults.colors(
 		focusedContainerColor = Color.Transparent,
@@ -65,8 +68,11 @@ internal fun RecipeSearchHeader(
 		disabledBorderColor = Color.Transparent,
 	)
 	LaunchedEffect(isSearchBarActive) {
-		if (isSearchBarActive) {
-			focusRequester.requestFocus()
+		if (!hasAppliedInitialFocus.value) {
+			hasAppliedInitialFocus.value = true
+			filterFocusRequester.requestFocus()
+		} else if (isSearchBarActive) {
+			searchFocusRequester.requestFocus()
 		}
 	}
 	Row(
@@ -77,6 +83,7 @@ internal fun RecipeSearchHeader(
 		RecipeSearchOpenFiltersButton(
 			hasActiveFilters = hasActiveFilters,
 			onClick = onFilterClick,
+			modifier = Modifier.focusRequester(filterFocusRequester),
 		)
 		if (isSearchBarActive) {
 			Surface(
@@ -98,7 +105,7 @@ internal fun RecipeSearchHeader(
 					) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Close title search",
+							contentDescription = "Back",
 						)
 					}
 					OutlinedTextField(
@@ -106,7 +113,7 @@ internal fun RecipeSearchHeader(
 						onValueChange = onSearchQueryChange,
 						modifier = Modifier
 							.weight(1f)
-							.focusRequester(focusRequester)
+							.focusRequester(searchFocusRequester)
 							.testTag(RECIPE_SEARCH_INPUT_TAG)
 							.semantics(mergeDescendants = true) {
 								contentDescription = RECIPE_SEARCH_TITLE

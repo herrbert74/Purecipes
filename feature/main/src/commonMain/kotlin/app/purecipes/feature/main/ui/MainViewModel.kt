@@ -13,7 +13,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import app.purecipes.feature.ads.domain.usecase.DecidePreCookInterstitialUseCase
 import app.purecipes.feature.ads.domain.usecase.ShowInterstitialAdUseCase
-import app.purecipes.feature.analytics.domain.model.AnalyticsActiveTab
 import app.purecipes.feature.analytics.domain.model.AnalyticsAdPlacement
 import app.purecipes.feature.analytics.domain.model.AnalyticsDeepLinkType
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
@@ -37,14 +36,14 @@ import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.featurerequests.ui.navigation.FeatureRequestsDestination
+import app.purecipes.feature.home.domain.readiness.HomeFeedRefreshCoordinator
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.ScreenViewTracker
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
-import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
@@ -53,6 +52,7 @@ import app.purecipes.feature.sharing.domain.usecase.PublishWebLaunchLinkUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.ui.navigation.Navigator
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import app.purecipes.shared.ui.navigation.PostLoginNavigationTarget
@@ -102,7 +102,7 @@ class MainViewModel(
 
 	private val tabBackStacks = mutableMapOf<MainTabStackId, NavBackStack<NavKey>>()
 
-	internal var selectedTab by mutableStateOf(mainTabs.first { it.stackId == MainTabStackId.Search })
+	internal var selectedTab by mutableStateOf(mainTabs.first { it.stackId == MainTabStackId.Home })
 		private set
 
 	internal val onboardingGate = OnboardingGate(
@@ -118,6 +118,7 @@ class MainViewModel(
 	private var previousSessionKey: String? = null
 	private var incomingLinksCollectionJob: Job? = null
 	private var isStarted = false
+	private var nextSearchLaunchId = 0L
 
 	var authenticationState by mutableStateOf(observeAuthenticationState().value)
 		private set
@@ -156,8 +157,8 @@ class MainViewModel(
 					true
 				}
 
-				selectedTab.stackId != MainTabStackId.Search -> {
-					selectTab(MainTabStackId.Search)
+				selectedTab.stackId != MainTabStackId.Home -> {
+					selectTab(MainTabStackId.Home)
 					true
 				}
 
@@ -191,7 +192,7 @@ class MainViewModel(
 		}
 		isStarted = true
 		setCrashCustomValue(AnalyticsGlobalProperty.ENVIRONMENT, purecipesConfig.environment())
-		setActiveTabContext(AnalyticsActiveTab.SEARCH)
+		setActiveTabContext(selectedTab.stackId.toAnalyticsActiveTab())
 		viewModelScope.launch {
 			observePremiumStatus().collectLatest { premium ->
 				val premiumStatus = if (premium) {
@@ -238,6 +239,11 @@ class MainViewModel(
 				serializersModule = mainNavigationSerializersModule()
 			}
 		}
+		val homeStack = rememberMainTabNavBackStack(
+			saveStateKey = MainTabStackId.Home.saveStateKey,
+			configuration = configuration,
+			root = tabRootForStack(MainTabStackId.Home),
+		)
 		val searchStack = rememberMainTabNavBackStack(
 			saveStateKey = MainTabStackId.Search.saveStateKey,
 			configuration = configuration,
@@ -259,12 +265,14 @@ class MainViewModel(
 			root = tabRootForStack(MainTabStackId.Account),
 		)
 		SideEffect {
+			tabBackStacks[MainTabStackId.Home] = homeStack
 			tabBackStacks[MainTabStackId.Search] = searchStack
 			tabBackStacks[MainTabStackId.Library] = libraryStack
 			tabBackStacks[MainTabStackId.Create] = createStack
 			tabBackStacks[MainTabStackId.Account] = accountStack
 		}
 		return when (selectedTab.stackId) {
+			MainTabStackId.Home -> homeStack
 			MainTabStackId.Search -> searchStack
 			MainTabStackId.Library -> libraryStack
 			MainTabStackId.Create -> createStack
@@ -279,7 +287,7 @@ class MainViewModel(
 	}
 
 	fun shouldExit(): Boolean =
-		selectedTab.stackId == MainTabStackId.Search && activeStack.size == 1
+		selectedTab.stackId == MainTabStackId.Home && activeStack.size == 1
 
 	internal fun peekBackStack(): List<NavKey> = activeStack.toList()
 
@@ -293,12 +301,8 @@ class MainViewModel(
 		if (tab.destination !is AccountDestination) {
 			pendingPostLoginAction = null
 		}
-		val root = tabRootDestination(tab)
 		if (tab.stackId == selectedTab.stackId) {
-			val stack = stackFor(tab.stackId)
-			if (stack.size != 1 || !stack.firstOrNull().isSameTabRoot(root)) {
-				replaceStackRoot(root)
-			}
+			resetActiveTab(tab)
 			return
 		}
 		selectTab(tab.stackId)
@@ -335,10 +339,10 @@ class MainViewModel(
 	}
 
 	private fun navigateToRecipe(recipeId: Int) {
-		selectTab(MainTabStackId.Search)
+		selectTab(MainTabStackId.Home)
 		openRecipeDetails(
 			recipeId = recipeId,
-			stack = stackFor(MainTabStackId.Search),
+			stack = stackFor(MainTabStackId.Home),
 			origin = AnalyticsOrigin.DEEP_LINK,
 		)
 	}
@@ -523,13 +527,31 @@ class MainViewModel(
 		navigator.push(FeatureRequestsDestination)
 	}
 
+	private fun resetActiveTab(tab: MainTab) {
+		if (tab.stackId == MainTabStackId.Search) {
+			replaceStackRoot(SearchDestination())
+			return
+		}
+		val root = tabRootDestination(tab)
+		val stack = stackFor(tab.stackId)
+		if (stack.size != 1 || !stack.firstOrNull().isSameTabRoot(root)) {
+			replaceStackRoot(root)
+		}
+	}
+
 	private fun replaceStackRoot(destination: NavKey) {
 		val stackId = tabStackIdForRoot(destination)
 		val stack = stackFor(stackId)
-		val root = tabRootForDestination(destination, stackId)
+		val root = tabRootForDestination(destination, stackId).withFreshSearchLaunch()
 		stack.clear()
 		stack += root
 		selectTab(stackId)
+	}
+
+	private fun NavKey.withFreshSearchLaunch(): NavKey = if (this is SearchDestination) {
+		copy(launchId = ++nextSearchLaunchId)
+	} else {
+		this
 	}
 
 	private fun stackFor(stackId: MainTabStackId): NavBackStack<NavKey> =
@@ -550,6 +572,7 @@ class MainViewModel(
 	}
 
 	private fun analyticsOriginForSelectedTab(): AnalyticsOrigin = when (selectedTab.stackId) {
+		MainTabStackId.Home -> AnalyticsOrigin.HOME
 		MainTabStackId.Search -> AnalyticsOrigin.SEARCH
 		MainTabStackId.Library -> AnalyticsOrigin.FAVORITES
 		MainTabStackId.Create -> AnalyticsOrigin.CREATE_RECIPE
@@ -559,6 +582,7 @@ class MainViewModel(
 	private fun tabRootDestination(tab: MainTab): NavKey = tabRootForStack(tab.stackId)
 
 	private fun tabRootForStack(stackId: MainTabStackId): NavKey = when (stackId) {
+		MainTabStackId.Home -> HomeDestination
 		MainTabStackId.Search -> SearchDestination()
 		MainTabStackId.Library -> LibraryDestination()
 		MainTabStackId.Create -> CreateDestination
@@ -567,6 +591,11 @@ class MainViewModel(
 
 	private fun tabRootForDestination(destination: NavKey, stackId: MainTabStackId): NavKey =
 		when (stackId) {
+			MainTabStackId.Home -> when (destination) {
+				is HomeDestination -> destination
+				else -> HomeDestination
+			}
+
 			MainTabStackId.Search -> when (destination) {
 				is SearchDestination -> destination
 				else -> SearchDestination()
@@ -581,6 +610,7 @@ class MainViewModel(
 		}
 
 	private fun tabStackIdForRoot(destination: NavKey): MainTabStackId = when (destination) {
+		is HomeDestination -> MainTabStackId.Home
 		is SearchDestination -> MainTabStackId.Search
 		is LibraryDestination -> MainTabStackId.Library
 		CreateDestination -> MainTabStackId.Create
@@ -589,6 +619,7 @@ class MainViewModel(
 	}
 
 	private fun NavKey?.isSameTabRoot(root: NavKey): Boolean = when (root) {
+		is HomeDestination -> this is HomeDestination
 		is SearchDestination -> this is SearchDestination
 		is LibraryDestination -> this is LibraryDestination
 		else -> this == root
