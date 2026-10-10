@@ -841,8 +841,11 @@ fun ensureSchema(connection: Connection) {
 		measurement_system VARCHAR(32),
 		is_private BOOLEAN NOT NULL DEFAULT FALSE,
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		catalog_rank INTEGER
 	);
+
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS catalog_rank INTEGER;
 
 	CREATE TABLE IF NOT EXISTS ingredient_groups (
 		id SERIAL PRIMARY KEY,

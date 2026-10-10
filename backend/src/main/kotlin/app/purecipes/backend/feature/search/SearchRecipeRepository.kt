@@ -3,8 +3,10 @@ package app.purecipes.backend.feature.search
 import app.purecipes.backend.feature.recipe.PantryCoverage
 import app.purecipes.backend.feature.recipe.RecipeRepository
 import app.purecipes.backend.feature.recipe.RecipeRepositorySql
+import app.purecipes.backend.feature.recipe.SearchRecipeCandidate
+import app.purecipes.backend.feature.recipe.SearchRecipeOrder
+import app.purecipes.backend.feature.recipe.SearchRecipeQuery
 import app.purecipes.backend.feature.recipe.addRecipeVisibilityCondition
-import app.purecipes.backend.feature.recipe.bindSearchParams
 import app.purecipes.backend.feature.recipe.countRecipesByKeyword
 import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
@@ -128,16 +130,18 @@ class SearchRecipeRepository(
 			availableIngredients.isNotEmpty() || excludedIngredients.isNotEmpty() || keyIngredients.isNotEmpty()
 		val result = if (!requiresIngredientPostFilter) {
 			val total = countSearchWithFiltersRecipes(conn, whereClause, params)
-			val page = querySearchWithFiltersRecipes(
+			val page = recipeRepository.querySearchWithFiltersRecipes(
 				conn = conn,
-				whereClause = whereClause,
-				params = params,
-				limit = limit,
-				offset = offset,
-				executeQuery = recipeRepository::executeQuery,
+				query = SearchRecipeQuery(
+					whereClause = whereClause,
+					params = params,
+					order = searchRecipeOrder(rankByPantryCoverage),
+					limit = limit,
+					offset = offset,
+				),
 			)
 			FilteredSearchResult(
-				items = page,
+				items = page.map { candidate -> candidate.summary },
 				totalMatches = total,
 				nearMissRecipes = emptyList(),
 			)
@@ -168,27 +172,29 @@ class SearchRecipeRepository(
 		keyIngredients: List<String>,
 		rankByPantryCoverage: Boolean,
 	): FilteredSearchResult {
-		val candidates = querySearchWithFiltersRecipes(
+		val candidates = recipeRepository.querySearchWithFiltersRecipes(
 			conn = conn,
-			whereClause = whereClause,
-			params = params,
-			executeQuery = recipeRepository::executeQuery,
+			query = SearchRecipeQuery(
+				whereClause = whereClause,
+				params = params,
+				order = searchRecipeOrder(rankByPantryCoverage),
+			),
 		)
 		val loadIngredientGroups = { recipeId: Int ->
 			recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
 		}
-		val eligible = candidates.filter { summary ->
+		val eligible = candidates.filter { candidate ->
 			passesExclusionAndKeyIngredientFilters(
-				summary = summary,
+				summary = candidate.summary,
 				excludedIngredients = excludedIngredients,
 				keyIngredients = keyIngredients,
 				loadIngredientGroups = loadIngredientGroups,
 			)
 		}
 		val matches = if (!rankByPantryCoverage && availableIngredients.isNotEmpty()) {
-			eligible.filter { summary ->
+			eligible.filter { candidate ->
 				isRecipeCoveredByAvailableIngredients(
-					recipeId = summary.id,
+					recipeId = candidate.summary.id,
 					availableIngredients = availableIngredients,
 					loadIngredientGroups = loadIngredientGroups,
 				)
@@ -198,19 +204,20 @@ class SearchRecipeRepository(
 		}
 		val orderedMatches = if (rankByPantryCoverage && availableIngredients.isNotEmpty()) {
 			rankRecipesByPantryCoverage(
-				recipes = matches,
+				candidates = matches,
 				availableIngredients = availableIngredients,
 				loadIngredientGroups = loadIngredientGroups,
 			)
 		} else {
 			matches
 		}
+		val orderedSummaries = orderedMatches.map { candidate -> candidate.summary }
 		return FilteredSearchResult(
-			items = orderedMatches.drop(offset).take(limit),
-			totalMatches = orderedMatches.size,
+			items = orderedSummaries.drop(offset).take(limit),
+			totalMatches = orderedSummaries.size,
 			nearMissRecipes = nearMissRecipesFor(
-				eligible = eligible,
-				orderedMatches = orderedMatches,
+				eligible = eligible.map { candidate -> candidate.summary },
+				orderedMatches = orderedSummaries,
 				availableIngredients = availableIngredients,
 				rankByPantryCoverage = rankByPantryCoverage,
 				offset = offset,
@@ -256,14 +263,14 @@ class SearchRecipeRepository(
 	}
 
 	private fun rankRecipesByPantryCoverage(
-		recipes: List<RecipeSummary>,
+		candidates: List<SearchRecipeCandidate>,
 		availableIngredients: List<String>,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
-	): List<RecipeSummary> {
-		return recipes
-			.map { summary ->
-				summary to pantryCoverageForRecipe(
-					recipeId = summary.id,
+	): List<SearchRecipeCandidate> {
+		return candidates
+			.map { candidate ->
+				candidate to pantryCoverageForRecipe(
+					recipeId = candidate.summary.id,
 					availableIngredients = availableIngredients,
 					loadIngredientGroups = loadIngredientGroups,
 				)
@@ -321,23 +328,20 @@ class SearchRecipeRepository(
 	}
 
 	private fun searchByKeyword(searchInput: KeywordSearchInput, userId: Long?): List<RecipeSummary> {
-		val conditions = mutableListOf("(LOWER(title) LIKE ? OR LOWER(cuisine) LIKE ?)")
+		val conditions = mutableListOf("(LOWER(r.title) LIKE ? OR LOWER(r.cuisine) LIKE ?)")
 		val params = mutableListOf<Any>(searchInput.like, searchInput.like)
-		addRecipeVisibilityCondition(conditions, params, userId, tableAlias = null)
-		val sql = """
-			SELECT id, title, cuisine, image_url, total_time, measurement_system, is_private
-			FROM recipes
-			WHERE ${conditions.joinToString(" AND ")}
-			ORDER BY created_at DESC
-			LIMIT ? OFFSET ?
-		""".trimIndent()
+		addRecipeVisibilityCondition(conditions, params, userId)
 		return dataSource.connection.use { conn ->
-			conn.prepareStatement(sql).use { ps ->
-				bindSearchParams(ps, params)
-				ps.setInt(params.size + 1, searchInput.pageSize)
-				ps.setInt(params.size + 2, searchInput.offset)
-				recipeRepository.executeQuery(ps)
-			}
+			recipeRepository.querySearchWithFiltersRecipes(
+				conn = conn,
+				query = SearchRecipeQuery(
+					whereClause = "WHERE ${conditions.joinToString(" AND ")}",
+					params = params,
+					order = SearchRecipeOrder.TITLE,
+					limit = searchInput.pageSize,
+					offset = searchInput.offset,
+				),
+			).map { candidate -> candidate.summary }
 		}
 	}
 
@@ -360,14 +364,23 @@ class SearchRecipeRepository(
 private const val NEAR_MISS_MATCH_THRESHOLD = 10
 private const val MAX_NEAR_MISS_RECIPES = 30
 
-private val pantryCoverageComparator: Comparator<Pair<RecipeSummary, PantryCoverage>> =
-	compareBy<Pair<RecipeSummary, PantryCoverage>> { ranked -> ranked.second.missingSlots }
+private val pantryCoverageComparator: Comparator<Pair<SearchRecipeCandidate, PantryCoverage>> =
+	compareBy<Pair<SearchRecipeCandidate, PantryCoverage>> { ranked -> ranked.second.missingSlots }
 		.thenComparator { left, right ->
 			val leftRatio = left.second.coveredSlots.toLong() * right.second.totalRequiredSlots
 			val rightRatio = right.second.coveredSlots.toLong() * left.second.totalRequiredSlots
 			rightRatio.compareTo(leftRatio)
 		}
-		.thenBy { ranked -> ranked.first.title.lowercase() }
+		.thenByDescending { ranked -> ranked.first.completenessScore }
+		.thenByDescending { ranked -> ranked.first.createdAtMillis }
+		.thenByDescending { ranked -> ranked.first.summary.id }
+
+private fun searchRecipeOrder(rankByPantryCoverage: Boolean): SearchRecipeOrder =
+	if (rankByPantryCoverage) {
+		SearchRecipeOrder.TITLE
+	} else {
+		SearchRecipeOrder.CATALOG
+	}
 
 private data class FilteredSearchResult(
 	val items: List<RecipeSummary>,

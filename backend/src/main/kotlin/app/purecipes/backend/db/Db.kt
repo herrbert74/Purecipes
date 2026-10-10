@@ -58,6 +58,7 @@ class Db private constructor(
 					statement.execute(RECIPES_ADD_CALORIE_RANGE_SQL)
 					statement.execute(RECIPES_ADD_DIETARY_PREFERENCES_SQL)
 					statement.execute(RECIPES_ADD_TAGS_SQL)
+					statement.execute(RECIPES_ADD_CATALOG_RANK_SQL)
 					statement.execute(NUTRITION_FOODS_TABLE_SQL)
 					statement.execute(NUTRITION_FOODS_NORMALIZED_NAME_INDEX_SQL)
 					statement.execute(NUTRITION_FOOD_ALIASES_TABLE_SQL)
