@@ -2,6 +2,7 @@ package app.purecipes
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import app.purecipes.feature.ads.data.runtime.AdsAndroidRuntime
@@ -36,6 +38,12 @@ class MainActivity : ComponentActivity() {
 	private val requestNotificationPermission =
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
+	private val requestLocalNetworkPermission =
+		registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+			startGraphLoadIfNeeded()
+			requestNotificationPermissionIfNeeded()
+		}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		val splashScreen = installSplashScreen()
 		var keepOsSplashOnScreen = true
@@ -45,8 +53,12 @@ class MainActivity : ComponentActivity() {
 		super.onCreate(savedInstanceState)
 		KMPNotifier.onCreateOrOnNewIntent(intent)
 		enableEdgeToEdge()
-		startGraphLoadIfNeeded()
-		requestNotificationPermissionIfNeeded()
+		if (shouldRequestLocalNetworkPermission()) {
+			requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
+		} else {
+			startGraphLoadIfNeeded()
+			requestNotificationPermissionIfNeeded()
+		}
 
 		appGraph = graphState.value
 
@@ -88,6 +100,15 @@ class MainActivity : ComponentActivity() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
 		}
+	}
+
+	private fun shouldRequestLocalNetworkPermission(): Boolean {
+		return BuildConfig.DEBUG &&
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN &&
+			ContextCompat.checkSelfPermission(
+				this,
+				Manifest.permission.ACCESS_LOCAL_NETWORK,
+			) != PackageManager.PERMISSION_GRANTED
 	}
 
 	override fun onNewIntent(intent: Intent) {

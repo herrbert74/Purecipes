@@ -95,7 +95,8 @@ internal const val RECIPES_TABLE_SQL = """
 		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
 		is_private BOOLEAN NOT NULL DEFAULT FALSE,
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		catalog_rank INTEGER
 	)
 """
 
@@ -157,6 +158,10 @@ internal const val RECIPES_ADD_DIETARY_PREFERENCES_SQL = """
 
 internal const val RECIPES_ADD_TAGS_SQL = """
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS tags TEXT ARRAY
+"""
+
+internal const val RECIPES_ADD_CATALOG_RANK_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS catalog_rank INTEGER
 """
 
 internal const val INGREDIENT_GROUPS_TABLE_SQL = """

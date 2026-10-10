@@ -207,19 +207,7 @@ class RecipeRepository(
 	internal fun executeQuery(ps: PreparedStatement): ArrayList<RecipeSummary> = ps.executeQuery().use { rs ->
 		val results = ArrayList<RecipeSummary>()
 		while (rs.next()) {
-			val recipeId = rs.getInt("id")
-			results.add(
-				RecipeSummary(
-					id = recipeId,
-					title = rs.getString("title"),
-					cuisine = cuisineFromRawValue(rs.getString("cuisine")),
-					imageUrl = rs.getString("image_url"),
-					totalTime = rs.getObject("total_time") as? Int,
-					measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
-						?: loadMeasurementSystemForRecipe(recipeId),
-					isPrivate = rs.getBoolean("is_private"),
-				)
-			)
+			results.add(readRecipeSummary(rs))
 		}
 		return results
 	}
@@ -589,36 +577,34 @@ internal fun countRecipesByKeyword(dataSource: DataSource, like: String, userId:
 	}
 }
 
-internal fun querySearchWithFiltersRecipes(
+internal fun RecipeRepository.querySearchWithFiltersRecipes(
 	conn: java.sql.Connection,
-	whereClause: String,
-	params: List<Any>,
-	executeQuery: (PreparedStatement) -> ArrayList<RecipeSummary>,
-	limit: Int? = null,
-	offset: Int? = null,
-): List<RecipeSummary> {
-	val limitAndOffsetClause = if (limit != null && offset != null) {
+	query: SearchRecipeQuery,
+): List<SearchRecipeCandidate> {
+	val limitAndOffsetClause = if (query.limit != null && query.offset != null) {
 		"LIMIT ? OFFSET ?"
 	} else {
 		""
 	}
 
 	val sql = """
-		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
+		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
+			${recipeCompletenessScoreSql("r")} AS completeness_score,
+			r.created_at
 		FROM recipes r
-		$whereClause
+		${query.whereClause}
 		GROUP BY r.id
-		ORDER BY r.created_at DESC
+		${searchRecipeOrderBySql(query.order)}
 		$limitAndOffsetClause
 	""".trimIndent()
 
 	return conn.prepareStatement(sql).use { ps ->
-		bindSearchParams(ps, params)
-		if (limit != null && offset != null) {
-			ps.setInt(params.size + 1, limit)
-			ps.setInt(params.size + 2, offset)
+		bindSearchParams(ps, query.params)
+		if (query.limit != null && query.offset != null) {
+			ps.setInt(query.params.size + 1, query.limit)
+			ps.setInt(query.params.size + 2, query.offset)
 		}
-		executeQuery(ps)
+		readSearchRecipeCandidates(ps)
 	}
 }
 
