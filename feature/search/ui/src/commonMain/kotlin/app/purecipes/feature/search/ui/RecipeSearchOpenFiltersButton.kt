@@ -18,10 +18,11 @@ internal const val RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG = "recipeSearchOpenFilt
 internal fun RecipeSearchOpenFiltersButton(
 	hasActiveFilters: Boolean,
 	onClick: () -> Unit,
+	modifier: Modifier = Modifier,
 ) {
 	IconButton(
 		onClick = onClick,
-		modifier = Modifier.testTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG),
+		modifier = modifier.testTag(RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG),
 	) {
 		Icon(
 			imageVector = AppIcons.FilterList,

@@ -41,6 +41,25 @@ class FeatureRequestRepository(
 		loadFeatureRequest(conn, userId, requestId)
 	}
 
+	fun findHomeFeatureRequest(userId: Long?): FeatureRequest? = dataSource.connection.use { conn ->
+		val sql = if (userId == null) {
+			TOP_OPEN_FEATURE_REQUEST_SQL
+		} else {
+			TOP_OPEN_HOME_FEATURE_REQUEST_SQL
+		}
+		conn.prepareStatement(sql).use { statement ->
+			if (userId == null) {
+				statement.setString(1, FeatureRequestStatus.OPEN.name)
+			} else {
+				statement.setLong(1, userId)
+				statement.setString(2, FeatureRequestStatus.OPEN.name)
+			}
+			statement.executeQuery().use { resultSet ->
+				if (resultSet.next()) resultSet.toFeatureRequest() else null
+			}
+		}
+	}
+
 	fun createFeatureRequest(userId: Long, title: String, description: String): FeatureRequest =
 		dataSource.connection.use { conn ->
 			conn.prepareStatement(INSERT_FEATURE_REQUEST_SQL, Statement.RETURN_GENERATED_KEYS).use { ps ->
@@ -311,6 +330,61 @@ class FeatureRequestRepository(
 			SELECT display_name
 			FROM app_users
 			WHERE id = ?
+		"""
+
+		const val TOP_OPEN_FEATURE_REQUEST_COLUMNS_SQL = """
+			SELECT fr.id,
+				fr.title,
+				fr.description,
+				fr.status,
+				fr.created_at,
+				(
+					SELECT COUNT(*)
+					FROM feature_request_votes v
+					WHERE v.request_id = fr.id
+				) AS vote_count,
+				(
+					SELECT COUNT(*)
+					FROM feature_request_comments c
+					WHERE c.request_id = fr.id
+				) AS comment_count,
+				FALSE AS voted_by_current_user
+			FROM feature_requests fr
+		"""
+
+		const val TOP_OPEN_FEATURE_REQUEST_SQL = """
+			$TOP_OPEN_FEATURE_REQUEST_COLUMNS_SQL
+			WHERE fr.status = ?
+			ORDER BY vote_count DESC, fr.created_at DESC, fr.id DESC
+			LIMIT 1
+		"""
+
+		const val TOP_OPEN_HOME_FEATURE_REQUEST_SQL = """
+			SELECT fr.id,
+				fr.title,
+				fr.description,
+				fr.status,
+				fr.created_at,
+				(
+					SELECT COUNT(*)
+					FROM feature_request_votes v
+					WHERE v.request_id = fr.id
+				) AS vote_count,
+				(
+					SELECT COUNT(*)
+					FROM feature_request_comments c
+					WHERE c.request_id = fr.id
+				) AS comment_count,
+				EXISTS(
+					SELECT 1
+					FROM feature_request_votes mv
+					WHERE mv.request_id = fr.id
+						AND mv.user_id = ?
+				) AS voted_by_current_user
+			FROM feature_requests fr
+			WHERE fr.status = ?
+			ORDER BY voted_by_current_user ASC, vote_count DESC, fr.created_at DESC, fr.id DESC
+			LIMIT 1
 		"""
 	}
 }

@@ -2,6 +2,7 @@ package app.purecipes.feature.analytics.domain.model
 
 object AnalyticsScreenName {
 
+	const val HOME = "home"
 	const val SEARCH = "search"
 	const val RECIPE_DETAILS = "recipe_details"
 	const val COOKING = "cooking"

@@ -31,7 +31,7 @@ class MainScreenMetroIntegrationTest {
 			MainScreen(metroViewModelFactory = graph.metroViewModelFactory)
 		}
 		composeRule.waitUntil(timeoutMillis = 10_000) {
-			composeRule.onAllNodesWithContentDescription("Search in recipe titles")
+			composeRule.onAllNodesWithContentDescription("Search")
 				.fetchSemanticsNodes()
 				.isNotEmpty()
 		}

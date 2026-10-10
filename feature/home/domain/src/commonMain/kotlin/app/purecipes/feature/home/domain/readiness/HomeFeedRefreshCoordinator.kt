@@ -1,4 +1,4 @@
-package app.purecipes.feature.search.domain.readiness
+package app.purecipes.feature.home.domain.readiness
 
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.asStateFlow
 
 @Inject
 @SingleIn(AppScope::class)
-class SearchReadinessCoordinator {
+class HomeFeedRefreshCoordinator {
 
-	private val mutableIsReady = MutableStateFlow(false)
+	private val mutableRevision = MutableStateFlow(0)
 
-	val isReady: StateFlow<Boolean> = mutableIsReady.asStateFlow()
+	val revision: StateFlow<Int> = mutableRevision.asStateFlow()
 
-	fun reportReady() {
-		mutableIsReady.value = true
+	fun markStale() {
+		mutableRevision.value += 1
 	}
 }

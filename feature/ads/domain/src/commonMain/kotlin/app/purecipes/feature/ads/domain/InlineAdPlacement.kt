@@ -8,6 +8,10 @@ object InlineAdPlacement {
 
 	const val MINIMUM_CONTENT_COUNT_FOR_ADS = 2
 
+	const val SHELF_FIRST_AD_CONTENT_INDEX = 5
+
+	const val SHELF_AD_EVERY_N_RECIPES = 24
+
 	fun shouldInsertAdBeforeContentIndex(contentIndex: Int, contentCount: Int): Boolean {
 		if (contentCount < MINIMUM_CONTENT_COUNT_FOR_ADS) {
 			return false
@@ -28,4 +32,33 @@ object InlineAdPlacement {
 		}
 		return ads
 	}
+
+	fun shouldInsertShelfAdBeforeContentIndex(contentIndex: Int, contentCount: Int): Boolean =
+		contentCount > SHELF_FIRST_AD_CONTENT_INDEX &&
+			contentIndex >= SHELF_FIRST_AD_CONTENT_INDEX &&
+			(contentIndex - SHELF_FIRST_AD_CONTENT_INDEX) % SHELF_AD_EVERY_N_RECIPES == 0
+}
+
+fun <T> inlineFeedEntries(
+	items: List<T>,
+	includeAds: Boolean,
+	shouldInsertAd: (contentIndex: Int, contentCount: Int) -> Boolean =
+		InlineAdPlacement::shouldInsertAdBeforeContentIndex,
+): List<InlineFeedEntry<T>> {
+	if (!includeAds) {
+		return items.map { item -> InlineFeedEntry.Content(item) }
+	}
+	return buildList {
+		items.forEachIndexed { index, item ->
+			if (shouldInsertAd(index, items.size)) {
+				add(InlineFeedEntry.Ad)
+			}
+			add(InlineFeedEntry.Content(item))
+		}
+	}
+}
+
+sealed interface InlineFeedEntry<out T> {
+	data class Content<T>(val item: T) : InlineFeedEntry<T>
+	data object Ad : InlineFeedEntry<Nothing>
 }
