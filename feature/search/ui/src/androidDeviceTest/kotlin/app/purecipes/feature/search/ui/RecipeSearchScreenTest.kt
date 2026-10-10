@@ -5,7 +5,10 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.ComposeTimeoutException
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
@@ -24,10 +27,14 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
+import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
+import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -71,6 +78,7 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -106,7 +114,7 @@ class RecipeSearchScreenTest {
 				)
 			}
 		}
-		waitUntil(timeoutMillis = 5_000) { searchRepository.queries.isNotEmpty() }
+		waitForIdle()
 		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).assertIsDisplayed()
 		onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
 		runOnIdle { viewModel.onSearchQueryChange("Pas") }
@@ -129,16 +137,19 @@ class RecipeSearchScreenTest {
 			),
 		)
 
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
 
+		openTitleSearch(viewModel)
+
 		onNodeWithTag("${BROWSE_TILE_TAG_PREFIX}meal:BREAKFAST").assertIsDisplayed()
-		onNodeWithText("1 recipes found").assertIsDisplayed()
+		assertDisplayedInSearchResults("1 recipes found")
 	}
 
 	@Test
@@ -184,19 +195,17 @@ class RecipeSearchScreenTest {
 			),
 		)
 
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
 
-		waitUntil(timeoutMillis = 5_000) {
-			onAllNodesWithText("Tomato Pasta").fetchSemanticsNodes().isNotEmpty()
-		}
-		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
-			.performScrollToNode(hasText("Tomato Pasta"))
+		openTitleSearch(viewModel)
+		assertDisplayedInSearchResults("Tomato Pasta")
 		onNodeWithTag(
 			testTag = "${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}1",
 			useUnmergedTree = true,
@@ -213,13 +222,16 @@ class RecipeSearchScreenTest {
 			result = Err(Failure.ServerError("Search failed")),
 		)
 
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
+
+		openTitleSearch(viewModel)
 
 		onNodeWithText("Search failed").assertIsDisplayed()
 	}
@@ -243,17 +255,20 @@ class RecipeSearchScreenTest {
 			),
 		)
 
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
 
-		onNodeWithText("0 recipes found").assertIsDisplayed()
-		onNodeWithText("Do you have Basil?").assertIsDisplayed()
-		onNodeWithText("Almost Stew").assertIsDisplayed()
+		openTitleSearch(viewModel)
+
+		assertDisplayedInSearchResults("0 recipes found")
+		assertDisplayedInSearchResults("Do you have Basil?")
+		assertDisplayedInSearchResults("Almost Stew")
 	}
 
 	@Test
@@ -298,29 +313,22 @@ class RecipeSearchScreenTest {
 			),
 		)
 
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeSearchScreen(
-					viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository),
+					viewModel = viewModel,
 				)
 			}
 		}
 
-		onNodeWithText("3 recipes found").assertIsDisplayed()
-		onNodeWithText("Chicken Tomato Stew").assertIsDisplayed()
-		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
-			.performScrollToNode(hasText("Almost Stew"))
-		onNodeWithText("Almost Stew").assertIsDisplayed()
-		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
-			.performScrollToNode(hasText("Do you have Basil?"))
-		onNodeWithText("Do you have Basil?").assertIsDisplayed()
-		onNodeWithTag(SEARCH_RESULTS_LIST_TAG)
-			.performScrollToNode(
-				hasText("These are almost a match — you're only missing one ingredient."),
-			)
-		onNodeWithText(
-			"These are almost a match — you're only missing one ingredient.",
-		).assertIsDisplayed()
+		openTitleSearch(viewModel)
+
+		assertDisplayedInSearchResults("3 recipes found")
+		assertDisplayedInSearchResults("Chicken Tomato Stew")
+		assertDisplayedInSearchResults("Almost Stew")
+		assertDisplayedInSearchResults("Do you have Basil?")
+		assertDisplayedInSearchResults("These are almost a match — you're only missing one ingredient.")
 	}
 
 	@Test
@@ -791,6 +799,33 @@ class RecipeSearchScreenTest {
 
 }
 
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.openTitleSearch(viewModel: RecipeSearchViewModel) {
+	onNodeWithTag(RECIPE_SEARCH_COLLAPSED_BAR_TAG).performClick()
+	try {
+		waitUntil(timeoutMillis = 5_000) {
+			viewModel.hasTitleSearchOutcome()
+		}
+	} catch (error: ComposeTimeoutException) {
+		throw AssertionError(
+			"Title search did not finish. searching=${viewModel.isSearching} " +
+				"home=${viewModel.showsHomeFeed} bar=${viewModel.isSearchBarActive} " +
+				"matches=${viewModel.totalMatches} recipes=${viewModel.recipes.size} " +
+				"nearMiss=${viewModel.nearMissRecipes.size} error=${viewModel.errorMessage}",
+			error,
+		)
+	}
+	waitForIdle()
+}
+
+private fun RecipeSearchViewModel.hasTitleSearchOutcome(): Boolean =
+	errorMessage != null || recipes.isNotEmpty() || nearMissRecipes.isNotEmpty()
+
+private fun SemanticsNodeInteractionsProvider.assertDisplayedInSearchResults(text: String) {
+	onNodeWithTag(SEARCH_RESULTS_LIST_TAG).performScrollToNode(hasText(text))
+	onNodeWithText(text).assertIsDisplayed()
+}
+
 private fun recipeSearchViewModelForTest(
 	searchRepository: FakeRecipeSearchRepository = FakeRecipeSearchRepository(),
 	filterRepository: FakeRecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
@@ -807,6 +842,9 @@ private fun recipeSearchViewModelForTest(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
+		getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
+		getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
+		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -820,6 +858,7 @@ private fun recipeSearchViewModelForTest(
 		updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(excludedIngredientsRepository),
 		matchIngredientInRecipes = MatchIngredientInRecipesUseCase(ingredientMatchRepository),
 		searchReadiness = SearchReadinessCoordinator(),
+		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 		observePremiumStatus = ObservePremiumStatusUseCase(
 			FakeSubscriptionRepository(

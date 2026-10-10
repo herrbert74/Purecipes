@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation3.runtime.entryProvider
@@ -102,6 +103,8 @@ class MainScreenRecipeSelectionTest {
 				}
 			}
 		}
+		composeRule.waitForIdle()
+		composeRule.onNodeWithContentDescription("Search in recipe titles").performClick()
 		composeRule.waitForIdle()
 		composeRule.onNodeWithText("2 recipes found").assertIsDisplayed()
 	}

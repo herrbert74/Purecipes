@@ -16,6 +16,7 @@ class PaginationState<KEY, T>(
 	initialPageKey: KEY,
 	val onRequestPage: PaginationState<KEY, T>.(KEY) -> Unit
 ) {
+
 	var internalState =
 		mutableStateOf<PaginationInternalState<KEY, T>>(PaginationInternalState.Initial(initialPageKey))
 
@@ -90,6 +91,40 @@ class PaginationState<KEY, T>(
 		internalState.value = PaginationInternalState.Initial(
 			initialPageKey ?: internalState.value.initialPageKey
 		)
+	}
+
+	fun mapItems(transform: (T) -> T) {
+		if (pages.isEmpty()) {
+			return
+		}
+		pages.keys.toList().forEach { key ->
+			pages[key] = pages.getValue(key).map(transform)
+		}
+		val updatedItems = pages.values.flatten()
+		val snapshot = internalState.value
+		internalState.value = when (snapshot) {
+			is PaginationInternalState.Initial -> snapshot
+			is PaginationInternalState.Loading -> PaginationInternalState.Loading(
+				initialPageKey = snapshot.initialPageKey,
+				requestedPageKey = snapshot.requestedPageKey,
+				items = updatedItems,
+			)
+
+			is PaginationInternalState.Loaded -> PaginationInternalState.Loaded(
+				initialPageKey = snapshot.initialPageKey,
+				requestedPageKey = snapshot.requestedPageKey,
+				nextPageKey = snapshot.nextPageKey,
+				items = updatedItems,
+				isLastPage = snapshot.isLastPage,
+			)
+
+			is PaginationInternalState.Error -> PaginationInternalState.Error(
+				initialPageKey = snapshot.initialPageKey,
+				requestedPageKey = snapshot.requestedPageKey,
+				exception = snapshot.exception,
+				items = updatedItems,
+			)
+		}
 	}
 
 	fun requestPage(

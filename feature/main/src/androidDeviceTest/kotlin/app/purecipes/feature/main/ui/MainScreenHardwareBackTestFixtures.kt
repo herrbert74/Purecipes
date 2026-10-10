@@ -41,7 +41,10 @@ import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
+import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
+import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
+import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -74,6 +77,7 @@ import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -201,6 +205,7 @@ internal fun mainViewModelForDeviceTest(
 		isOnboardingCompleted = IsOnboardingCompletedUseCase(onboardingRepository),
 		completeOnboarding = CompleteOnboardingUseCase(onboardingRepository),
 		searchReadiness = SearchReadinessCoordinator(),
+		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		onDeliverPendingIncomingLink = {},
 	).also { it.initializeTabBackStacksForTest() }
 }
@@ -211,6 +216,9 @@ internal fun recipeSearchViewModelForDeviceTest(
 	filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 	getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 	searchRecipes = SearchRecipesUseCase(searchRepository),
+	getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
+	getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
+	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -224,6 +232,7 @@ internal fun recipeSearchViewModelForDeviceTest(
 	updateUserExcludedIngredients = UpdateUserExcludedIngredientsUseCase(FakeUserExcludedIngredientsRepository()),
 	matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
+	homeFeedRefresh = HomeFeedRefreshCoordinator(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 	observePremiumStatus = ObservePremiumStatusUseCase(
 		FakeSubscriptionRepository(),

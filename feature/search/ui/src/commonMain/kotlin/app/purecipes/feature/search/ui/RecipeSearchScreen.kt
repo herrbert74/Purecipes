@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,6 +38,7 @@ fun RecipeSearchScreen(
 	onRecipeSelect: (Int) -> Unit = {},
 	onRequestLogInForFilters: () -> Unit = {},
 	onOpenPaywall: (String) -> Unit = {},
+	onOpenFeatureRequests: () -> Unit = {},
 	closeScreen: () -> Unit = {},
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
@@ -72,6 +74,7 @@ fun RecipeSearchScreen(
 	LaunchedEffect(Unit) {
 		viewModel.onSearchContentVisible()
 	}
+	val homeListState = rememberLazyListState()
 
 	if (viewModel.isFilterSheetVisible) {
 		val sheetState = rememberFilterSheetState()
@@ -86,7 +89,7 @@ fun RecipeSearchScreen(
 			isIngredientMatchLoading = viewModel.isIngredientMatchLoading,
 			sheetState = sheetState,
 			onDismiss = viewModel::onFilterSheetDismiss,
-			onFiltersChange = viewModel::onFiltersChange,
+			onFiltersChange = { filters -> viewModel.onFiltersChange(filters) },
 			onKeyIngredientsChange = viewModel::onKeyIngredientsChange,
 			onIngredientSelectionChange = viewModel::onIngredientSelectionChange,
 			onCustomIngredientToggle = viewModel::onCustomIngredientToggle,
@@ -152,27 +155,58 @@ fun RecipeSearchScreen(
 				)
 			}
 		}
-		SearchResultsContent(
-			isSearching = viewModel.isSearching,
-			errorMessage = viewModel.errorMessage,
-			totalMatches = viewModel.totalMatches,
-			paginationState = viewModel.paginationState,
-			recipes = viewModel.recipes,
-			nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
-			browseTiles = searchBrowseTiles(viewModel.activeFilters),
-			onBrowseTileClick = { tile ->
-				viewModel.onFiltersChange(
-					filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
-					search = true,
-				)
-			},
-			onRecipeSelect = onRecipeSelect,
-			onRetryClick = viewModel::searchNow,
-			bannerAdViewModel = bannerAdViewModel,
-			modifier = Modifier
-				.weight(1f)
-				.padding(top = PurecipesTheme.space.s),
-		)
+		if (viewModel.showsHomeFeed) {
+			HomeFeedContent(
+				isLoading = viewModel.isHomeLoading,
+				errorMessage = viewModel.homeErrorMessage,
+				homeFeed = viewModel.homeFeed,
+				shelfPagination = viewModel.shelfPagination,
+				browseTiles = searchBrowseTiles(viewModel.activeFilters),
+				onBrowseTileClick = { tile ->
+					viewModel.onFiltersChange(
+						filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
+						search = true,
+					)
+				},
+				onRecipeSelect = onRecipeSelect,
+				onSeeAll = { shelf ->
+					viewModel.onFiltersChange(
+						filters = shelf.filters,
+						search = true,
+						seeAllShelf = shelf.id,
+					)
+				},
+				onFeatureRequestClick = onOpenFeatureRequests,
+				onRetry = viewModel.reloadHomeFeed,
+				bannerAdViewModel = bannerAdViewModel,
+				listState = homeListState,
+				modifier = Modifier
+					.weight(1f)
+					.padding(top = PurecipesTheme.space.s),
+			)
+		} else {
+			SearchResultsContent(
+				isSearching = viewModel.isSearching,
+				errorMessage = viewModel.errorMessage,
+				totalMatches = viewModel.totalMatches,
+				paginationState = viewModel.paginationState,
+				recipes = viewModel.recipes,
+				nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
+				browseTiles = searchBrowseTiles(viewModel.activeFilters),
+				onBrowseTileClick = { tile ->
+					viewModel.onFiltersChange(
+						filters = viewModel.activeFilters.toggleBrowseTile(tile.id),
+						search = true,
+					)
+				},
+				onRecipeSelect = onRecipeSelect,
+				onRetryClick = viewModel::searchNow,
+				bannerAdViewModel = bannerAdViewModel,
+				modifier = Modifier
+					.weight(1f)
+					.padding(top = PurecipesTheme.space.s),
+			)
+		}
 	}
 }
 

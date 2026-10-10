@@ -8,6 +8,7 @@ import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
+import app.purecipes.feature.featurerequests.ui.navigation.FeatureRequestsDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
 import app.purecipes.feature.search.ui.navigation.SearchDestination
@@ -65,6 +66,38 @@ class MainViewModelStartTest {
 		viewModel.authenticationState shouldBe AuthenticationState.SignedIn(sampleUser)
 		viewModel.peekBackStack() shouldBe listOf(SearchDestination(openFiltersOnStart = true))
 	}
+
+	@Test
+	fun `start returns to the feature request list that is still open`() = runUnconfinedViewModelTest {
+		val authenticationRepository = FakeAuthenticationRepository()
+		val viewModel = mainViewModelForTest(
+			authenticationRepository = authenticationRepository,
+		)
+		viewModel.navigator.push(FeatureRequestsDestination)
+		viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenFeatureRequests)
+		viewModel.start()
+		authenticationRepository.signInWithGoogle(sampleGoogleProfile())
+
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
+		viewModel.peekBackStack() shouldBe listOf(SearchDestination(), FeatureRequestsDestination)
+	}
+
+	@Test
+	fun `start opens feature requests again when account login replaced that screen`() =
+		runUnconfinedViewModelTest {
+			val authenticationRepository = FakeAuthenticationRepository()
+			val viewModel = mainViewModelForTest(
+				authenticationRepository = authenticationRepository,
+			)
+			viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Account })
+			viewModel.navigator.push(FeatureRequestsDestination)
+			viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenFeatureRequests)
+			viewModel.start()
+			authenticationRepository.signInWithGoogle(sampleGoogleProfile())
+
+			viewModel.selectedTab.stackId shouldBe MainTabStackId.Account
+			viewModel.peekBackStack() shouldBe listOf(AccountDestination, FeatureRequestsDestination)
+		}
 
 	@Test
 	fun `start resumes cookbook share import after sign in`() = runUnconfinedViewModelTest {
@@ -219,6 +252,13 @@ class MainViewModelStartTest {
 
 		viewModel.takePendingPostLoginAction() shouldBe null
 	}
+
+	private fun sampleGoogleProfile() = GoogleAuthenticationProfile(
+		idToken = sampleUser.id,
+		email = sampleUser.email,
+		displayName = sampleUser.displayName,
+		profileImageUrl = sampleUser.profileImageUrl,
+	)
 }
 
 private fun incomingLinksRepository(links: MutableSharedFlow<PurecipesLink>): IncomingLinkRepository =

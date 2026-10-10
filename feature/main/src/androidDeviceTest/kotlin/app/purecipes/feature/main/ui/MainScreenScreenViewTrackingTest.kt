@@ -9,8 +9,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation3.runtime.entryProvider
@@ -206,6 +208,8 @@ class MainScreenScreenViewTrackingTest {
 				}
 			}
 		}
+		composeRule.waitForIdle()
+		composeRule.onNodeWithContentDescription("Search in recipe titles").performClick()
 		composeRule.waitForIdle()
 		composeRule.onNodeWithText("1 recipes found")
 			.performScrollTo()

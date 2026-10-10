@@ -19,6 +19,7 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 	onRecipeSelect: (Int) -> Unit,
 	onRequestLogInForFilters: () -> Unit,
 	onOpenPaywall: (String) -> Unit,
+	onOpenFeatureRequests: () -> Unit,
 ) {
 	entry<SearchDestination>(
 		metadata = ListDetailSceneStrategy.listPane(
@@ -32,6 +33,7 @@ fun EntryProviderScope<NavKey>.installSearchFlow(
 			onRecipeSelect = onRecipeSelect,
 			onRequestLogInForFilters = onRequestLogInForFilters,
 			onOpenPaywall = onOpenPaywall,
+			onOpenFeatureRequests = onOpenFeatureRequests,
 			sessionKey = sessionKey,
 			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
 		)

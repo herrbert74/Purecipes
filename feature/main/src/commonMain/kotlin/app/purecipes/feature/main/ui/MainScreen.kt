@@ -127,6 +127,9 @@ private fun MainScreenContent(
 											),
 										)
 									},
+									onOpenFeatureRequests = {
+										viewModel.navigator.push(FeatureRequestsDestination)
+									},
 								)
 								installRecipeDetailsFlow(
 									navigator = viewModel.navigator,
@@ -194,14 +197,16 @@ private fun MainScreenContent(
 								)
 								installSettingsFlow(
 									navigator = viewModel.navigator,
-									onOpenFeatureRequests = {
-										viewModel.navigator.push(FeatureRequestsDestination)
-									},
 								)
 								installFeatureRequestsFlow(
 									navigator = viewModel.navigator,
 									sessionKey = sessionKey,
-									onRequestLogIn = { viewModel.onOpenEmailSignIn() },
+									onRequestLogIn = {
+										viewModel.requestLoginForPostLoginAction(
+											PostLoginAction.OpenFeatureRequests,
+										)
+									},
+									onClosed = viewModel.markHomeFeedStale,
 								)
 								installSubscriptionFlow(
 									navigator = viewModel.navigator,
@@ -220,9 +225,9 @@ private fun MainScreenContent(
 		) {
 			Box(modifier = Modifier.fillMaxSize()) {
 				mainContent()
-			if (viewModel.onboardingGate.isVisible) {
-				OnboardingScreen(onFinish = viewModel.onboardingGate::onFinished)
-			}
+				if (viewModel.onboardingGate.isVisible) {
+					OnboardingScreen(onFinish = viewModel.onboardingGate::onFinished)
+				}
 			}
 		}
 	}

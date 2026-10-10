@@ -46,10 +46,19 @@ fun RecipeCard(
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	widthFraction: Float = RecipeCardDefaults.FullWidthFraction,
+	layout: RecipeCardDefaults.Layout = RecipeCardDefaults.Layout.GRID,
 	onEditClick: (() -> Unit)? = null,
 	onDeleteClick: (() -> Unit)? = null,
 	deleteContentDescription: String = "Delete recipe",
 ) {
+	if (layout == RecipeCardDefaults.Layout.SHELF) {
+		RecipeShelfCard(
+			recipe = recipe,
+			onClick = onClick,
+			modifier = modifier,
+		)
+		return
+	}
 	val tint = ContainerTint.forIndex(recipe.id)
 	val colors = tint.colorFamily()
 	Card(
@@ -129,7 +138,7 @@ fun RecipeCard(
 					color = colors.onColorContainer,
 				)
 				Text(
-					text = recipe.totalTime?.let { "$it min" } ?: PREP_TIME_UNKNOWN,
+					text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
 					style = PurecipesTheme.typography.bodyMedium,
 					color = colors.onColorContainer,
 				)

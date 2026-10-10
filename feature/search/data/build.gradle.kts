@@ -13,8 +13,9 @@ kotlin {
 		commonMain {
 			dependencies {
 				api(project(":feature:search:domain"))
-				implementation(libs.multiplatformSettings.noargs)
+				implementation(libs.kotlinx.datetime)
 				implementation(libs.kotlinx.serializationJson)
+				implementation(libs.multiplatformSettings.noargs)
 			}
 		}
 		commonTest {

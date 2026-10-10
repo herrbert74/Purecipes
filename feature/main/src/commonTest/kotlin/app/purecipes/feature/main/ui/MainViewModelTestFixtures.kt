@@ -16,6 +16,7 @@ import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCa
 import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
 import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
+import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
@@ -103,6 +104,7 @@ internal fun mainViewModelForTest(
 			override fun versionCode(): Long = 0L
 		},
 		searchReadiness = searchReadiness,
+		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
 	)
 	viewModel.initializeTabBackStacksForTest()

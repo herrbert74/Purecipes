@@ -36,12 +36,14 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
+import app.purecipes.feature.featurerequests.ui.navigation.FeatureRequestsDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.main.ui.analytics.ScreenViewTracker
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
 import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestination
+import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.settings.ui.navigation.AccountSettingsDestination
@@ -88,10 +90,13 @@ class MainViewModel(
 	completeOnboarding: CompleteOnboardingUseCase,
 	private val purecipesConfig: PurecipesConfig,
 	searchReadiness: SearchReadinessCoordinator,
+	homeFeedRefresh: HomeFeedRefreshCoordinator,
 	@Assisted private val onDeliverPendingIncomingLink: () -> Unit,
 ) : ViewModel() {
 
 	val isContentReady: StateFlow<Boolean> = searchReadiness.isReady
+
+	internal val markHomeFeedStale: () -> Unit = homeFeedRefresh::markStale
 
 	internal val screenViewTracker = ScreenViewTracker(trackScreenView)
 
@@ -500,9 +505,22 @@ class MainViewModel(
 			PostLoginNavigationTarget.OpenFavoritesMyRecipes ->
 				navigator.replaceTabRoot(LibraryDestination(openMyRecipes = true))
 
+			PostLoginNavigationTarget.OpenFeatureRequests -> openFeatureRequestsAfterLogin()
+
 			is PostLoginNavigationTarget.OpenFavoritesWithCookbookShare ->
 				navigator.replaceTabRoot(LibraryDestination(cookbookShareToken = target.token))
 		}
+	}
+
+	private fun openFeatureRequestsAfterLogin() {
+		val existing = tabBackStacks.entries.firstOrNull { (_, stack) ->
+			stack.any { destination -> destination is FeatureRequestsDestination }
+		}
+		if (existing != null) {
+			selectTab(existing.key)
+			return
+		}
+		navigator.push(FeatureRequestsDestination)
 	}
 
 	private fun replaceStackRoot(destination: NavKey) {

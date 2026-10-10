@@ -5,10 +5,14 @@ import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
+import app.purecipes.feature.search.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
+import app.purecipes.feature.search.domain.usecase.GetHomeFeedUseCase
+import app.purecipes.feature.search.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -21,14 +25,22 @@ import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredients
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.FeatureRequest
+import app.purecipes.shared.domain.model.FeatureRequestStatus
+import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
+import app.purecipes.shared.domain.model.HomeFeed
+import app.purecipes.shared.domain.model.HomeShelf
+import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.IngredientMatchCount
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
@@ -51,7 +63,7 @@ import kotlin.test.Test
 class RecipeSearchViewModelTest {
 
 	@Test
-	fun `search loads recipes on init`() = runViewModelTest {
+	fun `home feed loads on init and opening search loads recipes`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(
 				listOf(
@@ -69,12 +81,130 @@ class RecipeSearchViewModelTest {
 
 		advanceUntilIdle()
 
+		repository.queries shouldBe emptyList()
+		viewModel.showsHomeFeed shouldBe true
+		viewModel.recipes.size shouldBe 0
+
+		viewModel.onSearchBarExpandedChange(true)
+		advanceUntilIdle()
+
 		repository.queries shouldBe listOf("")
 		viewModel.recipes.size shouldBe 1
 		viewModel.recipes.single().title shouldBe "Tomato Pasta"
+		viewModel.showsHomeFeed shouldBe false
 		viewModel.isSearching shouldBe false
-		viewModel.isSearchBarActive shouldBe false
 		viewModel.errorMessage shouldBe null
+	}
+
+	@Test
+	fun `home shelf loads the next page when requested`() = runViewModelTest {
+		val firstPage = List(HOME_SHELF_PAGE_SIZE) { index ->
+			RecipeSummary(
+				id = index + 1,
+				title = "Ready ${index + 1}",
+				cuisine = null,
+				imageUrl = null,
+				totalTime = 20,
+			)
+		}
+		val extra = RecipeSummary(
+			id = HOME_SHELF_PAGE_SIZE + 1,
+			title = "Ready ${HOME_SHELF_PAGE_SIZE + 1}",
+			cuisine = null,
+			imageUrl = null,
+			totalTime = 20,
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(
+				HomeFeed(
+					shelves = listOf(
+						HomeShelf(
+							id = HomeShelfId.NEW,
+							title = "New",
+							recipes = firstPage,
+						),
+					),
+				),
+			),
+		)
+		homeFeedRepository.shelfPages = mapOf(
+			HomeShelfId.NEW to Ok(
+				SearchResultsPage(
+					items = listOf(extra),
+					pageNumber = 2,
+					pageSize = HOME_SHELF_PAGE_SIZE,
+					totalMatches = HOME_SHELF_PAGE_SIZE + 1,
+				),
+			),
+		)
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
+			homeFeedRepository = homeFeedRepository,
+		)
+
+		advanceUntilIdle()
+
+		val state = viewModel.shelfPagination.getValue(HomeShelfId.NEW)
+		state.allItems.size shouldBe HOME_SHELF_PAGE_SIZE
+		homeFeedRepository.shelfPageCalls shouldBe emptyList()
+
+		state.requestPage(
+			initialPageKey = 1,
+			requestedPageKey = 2,
+			items = state.allItems,
+		)
+		advanceUntilIdle()
+
+		state.allItems.size shouldBe HOME_SHELF_PAGE_SIZE + 1
+		state.allItems.last().title shouldBe extra.title
+		homeFeedRepository.shelfPageCalls shouldBe listOf(HomeShelfId.NEW)
+	}
+
+	@Test
+	fun `closing feature requests refreshes the home vote and suggest card`() = runViewModelTest {
+		val recipe = RecipeSummary(
+			id = 1,
+			title = "Tomato Pasta",
+			cuisine = Cuisine.ITALIAN,
+			imageUrl = null,
+			totalTime = 20,
+		)
+		val voted = featureRequest(title = "Meal plan", voteCount = 1)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(
+				HomeFeed(
+					shelves = listOf(
+						HomeShelf(
+							id = HomeShelfId.NEW,
+							title = "New",
+							recipes = listOf(recipe),
+						),
+					),
+					featureRequest = voted,
+				),
+			),
+		)
+		val homeFeedRefresh = HomeFeedRefreshCoordinator()
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			homeFeedRefresh = homeFeedRefresh,
+		)
+		advanceUntilIdle()
+
+		homeFeedRepository.result = Ok(HomeFeed(featureRequest = null))
+		homeFeedRefresh.markStale()
+		advanceUntilIdle()
+
+		viewModel.homeFeed.featureRequest shouldBe null
+		viewModel.homeFeed.shelves.single().recipes.single().title shouldBe recipe.title
+		viewModel.shelfPagination.getValue(HomeShelfId.NEW).allItems.single().title shouldBe recipe.title
+
+		val suggested = featureRequest(title = "Weekly plan", voteCount = 4, votedByCurrentUser = true)
+		homeFeedRepository.result = Ok(HomeFeed(featureRequest = suggested))
+		homeFeedRefresh.markStale()
+		advanceUntilIdle()
+
+		viewModel.homeFeed.featureRequest shouldBe suggested
+		viewModel.shelfPagination.getValue(HomeShelfId.NEW).allItems.single().title shouldBe recipe.title
 	}
 
 	@Test
@@ -98,6 +228,7 @@ class RecipeSearchViewModelTest {
 			favoritesRepository = favoritesRepository,
 			sessionKey = "session",
 		)
+		viewModel.onSearchBarExpandedChange(true)
 		advanceUntilIdle()
 		viewModel.recipes.single().isFavorite shouldBe false
 
@@ -142,6 +273,7 @@ class RecipeSearchViewModelTest {
 			favoritesRepository = favoritesRepository,
 			sessionKey = "session",
 		)
+		viewModel.onSearchBarExpandedChange(true)
 		advanceUntilIdle()
 
 		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Removed(7))
@@ -197,6 +329,7 @@ class RecipeSearchViewModelTest {
 			result = Err(Failure.ServerError("Search failed")),
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -222,6 +355,7 @@ class RecipeSearchViewModelTest {
 			nearMissRecipes = listOf(nearMiss),
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -255,6 +389,7 @@ class RecipeSearchViewModelTest {
 			nearMissRecipes = listOf(nearMiss),
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -280,6 +415,7 @@ class RecipeSearchViewModelTest {
 			totalMatches = 37,
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -408,6 +544,9 @@ class RecipeSearchViewModelTest {
 			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 			searchRecipes = SearchRecipesUseCase(FakeRecipeSearchRepository(Ok(emptyList()))),
+			getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
+			getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -423,6 +562,7 @@ class RecipeSearchViewModelTest {
 			),
 			matchIngredientInRecipes = MatchIngredientInRecipesUseCase(FakeIngredientMatchRepository()),
 			searchReadiness = SearchReadinessCoordinator(),
+			homeFeedRefresh = HomeFeedRefreshCoordinator(),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 			observePremiumStatus = ObservePremiumStatusUseCase(
 				FakeSubscriptionRepository(),
@@ -745,4 +885,19 @@ class RecipeSearchViewModelTest {
 
 		viewModel.keyIngredients shouldBe emptySet()
 	}
+
+	private fun featureRequest(
+		title: String,
+		voteCount: Int,
+		votedByCurrentUser: Boolean = false,
+	) = FeatureRequest(
+		id = 4,
+		title = title,
+		description = "Plan dinners ahead",
+		status = FeatureRequestStatus.OPEN,
+		voteCount = voteCount,
+		commentCount = 0,
+		createdAtEpochMillis = 0L,
+		votedByCurrentUser = votedByCurrentUser,
+	)
 }

@@ -11,6 +11,8 @@ import app.purecipes.feature.ads.domain.runtime.IosAdsNativeBridge
 internal actual fun PlatformBannerAd(
 	adUnitId: String,
 	modifier: Modifier,
+	widthDp: Int,
+	heightDp: Int,
 	onImpression: (() -> Unit)?,
 	onClick: (() -> Unit)?,
 ) {
@@ -18,10 +20,12 @@ internal actual fun PlatformBannerAd(
 		factory = {
 			IosAdsNativeBridge.createBannerView(
 				adUnitId = adUnitId,
+				widthDp = widthDp,
+				heightDp = heightDp,
 				onImpression = { onImpression?.invoke() },
 				onClick = { onClick?.invoke() },
 			)
 		},
-		modifier = modifier.height(50.dp),
+		modifier = modifier.height(heightDp.dp),
 	)
 }
