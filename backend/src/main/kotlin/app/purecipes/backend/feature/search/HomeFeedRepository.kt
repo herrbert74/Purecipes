@@ -10,6 +10,7 @@ import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.readSearchRecipeCandidates
 import app.purecipes.backend.feature.recipe.recipeCompletenessScoreSql
 import app.purecipes.shared.domain.model.CookingTimeRange
+import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
@@ -18,12 +19,16 @@ import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.domain.model.cuisineFromRawValue
 import java.sql.Connection
+import java.sql.ResultSet
 import javax.sql.DataSource
 
 private const val QUICK_SHELF_MAX_MINUTES = 30
 
 private const val QUICK_SHELF_MINIMUM_RECIPES = 4
+
+private const val HABIT_SHELF_MINIMUM_FAVORITES = 3
 
 private const val NEW_SHELF_TITLE = "New"
 
@@ -65,14 +70,23 @@ class HomeFeedRepository(
 		)
 		val mealType = mealTypeForLocalHour(localHour)
 		return dataSource.connection.use { connection ->
-			if (shelfId == HomeShelfId.FAVORITES) {
-				favoriteShelfPage(
+			when (shelfId) {
+				HomeShelfId.FAVORITES -> favoriteShelfPage(
 					connection = connection,
 					userId = userId,
 					window = window,
 				)
-			} else {
-				publicShelfPage(
+
+				HomeShelfId.HABIT -> habitShelfPage(
+					connection = connection,
+					userId = userId,
+					window = window,
+				)
+
+				HomeShelfId.NEW,
+				HomeShelfId.RIGHT_NOW,
+				HomeShelfId.QUICK,
+					-> publicShelfPage(
 					connection = connection,
 					userId = userId,
 					mealType = mealType,
@@ -141,6 +155,10 @@ class HomeFeedRepository(
 							recipes = favorites,
 						),
 					)
+				}
+				val habit = queryHabitShelf(connection, userId)
+				if (habit != null) {
+					add(habit)
 				}
 			}
 		}
@@ -252,6 +270,94 @@ class HomeFeedRepository(
 		return recipes
 	}
 
+	private fun queryHabitShelf(
+		connection: Connection,
+		userId: Long,
+	): HomeShelf? {
+		val cuisine = dominantFavoriteCuisine(connection, userId) ?: return null
+		val recipes = queryPublicShelf(
+			connection = connection,
+			userId = userId,
+			query = habitShelfQuery(cuisine),
+		)
+		return if (recipes.isEmpty()) {
+			null
+		} else {
+			HomeShelf(
+				id = HomeShelfId.HABIT,
+				title = cuisine.displayName,
+				filters = SearchFilters(cuisines = setOf(cuisine)),
+				recipes = recipes,
+			)
+		}
+	}
+
+	private fun habitShelfPage(
+		connection: Connection,
+		userId: Long?,
+		window: PageWindow,
+	): SearchResultsPage {
+		val cuisine = if (userId == null) null else dominantFavoriteCuisine(connection, userId)
+		val query = if (cuisine == null) null else habitShelfQuery(cuisine)
+		val totalMatches = if (query == null) {
+			0
+		} else {
+			countSearchWithFiltersRecipes(
+				connection,
+				publicWhereClause(query.extraConditions),
+				query.params,
+			)
+		}
+		val recipes = if (query == null) {
+			emptyList()
+		} else {
+			queryPublicShelf(
+				connection = connection,
+				userId = userId,
+				query = query,
+				limit = window.pageSize,
+				offset = window.offset,
+			)
+		}
+		return SearchResultsPage(
+			items = recipes,
+			pageNumber = window.pageNumber,
+			pageSize = window.pageSize,
+			totalMatches = totalMatches,
+		)
+	}
+
+	private fun dominantFavoriteCuisine(connection: Connection, userId: Long): Cuisine? {
+		val candidates = loadFavoriteCuisineSaves(connection, userId)
+			.groupBy { save -> save.cuisine }
+			.map { (cuisine, saves) ->
+				HabitCuisineCandidate(
+					cuisine = cuisine,
+					favoriteCount = saves.size,
+					latestFavoriteAtMillis = saves.maxOf { save -> save.createdAtMillis },
+				)
+			}
+			.filter { candidate -> candidate.favoriteCount >= HABIT_SHELF_MINIMUM_FAVORITES }
+		return candidates.maxWithOrNull(habitCuisineOrder())?.cuisine
+	}
+
+	private fun loadFavoriteCuisineSaves(connection: Connection, userId: Long): List<FavoriteCuisineSave> {
+		val sql = """
+			SELECT r.cuisine, fav.created_at
+			FROM favorites fav
+			INNER JOIN recipes r ON r.id = fav.recipe_id
+			WHERE fav.user_id = ?
+				AND (r.is_private = FALSE OR r.created_by_user_id = ?)
+		""".trimIndent()
+		return connection.prepareStatement(sql).use { statement ->
+			statement.setLong(1, userId)
+			statement.setLong(2, userId)
+			statement.executeQuery().use { resultSet ->
+				readFavoriteCuisineSaves(resultSet)
+			}
+		}
+	}
+
 	private fun publicShelfPage(
 		connection: Connection,
 		userId: Long?,
@@ -330,11 +436,9 @@ class HomeFeedRepository(
 				order = SearchRecipeOrder.CATALOG,
 			)
 
-			HomeShelfId.FAVORITES -> ShelfQuery(
-				extraConditions = emptyList(),
-				params = emptyList(),
-				order = SearchRecipeOrder.CATALOG,
-			)
+			HomeShelfId.FAVORITES,
+			HomeShelfId.HABIT,
+				-> throw IllegalArgumentException("Personal home shelves are loaded separately")
 		}
 	}
 
@@ -403,4 +507,43 @@ private data class PageWindow(
 
 	val offset: Int
 		get() = (pageNumber - 1) * pageSize
+}
+
+private data class FavoriteCuisineSave(
+	val cuisine: Cuisine,
+	val createdAtMillis: Long,
+)
+
+private data class HabitCuisineCandidate(
+	val cuisine: Cuisine,
+	val favoriteCount: Int,
+	val latestFavoriteAtMillis: Long,
+)
+
+private fun habitShelfQuery(cuisine: Cuisine): ShelfQuery {
+	return ShelfQuery(
+		extraConditions = listOf("r.cuisine = ?"),
+		params = listOf(cuisine.displayName),
+		order = SearchRecipeOrder.CATALOG,
+	)
+}
+
+private fun habitCuisineOrder(): Comparator<HabitCuisineCandidate> {
+	return compareBy<HabitCuisineCandidate> { candidate -> candidate.favoriteCount }
+		.thenBy { candidate -> candidate.latestFavoriteAtMillis }
+		.thenByDescending { candidate -> candidate.cuisine.displayName }
+}
+
+private fun readFavoriteCuisineSaves(resultSet: ResultSet): List<FavoriteCuisineSave> {
+	return buildList {
+		while (resultSet.next()) {
+			val cuisine = cuisineFromRawValue(resultSet.getString("cuisine")) ?: continue
+			add(
+				FavoriteCuisineSave(
+					cuisine = cuisine,
+					createdAtMillis = resultSet.getTimestamp("created_at").time,
+				),
+			)
+		}
+	}
 }

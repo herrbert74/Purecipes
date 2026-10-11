@@ -2,6 +2,7 @@ package app.purecipes.backend
 
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.fake.FakeSessionService
+import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelfId
@@ -309,11 +310,241 @@ class HomeFeedRouteTest {
 	}
 
 	@Test
+	fun `habit shelf stays hidden when signed out`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertItalianFavorites(db, count = HABIT_SHELF_MINIMUM_FAVORITES)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val signedOut = homeFeed(localHour = BREAKFAST_HOUR)
+		signedOut.shelves.none { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe true
+
+		val signedOutPage = shelfPage(shelfId = HomeShelfId.HABIT, pageNumber = 1)
+		signedOutPage.totalMatches shouldBe 0
+		signedOutPage.items shouldBe emptyList()
+	}
+
+	@Test
+	fun `habit shelf stays hidden until three favorites share a cuisine`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertItalianFavorites(db, count = HABIT_SHELF_MINIMUM_FAVORITES - 1)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 3, title = "Mexican", createdAt = "2022-01-01 00:00:00", cuisine = "Mexican"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 4, title = "Also Mexican", createdAt = "2022-02-01 00:00:00", cuisine = "Mexican"),
+		)
+		insertFavorite(db, recipeId = 3, createdAt = "2024-03-01 00:00:00")
+		insertFavorite(db, recipeId = 4, createdAt = "2024-04-01 00:00:00")
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		feed.shelves.none { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe true
+		feed.shelf(HomeShelfId.FAVORITES).recipes.size shouldBe HABIT_SHELF_MINIMUM_FAVORITES + 1
+	}
+
+	@Test
+	fun `habit shelf is the cuisine with the most favorites in catalog order`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 1, title = "Older Italian", createdAt = "2020-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 2, title = "Middle Italian", createdAt = "2021-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 3, title = "Newer Italian", createdAt = "2022-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 4,
+				title = "Complete Italian",
+				createdAt = "2019-01-01 00:00:00",
+				cuisine = "Italian",
+				imageUrl = PHOTO,
+				description = "Ready",
+				mealType = "DINNER",
+				totalTime = 40,
+				step = "Cook",
+				ingredient = "Pasta",
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 5, title = "Mexican One", createdAt = "2023-01-01 00:00:00", cuisine = "Mexican"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 6, title = "Mexican Two", createdAt = "2023-02-01 00:00:00", cuisine = "Mexican"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 7, title = "French", createdAt = "2023-03-01 00:00:00", cuisine = "French"),
+		)
+		insertFavorite(db, recipeId = 1, createdAt = "2024-01-01 00:00:00")
+		insertFavorite(db, recipeId = 2, createdAt = "2024-02-01 00:00:00")
+		insertFavorite(db, recipeId = 3, createdAt = "2024-03-01 00:00:00")
+		insertFavorite(db, recipeId = 5, createdAt = "2024-04-01 00:00:00")
+		insertFavorite(db, recipeId = 6, createdAt = "2024-05-01 00:00:00")
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		val habit = feed.shelf(HomeShelfId.HABIT)
+		val favoriteIndex = feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.FAVORITES }
+		feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe favoriteIndex + 1
+		habit.title shouldBe Cuisine.ITALIAN.displayName
+		habit.filters.cuisines shouldBe setOf(Cuisine.ITALIAN)
+		habit.recipes.map { recipe -> recipe.title } shouldContainExactly listOf(
+			"Complete Italian",
+			"Newer Italian",
+			"Middle Italian",
+			"Older Italian",
+		)
+		habit.recipes.map { recipe -> recipe.isFavorite } shouldContainExactly listOf(false, true, true, true)
+	}
+
+	@Test
+	fun `habit shelf breaks a cuisine tie with the newest save`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertCuisineFavorites(
+			db = db,
+			cuisine = "Italian",
+			titlePrefix = "Italian",
+			firstId = 1,
+			latestFavoriteAt = "2024-06-01 00:00:00",
+		)
+		insertCuisineFavorites(
+			db = db,
+			cuisine = "Mexican",
+			titlePrefix = "Mexican",
+			firstId = 4,
+			latestFavoriteAt = "2025-01-01 00:00:00",
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val habit = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token").shelf(HomeShelfId.HABIT)
+		habit.title shouldBe Cuisine.MEXICAN.displayName
+		habit.recipes.map { recipe -> recipe.cuisine } shouldContainExactly List(HABIT_SHELF_MINIMUM_FAVORITES) {
+			Cuisine.MEXICAN
+		}
+	}
+
+	@Test
+	fun `habit shelf breaks a remaining cuisine tie alphabetically`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val savedAt = "2024-06-01 00:00:00"
+		insertCuisineFavorites(
+			db = db,
+			cuisine = "Mexican",
+			titlePrefix = "Mexican",
+			firstId = 1,
+			latestFavoriteAt = savedAt,
+		)
+		insertCuisineFavorites(
+			db = db,
+			cuisine = "Italian",
+			titlePrefix = "Italian",
+			firstId = 4,
+			latestFavoriteAt = savedAt,
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+			.shelf(HomeShelfId.HABIT)
+			.title shouldBe Cuisine.ITALIAN.displayName
+	}
+
+	@Test
+	fun `a private favorite counts toward the habit cuisine and stays off the shelf`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 1, title = "Public Italian", createdAt = "2021-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 2, title = "Another Italian", createdAt = "2022-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 3,
+				title = "Private Italian",
+				createdAt = "2023-01-01 00:00:00",
+				cuisine = "Italian",
+				isPrivate = true,
+				createdByUserId = 1,
+			),
+		)
+		insertFavorite(db, recipeId = 1, createdAt = "2024-01-01 00:00:00")
+		insertFavorite(db, recipeId = 2, createdAt = "2024-02-01 00:00:00")
+		insertFavorite(db, recipeId = 3, createdAt = "2024-03-01 00:00:00")
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val habit = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token").shelf(HomeShelfId.HABIT)
+		habit.title shouldBe Cuisine.ITALIAN.displayName
+		habit.recipes.map { recipe -> recipe.title } shouldContainExactly listOf(
+			"Another Italian",
+			"Public Italian",
+		)
+	}
+
+	@Test
+	fun `habit shelf page returns the next recipes of that cuisine`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val newestFirst = (HOME_SHELF_PAGE_SIZE downTo 0).toList()
+		newestFirst.forEach { index ->
+			insertHomeRecipe(
+				db,
+				HomeRecipeSeed(
+					id = index + 1,
+					title = "Italian ${index + 1}",
+					createdAt = "2024-06-01 00:${index.toString().padStart(2, '0')}:00",
+					cuisine = "Italian",
+				),
+			)
+		}
+		repeat(HABIT_SHELF_MINIMUM_FAVORITES) { index ->
+			insertFavorite(db, recipeId = index + 1, createdAt = "2025-01-0${index + 1} 00:00:00")
+		}
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val firstPage = shelfPage(
+			shelfId = HomeShelfId.HABIT,
+			pageNumber = 1,
+			accessToken = "session-token",
+		)
+		firstPage.totalMatches shouldBe HOME_SHELF_PAGE_SIZE + 1
+		firstPage.items.map { recipe -> recipe.title } shouldContainExactly
+			(HOME_SHELF_PAGE_SIZE + 1 downTo 2).map { index -> "Italian $index" }
+
+		val secondPage = shelfPage(
+			shelfId = HomeShelfId.HABIT,
+			pageNumber = 2,
+			accessToken = "session-token",
+		)
+		secondPage.items.map { recipe -> recipe.title } shouldContainExactly listOf("Italian 1")
+		secondPage.totalMatches shouldBe HOME_SHELF_PAGE_SIZE + 1
+	}
+
+	@Test
 	fun `unknown shelf id is rejected`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		application { module(db = db) }
 
-		val response = client.get("/home/shelves/HABIT?localHour=$BREAKFAST_HOUR")
+		val response = client.get("/home/shelves/NOT_A_SHELF?localHour=$BREAKFAST_HOUR")
 
 		response.status shouldBe HttpStatusCode.BadRequest
 	}
@@ -334,10 +565,15 @@ class HomeFeedRouteTest {
 	private suspend fun ApplicationTestBuilder.shelfPage(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
+		accessToken: String? = null,
 	): SearchResultsPage {
 		val path = "/home/shelves/${shelfId.name}" +
 			"?localHour=$BREAKFAST_HOUR&pageNumber=$pageNumber&pageSize=$HOME_SHELF_PAGE_SIZE"
-		val response = client.get(path)
+		val response = client.get(path) {
+			if (accessToken != null) {
+				header(HttpHeaders.Authorization, "Bearer $accessToken")
+			}
+		}
 		response.status shouldBe HttpStatusCode.OK
 		return json.decodeFromString(SearchResultsPage.serializer(), response.bodyAsText())
 	}
@@ -350,8 +586,9 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 		connection.prepareStatement(
 			"""
 				INSERT INTO recipes (
-					id, title, description, image_url, cuisine, meal_type, total_time, is_private, created_at
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+					id, title, description, image_url, cuisine, meal_type, total_time, is_private, created_at,
+					created_by_user_id
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			""".trimIndent(),
 		).use { statement ->
 			statement.setInt(1, seed.id)
@@ -367,6 +604,11 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 			}
 			statement.setBoolean(8, seed.isPrivate)
 			statement.setTimestamp(9, Timestamp.valueOf(seed.createdAt))
+			if (seed.createdByUserId == null) {
+				statement.setNull(10, Types.BIGINT)
+			} else {
+				statement.setLong(10, seed.createdByUserId)
+			}
 			statement.executeUpdate()
 		}
 		if (seed.ingredient != null) {
@@ -407,6 +649,54 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 				statement.executeUpdate()
 			}
 		}
+	}
+}
+
+private fun signedInSessionService() = FakeSessionService(
+	initialSessions = listOf(FakeSessionService.createSession()),
+	createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+)
+
+private fun insertItalianFavorites(db: Db, count: Int) {
+	repeat(count) { index ->
+		val id = index + 1
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = id,
+				title = "Italian $id",
+				createdAt = "2021-01-0${index + 1} 00:00:00",
+				cuisine = "Italian",
+			),
+		)
+		insertFavorite(db, recipeId = id, createdAt = "2024-01-0${index + 1} 00:00:00")
+	}
+}
+
+private fun insertCuisineFavorites(
+	db: Db,
+	cuisine: String,
+	titlePrefix: String,
+	firstId: Int,
+	latestFavoriteAt: String,
+) {
+	repeat(HABIT_SHELF_MINIMUM_FAVORITES) { index ->
+		val id = firstId + index
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = id,
+				title = "$titlePrefix $id",
+				createdAt = "2020-01-0${index + 1} 00:00:00",
+				cuisine = cuisine,
+			),
+		)
+		val favoriteAt = if (index == HABIT_SHELF_MINIMUM_FAVORITES - 1) {
+			latestFavoriteAt
+		} else {
+			"2020-02-0${index + 1} 00:00:00"
+		}
+		insertFavorite(db, recipeId = id, createdAt = favoriteAt)
 	}
 }
 
@@ -502,6 +792,7 @@ private data class HomeRecipeSeed(
 	val step: String? = null,
 	val ingredient: String? = null,
 	val isPrivate: Boolean = false,
+	val createdByUserId: Long? = null,
 )
 
 private const val PHOTO = "https://example.com/photo.jpg"
@@ -510,5 +801,6 @@ private const val LUNCH_HOUR = 12
 private const val DINNER_HOUR = 19
 private const val QUICK_SHELF_BELOW_MINIMUM = 3
 private const val QUICK_SHELF_MINIMUM = 4
+private const val HABIT_SHELF_MINIMUM_FAVORITES = 3
 private const val VOTER_ID_BASE = 100L
 private const val VOTE_ID_STRIDE = 100
