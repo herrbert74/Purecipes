@@ -11,6 +11,7 @@ enum class HomeShelfId {
 	RIGHT_NOW,
 	QUICK,
 	FAVORITES,
+	HABIT,
 }
 
 @Serializable

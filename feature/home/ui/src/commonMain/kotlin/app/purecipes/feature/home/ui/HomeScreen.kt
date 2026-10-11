@@ -5,10 +5,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.shared.domain.model.HomeShelfId
@@ -31,7 +33,19 @@ fun HomeScreen(
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
 	}
-	val homeListState = rememberLazyListState()
+	val homeListState = remember(viewModel) {
+		LazyListState(
+			firstVisibleItemIndex = viewModel.homeListFirstVisibleItemIndex,
+			firstVisibleItemScrollOffset = viewModel.homeListFirstVisibleItemScrollOffset,
+		)
+	}
+	LaunchedEffect(homeListState) {
+		snapshotFlow {
+			homeListState.firstVisibleItemIndex to homeListState.firstVisibleItemScrollOffset
+		}.collect { (index, offset) ->
+			viewModel.onHomeListScrolled(index, offset)
+		}
+	}
 	HomeFeedContent(
 		isLoading = viewModel.isHomeLoading,
 		errorMessage = viewModel.homeErrorMessage,

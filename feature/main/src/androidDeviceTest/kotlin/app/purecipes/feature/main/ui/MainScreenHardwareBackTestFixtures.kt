@@ -214,13 +214,17 @@ internal fun mainViewModelForDeviceTest(
 	).also { it.initializeTabBackStacksForTest() }
 }
 
-internal fun homeViewModelForDeviceTest(): HomeViewModel = HomeViewModel(
-	getHomeFeed = GetHomeFeedUseCase(FakeHomeFeedRepository()),
-	getHomeShelfPage = GetHomeShelfPageUseCase(FakeHomeFeedRepository()),
+internal fun homeViewModelForDeviceTest(
+	homeFeedRepository: FakeHomeFeedRepository = FakeHomeFeedRepository(),
+	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+	sessionKey: String? = null,
+): HomeViewModel = HomeViewModel(
+	getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
+	getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 	homeFeedRefresh = HomeFeedRefreshCoordinator(),
-	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 	searchReadiness = SearchReadinessCoordinator(),
-	sessionKey = null,
+	sessionKey = sessionKey,
 )
 
 internal fun recipeSearchViewModelForDeviceTest(
@@ -255,15 +259,16 @@ internal fun recipeSearchViewModelForDeviceTest(
 internal fun recipeDetailsViewModelForDeviceTest(
 	recipeId: Int,
 	recipeDetailsRepository: FakeRecipeDetailsRepository,
+	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 	sessionKey: String? = null,
 ): RecipeDetailsViewModel = RecipeDetailsViewModel(
-	addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+	addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
 	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 	markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(FakeMeasurementPreferencesRepository()),
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
-	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
-	observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+	removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),
+	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 	observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(FakeCookbooksRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),

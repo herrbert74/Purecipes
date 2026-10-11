@@ -3,6 +3,7 @@ package app.purecipes.feature.home.ui
 import app.purecipes.feature.home.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.home.domain.usecase.GetHomeFeedUseCase
 import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.FeatureRequest
@@ -134,16 +135,132 @@ class HomeViewModelTest {
 		viewModel.shelfPagination.getValue(HomeShelfId.NEW).allItems.single().title shouldBe recipe.title
 	}
 
+	@Test
+	fun `removing a favorite drops it from the favorites shelf`() = runViewModelTest {
+		val kept = recipeSummary(id = 1, title = "Kept")
+		val removed = recipeSummary(id = 2, title = "Removed")
+		val favorites = FakeFavoritesRepository()
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(
+				HomeFeed(
+					shelves = listOf(
+						HomeShelf(
+							id = HomeShelfId.FAVORITES,
+							title = "Your favorites",
+							recipes = listOf(kept, removed),
+						),
+					),
+				),
+			),
+		)
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			favoritesRepository = favorites,
+			sessionKey = "user",
+		)
+		advanceUntilIdle()
+
+		homeFeedRepository.result = Ok(
+			HomeFeed(
+				shelves = listOf(
+					HomeShelf(
+						id = HomeShelfId.FAVORITES,
+						title = "Your favorites",
+						recipes = listOf(kept),
+					),
+				),
+			),
+		)
+		favorites.emitFavoriteEvent(FavoriteEvent.Removed(removed.id))
+		advanceUntilIdle()
+
+		viewModel.shelfPagination.getValue(HomeShelfId.FAVORITES).allItems.map { recipe ->
+			recipe.title
+		} shouldBe listOf("Kept")
+	}
+
+	@Test
+	fun `removing the last favorite hides the favorites shelf`() = runViewModelTest {
+		val removed = recipeSummary(id = 2, title = "Removed")
+		val favorites = FakeFavoritesRepository()
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(
+				HomeFeed(
+					shelves = listOf(
+						HomeShelf(
+							id = HomeShelfId.NEW,
+							title = "New",
+							recipes = listOf(recipeSummary(id = 1, title = "New pasta")),
+						),
+						HomeShelf(
+							id = HomeShelfId.FAVORITES,
+							title = "Your favorites",
+							recipes = listOf(removed),
+						),
+					),
+				),
+			),
+		)
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			favoritesRepository = favorites,
+			sessionKey = "user",
+		)
+		advanceUntilIdle()
+
+		homeFeedRepository.result = Ok(
+			HomeFeed(
+				shelves = listOf(
+					HomeShelf(
+						id = HomeShelfId.NEW,
+						title = "New",
+						recipes = listOf(recipeSummary(id = 1, title = "New pasta")),
+					),
+				),
+			),
+		)
+		favorites.emitFavoriteEvent(FavoriteEvent.Removed(removed.id))
+		advanceUntilIdle()
+
+		viewModel.homeFeed.shelves.map { shelf -> shelf.id } shouldBe listOf(HomeShelfId.NEW)
+		viewModel.shelfPagination.containsKey(HomeShelfId.FAVORITES) shouldBe false
+	}
+
+	@Test
+	fun `home list scroll position is kept for the next visit`() = runViewModelTest {
+		val viewModel = homeViewModel(FakeHomeFeedRepository())
+		advanceUntilIdle()
+
+		viewModel.onHomeListScrolled(firstVisibleItemIndex = 4, firstVisibleItemScrollOffset = 12)
+
+		viewModel.homeListFirstVisibleItemIndex shouldBe 4
+		viewModel.homeListFirstVisibleItemScrollOffset shouldBe 12
+	}
+
 	private fun homeViewModel(
 		homeFeedRepository: FakeHomeFeedRepository,
 		homeFeedRefresh: HomeFeedRefreshCoordinator = HomeFeedRefreshCoordinator(),
+		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		sessionKey: String? = null,
 	) = HomeViewModel(
 		getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
 		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 		homeFeedRefresh = homeFeedRefresh,
-		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		searchReadiness = SearchReadinessCoordinator(),
-		sessionKey = null,
+		sessionKey = sessionKey,
+	)
+
+	private fun recipeSummary(
+		id: Int,
+		title: String,
+	) = RecipeSummary(
+		id = id,
+		title = title,
+		cuisine = null,
+		imageUrl = null,
+		totalTime = 20,
+		isFavorite = true,
 	)
 
 	private fun featureRequest(

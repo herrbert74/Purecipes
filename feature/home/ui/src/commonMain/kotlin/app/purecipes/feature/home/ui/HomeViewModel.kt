@@ -1,6 +1,7 @@
 package app.purecipes.feature.home.ui
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -31,6 +32,8 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 private const val FIRST_PAGE_NUMBER = 1
 
@@ -58,8 +61,15 @@ class HomeViewModel(
 	var homeErrorMessage by mutableStateOf<String?>(null)
 		private set
 
+	var homeListFirstVisibleItemIndex by mutableIntStateOf(0)
+		private set
+
+	var homeListFirstVisibleItemScrollOffset by mutableIntStateOf(0)
+		private set
+
 	private var favoriteEventsJob: Job? = null
 	private var loadedSessionKey: String? = null
+	private val homeLoadMutex = Mutex()
 
 	val reloadHomeFeed: () -> Unit = {
 		viewModelScope.launch { loadHome() }
@@ -85,6 +95,11 @@ class HomeViewModel(
 		viewModelScope.launch { loadHome() }
 	}
 
+	fun onHomeListScrolled(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
+		homeListFirstVisibleItemIndex = firstVisibleItemIndex
+		homeListFirstVisibleItemScrollOffset = firstVisibleItemScrollOffset
+	}
+
 	private fun startFavoriteEventsCollection(sessionKey: String?) {
 		favoriteEventsJob?.cancel()
 		favoriteEventsJob = null
@@ -94,6 +109,7 @@ class HomeViewModel(
 		favoriteEventsJob = viewModelScope.launch {
 			observeFavoriteEvents().collect { event ->
 				applyFavoriteEvent(event)
+				refreshHomeShelves()
 			}
 		}
 	}
@@ -103,50 +119,116 @@ class HomeViewModel(
 			is FavoriteEvent.Added -> true
 			is FavoriteEvent.Removed -> false
 		}
-		val updatedShelves = homeFeed.shelves.map { shelf ->
-			val updatedRecipes = shelf.recipes.map { recipe ->
-				if (recipe.id == event.recipeId && recipe.isFavorite != isFavorite) {
-					recipe.copy(isFavorite = isFavorite)
+		homeFeed = homeFeed.copy(
+			shelves = homeFeed.shelves.mapNotNull { shelf ->
+				updatedShelf(shelf, event, isFavorite)
+			},
+		)
+		val pagination = shelfPagination.toMutableMap()
+		pagination.keys.toList().forEach { shelfId ->
+			val state = pagination.getValue(shelfId)
+			if (shelfId == HomeShelfId.FAVORITES && event is FavoriteEvent.Removed) {
+				val replacement = paginationWithoutRecipe(state, shelfId, event.recipeId)
+				if (replacement == null) {
+					pagination.remove(shelfId)
 				} else {
-					recipe
+					pagination[shelfId] = replacement
+				}
+			} else {
+				state.mapItems { recipe ->
+					if (recipe.id == event.recipeId && recipe.isFavorite != isFavorite) {
+						recipe.copy(isFavorite = isFavorite)
+					} else {
+						recipe
+					}
 				}
 			}
-			if (updatedRecipes == shelf.recipes) shelf else shelf.copy(recipes = updatedRecipes)
 		}
-		if (updatedShelves != homeFeed.shelves) {
-			homeFeed = homeFeed.copy(shelves = updatedShelves)
+		shelfPagination = pagination.toImmutableMap()
+	}
+
+	private fun updatedShelf(
+		shelf: HomeShelf,
+		event: FavoriteEvent,
+		isFavorite: Boolean,
+	): HomeShelf? {
+		val recipes = shelf.recipes.map { recipe ->
+			if (recipe.id == event.recipeId) recipe.copy(isFavorite = isFavorite) else recipe
 		}
-		shelfPagination.values.forEach { state ->
-			state.mapItems { recipe ->
-				if (recipe.id == event.recipeId && recipe.isFavorite != isFavorite) {
-					recipe.copy(isFavorite = isFavorite)
-				} else {
-					recipe
-				}
-			}
+		val visibleRecipes = if (shelf.id == HomeShelfId.FAVORITES && event is FavoriteEvent.Removed) {
+			recipes.filter { recipe -> recipe.id != event.recipeId }
+		} else {
+			recipes
+		}
+		return when {
+			shelf.id == HomeShelfId.FAVORITES && visibleRecipes.isEmpty() -> null
+			visibleRecipes == shelf.recipes -> shelf
+			else -> shelf.copy(recipes = visibleRecipes)
+		}
+	}
+
+	private fun paginationWithoutRecipe(
+		current: PaginationState<Int, RecipeSummary>,
+		shelfId: HomeShelfId,
+		recipeId: Int,
+	): PaginationState<Int, RecipeSummary>? {
+		val remaining = current.allItems.filter { recipe -> recipe.id != recipeId }
+		return if (remaining.isEmpty()) {
+			null
+		} else {
+			val state = PaginationState<Int, RecipeSummary>(
+				initialPageKey = FIRST_PAGE_NUMBER,
+				onRequestPage = { pageKey ->
+					viewModelScope.launch {
+						loadShelfPage(shelfId, pageKey)
+					}
+				},
+			)
+			state.appendPage(
+				pageKey = FIRST_PAGE_NUMBER,
+				items = remaining,
+				nextPageKey = FIRST_PAGE_NUMBER + 1,
+				isLastPage = true,
+			)
+			state
 		}
 	}
 
 	private suspend fun loadHome() {
-		isHomeLoading = true
-		homeErrorMessage = null
-		val outcome = getHomeFeed()
-		val feed = outcome.get()
-		if (feed != null) {
-			shelfPagination = feed.shelves.associate { shelf ->
-				shelf.id to newShelfPagination(shelf)
-			}.toImmutableMap()
-			homeFeed = feed
-		} else {
-			homeErrorMessage = outcome.getError()?.message
+		homeLoadMutex.withLock {
+			isHomeLoading = true
+			homeErrorMessage = null
+			val outcome = getHomeFeed()
+			val feed = outcome.get()
+			if (feed != null) {
+				applyFeed(feed)
+			} else {
+				homeErrorMessage = outcome.getError()?.message
+			}
+			isHomeLoading = false
+			searchReadiness.reportReady()
 		}
-		isHomeLoading = false
-		searchReadiness.reportReady()
+	}
+
+	private suspend fun refreshHomeShelves() {
+		homeLoadMutex.withLock {
+			val feed = getHomeFeed().get() ?: return@withLock
+			applyFeed(feed)
+		}
+	}
+
+	private fun applyFeed(feed: HomeFeed) {
+		shelfPagination = feed.shelves.associate { shelf ->
+			shelf.id to newShelfPagination(shelf)
+		}.toImmutableMap()
+		homeFeed = feed
 	}
 
 	private suspend fun refreshHomeFeatureRequest() {
-		val feed = getHomeFeed().get() ?: return
-		homeFeed = homeFeed.copy(featureRequest = feed.featureRequest)
+		homeLoadMutex.withLock {
+			val feed = getHomeFeed().get() ?: return@withLock
+			homeFeed = homeFeed.copy(featureRequest = feed.featureRequest)
+		}
 	}
 
 	private fun newShelfPagination(shelf: HomeShelf): PaginationState<Int, RecipeSummary> {
