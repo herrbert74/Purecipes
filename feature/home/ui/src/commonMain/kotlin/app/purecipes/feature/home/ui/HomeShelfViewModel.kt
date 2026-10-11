@@ -34,6 +34,7 @@ class HomeShelfViewModel(
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	@Assisted private val shelfId: HomeShelfId,
 	@Assisted private val collectionSlug: String?,
+	@Assisted private val habitCuisine: String?,
 	@Assisted val title: String,
 	@Assisted sessionKey: String?,
 ) : ViewModel() {
@@ -109,6 +110,7 @@ class HomeShelfViewModel(
 			pageNumber = pageNumber,
 			pageSize = PAGE_SIZE,
 			collectionSlug = collectionSlug,
+			habitCuisine = habitCuisine,
 		)
 		val page = outcome.get()
 		if (page != null) {
@@ -145,6 +147,7 @@ class HomeShelfViewModel(
 		fun create(
 			shelfId: HomeShelfId,
 			collectionSlug: String?,
+			habitCuisine: String?,
 			title: String,
 			sessionKey: String?,
 		): HomeShelfViewModel

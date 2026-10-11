@@ -44,6 +44,8 @@ import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForM
 import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.recipedetails.ui.RecipeDetailsViewModel
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
@@ -84,6 +86,7 @@ import app.purecipes.shared.testfixtures.fake.FakeIngredientMatchRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchRepository
@@ -223,6 +226,7 @@ internal fun homeViewModelForDeviceTest(
 	getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 	homeFeedRefresh = HomeFeedRefreshCoordinator(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+	observeRecipeViews = ObserveRecipeViewsUseCase(FakeRecipeActivityRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
 	sessionKey = sessionKey,
 )
@@ -263,6 +267,7 @@ internal fun recipeDetailsViewModelForDeviceTest(
 ): RecipeDetailsViewModel = RecipeDetailsViewModel(
 	addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
+	recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 	observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 	markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(FakeMeasurementPreferencesRepository()),
 	processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),

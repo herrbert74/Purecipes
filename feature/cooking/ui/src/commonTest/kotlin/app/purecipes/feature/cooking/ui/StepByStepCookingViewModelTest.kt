@@ -18,17 +18,21 @@ import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
+import app.purecipes.feature.recipedetails.domain.repository.RecipeActivityRepository
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.runViewModelTest
@@ -61,6 +65,47 @@ class StepByStepCookingViewModelTest {
 
 		viewModel.previousStep()
 		viewModel.currentPageIndex shouldBe recipe.steps.lastIndex
+	}
+
+	@Test
+	fun `finishing a cook records one cook when signed in`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val activity = FakeRecipeActivityRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			sessionKey = "session",
+			recipeActivityRepository = activity,
+		)
+		advanceUntilIdle()
+
+		repeat(recipe.steps.lastIndex) { viewModel.nextStep() }
+		advanceUntilIdle()
+		activity.events shouldBe emptyList()
+
+		viewModel.nextStep()
+		viewModel.nextStep()
+		advanceUntilIdle()
+
+		activity.events shouldBe listOf(recipe.id to RecipeActivityEvent.COOK_COMPLETE)
+	}
+
+	@Test
+	fun `finishing a cook is not recorded when signed out`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val activity = FakeRecipeActivityRepository()
+		val viewModel = createViewModel(
+			recipeId = recipe.id,
+			recipe = recipe,
+			recipeActivityRepository = activity,
+		)
+		advanceUntilIdle()
+
+		repeat(recipe.steps.size) { viewModel.nextStep() }
+		advanceUntilIdle()
+
+		viewModel.currentPageIndex shouldBe recipe.steps.size
+		activity.events shouldBe emptyList()
 	}
 
 	@Test
@@ -460,6 +505,7 @@ class StepByStepCookingViewModelTest {
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 		crashRepository: FakeCrashRepository = FakeCrashRepository(),
 		sessionKey: String? = null,
+		recipeActivityRepository: RecipeActivityRepository = FakeRecipeActivityRepository(),
 	): StepByStepCookingViewModel {
 		val measurementRepository = FakeMeasurementPreferencesRepository()
 		return StepByStepCookingViewModel(
@@ -468,6 +514,7 @@ class StepByStepCookingViewModelTest {
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			getCookbooksPage = GetCookbooksPageUseCase(cookbooksRepository),
 			getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
+			recordRecipeActivity = RecordRecipeActivityUseCase(recipeActivityRepository),
 			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
 			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
 			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(favoritesRepository),

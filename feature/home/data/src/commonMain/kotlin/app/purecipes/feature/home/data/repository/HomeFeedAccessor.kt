@@ -22,7 +22,13 @@ class HomeFeedAccessor(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		pageSize: Int,
-	): Outcome<SearchResultsPage> = remoteDataSource.getShelfPage(shelfId, pageNumber, pageSize)
+		habitCuisine: String?,
+	): Outcome<SearchResultsPage> = remoteDataSource.getShelfPage(
+		shelfId = shelfId,
+		pageNumber = pageNumber,
+		pageSize = pageSize,
+		habitCuisine = habitCuisine,
+	)
 
 	override suspend fun getCollectionPage(
 		slug: String,

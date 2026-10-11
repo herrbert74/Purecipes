@@ -9,4 +9,5 @@ data class HomeShelfDestination(
 	val title: String,
 	val shelfId: HomeShelfId,
 	val collectionSlug: String? = null,
+	val habitCuisine: String? = null,
 ) : NavKey

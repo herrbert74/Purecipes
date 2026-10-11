@@ -27,12 +27,14 @@ class HomeFeedRemoteDataSource(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		pageSize: Int,
+		habitCuisine: String?,
 	): Outcome<SearchResultsPage> = runCatchingApi {
 		api.getHomeShelfPage(
 			shelfId = shelfId.name,
 			localHour = localHour(),
 			pageNumber = pageNumber,
 			pageSize = pageSize,
+			habitCuisine = habitCuisine,
 		)
 	}
 

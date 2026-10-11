@@ -108,6 +108,8 @@ class Db private constructor(
 					statement.execute(HOME_COLLECTIONS_POSITION_INDEX_SQL)
 					statement.execute(HOME_COLLECTION_RECIPES_TABLE_SQL)
 					statement.execute(HOME_COLLECTION_RECIPES_ORDER_INDEX_SQL)
+					statement.execute(RECIPE_ACTIVITY_TABLE_SQL)
+					statement.execute(RECIPE_ACTIVITY_USER_CREATED_INDEX_SQL)
 				}
 			}
 		}

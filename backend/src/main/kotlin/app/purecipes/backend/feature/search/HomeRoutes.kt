@@ -6,6 +6,7 @@ import app.purecipes.backend.db.Db
 import app.purecipes.backend.feature.auth.optionalAuthenticatedUserId
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeShelfId
+import app.purecipes.shared.domain.model.cuisineFromRawValue
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respond
@@ -70,12 +71,18 @@ private suspend fun ApplicationCall.respondShelfPage(
 	val shelfId = parameters["shelfId"]?.let { rawId ->
 		HomeShelfId.entries.firstOrNull { shelf -> shelf.name == rawId }
 	}
-	if (shelfId == null) {
+	val habitCuisine = request.queryParameters["habitCuisine"]?.trim()?.takeIf { cuisine -> cuisine.isNotEmpty() }
+	val habitCuisineInvalid = habitCuisine != null && cuisineFromRawValue(habitCuisine) == null
+	if (shelfId == null || habitCuisineInvalid) {
 		respond(
 			HttpStatusCode.BadRequest,
 			ErrorResponse(
 				message = "Invalid request",
-				detail = "shelfId must be a home shelf id",
+				detail = if (shelfId == null) {
+					"shelfId must be a home shelf id"
+				} else {
+					"habitCuisine must be a cuisine"
+				},
 			),
 		)
 		return
@@ -84,15 +91,24 @@ private suspend fun ApplicationCall.respondShelfPage(
 	val pageNumber = request.queryParameters["pageNumber"]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
 	val pageSize = request.queryParameters["pageSize"]?.toIntOrNull() ?: HOME_SHELF_PAGE_SIZE
 	val repository = HomeFeedRepository(dbProvider().dataSource)
-	respond(
+	val userId = optionalAuthenticatedUserId(sessionService)
+	val page = if (habitCuisine != null && shelfId == HomeShelfId.HABIT) {
+		repository.loadHabitCuisinePage(
+			userId = userId,
+			habitCuisine = habitCuisine,
+			pageNumber = pageNumber,
+			pageSize = pageSize,
+		)
+	} else {
 		repository.loadShelfPage(
-			userId = optionalAuthenticatedUserId(sessionService),
+			userId = userId,
 			localHour = localHour,
 			shelfId = shelfId,
 			pageNumber = pageNumber,
 			pageSize = pageSize,
-		),
-	)
+		)
+	}
+	respond(page)
 }
 
 private suspend fun ApplicationCall.respondCollectionPage(

@@ -124,6 +124,7 @@ private fun MainScreenContent(
 												title = shelf.title,
 												shelfId = shelf.id,
 												collectionSlug = shelf.collectionSlug,
+												habitCuisine = shelf.habitCuisine,
 											),
 										)
 									},

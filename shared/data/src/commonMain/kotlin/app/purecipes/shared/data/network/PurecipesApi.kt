@@ -16,6 +16,7 @@ import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
+import app.purecipes.shared.domain.model.RecipeActivityRequest
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeNutritionEstimateRequest
 import app.purecipes.shared.domain.model.RecipeNutritionEstimateResponse
@@ -48,6 +49,7 @@ interface PurecipesApi : PurecipesAuthApi {
 		@Query("localHour") localHour: Int,
 		@Query("pageNumber") pageNumber: Int = 1,
 		@Query("pageSize") pageSize: Int = 12,
+		@Query("habitCuisine") habitCuisine: String? = null,
 	): SearchResultsPage
 
 	@GET("home/collections/{slug}")
@@ -59,6 +61,13 @@ interface PurecipesApi : PurecipesAuthApi {
 
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails
+
+	@Headers("Accept: application/json", "Content-Type: application/json")
+	@POST("recipes/{id}/activity")
+	suspend fun recordRecipeActivity(
+		@Path("id") recipeId: Int,
+		@Body request: RecipeActivityRequest,
+	)
 
 	@GET("recipes/mine")
 	suspend fun getCreatedRecipes(): List<RecipeDetails>

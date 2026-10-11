@@ -16,6 +16,7 @@ import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.MealType
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
@@ -30,11 +31,27 @@ private const val QUICK_SHELF_MINIMUM_RECIPES = 4
 
 private const val HABIT_SHELF_MINIMUM_FAVORITES = 3
 
+private const val ACTIVITY_HABIT_MINIMUM_EVENTS = 3
+
+private const val HABIT_SHELF_LIMIT = 2
+
 private const val NEW_SHELF_TITLE = "New"
 
 private const val QUICK_SHELF_TITLE = "Quick"
 
 private const val FAVORITES_SHELF_TITLE = "Your favorites"
+
+private const val RECENTLY_VIEWED_SHELF_TITLE = "Recently viewed"
+
+private const val RECENTLY_VIEWED_USER_PARAMETER = 1
+
+private const val RECENTLY_VIEWED_EVENT_PARAMETER = 2
+
+private const val RECENTLY_VIEWED_OWNER_PARAMETER = 3
+
+private const val RECENTLY_VIEWED_LIMIT_PARAMETER = 4
+
+private const val RECENTLY_VIEWED_OFFSET_PARAMETER = 5
 
 class HomeFeedRepository(
 	private val dataSource: DataSource,
@@ -79,10 +96,17 @@ class HomeFeedRepository(
 					window = window,
 				)
 
+				HomeShelfId.RECENTLY_VIEWED -> recentlyViewedShelfPage(
+					connection = connection,
+					userId = userId,
+					window = window,
+				)
+
 				HomeShelfId.HABIT -> habitShelfPage(
 					connection = connection,
 					userId = userId,
 					window = window,
+					habitCuisine = null,
 				)
 
 				HomeShelfId.NEW,
@@ -98,6 +122,28 @@ class HomeFeedRepository(
 
 				HomeShelfId.COLLECTION -> emptyShelfPage(window)
 			}
+		}
+	}
+
+	fun loadHabitCuisinePage(
+		userId: Long?,
+		habitCuisine: String,
+		pageNumber: Int,
+		pageSize: Int,
+	): SearchResultsPage {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
+		val window = PageWindow(
+			pageNumber = normalizedPageNumber,
+			pageSize = normalizedPageSize,
+		)
+		return dataSource.connection.use { connection ->
+			habitShelfPage(
+				connection = connection,
+				userId = userId,
+				window = window,
+				habitCuisine = habitCuisine,
+			)
 		}
 	}
 
@@ -169,6 +215,30 @@ class HomeFeedRepository(
 				add(quick)
 			}
 			if (userId != null) {
+				val recentlyViewed = queryRecentlyViewedShelf(connection, userId)
+				if (recentlyViewed.isNotEmpty()) {
+					add(
+						HomeShelf(
+							id = HomeShelfId.RECENTLY_VIEWED,
+							title = RECENTLY_VIEWED_SHELF_TITLE,
+							recipes = recentlyViewed,
+						),
+					)
+				}
+				val habit = queryHabitShelf(connection, userId)
+				if (habit != null) {
+					add(habit)
+				}
+				val excludedCuisines = habit?.filters?.cuisines.orEmpty()
+				val activityLimit = HABIT_SHELF_LIMIT - if (habit == null) 0 else 1
+				addAll(
+					queryActivityHabitShelves(
+						connection = connection,
+						userId = userId,
+						excludedCuisines = excludedCuisines,
+						limit = activityLimit,
+					),
+				)
 				val favorites = queryFavoriteShelf(connection, userId)
 				if (favorites.isNotEmpty()) {
 					add(
@@ -178,10 +248,6 @@ class HomeFeedRepository(
 							recipes = favorites,
 						),
 					)
-				}
-				val habit = queryHabitShelf(connection, userId)
-				if (habit != null) {
-					add(habit)
 				}
 			}
 			addAll(
@@ -299,6 +365,42 @@ class HomeFeedRepository(
 		return recipes
 	}
 
+	private fun queryRecentlyViewedShelf(
+		connection: Connection,
+		userId: Long,
+		limit: Int = HOME_SHELF_PAGE_SIZE,
+		offset: Int = 0,
+	): List<RecipeSummary> {
+		val sql = """
+			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
+				${recipeCompletenessScoreSql("r")} AS completeness_score,
+				r.created_at
+			FROM recipes r
+			INNER JOIN (
+				SELECT recipe_id, MAX(created_at) AS viewed_at
+				FROM recipe_activity
+				WHERE user_id = ? AND event = ?
+				GROUP BY recipe_id
+			) viewed ON viewed.recipe_id = r.id
+			WHERE r.is_private = FALSE OR r.created_by_user_id = ?
+			ORDER BY viewed.viewed_at DESC, r.id DESC
+			LIMIT ? OFFSET ?
+		""".trimIndent()
+		val recipes = connection.prepareStatement(sql).use { statement ->
+			statement.setLong(RECENTLY_VIEWED_USER_PARAMETER, userId)
+			statement.setString(RECENTLY_VIEWED_EVENT_PARAMETER, RecipeActivityEvent.OPEN.name)
+			statement.setLong(RECENTLY_VIEWED_OWNER_PARAMETER, userId)
+			statement.setInt(RECENTLY_VIEWED_LIMIT_PARAMETER, limit)
+			statement.setInt(RECENTLY_VIEWED_OFFSET_PARAMETER, offset)
+			recipeRepository.readSearchRecipeCandidates(statement).map { candidate -> candidate.summary }
+		}
+		return markFavorites(
+			connection = connection,
+			userId = userId,
+			recipes = recipes,
+		)
+	}
+
 	private fun queryHabitShelf(
 		connection: Connection,
 		userId: Long,
@@ -321,12 +423,62 @@ class HomeFeedRepository(
 		}
 	}
 
+	private fun queryActivityHabitShelves(
+		connection: Connection,
+		userId: Long,
+		excludedCuisines: Set<Cuisine>,
+		limit: Int,
+	): List<HomeShelf> {
+		if (limit <= 0) {
+			return emptyList()
+		}
+		return loadActivityCuisineCandidates(connection, userId)
+			.filter { candidate -> candidate.cuisine !in excludedCuisines }
+			.sortedWith(activityCuisineOrder().reversed())
+			.mapNotNull { candidate ->
+				activityHabitShelf(
+					connection = connection,
+					userId = userId,
+					cuisine = candidate.cuisine,
+				)
+			}
+			.take(limit)
+	}
+
+	private fun activityHabitShelf(
+		connection: Connection,
+		userId: Long,
+		cuisine: Cuisine,
+	): HomeShelf? {
+		val recipes = queryPublicShelf(
+			connection = connection,
+			userId = userId,
+			query = habitShelfQuery(cuisine),
+		)
+		return if (recipes.isEmpty()) {
+			null
+		} else {
+			HomeShelf(
+				id = HomeShelfId.HABIT,
+				title = cuisine.displayName,
+				filters = SearchFilters(cuisines = setOf(cuisine)),
+				recipes = recipes,
+				habitCuisine = cuisine.displayName,
+			)
+		}
+	}
+
 	private fun habitShelfPage(
 		connection: Connection,
 		userId: Long?,
 		window: PageWindow,
+		habitCuisine: String?,
 	): SearchResultsPage {
-		val cuisine = if (userId == null) null else dominantFavoriteCuisine(connection, userId)
+		val cuisine = when {
+			habitCuisine != null -> cuisineFromRawValue(habitCuisine)
+			userId == null -> null
+			else -> dominantFavoriteCuisine(connection, userId)
+		}
 		val query = if (cuisine == null) null else habitShelfQuery(cuisine)
 		val totalMatches = if (query == null) {
 			0
@@ -368,6 +520,28 @@ class HomeFeedRepository(
 			}
 			.filter { candidate -> candidate.favoriteCount >= HABIT_SHELF_MINIMUM_FAVORITES }
 		return candidates.maxWithOrNull(habitCuisineOrder())?.cuisine
+	}
+
+	private fun loadActivityCuisineCandidates(
+		connection: Connection,
+		userId: Long,
+	): List<ActivityCuisineCandidate> {
+		val sql = """
+			SELECT r.cuisine, COUNT(*) AS event_count, MAX(a.created_at) AS latest_event_at
+			FROM recipe_activity a
+			INNER JOIN recipes r ON r.id = a.recipe_id
+			WHERE a.user_id = ?
+				AND (r.is_private = FALSE OR r.created_by_user_id = ?)
+			GROUP BY r.cuisine
+			HAVING COUNT(*) >= $ACTIVITY_HABIT_MINIMUM_EVENTS
+		""".trimIndent()
+		return connection.prepareStatement(sql).use { statement ->
+			statement.setLong(1, userId)
+			statement.setLong(2, userId)
+			statement.executeQuery().use { resultSet ->
+				readActivityCuisineCandidates(resultSet)
+			}
+		}
 	}
 
 	private fun loadFavoriteCuisineSaves(connection: Connection, userId: Long): List<FavoriteCuisineSave> {
@@ -436,6 +610,30 @@ class HomeFeedRepository(
 		)
 	}
 
+	private fun recentlyViewedShelfPage(
+		connection: Connection,
+		userId: Long?,
+		window: PageWindow,
+	): SearchResultsPage {
+		val totalMatches = if (userId == null) 0 else countRecentlyViewed(connection, userId)
+		val recipes = if (userId == null) {
+			emptyList()
+		} else {
+			queryRecentlyViewedShelf(
+				connection = connection,
+				userId = userId,
+				limit = window.pageSize,
+				offset = window.offset,
+			)
+		}
+		return SearchResultsPage(
+			items = recipes,
+			pageNumber = window.pageNumber,
+			pageSize = window.pageSize,
+			totalMatches = totalMatches,
+		)
+	}
+
 	private fun publicShelfQuery(shelfId: HomeShelfId, mealType: MealType): ShelfQuery {
 		return when (shelfId) {
 			HomeShelfId.NEW -> ShelfQuery(
@@ -467,6 +665,7 @@ class HomeFeedRepository(
 
 			HomeShelfId.FAVORITES,
 			HomeShelfId.HABIT,
+			HomeShelfId.RECENTLY_VIEWED,
 			HomeShelfId.COLLECTION,
 				-> throw IllegalArgumentException("This home shelf is loaded separately")
 		}
@@ -479,6 +678,28 @@ class HomeFeedRepository(
 			pageSize = window.pageSize,
 			totalMatches = 0,
 		)
+	}
+
+	private fun countRecentlyViewed(connection: Connection, userId: Long): Int {
+		val sql = """
+			SELECT COUNT(*)
+			FROM recipes r
+			INNER JOIN (
+				SELECT recipe_id
+				FROM recipe_activity
+				WHERE user_id = ? AND event = ?
+				GROUP BY recipe_id
+			) viewed ON viewed.recipe_id = r.id
+			WHERE r.is_private = FALSE OR r.created_by_user_id = ?
+		""".trimIndent()
+		return connection.prepareStatement(sql).use { statement ->
+			statement.setLong(RECENTLY_VIEWED_USER_PARAMETER, userId)
+			statement.setString(RECENTLY_VIEWED_EVENT_PARAMETER, RecipeActivityEvent.OPEN.name)
+			statement.setLong(RECENTLY_VIEWED_OWNER_PARAMETER, userId)
+			statement.executeQuery().use { resultSet ->
+				if (resultSet.next()) resultSet.getInt(1) else 0
+			}
+		}
 	}
 
 	private fun countFavorites(connection: Connection, userId: Long): Int {
@@ -559,6 +780,12 @@ private data class HabitCuisineCandidate(
 	val latestFavoriteAtMillis: Long,
 )
 
+private data class ActivityCuisineCandidate(
+	val cuisine: Cuisine,
+	val eventCount: Int,
+	val latestEventAtMillis: Long,
+)
+
 private fun habitShelfQuery(cuisine: Cuisine): ShelfQuery {
 	return ShelfQuery(
 		extraConditions = listOf("r.cuisine = ?"),
@@ -571,6 +798,27 @@ private fun habitCuisineOrder(): Comparator<HabitCuisineCandidate> {
 	return compareBy<HabitCuisineCandidate> { candidate -> candidate.favoriteCount }
 		.thenBy { candidate -> candidate.latestFavoriteAtMillis }
 		.thenByDescending { candidate -> candidate.cuisine.displayName }
+}
+
+private fun activityCuisineOrder(): Comparator<ActivityCuisineCandidate> {
+	return compareBy<ActivityCuisineCandidate> { candidate -> candidate.eventCount }
+		.thenBy { candidate -> candidate.latestEventAtMillis }
+		.thenByDescending { candidate -> candidate.cuisine.displayName }
+}
+
+private fun readActivityCuisineCandidates(resultSet: ResultSet): List<ActivityCuisineCandidate> {
+	return buildList {
+		while (resultSet.next()) {
+			val cuisine = cuisineFromRawValue(resultSet.getString("cuisine")) ?: continue
+			add(
+				ActivityCuisineCandidate(
+					cuisine = cuisine,
+					eventCount = resultSet.getInt("event_count"),
+					latestEventAtMillis = resultSet.getTimestamp("latest_event_at").time,
+				),
+			)
+		}
+	}
 }
 
 private fun readFavoriteCuisineSaves(resultSet: ResultSet): List<FavoriteCuisineSave> {

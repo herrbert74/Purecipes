@@ -24,6 +24,7 @@ import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchS
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.Cuisine
@@ -36,6 +37,7 @@ import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
@@ -144,6 +146,7 @@ private fun recipeDetailsViewModelForTest(
 			override fun shareText(text: String, title: String?) = Unit
 		},
 	),
+	recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 	recipeId = recipeId,
 	sessionKey = sessionKey,
 	origin = AnalyticsOrigin.SEARCH.value,

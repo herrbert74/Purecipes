@@ -20,6 +20,10 @@ class FakeHomeFeedRepository(
 
 	val shelfPageCalls = mutableListOf<HomeShelfId>()
 
+	val habitCuisineCalls = mutableListOf<String?>()
+
+	var habitShelfPages: Map<String, Outcome<SearchResultsPage>> = emptyMap()
+
 	val collectionPageCalls = mutableListOf<String>()
 
 	override suspend fun getHomeFeed(): Outcome<HomeFeed> {
@@ -31,9 +35,12 @@ class FakeHomeFeedRepository(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		pageSize: Int,
+		habitCuisine: String?,
 	): Outcome<SearchResultsPage> {
 		shelfPageCalls += shelfId
-		return shelfPages[shelfId] ?: Ok(
+		habitCuisineCalls += habitCuisine
+		val habitPage = habitCuisine?.let { cuisine -> habitShelfPages[cuisine] }
+		return habitPage ?: shelfPages[shelfId] ?: Ok(
 			SearchResultsPage(
 				items = emptyList(),
 				pageNumber = pageNumber,

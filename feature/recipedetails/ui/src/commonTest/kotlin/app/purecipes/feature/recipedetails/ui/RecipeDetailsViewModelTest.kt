@@ -25,6 +25,7 @@ import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPrefer
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.repository.RecipeDetailsRepository
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookListPage
@@ -33,6 +34,7 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import app.purecipes.shared.domain.model.SearchResultsPage
@@ -41,6 +43,7 @@ import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
@@ -101,6 +104,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -143,6 +147,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -150,6 +155,74 @@ class RecipeDetailsViewModelTest {
 		viewModel.recipeDetails shouldBe recipe
 		viewModel.errorMessage shouldBe null
 		viewModel.isLoading shouldBe false
+	}
+
+	@Test
+	fun `a signed-in open is recorded once`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val activity = FakeRecipeActivityRepository()
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(Ok(recipe))),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = "session",
+			origin = AnalyticsOrigin.SEARCH.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(activity),
+		)
+
+		advanceUntilIdle()
+		viewModel.retry()
+		advanceUntilIdle()
+
+		activity.events shouldBe listOf(recipe.id to RecipeActivityEvent.OPEN)
+	}
+
+	@Test
+	fun `a signed-out open is not recorded`() = runViewModelTest {
+		val recipe = fakeRecipeDetails()
+		val activity = FakeRecipeActivityRepository()
+		val measurementRepository = FakeMeasurementPreferencesRepository()
+		val viewModel = RecipeDetailsViewModel(
+			recipeId = recipe.id,
+			addFavoriteRecipe = AddFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			getRecipeDetails = GetRecipeDetailsUseCase(FakeRecipeDetailsRepository(Ok(recipe))),
+			observeMeasurementPreferences = ObserveMeasurementPreferencesUseCase(measurementRepository),
+			markMeasurementMismatchSeen = MarkMeasurementMismatchSeenUseCase(measurementRepository),
+			processRecipeDetailsForMeasurementPreferences = ProcessRecipeDetailsForMeasurementPreferencesUseCase(),
+			removeFavoriteRecipe = RemoveFavoriteRecipeUseCase(FakeFavoritesRepository()),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeCookbookMembershipEvents = ObserveCookbookMembershipEventsUseCase(fakeCookbooksRepository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+			sessionKey = null,
+			origin = AnalyticsOrigin.SEARCH.value,
+			getRecipeCookbooks = GetRecipeCookbooksUseCase(fakeCookbooksRepository),
+			getCookbooksPage = GetCookbooksPageUseCase(fakeCookbooksRepository),
+			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
+			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
+			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(activity),
+		)
+
+		advanceUntilIdle()
+
+		activity.events shouldBe emptyList()
 	}
 
 	@Test
@@ -177,6 +250,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 		advanceUntilIdle()
 		viewModel.recipeDetails?.isFavorite shouldBe false
@@ -213,6 +287,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -253,6 +328,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -294,6 +370,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -327,6 +404,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -362,6 +440,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -405,6 +484,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -450,6 +530,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -487,6 +568,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -525,6 +607,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(fakeCookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(fakeCookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 
 		advanceUntilIdle()
@@ -586,6 +669,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 		advanceUntilIdle()
 		viewModel.prepareCookbookPicker()
@@ -637,6 +721,7 @@ class RecipeDetailsViewModelTest {
 			createCookbook = CreateCookbookUseCase(cookbooksRepository),
 			addRecipeToCookbook = AddRecipeToCookbookUseCase(cookbooksRepository),
 			shareRecipe = shareRecipe,
+			recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
 		)
 		advanceUntilIdle()
 

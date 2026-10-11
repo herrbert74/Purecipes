@@ -11,6 +11,7 @@ import app.purecipes.feature.home.domain.usecase.GetHomeFeedUseCase
 import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeFeed
@@ -44,6 +45,7 @@ class HomeViewModel(
 	private val getHomeShelfPage: GetHomeShelfPageUseCase,
 	private val homeFeedRefresh: HomeFeedRefreshCoordinator,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
+	private val observeRecipeViews: ObserveRecipeViewsUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted private val sessionKey: String?,
 ) : ViewModel() {
@@ -69,6 +71,7 @@ class HomeViewModel(
 		private set
 
 	private var favoriteEventsJob: Job? = null
+	private var recipeViewsJob: Job? = null
 	private var loadedSessionKey: String? = null
 	private val homeLoadMutex = Mutex()
 
@@ -79,6 +82,7 @@ class HomeViewModel(
 	init {
 		viewModelScope.launch { loadHome() }
 		startFavoriteEventsCollection(sessionKey)
+		startRecipeViewsCollection(sessionKey)
 		loadedSessionKey = sessionKey
 		viewModelScope.launch {
 			homeFeedRefresh.revision.collect { revision ->
@@ -93,6 +97,7 @@ class HomeViewModel(
 		if (sessionKey == loadedSessionKey) return
 		loadedSessionKey = sessionKey
 		startFavoriteEventsCollection(sessionKey)
+		startRecipeViewsCollection(sessionKey)
 		viewModelScope.launch { loadHome() }
 	}
 
@@ -110,6 +115,19 @@ class HomeViewModel(
 		favoriteEventsJob = viewModelScope.launch {
 			observeFavoriteEvents().collect { event ->
 				applyFavoriteEvent(event)
+				refreshHomeShelves()
+			}
+		}
+	}
+
+	private fun startRecipeViewsCollection(sessionKey: String?) {
+		recipeViewsJob?.cancel()
+		recipeViewsJob = null
+		if (sessionKey == null) {
+			return
+		}
+		recipeViewsJob = viewModelScope.launch {
+			observeRecipeViews().collect { ignored ->
 				refreshHomeShelves()
 			}
 		}
@@ -234,11 +252,12 @@ class HomeViewModel(
 	private fun newShelfPagination(shelf: HomeShelf): PaginationState<Int, RecipeSummary> {
 		val shelfId = shelf.id
 		val collectionSlug = shelf.collectionSlug
+		val habitCuisine = shelf.habitCuisine
 		val state = PaginationState<Int, RecipeSummary>(
 			initialPageKey = FIRST_PAGE_NUMBER,
 			onRequestPage = { pageKey ->
 				viewModelScope.launch {
-					loadShelfPage(shelfId, pageKey, collectionSlug)
+					loadShelfPage(shelfId, pageKey, collectionSlug, habitCuisine)
 				}
 			},
 		)
@@ -255,13 +274,15 @@ class HomeViewModel(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		collectionSlug: String?,
+		habitCuisine: String? = null,
 	) {
-		val state = shelfPagination[collectionSlug ?: shelfId.name] ?: return
+		val state = shelfPagination[collectionSlug ?: habitCuisine ?: shelfId.name] ?: return
 		val outcome = getHomeShelfPage(
 			shelfId = shelfId,
 			pageNumber = pageNumber,
 			pageSize = HOME_SHELF_PAGE_SIZE,
 			collectionSlug = collectionSlug,
+			habitCuisine = habitCuisine,
 		)
 		val page = outcome.get()
 		if (page == null) {

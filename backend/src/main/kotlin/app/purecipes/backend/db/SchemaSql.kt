@@ -508,3 +508,18 @@ internal const val HOME_COLLECTION_RECIPES_ORDER_INDEX_SQL = """
 	CREATE INDEX IF NOT EXISTS idx_home_collection_recipes_order
 	ON home_collection_recipes (collection_id, position, recipe_id)
 """
+
+internal const val RECIPE_ACTIVITY_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS recipe_activity (
+		id BIGSERIAL PRIMARY KEY,
+		user_id BIGINT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+		recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+		event VARCHAR(32) NOT NULL,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)
+"""
+
+internal const val RECIPE_ACTIVITY_USER_CREATED_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_recipe_activity_user_created
+	ON recipe_activity (user_id, created_at)
+"""

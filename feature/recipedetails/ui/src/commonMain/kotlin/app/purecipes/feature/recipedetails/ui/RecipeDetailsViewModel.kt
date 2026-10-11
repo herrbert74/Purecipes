@@ -28,10 +28,12 @@ import app.purecipes.feature.measurement.domain.usecase.MarkMeasurementMismatchS
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.MeasurementPreferences
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeFormatHandling
 import com.github.michaelbull.result.get
@@ -53,6 +55,7 @@ private const val COOKBOOK_PICKER_PAGE_SIZE = 100
 class RecipeDetailsViewModel(
 	private val addFavoriteRecipe: AddFavoriteRecipeUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
+	private val recordRecipeActivity: RecordRecipeActivityUseCase,
 	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val markMeasurementMismatchSeen: MarkMeasurementMismatchSeenUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
@@ -115,6 +118,8 @@ class RecipeDetailsViewModel(
 	private var favoriteEventsJob: Job? = null
 
 	private var cookbookMembershipEventsJob: Job? = null
+
+	private var hasRecordedOpen = false
 
 	init {
 		viewModelScope.launch {
@@ -386,6 +391,17 @@ class RecipeDetailsViewModel(
 		}
 	}
 
+	private fun recordOpenIfNeeded() {
+		if (hasRecordedOpen || activeSessionKey == null) {
+			return
+		}
+		hasRecordedOpen = true
+		val id = recipeId
+		viewModelScope.launch {
+			recordRecipeActivity(id, RecipeActivityEvent.OPEN)
+		}
+	}
+
 	private fun loadRecipe(shouldTrackAnalytics: Boolean = true) {
 		viewModelScope.launch {
 			isLoading = true
@@ -398,6 +414,9 @@ class RecipeDetailsViewModel(
 			baseRecipeDetails = outcome.get()
 			applyMeasurementPreferences()
 			val loadedRecipe = baseRecipeDetails
+			if (loadedRecipe != null) {
+				recordOpenIfNeeded()
+			}
 			if (loadedRecipe != null && shouldTrackAnalytics) {
 				logBreadcrumb(CrashBreadcrumb.recipeOpened(recipeId))
 				trackEvent(

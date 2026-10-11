@@ -107,6 +107,7 @@ class HomeShelfViewModelTest {
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favorites),
 			shelfId = HomeShelfId.FAVORITES,
 			collectionSlug = null,
+			habitCuisine = null,
 			title = "Your favorites",
 			sessionKey = "user",
 		)
@@ -139,6 +140,7 @@ class HomeShelfViewModelTest {
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 		shelfId = shelfId,
 		collectionSlug = collectionSlug,
+		habitCuisine = null,
 		title = title,
 		sessionKey = null,
 	)

@@ -38,8 +38,29 @@ class HomeFeedAccessorTest {
 		api.homeShelfPages = mapOf(HomeShelfId.NEW to page)
 		val accessor = HomeFeedAccessor(HomeFeedRemoteDataSource(api))
 
-		accessor.getShelfPage(HomeShelfId.NEW, pageNumber = 2, pageSize = 12).get() shouldBe page
+		accessor.getShelfPage(
+			shelfId = HomeShelfId.NEW,
+			pageNumber = 2,
+			pageSize = 12,
+			habitCuisine = null,
+		).get() shouldBe page
 		api.getHomeShelfPageCalls shouldBe listOf("NEW")
+		api.getHomeShelfHabitCuisines shouldBe listOf(null)
+	}
+
+	@Test
+	fun `passes the habit cuisine when loading that shelf page`() = runTest {
+		val api = FakePurecipesApi()
+		val accessor = HomeFeedAccessor(HomeFeedRemoteDataSource(api))
+
+		accessor.getShelfPage(
+			shelfId = HomeShelfId.HABIT,
+			pageNumber = 2,
+			pageSize = 12,
+			habitCuisine = "Mexican",
+		)
+		api.getHomeShelfPageCalls shouldBe listOf("HABIT")
+		api.getHomeShelfHabitCuisines shouldBe listOf("Mexican")
 	}
 
 	@Test
