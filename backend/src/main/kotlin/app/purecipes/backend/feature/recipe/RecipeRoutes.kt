@@ -38,6 +38,10 @@ fun Route.recipeRoutes(
 			call.respondRecipeCookbooks(sessionService, dbProvider)
 		}
 
+		post("/{id}/activity") {
+			call.respondRecordRecipeActivity(sessionService, dbProvider)
+		}
+
 		get("/{id}") {
 			call.respondRecipeDetails(sessionService, dbProvider)
 		}

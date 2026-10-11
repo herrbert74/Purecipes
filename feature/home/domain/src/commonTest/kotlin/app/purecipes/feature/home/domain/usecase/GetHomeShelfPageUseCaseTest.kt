@@ -64,6 +64,7 @@ class GetHomeShelfPageUseCaseTest {
 			shelfId: HomeShelfId,
 			pageNumber: Int,
 			pageSize: Int,
+			ignored: String?,
 		): Outcome<SearchResultsPage> {
 			shelfCalls += 1
 			return page

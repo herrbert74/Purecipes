@@ -3,6 +3,8 @@ package app.purecipes.feature.recipedetails.data.datasource
 import app.purecipes.base.kotlin.result.Outcome
 import app.purecipes.shared.data.network.PurecipesApi
 import app.purecipes.shared.data.util.runCatchingApi
+import app.purecipes.shared.domain.model.RecipeActivityEvent
+import app.purecipes.shared.domain.model.RecipeActivityRequest
 import app.purecipes.shared.domain.model.RecipeDetails
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -17,4 +19,12 @@ class RecipeDetailsRemoteDataSource(
 	override suspend fun getRecipeDetails(recipeId: Int): Outcome<RecipeDetails> = runCatchingApi {
 		api.getRecipeDetails(recipeId)
 	}
+
+	override suspend fun recordRecipeActivity(recipeId: Int, event: RecipeActivityEvent): Outcome<Unit> =
+		runCatchingApi {
+			api.recordRecipeActivity(
+				recipeId = recipeId,
+				request = RecipeActivityRequest(event = event),
+			)
+		}
 }

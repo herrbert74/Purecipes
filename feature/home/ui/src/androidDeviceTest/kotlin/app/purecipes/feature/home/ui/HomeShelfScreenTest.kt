@@ -54,6 +54,7 @@ class HomeShelfScreenTest {
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
 			shelfId = HomeShelfId.COLLECTION,
 			collectionSlug = "this-week",
+			habitCuisine = null,
 			title = "This week",
 			sessionKey = null,
 		)

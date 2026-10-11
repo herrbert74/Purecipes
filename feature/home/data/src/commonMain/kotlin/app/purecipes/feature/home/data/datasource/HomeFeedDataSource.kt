@@ -15,6 +15,7 @@ interface HomeFeedDataSource {
 			shelfId: HomeShelfId,
 			pageNumber: Int,
 			pageSize: Int,
+			habitCuisine: String? = null,
 		): Outcome<SearchResultsPage>
 
 		suspend fun getCollectionPage(

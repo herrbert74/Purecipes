@@ -51,6 +51,7 @@ fun EntryProviderScope<NavKey>.installHomeShelfFlow(
 			title = destination.title,
 			shelfId = destination.shelfId,
 			collectionSlug = destination.collectionSlug,
+			habitCuisine = destination.habitCuisine,
 			onBack = onBack,
 			onRecipeSelect = onRecipeSelect,
 			modifier = Modifier.fillMaxSize(),

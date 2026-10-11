@@ -26,9 +26,11 @@ import app.purecipes.feature.library.domain.usecase.RemoveFavoriteRecipeUseCase
 import app.purecipes.feature.measurement.domain.usecase.ObserveMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.ProcessRecipeDetailsForMeasurementPreferencesUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.MeasurementPreferences
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeDetails
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
@@ -53,6 +55,7 @@ class StepByStepCookingViewModel(
 	private val createCookbook: CreateCookbookUseCase,
 	private val getCookbooksPage: GetCookbooksPageUseCase,
 	private val getRecipeDetails: GetRecipeDetailsUseCase,
+	private val recordRecipeActivity: RecordRecipeActivityUseCase,
 	private val observeMeasurementPreferences: ObserveMeasurementPreferencesUseCase,
 	private val processRecipeDetailsForMeasurementPreferences: ProcessRecipeDetailsForMeasurementPreferencesUseCase,
 	private val removeFavoriteRecipe: RemoveFavoriteRecipeUseCase,
@@ -103,6 +106,8 @@ class StepByStepCookingViewModel(
 
 	private var hasTrackedCookingCompleted = false
 
+	private var hasRecordedCookComplete = false
+
 	private var hasTrackedCookingAbandoned = false
 
 	private var favoriteEventsJob: Job? = null
@@ -136,6 +141,7 @@ class StepByStepCookingViewModel(
 		} else {
 			refreshFavoriteState()
 		}
+		recordCookCompleteIfNeeded()
 	}
 
 	fun previousStep() {
@@ -385,6 +391,18 @@ class StepByStepCookingViewModel(
 			trackCookingStepViewed()
 		}
 		trackCookingCompletedIfNeeded()
+		recordCookCompleteIfNeeded()
+	}
+
+	private fun recordCookCompleteIfNeeded() {
+		if (hasRecordedCookComplete || activeSessionKey == null || !isOnFinishPage()) {
+			return
+		}
+		hasRecordedCookComplete = true
+		val id = recipeId
+		viewModelScope.launch {
+			recordRecipeActivity(id, RecipeActivityEvent.COOK_COMPLETE)
+		}
 	}
 
 	private fun isOnFinishPage(): Boolean {

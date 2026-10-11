@@ -15,17 +15,19 @@ fun HomeShelfScreen(
 	onRecipeSelect: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	collectionSlug: String? = null,
+	habitCuisine: String? = null,
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: HomeShelfViewModel = assistedMetroViewModel<
 		HomeShelfViewModel,
 		HomeShelfViewModel.Factory,
 		>(
-		key = collectionSlug ?: shelfId.name,
+		key = collectionSlug ?: habitCuisine ?: shelfId.name,
 	) {
 		create(
 			shelfId = shelfId,
 			collectionSlug = collectionSlug,
+			habitCuisine = habitCuisine,
 			title = title,
 			sessionKey = sessionKey,
 		)

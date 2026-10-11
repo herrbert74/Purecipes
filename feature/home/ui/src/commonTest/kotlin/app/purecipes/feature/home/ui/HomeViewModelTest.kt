@@ -5,6 +5,7 @@ import app.purecipes.feature.home.domain.usecase.GetHomeFeedUseCase
 import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestStatus
@@ -13,11 +14,13 @@ import app.purecipes.shared.domain.model.HomeCollectionSource
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
@@ -144,6 +147,59 @@ class HomeViewModelTest {
 	}
 
 	@Test
+	fun `activity shelf loads the next page for its cuisine`() = runViewModelTest {
+		val firstPage = List(HOME_SHELF_PAGE_SIZE) { index ->
+			RecipeSummary(
+				id = index + 1,
+				title = "Mexican ${index + 1}",
+				cuisine = null,
+				imageUrl = null,
+				totalTime = 20,
+			)
+		}
+		val extra = RecipeSummary(
+			id = HOME_SHELF_PAGE_SIZE + 1,
+			title = "Mexican ${HOME_SHELF_PAGE_SIZE + 1}",
+			cuisine = null,
+			imageUrl = null,
+			totalTime = 20,
+		)
+		val shelf = HomeShelf(
+			id = HomeShelfId.HABIT,
+			title = "Mexican",
+			recipes = firstPage,
+			habitCuisine = "Mexican",
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(HomeFeed(shelves = listOf(shelf))),
+		)
+		homeFeedRepository.habitShelfPages = mapOf(
+			"Mexican" to Ok(
+				SearchResultsPage(
+					items = listOf(extra),
+					pageNumber = 2,
+					pageSize = HOME_SHELF_PAGE_SIZE,
+					totalMatches = HOME_SHELF_PAGE_SIZE + 1,
+				),
+			),
+		)
+		val viewModel = homeViewModel(homeFeedRepository)
+		advanceUntilIdle()
+
+		val state = viewModel.shelfPagination.getValue(shelf.shelfKey())
+		state.requestPage(
+			initialPageKey = 1,
+			requestedPageKey = 2,
+			items = state.allItems,
+		)
+		advanceUntilIdle()
+
+		state.allItems.last().title shouldBe extra.title
+		homeFeedRepository.shelfPageCalls shouldBe listOf(HomeShelfId.HABIT)
+		homeFeedRepository.habitCuisineCalls shouldBe listOf("Mexican")
+	}
+
+	@Test
 	fun `closing feature requests refreshes the home vote and suggest card`() = runViewModelTest {
 		val recipe = RecipeSummary(
 			id = 1,
@@ -189,6 +245,53 @@ class HomeViewModelTest {
 
 		viewModel.homeFeed.featureRequest shouldBe suggested
 		viewModel.shelfPagination.getValue(HomeShelfId.NEW.name).allItems.single().title shouldBe recipe.title
+	}
+
+	@Test
+	fun `every recipe details view refreshes recently viewed`() = runViewModelTest {
+		val first = recipeSummary(id = 1, title = "First")
+		val second = recipeSummary(id = 2, title = "Second")
+		val newShelf = HomeShelf(
+			id = HomeShelfId.NEW,
+			title = "New",
+			recipes = listOf(first),
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(HomeFeed(shelves = listOf(newShelf))),
+		)
+		val activity = FakeRecipeActivityRepository()
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			recipeActivityRepository = activity,
+			sessionKey = "user",
+		)
+		advanceUntilIdle()
+
+		homeFeedRepository.result = Ok(
+			HomeFeed(
+				shelves = listOf(
+					newShelf,
+					recentlyViewedShelf(second),
+				),
+			),
+		)
+		activity.record(second.id, RecipeActivityEvent.OPEN)
+		advanceUntilIdle()
+
+		recentlyViewedTitles(viewModel) shouldBe listOf("Second")
+
+		homeFeedRepository.result = Ok(
+			HomeFeed(
+				shelves = listOf(
+					newShelf,
+					recentlyViewedShelf(first, second),
+				),
+			),
+		)
+		activity.record(first.id, RecipeActivityEvent.OPEN)
+		advanceUntilIdle()
+
+		recentlyViewedTitles(viewModel) shouldBe listOf("First", "Second")
 	}
 
 	@Test
@@ -297,15 +400,30 @@ class HomeViewModelTest {
 		homeFeedRepository: FakeHomeFeedRepository,
 		homeFeedRefresh: HomeFeedRefreshCoordinator = HomeFeedRefreshCoordinator(),
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		recipeActivityRepository: FakeRecipeActivityRepository = FakeRecipeActivityRepository(),
 		sessionKey: String? = null,
 	) = HomeViewModel(
 		getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
 		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 		homeFeedRefresh = homeFeedRefresh,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+		observeRecipeViews = ObserveRecipeViewsUseCase(recipeActivityRepository),
 		searchReadiness = SearchReadinessCoordinator(),
 		sessionKey = sessionKey,
 	)
+
+	private fun recentlyViewedShelf(vararg recipes: RecipeSummary) = HomeShelf(
+		id = HomeShelfId.RECENTLY_VIEWED,
+		title = "Recently viewed",
+		recipes = recipes.toList(),
+	)
+
+	private fun recentlyViewedTitles(viewModel: HomeViewModel): List<String> {
+		return viewModel.homeFeed.shelves
+			.first { shelf -> shelf.id == HomeShelfId.RECENTLY_VIEWED }
+			.recipes
+			.map { recipe -> recipe.title }
+	}
 
 	private fun recipeSummary(
 		id: Int,

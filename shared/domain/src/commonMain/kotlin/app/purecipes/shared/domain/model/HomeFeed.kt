@@ -12,6 +12,7 @@ enum class HomeShelfId {
 	QUICK,
 	FAVORITES,
 	HABIT,
+	RECENTLY_VIEWED,
 	COLLECTION,
 }
 
@@ -30,9 +31,10 @@ data class HomeShelf(
 	val recipes: List<RecipeSummary> = emptyList(),
 	val collectionSlug: String? = null,
 	val collectionSource: HomeCollectionSource? = null,
+	val habitCuisine: String? = null,
 )
 
-fun HomeShelf.shelfKey(): String = collectionSlug ?: id.name
+fun HomeShelf.shelfKey(): String = collectionSlug ?: habitCuisine ?: id.name
 
 @Serializable
 data class HomeFeed(

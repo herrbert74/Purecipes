@@ -14,6 +14,8 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -233,6 +235,96 @@ class HomeFeedRouteTest {
 	}
 
 	@Test
+	fun `recently viewed is the newest open and stays hidden when signed out`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(db, HomeRecipeSeed(id = 1, title = "Early", createdAt = "2020-01-01 00:00:00"))
+		insertHomeRecipe(db, HomeRecipeSeed(id = 2, title = "Later", createdAt = "2021-01-01 00:00:00"))
+		insertHomeRecipe(db, HomeRecipeSeed(id = 3, title = "Cooked only", createdAt = "2022-01-01 00:00:00"))
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 4,
+				title = "Private mine",
+				createdAt = "2023-01-01 00:00:00",
+				isPrivate = true,
+				createdByUserId = 1,
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 5,
+				title = "Private theirs",
+				createdAt = "2023-02-01 00:00:00",
+				isPrivate = true,
+			),
+		)
+		insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 2, event = "OPEN", createdAt = "2024-01-02 00:00:00")
+		insertRecipeActivity(db, recipeId = 2, event = "OPEN", createdAt = "2024-03-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 3, event = "COOK_COMPLETE", createdAt = "2024-04-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 4, event = "OPEN", createdAt = "2024-02-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 5, event = "OPEN", createdAt = "2024-05-01 00:00:00")
+		insertFavorite(db, recipeId = 2, createdAt = "2024-06-01 00:00:00")
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val signedOut = homeFeed(localHour = BREAKFAST_HOUR)
+		signedOut.shelves.none { shelf -> shelf.id == HomeShelfId.RECENTLY_VIEWED } shouldBe true
+
+		val recentlyViewed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+			.shelf(HomeShelfId.RECENTLY_VIEWED)
+		recentlyViewed.title shouldBe "Recently viewed"
+		recentlyViewed.recipes.map { recipe -> recipe.title } shouldContainExactly listOf(
+			"Later",
+			"Private mine",
+			"Early",
+		)
+		recentlyViewed.recipes.map { recipe -> recipe.isFavorite } shouldContainExactly listOf(true, false, false)
+	}
+
+	@Test
+	fun `recently viewed page follows the latest open`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		repeat(HOME_SHELF_PAGE_SIZE + 1) { index ->
+			val id = index + 1
+			val day = id.toString().padStart(2, '0')
+			insertHomeRecipe(
+				db,
+				HomeRecipeSeed(id = id, title = "Opened $id", createdAt = "2020-01-01 00:00:00"),
+			)
+			insertRecipeActivity(
+				db,
+				recipeId = id,
+				event = "OPEN",
+				createdAt = "2024-01-$day 00:00:00",
+			)
+		}
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val signedOutPage = shelfPage(shelfId = HomeShelfId.RECENTLY_VIEWED, pageNumber = 1)
+		signedOutPage.totalMatches shouldBe 0
+		signedOutPage.items shouldBe emptyList()
+
+		val firstPage = shelfPage(
+			shelfId = HomeShelfId.RECENTLY_VIEWED,
+			pageNumber = 1,
+			accessToken = "session-token",
+		)
+		firstPage.totalMatches shouldBe HOME_SHELF_PAGE_SIZE + 1
+		firstPage.items.map { recipe -> recipe.title } shouldContainExactly
+			(HOME_SHELF_PAGE_SIZE + 1 downTo 2).map { index -> "Opened $index" }
+
+		val secondPage = shelfPage(
+			shelfId = HomeShelfId.RECENTLY_VIEWED,
+			pageNumber = 2,
+			accessToken = "session-token",
+		)
+		secondPage.items.map { recipe -> recipe.title } shouldContainExactly listOf("Opened 1")
+	}
+
+	@Test
 	fun `feature request card is the top open request this user has not voted on`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		seedAppUsersForSearchRouteTest(db)
@@ -401,7 +493,7 @@ class HomeFeedRouteTest {
 		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
 		val habit = feed.shelf(HomeShelfId.HABIT)
 		val favoriteIndex = feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.FAVORITES }
-		feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe favoriteIndex + 1
+		favoriteIndex shouldBe feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.HABIT } + 1
 		habit.title shouldBe Cuisine.ITALIAN.displayName
 		habit.filters.cuisines shouldBe setOf(Cuisine.ITALIAN)
 		habit.recipes.map { recipe -> recipe.title } shouldContainExactly listOf(
@@ -539,6 +631,368 @@ class HomeFeedRouteTest {
 		)
 		secondPage.items.map { recipe -> recipe.title } shouldContainExactly listOf("Italian 1")
 		secondPage.totalMatches shouldBe HOME_SHELF_PAGE_SIZE + 1
+	}
+
+	@Test
+	fun `activity shelf stays hidden until three opens or finished cooks share a cuisine`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 1, title = "Mexican", createdAt = "2022-01-01 00:00:00", cuisine = "Mexican"),
+		)
+		insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 1, event = "COOK_COMPLETE", createdAt = "2024-01-02 00:00:00")
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		feed.shelves.none { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe true
+	}
+
+	@Test
+	fun `activity shelf is the cuisine with the most events in catalog order`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 1, title = "Newer Mexican", createdAt = "2022-01-01 00:00:00", cuisine = "Mexican"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 2,
+				title = "Complete Mexican",
+				createdAt = "2019-01-01 00:00:00",
+				cuisine = "Mexican",
+				imageUrl = PHOTO,
+				description = "Ready",
+				mealType = "DINNER",
+				totalTime = 40,
+				step = "Cook",
+				ingredient = "Beans",
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 3, title = "Italian", createdAt = "2021-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 1, event = "COOK_COMPLETE", createdAt = "2024-01-02 00:00:00")
+		insertRecipeActivity(db, recipeId = 2, event = "OPEN", createdAt = "2024-01-03 00:00:00")
+		insertRecipeActivity(db, recipeId = 2, event = "COOK_COMPLETE", createdAt = "2024-01-04 00:00:00")
+		repeat(ACTIVITY_HABIT_MINIMUM_EVENTS) { index ->
+			insertRecipeActivity(
+				db,
+				recipeId = 3,
+				event = "OPEN",
+				createdAt = "2024-02-0${index + 1} 00:00:00",
+			)
+		}
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val habits = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+			.shelves
+			.filter { shelf -> shelf.id == HomeShelfId.HABIT }
+		habits.map { shelf -> shelf.title } shouldContainExactly listOf(
+			Cuisine.MEXICAN.displayName,
+			Cuisine.ITALIAN.displayName,
+		)
+		habits.first().habitCuisine shouldBe Cuisine.MEXICAN.displayName
+		habits.first().filters.cuisines shouldBe setOf(Cuisine.MEXICAN)
+		habits.first().recipes.map { recipe -> recipe.title } shouldContainExactly listOf(
+			"Complete Mexican",
+			"Newer Mexican",
+		)
+	}
+
+	@Test
+	fun `activity shelf breaks a cuisine tie with the newest event`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertActivityCuisine(
+			db,
+			cuisine = "Italian",
+			titlePrefix = "Italian",
+			firstId = 1,
+			latestEventAt = "2024-06-01 00:00:00",
+		)
+		insertActivityCuisine(
+			db,
+			cuisine = "Mexican",
+			titlePrefix = "Mexican",
+			firstId = 4,
+			latestEventAt = "2025-01-01 00:00:00",
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val habits = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+			.shelves
+			.filter { shelf -> shelf.id == HomeShelfId.HABIT }
+		habits.map { shelf -> shelf.title } shouldContainExactly listOf(
+			Cuisine.MEXICAN.displayName,
+			Cuisine.ITALIAN.displayName,
+		)
+	}
+
+	@Test
+	fun `activity shelf breaks a remaining cuisine tie alphabetically`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val eventAt = "2024-06-01 00:00:00"
+		insertActivityCuisine(
+			db,
+			cuisine = "Mexican",
+			titlePrefix = "Mexican",
+			firstId = 1,
+			latestEventAt = eventAt,
+		)
+		insertActivityCuisine(
+			db,
+			cuisine = "Italian",
+			titlePrefix = "Italian",
+			firstId = 4,
+			latestEventAt = eventAt,
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val habits = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+			.shelves
+			.filter { shelf -> shelf.id == HomeShelfId.HABIT }
+		habits.map { shelf -> shelf.title } shouldContainExactly listOf(
+			Cuisine.ITALIAN.displayName,
+			Cuisine.MEXICAN.displayName,
+		)
+	}
+
+	@Test
+	fun `a private cook counts toward the activity cuisine and stays off the shelf`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 1, title = "Public Italian", createdAt = "2021-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 2, title = "Another Italian", createdAt = "2022-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 3,
+				title = "Private Italian",
+				createdAt = "2023-01-01 00:00:00",
+				cuisine = "Italian",
+				isPrivate = true,
+				createdByUserId = 1,
+			),
+		)
+		insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 2, event = "OPEN", createdAt = "2024-01-02 00:00:00")
+		insertRecipeActivity(db, recipeId = 3, event = "COOK_COMPLETE", createdAt = "2024-01-03 00:00:00")
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val habit = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token").shelf(HomeShelfId.HABIT)
+		habit.title shouldBe Cuisine.ITALIAN.displayName
+		habit.habitCuisine shouldBe Cuisine.ITALIAN.displayName
+		habit.recipes.map { recipe -> recipe.title } shouldContainExactly listOf(
+			"Another Italian",
+			"Public Italian",
+		)
+	}
+
+	@Test
+	fun `activity shelf skips the favorites habit cuisine and home keeps two habit shelves`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertCuisineFavorites(
+			db = db,
+			cuisine = "Italian",
+			titlePrefix = "Italian",
+			firstId = 1,
+			latestFavoriteAt = "2024-01-01 00:00:00",
+		)
+		insertActivityCuisine(
+			db,
+			cuisine = "Mexican",
+			titlePrefix = "Mexican",
+			firstId = 4,
+			latestEventAt = "2024-06-01 00:00:00",
+		)
+		insertActivityCuisine(
+			db,
+			cuisine = "Japanese",
+			titlePrefix = "Japanese",
+			firstId = 7,
+			latestEventAt = "2024-05-01 00:00:00",
+		)
+		insertActivityCuisine(
+			db,
+			cuisine = "French",
+			titlePrefix = "French",
+			firstId = 10,
+			latestEventAt = "2024-04-01 00:00:00",
+		)
+		repeat(ACTIVITY_HABIT_MINIMUM_EVENTS) { index ->
+			insertRecipeActivity(
+				db,
+				recipeId = 4,
+				event = "COOK_COMPLETE",
+				createdAt = "2024-07-0${index + 1} 00:00:00",
+			)
+		}
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		val habits = feed.shelves.filter { shelf -> shelf.id == HomeShelfId.HABIT }
+		val recentlyViewedIndex = feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.RECENTLY_VIEWED }
+		val favoriteIndex = feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.FAVORITES }
+		feed.shelves.indexOfFirst { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe recentlyViewedIndex + 1
+		favoriteIndex shouldBe feed.shelves.indexOfLast { shelf -> shelf.id == HomeShelfId.HABIT } + 1
+		habits.map { shelf -> shelf.title } shouldContainExactly listOf(
+			Cuisine.ITALIAN.displayName,
+			Cuisine.MEXICAN.displayName,
+		)
+		habits.map { shelf -> shelf.habitCuisine } shouldContainExactly listOf(null, Cuisine.MEXICAN.displayName)
+	}
+
+	@Test
+	fun `activity shelf stays hidden when signed out`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertActivityCuisine(
+			db,
+			cuisine = "Italian",
+			titlePrefix = "Italian",
+			firstId = 1,
+			latestEventAt = "2024-06-01 00:00:00",
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR)
+		feed.shelves.none { shelf -> shelf.id == HomeShelfId.HABIT } shouldBe true
+	}
+
+	@Test
+	fun `activity shelf page follows habitCuisine`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val newestFirst = (HOME_SHELF_PAGE_SIZE downTo 0).toList()
+		newestFirst.forEach { index ->
+			insertHomeRecipe(
+				db,
+				HomeRecipeSeed(
+					id = index + 1,
+					title = "Italian ${index + 1}",
+					createdAt = "2024-06-01 00:${index.toString().padStart(2, '0')}:00",
+					cuisine = "Italian",
+				),
+			)
+		}
+		repeat(ACTIVITY_HABIT_MINIMUM_EVENTS) { index ->
+			insertRecipeActivity(db, recipeId = index + 1, event = "OPEN", createdAt = "2025-01-0${index + 1} 00:00:00")
+		}
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val favoritesPage = shelfPage(
+			shelfId = HomeShelfId.HABIT,
+			pageNumber = 1,
+			accessToken = "session-token",
+		)
+		favoritesPage.totalMatches shouldBe 0
+		favoritesPage.items shouldBe emptyList()
+
+		val firstPage = shelfPage(
+			shelfId = HomeShelfId.HABIT,
+			pageNumber = 1,
+			accessToken = "session-token",
+			habitCuisine = Cuisine.ITALIAN.displayName,
+		)
+		firstPage.totalMatches shouldBe HOME_SHELF_PAGE_SIZE + 1
+		firstPage.items.map { recipe -> recipe.title } shouldContainExactly
+			(HOME_SHELF_PAGE_SIZE + 1 downTo 2).map { index -> "Italian $index" }
+
+		val secondPage = shelfPage(
+			shelfId = HomeShelfId.HABIT,
+			pageNumber = 2,
+			accessToken = "session-token",
+			habitCuisine = Cuisine.ITALIAN.displayName,
+		)
+		secondPage.items.map { recipe -> recipe.title } shouldContainExactly listOf("Italian 1")
+	}
+
+	@Test
+	fun `unknown habit cuisine is rejected`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		application { module(db = db) }
+
+		val response = client.get(
+			"/home/shelves/${HomeShelfId.HABIT.name}?localHour=$BREAKFAST_HOUR&habitCuisine=NotACuisine",
+		)
+
+		response.status shouldBe HttpStatusCode.BadRequest
+	}
+
+	@Test
+	fun `recording an open requires a signed-in user and a visible recipe`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 1, title = "Public Italian", createdAt = "2021-01-01 00:00:00", cuisine = "Italian"),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 2,
+				title = "Private Italian",
+				createdAt = "2021-02-01 00:00:00",
+				cuisine = "Italian",
+				isPrivate = true,
+			),
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val signedOut = client.post("/recipes/1/activity") {
+			header(HttpHeaders.ContentType, "application/json")
+			setBody("""{"event":"OPEN"}""")
+		}
+		signedOut.status shouldBe HttpStatusCode.Unauthorized
+
+		val missing = client.post("/recipes/99/activity") {
+			header(HttpHeaders.Authorization, "Bearer session-token")
+			header(HttpHeaders.ContentType, "application/json")
+			setBody("""{"event":"OPEN"}""")
+		}
+		missing.status shouldBe HttpStatusCode.NotFound
+
+		val hidden = client.post("/recipes/2/activity") {
+			header(HttpHeaders.Authorization, "Bearer session-token")
+			header(HttpHeaders.ContentType, "application/json")
+			setBody("""{"event":"COOK_COMPLETE"}""")
+		}
+		hidden.status shouldBe HttpStatusCode.NotFound
+
+		val invalid = client.post("/recipes/1/activity") {
+			header(HttpHeaders.Authorization, "Bearer session-token")
+			header(HttpHeaders.ContentType, "application/json")
+			setBody("""{"event":"SAVED"}""")
+		}
+		invalid.status shouldBe HttpStatusCode.BadRequest
+
+		repeat(ACTIVITY_HABIT_MINIMUM_EVENTS) {
+			val recorded = client.post("/recipes/1/activity") {
+				header(HttpHeaders.Authorization, "Bearer session-token")
+				header(HttpHeaders.ContentType, "application/json")
+				setBody("""{"event":"OPEN"}""")
+			}
+			recorded.status shouldBe HttpStatusCode.NoContent
+		}
+
+		val habit = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token").shelf(HomeShelfId.HABIT)
+		habit.title shouldBe Cuisine.ITALIAN.displayName
+		habit.habitCuisine shouldBe Cuisine.ITALIAN.displayName
+		habit.recipes.map { recipe -> recipe.title } shouldContainExactly listOf("Public Italian")
 	}
 
 	@Test
@@ -756,9 +1210,11 @@ class HomeFeedRouteTest {
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		accessToken: String? = null,
+		habitCuisine: String? = null,
 	): SearchResultsPage {
+		val cuisineQuery = if (habitCuisine == null) "" else "&habitCuisine=$habitCuisine"
 		val path = "/home/shelves/${shelfId.name}" +
-			"?localHour=$BREAKFAST_HOUR&pageNumber=$pageNumber&pageSize=$HOME_SHELF_PAGE_SIZE"
+			"?localHour=$BREAKFAST_HOUR&pageNumber=$pageNumber&pageSize=$HOME_SHELF_PAGE_SIZE$cuisineQuery"
 		val response = client.get(path) {
 			if (accessToken != null) {
 				header(HttpHeaders.Authorization, "Bearer $accessToken")
@@ -935,6 +1391,54 @@ private fun insertHomeCollection(db: Db, seed: HomeCollectionSeed) {
 	}
 }
 
+private fun insertRecipeActivity(
+	db: Db,
+	recipeId: Int,
+	event: String,
+	createdAt: String,
+) {
+	db.dataSource.connection.use { connection ->
+		connection.prepareStatement(
+			"""
+				INSERT INTO recipe_activity (user_id, recipe_id, event, created_at)
+				VALUES (1, ?, ?, ?)
+			""".trimIndent(),
+		).use { statement ->
+			statement.setInt(1, recipeId)
+			statement.setString(2, event)
+			statement.setTimestamp(3, Timestamp.valueOf(createdAt))
+			statement.executeUpdate()
+		}
+	}
+}
+
+private fun insertActivityCuisine(
+	db: Db,
+	cuisine: String,
+	titlePrefix: String,
+	firstId: Int,
+	latestEventAt: String,
+) {
+	repeat(ACTIVITY_HABIT_MINIMUM_EVENTS) { index ->
+		val id = firstId + index
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = id,
+				title = "$titlePrefix $id",
+				createdAt = "2021-01-0${index + 1} 00:00:00",
+				cuisine = cuisine,
+			),
+		)
+		val createdAt = if (index == ACTIVITY_HABIT_MINIMUM_EVENTS - 1) {
+			latestEventAt
+		} else {
+			"2024-01-0${index + 1} 00:00:00"
+		}
+		insertRecipeActivity(db, recipeId = id, event = "OPEN", createdAt = createdAt)
+	}
+}
+
 private fun insertFavorite(db: Db, recipeId: Int, createdAt: String) {
 	db.dataSource.connection.use { connection ->
 		connection.prepareStatement(
@@ -1051,5 +1555,6 @@ private const val DINNER_HOUR = 19
 private const val QUICK_SHELF_BELOW_MINIMUM = 3
 private const val QUICK_SHELF_MINIMUM = 4
 private const val HABIT_SHELF_MINIMUM_FAVORITES = 3
+private const val ACTIVITY_HABIT_MINIMUM_EVENTS = 3
 private const val VOTER_ID_BASE = 100L
 private const val VOTE_ID_STRIDE = 100

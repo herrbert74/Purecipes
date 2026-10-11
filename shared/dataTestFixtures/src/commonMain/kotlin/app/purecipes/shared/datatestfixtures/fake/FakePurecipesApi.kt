@@ -27,6 +27,8 @@ import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.PantryDelta
+import app.purecipes.shared.domain.model.RecipeActivityEvent
+import app.purecipes.shared.domain.model.RecipeActivityRequest
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeNutritionEstimateRequest
 import app.purecipes.shared.domain.model.RecipeNutritionEstimateResponse
@@ -76,6 +78,11 @@ class FakePurecipesApi(
 
 	var getHomeShelfPageCalls: List<String> = emptyList()
 		private set
+
+	var getHomeShelfHabitCuisines: List<String?> = emptyList()
+		private set
+
+	val recordedRecipeActivity = mutableListOf<Pair<Int, RecipeActivityEvent>>()
 
 	var lastLocalHour: Int? = null
 		private set
@@ -143,8 +150,10 @@ class FakePurecipesApi(
 		localHour: Int,
 		pageNumber: Int,
 		pageSize: Int,
+		habitCuisine: String?,
 	): SearchResultsPage {
 		getHomeShelfPageCalls = getHomeShelfPageCalls + shelfId
+		getHomeShelfHabitCuisines = getHomeShelfHabitCuisines + habitCuisine
 		lastLocalHour = localHour
 		val shelf = HomeShelfId.entries.firstOrNull { entry -> entry.name == shelfId }
 		return homeShelfPages[shelf] ?: SearchResultsPage(
@@ -167,6 +176,10 @@ class FakePurecipesApi(
 			pageSize = pageSize,
 			totalMatches = 0,
 		)
+	}
+
+	override suspend fun recordRecipeActivity(recipeId: Int, request: RecipeActivityRequest) {
+		recordedRecipeActivity += recipeId to request.event
 	}
 
 	override suspend fun getRecipeDetails(recipeId: Int): RecipeDetails {

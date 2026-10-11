@@ -21,7 +21,7 @@ A row is live when all of these are true:
 
 Dates are compared with the database clock (`CURRENT_TIMESTAMP`). An empty start means "already started". An empty end means "no end date". The end instant itself is not included: a shelf with `ends_at` of Monday 00:00 is gone at that moment.
 
-Live shelves are appended after the automatic shelves (New, Right now, Quick, and, when the person is signed in, Your favorites and the habit shelf). Several live shelves can show at once. They are ordered by `position`, then by `id`.
+Live shelves are appended after the automatic shelves (New, Right now, Quick, and, when the person is signed in, Recently viewed, the favorites habit shelf, habit shelves from opens and finished cooks, and Your favorites). Several live shelves can show at once. They are ordered by `position`, then by `id`.
 
 A shelf is left out when it has nothing to show: an editorial list whose recipes are all private or missing, or a query whose filters match nothing. A query row whose `filter_payload` is not valid JSON is also left out. The rest of Home still loads.
 
