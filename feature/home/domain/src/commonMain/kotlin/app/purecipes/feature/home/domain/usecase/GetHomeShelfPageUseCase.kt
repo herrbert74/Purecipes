@@ -15,5 +15,10 @@ class GetHomeShelfPageUseCase(
 		shelfId: HomeShelfId,
 		pageNumber: Int,
 		pageSize: Int,
-	): Outcome<SearchResultsPage> = repository.getShelfPage(shelfId, pageNumber, pageSize)
+		collectionSlug: String? = null,
+	): Outcome<SearchResultsPage> = if (collectionSlug.isNullOrBlank()) {
+		repository.getShelfPage(shelfId, pageNumber, pageSize)
+	} else {
+		repository.getCollectionPage(collectionSlug, pageNumber, pageSize)
+	}
 }

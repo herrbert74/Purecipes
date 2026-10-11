@@ -233,7 +233,6 @@ internal fun recipeSearchViewModelForDeviceTest(
 	filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 	getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 	searchRecipes = SearchRecipesUseCase(searchRepository),
-	getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 	trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 	logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 	sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),

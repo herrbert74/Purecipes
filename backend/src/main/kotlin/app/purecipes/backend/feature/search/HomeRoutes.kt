@@ -28,6 +28,9 @@ fun Route.homeRoutes(
 	get("/home/shelves/{shelfId}") {
 		call.respondShelfPage(sessionService, dbProvider)
 	}
+	get("/home/collections/{slug}") {
+		call.respondCollectionPage(sessionService, dbProvider)
+	}
 }
 
 private suspend fun ApplicationCall.respondHome(
@@ -92,8 +95,47 @@ private suspend fun ApplicationCall.respondShelfPage(
 	)
 }
 
+private suspend fun ApplicationCall.respondCollectionPage(
+	sessionService: SessionService,
+	dbProvider: () -> Db,
+) {
+	val slug = parameters["slug"]?.trim().orEmpty()
+	if (!COLLECTION_SLUG.matches(slug)) {
+		respond(
+			HttpStatusCode.BadRequest,
+			ErrorResponse(
+				message = "Invalid request",
+				detail = "slug must be a home collection slug",
+			),
+		)
+		return
+	}
+	val pageNumber = request.queryParameters["pageNumber"]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+	val pageSize = request.queryParameters["pageSize"]?.toIntOrNull() ?: HOME_SHELF_PAGE_SIZE
+	val repository = HomeFeedRepository(dbProvider().dataSource)
+	val page = repository.loadCollectionPage(
+		userId = optionalAuthenticatedUserId(sessionService),
+		slug = slug,
+		pageNumber = pageNumber,
+		pageSize = pageSize,
+	)
+	if (page == null) {
+		respond(
+			HttpStatusCode.NotFound,
+			ErrorResponse(
+				message = "Home collection not found",
+				detail = "No live home collection found for slug: $slug",
+			),
+		)
+	} else {
+		respond(page)
+	}
+}
+
 private fun clockHourWhenMissing(rawHour: String?): Int? = if (rawHour == null) {
 	LocalTime.now(ZoneId.systemDefault()).hour
 } else {
 	null
 }
+
+private val COLLECTION_SLUG = Regex("^[a-z0-9]+(?:-[a-z0-9]+)*$")

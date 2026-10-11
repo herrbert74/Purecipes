@@ -105,7 +105,7 @@ class HomeScreenTest {
 			PurecipesTheme {
 				if (showHome) {
 					HomeScreen(
-						onOpenSearch = { _, _ ->
+						onOpenShelf = {
 							showHome = false
 						},
 						viewModel = viewModel,

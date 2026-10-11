@@ -36,6 +36,18 @@ class HomeFeedRemoteDataSource(
 		)
 	}
 
+	override suspend fun getCollectionPage(
+		slug: String,
+		pageNumber: Int,
+		pageSize: Int,
+	): Outcome<SearchResultsPage> = runCatchingApi {
+		api.getHomeCollectionPage(
+			slug = slug,
+			pageNumber = pageNumber,
+			pageSize = pageSize,
+		)
+	}
+
 	private fun localHour(): Int =
 		Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
 }

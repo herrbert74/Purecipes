@@ -137,9 +137,7 @@ class MainScreenHardwareBackTest {
 									HomeScreen(
 										modifier = Modifier.fillMaxSize(),
 										onRecipeSelect = mainViewModel::onRecipeSelected,
-										onOpenSearch = { _, _ ->
-											mainViewModel.navigator.replaceTabRoot(SearchDestination())
-										},
+										onOpenShelf = { _ -> },
 										viewModel = homeViewModel,
 									)
 								}

@@ -27,7 +27,6 @@ import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -836,7 +835,6 @@ private fun recipeSearchViewModelForTest(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(settingsRepository),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
-		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 		trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),

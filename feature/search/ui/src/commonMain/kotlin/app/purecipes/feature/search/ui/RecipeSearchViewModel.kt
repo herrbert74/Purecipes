@@ -16,7 +16,6 @@ import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
-import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -36,7 +35,6 @@ import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.ExcludedIngredientsDelta
-import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -67,7 +65,6 @@ class RecipeSearchViewModel(
 	private val filterRecipesForMeasurementPreferences: FilterRecipesForMeasurementPreferencesUseCase,
 	private val getMeasurementPreferences: GetMeasurementPreferencesUseCase,
 	private val searchRecipes: SearchRecipesUseCase,
-	private val getFavoriteRecipesPage: GetFavoriteRecipesPageUseCase,
 	private val trackEvent: TrackEventUseCase,
 	private val logBreadcrumb: LogBreadcrumbUseCase,
 	private val sendHandledException: SendHandledExceptionUseCase,
@@ -131,8 +128,6 @@ class RecipeSearchViewModel(
 	var isIngredientMatchLoading by mutableStateOf(false)
 		private set
 
-	private var isSeeAllActive by mutableStateOf(false)
-	private var showsFavoritesResults by mutableStateOf(false)
 	private var showsIngredientResults by mutableStateOf(false)
 
 	private var ingredientMatchJob: Job? = null
@@ -183,15 +178,7 @@ class RecipeSearchViewModel(
 			if (launch.openFiltersOnStart) {
 				isFilterSheetVisible = true
 			}
-			if (launch.seeAllShelf != null || !launch.initialFilters.isEmpty) {
-				onFiltersChange(
-					filters = launch.initialFilters,
-					search = true,
-					seeAllShelf = launch.seeAllShelf,
-				)
-			} else {
-				doSearch()
-			}
+			doSearch()
 			observeSearchPreferences().collect { preferences ->
 				if (preferences != searchPreferences) {
 					searchPreferences = preferences
@@ -251,15 +238,11 @@ class RecipeSearchViewModel(
 	fun onSearchBarExpandedChange(expanded: Boolean) {
 		if (expanded == isSearchBarActive) return
 		if (expanded) {
-			isSeeAllActive = false
-			showsFavoritesResults = false
 			isSearchBarActive = true
 			viewModelScope.launch { doSearch() }
 		} else {
 			isSearchBarActive = false
 			searchQuery = ""
-			isSeeAllActive = false
-			showsFavoritesResults = false
 			showsIngredientResults = false
 			viewModelScope.launch { doSearch() }
 		}
@@ -268,18 +251,10 @@ class RecipeSearchViewModel(
 	fun onFiltersChange(
 		filters: SearchFilters,
 		search: Boolean = false,
-		seeAllShelf: HomeShelfId? = null,
 	) {
-		val opensUnfilteredShelf = seeAllShelf == HomeShelfId.NEW || seeAllShelf == HomeShelfId.FAVORITES
-		showsFavoritesResults = seeAllShelf == HomeShelfId.FAVORITES
-		isSeeAllActive = opensUnfilteredShelf
-		if (opensUnfilteredShelf) {
-			viewModelScope.launch { doSearch() }
-		} else {
-			activeFilters = if (isPremium) filters else filters.withoutPremiumFilters()
-			if (search) {
-				persistFilterSheetChangesAndSearch()
-			}
+		activeFilters = if (isPremium) filters else filters.withoutPremiumFilters()
+		if (search) {
+			persistFilterSheetChangesAndSearch()
 		}
 	}
 
@@ -494,18 +469,14 @@ class RecipeSearchViewModel(
 
 	private suspend fun loadPageOfResults(pageNumber: Int) {
 		val preferences = getMeasurementPreferences()
-		val outcome = if (showsFavoritesResults) {
-			getFavoriteRecipesPage(pageNumber, PAGE_SIZE)
-		} else {
-			searchRecipes(
-				searchQuery,
-				filtersForSearch(),
-				keyIngredients = keyIngredientsForSearch(),
-				pageNumber = pageNumber,
-				pageSize = PAGE_SIZE,
-				applyRecipeFilters = applyRecipeFiltersForSearch(),
-			)
-		}
+		val outcome = searchRecipes(
+			searchQuery,
+			filtersForSearch(),
+			keyIngredients = keyIngredientsForSearch(),
+			pageNumber = pageNumber,
+			pageSize = PAGE_SIZE,
+			applyRecipeFilters = applyRecipeFiltersForSearch(),
+		)
 		val paginatedResult = outcome.get()
 		if (paginatedResult != null) {
 			if (pageNumber == FIRST_PAGE_NUMBER) {
@@ -526,7 +497,7 @@ class RecipeSearchViewModel(
 				nextPageKey = nextPageKey,
 				isLastPage = isLastPage,
 			)
-			if (pageNumber == FIRST_PAGE_NUMBER && !showsFavoritesResults) {
+			if (pageNumber == FIRST_PAGE_NUMBER) {
 				logBreadcrumb(CrashBreadcrumb.SEARCH_PERFORMED)
 				trackEvent(
 					AnalyticsEvent.SearchPerformed.from(

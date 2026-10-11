@@ -8,6 +8,7 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.home.ui.navigation.HomeDestination
+import app.purecipes.feature.home.ui.navigation.HomeShelfDestination
 import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateEditorDestination
@@ -274,18 +275,25 @@ class MainViewModelTest {
 	}
 
 	@Test
-	fun `opening search from home replaces the search stack`() {
+	fun `opening a shelf stays on home and leaves search alone`() {
 		val viewModel = mainViewModelForTest()
 		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
 		viewModel.onRecipeSelected(42)
-
-		viewModel.navigator.replaceTabRoot(
-			SearchDestination(seeAllShelf = HomeShelfId.NEW),
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Home })
+		val shelf = HomeShelfDestination(
+			title = "This week",
+			shelfId = HomeShelfId.COLLECTION,
+			collectionSlug = "this-week",
 		)
 
-		viewModel.selectedTab.stackId shouldBe MainTabStackId.Search
+		viewModel.navigator.push(shelf)
+
+		viewModel.selectedTab.stackId shouldBe MainTabStackId.Home
+		viewModel.peekBackStack() shouldBe listOf(HomeDestination, shelf)
+		viewModel.onTabSelected(mainTabs.first { it.stackId == MainTabStackId.Search })
 		viewModel.peekBackStack() shouldBe listOf(
-			SearchDestination(seeAllShelf = HomeShelfId.NEW, launchId = 1),
+			SearchDestination(),
+			RecipeDetailsDestination(42),
 		)
 	}
 

@@ -3,7 +3,6 @@ package app.purecipes.feature.search.ui
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
-import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
@@ -53,11 +52,11 @@ internal object RecipeSearchViewModelTestSupport {
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		searchPreferencesRepository: FakeSearchPreferencesRepository = FakeSearchPreferencesRepository(),
 		sessionKey: String? = null,
+		launch: SearchDestination = SearchDestination(),
 	) = RecipeSearchViewModel(
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
-		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -76,7 +75,7 @@ internal object RecipeSearchViewModelTestSupport {
 			subscriptionRepository,
 			FakeMonetisationDebugOverridesRepository(),
 		),
-		launch = SearchDestination(),
+		launch = launch,
 		sessionKey = sessionKey,
 	)
 

@@ -42,6 +42,8 @@ class HomeFeedRepository(
 
 	private val recipeRepository = RecipeRepository(dataSource)
 
+	private val collectionRepository = HomeCollectionRepository(recipeRepository)
+
 	private val featureRequestRepository = FeatureRequestRepository(dataSource)
 
 	fun loadHomeFeed(userId: Long?, localHour: Int): HomeFeed {
@@ -93,7 +95,28 @@ class HomeFeedRepository(
 					shelfId = shelfId,
 					window = window,
 				)
+
+				HomeShelfId.COLLECTION -> emptyShelfPage(window)
 			}
+		}
+	}
+
+	fun loadCollectionPage(
+		userId: Long?,
+		slug: String,
+		pageNumber: Int,
+		pageSize: Int,
+	): SearchResultsPage? {
+		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
+		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
+		return dataSource.connection.use { connection ->
+			collectionRepository.page(
+				connection = connection,
+				userId = userId,
+				slug = slug,
+				pageNumber = normalizedPageNumber,
+				pageSize = normalizedPageSize,
+			)
 		}
 	}
 
@@ -161,6 +184,12 @@ class HomeFeedRepository(
 					add(habit)
 				}
 			}
+			addAll(
+				collectionRepository.liveShelves(
+					connection = connection,
+					userId = userId,
+				),
+			)
 		}
 	}
 
@@ -438,8 +467,18 @@ class HomeFeedRepository(
 
 			HomeShelfId.FAVORITES,
 			HomeShelfId.HABIT,
-				-> throw IllegalArgumentException("Personal home shelves are loaded separately")
+			HomeShelfId.COLLECTION,
+				-> throw IllegalArgumentException("This home shelf is loaded separately")
 		}
+	}
+
+	private fun emptyShelfPage(window: PageWindow): SearchResultsPage {
+		return SearchResultsPage(
+			items = emptyList(),
+			pageNumber = window.pageNumber,
+			pageSize = window.pageSize,
+			totalMatches = 0,
+		)
 	}
 
 	private fun countFavorites(connection: Connection, userId: Long): Int {

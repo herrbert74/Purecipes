@@ -13,8 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.ads.ui.BannerAdViewModel
-import app.purecipes.shared.domain.model.HomeShelfId
-import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 
@@ -22,7 +21,7 @@ import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 fun HomeScreen(
 	modifier: Modifier = Modifier,
 	onRecipeSelect: (Int) -> Unit = {},
-	onOpenSearch: (SearchFilters, HomeShelfId?) -> Unit = { _, _ -> },
+	onOpenShelf: (HomeShelf) -> Unit = {},
 	onOpenFeatureRequests: () -> Unit = {},
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
@@ -52,9 +51,7 @@ fun HomeScreen(
 		homeFeed = viewModel.homeFeed,
 		shelfPagination = viewModel.shelfPagination,
 		onRecipeSelect = onRecipeSelect,
-		onSeeAll = { shelf ->
-			onOpenSearch(shelf.filters, shelf.id)
-		},
+		onSeeAll = onOpenShelf,
 		onFeatureRequestClick = onOpenFeatureRequests,
 		onRetry = viewModel.reloadHomeFeed,
 		bannerAdViewModel = bannerAdViewModel,

@@ -24,6 +24,7 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.component.ContainerTint
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.RecipeCardDefaults
@@ -71,7 +72,7 @@ internal fun HomeShelfRow(
 			)
 			TextButton(
 				onClick = onSeeAll,
-				modifier = Modifier.testTag("$HOME_SHELF_SEE_ALL_TAG_PREFIX${shelf.id.name}"),
+				modifier = Modifier.testTag("$HOME_SHELF_SEE_ALL_TAG_PREFIX${shelf.shelfKey()}"),
 			) {
 				Text(text = "See all")
 			}

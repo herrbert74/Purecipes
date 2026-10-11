@@ -20,6 +20,7 @@ import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
@@ -37,7 +38,7 @@ internal fun HomeFeedContent(
 	isLoading: Boolean,
 	errorMessage: String?,
 	homeFeed: HomeFeed,
-	shelfPagination: ImmutableMap<HomeShelfId, PaginationState<Int, RecipeSummary>>,
+	shelfPagination: ImmutableMap<String, PaginationState<Int, RecipeSummary>>,
 	onRecipeSelect: (Int) -> Unit,
 	onSeeAll: (HomeShelf) -> Unit,
 	onFeatureRequestClick: () -> Unit,
@@ -71,10 +72,10 @@ internal fun HomeFeedContent(
 		) {
 			items(
 				count = homeFeed.shelves.size,
-				key = { index -> homeFeed.shelves[index].id },
+				key = { index -> homeFeed.shelves[index].shelfKey() },
 			) { index ->
 				val shelf = homeFeed.shelves[index]
-				val paginationState = shelfPagination[shelf.id]
+				val paginationState = shelfPagination[shelf.shelfKey()]
 				Column {
 					if (paginationState != null) {
 						HomeShelfRow(
@@ -155,7 +156,7 @@ private fun HomeFeedContentPreview() {
 					votedByCurrentUser = false,
 				),
 			),
-			shelfPagination = mapOf(HomeShelfId.NEW to paginationState).toImmutableMap(),
+			shelfPagination = mapOf(HomeShelfId.NEW.name to paginationState).toImmutableMap(),
 			onRecipeSelect = {},
 			onSeeAll = {},
 			onFeatureRequestClick = {},

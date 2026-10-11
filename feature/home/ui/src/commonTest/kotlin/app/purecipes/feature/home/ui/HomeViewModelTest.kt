@@ -9,11 +9,13 @@ import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
+import app.purecipes.shared.domain.model.HomeCollectionSource
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
@@ -71,7 +73,7 @@ class HomeViewModelTest {
 
 		advanceUntilIdle()
 
-		val state = viewModel.shelfPagination.getValue(HomeShelfId.NEW)
+		val state = viewModel.shelfPagination.getValue(HomeShelfId.NEW.name)
 		state.allItems.size shouldBe HOME_SHELF_PAGE_SIZE
 		homeFeedRepository.shelfPageCalls shouldBe emptyList()
 
@@ -85,6 +87,60 @@ class HomeViewModelTest {
 		state.allItems.size shouldBe HOME_SHELF_PAGE_SIZE + 1
 		state.allItems.last().title shouldBe extra.title
 		homeFeedRepository.shelfPageCalls shouldBe listOf(HomeShelfId.NEW)
+	}
+
+	@Test
+	fun `collection shelf loads the next page by slug`() = runViewModelTest {
+		val firstPage = List(HOME_SHELF_PAGE_SIZE) { index ->
+			RecipeSummary(
+				id = index + 1,
+				title = "Week ${index + 1}",
+				cuisine = null,
+				imageUrl = null,
+				totalTime = 20,
+			)
+		}
+		val extra = RecipeSummary(
+			id = HOME_SHELF_PAGE_SIZE + 1,
+			title = "Week ${HOME_SHELF_PAGE_SIZE + 1}",
+			cuisine = null,
+			imageUrl = null,
+			totalTime = 20,
+		)
+		val shelf = HomeShelf(
+			id = HomeShelfId.COLLECTION,
+			title = "This week",
+			recipes = firstPage,
+			collectionSlug = "this-week",
+			collectionSource = HomeCollectionSource.EDITORIAL,
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(HomeFeed(shelves = listOf(shelf))),
+		)
+		homeFeedRepository.collectionPages = mapOf(
+			"this-week" to Ok(
+				SearchResultsPage(
+					items = listOf(extra),
+					pageNumber = 2,
+					pageSize = HOME_SHELF_PAGE_SIZE,
+					totalMatches = HOME_SHELF_PAGE_SIZE + 1,
+				),
+			),
+		)
+		val viewModel = homeViewModel(homeFeedRepository)
+		advanceUntilIdle()
+
+		val state = viewModel.shelfPagination.getValue(shelf.shelfKey())
+		state.requestPage(
+			initialPageKey = 1,
+			requestedPageKey = 2,
+			items = state.allItems,
+		)
+		advanceUntilIdle()
+
+		state.allItems.last().title shouldBe extra.title
+		homeFeedRepository.collectionPageCalls shouldBe listOf("this-week")
+		homeFeedRepository.shelfPageCalls shouldBe emptyList()
 	}
 
 	@Test
@@ -124,7 +180,7 @@ class HomeViewModelTest {
 
 		viewModel.homeFeed.featureRequest shouldBe null
 		viewModel.homeFeed.shelves.single().recipes.single().title shouldBe recipe.title
-		viewModel.shelfPagination.getValue(HomeShelfId.NEW).allItems.single().title shouldBe recipe.title
+		viewModel.shelfPagination.getValue(HomeShelfId.NEW.name).allItems.single().title shouldBe recipe.title
 
 		val suggested = featureRequest(title = "Weekly plan", voteCount = 4, votedByCurrentUser = true)
 		homeFeedRepository.result = Ok(HomeFeed(featureRequest = suggested))
@@ -132,7 +188,7 @@ class HomeViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.homeFeed.featureRequest shouldBe suggested
-		viewModel.shelfPagination.getValue(HomeShelfId.NEW).allItems.single().title shouldBe recipe.title
+		viewModel.shelfPagination.getValue(HomeShelfId.NEW.name).allItems.single().title shouldBe recipe.title
 	}
 
 	@Test
@@ -174,7 +230,7 @@ class HomeViewModelTest {
 		favorites.emitFavoriteEvent(FavoriteEvent.Removed(removed.id))
 		advanceUntilIdle()
 
-		viewModel.shelfPagination.getValue(HomeShelfId.FAVORITES).allItems.map { recipe ->
+		viewModel.shelfPagination.getValue(HomeShelfId.FAVORITES.name).allItems.map { recipe ->
 			recipe.title
 		} shouldBe listOf("Kept")
 	}
@@ -223,7 +279,7 @@ class HomeViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.homeFeed.shelves.map { shelf -> shelf.id } shouldBe listOf(HomeShelfId.NEW)
-		viewModel.shelfPagination.containsKey(HomeShelfId.FAVORITES) shouldBe false
+		viewModel.shelfPagination.containsKey(HomeShelfId.FAVORITES.name) shouldBe false
 	}
 
 	@Test

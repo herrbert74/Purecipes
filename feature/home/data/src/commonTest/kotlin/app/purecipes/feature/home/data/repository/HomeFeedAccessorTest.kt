@@ -41,4 +41,20 @@ class HomeFeedAccessorTest {
 		accessor.getShelfPage(HomeShelfId.NEW, pageNumber = 2, pageSize = 12).get() shouldBe page
 		api.getHomeShelfPageCalls shouldBe listOf("NEW")
 	}
+
+	@Test
+	fun `returns a collection page from the API`() = runTest {
+		val page = SearchResultsPage(
+			items = emptyList(),
+			pageNumber = 2,
+			pageSize = 12,
+			totalMatches = 13,
+		)
+		val api = FakePurecipesApi()
+		api.homeCollectionPages = mapOf("this-week" to page)
+		val accessor = HomeFeedAccessor(HomeFeedRemoteDataSource(api))
+
+		accessor.getCollectionPage("this-week", pageNumber = 2, pageSize = 12).get() shouldBe page
+		api.getHomeCollectionPageCalls shouldBe listOf("this-week")
+	}
 }

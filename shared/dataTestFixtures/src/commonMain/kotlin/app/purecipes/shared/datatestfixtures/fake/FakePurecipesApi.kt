@@ -84,6 +84,11 @@ class FakePurecipesApi(
 
 	var homeShelfPages: Map<HomeShelfId, SearchResultsPage> = emptyMap()
 
+	var homeCollectionPages: Map<String, SearchResultsPage> = emptyMap()
+
+	var getHomeCollectionPageCalls: List<String> = emptyList()
+		private set
+
 	var lastSearchRequest: SearchRequest? = null
 		private set
 
@@ -143,6 +148,20 @@ class FakePurecipesApi(
 		lastLocalHour = localHour
 		val shelf = HomeShelfId.entries.firstOrNull { entry -> entry.name == shelfId }
 		return homeShelfPages[shelf] ?: SearchResultsPage(
+			items = emptyList(),
+			pageNumber = pageNumber,
+			pageSize = pageSize,
+			totalMatches = 0,
+		)
+	}
+
+	override suspend fun getHomeCollectionPage(
+		slug: String,
+		pageNumber: Int,
+		pageSize: Int,
+	): SearchResultsPage {
+		getHomeCollectionPageCalls = getHomeCollectionPageCalls + slug
+		return homeCollectionPages[slug] ?: SearchResultsPage(
 			items = emptyList(),
 			pageNumber = pageNumber,
 			pageSize = pageSize,
