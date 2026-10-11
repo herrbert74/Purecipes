@@ -5,6 +5,7 @@ UI_TEST_MODULES=(
 	feature/auth/ui
 	feature/cooking/ui
 	feature/featurerequests/ui
+	feature/home/ui
 	feature/library/ui
 	feature/newrecipe/ui
 	feature/onboarding/ui
