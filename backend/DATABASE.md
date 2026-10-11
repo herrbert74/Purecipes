@@ -94,6 +94,10 @@ Two matching problems are easy to confuse:
 - `measurement_preferences`, `measurement_preference_seen_recipes`
 - `search_filters`, `user_pantry`, `user_excluded_ingredients`
 
+**Home shelves**
+
+- `home_collections`, `home_collection_recipes` — how editors write these is in [`editorial-shelves/README.md`](editorial-shelves/README.md)
+
 ---
 
 ## Accounts
@@ -470,3 +474,4 @@ A name should not sit in both pantry and exclusions at once; the app keeps those
 - USDA import, nutrition backfill, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md)
 - Scraping and ingredient-line cleanup: [`../scripts/scraping/README.md`](../scripts/scraping/README.md)
 - Filling cuisine / meal type / diet chips: [`../enrichment/README.md`](../enrichment/README.md)
+- Editorial home shelves: [`editorial-shelves/README.md`](editorial-shelves/README.md)

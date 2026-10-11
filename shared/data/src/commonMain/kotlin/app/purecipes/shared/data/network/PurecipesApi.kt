@@ -50,6 +50,13 @@ interface PurecipesApi : PurecipesAuthApi {
 		@Query("pageSize") pageSize: Int = 12,
 	): SearchResultsPage
 
+	@GET("home/collections/{slug}")
+	suspend fun getHomeCollectionPage(
+		@Path("slug") slug: String,
+		@Query("pageNumber") pageNumber: Int = 1,
+		@Query("pageSize") pageSize: Int = 12,
+	): SearchResultsPage
+
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails
 

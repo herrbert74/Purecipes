@@ -17,6 +17,7 @@ import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.component.paging.PaginationState
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
@@ -50,7 +51,7 @@ class HomeViewModel(
 	var homeFeed by mutableStateOf(HomeFeed())
 		private set
 
-	var shelfPagination by mutableStateOf<ImmutableMap<HomeShelfId, PaginationState<Int, RecipeSummary>>>(
+	var shelfPagination by mutableStateOf<ImmutableMap<String, PaginationState<Int, RecipeSummary>>>(
 		persistentMapOf(),
 	)
 		private set
@@ -125,14 +126,14 @@ class HomeViewModel(
 			},
 		)
 		val pagination = shelfPagination.toMutableMap()
-		pagination.keys.toList().forEach { shelfId ->
-			val state = pagination.getValue(shelfId)
-			if (shelfId == HomeShelfId.FAVORITES && event is FavoriteEvent.Removed) {
-				val replacement = paginationWithoutRecipe(state, shelfId, event.recipeId)
+		pagination.keys.toList().forEach { shelfKey ->
+			val state = pagination.getValue(shelfKey)
+			if (shelfKey == HomeShelfId.FAVORITES.name && event is FavoriteEvent.Removed) {
+				val replacement = paginationWithoutRecipe(state, event.recipeId)
 				if (replacement == null) {
-					pagination.remove(shelfId)
+					pagination.remove(shelfKey)
 				} else {
-					pagination[shelfId] = replacement
+					pagination[shelfKey] = replacement
 				}
 			} else {
 				state.mapItems { recipe ->
@@ -169,7 +170,6 @@ class HomeViewModel(
 
 	private fun paginationWithoutRecipe(
 		current: PaginationState<Int, RecipeSummary>,
-		shelfId: HomeShelfId,
 		recipeId: Int,
 	): PaginationState<Int, RecipeSummary>? {
 		val remaining = current.allItems.filter { recipe -> recipe.id != recipeId }
@@ -180,7 +180,7 @@ class HomeViewModel(
 				initialPageKey = FIRST_PAGE_NUMBER,
 				onRequestPage = { pageKey ->
 					viewModelScope.launch {
-						loadShelfPage(shelfId, pageKey)
+						loadShelfPage(HomeShelfId.FAVORITES, pageKey, collectionSlug = null)
 					}
 				},
 			)
@@ -219,7 +219,7 @@ class HomeViewModel(
 
 	private fun applyFeed(feed: HomeFeed) {
 		shelfPagination = feed.shelves.associate { shelf ->
-			shelf.id to newShelfPagination(shelf)
+			shelf.shelfKey() to newShelfPagination(shelf)
 		}.toImmutableMap()
 		homeFeed = feed
 	}
@@ -232,11 +232,13 @@ class HomeViewModel(
 	}
 
 	private fun newShelfPagination(shelf: HomeShelf): PaginationState<Int, RecipeSummary> {
+		val shelfId = shelf.id
+		val collectionSlug = shelf.collectionSlug
 		val state = PaginationState<Int, RecipeSummary>(
 			initialPageKey = FIRST_PAGE_NUMBER,
 			onRequestPage = { pageKey ->
 				viewModelScope.launch {
-					loadShelfPage(shelf.id, pageKey)
+					loadShelfPage(shelfId, pageKey, collectionSlug)
 				}
 			},
 		)
@@ -249,12 +251,17 @@ class HomeViewModel(
 		return state
 	}
 
-	private suspend fun loadShelfPage(shelfId: HomeShelfId, pageNumber: Int) {
-		val state = shelfPagination[shelfId] ?: return
+	private suspend fun loadShelfPage(
+		shelfId: HomeShelfId,
+		pageNumber: Int,
+		collectionSlug: String?,
+	) {
+		val state = shelfPagination[collectionSlug ?: shelfId.name] ?: return
 		val outcome = getHomeShelfPage(
 			shelfId = shelfId,
 			pageNumber = pageNumber,
 			pageSize = HOME_SHELF_PAGE_SIZE,
+			collectionSlug = collectionSlug,
 		)
 		val page = outcome.get()
 		if (page == null) {

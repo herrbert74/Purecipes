@@ -25,14 +25,38 @@ class GetHomeShelfPageUseCaseTest {
 		val useCase = GetHomeShelfPageUseCase(repository)
 
 		useCase(HomeShelfId.NEW, pageNumber = 2, pageSize = 12).get() shouldBe page
-		repository.calls shouldBe 1
+		repository.shelfCalls shouldBe 1
+		repository.collectionCalls shouldBe 0
+	}
+
+	@Test
+	fun `returns the collection page when a slug is set`() = runTest {
+		val page = SearchResultsPage(
+			items = emptyList(),
+			pageNumber = 2,
+			pageSize = 12,
+			totalMatches = 13,
+		)
+		val repository = FakeShelfRepository(Ok(page))
+		val useCase = GetHomeShelfPageUseCase(repository)
+
+		useCase(
+			HomeShelfId.COLLECTION,
+			pageNumber = 2,
+			pageSize = 12,
+			collectionSlug = "this-week",
+		).get() shouldBe page
+		repository.shelfCalls shouldBe 0
+		repository.collectionCalls shouldBe 1
 	}
 
 	private class FakeShelfRepository(
 		private val page: Outcome<SearchResultsPage>,
 	) : HomeFeedRepository {
 
-		var calls: Int = 0
+		var shelfCalls: Int = 0
+
+		var collectionCalls: Int = 0
 
 		override suspend fun getHomeFeed(): Outcome<HomeFeed> = Ok(HomeFeed())
 
@@ -41,7 +65,16 @@ class GetHomeShelfPageUseCaseTest {
 			pageNumber: Int,
 			pageSize: Int,
 		): Outcome<SearchResultsPage> {
-			calls += 1
+			shelfCalls += 1
+			return page
+		}
+
+		override suspend fun getCollectionPage(
+			slug: String,
+			pageNumber: Int,
+			pageSize: Int,
+		): Outcome<SearchResultsPage> {
+			collectionCalls += 1
 			return page
 		}
 	}

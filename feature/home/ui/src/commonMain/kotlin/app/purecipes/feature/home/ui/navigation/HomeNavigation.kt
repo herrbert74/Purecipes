@@ -8,8 +8,8 @@ import androidx.navigation3.runtime.NavKey
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.home.ui.HomeListDetailPlaceholder
 import app.purecipes.feature.home.ui.HomeScreen
-import app.purecipes.shared.domain.model.HomeShelfId
-import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.feature.home.ui.HomeShelfScreen
+import app.purecipes.shared.domain.model.HomeShelf
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -18,7 +18,7 @@ import kotlinx.serialization.modules.subclass
 fun EntryProviderScope<NavKey>.installHomeFlow(
 	sessionKey: String?,
 	onRecipeSelect: (Int) -> Unit,
-	onOpenSearch: (SearchFilters, HomeShelfId?) -> Unit,
+	onOpenShelf: (HomeShelf) -> Unit,
 	onOpenFeatureRequests: () -> Unit,
 ) {
 	entry<HomeDestination>(
@@ -29,8 +29,31 @@ fun EntryProviderScope<NavKey>.installHomeFlow(
 		HomeScreen(
 			modifier = Modifier.fillMaxSize(),
 			onRecipeSelect = onRecipeSelect,
-			onOpenSearch = onOpenSearch,
+			onOpenShelf = onOpenShelf,
 			onOpenFeatureRequests = onOpenFeatureRequests,
+			sessionKey = sessionKey,
+			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
+		)
+	}
+}
+
+fun EntryProviderScope<NavKey>.installHomeShelfFlow(
+	sessionKey: String?,
+	onRecipeSelect: (Int) -> Unit,
+	onBack: () -> Unit,
+) {
+	entry<HomeShelfDestination>(
+		metadata = ListDetailSceneStrategy.listPane(
+			detailPlaceholder = { HomeListDetailPlaceholder() },
+		),
+	) { destination ->
+		HomeShelfScreen(
+			title = destination.title,
+			shelfId = destination.shelfId,
+			collectionSlug = destination.collectionSlug,
+			onBack = onBack,
+			onRecipeSelect = onRecipeSelect,
+			modifier = Modifier.fillMaxSize(),
 			sessionKey = sessionKey,
 			bannerAdViewModel = metroViewModel<BannerAdViewModel>(),
 		)
@@ -40,5 +63,6 @@ fun EntryProviderScope<NavKey>.installHomeFlow(
 fun homeNavigationSerializersModule(): SerializersModule = SerializersModule {
 	polymorphic(baseClass = NavKey::class) {
 		subclass(HomeDestination.serializer())
+		subclass(HomeShelfDestination.serializer())
 	}
 }

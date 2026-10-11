@@ -43,7 +43,15 @@ class GetHomeFeedUseCaseTest {
 			shelfId: HomeShelfId,
 			pageNumber: Int,
 			pageSize: Int,
-		): Outcome<SearchResultsPage> = Ok(
+		): Outcome<SearchResultsPage> = emptyPage(pageNumber, pageSize)
+
+		override suspend fun getCollectionPage(
+			slug: String,
+			pageNumber: Int,
+			pageSize: Int,
+		): Outcome<SearchResultsPage> = emptyPage(pageNumber, pageSize)
+
+		private fun emptyPage(pageNumber: Int, pageSize: Int) = Ok(
 			SearchResultsPage(
 				items = emptyList(),
 				pageNumber = pageNumber,

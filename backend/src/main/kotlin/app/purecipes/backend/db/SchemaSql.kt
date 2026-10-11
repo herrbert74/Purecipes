@@ -474,3 +474,37 @@ internal const val USER_EXCLUDED_INGREDIENTS_TABLE_SQL = """
 		PRIMARY KEY (user_id, ingredient)
 	)
 """
+
+internal const val HOME_COLLECTIONS_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS home_collections (
+		id SERIAL PRIMARY KEY,
+		slug VARCHAR(64) NOT NULL UNIQUE,
+		title TEXT NOT NULL,
+		source VARCHAR(16) NOT NULL,
+		filter_payload TEXT,
+		sort VARCHAR(16) NOT NULL DEFAULT 'catalog',
+		position INTEGER NOT NULL,
+		enabled BOOLEAN NOT NULL DEFAULT TRUE,
+		starts_at TIMESTAMP,
+		ends_at TIMESTAMP
+	)
+"""
+
+internal const val HOME_COLLECTIONS_POSITION_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_home_collections_position
+	ON home_collections (enabled, position, id)
+"""
+
+internal const val HOME_COLLECTION_RECIPES_TABLE_SQL = """
+	CREATE TABLE IF NOT EXISTS home_collection_recipes (
+		collection_id INTEGER NOT NULL REFERENCES home_collections(id) ON DELETE CASCADE,
+		recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+		position INTEGER NOT NULL,
+		PRIMARY KEY (collection_id, recipe_id)
+	)
+"""
+
+internal const val HOME_COLLECTION_RECIPES_ORDER_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_home_collection_recipes_order
+	ON home_collection_recipes (collection_id, position, recipe_id)
+"""

@@ -4,9 +4,11 @@ import app.purecipes.backend.db.Db
 import app.purecipes.backend.fake.FakeSessionService
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
+import app.purecipes.shared.domain.model.HomeCollectionSource
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.MealType
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -540,6 +542,172 @@ class HomeFeedRouteTest {
 	}
 
 	@Test
+	fun `editorial collection is ordered by position while it is live`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(db, HomeRecipeSeed(id = 1, title = "Later", createdAt = "2024-02-01 00:00:00"))
+		insertHomeRecipe(db, HomeRecipeSeed(id = 2, title = "Sooner", createdAt = "2024-01-01 00:00:00"))
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(id = 3, title = "Private pick", createdAt = "2024-03-01 00:00:00", isPrivate = true),
+		)
+		insertHomeRecipe(db, HomeRecipeSeed(id = 4, title = "Unused", createdAt = "2024-04-01 00:00:00"))
+		insertFavorite(db, recipeId = 2, createdAt = "2024-05-01 00:00:00")
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 1,
+				slug = "this-week",
+				title = "This week",
+				source = "editorial",
+				position = 2,
+				recipePositions = listOf(1 to 2, 2 to 1, 3 to 3),
+			),
+		)
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 2,
+				slug = "next-month",
+				title = "Next month",
+				source = "editorial",
+				position = 1,
+				recipePositions = listOf(4 to 1),
+				startsAt = "2099-01-01 00:00:00",
+			),
+		)
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 3,
+				slug = "last-month",
+				title = "Last month",
+				source = "editorial",
+				position = 3,
+				recipePositions = listOf(4 to 1),
+				endsAt = "2000-01-01 00:00:00",
+			),
+		)
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 4,
+				slug = "hidden",
+				title = "Hidden",
+				source = "editorial",
+				position = 0,
+				recipePositions = listOf(4 to 1),
+				enabled = false,
+			),
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		val week = feed.shelves.first { shelf -> shelf.collectionSlug == "this-week" }
+
+		week.title shouldBe "This week"
+		week.id shouldBe HomeShelfId.COLLECTION
+		week.collectionSource shouldBe HomeCollectionSource.EDITORIAL
+		week.filters shouldBe SearchFilters()
+		week.recipes.map { recipe -> recipe.title } shouldContainExactly listOf("Sooner", "Later")
+		week.recipes.first().isFavorite shouldBe true
+		feed.shelves.mapNotNull { shelf -> shelf.collectionSlug } shouldContainExactly listOf("this-week")
+
+		val secondRecipe = collectionPage(slug = "this-week", pageNumber = 2, accessToken = "session-token")
+		secondRecipe.totalMatches shouldBe 2
+		secondRecipe.items.map { recipe -> recipe.title } shouldContainExactly listOf("Later")
+
+		collectionResponse("missing").status shouldBe HttpStatusCode.NotFound
+		collectionResponse("next-month").status shouldBe HttpStatusCode.NotFound
+		collectionResponse("Not-A-Slug").status shouldBe HttpStatusCode.BadRequest
+	}
+
+	@Test
+	fun `query collection uses the saved filters and sort`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 1,
+				title = "Complete Italian",
+				createdAt = "2020-01-01 00:00:00",
+				imageUrl = PHOTO,
+				description = "Ready",
+				cuisine = "Italian",
+				mealType = "DINNER",
+				totalTime = 40,
+				step = "Cook",
+				ingredient = "Pasta",
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 2,
+				title = "Plain Italian",
+				createdAt = "2024-01-01 00:00:00",
+				cuisine = "Italian",
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 3,
+				title = "French",
+				createdAt = "2025-01-01 00:00:00",
+				cuisine = "French",
+			),
+		)
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 1,
+				slug = "italian-now",
+				title = "Italian now",
+				source = "query",
+				position = 2,
+				filterPayload = """{"cuisines":["Italian"]}""",
+				sort = "catalog",
+			),
+		)
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 2,
+				slug = "newest-italian",
+				title = "Newest Italian",
+				source = "query",
+				position = 1,
+				filterPayload = """{"cuisines":["Italian"]}""",
+				sort = "newest",
+			),
+		)
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 3,
+				slug = "broken-query",
+				title = "Broken",
+				source = "query",
+				position = 3,
+				filterPayload = """{"cuisines":["Not a cuisine"]}""",
+			),
+		)
+		application { module(db = db) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR)
+		val slugs = feed.shelves.mapNotNull { shelf -> shelf.collectionSlug }
+
+		slugs shouldContainExactly listOf("newest-italian", "italian-now")
+		val newest = feed.shelves.first { shelf -> shelf.collectionSlug == "newest-italian" }
+		val catalog = feed.shelves.first { shelf -> shelf.collectionSlug == "italian-now" }
+		newest.collectionSource shouldBe HomeCollectionSource.QUERY
+		newest.filters shouldBe SearchFilters(cuisines = setOf(Cuisine.ITALIAN))
+		newest.recipes.map { recipe -> recipe.title } shouldContainExactly listOf("Plain Italian", "Complete Italian")
+		catalog.recipes.map { recipe -> recipe.title } shouldContainExactly listOf("Complete Italian", "Plain Italian")
+	}
+
+	@Test
 	fun `unknown shelf id is rejected`() = testApplication {
 		val db = createRecipeSearchRouteTestDb()
 		application { module(db = db) }
@@ -560,6 +728,28 @@ class HomeFeedRouteTest {
 		}
 		response.status shouldBe HttpStatusCode.OK
 		return json.decodeFromString(HomeFeed.serializer(), response.bodyAsText())
+	}
+
+	private suspend fun ApplicationTestBuilder.collectionPage(
+		slug: String,
+		pageNumber: Int,
+		pageSize: Int = 1,
+		accessToken: String? = null,
+	): SearchResultsPage {
+		val response = collectionResponse(slug, pageNumber, pageSize, accessToken)
+		response.status shouldBe HttpStatusCode.OK
+		return json.decodeFromString(SearchResultsPage.serializer(), response.bodyAsText())
+	}
+
+	private suspend fun ApplicationTestBuilder.collectionResponse(
+		slug: String,
+		pageNumber: Int = 1,
+		pageSize: Int = 1,
+		accessToken: String? = null,
+	) = client.get("/home/collections/$slug?pageNumber=$pageNumber&pageSize=$pageSize") {
+		if (accessToken != null) {
+			header(HttpHeaders.Authorization, "Bearer $accessToken")
+		}
 	}
 
 	private suspend fun ApplicationTestBuilder.shelfPage(
@@ -700,6 +890,51 @@ private fun insertCuisineFavorites(
 	}
 }
 
+private fun insertHomeCollection(db: Db, seed: HomeCollectionSeed) {
+	db.dataSource.connection.use { connection ->
+		connection.prepareStatement(
+			"""
+				INSERT INTO home_collections (
+					id, slug, title, source, filter_payload, sort, position, enabled, starts_at, ends_at
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			""".trimIndent(),
+		).use { statement ->
+			statement.setInt(1, seed.id)
+			statement.setString(2, seed.slug)
+			statement.setString(3, seed.title)
+			statement.setString(4, seed.source)
+			statement.setString(5, seed.filterPayload)
+			statement.setString(6, seed.sort)
+			statement.setInt(7, seed.position)
+			statement.setBoolean(8, seed.enabled)
+			if (seed.startsAt == null) {
+				statement.setNull(9, Types.TIMESTAMP)
+			} else {
+				statement.setTimestamp(9, Timestamp.valueOf(seed.startsAt))
+			}
+			if (seed.endsAt == null) {
+				statement.setNull(10, Types.TIMESTAMP)
+			} else {
+				statement.setTimestamp(10, Timestamp.valueOf(seed.endsAt))
+			}
+			statement.executeUpdate()
+		}
+		seed.recipePositions.forEach { (recipeId, position) ->
+			connection.prepareStatement(
+				"""
+					INSERT INTO home_collection_recipes (collection_id, recipe_id, position)
+					VALUES (?, ?, ?)
+				""".trimIndent(),
+			).use { statement ->
+				statement.setInt(1, seed.id)
+				statement.setInt(2, recipeId)
+				statement.setInt(3, position)
+				statement.executeUpdate()
+			}
+		}
+	}
+}
+
 private fun insertFavorite(db: Db, recipeId: Int, createdAt: String) {
 	db.dataSource.connection.use { connection ->
 		connection.prepareStatement(
@@ -779,6 +1014,20 @@ private fun insertFeatureRequestVote(db: Db, requestId: Int) {
 		}
 	}
 }
+
+private data class HomeCollectionSeed(
+	val id: Int,
+	val slug: String,
+	val title: String,
+	val source: String,
+	val position: Int,
+	val recipePositions: List<Pair<Int, Int>> = emptyList(),
+	val filterPayload: String? = null,
+	val sort: String = "catalog",
+	val enabled: Boolean = true,
+	val startsAt: String? = null,
+	val endsAt: String? = null,
+)
 
 private data class HomeRecipeSeed(
 	val id: Int,

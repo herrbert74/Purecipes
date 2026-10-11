@@ -14,4 +14,10 @@ interface HomeFeedRepository {
 		pageNumber: Int,
 		pageSize: Int,
 	): Outcome<SearchResultsPage>
+
+	suspend fun getCollectionPage(
+		slug: String,
+		pageNumber: Int,
+		pageSize: Int,
+	): Outcome<SearchResultsPage>
 }

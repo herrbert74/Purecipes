@@ -147,14 +147,7 @@ class MainScreenHomeRestorationTest {
 								HomeScreen(
 									modifier = Modifier.fillMaxSize(),
 									onRecipeSelect = mainViewModel::onRecipeSelected,
-									onOpenSearch = { filters, seeAllShelf ->
-										mainViewModel.navigator.replaceTabRoot(
-											SearchDestination(
-												initialFilters = filters,
-												seeAllShelf = seeAllShelf,
-											),
-										)
-									},
+									onOpenShelf = { _ -> },
 									sessionKey = sessionKey,
 									viewModel = homeViewModel,
 								)

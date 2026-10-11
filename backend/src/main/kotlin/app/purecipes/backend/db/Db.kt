@@ -104,6 +104,10 @@ class Db private constructor(
 					statement.execute(SEARCH_FILTERS_TABLE_SQL)
 					statement.execute(USER_PANTRY_TABLE_SQL)
 					statement.execute(USER_EXCLUDED_INGREDIENTS_TABLE_SQL)
+					statement.execute(HOME_COLLECTIONS_TABLE_SQL)
+					statement.execute(HOME_COLLECTIONS_POSITION_INDEX_SQL)
+					statement.execute(HOME_COLLECTION_RECIPES_TABLE_SQL)
+					statement.execute(HOME_COLLECTION_RECIPES_ORDER_INDEX_SQL)
 				}
 			}
 		}

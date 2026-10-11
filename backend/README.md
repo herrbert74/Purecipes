@@ -1,6 +1,6 @@
 # Purecipes Backend
 
-What each database table and column is for: [`DATABASE.md`](DATABASE.md). USDA import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md).
+What each database table and column is for: [`DATABASE.md`](DATABASE.md). USDA import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md). Editorial home shelves, and how editors write the lists: [`editorial-shelves/README.md`](editorial-shelves/README.md).
 
 ## Gradle tasks: `run`, `build`, and `shadowJar`
 
