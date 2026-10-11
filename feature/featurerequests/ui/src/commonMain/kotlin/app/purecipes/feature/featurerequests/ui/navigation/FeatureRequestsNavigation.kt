@@ -15,10 +15,14 @@ fun EntryProviderScope<NavKey>.installFeatureRequestsFlow(
 	navigator: Navigator,
 	sessionKey: String?,
 	onRequestLogIn: () -> Unit,
+	onClosed: () -> Unit,
 ) {
 	entry<FeatureRequestsDestination> {
 		FeatureRequestsScreen(
-			onBack = { navigator.back() },
+			onBack = {
+				onClosed()
+				navigator.back()
+			},
 			onFeatureRequestSelect = { requestId ->
 				navigator.push(FeatureRequestDetailDestination(requestId = requestId))
 			},

@@ -13,6 +13,7 @@ internal const val CATALOG_METADATA_SCORE = 1
 internal enum class SearchRecipeOrder {
 	CATALOG,
 	TITLE,
+	NEWEST,
 }
 
 internal data class SearchRecipeQuery(
@@ -64,5 +65,8 @@ internal fun searchRecipeOrderBySql(order: SearchRecipeOrder): String {
 
 		SearchRecipeOrder.TITLE ->
 			"ORDER BY completeness_score DESC, $newestTieBreak"
+
+		SearchRecipeOrder.NEWEST ->
+			"ORDER BY $newestTieBreak"
 	}
 }

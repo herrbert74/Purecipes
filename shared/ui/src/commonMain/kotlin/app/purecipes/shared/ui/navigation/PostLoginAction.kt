@@ -7,5 +7,7 @@ sealed interface PostLoginAction {
 
 	data object OpenFavoritesMyRecipes : PostLoginAction
 
+	data object OpenFeatureRequests : PostLoginAction
+
 	data class ImportCookbookShare(val token: String) : PostLoginAction
 }

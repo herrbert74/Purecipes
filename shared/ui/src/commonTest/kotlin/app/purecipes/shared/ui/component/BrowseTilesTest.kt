@@ -1,4 +1,4 @@
-package app.purecipes.feature.search.ui
+package app.purecipes.shared.ui.component
 
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MealType
@@ -6,7 +6,7 @@ import app.purecipes.shared.domain.model.SearchFilters
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class SearchBrowseTilesTest {
+class BrowseTilesTest {
 
 	@Test
 	fun toggleBrowseTileSelectsAndClearsMealType() {
@@ -28,8 +28,8 @@ class SearchBrowseTilesTest {
 	}
 
 	@Test
-	fun searchBrowseTilesMarkSelectedFilters() {
-		val tiles = searchBrowseTiles(
+	fun browseTilesMarkSelectedFilters() {
+		val tiles = browseTiles(
 			SearchFilters(
 				mealTypes = setOf(MealType.LUNCH),
 				cuisines = setOf(Cuisine.MEXICAN),

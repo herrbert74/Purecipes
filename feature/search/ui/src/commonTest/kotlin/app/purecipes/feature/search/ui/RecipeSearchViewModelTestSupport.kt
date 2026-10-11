@@ -3,10 +3,10 @@ package app.purecipes.feature.search.ui
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.repository.RecipeSearchFilterRepository
 import app.purecipes.feature.search.domain.repository.RecipeSearchRepository
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
@@ -19,9 +19,11 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
@@ -55,6 +57,7 @@ internal object RecipeSearchViewModelTestSupport {
 		filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 		getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 		searchRecipes = SearchRecipesUseCase(searchRepository),
+		getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(favoritesRepository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 		logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 		sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -73,7 +76,7 @@ internal object RecipeSearchViewModelTestSupport {
 			subscriptionRepository,
 			FakeMonetisationDebugOverridesRepository(),
 		),
-		initialShowFilterSheet = false,
+		launch = SearchDestination(),
 		sessionKey = sessionKey,
 	)
 

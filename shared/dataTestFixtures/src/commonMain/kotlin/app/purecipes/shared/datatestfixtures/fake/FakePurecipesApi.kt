@@ -21,6 +21,8 @@ import app.purecipes.shared.domain.model.FeatureRequestListPage
 import app.purecipes.shared.domain.model.FeatureRequestSort
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.domain.model.GoogleSignInRequest
+import app.purecipes.shared.domain.model.HomeFeed
+import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
@@ -69,6 +71,19 @@ class FakePurecipesApi(
 	var searchWithFiltersCalls: Int = 0
 		private set
 
+	var getHomeCalls: Int = 0
+		private set
+
+	var getHomeShelfPageCalls: List<String> = emptyList()
+		private set
+
+	var lastLocalHour: Int? = null
+		private set
+
+	var homeFeed: HomeFeed = HomeFeed()
+
+	var homeShelfPages: Map<HomeShelfId, SearchResultsPage> = emptyMap()
+
 	var lastSearchRequest: SearchRequest? = null
 		private set
 
@@ -109,6 +124,29 @@ class FakePurecipesApi(
 			pageNumber = pageNumber,
 			pageSize = pageSize,
 			totalMatches = searchResult.size,
+		)
+	}
+
+	override suspend fun getHome(localHour: Int): HomeFeed {
+		getHomeCalls += 1
+		lastLocalHour = localHour
+		return homeFeed
+	}
+
+	override suspend fun getHomeShelfPage(
+		shelfId: String,
+		localHour: Int,
+		pageNumber: Int,
+		pageSize: Int,
+	): SearchResultsPage {
+		getHomeShelfPageCalls = getHomeShelfPageCalls + shelfId
+		lastLocalHour = localHour
+		val shelf = HomeShelfId.entries.firstOrNull { entry -> entry.name == shelfId }
+		return homeShelfPages[shelf] ?: SearchResultsPage(
+			items = emptyList(),
+			pageNumber = pageNumber,
+			pageSize = pageSize,
+			totalMatches = 0,
 		)
 	}
 

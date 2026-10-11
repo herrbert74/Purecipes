@@ -6,12 +6,12 @@ object IosAdsNativeBridge {
 
 	private var initializeHandler: ((String, String) -> Unit)? = null
 	private var showInterstitialHandler: ((String, () -> Unit, () -> Unit, () -> Unit) -> Unit)? = null
-	private var createBannerHandler: ((String, () -> Unit, () -> Unit) -> UIView)? = null
+	private var createBannerHandler: ((String, Int, Int, () -> Unit, () -> Unit) -> UIView)? = null
 
 	fun registerHandlers(
 		initialize: (String, String) -> Unit,
 		showInterstitial: (String, () -> Unit, () -> Unit, () -> Unit) -> Unit,
-		createBanner: (String, () -> Unit, () -> Unit) -> UIView,
+		createBanner: (String, Int, Int, () -> Unit, () -> Unit) -> UIView,
 	) {
 		initializeHandler = initialize
 		showInterstitialHandler = showInterstitial
@@ -38,9 +38,11 @@ object IosAdsNativeBridge {
 
 	fun createBannerView(
 		adUnitId: String,
+		widthDp: Int,
+		heightDp: Int,
 		onImpression: () -> Unit,
 		onClick: () -> Unit,
 	): UIView {
-		return createBannerHandler?.invoke(adUnitId, onImpression, onClick) ?: UIView()
+		return createBannerHandler?.invoke(adUnitId, widthDp, heightDp, onImpression, onClick) ?: UIView()
 	}
 }

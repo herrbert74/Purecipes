@@ -14,9 +14,9 @@ import app.purecipes.feature.analytics.domain.usecase.SetGlobalPropertiesUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.auth.domain.usecase.ObserveAuthenticationStateUseCase
 import app.purecipes.feature.auth.domain.usecase.ValidateSessionUseCase
+import app.purecipes.feature.home.domain.readiness.HomeFeedRefreshCoordinator
 import app.purecipes.feature.onboarding.domain.usecase.CompleteOnboardingUseCase
 import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseCase
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.sharing.domain.model.PurecipesLink
 import app.purecipes.feature.sharing.domain.repository.IncomingLinkRepository
 import app.purecipes.feature.sharing.domain.repository.WebLaunchLinkRepository
@@ -26,6 +26,7 @@ import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUse
 import app.purecipes.feature.subscription.domain.usecase.SyncSubscriptionUserIdUseCase
 import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
@@ -103,6 +104,7 @@ internal fun mainViewModelForTest(
 			override fun versionCode(): Long = 0L
 		},
 		searchReadiness = searchReadiness,
+		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		onDeliverPendingIncomingLink = onDeliverPendingIncomingLink,
 	)
 	viewModel.initializeTabBackStacksForTest()

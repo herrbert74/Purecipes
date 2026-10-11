@@ -26,9 +26,11 @@ final class IosAdsController: NSObject {
                     onClicked: { _ = onClicked() }
                 )
             },
-            createBanner: { adUnitId, onImpression, onClick in
+            createBanner: { adUnitId, width, height, onImpression, onClick in
                 IosBannerAdView(
                     adUnitId: adUnitId,
+                    width: CGFloat(width),
+                    height: CGFloat(height),
                     onImpression: { _ = onImpression() },
                     onClick: { _ = onClick() }
                 )
@@ -125,21 +127,29 @@ final class IosBannerAdView: UIView, BannerViewDelegate {
 
     init(
         adUnitId: String,
+        width: CGFloat,
+        height: CGFloat,
         onImpression: @escaping () -> Void,
         onClick: @escaping () -> Void
     ) {
-        self.bannerView = BannerView(adSize: AdSizeBanner)
+        let adSize = width == 320 && height == 50
+            ? AdSizeBanner
+            : adSizeFor(cgSize: CGSize(width: width, height: height))
+        self.bannerView = BannerView(adSize: adSize)
         self.onImpression = onImpression
         self.onClick = onClick
-        super.init(frame: .zero)
+        super.init(frame: CGRect(x: 0, y: 0, width: width, height: height))
         bannerView.translatesAutoresizingMaskIntoConstraints = false
         bannerView.adUnitID = adUnitId
         bannerView.delegate = self
         addSubview(bannerView)
         NSLayoutConstraint.activate([
-            bannerView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            bannerView.leadingAnchor.constraint(equalTo: leadingAnchor),
             bannerView.topAnchor.constraint(equalTo: topAnchor),
-            bannerView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            bannerView.widthAnchor.constraint(equalToConstant: width),
+            bannerView.heightAnchor.constraint(equalToConstant: height),
+            widthAnchor.constraint(equalToConstant: width),
+            heightAnchor.constraint(equalToConstant: height)
         ])
     }
 

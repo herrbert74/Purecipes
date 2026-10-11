@@ -15,6 +15,7 @@ import app.purecipes.backend.feature.library.cookbookShareRoutes
 import app.purecipes.backend.feature.library.favoriteRoutes
 import app.purecipes.backend.feature.recipe.recipeImageRoutes
 import app.purecipes.backend.feature.recipe.recipeRoutes
+import app.purecipes.backend.feature.search.homeRoutes
 import app.purecipes.backend.feature.settings.settingsRoutes
 import app.purecipes.backend.feature.subscription.revenueCatWebhookRoutes
 import io.ktor.http.HttpHeaders
@@ -105,6 +106,7 @@ fun Application.module(
 		featureRequestRoutes(sessionService) { db }
 		recipeImageRoutes(sessionService, recipeImageStorage)
 		recipeRoutes(sessionService, { db }, corpusCache)
+		homeRoutes(sessionService) { db }
 		ingredientRoutes(sessionService, corpusCache)
 		settingsRoutes(sessionService) { db }
 		revenueCatWebhookRoutes({ db }, revenueCatWebhookAuthorization)

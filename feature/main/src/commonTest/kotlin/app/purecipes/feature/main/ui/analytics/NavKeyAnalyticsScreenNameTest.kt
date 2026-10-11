@@ -6,6 +6,7 @@ import app.purecipes.feature.auth.ui.navigation.AccountDestination
 import app.purecipes.feature.auth.ui.navigation.EmailRegistrationDestination
 import app.purecipes.feature.auth.ui.navigation.EmailSignInDestination
 import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
+import app.purecipes.feature.home.ui.navigation.HomeDestination
 import app.purecipes.feature.library.ui.navigation.CookbookDetailDestination
 import app.purecipes.feature.library.ui.navigation.LibraryDestination
 import app.purecipes.feature.newrecipe.ui.navigation.CreateDestination
@@ -24,6 +25,7 @@ class NavKeyAnalyticsScreenNameTest {
 	@Test
 	fun `maps every known destination and tab root to its screen name`() {
 		val mappings = listOf(
+			HomeDestination to AnalyticsScreenName.HOME,
 			SearchDestination() to AnalyticsScreenName.SEARCH,
 			RecipeDetailsDestination(42) to AnalyticsScreenName.RECIPE_DETAILS,
 			RecipeCookingDestination(7) to AnalyticsScreenName.COOKING,
@@ -53,6 +55,7 @@ class NavKeyAnalyticsScreenNameTest {
 	fun `maps recipe destinations to recipe ids`() {
 		RecipeDetailsDestination(42).toAnalyticsRecipeId() shouldBe 42
 		RecipeCookingDestination(7).toAnalyticsRecipeId() shouldBe 7
+		HomeDestination.toAnalyticsRecipeId() shouldBe null
 		SearchDestination().toAnalyticsRecipeId() shouldBe null
 	}
 

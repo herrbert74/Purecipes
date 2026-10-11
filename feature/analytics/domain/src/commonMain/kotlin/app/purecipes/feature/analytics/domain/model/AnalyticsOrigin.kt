@@ -1,6 +1,7 @@
 package app.purecipes.feature.analytics.domain.model
 
 enum class AnalyticsOrigin(val value: String) {
+	HOME(AnalyticsScreenName.HOME),
 	SEARCH(AnalyticsScreenName.SEARCH),
 	RECIPE_DETAILS(AnalyticsScreenName.RECIPE_DETAILS),
 	COOKING(AnalyticsScreenName.COOKING),

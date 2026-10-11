@@ -12,6 +12,7 @@ import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestCommentCreateRequest
 import app.purecipes.shared.domain.model.FeatureRequestCreateRequest
 import app.purecipes.shared.domain.model.FeatureRequestListPage
+import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.PantryDelta
@@ -37,6 +38,17 @@ interface PurecipesApi : PurecipesAuthApi {
 	@Headers("Accept: application/json", "Content-Type: application/json")
 	@POST("recipes/search")
 	suspend fun searchWithFilters(@Body request: SearchRequest): SearchResultsPage
+
+	@GET("home")
+	suspend fun getHome(@Query("localHour") localHour: Int): HomeFeed
+
+	@GET("home/shelves/{shelfId}")
+	suspend fun getHomeShelfPage(
+		@Path("shelfId") shelfId: String,
+		@Query("localHour") localHour: Int,
+		@Query("pageNumber") pageNumber: Int = 1,
+		@Query("pageSize") pageSize: Int = 12,
+	): SearchResultsPage
 
 	@GET("recipes/{id}")
 	suspend fun getRecipeDetails(@Path("id") recipeId: Int): RecipeDetails

@@ -21,12 +21,14 @@ import app.purecipes.feature.cooking.ui.navigation.RecipeCookingDestination
 import app.purecipes.feature.cooking.ui.navigation.installCookingFlow
 import app.purecipes.feature.featurerequests.ui.navigation.FeatureRequestsDestination
 import app.purecipes.feature.featurerequests.ui.navigation.installFeatureRequestsFlow
+import app.purecipes.feature.home.ui.navigation.installHomeFlow
 import app.purecipes.feature.library.ui.navigation.installCookbookDetailFlow
 import app.purecipes.feature.library.ui.navigation.installLibraryFlow
 import app.purecipes.feature.main.ui.analytics.TrackActiveScreenViews
 import app.purecipes.feature.newrecipe.ui.navigation.installCreateFlow
 import app.purecipes.feature.onboarding.ui.OnboardingScreen
 import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlow
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.search.ui.navigation.installSearchFlow
 import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
 import app.purecipes.feature.subscription.ui.navigation.PaywallDestination
@@ -112,6 +114,21 @@ private fun MainScreenContent(
 							modifier = Modifier.fillMaxSize(),
 							sceneStrategies = listOf(listDetailSceneStrategy),
 							entryProvider = entryProvider {
+								installHomeFlow(
+									sessionKey = sessionKey,
+									onRecipeSelect = viewModel::onRecipeSelected,
+									onOpenSearch = { filters, seeAllShelf ->
+										viewModel.navigator.replaceTabRoot(
+											SearchDestination(
+												initialFilters = filters,
+												seeAllShelf = seeAllShelf,
+											),
+										)
+									},
+									onOpenFeatureRequests = {
+										viewModel.navigator.push(FeatureRequestsDestination)
+									},
+								)
 								installSearchFlow(
 									isSignedIn = authenticationState is AuthenticationState.SignedIn,
 									sessionKey = sessionKey,
@@ -127,6 +144,7 @@ private fun MainScreenContent(
 											),
 										)
 									},
+									onCloseSearch = { viewModel.navigator.back() },
 								)
 								installRecipeDetailsFlow(
 									navigator = viewModel.navigator,
@@ -194,14 +212,16 @@ private fun MainScreenContent(
 								)
 								installSettingsFlow(
 									navigator = viewModel.navigator,
-									onOpenFeatureRequests = {
-										viewModel.navigator.push(FeatureRequestsDestination)
-									},
 								)
 								installFeatureRequestsFlow(
 									navigator = viewModel.navigator,
 									sessionKey = sessionKey,
-									onRequestLogIn = { viewModel.onOpenEmailSignIn() },
+									onRequestLogIn = {
+										viewModel.requestLoginForPostLoginAction(
+											PostLoginAction.OpenFeatureRequests,
+										)
+									},
+									onClosed = viewModel.markHomeFeedStale,
 								)
 								installSubscriptionFlow(
 									navigator = viewModel.navigator,
@@ -220,9 +240,9 @@ private fun MainScreenContent(
 		) {
 			Box(modifier = Modifier.fillMaxSize()) {
 				mainContent()
-			if (viewModel.onboardingGate.isVisible) {
-				OnboardingScreen(onFinish = viewModel.onboardingGate::onFinished)
-			}
+				if (viewModel.onboardingGate.isVisible) {
+					OnboardingScreen(onFinish = viewModel.onboardingGate::onFinished)
+				}
 			}
 		}
 	}

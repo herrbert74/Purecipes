@@ -12,14 +12,21 @@ import com.google.android.gms.ads.AdView
 internal actual fun PlatformBannerAd(
 	adUnitId: String,
 	modifier: Modifier,
+	widthDp: Int,
+	heightDp: Int,
 	onImpression: (() -> Unit)?,
 	onClick: (() -> Unit)?,
 ) {
+	val adSize = if (widthDp == STANDARD_BANNER_WIDTH_DP && heightDp == STANDARD_BANNER_HEIGHT_DP) {
+		AdSize.BANNER
+	} else {
+		AdSize(widthDp, heightDp)
+	}
 	AndroidView(
 		modifier = modifier,
 		factory = { context ->
 			AdView(context).apply {
-				setAdSize(AdSize.BANNER)
+				setAdSize(adSize)
 				this.adUnitId = adUnitId
 				adListener = object : AdListener() {
 					override fun onAdImpression() {

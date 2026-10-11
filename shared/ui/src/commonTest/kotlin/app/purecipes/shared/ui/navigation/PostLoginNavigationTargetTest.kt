@@ -26,6 +26,12 @@ class PostLoginNavigationTargetTest {
 	}
 
 	@Test
+	fun `open feature requests resolves to feature requests target`() {
+		resolvePostLoginNavigationTarget(PostLoginAction.OpenFeatureRequests) shouldBe
+			PostLoginNavigationTarget.OpenFeatureRequests
+	}
+
+	@Test
 	fun `import cookbook share resolves to favorites with token`() {
 		resolvePostLoginNavigationTarget(PostLoginAction.ImportCookbookShare(sampleShareToken)) shouldBe
 			PostLoginNavigationTarget.OpenFavoritesWithCookbookShare(sampleShareToken)

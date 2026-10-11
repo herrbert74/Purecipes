@@ -19,6 +19,7 @@ object AnalyticsUserState {
 
 object AnalyticsActiveTab {
 
+	const val HOME = "home"
 	const val SEARCH = "search"
 	const val FAVORITES = "favorites"
 	const val CREATE = "create"

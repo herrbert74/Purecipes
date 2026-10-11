@@ -5,10 +5,10 @@ import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.GetFavoriteRecipesPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.measurement.domain.usecase.FilterRecipesForMeasurementPreferencesUseCase
 import app.purecipes.feature.measurement.domain.usecase.GetMeasurementPreferencesUseCase
-import app.purecipes.feature.search.domain.readiness.SearchReadinessCoordinator
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
@@ -19,7 +19,9 @@ import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
+import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientMatchCount
 import app.purecipes.shared.domain.model.IngredientMatchResponse
@@ -51,7 +53,7 @@ import kotlin.test.Test
 class RecipeSearchViewModelTest {
 
 	@Test
-	fun `search loads recipes on init`() = runViewModelTest {
+	fun `opening search loads recipes`() = runViewModelTest {
 		val repository = FakeRecipeSearchRepository(
 			result = Ok(
 				listOf(
@@ -72,8 +74,8 @@ class RecipeSearchViewModelTest {
 		repository.queries shouldBe listOf("")
 		viewModel.recipes.size shouldBe 1
 		viewModel.recipes.single().title shouldBe "Tomato Pasta"
+		viewModel.isSearchBarActive shouldBe true
 		viewModel.isSearching shouldBe false
-		viewModel.isSearchBarActive shouldBe false
 		viewModel.errorMessage shouldBe null
 	}
 
@@ -98,6 +100,7 @@ class RecipeSearchViewModelTest {
 			favoritesRepository = favoritesRepository,
 			sessionKey = "session",
 		)
+		viewModel.onSearchBarExpandedChange(true)
 		advanceUntilIdle()
 		viewModel.recipes.single().isFavorite shouldBe false
 
@@ -142,6 +145,7 @@ class RecipeSearchViewModelTest {
 			favoritesRepository = favoritesRepository,
 			sessionKey = "session",
 		)
+		viewModel.onSearchBarExpandedChange(true)
 		advanceUntilIdle()
 
 		favoritesRepository.emitFavoriteEvent(FavoriteEvent.Removed(7))
@@ -197,6 +201,7 @@ class RecipeSearchViewModelTest {
 			result = Err(Failure.ServerError("Search failed")),
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -222,6 +227,7 @@ class RecipeSearchViewModelTest {
 			nearMissRecipes = listOf(nearMiss),
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -255,6 +261,7 @@ class RecipeSearchViewModelTest {
 			nearMissRecipes = listOf(nearMiss),
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -280,6 +287,7 @@ class RecipeSearchViewModelTest {
 			totalMatches = 37,
 		)
 		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(searchRepository = repository)
+		viewModel.onSearchBarExpandedChange(true)
 
 		advanceUntilIdle()
 
@@ -408,6 +416,7 @@ class RecipeSearchViewModelTest {
 			filterRecipesForMeasurementPreferences = FilterRecipesForMeasurementPreferencesUseCase(),
 			getMeasurementPreferences = GetMeasurementPreferencesUseCase(FakeMeasurementPreferencesRepository()),
 			searchRecipes = SearchRecipesUseCase(FakeRecipeSearchRepository(Ok(emptyList()))),
+			getFavoriteRecipesPage = GetFavoriteRecipesPageUseCase(FakeFavoritesRepository()),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
 			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
@@ -428,7 +437,7 @@ class RecipeSearchViewModelTest {
 				FakeSubscriptionRepository(),
 				FakeMonetisationDebugOverridesRepository(),
 			),
-			initialShowFilterSheet = true,
+			launch = SearchDestination(openFiltersOnStart = true),
 			sessionKey = null,
 		)
 

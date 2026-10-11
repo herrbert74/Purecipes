@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 internal actual fun PlatformBannerAd(
 	adUnitId: String,
 	modifier: Modifier,
+	widthDp: Int,
+	heightDp: Int,
 	onImpression: (() -> Unit)?,
 	onClick: (() -> Unit)?,
 ) = Unit

@@ -1,4 +1,4 @@
-package app.purecipes.feature.search.domain.readiness
+package app.purecipes.shared.data.readiness
 
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test

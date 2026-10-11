@@ -1,14 +1,12 @@
-package app.purecipes.feature.search.ui
+package app.purecipes.shared.ui.component
 
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.SearchFilters
-import app.purecipes.shared.ui.component.BrowseTileItem
-import app.purecipes.shared.ui.component.ContainerTint
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
-internal fun searchBrowseTiles(filters: SearchFilters): ImmutableList<BrowseTileItem> =
+fun browseTiles(filters: SearchFilters): ImmutableList<BrowseTileItem> =
 	persistentListOf(
 		BrowseTileItem(
 			id = browseMealTypeId(MealType.BREAKFAST),
@@ -68,7 +66,7 @@ internal fun searchBrowseTiles(filters: SearchFilters): ImmutableList<BrowseTile
 		),
 	)
 
-internal fun SearchFilters.toggleBrowseTile(tileId: String): SearchFilters {
+fun SearchFilters.toggleBrowseTile(tileId: String): SearchFilters {
 	val mealType = MealType.entries.firstOrNull { browseMealTypeId(it) == tileId }
 	if (mealType != null) {
 		return copy(

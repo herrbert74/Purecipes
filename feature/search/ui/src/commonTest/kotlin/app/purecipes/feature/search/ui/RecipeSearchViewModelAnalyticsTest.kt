@@ -44,11 +44,13 @@ class RecipeSearchViewModelAnalyticsTest {
 			totalMatches = 0,
 			nearMissRecipes = listOf(nearMiss),
 		)
-		RecipeSearchViewModelTestSupport.makeViewModel(
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel(
 			searchRepository = repository,
 			analyticsRepository = analyticsRepository,
 		)
 
+		advanceUntilIdle()
+		viewModel.onSearchBarExpandedChange(true)
 		advanceUntilIdle()
 
 		analyticsRepository.trackedEvents.single() shouldBe AnalyticsEvent.SearchPerformed.from(

@@ -33,13 +33,13 @@ class MainViewModelGlobalPropertiesTest {
 		).start()
 
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe
-			AnalyticsValue.TextValue(AnalyticsActiveTab.SEARCH)
+			AnalyticsValue.TextValue(AnalyticsActiveTab.HOME)
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.USER_STATE] shouldBe
 			AnalyticsValue.TextValue(AnalyticsUserState.ANONYMOUS)
 		analyticsRepository.globalProperties[AnalyticsGlobalProperty.PREMIUM_STATUS] shouldBe
 			AnalyticsValue.TextValue(AnalyticsPremiumStatus.FREE)
 		crashRepository.customValues[AnalyticsGlobalProperty.ENVIRONMENT] shouldBe "debug"
-		crashRepository.customValues[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe AnalyticsActiveTab.SEARCH
+		crashRepository.customValues[AnalyticsGlobalProperty.ACTIVE_TAB] shouldBe AnalyticsActiveTab.HOME
 		crashRepository.customValues[AnalyticsGlobalProperty.USER_STATE] shouldBe AnalyticsUserState.ANONYMOUS
 		crashRepository.lastUserId shouldBe null
 	}

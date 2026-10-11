@@ -21,6 +21,7 @@ kotlin {
 				api(project(":feature:ads:domain"))
 				implementation(project(":feature:analytics:domain"))
 				implementation(project(":shared:data"))
+				implementation(project(":shared:ui"))
 			}
 		}
 		androidMain {
