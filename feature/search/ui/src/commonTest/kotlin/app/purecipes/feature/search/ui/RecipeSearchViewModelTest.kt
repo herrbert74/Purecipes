@@ -79,6 +79,23 @@ class RecipeSearchViewModelTest {
 	}
 
 	@Test
+	fun `search list scroll position is kept until the next search`() = runViewModelTest {
+		val viewModel = RecipeSearchViewModelTestSupport.makeViewModel()
+
+		advanceUntilIdle()
+		viewModel.onResultsListScrolled(firstVisibleItemIndex = 3, firstVisibleItemScrollOffset = 20)
+
+		viewModel.resultsFirstVisibleItemIndex shouldBe 3
+		viewModel.resultsFirstVisibleItemScrollOffset shouldBe 20
+
+		viewModel.searchNow()
+		advanceUntilIdle()
+
+		viewModel.resultsFirstVisibleItemIndex shouldBe 0
+		viewModel.resultsFirstVisibleItemScrollOffset shouldBe 0
+	}
+
+	@Test
 	fun `favorite added event marks matching search result as favorite`() = runViewModelTest {
 		val favoritesRepository = FakeFavoritesRepository()
 		val repository = FakeRecipeSearchRepository(

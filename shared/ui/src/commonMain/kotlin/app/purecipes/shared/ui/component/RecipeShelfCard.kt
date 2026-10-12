@@ -25,17 +25,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 
-private const val SHELF_CARD_ASPECT_RATIO_WIDTH = 4f
-private const val SHELF_CARD_ASPECT_RATIO_HEIGHT = 3f
 private const val SHELF_TITLE_MAX_LINES = 2
-private val SHELF_CARD_WIDTH = 160.dp
 private const val PREP_TIME_UNKNOWN = "Prep time unknown"
 
 @Composable
@@ -46,7 +42,7 @@ internal fun RecipeShelfCard(
 ) {
 	Card(
 		onClick = onClick,
-		modifier = modifier.width(SHELF_CARD_WIDTH),
+		modifier = modifier.width(RecipeCardDefaults.ShelfCardWidth),
 		colors = CardDefaults.cardColors(
 			containerColor = PurecipesTheme.colorScheme.surface,
 		),
@@ -60,7 +56,10 @@ internal fun RecipeShelfCard(
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.aspectRatio(SHELF_CARD_ASPECT_RATIO_WIDTH / SHELF_CARD_ASPECT_RATIO_HEIGHT)
+					.aspectRatio(
+						RecipeCardDefaults.ShelfImageAspectRatioWidth /
+							RecipeCardDefaults.ShelfImageAspectRatioHeight,
+					)
 					.clip(RoundedCornerShape(PurecipesTheme.space.m)),
 			) {
 				AsyncImage(

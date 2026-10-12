@@ -6,9 +6,11 @@ import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
@@ -38,6 +40,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
 class MainScreenScreenViewTrackingTest {
 
 	@get:Rule
@@ -111,6 +114,9 @@ class MainScreenScreenViewTrackingTest {
 			composeRule.activity.onBackPressedDispatcher.onBackPressed()
 		}
 		composeRule.waitForIdle()
+		composeRule.waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			composeRule.onAllNodesWithText("Suggest a feature").fetchSemanticsNodes().isNotEmpty()
+		}
 		composeRule.onNodeWithText("Suggest a feature").assertIsDisplayed()
 
 		composeRule.runOnIdle {
@@ -225,5 +231,10 @@ class MainScreenScreenViewTrackingTest {
 		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION))
 		composeRule.onNodeWithText(HARDWARE_BACK_TEST_RECIPE_DESCRIPTION).assertIsDisplayed()
+	}
+
+	private companion object {
+
+		const val HOME_CONTENT_TIMEOUT_MILLIS = 5_000L
 	}
 }

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,12 +25,13 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.BrowseTileGrid
 import app.purecipes.shared.ui.component.BrowseTileItem
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
+import app.purecipes.shared.ui.component.browseTiles
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.component.staggeredAppear
@@ -53,9 +56,14 @@ internal fun SearchResultsContent(
 	onBrowseTileClick: (BrowseTileItem) -> Unit = {},
 	onRetryClick: () -> Unit = {},
 	bannerAdViewModel: BannerAdViewModel? = null,
+	resultsListState: LazyGridState = rememberLazyGridState(),
 ) {
 	when {
-		isSearching -> RecipeCardSkeletonGrid(modifier = modifier)
+		isSearching -> SearchResultsSkeleton(
+			browseTiles = browseTiles,
+			onBrowseTileClick = onBrowseTileClick,
+			modifier = modifier,
+		)
 
 		errorMessage != null -> EmptyStateContent(
 			icon = AppIcons.Warning,
@@ -74,6 +82,7 @@ internal fun SearchResultsContent(
 		else -> PaginatedLazyVerticalGrid(
 			paginationState = paginationState,
 			requestInitialPageAutomatically = false,
+			state = resultsListState,
 			modifier = modifier.fillMaxWidth(),
 			lazyModifier = Modifier.testTag(SEARCH_RESULTS_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
@@ -213,6 +222,7 @@ private fun SearchResultsContentLoadingPreview() {
 				paginationState = rememberPreviewPaginationState(persistentListOf()),
 				recipes = remember { mutableStateListOf() },
 				onRecipeSelect = {},
+				browseTiles = browseTiles(SearchFilters.default()),
 				modifier = Modifier.fillMaxSize(),
 			)
 		}

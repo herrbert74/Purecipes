@@ -25,8 +25,11 @@ import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -386,6 +389,45 @@ class HomeViewModelTest {
 	}
 
 	@Test
+	fun `initial load keeps the skeleton visible until the splash has cleared`() = runViewModelTest {
+		val readiness = SearchReadinessCoordinator()
+		val viewModel = homeViewModel(
+			homeFeedRepository = FakeHomeFeedRepository(
+				result = Ok(
+					HomeFeed(
+						shelves = listOf(
+							HomeShelf(
+								id = HomeShelfId.NEW,
+								title = "New",
+								recipes = listOf(recipeSummary(id = 1, title = "Pasta")),
+							),
+						),
+					),
+				),
+			),
+			searchReadiness = readiness,
+		)
+
+		runCurrent()
+
+		viewModel.isHomeLoading shouldBe true
+		viewModel.homeFeed.shelves.isEmpty() shouldBe true
+		readiness.isReady.value shouldBe true
+
+		advanceTimeBy((HOME_SKELETON_REVEAL_MILLIS - 1).milliseconds)
+		runCurrent()
+
+		viewModel.isHomeLoading shouldBe true
+		viewModel.homeFeed.shelves.isEmpty() shouldBe true
+
+		advanceTimeBy(1.milliseconds)
+		runCurrent()
+
+		viewModel.isHomeLoading shouldBe false
+		viewModel.homeFeed.shelves.map { shelf -> shelf.title } shouldBe listOf("New")
+	}
+
+	@Test
 	fun `home list scroll position is kept for the next visit`() = runViewModelTest {
 		val viewModel = homeViewModel(FakeHomeFeedRepository())
 		advanceUntilIdle()
@@ -402,13 +444,14 @@ class HomeViewModelTest {
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		recipeActivityRepository: FakeRecipeActivityRepository = FakeRecipeActivityRepository(),
 		sessionKey: String? = null,
+		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 	) = HomeViewModel(
 		getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
 		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 		homeFeedRefresh = homeFeedRefresh,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		observeRecipeViews = ObserveRecipeViewsUseCase(recipeActivityRepository),
-		searchReadiness = SearchReadinessCoordinator(),
+		searchReadiness = searchReadiness,
 		sessionKey = sessionKey,
 	)
 

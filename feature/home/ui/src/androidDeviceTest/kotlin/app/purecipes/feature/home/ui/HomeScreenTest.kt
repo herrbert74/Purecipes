@@ -36,12 +36,35 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import kotlinx.collections.immutable.persistentMapOf
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
 class HomeScreenTest {
+
+	@Test
+	fun loadingHomeShowsShelfSkeleton() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				HomeFeedContent(
+					isLoading = true,
+					errorMessage = null,
+					homeFeed = HomeFeed(),
+					shelfPagination = persistentMapOf(),
+					onRecipeSelect = {},
+					onSeeAll = {},
+					onFeatureRequestClick = {},
+					onRetry = {},
+				)
+			}
+		}
+
+		onNodeWithTag(HOME_FEED_SKELETON_TAG).assertIsDisplayed()
+		onNodeWithTag(HOME_TITLE_TAG).assertIsDisplayed()
+		onNodeWithText("Purecipes").assertIsDisplayed()
+	}
 
 	@Test
 	fun removingAFavoriteDropsItFromTheFavoritesShelf() = runRecompositionTrackingUiTest {
@@ -73,6 +96,9 @@ class HomeScreenTest {
 					viewModel = viewModel,
 				)
 			}
+		}
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText(KEPT_RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()
 		}
 
 		onNodeWithTag(HOME_TITLE_TAG).assertIsDisplayed()
@@ -120,6 +146,9 @@ class HomeScreenTest {
 					Text(text = "Favorites list")
 				}
 			}
+		}
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText(FIRST_SHELF_TITLE).fetchSemanticsNodes().isNotEmpty()
 		}
 
 		onNodeWithText(FIRST_SHELF_TITLE).assertIsDisplayed()
@@ -187,6 +216,7 @@ class HomeScreenTest {
 		const val REMOVED_RECIPE_TITLE = "Removed pasta"
 		const val FIRST_SHELF_TITLE = "New shelf"
 		const val LAST_SHELF_TITLE = "Habit shelf"
+		const val HOME_CONTENT_TIMEOUT_MILLIS = 5_000L
 		val HOME_LIST_VIEWPORT_HEIGHT = 220.dp
 	}
 }
