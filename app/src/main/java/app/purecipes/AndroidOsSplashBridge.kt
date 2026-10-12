@@ -1,72 +1,165 @@
 package app.purecipes
 
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.Drawable
-import android.os.Build
+import android.content.Context
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
+import app.purecipes.shared.ui.splash.SplashAnimatedIconSpec
 import app.purecipes.shared.ui.splash.SplashTimings
 
 class AndroidOsSplashBridge {
 
 	private var splashScreenViewProvider: SplashScreenViewProvider? = null
+	private var contentDrawListener: ViewTreeObserver.OnPreDrawListener? = null
+	private var contentDrawObserver: ViewTreeObserver? = null
+	private var exitRequested = false
+	private var waitingForDraw = false
+	private var removed = false
+	private var drawnReadyFrames = 0
 
 	fun install(splashScreen: SplashScreen) {
 		splashScreen.setOnExitAnimationListener(::onSplashExit)
 	}
 
 	private fun onSplashExit(provider: SplashScreenViewProvider) {
-		splashScreenViewProvider = provider
-		startThemeSplashAnimation(provider.iconView)
-	}
-
-	private fun startThemeSplashAnimation(iconView: View) {
-		if (iconView !is ImageView) {
+		if (removed) {
+			provider.remove()
 			return
 		}
-		val animation = iconView.drawable as? Animatable ?: loadPreApi31SplashAnimation(iconView)
-		animation?.start()
+		splashScreenViewProvider = provider
+		showLoopingSplashIcon(provider)
+		if (exitRequested) {
+			waitForContentDraw(provider) {}
+		}
 	}
 
-	private fun loadPreApi31SplashAnimation(iconView: ImageView): Animatable? {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			return null
+	private fun showLoopingSplashIcon(provider: SplashScreenViewProvider) {
+		val splashView = provider.view as? ViewGroup ?: return
+		val animatedDrawable = newLoopingSplashDrawable(splashView.context) ?: return
+		val overlay = ImageView(splashView.context).apply {
+			scaleType = ImageView.ScaleType.FIT_CENTER
+			setImageDrawable(animatedDrawable)
 		}
-		val animatedDrawable = AnimatedVectorDrawableCompat.create(
-			iconView.context,
-			R.drawable.ic_launcher_splash_animated,
-		)
-		if (animatedDrawable != null) {
-			iconView.setImageDrawable(animatedDrawable)
+		val iconSize = splashIconSizePx(splashView)
+		val params = FrameLayout.LayoutParams(iconSize, iconSize, Gravity.CENTER)
+		splashView.addView(overlay, params)
+		overlay.bringToFront()
+		val iconView = provider.iconView
+		if (iconView is ImageView) {
+			iconView.setImageDrawable(null)
 		}
-		return animatedDrawable
+		iconView.alpha = 0f
+		iconView.visibility = View.INVISIBLE
+		animatedDrawable.start()
+		overlay.post { animatedDrawable.start() }
+	}
+
+	private fun newLoopingSplashDrawable(context: Context): AnimatedVectorDrawableCompat? {
+		val created = AnimatedVectorDrawableCompat.create(
+			context,
+			R.drawable.ic_launcher_splash_animated_loop,
+		) ?: return null
+		return created.mutate() as? AnimatedVectorDrawableCompat ?: created
+	}
+
+	private fun splashIconSizePx(splashView: View): Int {
+		val density = splashView.resources.displayMetrics.density
+		return (SplashAnimatedIconSpec.VISIBLE_SIZE_DP * density).toInt()
 	}
 
 	fun dismiss(onEnd: () -> Unit = {}) {
 		val provider = splashScreenViewProvider
-		if (provider == null) {
+		if (removed || provider == null) {
+			if (!removed) {
+				exitRequested = true
+			}
 			onEnd()
 			return
 		}
-		val iconView = provider.iconView
-		if (iconView is ImageView) {
-			stopSplashAnimation(iconView.drawable)
+		if (waitingForDraw) {
+			fadeOut(provider, onEnd)
+			return
 		}
+		exitRequested = true
+		waitForContentDraw(provider, onEnd)
+	}
+
+	private fun waitForContentDraw(
+		provider: SplashScreenViewProvider,
+		onEnd: () -> Unit,
+	) {
+		if (removed) {
+			onEnd()
+			return
+		}
+		waitingForDraw = true
+		drawnReadyFrames = 0
+		val content = provider.view.rootView.findViewById(android.R.id.content) ?: provider.view
+		val observer = content.viewTreeObserver
+		val listener = object : ViewTreeObserver.OnPreDrawListener {
+			override fun onPreDraw(): Boolean {
+				drawnReadyFrames = if (contentIsReady(content)) {
+					drawnReadyFrames + 1
+				} else {
+					0
+				}
+				if (drawnReadyFrames >= DRAWN_FRAMES_BEFORE_FADE) {
+					clearContentDrawListener()
+					fadeOut(provider, onEnd)
+				}
+				return true
+			}
+		}
+		contentDrawListener = listener
+		contentDrawObserver = observer
+		observer.addOnPreDrawListener(listener)
+		content.invalidate()
+	}
+
+	private fun contentIsReady(content: View): Boolean {
+		return content is ViewGroup &&
+			content.childCount > 0 &&
+			content.isLaidOut &&
+			content.height > 0
+	}
+
+	private fun fadeOut(provider: SplashScreenViewProvider, onEnd: () -> Unit) {
+		if (removed) {
+			onEnd()
+			return
+		}
+		removed = true
+		waitingForDraw = false
+		drawnReadyFrames = 0
+		clearContentDrawListener()
 		provider.view.animate()
 			.alpha(0f)
 			.setDuration(SplashTimings.FADE_OUT_MILLIS.toLong())
 			.withEndAction {
 				provider.remove()
-				splashScreenViewProvider = null
+				if (splashScreenViewProvider === provider) {
+					splashScreenViewProvider = null
+				}
 				onEnd()
 			}
 			.start()
 	}
 
-	private fun stopSplashAnimation(drawable: Drawable?) {
-		(drawable as? Animatable)?.stop()
+	private fun clearContentDrawListener() {
+		val listener = contentDrawListener ?: return
+		val observer = contentDrawObserver
+		if (observer != null && observer.isAlive) {
+			observer.removeOnPreDrawListener(listener)
+		}
+		contentDrawListener = null
+		contentDrawObserver = null
 	}
 }
+
+private const val DRAWN_FRAMES_BEFORE_FADE = 2

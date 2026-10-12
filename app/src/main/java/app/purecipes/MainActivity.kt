@@ -22,10 +22,12 @@ import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.feature.main.ui.MainScreen
 import app.purecipes.feature.sharing.data.runtime.SharingAndroidRuntime
 import app.purecipes.feature.sharing.domain.usecase.DeliverIncomingLinkUseCase
+import app.purecipes.shared.ui.splash.SplashTimings
 import com.mmk.kmpnotifier.KMPNotifier
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import dev.zacsweers.metro.createGraph
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -36,13 +38,13 @@ class MainActivity : ComponentActivity() {
 
 	private var appGraph: PurecipesAppGraph? = null
 	private var graphLoadStarted = false
+	private var startupPermissionsRequested = false
 
 	private val requestNotificationPermission =
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
 	private val requestLocalNetworkPermission =
 		registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-			startGraphLoadIfNeeded()
 			requestNotificationPermissionIfNeeded()
 		}
 
@@ -63,12 +65,7 @@ class MainActivity : ComponentActivity() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			window.isNavigationBarContrastEnforced = false
 		}
-		if (shouldRequestLocalNetworkPermission()) {
-			requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
-		} else {
-			startGraphLoadIfNeeded()
-			requestNotificationPermissionIfNeeded()
-		}
+		startGraphLoadIfNeeded()
 
 		appGraph = graphState.value
 
@@ -79,12 +76,28 @@ class MainActivity : ComponentActivity() {
 					onDeliverPendingIncomingLink = { deliverDeepLinkFromIntent(intent) },
 					metroViewModelFactory = graph.metroViewModelFactory,
 					onExitRequest = ::finish,
-					onPlatformSplashExitStart = osSplashBridge::dismiss,
+					onPlatformSplashExitStart = { osSplashBridge.dismiss(::requestStartupPermissions) },
 				)
 			}
 		}
 
 		keepOsSplashOnScreen = false
+		lifecycleScope.launch {
+			delay(SplashTimings.MAXIMUM_DWELL_MILLIS.toLong())
+			osSplashBridge.dismiss(::requestStartupPermissions)
+		}
+	}
+
+	private fun requestStartupPermissions() {
+		if (startupPermissionsRequested) {
+			return
+		}
+		startupPermissionsRequested = true
+		if (shouldRequestLocalNetworkPermission()) {
+			requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
+		} else {
+			requestNotificationPermissionIfNeeded()
+		}
 	}
 
 	private fun startGraphLoadIfNeeded() {

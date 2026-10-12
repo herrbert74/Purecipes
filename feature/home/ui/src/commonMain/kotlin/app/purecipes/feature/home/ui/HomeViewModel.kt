@@ -20,6 +20,7 @@ import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.splash.SplashTimings
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import dev.zacsweers.metro.AppScope
@@ -33,11 +34,19 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val FIRST_PAGE_NUMBER = 1
+private const val HOME_SKELETON_AFTER_SPLASH_MILLIS = 1_000
+internal const val HOME_SKELETON_REVEAL_MILLIS =
+	SplashTimings.MINIMUM_DWELL_MILLIS +
+		SplashTimings.FADE_OUT_MILLIS +
+		HOME_SKELETON_AFTER_SPLASH_MILLIS
 
 @AssistedInject
 class HomeViewModel(
@@ -58,7 +67,7 @@ class HomeViewModel(
 	)
 		private set
 
-	var isHomeLoading by mutableStateOf(false)
+	var isHomeLoading by mutableStateOf(true)
 		private set
 
 	var homeErrorMessage by mutableStateOf<String?>(null)
@@ -73,6 +82,7 @@ class HomeViewModel(
 	private var favoriteEventsJob: Job? = null
 	private var recipeViewsJob: Job? = null
 	private var loadedSessionKey: String? = null
+	private var hasHeldInitialSkeleton = false
 	private val homeLoadMutex = Mutex()
 
 	val reloadHomeFeed: () -> Unit = {
@@ -214,9 +224,23 @@ class HomeViewModel(
 
 	private suspend fun loadHome() {
 		homeLoadMutex.withLock {
+			val holdInitialSkeleton = !hasHeldInitialSkeleton && homeFeed.shelves.isEmpty()
 			isHomeLoading = true
 			homeErrorMessage = null
-			val outcome = getHomeFeed()
+			searchReadiness.reportReady()
+			val outcome = coroutineScope {
+				val skeletonHold = if (holdInitialSkeleton) {
+					launch { delay(HOME_SKELETON_REVEAL_MILLIS.milliseconds) }
+				} else {
+					null
+				}
+				val result = getHomeFeed()
+				skeletonHold?.join()
+				result
+			}
+			if (holdInitialSkeleton) {
+				hasHeldInitialSkeleton = true
+			}
 			val feed = outcome.get()
 			if (feed != null) {
 				applyFeed(feed)
@@ -224,7 +248,6 @@ class HomeViewModel(
 				homeErrorMessage = outcome.getError()?.message
 			}
 			isHomeLoading = false
-			searchReadiness.reportReady()
 		}
 	}
 

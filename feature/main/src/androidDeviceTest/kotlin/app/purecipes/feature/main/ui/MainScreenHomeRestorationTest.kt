@@ -10,6 +10,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -73,6 +74,9 @@ class MainScreenHomeRestorationTest {
 			removedRecipeTitle = REMOVED_RECIPE_TITLE,
 		)
 
+		composeRule.waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			composeRule.onAllNodesWithText(REMOVED_RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()
+		}
 		composeRule.onNodeWithText(REMOVED_RECIPE_TITLE).performClick()
 		composeRule.waitForIdle()
 		homeFeedRepository.result = Ok(
@@ -211,5 +215,6 @@ class MainScreenHomeRestorationTest {
 		const val KEPT_RECIPE_TITLE = "Kept pasta"
 		const val REMOVED_RECIPE_TITLE = "Removed pasta"
 		const val REMOVED_RECIPE_ID = 2
+		const val HOME_CONTENT_TIMEOUT_MILLIS = 5_000L
 	}
 }

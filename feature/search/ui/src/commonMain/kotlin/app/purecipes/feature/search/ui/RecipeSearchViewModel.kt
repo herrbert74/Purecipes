@@ -143,6 +143,15 @@ class RecipeSearchViewModel(
 	var totalMatches by mutableIntStateOf(0)
 		private set
 
+	var resultsFirstVisibleItemIndex by mutableIntStateOf(0)
+		private set
+
+	var resultsFirstVisibleItemScrollOffset by mutableIntStateOf(0)
+		private set
+
+	var resultsListSession by mutableIntStateOf(0)
+		private set
+
 	val recipes = mutableStateListOf<RecipeSummary>()
 
 	val nearMissRecipes = mutableStateListOf<NearMissRecipe>()
@@ -436,6 +445,11 @@ class RecipeSearchViewModel(
 		isIngredientMatchLoading = false
 	}
 
+	fun onResultsListScrolled(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
+		resultsFirstVisibleItemIndex = firstVisibleItemIndex
+		resultsFirstVisibleItemScrollOffset = firstVisibleItemScrollOffset
+	}
+
 	fun searchNow() {
 		viewModelScope.launch { doSearch() }
 	}
@@ -460,6 +474,9 @@ class RecipeSearchViewModel(
 	private suspend fun doSearch() {
 		isSearching = true
 		errorMessage = null
+		resultsFirstVisibleItemIndex = 0
+		resultsFirstVisibleItemScrollOffset = 0
+		resultsListSession += 1
 		recipes.clear()
 		nearMissRecipes.clear()
 		totalMatches = 0

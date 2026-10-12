@@ -6,6 +6,7 @@ import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
@@ -38,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
 class MainScreenHardwareBackTest {
 
 	@get:Rule
@@ -89,6 +91,9 @@ class MainScreenHardwareBackTest {
 		composeRule.onNodeWithText("No favorites yet").assertIsDisplayed()
 		pressHardwareBack()
 
+		composeRule.waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			composeRule.onAllNodesWithText("Suggest a feature").fetchSemanticsNodes().isNotEmpty()
+		}
 		composeRule.onNodeWithText("Suggest a feature").assertIsDisplayed()
 	}
 
@@ -224,5 +229,10 @@ class MainScreenHardwareBackTest {
 			composeRule.activity.onBackPressedDispatcher.onBackPressed()
 		}
 		composeRule.waitForIdle()
+	}
+
+	private companion object {
+
+		const val HOME_CONTENT_TIMEOUT_MILLIS = 5_000L
 	}
 }

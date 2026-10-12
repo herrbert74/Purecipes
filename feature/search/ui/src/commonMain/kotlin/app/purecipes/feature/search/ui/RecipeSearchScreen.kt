@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
@@ -71,6 +73,19 @@ fun RecipeSearchScreen(
 	}
 	LaunchedEffect(Unit) {
 		viewModel.onSearchContentVisible()
+	}
+	val resultsListState = remember(viewModel, viewModel.resultsListSession) {
+		LazyGridState(
+			firstVisibleItemIndex = viewModel.resultsFirstVisibleItemIndex,
+			firstVisibleItemScrollOffset = viewModel.resultsFirstVisibleItemScrollOffset,
+		)
+	}
+	LaunchedEffect(resultsListState) {
+		snapshotFlow {
+			resultsListState.firstVisibleItemIndex to resultsListState.firstVisibleItemScrollOffset
+		}.collect { (index, offset) ->
+			viewModel.onResultsListScrolled(index, offset)
+		}
 	}
 
 	if (viewModel.isFilterSheetVisible) {
@@ -166,6 +181,7 @@ fun RecipeSearchScreen(
 			},
 			onRecipeSelect = onRecipeSelect,
 			onRetryClick = viewModel::searchNow,
+			resultsListState = resultsListState,
 			bannerAdViewModel = bannerAdViewModel,
 			modifier = Modifier
 				.weight(1f)

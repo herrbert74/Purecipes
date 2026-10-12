@@ -31,7 +31,6 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
@@ -57,12 +56,19 @@ internal fun HomeFeedContent(
 	listState: LazyListState = rememberLazyListState(),
 ) {
 	val contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime)
+	val listContentPadding = contentWindowInsets.asPaddingValues() + PaddingValues(
+		bottom = PurecipesTheme.space.m,
+	)
+	val listModifier = modifier
+		.fillMaxSize()
+		.consumeWindowInsets(contentWindowInsets)
 	val insetContentModifier = modifier
 		.consumeWindowInsets(contentWindowInsets)
 		.padding(contentWindowInsets.asPaddingValues())
 	when {
-		isLoading && homeFeed.shelves.isEmpty() -> RecipeCardSkeletonGrid(
-			modifier = insetContentModifier,
+		isLoading && homeFeed.shelves.isEmpty() -> HomeFeedSkeleton(
+			modifier = listModifier,
+			contentPadding = listContentPadding,
 		)
 
 		errorMessage != null && homeFeed.shelves.isEmpty() -> EmptyStateContent(
@@ -81,14 +87,9 @@ internal fun HomeFeedContent(
 
 		else -> LazyColumn(
 			state = listState,
-			modifier = modifier
-				.fillMaxSize()
-				.consumeWindowInsets(contentWindowInsets)
-				.testTag(HOME_FEED_LIST_TAG),
+			modifier = listModifier.testTag(HOME_FEED_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.l),
-			contentPadding = contentWindowInsets.asPaddingValues() + PaddingValues(
-				bottom = PurecipesTheme.space.m,
-			),
+			contentPadding = listContentPadding,
 		) {
 			item(key = HOME_TITLE_TAG) {
 				Text(
