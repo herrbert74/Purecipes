@@ -34,12 +34,12 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.TimeSource
 
 private const val FIRST_PAGE_NUMBER = 1
 private const val HOME_SKELETON_AFTER_SPLASH_MILLIS = 1_000
@@ -228,13 +228,17 @@ class HomeViewModel(
 			isHomeLoading = true
 			homeErrorMessage = null
 			searchReadiness.reportReady()
-			val revealStarted = TimeSource.Monotonic.markNow()
-			val outcome = getHomeFeed()
-			if (holdInitialSkeleton) {
-				val remaining = HOME_SKELETON_REVEAL_MILLIS.milliseconds - revealStarted.elapsedNow()
-				if (remaining.isPositive()) {
-					delay(remaining)
+			val outcome = coroutineScope {
+				val skeletonHold = if (holdInitialSkeleton) {
+					launch { delay(HOME_SKELETON_REVEAL_MILLIS.milliseconds) }
+				} else {
+					null
 				}
+				val result = getHomeFeed()
+				skeletonHold?.join()
+				result
+			}
+			if (holdInitialSkeleton) {
 				hasHeldInitialSkeleton = true
 			}
 			val feed = outcome.get()
