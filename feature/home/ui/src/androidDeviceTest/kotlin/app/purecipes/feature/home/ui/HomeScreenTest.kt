@@ -75,6 +75,7 @@ class HomeScreenTest {
 			}
 		}
 
+		onNodeWithTag(HOME_TITLE_TAG).assertIsDisplayed()
 		onNodeWithText(KEPT_RECIPE_TITLE).assertIsDisplayed()
 		onNodeWithText(REMOVED_RECIPE_TITLE).assertIsDisplayed()
 		homeFeedRepository.result = Ok(

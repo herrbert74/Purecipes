@@ -3,10 +3,12 @@ package app.purecipes
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -52,7 +54,15 @@ class MainActivity : ComponentActivity() {
 
 		super.onCreate(savedInstanceState)
 		KMPNotifier.onCreateOrOnNewIntent(intent)
-		enableEdgeToEdge()
+		enableEdgeToEdge(
+			navigationBarStyle = SystemBarStyle.auto(
+				lightScrim = Color.TRANSPARENT,
+				darkScrim = Color.TRANSPARENT,
+			),
+		)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			window.isNavigationBarContrastEnforced = false
+		}
 		if (shouldRequestLocalNetworkPermission()) {
 			requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
 		} else {

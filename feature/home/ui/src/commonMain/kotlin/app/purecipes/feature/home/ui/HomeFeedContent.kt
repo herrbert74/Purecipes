@@ -3,11 +3,19 @@ package app.purecipes.feature.home.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -32,6 +40,7 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 
 internal const val HOME_FEED_LIST_TAG = "homeFeedList"
+internal const val HOME_TITLE_TAG = "homeTitle"
 
 @Composable
 internal fun HomeFeedContent(
@@ -47,15 +56,21 @@ internal fun HomeFeedContent(
 	bannerAdViewModel: BannerAdViewModel? = null,
 	listState: LazyListState = rememberLazyListState(),
 ) {
+	val contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime)
+	val insetContentModifier = modifier
+		.consumeWindowInsets(contentWindowInsets)
+		.padding(contentWindowInsets.asPaddingValues())
 	when {
-		isLoading && homeFeed.shelves.isEmpty() -> RecipeCardSkeletonGrid(modifier = modifier)
+		isLoading && homeFeed.shelves.isEmpty() -> RecipeCardSkeletonGrid(
+			modifier = insetContentModifier,
+		)
 
 		errorMessage != null && homeFeed.shelves.isEmpty() -> EmptyStateContent(
 			icon = AppIcons.Warning,
 			iconContentDescription = "Error",
 			title = errorMessage,
 			description = "Check your connection, then try again.",
-			modifier = modifier,
+			modifier = insetContentModifier,
 			action = {
 				PurecipesButton(
 					text = "Retry",
@@ -66,10 +81,26 @@ internal fun HomeFeedContent(
 
 		else -> LazyColumn(
 			state = listState,
-			modifier = modifier.fillMaxSize().testTag(HOME_FEED_LIST_TAG),
+			modifier = modifier
+				.fillMaxSize()
+				.consumeWindowInsets(contentWindowInsets)
+				.testTag(HOME_FEED_LIST_TAG),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.l),
-			contentPadding = PaddingValues(bottom = PurecipesTheme.space.m),
+			contentPadding = contentWindowInsets.asPaddingValues() + PaddingValues(
+				bottom = PurecipesTheme.space.m,
+			),
 		) {
+			item(key = HOME_TITLE_TAG) {
+				Text(
+					text = "Purecipes",
+					modifier = Modifier
+						.padding(horizontal = PurecipesTheme.space.m)
+						.padding(top = PurecipesTheme.space.m)
+						.testTag(HOME_TITLE_TAG),
+					style = PurecipesTheme.typography.headlineMedium,
+					color = PurecipesTheme.colorScheme.onSurface,
+				)
+			}
 			items(
 				count = homeFeed.shelves.size,
 				key = { index -> homeFeed.shelves[index].shelfKey() },
