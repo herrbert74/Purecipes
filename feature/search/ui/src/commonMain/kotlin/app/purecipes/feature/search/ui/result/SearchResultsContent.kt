@@ -90,7 +90,7 @@ internal fun SearchResultsContent(
 			contentPadding = PaddingValues(
 				start = PurecipesTheme.space.m,
 				end = PurecipesTheme.space.m,
-				bottom = PurecipesTheme.space.m,
+				bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
 			),
 		) {
 			if (browseTiles.isNotEmpty()) {

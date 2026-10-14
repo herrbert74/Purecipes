@@ -57,7 +57,7 @@ internal fun HomeFeedContent(
 ) {
 	val contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime)
 	val listContentPadding = contentWindowInsets.asPaddingValues() + PaddingValues(
-		bottom = PurecipesTheme.space.m,
+		bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
 	)
 	val listModifier = modifier
 		.fillMaxSize()

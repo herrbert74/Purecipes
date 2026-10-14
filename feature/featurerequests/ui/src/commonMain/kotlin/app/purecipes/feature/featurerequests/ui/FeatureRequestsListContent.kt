@@ -85,7 +85,7 @@ internal fun FeatureRequestsListContent(
 				contentPadding = PaddingValues(
 					start = PurecipesTheme.space.m,
 					end = PurecipesTheme.space.m,
-					bottom = PurecipesTheme.space.xxl,
+					bottom = PurecipesTheme.space.xxl + PurecipesTheme.bottomBarPadding,
 				),
 			) {
 				items(state.featureRequests.size, key = { state.featureRequests[it].id }) { index ->

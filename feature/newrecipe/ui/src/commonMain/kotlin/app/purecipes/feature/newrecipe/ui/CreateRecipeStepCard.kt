@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -35,6 +37,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.icon.AppIcons
@@ -80,8 +83,9 @@ internal fun CreateRecipeStepCard(
 	var isStepFieldFocused by remember { mutableStateOf(false) }
 	val stepEditorBringIntoViewRequester = remember { BringIntoViewRequester() }
 	val isLastStep = index == itemCount - 1
+	val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
 
-	LaunchedEffect(isStepFieldFocused) {
+	LaunchedEffect(isStepFieldFocused, imeBottom) {
 		if (isStepFieldFocused) {
 			delay(STEP_FIELD_SCROLL_DELAY_MILLIS)
 			stepEditorBringIntoViewRequester.bringIntoView()

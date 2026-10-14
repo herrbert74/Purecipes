@@ -87,7 +87,12 @@ fun AuthenticationScreen(
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
 					.padding(innerPadding)
-					.padding(PurecipesTheme.space.l),
+					.padding(
+						start = PurecipesTheme.space.l,
+						top = PurecipesTheme.space.l,
+						end = PurecipesTheme.space.l,
+						bottom = PurecipesTheme.space.l + PurecipesTheme.bottomBarPadding,
+					),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				viewModel.message?.let { message ->

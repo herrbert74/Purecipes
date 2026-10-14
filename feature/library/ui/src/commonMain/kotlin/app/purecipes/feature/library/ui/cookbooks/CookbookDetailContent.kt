@@ -118,7 +118,12 @@ internal fun CookbookDetailContent(
 					.padding(innerPadding),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-				contentPadding = PaddingValues(PurecipesTheme.space.m),
+				contentPadding = PaddingValues(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+				),
 			) {
 				item(span = { GridItemSpan(maxLineSpan) }) {
 					Text(

@@ -88,7 +88,7 @@ internal fun CookbooksTabContent(
 				contentPadding = PaddingValues(
 					start = PurecipesTheme.space.m,
 					end = PurecipesTheme.space.m,
-					bottom = PurecipesTheme.space.m,
+					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
 				),
 			) {
 				items(cookbooks.size, key = { cookbooks[it].id }) { index ->
