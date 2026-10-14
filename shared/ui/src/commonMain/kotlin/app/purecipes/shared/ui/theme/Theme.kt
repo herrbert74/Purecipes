@@ -266,6 +266,7 @@ data class Space(
 	val l: Dp = 24.dp,
 	val xl: Dp = 32.dp,
 	val xxl: Dp = 48.dp,
+	val bottomBar: Dp = 0.dp,
 )
 
 private val LocalPurecipesColorScheme = staticCompositionLocalOf<ColorScheme> {
@@ -280,7 +281,7 @@ private val LocalPurecipesShapes = staticCompositionLocalOf<Shapes> {
 	error("No Shapes provided. Wrap your content in PurecipesTheme.")
 }
 
-private val LocalPurecipesSpace = staticCompositionLocalOf { Space() }
+val LocalPurecipesSpace = staticCompositionLocalOf { Space() }
 
 private val defaultFixedColors = getFixedColors()
 
@@ -304,6 +305,10 @@ object PurecipesTheme {
 	val fixedColors: FixedColorScheme
 		@Composable
 		get() = LocalFixedColors.current
+
+	val bottomBarPadding: Dp
+		@Composable
+		get() = LocalPurecipesSpace.current.bottomBar
 
 	@Composable
 	fun fixedScrimBrush(): Brush = Brush.verticalGradient(

@@ -107,7 +107,12 @@ fun SettingsScreen(
 				.fillMaxSize()
 				.verticalScroll(scrollState)
 				.padding(innerPadding)
-				.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.m),
+				.padding(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+				),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		) {
 			GoPremiumSettingsPanel(onOpenPaywall = onOpenPaywall)

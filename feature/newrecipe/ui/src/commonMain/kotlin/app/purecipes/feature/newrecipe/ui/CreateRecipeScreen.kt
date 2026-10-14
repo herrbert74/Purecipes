@@ -161,9 +161,14 @@ fun CreateRecipeScreen(
 					modifier = Modifier
 						.weight(1f)
 						.fillMaxWidth()
-						.verticalScroll(scrollState)
 						.imePadding()
-						.padding(PurecipesTheme.space.m),
+						.verticalScroll(scrollState)
+						.padding(
+							start = PurecipesTheme.space.m,
+							top = PurecipesTheme.space.m,
+							end = PurecipesTheme.space.m,
+							bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+						),
 				) {
 					CreateRecipeForm(
 						selectedSection = viewModel.selectedSection,

@@ -4,11 +4,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldState
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -19,6 +23,9 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.theme.LocalPurecipesSpace
+import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -46,31 +53,41 @@ internal fun MainNavigationSuiteScaffold(
 	LaunchedEffect(isNavBarVisible, selectedTab.stackId) {
 		scrollConnection.reset(visible = isNavBarVisible)
 	}
-	NavigationSuiteScaffold(
-		modifier = modifier.fillMaxSize(),
-		state = scaffoldState,
-		navigationItems = {
-			mainTabs.forEach { tab ->
-				NavigationSuiteItem(
-					selected = tab.stackId == selectedTab.stackId,
-					onClick = { onTabSelect(tab) },
-					icon = {
-						Icon(
-							imageVector = tab.icon,
-							contentDescription = tab.label,
-						)
-					},
-					label = { Text(text = tab.label) },
-				)
-			}
-		},
+	val adaptiveInfo = currentWindowAdaptiveInfo()
+	val navSuiteType = NavigationSuiteScaffoldDefaults.navigationSuiteType(adaptiveInfo)
+	val isBottomBar = navSuiteType == NavigationSuiteType.ShortNavigationBarCompact ||
+		navSuiteType == NavigationSuiteType.ShortNavigationBarMedium ||
+		navSuiteType == NavigationSuiteType.NavigationBar
+	val bottomBarPadding = if (isNavBarVisible && isBottomBar) 80.dp else 0.dp
+	CompositionLocalProvider(
+		LocalPurecipesSpace provides PurecipesTheme.space.copy(bottomBar = bottomBarPadding),
 	) {
-		Box(
-			modifier = Modifier
-				.fillMaxSize()
-				.nestedScroll(scrollConnection),
+		NavigationSuiteScaffold(
+			modifier = modifier.fillMaxSize(),
+			state = scaffoldState,
+			navigationItems = {
+				mainTabs.forEach { tab ->
+					NavigationSuiteItem(
+						selected = tab.stackId == selectedTab.stackId,
+						onClick = { onTabSelect(tab) },
+						icon = {
+							Icon(
+								imageVector = tab.icon,
+								contentDescription = tab.label,
+							)
+						},
+						label = { Text(text = tab.label) },
+					)
+				}
+			},
 		) {
-			content()
+			Box(
+				modifier = Modifier
+					.fillMaxSize()
+					.nestedScroll(scrollConnection),
+			) {
+				content()
+			}
 		}
 	}
 }
@@ -96,13 +113,25 @@ private class TabBarScrollConnection(
 		if (!canChangeVisibility() || !source.isDragOrFling() || abs(available.y) <= abs(available.x)) {
 			return Offset.Zero
 		}
-		accumulatedScroll += available.y
-		if (abs(accumulatedScroll) >= TAB_BAR_SCROLL_THRESHOLD || !tabBarVisible) {
-			if (abs(accumulatedScroll) >= TAB_BAR_SCROLL_THRESHOLD && tabBarVisible) {
-				setVisible(visible = false)
+		if (available.y < 0f) {
+			if (accumulatedScroll > 0f) {
+				accumulatedScroll = 0f
 			}
-			accumulatedScroll = 0f
+			accumulatedScroll += available.y
+			if (accumulatedScroll <= -TAB_BAR_SCROLL_THRESHOLD && tabBarVisible) {
+				setVisible(visible = false)
+				accumulatedScroll = 0f
+			}
 			scheduleShowWhenIdle()
+		} else if (available.y > 0f) {
+			if (accumulatedScroll < 0f) {
+				accumulatedScroll = 0f
+			}
+			accumulatedScroll += available.y
+			if (accumulatedScroll >= TAB_BAR_SCROLL_THRESHOLD && !tabBarVisible) {
+				setVisible(visible = true)
+				accumulatedScroll = 0f
+			}
 		}
 		return Offset.Zero
 	}

@@ -98,7 +98,12 @@ internal fun HomeShelfContent(
 				requestInitialPageAutomatically = false,
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-				contentPadding = PaddingValues(PurecipesTheme.space.m),
+				contentPadding = PaddingValues(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+				),
 				firstPageEmptyIndicator = {
 					Box(
 						modifier = Modifier

@@ -97,7 +97,7 @@ internal fun RecipeDetailsContent(
 			start = PurecipesTheme.space.m,
 			top = PurecipesTheme.space.m,
 			end = PurecipesTheme.space.m,
-			bottom = PurecipesTheme.space.l,
+			bottom = PurecipesTheme.space.l + PurecipesTheme.bottomBarPadding,
 		),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {

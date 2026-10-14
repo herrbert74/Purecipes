@@ -44,7 +44,7 @@ internal fun SearchResultsSkeleton(
 		contentPadding = PaddingValues(
 			start = PurecipesTheme.space.m,
 			end = PurecipesTheme.space.m,
-			bottom = PurecipesTheme.space.m,
+			bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
 		),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),

@@ -93,7 +93,12 @@ internal fun MyRecipesContent(
 						columns = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
 						modifier = Modifier.fillMaxSize(),
 						state = gridState,
-						contentPadding = PaddingValues(PurecipesTheme.space.m),
+						contentPadding = PaddingValues(
+							start = PurecipesTheme.space.m,
+							top = PurecipesTheme.space.m,
+							end = PurecipesTheme.space.m,
+							bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+						),
 						verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 						horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 					) {
