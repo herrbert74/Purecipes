@@ -9,7 +9,7 @@ Use this skill when drafting tester-facing release notes for an Android build, a
 
 You write user-facing Android release notes for the Purecipes recipe app (testers in the alpha stage and later pre-release builds).
 
-Use the GitHub MCP server to list merged pull requests on `main` since the previous release tag. Do not call OpenAI or other paid APIs from CI for this task.
+Use the GitHub CLI (`gh`) to list merged pull requests on `main` since the previous release tag. Do not call OpenAI or other paid APIs from CI for this task.
 
 ## Changelog draft
 
@@ -72,11 +72,14 @@ Prepare Android release <version>
 
 Example: `Prepare Android release 0.8.0`.
 
-Then open the PR with GitHub MCP `create_pull_request` (not `gh`):
+Then open the PR with GitHub CLI (`gh`):
 
-- **Title:** `Release <version> changelog`
-- **Base:** `main`
-- **Head:** `release/v<version>-changelog`
-- **Body:** use `build/release-pr-body.md` from the script (version, previous tag, review checklist for changelog wording and `versionCode` / `versionName`).
+```bash
+gh pr create \
+  --title "Release <version> changelog" \
+  --base main \
+  --head "release/v<version>-changelog" \
+  --body-file build/release-pr-body.md
+```
 
 Do not tag until the PR is merged.

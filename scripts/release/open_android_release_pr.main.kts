@@ -121,7 +121,7 @@ fun main(args: Array<String>) {
 		System.err.println("  <version> <previous_tag> [bump_version_code]")
 		System.err.println("  Requires CHANGELOG.md section ## [version] drafted locally first.")
 		System.err.println("  Requires git authenticated for this repository.")
-		System.err.println("  Open the PR with GitHub MCP create_pull_request (see build/release-pr-body.md).")
+		System.err.println("  Open the PR with gh pr create (see build/release-pr-body.md).")
 		kotlin.system.exitProcess(1)
 	}
 	val version = args[0]
@@ -177,11 +177,12 @@ fun main(args: Array<String>) {
 	bodyFile.parentFile?.mkdirs()
 	bodyFile.writeText(prBody)
 	println("Pushed branch $branch")
-	println("Open a PR with GitHub MCP create_pull_request:")
-	println("  title: Release $version changelog")
-	println("  base: main")
-	println("  head: $branch")
-	println("  body: ${bodyFile.absolutePath}")
+	println("Open a PR with GitHub CLI (gh):")
+	println("  gh pr create \\")
+	println("    --title \"Release $version changelog\" \\")
+	println("    --base main \\")
+	println("    --head \"$branch\" \\")
+	println("    --body-file \"${bodyFile.absolutePath}\"")
 }
 
 main(args)
