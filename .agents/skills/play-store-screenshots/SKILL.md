@@ -1,3 +1,8 @@
+---
+name: play-store-screenshots
+description: Generate, update, frame, or upload Google Play listing screenshots.
+---
+
 # Skill: Play Store screenshots
 
 Use this skill when generating, updating, framing, or uploading Google Play listing screenshots for Purecipes (`app.purecipes`).

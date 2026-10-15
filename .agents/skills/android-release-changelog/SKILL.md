@@ -1,3 +1,8 @@
+---
+name: android-release-changelog
+description: Draft tester-facing release notes for an Android build and prepare the Android release PR.
+---
+
 # Skill: Android release changelog
 
 Use this skill when drafting tester-facing release notes for an Android build, and when preparing the Android release PR.

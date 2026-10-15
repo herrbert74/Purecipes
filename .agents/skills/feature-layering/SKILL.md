@@ -1,3 +1,8 @@
+---
+name: feature-layering
+description: Maintain architecture conventions for feature data sources, repositories, and use cases.
+---
+
 # Skill: Feature Layering
 
 Use this skill when you add or refactor feature module data flow.

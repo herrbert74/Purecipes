@@ -4,6 +4,21 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.15.0] - 2026-10-15
+
+### Added
+
+- Home tab with habit shelves, editorial collections, and full-shelf view.
+
+### Changed
+
+- Edge-to-edge layout with a scrolling navigation bar that returns when scrolling stops.
+
+### Fixed
+
+- Bottom navigation bar no longer covers screen content.
+- Create recipe action buttons stay visible above the keyboard.
+
 ## [0.14.0] - 2026-10-04
 
 ### Changed
