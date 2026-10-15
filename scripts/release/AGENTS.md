@@ -6,12 +6,12 @@ Guidelines for Android release automation under [`scripts/release/`](.).
 
 Release automation lives in `scripts/release/*.main.kts`. Prefer Kotlin scripts over bash. CI installs the Kotlin compiler via [`.github/scripts/install-kotlin-compiler.sh`](../../.github/scripts/install-kotlin-compiler.sh) only for the distribute workflow (`extract_release_notes`).
 
-## Rule: Prepare releases locally with GitHub MCP
+## Rule: Prepare releases locally with GitHub CLI
 
-- Draft `CHANGELOG.md` locally using the GitHub MCP server and [`.agents/skills/android-release-changelog/SKILL.md`](../../.agents/skills/android-release-changelog/SKILL.md).
+- Draft `CHANGELOG.md` locally using the GitHub CLI (`gh`) and [`.agents/skills/android-release-changelog/SKILL.md`](../../.agents/skills/android-release-changelog/SKILL.md).
 - Bump `versionName` and increment `versionCode` in `gradle/libs.versions.toml` (see [`bump_android_version.main.kts`](bump_android_version.main.kts)); release builds use these values. The bump also rewrites `iosApp/PurecipesIOSApp/Config/Versions.xcconfig` so Xcode `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` stay in sync.
 - Regenerate the open source license definitions as part of release prep (`open_android_release_pr.main.kts` runs `:app:exportLibraryDefinitions` and `:feature:settings:ui:exportLibraryDefinitions`). Do not apply the `com.mikepenz.aboutlibraries.plugin.android` plugin; the `aboutlibraries.json` files are committed and regenerated only during release prep.
-- Open the release PR with GitHub MCP (`create_branch`, `push_files`, `create_pull_request`). Never commit release prep directly to `main`.
+- Open the release PR with GitHub CLI (`gh pr create`). Never commit release prep directly to `main`.
 - Do not add changelog LLM API keys or OpenAI calls to GitHub Actions.
 
 See [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md).

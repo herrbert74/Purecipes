@@ -4,7 +4,7 @@ Release builds use the **release** variant (`app.purecipes`), [Firebase App Dist
 
 Release scripts: [`scripts/release/README.md`](../../scripts/release/README.md).
 
-Prepare releases locally with the GitHub MCP server: [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md).
+Prepare releases locally with the GitHub CLI (`gh`): [`.agents/instructions/android-release.md`](../../.agents/instructions/android-release.md).
 
 Play AAB upload tool: [`tools/play-publish/README.md`](../../tools/play-publish/README.md).
 

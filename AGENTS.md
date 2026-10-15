@@ -88,10 +88,9 @@ See the **Compose UI file layout** bullet under [Core Principles](#core-principl
 If this MCP server is not available, stop all work and notify the user.
 If possible find a way to restart in the same request, for example by using ask question tool.
 
-## Rule: GitHub operations (user-github MCP server)
+## Rule: GitHub operations (gh CLI)
 
-For issues, pull requests, checks, releases, and other GitHub tasks, use the **user-github** MCP server tools. Do **not** use the GitHub CLI (`gh`).
-If this MCP server is not available, stop and notify the user instead of falling back to `gh`.
+For issues, pull requests, checks, releases, and other GitHub tasks, use the GitHub CLI (`gh`). Do not use the `user-github` MCP server.
 
 ## Rule: Use kotlin-result library
 

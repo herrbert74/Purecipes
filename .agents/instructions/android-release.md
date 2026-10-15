@@ -1,11 +1,11 @@
 # Android release preparation (local)
 
-Changelog drafting is **local only** (your AI assistant + GitHub MCP). CI only **distributes** on tag push.
+Changelog drafting is **local only** (your AI assistant + GitHub CLI `gh`). CI only **distributes** on tag push.
 
-## Draft CHANGELOG with GitHub MCP
+## Draft CHANGELOG with GitHub CLI
 
 1. Identify `previous_tag` (e.g. `0.1.0`) and new `version` (e.g. `0.2.0`).
-2. Use the **GitHub MCP server** to list merged pull requests on `main` since that tag (e.g. `search_pull_requests`, `list_commits` on the compare range).
+2. Use the **GitHub CLI** (`gh`) to list merged pull requests on `main` since that tag (e.g. `gh pr list --state merged --base main`).
 3. Follow [`.agents/skills/android-release-changelog/SKILL.md`](../skills/android-release-changelog/SKILL.md) and draft a section in root [`CHANGELOG.md`](../../CHANGELOG.md):
 
    ```markdown
@@ -44,19 +44,24 @@ The About screen ships committed `aboutlibraries.json` files instead of using th
 
 This updates `app/src/main/res/raw/aboutlibraries.json` (Android) and `feature/settings/ui/src/commonMain/composeResources/files/aboutlibraries.json` (iOS / WASM / JVM). [`open_android_release_pr.main.kts`](../../scripts/release/open_android_release_pr.main.kts) runs this automatically.
 
-## Open the release PR with GitHub MCP
+## Open the release PR with GitHub CLI
 
 Never commit release prep directly to `main`. The release PR must include **`CHANGELOG.md`** (new `## [version]` section), **`gradle/libs.versions.toml`** (updated `versionName` / `versionCode`), and the regenerated **`aboutlibraries.json`** license files.
 
 1. Sync with `main` (stash or commit unrelated work first).
 2. Bump versions (see above) if not already done.
-3. Create branch `release/v<version>-changelog` from `main` (GitHub MCP `create_branch`, or local `git checkout -b`).
-4. Push `CHANGELOG.md`, `gradle/libs.versions.toml`, and the regenerated `aboutlibraries.json` files on that branch (GitHub MCP `push_files`, or local `git commit` + `git push`).
-5. Open a PR to `main` with GitHub MCP `create_pull_request`:
-   - **Title:** `Release <version> changelog`
-   - **Body:** version, previous tag, and review checklist (changelog wording, `versionCode` / `versionName`, merge before tagging).
+3. Create branch `release/v<version>-changelog` from `main` (local `git checkout -b`).
+4. Push `CHANGELOG.md`, `gradle/libs.versions.toml`, and the regenerated `aboutlibraries.json` files on that branch (local `git commit` + `git push`).
+5. Open a PR to `main` with GitHub CLI (`gh`):
+   ```bash
+   gh pr create \
+     --title "Release <version> changelog" \
+     --base main \
+     --head "release/v<version>-changelog" \
+     --body-file build/release-pr-body.md
+   ```
 
-Optional: [`open_android_release_pr.main.kts`](../../scripts/release/open_android_release_pr.main.kts) can validate the changelog section, bump versions, and push the branch with local `git`; use GitHub MCP `create_pull_request` to open the PR.
+Optional: [`open_android_release_pr.main.kts`](../../scripts/release/open_android_release_pr.main.kts) can validate the changelog section, bump versions, and push the branch with local `git`; then use `gh pr create` to open the PR.
 
 ## After merge
 

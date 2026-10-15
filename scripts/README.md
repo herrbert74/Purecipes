@@ -6,7 +6,7 @@ Kotlin scripts and small shell helpers for local and CI workflows. Each area has
 |--------|---------|---------------|
 | [`scraping/`](scraping/) | Recipe website scraping and Postgres import | [`scraping/README.md`](scraping/README.md) |
 | [`editorial/`](editorial/) | Editorial home shelves: create and edit lists in Postgres | [`editorial/README.md`](editorial/README.md) |
-| [`release/`](release/) | Changelog (local + GitHub MCP), release PR, Firebase notes | [`release/README.md`](release/README.md) |
+| [`release/`](release/) | Changelog (local + GitHub CLI), release PR, Firebase notes | [`release/README.md`](release/README.md) |
 | [`ios/`](ios/) | iOS-only helpers (Usercentrics xcframework fetch) | — |
 
 Agent guidelines: [`scraping/AGENTS.md`](scraping/AGENTS.md), [`release/AGENTS.md`](release/AGENTS.md).
