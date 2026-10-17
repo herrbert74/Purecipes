@@ -103,7 +103,7 @@ internal fun RecipeDetailsContent(
 					if (listState.firstVisibleItemIndex == 0) {
 						listState.firstVisibleItemScrollOffset.toFloat()
 					} else {
-						0f
+						Float.MAX_VALUE
 					}
 				},
 			)
