@@ -55,6 +55,7 @@ fun RecipeDetailsScreenContent(
 				onBack = {},
 				onShare = {},
 				containerColor = Color.Transparent,
+				titleAlpha = 0f,
 			)
 		}
 	}

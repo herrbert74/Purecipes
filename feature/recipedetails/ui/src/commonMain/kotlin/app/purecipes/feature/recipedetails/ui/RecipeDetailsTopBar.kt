@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -12,6 +11,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -38,6 +38,7 @@ internal fun RecipeDetailsTopBar(
 	onShare: () -> Unit,
 	modifier: Modifier = Modifier,
 	containerColor: Color = Color.Transparent,
+	titleAlpha: Float = 1f,
 ) {
 	Box(modifier = modifier.fillMaxWidth()) {
 		if (containerColor.alpha < 1f) {
@@ -60,15 +61,14 @@ internal fun RecipeDetailsTopBar(
 		val buttonAlpha = BUTTON_BACKGROUND_ALPHA * (1f - containerColor.alpha)
 		TopAppBar(
 			title = {
-				Text(
-					text = title,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
-					modifier = Modifier
-						.clip(CircleShape)
-						.background(PurecipesTheme.colorScheme.surface.copy(alpha = buttonAlpha))
-						.padding(horizontal = PurecipesTheme.space.s, vertical = PurecipesTheme.space.xs),
-				)
+				if (titleAlpha > 0f) {
+					Text(
+						text = title,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+						modifier = Modifier.alpha(titleAlpha),
+					)
+				}
 			},
 			navigationIcon = {
 				if (showBackNavigation) {

@@ -110,6 +110,17 @@ internal fun RecipeDetailsContent(
 		}
 
 		item {
+			Text(
+				text = recipe.title,
+				style = PurecipesTheme.typography.headlineSmall,
+				color = PurecipesTheme.colorScheme.onSurface,
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(horizontal = PurecipesTheme.space.m),
+			)
+		}
+
+		item {
 			RecipeDetailsTopBarActions(
 				canManageFavorites = canManageFavorites,
 				isFavorite = recipe.isFavorite,

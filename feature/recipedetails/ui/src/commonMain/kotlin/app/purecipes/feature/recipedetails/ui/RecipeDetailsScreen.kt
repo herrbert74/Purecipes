@@ -65,6 +65,18 @@ fun RecipeDetailsScreen(
 			}
 		}
 	}
+	val titleAlpha by remember {
+		derivedStateOf {
+			when {
+				listState.firstVisibleItemIndex == 0 -> 0f
+				listState.firstVisibleItemIndex == 1 -> {
+					(listState.firstVisibleItemScrollOffset / TITLE_FADE_RANGE).coerceIn(0f, 1f)
+				}
+
+				else -> 1f
+			}
+		}
+	}
 	val swipeDismissState = rememberRecipeDetailsSwipeDismissState(
 		listState = listState,
 		enabled = showBackNavigation,
@@ -176,6 +188,11 @@ fun RecipeDetailsScreen(
 			} else {
 				PurecipesTheme.colorScheme.surface
 			},
+			titleAlpha = if (viewModel.recipeDetails != null) {
+				titleAlpha
+			} else {
+				1f
+			},
 		)
 
 		RecipeDetailsNutritionOverlay(
@@ -205,5 +222,6 @@ fun RecipeDetailsScreen(
 	}
 }
 
+private const val TITLE_FADE_RANGE = 120f
 private const val TOP_BAR_SCROLL_RANGE = 400f
 private val LOADING_TOP_PADDING = 64.dp
