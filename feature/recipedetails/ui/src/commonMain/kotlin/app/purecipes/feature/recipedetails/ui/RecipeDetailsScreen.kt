@@ -85,7 +85,16 @@ fun RecipeDetailsScreen(
 		viewModel.onScreenVisible()
 	}
 
-	Box(modifier = modifier.fillMaxSize()) {
+	val edgeSwipeBackState = rememberRecipeDetailsEdgeSwipeBackState(
+		enabled = showBackNavigation,
+		onDismiss = onBack,
+	)
+
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.recipeDetailsEdgeSwipeBack(edgeSwipeBackState),
+	) {
 		Scaffold(
 			modifier = Modifier.fillMaxSize(),
 			bottomBar = {
