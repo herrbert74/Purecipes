@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,13 +18,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAd
 import app.purecipes.feature.ads.ui.BannerAdViewModel
@@ -54,6 +55,16 @@ fun RecipeDetailsScreen(
 	var showNutritionDialog by remember { mutableStateOf(false) }
 	var newCookbookName by rememberSaveable { mutableStateOf("") }
 	val showBackNavigation = rememberShowRecipeDetailsBackNavigation()
+	val listState = rememberLazyListState()
+	val topBarAlpha by remember {
+		derivedStateOf {
+			if (listState.firstVisibleItemIndex > 0) {
+				1f
+			} else {
+				(listState.firstVisibleItemScrollOffset / TOP_BAR_SCROLL_RANGE).coerceIn(0f, 1f)
+			}
+		}
+	}
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
@@ -102,7 +113,7 @@ fun RecipeDetailsScreen(
 					modifier = Modifier
 						.fillMaxSize()
 						.padding(innerPadding)
-						.padding(top = 64.dp),
+						.padding(top = LOADING_TOP_PADDING),
 				)
 
 				viewModel.errorMessage != null -> RecipeDetailsMessageScreen(
@@ -111,7 +122,7 @@ fun RecipeDetailsScreen(
 					modifier = Modifier
 						.fillMaxSize()
 						.padding(innerPadding)
-						.padding(top = 64.dp),
+						.padding(top = LOADING_TOP_PADDING),
 				)
 
 				viewModel.recipeDetails != null -> RecipeDetailsContent(
@@ -130,6 +141,7 @@ fun RecipeDetailsScreen(
 					onStartCooking = { onStartCooking(recipeId) },
 					onToggleFavorite = viewModel::toggleFavorite,
 					bottomPadding = innerPadding.calculateBottomPadding(),
+					listState = listState,
 					modifier = Modifier.fillMaxSize(),
 				)
 
@@ -139,7 +151,7 @@ fun RecipeDetailsScreen(
 					modifier = Modifier
 						.fillMaxSize()
 						.padding(innerPadding)
-						.padding(top = 64.dp),
+						.padding(top = LOADING_TOP_PADDING),
 				)
 			}
 		}
@@ -151,7 +163,7 @@ fun RecipeDetailsScreen(
 			onBack = onBack,
 			onShare = viewModel::shareCurrentRecipe,
 			containerColor = if (viewModel.recipeDetails != null) {
-				Color.Transparent
+				PurecipesTheme.colorScheme.surface.copy(alpha = topBarAlpha)
 			} else {
 				PurecipesTheme.colorScheme.surface
 			},
@@ -183,3 +195,6 @@ fun RecipeDetailsScreen(
 		)
 	}
 }
+
+private const val TOP_BAR_SCROLL_RANGE = 400f
+private val LOADING_TOP_PADDING = 64.dp

@@ -65,6 +65,7 @@ internal fun RecipeDetailsContent(
 	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
 	bottomPadding: Dp = 0.dp,
+	listState: LazyListState = rememberLazyListState(),
 ) {
 	val sections = if (showNutrition) {
 		RecipeDetailsSection.entries.toImmutableList()
@@ -83,7 +84,6 @@ internal fun RecipeDetailsContent(
 		RecipeDetailsSection.Ingredients
 	}
 	val cookbookRefs = recipeCookbooks.items
-	val listState = rememberLazyListState()
 	val coroutineScope = rememberCoroutineScope()
 	LazyColumn(
 		modifier = modifier
@@ -99,6 +99,13 @@ internal fun RecipeDetailsContent(
 			RecipeDetailsHeaderImage(
 				imageUrl = recipe.imageUrl,
 				title = recipe.title,
+				scrollOffset = {
+					if (listState.firstVisibleItemIndex == 0) {
+						listState.firstVisibleItemScrollOffset.toFloat()
+					} else {
+						0f
+					}
+				},
 			)
 		}
 

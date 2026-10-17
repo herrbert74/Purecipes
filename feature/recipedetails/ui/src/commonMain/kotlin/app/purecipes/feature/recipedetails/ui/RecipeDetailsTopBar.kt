@@ -23,6 +23,9 @@ import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 const val RECIPE_DETAILS_TOP_BAR_TAG = "recipeDetailsTopBar"
+private val STATUS_BAR_SCRIM_HEIGHT = 100.dp
+private const val STATUS_BAR_SCRIM_ALPHA = 0.45f
+private const val BUTTON_BACKGROUND_ALPHA = 0.75f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,21 +39,24 @@ internal fun RecipeDetailsTopBar(
 	containerColor: Color = Color.Transparent,
 ) {
 	Box(modifier = modifier.fillMaxWidth()) {
-		if (containerColor == Color.Transparent) {
+		if (containerColor.alpha < 1f) {
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.height(100.dp)
+					.height(STATUS_BAR_SCRIM_HEIGHT)
 					.background(
 						Brush.verticalGradient(
 							colors = listOf(
-								PurecipesTheme.colorScheme.surface.copy(alpha = 0.45f),
+								PurecipesTheme.colorScheme.surface.copy(
+									alpha = STATUS_BAR_SCRIM_ALPHA * (1f - containerColor.alpha),
+								),
 								Color.Transparent,
 							),
 						),
 					),
 			)
 		}
+		val buttonAlpha = BUTTON_BACKGROUND_ALPHA * (1f - containerColor.alpha)
 		TopAppBar(
 			title = {
 				Text(
@@ -65,7 +71,7 @@ internal fun RecipeDetailsTopBar(
 						onBack = onBack,
 						modifier = Modifier
 							.clip(CircleShape)
-							.background(PurecipesTheme.colorScheme.surface.copy(alpha = 0.75f)),
+							.background(PurecipesTheme.colorScheme.surface.copy(alpha = buttonAlpha)),
 					)
 				}
 			},
@@ -76,7 +82,7 @@ internal fun RecipeDetailsTopBar(
 						contentDescription = "Share recipe",
 						modifier = Modifier
 							.clip(CircleShape)
-							.background(PurecipesTheme.colorScheme.surface.copy(alpha = 0.75f)),
+							.background(PurecipesTheme.colorScheme.surface.copy(alpha = buttonAlpha)),
 					)
 				}
 			},
