@@ -1,5 +1,6 @@
 package app.purecipes.feature.main.ui
 
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import app.purecipes.feature.settings.ui.navigation.installSettingsFlow
 import app.purecipes.feature.subscription.ui.navigation.PaywallDestination
 import app.purecipes.feature.subscription.ui.navigation.installSubscriptionFlow
 import app.purecipes.shared.domain.model.CookbookSummary
+import app.purecipes.shared.ui.component.LocalSharedTransitionScope
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.navigation.PostLoginAction
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -110,132 +112,139 @@ private fun MainScreenContent(
 					isNavBarVisible = isNavBarVisible,
 				) {
 					key(viewModel.selectedTab.stackId) {
-						NavDisplay(
-							backStack = tabBackStack,
-							modifier = Modifier.fillMaxSize(),
-							sceneStrategies = listOf(listDetailSceneStrategy),
-							entryProvider = entryProvider {
-								installHomeFlow(
-									sessionKey = sessionKey,
-									onRecipeSelect = viewModel::onRecipeSelected,
-									onOpenShelf = { shelf ->
-										viewModel.navigator.push(
-											HomeShelfDestination(
-												title = shelf.title,
-												shelfId = shelf.id,
-												collectionSlug = shelf.collectionSlug,
-												habitCuisine = shelf.habitCuisine,
-											),
+						SharedTransitionLayout {
+							CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+								NavDisplay(
+									backStack = tabBackStack,
+									modifier = Modifier.fillMaxSize(),
+									sceneStrategies = listOf(listDetailSceneStrategy),
+									sharedTransitionScope = this,
+									entryProvider = entryProvider {
+										installHomeFlow(
+											sessionKey = sessionKey,
+											onRecipeSelect = viewModel::onRecipeSelected,
+											onOpenShelf = { shelf ->
+												viewModel.navigator.push(
+													HomeShelfDestination(
+														title = shelf.title,
+														shelfId = shelf.id,
+														collectionSlug = shelf.collectionSlug,
+														habitCuisine = shelf.habitCuisine,
+													),
+												)
+											},
+											onOpenFeatureRequests = {
+												viewModel.navigator.push(FeatureRequestsDestination)
+											},
+										)
+										installHomeShelfFlow(
+											sessionKey = sessionKey,
+											onRecipeSelect = viewModel::onRecipeSelected,
+											onBack = { viewModel.onBack() },
+										)
+										installSearchFlow(
+											isSignedIn = authenticationState is AuthenticationState.SignedIn,
+											sessionKey = sessionKey,
+											onRecipeSelect = viewModel::onRecipeSelected,
+											onRequestLogInForFilters = {
+												viewModel.requestLoginForPostLoginAction(
+													PostLoginAction.OpenSearchFilters,
+												)
+											},
+											onOpenPaywall = { feature ->
+												viewModel.navigator.push(
+													PaywallDestination(
+														feature = feature,
+														origin = AnalyticsOrigin.SEARCH.value,
+													),
+												)
+											},
+											onCloseSearch = { viewModel.navigator.back() },
+										)
+										installRecipeDetailsFlow(
+											navigator = viewModel.navigator,
+											canManageFavorites = canManageFavorites,
+											sessionKey = sessionKey,
+											onStartCooking = viewModel::onStartCooking,
+											onOpenMeasurementPreferences = viewModel::onOpenSettings,
+										)
+										installCookingFlow(
+											navigator = viewModel.navigator,
+											canManageFavorites = canManageFavorites,
+											sessionKey = sessionKey,
+											onFindMoreRecipes = viewModel.cookingFlowNavigator::findMoreRecipes,
+										)
+										installLibraryFlow(
+											sessionKey = sessionKey,
+											onRecipeSelect = viewModel::onRecipeSelected,
+											onCookbookSelect = viewModel.libraryTabNavigator::openCookbook,
+											onCookbookImportSuccess = { cookbookId, name, recipeCount ->
+												viewModel.libraryTabNavigator.openCookbook(
+													CookbookSummary(
+														id = cookbookId,
+														name = name,
+														recipeCount = recipeCount,
+														updatedAtEpochMillis = 0L,
+													),
+												)
+											},
+											onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,
+											onEditCreatedRecipe = viewModel.createRecipeTabNavigator::openEditor,
+											onRequestLogIn = {
+												viewModel.requestLoginForPostLoginAction(
+													PostLoginAction.OpenFavoritesMyRecipes,
+												)
+											},
+										)
+										installCookbookDetailFlow(
+											sessionKey = sessionKey,
+											onRecipeSelect = viewModel::onRecipeSelected,
+											onBack = viewModel::onBack,
+										)
+										installCreateFlow(
+											navigator = viewModel.navigator,
+											canUploadRecipes = canManageFavorites,
+											onSaveSuccess = viewModel.createRecipeTabNavigator::onRecipeSaveSuccess,
+											onRequestLogIn = {
+												viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenCreate)
+											},
+											onOpenPaywall = { feature ->
+												viewModel.navigator.push(
+													PaywallDestination(
+														feature = feature,
+														origin = AnalyticsOrigin.CREATE_RECIPE.value,
+													),
+												)
+											},
+										)
+										installAuthFlow(
+											navigator = viewModel.navigator,
+											googleWebClientId = viewModel.googleWebClientId,
+											onOpenSettings = viewModel::onOpenSettings,
+											onNavigateToEmailRegistration = viewModel::onOpenEmailRegistration,
+											onNavigateToSignIn = viewModel::onOpenEmailSignIn,
+											onRegistrationSuccess = viewModel::onRegistrationSuccess,
+										)
+										installSettingsFlow(
+											navigator = viewModel.navigator,
+										)
+										installFeatureRequestsFlow(
+											navigator = viewModel.navigator,
+											sessionKey = sessionKey,
+											onRequestLogIn = {
+												viewModel.requestLoginForPostLoginAction(
+													PostLoginAction.OpenFeatureRequests,
+												)
+											},
+											onClosed = viewModel.markHomeFeedStale,
+										)
+										installSubscriptionFlow(
+											navigator = viewModel.navigator,
 										)
 									},
-									onOpenFeatureRequests = {
-										viewModel.navigator.push(FeatureRequestsDestination)
-									},
 								)
-								installHomeShelfFlow(
-									sessionKey = sessionKey,
-									onRecipeSelect = viewModel::onRecipeSelected,
-									onBack = { viewModel.onBack() },
-								)
-								installSearchFlow(
-									isSignedIn = authenticationState is AuthenticationState.SignedIn,
-									sessionKey = sessionKey,
-									onRecipeSelect = viewModel::onRecipeSelected,
-									onRequestLogInForFilters = {
-										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenSearchFilters)
-									},
-									onOpenPaywall = { feature ->
-										viewModel.navigator.push(
-											PaywallDestination(
-												feature = feature,
-												origin = AnalyticsOrigin.SEARCH.value,
-											),
-										)
-									},
-									onCloseSearch = { viewModel.navigator.back() },
-								)
-								installRecipeDetailsFlow(
-									navigator = viewModel.navigator,
-									canManageFavorites = canManageFavorites,
-									sessionKey = sessionKey,
-									onStartCooking = viewModel::onStartCooking,
-									onOpenMeasurementPreferences = viewModel::onOpenSettings,
-								)
-								installCookingFlow(
-									navigator = viewModel.navigator,
-									canManageFavorites = canManageFavorites,
-									sessionKey = sessionKey,
-									onFindMoreRecipes = viewModel.cookingFlowNavigator::findMoreRecipes,
-								)
-								installLibraryFlow(
-									sessionKey = sessionKey,
-									onRecipeSelect = viewModel::onRecipeSelected,
-									onCookbookSelect = viewModel.libraryTabNavigator::openCookbook,
-									onCookbookImportSuccess = { cookbookId, name, recipeCount ->
-										viewModel.libraryTabNavigator.openCookbook(
-											CookbookSummary(
-												id = cookbookId,
-												name = name,
-												recipeCount = recipeCount,
-												updatedAtEpochMillis = 0L,
-											),
-										)
-									},
-									onCreateRecipe = viewModel.createRecipeTabNavigator::openNewRecipe,
-									onEditCreatedRecipe = viewModel.createRecipeTabNavigator::openEditor,
-									onRequestLogIn = {
-										viewModel.requestLoginForPostLoginAction(
-											PostLoginAction.OpenFavoritesMyRecipes,
-										)
-									},
-								)
-								installCookbookDetailFlow(
-									sessionKey = sessionKey,
-									onRecipeSelect = viewModel::onRecipeSelected,
-									onBack = viewModel::onBack,
-								)
-								installCreateFlow(
-									navigator = viewModel.navigator,
-									canUploadRecipes = canManageFavorites,
-									onSaveSuccess = viewModel.createRecipeTabNavigator::onRecipeSaveSuccess,
-									onRequestLogIn = {
-										viewModel.requestLoginForPostLoginAction(PostLoginAction.OpenCreate)
-									},
-									onOpenPaywall = { feature ->
-										viewModel.navigator.push(
-											PaywallDestination(
-												feature = feature,
-												origin = AnalyticsOrigin.CREATE_RECIPE.value,
-											),
-										)
-									},
-								)
-								installAuthFlow(
-									navigator = viewModel.navigator,
-									googleWebClientId = viewModel.googleWebClientId,
-									onOpenSettings = viewModel::onOpenSettings,
-									onNavigateToEmailRegistration = viewModel::onOpenEmailRegistration,
-									onNavigateToSignIn = viewModel::onOpenEmailSignIn,
-									onRegistrationSuccess = viewModel::onRegistrationSuccess,
-								)
-								installSettingsFlow(
-									navigator = viewModel.navigator,
-								)
-								installFeatureRequestsFlow(
-									navigator = viewModel.navigator,
-									sessionKey = sessionKey,
-									onRequestLogIn = {
-										viewModel.requestLoginForPostLoginAction(
-											PostLoginAction.OpenFeatureRequests,
-										)
-									},
-									onClosed = viewModel.markHomeFeedStale,
-								)
-								installSubscriptionFlow(
-									navigator = viewModel.navigator,
-								)
-							},
-						)
+							}
+						}
 					}
 				}
 			}

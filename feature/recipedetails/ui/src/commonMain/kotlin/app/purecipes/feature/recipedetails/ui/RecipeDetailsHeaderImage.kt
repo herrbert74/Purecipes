@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.component.recipeImageSharedElement
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
@@ -34,6 +35,7 @@ internal fun RecipeDetailsHeaderImage(
 	imageUrl: String?,
 	title: String,
 	modifier: Modifier = Modifier,
+	recipeId: Int = 0,
 	height: Dp = RECIPE_DETAILS_HEADER_HEIGHT,
 	scrollOffset: () -> Float = { 0f },
 ) {
@@ -73,6 +75,7 @@ internal fun RecipeDetailsHeaderImage(
 			contentDescription = title,
 			modifier = Modifier
 				.fillMaxSize()
+				.recipeImageSharedElement(recipeId)
 				.graphicsLayer {
 					val offset = scrollOffset()
 					if (offset < 0f) {

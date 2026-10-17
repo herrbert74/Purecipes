@@ -67,6 +67,7 @@ internal fun RecipeShelfCard(
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
+						.recipeImageSharedElement(recipe.id)
 						.background(PurecipesTheme.colorScheme.surfaceVariant),
 					contentScale = ContentScale.Crop,
 				)

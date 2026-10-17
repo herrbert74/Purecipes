@@ -99,6 +99,7 @@ internal fun RecipeDetailsContent(
 			RecipeDetailsHeaderImage(
 				imageUrl = recipe.imageUrl,
 				title = recipe.title,
+				recipeId = recipe.id,
 				scrollOffset = {
 					if (listState.firstVisibleItemIndex == 0) {
 						listState.firstVisibleItemScrollOffset.toFloat()

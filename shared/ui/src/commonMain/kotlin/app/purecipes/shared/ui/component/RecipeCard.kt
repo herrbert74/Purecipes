@@ -84,6 +84,7 @@ fun RecipeCard(
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
+						.recipeImageSharedElement(recipe.id)
 						.background(colors.color),
 					contentScale = ContentScale.Crop,
 				)

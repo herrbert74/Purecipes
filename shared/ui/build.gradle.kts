@@ -13,6 +13,10 @@ kotlin {
 		androidResources.enable = true
 	}
 
+	compilerOptions.freeCompilerArgs.add(
+		"-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
+	)
+
 	// For iOS targets, this is also where you should
 	// configure native binary output. For more information, see:
 	// https://kotlinlang.org/docs/multiplatform-build-native-binaries.html#build-xcframeworks
