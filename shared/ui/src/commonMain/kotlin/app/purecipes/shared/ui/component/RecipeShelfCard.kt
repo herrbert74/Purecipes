@@ -39,6 +39,7 @@ internal fun RecipeShelfCard(
 	recipe: RecipeSummary,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
+	transitionKey: String? = null,
 ) {
 	Card(
 		onClick = onClick,
@@ -67,6 +68,7 @@ internal fun RecipeShelfCard(
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
+						.recipeImageSharedElement(key = transitionKey)
 						.background(PurecipesTheme.colorScheme.surfaceVariant),
 					contentScale = ContentScale.Crop,
 				)

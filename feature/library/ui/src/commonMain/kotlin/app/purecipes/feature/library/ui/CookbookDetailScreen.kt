@@ -12,14 +12,14 @@ fun CookbookDetailScreen(
 	cookbookId: Int,
 	name: String,
 	onBack: () -> Unit,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 	sessionKey: String? = null,
 	bannerAdViewModel: BannerAdViewModel? = null,
 	viewModel: CookbookDetailViewModel = assistedMetroViewModel<
 		CookbookDetailViewModel,
 		CookbookDetailViewModel.Factory,
-	>(
+		>(
 		key = "$cookbookId-$name",
 	) {
 		create(

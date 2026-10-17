@@ -49,7 +49,7 @@ internal fun CookbookDetailContent(
 	coverUrl: String?,
 	onBack: () -> Unit,
 	onShare: () -> Unit,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onRemoveRecipe: (RecipeSummary) -> Unit,
 	modifier: Modifier = Modifier,
 	showBackNavigation: Boolean = true,
@@ -134,6 +134,7 @@ internal fun CookbookDetailContent(
 				}
 				items(recipes.size, key = { recipes[it].id }) { index ->
 					val recipe = recipes[index]
+					val transitionKey = "cookbook-${recipe.id}"
 					InlineListBannerAdSlot(
 						contentIndex = index,
 						contentCount = recipes.size,
@@ -141,7 +142,8 @@ internal fun CookbookDetailContent(
 					) {
 						RecipeCard(
 							recipe = recipe,
-							onClick = { onRecipeSelect(recipe.id) },
+							transitionKey = transitionKey,
+							onClick = { onRecipeSelect(recipe.id, transitionKey) },
 							onDeleteClick = { onRemoveRecipe(recipe) },
 							deleteContentDescription = "Remove from cookbook",
 						)

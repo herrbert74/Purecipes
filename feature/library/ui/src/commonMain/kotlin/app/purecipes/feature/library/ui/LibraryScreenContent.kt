@@ -75,7 +75,7 @@ fun LibraryScreenContent(
 					paginationState = paginationState,
 					recipes = recipeList,
 					totalMatches = totalMatches,
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 					modifier = Modifier.weight(1f),
 				)
 			}

@@ -29,7 +29,7 @@ internal fun FavoritesTabContent(
 	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
 	totalMatches: Int,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
@@ -72,6 +72,7 @@ internal fun FavoritesTabContent(
 			}
 			items(recipes.size, key = { recipes[it].id }) { index ->
 				val recipe = recipes[index]
+				val transitionKey = "favorites-${recipe.id}"
 				InlineListBannerAdSlot(
 					contentIndex = index,
 					contentCount = recipes.size,
@@ -79,7 +80,8 @@ internal fun FavoritesTabContent(
 				) {
 					RecipeCard(
 						recipe = recipe,
-						onClick = { onRecipeSelect(recipe.id) },
+						transitionKey = transitionKey,
+						onClick = { onRecipeSelect(recipe.id, transitionKey) },
 					)
 				}
 			}

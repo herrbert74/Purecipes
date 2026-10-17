@@ -26,6 +26,7 @@ fun EntryProviderScope<NavKey>.installRecipeDetailsFlow(
 		RecipeDetailsScreen(
 			recipeId = destination.recipeId,
 			origin = destination.origin,
+			transitionKey = destination.transitionKey,
 			canManageFavorites = canManageFavorites,
 			onOpenMeasurementPreferences = onOpenMeasurementPreferences,
 			onBack = { navigator.back() },

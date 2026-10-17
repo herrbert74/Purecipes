@@ -53,7 +53,7 @@ class HomeScreenTest {
 					errorMessage = null,
 					homeFeed = HomeFeed(),
 					shelfPagination = persistentMapOf(),
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 					onSeeAll = {},
 					onFeatureRequestClick = {},
 					onRetry = {},

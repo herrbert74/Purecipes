@@ -50,7 +50,7 @@ fun LibraryScreen(
 	initialCookbookShareToken: String? = null,
 	openMyRecipes: Boolean = false,
 	recipeSaveMessage: String? = null,
-	onRecipeSelect: (Int) -> Unit = {},
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit = { _, _ -> },
 	onCookbookSelect: (CookbookSummary) -> Unit = {},
 	onCookbookImportSuccess: (cookbookId: Int, name: String, recipeCount: Int) -> Unit = { _, _, _ -> },
 	onCreateRecipe: () -> Unit = {},

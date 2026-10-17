@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.subclass
 fun EntryProviderScope<NavKey>.installSearchFlow(
 	isSignedIn: Boolean,
 	sessionKey: String?,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onRequestLogInForFilters: () -> Unit,
 	onOpenPaywall: (String) -> Unit,
 	onCloseSearch: () -> Unit,

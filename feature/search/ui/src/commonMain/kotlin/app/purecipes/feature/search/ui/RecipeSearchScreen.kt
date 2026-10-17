@@ -39,7 +39,7 @@ fun RecipeSearchScreen(
 	modifier: Modifier = Modifier,
 	launch: SearchDestination = SearchDestination(),
 	isSignedIn: Boolean = true,
-	onRecipeSelect: (Int) -> Unit = {},
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit = { _, _ -> },
 	onRequestLogInForFilters: () -> Unit = {},
 	onOpenPaywall: (String) -> Unit = {},
 	closeScreen: () -> Unit = {},

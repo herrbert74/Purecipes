@@ -25,7 +25,7 @@ import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 @Composable
 fun HomeScreen(
 	modifier: Modifier = Modifier,
-	onRecipeSelect: (Int) -> Unit = {},
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit = { _, _ -> },
 	onOpenShelf: (HomeShelf) -> Unit = {},
 	onOpenFeatureRequests: () -> Unit = {},
 	sessionKey: String? = null,

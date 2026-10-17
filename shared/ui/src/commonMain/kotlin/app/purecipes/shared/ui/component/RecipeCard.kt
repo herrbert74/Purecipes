@@ -45,6 +45,7 @@ fun RecipeCard(
 	recipe: RecipeSummary,
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
+	transitionKey: String? = null,
 	widthFraction: Float = RecipeCardDefaults.FullWidthFraction,
 	layout: RecipeCardDefaults.Layout = RecipeCardDefaults.Layout.GRID,
 	onEditClick: (() -> Unit)? = null,
@@ -56,6 +57,7 @@ fun RecipeCard(
 			recipe = recipe,
 			onClick = onClick,
 			modifier = modifier,
+			transitionKey = transitionKey,
 		)
 		return
 	}
@@ -84,6 +86,7 @@ fun RecipeCard(
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
+						.recipeImageSharedElement(key = transitionKey)
 						.background(colors.color),
 					contentScale = ContentScale.Crop,
 				)

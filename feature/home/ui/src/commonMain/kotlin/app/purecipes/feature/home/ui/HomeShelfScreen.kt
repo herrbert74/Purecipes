@@ -12,7 +12,7 @@ fun HomeShelfScreen(
 	title: String,
 	shelfId: HomeShelfId,
 	onBack: () -> Unit,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 	collectionSlug: String? = null,
 	habitCuisine: String? = null,

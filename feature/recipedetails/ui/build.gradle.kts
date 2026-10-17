@@ -15,7 +15,8 @@ kotlin {
 		}
 	}
 
-	compilerOptions.freeCompilerArgs.add(
+	compilerOptions.freeCompilerArgs.addAll(
+		"-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
 		"-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
 	)
 
@@ -47,6 +48,7 @@ kotlin {
 		}
 		named("androidDeviceTest") {
 			dependencies {
+				implementation(libs.dejavu)
 				implementation(project(":shared:testfixtures"))
 			}
 		}
