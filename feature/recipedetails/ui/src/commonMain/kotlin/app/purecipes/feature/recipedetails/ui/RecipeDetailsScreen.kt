@@ -65,6 +65,11 @@ fun RecipeDetailsScreen(
 			}
 		}
 	}
+	val swipeDismissState = rememberRecipeDetailsSwipeDismissState(
+		listState = listState,
+		enabled = showBackNavigation,
+		onDismiss = onBack,
+	)
 
 	LaunchedEffect(sessionKey) {
 		viewModel.onSessionKeyChanged(sessionKey)
@@ -74,7 +79,11 @@ fun RecipeDetailsScreen(
 		viewModel.onScreenVisible()
 	}
 
-	Box(modifier = modifier.fillMaxSize()) {
+	Box(
+		modifier = modifier
+			.fillMaxSize()
+			.recipeDetailsSwipeDismiss(swipeDismissState),
+	) {
 		Scaffold(
 			modifier = Modifier.fillMaxSize(),
 			bottomBar = {
