@@ -39,7 +39,7 @@ internal fun MyRecipesContent(
 	errorMessage: String?,
 	recipes: ImmutableList<RecipeSummary>,
 	onCreateRecipe: () -> Unit,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onEditRecipe: (Int) -> Unit,
 	onDeleteRecipe: (RecipeSummary) -> Unit,
 	onRetry: () -> Unit,
@@ -114,9 +114,11 @@ internal fun MyRecipesContent(
 							)
 						}
 						items(recipes, key = RecipeSummary::id) { recipe ->
+							val transitionKey = "myrecipes-${recipe.id}"
 							RecipeCard(
 								recipe = recipe,
-								onClick = { onRecipeSelect(recipe.id) },
+								transitionKey = transitionKey,
+								onClick = { onRecipeSelect(recipe.id, transitionKey) },
 								onEditClick = { onEditRecipe(recipe.id) },
 								onDeleteClick = { pendingDeleteRecipe = recipe },
 							)

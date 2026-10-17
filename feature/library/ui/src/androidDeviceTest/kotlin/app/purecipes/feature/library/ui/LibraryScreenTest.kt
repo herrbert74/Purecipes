@@ -68,7 +68,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(),
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -104,7 +104,7 @@ class LibraryScreenTest {
 					LibraryScreen(
 						sessionKey = "session",
 						viewModel = viewModel,
-						onRecipeSelect = {},
+						onRecipeSelect = { _, _ -> },
 					)
 				}
 			}
@@ -157,7 +157,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = viewModel,
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -201,7 +201,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = viewModel,
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -252,7 +252,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = viewModel,
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -332,7 +332,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -349,7 +349,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -387,7 +387,7 @@ class LibraryScreenTest {
 				LibraryScreen(
 					sessionKey = "session",
 					viewModel = favoritesViewModelForTest(cookbooksRepository = cookbooksRepo),
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 				)
 			}
 		}
@@ -422,7 +422,7 @@ class LibraryScreenTest {
 					name = TEST_COOKBOOK_NAME,
 					sessionKey = "session",
 					onBack = {},
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 					viewModel = viewModel,
 				)
 			}
@@ -459,7 +459,7 @@ class LibraryScreenTest {
 					name = TEST_COOKBOOK_NAME,
 					sessionKey = "session",
 					onBack = {},
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 					viewModel = viewModel,
 				)
 			}
@@ -502,7 +502,7 @@ class LibraryScreenTest {
 					name = TEST_COOKBOOK_NAME,
 					sessionKey = "session",
 					onBack = {},
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 					viewModel = viewModel,
 				)
 			}

@@ -43,7 +43,7 @@ internal fun HomeShelfContent(
 	recipes: SnapshotStateList<RecipeSummary>,
 	paginationState: PaginationState<Int, RecipeSummary>,
 	onBack: () -> Unit,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 	bannerAdViewModel: BannerAdViewModel? = null,
 ) {
@@ -130,9 +130,11 @@ internal fun HomeShelfContent(
 						contentCount = recipes.size,
 						viewModel = bannerAdViewModel,
 					) {
+						val transitionKey = "shelf-${title.lowercase().replace(' ', '-')}-${recipe.id}"
 						RecipeCard(
 							recipe = recipe,
-							onClick = { onRecipeSelect(recipe.id) },
+							transitionKey = transitionKey,
+							onClick = { onRecipeSelect(recipe.id, transitionKey) },
 						)
 					}
 				}
@@ -176,7 +178,7 @@ private fun HomeShelfContentPreview() {
 			recipes = recipes,
 			paginationState = paginationState,
 			onBack = {},
-			onRecipeSelect = {},
+			onRecipeSelect = { _, _ -> },
 		)
 	}
 }

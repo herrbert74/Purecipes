@@ -1,13 +1,14 @@
 package app.purecipes.feature.recipedetails.ui
 
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.usecase.LogBreadcrumbUseCase
 import app.purecipes.feature.analytics.domain.usecase.SendHandledExceptionUseCase
@@ -44,20 +45,21 @@ import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
 import app.purecipes.shared.ui.component.RecipeDetailsSection
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import org.junit.Rule
+import dejavu.runRecompositionTrackingUiTest
+import dejavu.setTrackedContent
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
 class RecipeDetailsScreenTest {
 
-	@get:Rule
-	val composeRule = createComposeRule()
-
 	@Test
-	fun recipeDetailsScreenShowsTitleIngredientsAndSteps() {
+	fun recipeDetailsScreenShowsTitleIngredientsAndSteps() = runRecompositionTrackingUiTest {
 		val favoritesRepository = FakeFavoritesRepository()
 		val cookbooksRepository = FakeCookbooksRepository()
 		val measurementRepository = FakeMeasurementPreferencesRepository()
-		composeRule.setContent {
+		setTrackedContent {
 			PurecipesTheme {
 				RecipeDetailsScreen(
 					recipeId = 7,
@@ -99,22 +101,22 @@ class RecipeDetailsScreenTest {
 			}
 		}
 
-		composeRule.onNodeWithText("Roasted Carrots").assertIsDisplayed()
-		composeRule.onNodeWithText("Sweet and savory side dish.").assertIsDisplayed()
-		composeRule.onNodeWithText("Start cooking").assertIsDisplayed()
-		composeRule.onNodeWithText("35 min").assertIsDisplayed()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+		onNodeWithText("Roasted Carrots").assertIsDisplayed()
+		onNodeWithText("Sweet and savory side dish.").assertIsDisplayed()
+		onNodeWithText("Start cooking").assertIsDisplayed()
+		onNodeWithText("35 min").assertIsDisplayed()
+		onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasTestTag(RecipeDetailsSection.Ingredients.testTag))
-		composeRule.onNodeWithTag(RecipeDetailsSection.Ingredients.testTag).assertIsDisplayed()
-		composeRule.onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+		onNodeWithTag(RecipeDetailsSection.Ingredients.testTag).assertIsDisplayed()
+		onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText("- 6 carrots"))
-		composeRule.onNodeWithText("- 6 carrots").assertIsDisplayed()
-		composeRule.onNodeWithTag(RecipeDetailsSection.Method.testTag).performClick()
-		composeRule.onNodeWithText("Trim the carrots").assertIsDisplayed()
-		composeRule.onNodeWithText("Roast until tender").assertIsDisplayed()
-		composeRule.onNodeWithTag(RecipeDetailsSection.Nutrition.testTag).performClick()
-		composeRule.onNodeWithText("Nutrition estimate").assertIsDisplayed()
-		composeRule.onNodeWithTag(NUTRITION_FACTS_BUTTON_TAG).assertIsDisplayed()
+		onNodeWithText("- 6 carrots").assertIsDisplayed()
+		onNodeWithTag(RecipeDetailsSection.Method.testTag).performClick()
+		onNodeWithText("Trim the carrots").assertIsDisplayed()
+		onNodeWithText("Roast until tender").assertIsDisplayed()
+		onNodeWithTag(RecipeDetailsSection.Nutrition.testTag).performClick()
+		onNodeWithText("Nutrition estimate").assertIsDisplayed()
+		onNodeWithTag(NUTRITION_FACTS_BUTTON_TAG).assertIsDisplayed()
 	}
 }
 

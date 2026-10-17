@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.subclass
 
 fun EntryProviderScope<NavKey>.installHomeFlow(
 	sessionKey: String?,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onOpenShelf: (HomeShelf) -> Unit,
 	onOpenFeatureRequests: () -> Unit,
 ) {
@@ -39,7 +39,7 @@ fun EntryProviderScope<NavKey>.installHomeFlow(
 
 fun EntryProviderScope<NavKey>.installHomeShelfFlow(
 	sessionKey: String?,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onBack: () -> Unit,
 ) {
 	entry<HomeShelfDestination>(

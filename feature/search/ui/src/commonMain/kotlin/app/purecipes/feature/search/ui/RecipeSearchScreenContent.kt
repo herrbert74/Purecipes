@@ -95,7 +95,7 @@ fun RecipeSearchScreenContent(
 				totalMatches = totalMatches,
 				paginationState = paginationState,
 				recipes = recipeList,
-				onRecipeSelect = {},
+				onRecipeSelect = { _, _ -> },
 				browseTiles = browseTiles(SearchFilters.default()),
 				modifier = Modifier
 					.weight(1f)

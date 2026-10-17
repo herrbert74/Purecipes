@@ -64,6 +64,7 @@ internal fun RecipeDetailsContent(
 	onStartCooking: () -> Unit,
 	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
+	transitionKey: String? = null,
 	bottomPadding: Dp = 0.dp,
 	listState: LazyListState = rememberLazyListState(),
 ) {
@@ -99,7 +100,7 @@ internal fun RecipeDetailsContent(
 			RecipeDetailsHeaderImage(
 				imageUrl = recipe.imageUrl,
 				title = recipe.title,
-				recipeId = recipe.id,
+				transitionKey = transitionKey,
 				scrollOffset = {
 					if (listState.firstVisibleItemIndex == 0) {
 						listState.firstVisibleItemScrollOffset.toFloat()

@@ -47,7 +47,7 @@ class MyRecipesTabContentTest {
 					errorMessage = null,
 					recipes = persistentListOf(sampleRecipe()),
 					onCreateRecipe = {},
-					onRecipeSelect = { selectedId = it },
+					onRecipeSelect = { id, _ -> selectedId = id },
 					onEditRecipe = { editedId = it },
 					onDeleteRecipe = {},
 					onRetry = {},
@@ -74,7 +74,7 @@ class MyRecipesTabContentTest {
 					errorMessage = null,
 					recipes = persistentListOf(sampleRecipe()),
 					onCreateRecipe = {},
-					onRecipeSelect = {},
+					onRecipeSelect = { _, _ -> },
 					onEditRecipe = {},
 					onDeleteRecipe = { deletedRecipe = it },
 					onRetry = {},
@@ -104,7 +104,7 @@ class MyRecipesTabContentTest {
 				key(compositionGeneration) {
 					MyRecipesTabContent(
 						onCreateRecipe = {},
-						onRecipeSelect = {},
+						onRecipeSelect = { _, _ -> },
 						onEditRecipe = {},
 						viewModel = viewModel,
 					)

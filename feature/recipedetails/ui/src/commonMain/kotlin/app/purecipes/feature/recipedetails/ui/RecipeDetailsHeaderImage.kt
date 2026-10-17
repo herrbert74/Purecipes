@@ -35,7 +35,7 @@ internal fun RecipeDetailsHeaderImage(
 	imageUrl: String?,
 	title: String,
 	modifier: Modifier = Modifier,
-	recipeId: Int = 0,
+	transitionKey: String? = null,
 	height: Dp = RECIPE_DETAILS_HEADER_HEIGHT,
 	scrollOffset: () -> Float = { 0f },
 ) {
@@ -75,7 +75,7 @@ internal fun RecipeDetailsHeaderImage(
 			contentDescription = title,
 			modifier = Modifier
 				.fillMaxSize()
-				.recipeImageSharedElement(recipeId)
+				.recipeImageSharedElement(key = transitionKey)
 				.graphicsLayer {
 					val offset = scrollOffset()
 					if (offset < 0f) {

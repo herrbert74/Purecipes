@@ -11,16 +11,16 @@ val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { nu
 
 @Composable
 fun Modifier.recipeImageSharedElement(
-	recipeId: Int,
+	key: String?,
 ): Modifier {
 	val sharedTransitionScope = LocalSharedTransitionScope.current
-	if (recipeId <= 0 || sharedTransitionScope == null) {
+	if (key.isNullOrBlank() || sharedTransitionScope == null) {
 		return this
 	}
 	val animatedVisibilityScope: AnimatedVisibilityScope = LocalNavAnimatedContentScope.current
 	return with(sharedTransitionScope) {
 		this@recipeImageSharedElement.sharedElement(
-			sharedContentState = rememberSharedContentState(key = "recipe-image-$recipeId"),
+			sharedContentState = rememberSharedContentState(key = key),
 			animatedVisibilityScope = animatedVisibilityScope,
 		)
 	}

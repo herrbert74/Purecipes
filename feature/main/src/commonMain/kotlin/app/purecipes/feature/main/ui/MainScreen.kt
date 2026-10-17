@@ -118,7 +118,6 @@ private fun MainScreenContent(
 									backStack = tabBackStack,
 									modifier = Modifier.fillMaxSize(),
 									sceneStrategies = listOf(listDetailSceneStrategy),
-									sharedTransitionScope = this,
 									entryProvider = entryProvider {
 										installHomeFlow(
 											sessionKey = sessionKey,

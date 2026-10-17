@@ -16,7 +16,7 @@ import kotlinx.collections.immutable.toImmutableList
 @Composable
 internal fun NearMissSearchResults(
 	nearMissRecipes: ImmutableList<NearMissRecipe>,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	if (nearMissRecipes.isEmpty()) {
@@ -49,7 +49,7 @@ internal fun NearMissSearchResults(
 private fun NearMissIngredientSection(
 	missingIngredient: String,
 	recipes: ImmutableList<NearMissRecipe>,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Column(
@@ -62,9 +62,11 @@ private fun NearMissIngredientSection(
 			color = PurecipesTheme.colorScheme.onSurface,
 		)
 		recipes.forEach { nearMiss ->
+			val transitionKey = "nearmiss-${nearMiss.recipe.id}"
 			RecipeCard(
 				recipe = nearMiss.recipe,
-				onClick = { onRecipeSelect(nearMiss.recipe.id) },
+				transitionKey = transitionKey,
+				onClick = { onRecipeSelect(nearMiss.recipe.id, transitionKey) },
 			)
 		}
 	}

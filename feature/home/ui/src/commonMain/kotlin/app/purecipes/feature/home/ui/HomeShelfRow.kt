@@ -48,7 +48,7 @@ internal fun HomeShelfRow(
 	shelf: HomeShelf,
 	shelfIndex: Int,
 	paginationState: PaginationState<Int, RecipeSummary>,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onSeeAll: () -> Unit,
 	modifier: Modifier = Modifier,
 	bannerAdViewModel: BannerAdViewModel? = null,
@@ -106,11 +106,15 @@ internal fun HomeShelfRow(
 				key = { index -> shelfEntryKey(entries[index], index) },
 			) { index ->
 				when (val entry = entries[index]) {
-					is InlineFeedEntry.Content -> RecipeCard(
-						recipe = entry.item,
-						onClick = { onRecipeSelect(entry.item.id) },
-						layout = RecipeCardDefaults.Layout.SHELF,
-					)
+					is InlineFeedEntry.Content -> {
+						val transitionKey = "home-${shelf.shelfKey()}-${entry.item.id}"
+						RecipeCard(
+							recipe = entry.item,
+							onClick = { onRecipeSelect(entry.item.id, transitionKey) },
+							transitionKey = transitionKey,
+							layout = RecipeCardDefaults.Layout.SHELF,
+						)
+					}
 
 					InlineFeedEntry.Ad -> ShelfCardBannerAd(viewModel = bannerAdViewModel)
 				}
@@ -150,7 +154,7 @@ private fun HomeShelfRowPreview() {
 			),
 			shelfIndex = 0,
 			paginationState = paginationState,
-			onRecipeSelect = {},
+			onRecipeSelect = { _, _ -> },
 			onSeeAll = {},
 		)
 	}

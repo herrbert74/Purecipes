@@ -49,7 +49,7 @@ internal fun SearchResultsContent(
 	totalMatches: Int,
 	paginationState: PaginationState<Int, RecipeSummary>,
 	recipes: SnapshotStateList<RecipeSummary>,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
 	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
 	browseTiles: ImmutableList<BrowseTileItem> = persistentListOf(),
@@ -115,9 +115,11 @@ internal fun SearchResultsContent(
 					contentCount = recipes.size,
 					viewModel = bannerAdViewModel,
 				) {
+					val transitionKey = "search-${recipe.id}"
 					RecipeCard(
 						recipe = recipe,
-						onClick = { onRecipeSelect(recipe.id) },
+						transitionKey = transitionKey,
+						onClick = { onRecipeSelect(recipe.id, transitionKey) },
 						modifier = Modifier.staggeredAppear(index = index),
 					)
 				}
@@ -221,7 +223,7 @@ private fun SearchResultsContentLoadingPreview() {
 				totalMatches = 0,
 				paginationState = rememberPreviewPaginationState(persistentListOf()),
 				recipes = remember { mutableStateListOf() },
-				onRecipeSelect = {},
+				onRecipeSelect = { _, _ -> },
 				browseTiles = browseTiles(SearchFilters.default()),
 				modifier = Modifier.fillMaxSize(),
 			)
@@ -249,7 +251,7 @@ private fun SearchResultsContentErrorPreview() {
 				totalMatches = 0,
 				paginationState = rememberPreviewPaginationState(persistentListOf()),
 				recipes = remember { mutableStateListOf() },
-				onRecipeSelect = {},
+				onRecipeSelect = { _, _ -> },
 				modifier = Modifier.fillMaxSize(),
 			)
 		}
@@ -277,7 +279,7 @@ private fun SearchResultsContentNearMissPreview() {
 				paginationState = rememberPreviewPaginationState(persistentListOf()),
 				recipes = remember { mutableStateListOf() },
 				nearMissRecipes = previewNearMissRecipes,
-				onRecipeSelect = {},
+				onRecipeSelect = { _, _ -> },
 				modifier = Modifier.fillMaxSize(),
 			)
 		}
@@ -308,7 +310,7 @@ private fun SearchResultsContentSparseWithNearMissPreview() {
 				paginationState = rememberPreviewPaginationState(persistentListOf(previewRecipeA)),
 				recipes = recipes,
 				nearMissRecipes = previewNearMissRecipes,
-				onRecipeSelect = {},
+				onRecipeSelect = { _, _ -> },
 				modifier = Modifier.fillMaxSize(),
 			)
 		}
@@ -365,7 +367,7 @@ private fun SearchResultsContentListPreviewBody() {
 		totalMatches = previewRecipeList.size,
 		paginationState = paginationState,
 		recipes = recipes,
-		onRecipeSelect = {},
+		onRecipeSelect = { _, _ -> },
 		modifier = Modifier.fillMaxSize(),
 	)
 }

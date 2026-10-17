@@ -67,7 +67,7 @@ class HomeShelfScreenTest {
 					shelfId = HomeShelfId.COLLECTION,
 					collectionSlug = "this-week",
 					onBack = { wentBack = true },
-					onRecipeSelect = { recipeId -> selectedRecipeId = recipeId },
+					onRecipeSelect = { recipeId, _ -> selectedRecipeId = recipeId },
 					viewModel = viewModel,
 				)
 			}

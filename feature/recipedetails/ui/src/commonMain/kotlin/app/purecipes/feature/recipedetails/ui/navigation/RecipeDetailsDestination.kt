@@ -8,4 +8,5 @@ import kotlinx.serialization.Serializable
 data class RecipeDetailsDestination(
 	val recipeId: Int,
 	val origin: String = AnalyticsOrigin.SEARCH.value,
+	val transitionKey: String? = null,
 ) : NavKey

@@ -17,7 +17,7 @@ import kotlinx.serialization.modules.subclass
 
 fun EntryProviderScope<NavKey>.installLibraryFlow(
 	sessionKey: String?,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onCookbookSelect: (CookbookSummary) -> Unit,
 	onCookbookImportSuccess: (cookbookId: Int, name: String, recipeCount: Int) -> Unit,
 	onCreateRecipe: () -> Unit,
@@ -48,7 +48,7 @@ fun EntryProviderScope<NavKey>.installLibraryFlow(
 
 fun EntryProviderScope<NavKey>.installCookbookDetailFlow(
 	sessionKey: String?,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onBack: () -> Unit,
 ) {
 	entry<CookbookDetailDestination>(

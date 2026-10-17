@@ -48,6 +48,7 @@ kotlin {
 		}
 		named("androidDeviceTest") {
 			dependencies {
+				implementation(libs.dejavu)
 				implementation(project(":shared:testfixtures"))
 			}
 		}

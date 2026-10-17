@@ -14,7 +14,7 @@ import kotlinx.collections.immutable.toImmutableList
 @Composable
 internal fun MyRecipesTabContent(
 	onCreateRecipe: () -> Unit,
-	onRecipeSelect: (Int) -> Unit,
+	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	onEditRecipe: (Int) -> Unit,
 	modifier: Modifier = Modifier,
 	viewModel: MyRecipesViewModel = metroViewModel(),
@@ -46,7 +46,7 @@ private fun MyRecipesTabContentEmptyLightPreview() {
 			errorMessage = null,
 			recipes = persistentListOf(),
 			onCreateRecipe = {},
-			onRecipeSelect = {},
+			onRecipeSelect = { _, _ -> },
 			onEditRecipe = {},
 			onDeleteRecipe = {},
 			onRetry = {},
@@ -76,7 +76,7 @@ private fun MyRecipesTabContentListLightPreview() {
 				),
 			),
 			onCreateRecipe = {},
-			onRecipeSelect = {},
+			onRecipeSelect = { _, _ -> },
 			onEditRecipe = {},
 			onDeleteRecipe = {},
 			onRetry = {},

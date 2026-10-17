@@ -42,6 +42,7 @@ fun RecipeDetailsScreen(
 	onBack: () -> Unit,
 	onStartCooking: (Int) -> Unit,
 	modifier: Modifier = Modifier,
+	transitionKey: String? = null,
 	sessionKey: String? = null,
 	origin: String = AnalyticsOrigin.SEARCH.value,
 	bannerAdViewModel: BannerAdViewModel? = null,
@@ -160,9 +161,10 @@ fun RecipeDetailsScreen(
 					},
 					onStartCooking = { onStartCooking(recipeId) },
 					onToggleFavorite = viewModel::toggleFavorite,
+					modifier = Modifier.fillMaxSize(),
+					transitionKey = transitionKey,
 					bottomPadding = innerPadding.calculateBottomPadding(),
 					listState = listState,
-					modifier = Modifier.fillMaxSize(),
 				)
 
 				else -> RecipeDetailsMessageScreen(

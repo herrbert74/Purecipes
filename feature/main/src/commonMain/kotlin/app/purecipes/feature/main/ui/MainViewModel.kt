@@ -308,8 +308,12 @@ class MainViewModel(
 		selectTab(tab.stackId)
 	}
 
-	fun onRecipeSelected(recipeId: Int) {
-		openRecipeDetails(recipeId = recipeId, origin = analyticsOriginForSelectedTab())
+	fun onRecipeSelected(recipeId: Int, transitionKey: String? = null) {
+		openRecipeDetails(
+			recipeId = recipeId,
+			origin = analyticsOriginForSelectedTab(),
+			transitionKey = transitionKey,
+		)
 	}
 
 	fun onDeepLink(link: PurecipesLink) {
@@ -351,6 +355,7 @@ class MainViewModel(
 		recipeId: Int,
 		stack: NavBackStack<NavKey> = activeStack,
 		origin: AnalyticsOrigin,
+		transitionKey: String? = null,
 	) {
 		while (
 			stack.lastOrNull() is RecipeDetailsDestination ||
@@ -358,7 +363,11 @@ class MainViewModel(
 		) {
 			stack.removeAt(stack.lastIndex)
 		}
-		stack += RecipeDetailsDestination(recipeId = recipeId, origin = origin.value)
+		stack += RecipeDetailsDestination(
+			recipeId = recipeId,
+			origin = origin.value,
+			transitionKey = transitionKey,
+		)
 	}
 
 	private fun navigateToCookbookShare(token: String) {
