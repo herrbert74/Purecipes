@@ -3,17 +3,18 @@ package app.purecipes.feature.recipedetails.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,13 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAd
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
-import app.purecipes.feature.sharing.ui.ShareIconButton
-import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ShowLoading
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -64,42 +63,15 @@ fun RecipeDetailsScreen(
 		viewModel.onScreenVisible()
 	}
 
-	val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-		rememberTopAppBarState(),
-	)
 	Box(modifier = modifier.fillMaxSize()) {
 		Scaffold(
-			modifier = Modifier
-				.fillMaxSize()
-				.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
-			topBar = {
-				TopAppBar(
-					scrollBehavior = topAppBarScrollBehavior,
-					title = {
-						Text(
-							text = viewModel.recipeDetails?.title ?: "Recipe details",
-							maxLines = 1,
-							overflow = TextOverflow.Ellipsis,
-						)
-					},
-					navigationIcon = {
-						if (showBackNavigation) {
-							BackNavigationButton(onBack = onBack)
-						}
-					},
-					actions = {
-						if (viewModel.recipeDetails?.isPrivate != true) {
-							ShareIconButton(
-								onShare = viewModel::shareCurrentRecipe,
-								contentDescription = "Share recipe",
-							)
-						}
-					},
-				)
-			},
+			modifier = Modifier.fillMaxSize(),
 			bottomBar = {
 				BannerAd(viewModel = bannerAdViewModel)
 			},
+			contentWindowInsets = WindowInsets.safeDrawing.only(
+				WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,
+			),
 		) { innerPadding ->
 			if (viewModel.showMeasurementMismatchDialog) {
 				AlertDialog(
@@ -127,13 +99,19 @@ fun RecipeDetailsScreen(
 			}
 			when {
 				viewModel.isLoading -> ShowLoading(
-					modifier = Modifier.padding(innerPadding),
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding)
+						.padding(top = 64.dp),
 				)
 
 				viewModel.errorMessage != null -> RecipeDetailsMessageScreen(
 					message = viewModel.errorMessage ?: "Unknown error",
 					onBack = onBack,
-					modifier = Modifier.padding(innerPadding),
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding)
+						.padding(top = 64.dp),
 				)
 
 				viewModel.recipeDetails != null -> RecipeDetailsContent(
@@ -151,16 +129,33 @@ fun RecipeDetailsScreen(
 					},
 					onStartCooking = { onStartCooking(recipeId) },
 					onToggleFavorite = viewModel::toggleFavorite,
-					modifier = Modifier.padding(innerPadding),
+					bottomPadding = innerPadding.calculateBottomPadding(),
+					modifier = Modifier.fillMaxSize(),
 				)
 
 				else -> RecipeDetailsMessageScreen(
 					message = "Recipe not found",
 					onBack = onBack,
-					modifier = Modifier.padding(innerPadding),
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding)
+						.padding(top = 64.dp),
 				)
 			}
 		}
+
+		RecipeDetailsTopBar(
+			title = viewModel.recipeDetails?.title ?: "Recipe details",
+			showBackNavigation = showBackNavigation,
+			isPrivate = viewModel.recipeDetails?.isPrivate == true,
+			onBack = onBack,
+			onShare = viewModel::shareCurrentRecipe,
+			containerColor = if (viewModel.recipeDetails != null) {
+				Color.Transparent
+			} else {
+				PurecipesTheme.colorScheme.surface
+			},
+		)
 
 		RecipeDetailsNutritionOverlay(
 			nutrition = viewModel.recipeDetails?.nutrition,

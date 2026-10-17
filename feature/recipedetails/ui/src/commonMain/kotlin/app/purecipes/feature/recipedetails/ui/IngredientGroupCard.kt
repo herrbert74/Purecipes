@@ -16,9 +16,12 @@ import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
-internal fun IngredientGroupCard(group: IngredientGroup) {
+internal fun IngredientGroupCard(
+	group: IngredientGroup,
+	modifier: Modifier = Modifier,
+) {
 	Card(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = modifier.fillMaxWidth(),
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Column(

@@ -1,18 +1,16 @@
 package app.purecipes.feature.recipedetails.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,11 +20,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
@@ -44,7 +41,6 @@ import app.purecipes.shared.ui.component.RecipeDetailsSection
 import app.purecipes.shared.ui.component.RecipeSectionSegmentedControl
 import app.purecipes.shared.ui.component.RecipeStatChipsRow
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -68,6 +64,7 @@ internal fun RecipeDetailsContent(
 	onStartCooking: () -> Unit,
 	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
+	bottomPadding: Dp = 0.dp,
 ) {
 	val sections = if (showNutrition) {
 		RecipeDetailsSection.entries.toImmutableList()
@@ -94,23 +91,14 @@ internal fun RecipeDetailsContent(
 			.testTag(RECIPE_DETAILS_CONTENT_TAG),
 		state = listState,
 		contentPadding = PaddingValues(
-			start = PurecipesTheme.space.m,
-			top = PurecipesTheme.space.m,
-			end = PurecipesTheme.space.m,
-			bottom = PurecipesTheme.space.l + PurecipesTheme.bottomBarPadding,
+			bottom = bottomPadding + PurecipesTheme.space.l + PurecipesTheme.bottomBarPadding,
 		),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		item {
-			AsyncImage(
-				model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
-				contentDescription = recipe.title,
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(240.dp)
-					.clip(RoundedCornerShape(PurecipesTheme.space.l))
-					.background(PurecipesTheme.colorScheme.surfaceContainerLow),
-				contentScale = ContentScale.Crop,
+			RecipeDetailsHeaderImage(
+				imageUrl = recipe.imageUrl,
+				title = recipe.title,
 			)
 		}
 
@@ -122,6 +110,7 @@ internal fun RecipeDetailsContent(
 				hasRecipe = true,
 				onToggleFavorite = onToggleFavorite,
 				onShowCookbookSheet = onShowCookbookSheet,
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 			)
 		}
 
@@ -130,6 +119,7 @@ internal fun RecipeDetailsContent(
 				text = recipe.description,
 				style = PurecipesTheme.typography.bodyLarge,
 				color = PurecipesTheme.colorScheme.onSurfaceVariant,
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 			)
 		}
 
@@ -138,11 +128,16 @@ internal fun RecipeDetailsContent(
 				totalTimeMinutes = recipe.totalTime,
 				servings = recipe.yields,
 				difficulty = recipe.difficultyLevel?.displayName,
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 			)
 		}
 
 		item {
-			RecipeMetadataRow(recipe = recipe, isRecipeConverted = isRecipeConverted)
+			RecipeMetadataRow(
+				recipe = recipe,
+				isRecipeConverted = isRecipeConverted,
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
+			)
 		}
 
 		item {
@@ -150,7 +145,9 @@ internal fun RecipeDetailsContent(
 				FlowRow(
 					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
-					modifier = Modifier.fillMaxWidth(),
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = PurecipesTheme.space.m),
 				) {
 					cookbookRefs.forEach { cookbook ->
 						MetadataPillChip(
@@ -171,6 +168,7 @@ internal fun RecipeDetailsContent(
 				hasSteps = recipe.steps.isNotEmpty(),
 				onStartCooking = onStartCooking,
 				onToggleFavorite = onToggleFavorite,
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 			)
 		}
 
@@ -184,13 +182,17 @@ internal fun RecipeDetailsContent(
 						listState.animateScrollToSectionControl()
 					}
 				},
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 			)
 		}
 
 		when (activeSection) {
 			RecipeDetailsSection.Ingredients -> {
 				items(recipe.ingredientGroups) { group ->
-					IngredientGroupCard(group = group)
+					IngredientGroupCard(
+						group = group,
+						modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
+					)
 				}
 			}
 
@@ -199,6 +201,7 @@ internal fun RecipeDetailsContent(
 					StepCard(
 						stepNumber = stepIndex + 1,
 						step = recipe.steps[stepIndex],
+						modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 					)
 				}
 			}
@@ -209,6 +212,7 @@ internal fun RecipeDetailsContent(
 						RecipeDetailsNutritionSection(
 							nutrition = nutrition,
 							onShowFullNutrition = onShowNutrition,
+							modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 						)
 					}
 				}

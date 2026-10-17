@@ -1,12 +1,10 @@
 package app.purecipes.feature.recipedetails.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
@@ -16,7 +14,6 @@ import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
-import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -32,17 +29,7 @@ fun RecipeDetailsScreenContent(
 	showNutrition: Boolean = false,
 ) {
 	PurecipesTheme(darkTheme = darkTheme) {
-		Scaffold(
-			modifier = modifier.fillMaxSize(),
-			topBar = {
-				TopAppBar(
-					title = { Text(text = recipe.title) },
-					navigationIcon = {
-						BackNavigationButton(onBack = {})
-					},
-				)
-			},
-		) { innerPadding ->
+		Box(modifier = modifier.fillMaxSize()) {
 			RecipeDetailsContent(
 				canManageFavorites = canManageFavorites,
 				favoriteErrorMessage = null,
@@ -59,7 +46,15 @@ fun RecipeDetailsScreenContent(
 				onShowCookbookSheet = {},
 				onStartCooking = {},
 				onToggleFavorite = {},
-				modifier = Modifier.padding(innerPadding),
+				modifier = Modifier.fillMaxSize(),
+			)
+			RecipeDetailsTopBar(
+				title = recipe.title,
+				showBackNavigation = true,
+				isPrivate = recipe.isPrivate,
+				onBack = {},
+				onShare = {},
+				containerColor = Color.Transparent,
 			)
 		}
 	}

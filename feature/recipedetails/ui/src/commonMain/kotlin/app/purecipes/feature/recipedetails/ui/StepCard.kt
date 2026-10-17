@@ -17,9 +17,13 @@ import androidx.compose.ui.Modifier
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
-internal fun StepCard(stepNumber: Int, step: String) {
+internal fun StepCard(
+	stepNumber: Int,
+	step: String,
+	modifier: Modifier = Modifier,
+) {
 	Card(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = modifier.fillMaxWidth(),
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(
