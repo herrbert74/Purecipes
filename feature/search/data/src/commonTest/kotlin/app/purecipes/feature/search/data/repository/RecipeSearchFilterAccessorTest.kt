@@ -9,9 +9,15 @@ import app.purecipes.shared.domain.model.SearchFilters
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RecipeSearchFilterAccessorTest {
 
 	@Test
@@ -81,6 +87,20 @@ class RecipeSearchFilterAccessorTest {
 		accessor.saveFilters(filters)
 
 		remote.savedFilters shouldBe filters
+	}
+
+	@Test
+	fun `saveFilters emits filter change event`() = runTest {
+		val remote = FakeRemoteFilterDataSource(Ok(SearchFilters()))
+		val accessor = RecipeSearchFilterAccessor(remote, RecipeSearchFilterInMemoryDataSource())
+		val filters = SearchFilters(cuisines = setOf(Cuisine.MEXICAN))
+
+		val event = async { accessor.observeFilterChanges().take(1).single() }
+		runCurrent()
+
+		accessor.saveFilters(filters)
+
+		event.await() shouldBe Unit
 	}
 
 	private class FakeRemoteFilterDataSource(

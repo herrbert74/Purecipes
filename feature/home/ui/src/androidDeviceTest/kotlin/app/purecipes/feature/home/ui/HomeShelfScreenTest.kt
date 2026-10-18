@@ -11,11 +11,13 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestHome
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
@@ -54,6 +56,7 @@ class HomeShelfScreenTest {
 		val viewModel = HomeShelfViewModel(
 			getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(FakeRecipeSearchFilterRepository()),
 			shelfId = HomeShelfId.COLLECTION,
 			collectionSlug = "this-week",
 			habitCuisine = null,
