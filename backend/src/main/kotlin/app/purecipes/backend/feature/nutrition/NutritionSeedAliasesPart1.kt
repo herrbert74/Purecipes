@@ -26,6 +26,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BELL_PEPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_BEAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_PEPPER_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLOOD_SAUSAGE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUEBERRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUEBERRY_FROZEN_DESCRIPTION
@@ -67,6 +68,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CH
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKPEA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKPEA_FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHILI_POWDER_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHINKIANG_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHORIZO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CIDER_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CILANTRO_DESCRIPTION
@@ -198,6 +200,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PU
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.QUESO_FRESCO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_BELL_PEPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_WINE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_WINE_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_NOODLE_DESCRIPTION
@@ -456,7 +459,8 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("chillies", HOT_CHILI_RED_DESCRIPTION, CAYENNE_DESCRIPTION),
 		NutritionSeedAlias(
 			"chinese black vinegar",
-			WHITE_VINEGAR_DESCRIPTION,
+			BLACK_VINEGAR_DESCRIPTION,
+			CHINKIANG_VINEGAR_DESCRIPTION,
 			BALSAMIC_VINEGAR_DESCRIPTION,
 		),
 		NutritionSeedAlias("chipotle chilli flake", CAYENNE_DESCRIPTION, CHILI_POWDER_DESCRIPTION),
@@ -592,6 +596,8 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("fresh lemon juice", LEMON_JUICE_DESCRIPTION),
 		NutritionSeedAlias("fresh lime juice", LIME_JUICE_DESCRIPTION),
 		NutritionSeedAlias("fresh mint", MINT_DESCRIPTION),
+		NutritionSeedAlias("fresh oregano", OREGANO_DESCRIPTION),
+		NutritionSeedAlias("fresh oregano leaves", OREGANO_DESCRIPTION),
 		NutritionSeedAlias("freshly ground black pepper", BLACK_PEPPER_DESCRIPTION),
 		NutritionSeedAlias("frozen blueberries", BLUEBERRY_FROZEN_DESCRIPTION, BLUEBERRY_DESCRIPTION),
 		NutritionSeedAlias("frozen pearl onions thawed", ONION_DESCRIPTION),
@@ -760,6 +766,8 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("onions", ONION_DESCRIPTION),
 		NutritionSeedAlias("orange", ORANGE_DESCRIPTION),
 		NutritionSeedAlias("orange liqueur", DESSERT_WINE_SWEET_DESCRIPTION),
+		NutritionSeedAlias("oregano", OREGANO_DESCRIPTION),
+		NutritionSeedAlias("oregano leaves", OREGANO_DESCRIPTION),
 		NutritionSeedAlias("orzo", PASTA_DESCRIPTION),
 		NutritionSeedAlias("packed dark brown sugar", BROWN_SUGAR_DESCRIPTION, SUGAR_DESCRIPTION),
 		NutritionSeedAlias("packed light brown sugar", BROWN_SUGAR_DESCRIPTION, SUGAR_DESCRIPTION),
@@ -821,6 +829,7 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("red pepper flakes heavier extra spicy", CAYENNE_DESCRIPTION),
 		NutritionSeedAlias("red pepper strips", RED_BELL_PEPPER_DESCRIPTION),
 		NutritionSeedAlias("red peppers", RED_BELL_PEPPER_DESCRIPTION),
+		NutritionSeedAlias("red wine vinegar", RED_WINE_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("rice noodle sheets", RICE_NOODLE_DESCRIPTION),
 		NutritionSeedAlias("rice vinegar", WHITE_VINEGAR_DESCRIPTION, CIDER_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("rice wine vinegar", WHITE_VINEGAR_DESCRIPTION, CIDER_VINEGAR_DESCRIPTION),
@@ -990,6 +999,7 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("vine ripened tomatoes tomatoes", TOMATO_RAW_DESCRIPTION),
 		NutritionSeedAlias("vine tomato", TOMATO_RAW_DESCRIPTION),
 		NutritionSeedAlias("vine tomatoes", TOMATO_RAW_DESCRIPTION),
+		NutritionSeedAlias("vinegar", WHITE_VINEGAR_DESCRIPTION),
 		NutritionSeedAlias("walnuts toasted", WALNUT_DESCRIPTION),
 		NutritionSeedAlias("boiling water", WATER_DESCRIPTION, WATER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("cold water", WATER_DESCRIPTION, WATER_FALLBACK_DESCRIPTION),

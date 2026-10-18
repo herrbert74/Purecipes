@@ -1,6 +1,7 @@
 package app.purecipes.backend.feature.nutrition
 
 internal object NutritionSeedOverrides {
+
 	val preferredDescriptionByCatalogueName: Map<String, String> = mapOf(
 		"Flour" to "Flour, wheat, all-purpose, enriched, unbleached",
 		"Eggs" to "Eggs, Grade A, Large, egg whole",
@@ -49,5 +50,10 @@ internal object NutritionSeedOverrides {
 		"Vegetable Stock" to "Soup, vegetable broth, ready to serve",
 		"Chicken Stock" to "Soup, chicken broth, ready-to-serve",
 		"Beef Stock" to "Soup, beef broth, less/reduced sodium, ready to serve",
+		"Apple Cider Vinegar" to "Vinegar, cider",
+		"Red Wine Vinegar" to "Vinegar, red wine",
+		"Vinegar" to "Vinegar, distilled",
+		"White Wine Vinegar" to "Vinegar, distilled",
+		"Oregano" to "Spices, oregano, dried",
 	)
 }

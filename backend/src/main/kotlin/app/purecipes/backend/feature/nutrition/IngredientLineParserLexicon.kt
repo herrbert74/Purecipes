@@ -35,6 +35,7 @@ internal object IngredientLineParserLexicon {
 		"generous",
 		"square",
 		"rectangular",
+		"tiny",
 	)
 
 	val knownUnits = setOf(
@@ -68,7 +69,9 @@ internal object IngredientLineParserLexicon {
 		"handful",
 	)
 
-	val pinchUnits = setOf("pinch", "dash")
+	val pinchUnits = setOf("pinch")
+
+	val dashUnits = setOf("dash")
 
 	val handfulUnits = setOf("handful")
 
