@@ -79,7 +79,7 @@ private fun addDietaryPreferenceFilters(
 		return
 	}
 	val parts = filters.dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
-	conditions.add("(${parts.joinToString(" OR ")})")
+	conditions.add("(${parts.joinToString(" AND ")})")
 	filters.dietaryPreferences.forEach { params.add(it.name) }
 }
 

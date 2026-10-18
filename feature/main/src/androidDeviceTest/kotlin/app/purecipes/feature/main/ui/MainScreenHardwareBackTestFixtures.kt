@@ -52,6 +52,7 @@ import app.purecipes.feature.search.domain.usecase.GetSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserExcludedIngredientsUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
 import app.purecipes.feature.search.domain.usecase.MatchIngredientInRecipesUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.feature.search.domain.usecase.ObserveSearchPreferencesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
@@ -227,6 +228,7 @@ internal fun homeViewModelForDeviceTest(
 	homeFeedRefresh = HomeFeedRefreshCoordinator(),
 	observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 	observeRecipeViews = ObserveRecipeViewsUseCase(FakeRecipeActivityRepository()),
+	observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(FakeRecipeSearchFilterRepository()),
 	searchReadiness = SearchReadinessCoordinator(),
 	sessionKey = sessionKey,
 )

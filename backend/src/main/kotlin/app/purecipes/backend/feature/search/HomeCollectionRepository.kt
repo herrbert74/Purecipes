@@ -7,6 +7,7 @@ import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.readSearchRecipeCandidates
 import app.purecipes.backend.feature.recipe.recipeCompletenessScoreSql
+import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeCollectionSource
 import app.purecipes.shared.domain.model.HomeShelf
@@ -23,7 +24,11 @@ internal class HomeCollectionRepository(
 	private val recipeRepository: RecipeRepository,
 ) {
 
-	fun liveShelves(connection: Connection, userId: Long?): List<HomeShelf> {
+	fun liveShelves(
+		connection: Connection,
+		userId: Long?,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
+	): List<HomeShelf> {
 		return loadRows(connection, LIVE_COLLECTIONS_SQL, emptyList()).mapNotNull { row ->
 			val recipes = loadRecipes(
 				connection = connection,
@@ -31,11 +36,12 @@ internal class HomeCollectionRepository(
 				row = row,
 				limit = HOME_SHELF_PAGE_SIZE,
 				offset = 0,
+				dietaryPreferences = dietaryPreferences,
 			)
 			if (recipes.isEmpty()) {
 				null
 			} else {
-				shelf(row, recipes)
+				shelf(row, recipes, dietaryPreferences)
 			}
 		}
 	}
@@ -46,6 +52,7 @@ internal class HomeCollectionRepository(
 		slug: String,
 		pageNumber: Int,
 		pageSize: Int,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage? {
 		val row = loadRows(connection, LIVE_COLLECTION_BY_SLUG_SQL, listOf(slug)).singleOrNull() ?: return null
 		val offset = (pageNumber - 1) * pageSize
@@ -55,12 +62,13 @@ internal class HomeCollectionRepository(
 			row = row,
 			limit = pageSize,
 			offset = offset,
+			dietaryPreferences = dietaryPreferences,
 		)
 		return SearchResultsPage(
 			items = recipes,
 			pageNumber = pageNumber,
 			pageSize = pageSize,
-			totalMatches = countRecipes(connection, row),
+			totalMatches = countRecipes(connection, row, dietaryPreferences),
 		)
 	}
 
@@ -70,21 +78,56 @@ internal class HomeCollectionRepository(
 		row: HomeCollectionRow,
 		limit: Int,
 		offset: Int,
+		dietaryPreferences: Set<DietaryPreference>,
 	): List<RecipeSummary> {
-		val recipes = when (row.source) {
-			HomeCollectionSource.EDITORIAL -> editorialRecipes(connection, row.id, limit, offset)
-			HomeCollectionSource.QUERY -> queryRecipes(connection, row, limit, offset)
+		val effectiveRow = if (dietaryPreferences.isEmpty()) {
+			row
+		} else {
+			row.copy(
+				filters = row.filters.copy(
+					dietaryPreferences = row.filters.dietaryPreferences + dietaryPreferences,
+				),
+			)
+		}
+		val recipes = when (effectiveRow.source) {
+			HomeCollectionSource.EDITORIAL -> editorialRecipes(
+				connection = connection,
+				collectionId = effectiveRow.id,
+				limit = limit,
+				offset = offset,
+				dietaryPreferences = dietaryPreferences,
+			)
+
+			HomeCollectionSource.QUERY -> queryRecipes(connection, effectiveRow, limit, offset)
 		}
 		return markFavorites(connection, userId, recipes)
 	}
 
-	private fun countRecipes(connection: Connection, row: HomeCollectionRow): Int {
-		return when (row.source) {
-			HomeCollectionSource.EDITORIAL -> countEditorialRecipes(connection, row.id)
+	private fun countRecipes(
+		connection: Connection,
+		row: HomeCollectionRow,
+		dietaryPreferences: Set<DietaryPreference>,
+	): Int {
+		val effectiveRow = if (dietaryPreferences.isEmpty()) {
+			row
+		} else {
+			row.copy(
+				filters = row.filters.copy(
+					dietaryPreferences = row.filters.dietaryPreferences + dietaryPreferences,
+				),
+			)
+		}
+		return when (effectiveRow.source) {
+			HomeCollectionSource.EDITORIAL -> countEditorialRecipes(
+				connection = connection,
+				collectionId = effectiveRow.id,
+				dietaryPreferences = dietaryPreferences,
+			)
+
 			HomeCollectionSource.QUERY -> countSearchWithFiltersRecipes(
 				connection,
-				row.query.whereClause,
-				row.query.params,
+				effectiveRow.query.whereClause,
+				effectiveRow.query.params,
 			)
 		}
 	}
@@ -94,7 +137,10 @@ internal class HomeCollectionRepository(
 		collectionId: Int,
 		limit: Int,
 		offset: Int,
+		dietaryPreferences: Set<DietaryPreference>,
 	): List<RecipeSummary> {
+		val dietaryClauses = dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
+		val extraWhere = if (dietaryClauses.isEmpty()) "" else " AND " + dietaryClauses.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
 				${recipeCompletenessScoreSql("r")} AS completeness_score,
@@ -103,13 +149,18 @@ internal class HomeCollectionRepository(
 			INNER JOIN recipes r ON r.id = hcr.recipe_id
 			WHERE hcr.collection_id = ?
 				AND r.is_private = FALSE
+				$extraWhere
 			ORDER BY hcr.position ASC, r.id ASC
 			LIMIT ? OFFSET ?
 		""".trimIndent()
 		return connection.prepareStatement(sql).use { statement ->
-			statement.setInt(COLLECTION_ID_INDEX, collectionId)
-			statement.setInt(LIMIT_INDEX, limit)
-			statement.setInt(OFFSET_INDEX, offset)
+			var paramIndex = 1
+			statement.setInt(paramIndex++, collectionId)
+			dietaryPreferences.forEach { pref ->
+				statement.setString(paramIndex++, pref.name)
+			}
+			statement.setInt(paramIndex++, limit)
+			statement.setInt(paramIndex++, offset)
 			recipeRepository.readSearchRecipeCandidates(statement).map { candidate -> candidate.summary }
 		}
 	}
@@ -132,16 +183,27 @@ internal class HomeCollectionRepository(
 		).map { candidate -> candidate.summary }
 	}
 
-	private fun countEditorialRecipes(connection: Connection, collectionId: Int): Int {
+	private fun countEditorialRecipes(
+		connection: Connection,
+		collectionId: Int,
+		dietaryPreferences: Set<DietaryPreference>,
+	): Int {
+		val dietaryClauses = dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
+		val extraWhere = if (dietaryClauses.isEmpty()) "" else " AND " + dietaryClauses.joinToString(" AND ")
 		val sql = """
 			SELECT COUNT(*)
 			FROM home_collection_recipes hcr
 			INNER JOIN recipes r ON r.id = hcr.recipe_id
 			WHERE hcr.collection_id = ?
 				AND r.is_private = FALSE
+				$extraWhere
 		""".trimIndent()
 		return connection.prepareStatement(sql).use { statement ->
-			statement.setInt(1, collectionId)
+			var paramIndex = 1
+			statement.setInt(paramIndex++, collectionId)
+			dietaryPreferences.forEach { pref ->
+				statement.setString(paramIndex++, pref.name)
+			}
 			statement.executeQuery().use { resultSet ->
 				if (resultSet.next()) resultSet.getInt(1) else 0
 			}
@@ -211,8 +273,19 @@ internal class HomeCollectionRepository(
 		}
 	}
 
-	private fun shelf(row: HomeCollectionRow, recipes: List<RecipeSummary>): HomeShelf {
-		val filters = if (row.source == HomeCollectionSource.QUERY) row.filters else SearchFilters()
+	private fun shelf(
+		row: HomeCollectionRow,
+		recipes: List<RecipeSummary>,
+		dietaryPreferences: Set<DietaryPreference>,
+	): HomeShelf {
+		val baseFilters = if (row.source == HomeCollectionSource.QUERY) row.filters else SearchFilters()
+		val filters = if (dietaryPreferences.isEmpty()) {
+			baseFilters
+		} else {
+			baseFilters.copy(
+				dietaryPreferences = baseFilters.dietaryPreferences + dietaryPreferences,
+			)
+		}
 		return HomeShelf(
 			id = HomeShelfId.COLLECTION,
 			title = row.title,

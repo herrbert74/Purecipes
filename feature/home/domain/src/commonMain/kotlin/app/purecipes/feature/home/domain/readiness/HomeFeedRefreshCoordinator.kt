@@ -12,10 +12,16 @@ import kotlinx.coroutines.flow.asStateFlow
 class HomeFeedRefreshCoordinator {
 
 	private val mutableRevision = MutableStateFlow(0)
+	private val mutableShelvesRevision = MutableStateFlow(0)
 
 	val revision: StateFlow<Int> = mutableRevision.asStateFlow()
+	val shelvesRevision: StateFlow<Int> = mutableShelvesRevision.asStateFlow()
 
 	fun markStale() {
 		mutableRevision.value += 1
+	}
+
+	fun markShelvesStale() {
+		mutableShelvesRevision.value += 1
 	}
 }

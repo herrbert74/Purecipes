@@ -24,6 +24,7 @@ import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
@@ -32,6 +33,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
@@ -175,6 +177,7 @@ class HomeScreenTest {
 		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		observeRecipeViews = ObserveRecipeViewsUseCase(FakeRecipeActivityRepository()),
+		observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(FakeRecipeSearchFilterRepository()),
 		searchReadiness = SearchReadinessCoordinator(),
 		sessionKey = sessionKey,
 	)

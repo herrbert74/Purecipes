@@ -6,7 +6,9 @@ import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
+import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
@@ -16,11 +18,13 @@ import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
@@ -438,11 +442,90 @@ class HomeViewModelTest {
 		viewModel.homeListFirstVisibleItemScrollOffset shouldBe 12
 	}
 
+	@Test
+	fun `saving search filters refreshes home feed shelves`() = runViewModelTest {
+		val initialFeed = HomeFeed(
+			shelves = listOf(
+				HomeShelf(
+					id = HomeShelfId.NEW,
+					title = "New",
+					recipes = listOf(recipeSummary(id = 1, title = "Original Pasta")),
+				),
+			),
+		)
+		val refreshedFeed = HomeFeed(
+			shelves = listOf(
+				HomeShelf(
+					id = HomeShelfId.NEW,
+					title = "New",
+					recipes = listOf(recipeSummary(id = 2, title = "Vegan Pasta")),
+				),
+			),
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(result = Ok(initialFeed))
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			filterRepository = filterRepository,
+		)
+		advanceUntilIdle()
+
+		viewModel.homeFeed.shelves.single().recipes.single().title shouldBe "Original Pasta"
+		homeFeedRepository.calls shouldBe 1
+
+		homeFeedRepository.result = Ok(refreshedFeed)
+		filterRepository.saveFilters(SearchFilters(dietaryPreferences = setOf(DietaryPreference.VEGAN)))
+		advanceUntilIdle()
+
+		viewModel.homeFeed.shelves.single().recipes.single().title shouldBe "Vegan Pasta"
+		homeFeedRepository.calls shouldBe 2
+	}
+
+	@Test
+	fun `marking shelves stale refreshes home feed shelves`() = runViewModelTest {
+		val initialFeed = HomeFeed(
+			shelves = listOf(
+				HomeShelf(
+					id = HomeShelfId.NEW,
+					title = "New",
+					recipes = listOf(recipeSummary(id = 1, title = "Original Pasta")),
+				),
+			),
+		)
+		val refreshedFeed = HomeFeed(
+			shelves = listOf(
+				HomeShelf(
+					id = HomeShelfId.NEW,
+					title = "New",
+					recipes = listOf(recipeSummary(id = 2, title = "Refreshed Pasta")),
+				),
+			),
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(result = Ok(initialFeed))
+		val homeFeedRefresh = HomeFeedRefreshCoordinator()
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			homeFeedRefresh = homeFeedRefresh,
+		)
+		advanceUntilIdle()
+
+		viewModel.homeFeed.shelves.single().recipes.single().title shouldBe "Original Pasta"
+		homeFeedRepository.calls shouldBe 1
+
+		homeFeedRepository.result = Ok(refreshedFeed)
+		homeFeedRefresh.markShelvesStale()
+		advanceUntilIdle()
+
+		viewModel.homeFeed.shelves.single().recipes.single().title shouldBe "Refreshed Pasta"
+		homeFeedRepository.calls shouldBe 2
+	}
+
 	private fun homeViewModel(
 		homeFeedRepository: FakeHomeFeedRepository,
 		homeFeedRefresh: HomeFeedRefreshCoordinator = HomeFeedRefreshCoordinator(),
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 		recipeActivityRepository: FakeRecipeActivityRepository = FakeRecipeActivityRepository(),
+		filterRepository: FakeRecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
 		sessionKey: String? = null,
 		searchReadiness: SearchReadinessCoordinator = SearchReadinessCoordinator(),
 	) = HomeViewModel(
@@ -451,6 +534,7 @@ class HomeViewModelTest {
 		homeFeedRefresh = homeFeedRefresh,
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
 		observeRecipeViews = ObserveRecipeViewsUseCase(recipeActivityRepository),
+		observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(filterRepository),
 		searchReadiness = searchReadiness,
 		sessionKey = sessionKey,
 	)

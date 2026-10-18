@@ -3,11 +3,15 @@ package app.purecipes.feature.home.ui
 import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
+import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -105,6 +109,7 @@ class HomeShelfViewModelTest {
 		val viewModel = HomeShelfViewModel(
 			getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 			observeFavoriteEvents = ObserveFavoriteEventsUseCase(favorites),
+			observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(FakeRecipeSearchFilterRepository()),
 			shelfId = HomeShelfId.FAVORITES,
 			collectionSlug = null,
 			habitCuisine = null,
@@ -130,14 +135,54 @@ class HomeShelfViewModelTest {
 		homeFeedRepository.shelfPageCalls shouldBe listOf(HomeShelfId.FAVORITES, HomeShelfId.FAVORITES)
 	}
 
+	@Test
+	fun `saving search filters reloads the shelf`() = runViewModelTest {
+		val recipe = recipeSummary(id = 5, title = "Vegan pasta")
+		val homeFeedRepository = FakeHomeFeedRepository()
+		homeFeedRepository.shelfPages = mapOf(
+			HomeShelfId.NEW to Ok(page(recipe)),
+		)
+		val filterRepository = FakeRecipeSearchFilterRepository()
+		val viewModel = HomeShelfViewModel(
+			getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
+			observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+			observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(filterRepository),
+			shelfId = HomeShelfId.NEW,
+			collectionSlug = null,
+			habitCuisine = null,
+			title = "New",
+			sessionKey = null,
+		)
+		advanceUntilIdle()
+
+		homeFeedRepository.shelfPages = mapOf(
+			HomeShelfId.NEW to Ok(
+				SearchResultsPage(
+					items = listOf(recipeSummary(id = 6, title = "Refreshed vegan pasta")),
+					pageNumber = 1,
+					pageSize = 20,
+					totalMatches = 1,
+				),
+			),
+		)
+
+		filterRepository.saveFilters(SearchFilters(dietaryPreferences = setOf(DietaryPreference.VEGAN)))
+		advanceUntilIdle()
+
+		viewModel.recipes.map { it.title } shouldBe listOf("Refreshed vegan pasta")
+		homeFeedRepository.shelfPageCalls shouldBe listOf(HomeShelfId.NEW, HomeShelfId.NEW)
+	}
+
 	private fun homeShelfViewModel(
 		homeFeedRepository: FakeHomeFeedRepository,
 		shelfId: HomeShelfId,
 		title: String,
 		collectionSlug: String? = null,
+		filterRepository: FakeRecipeSearchFilterRepository = FakeRecipeSearchFilterRepository(),
 	) = HomeShelfViewModel(
 		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(FakeFavoritesRepository()),
+		observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(filterRepository),
 		shelfId = shelfId,
 		collectionSlug = collectionSlug,
 		habitCuisine = null,
