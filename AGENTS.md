@@ -24,6 +24,8 @@ Agents should treat those files as extensions of this document when the task mat
 
 For iOS TestFlight / store preparation, also follow [`.agents/instructions/ios-release.md`](.agents/instructions/ios-release.md) and [`docs/releases/ios-app-distribution.md`](docs/releases/ios-app-distribution.md).
 
+For selective Android UI tests (tags, PR labels, local `-PuiTestTags`), also follow [`.agents/instructions/ui-test-tags.md`](.agents/instructions/ui-test-tags.md).
+
 For scraping, PostgreSQL maintenance, and deleting imported recipes by site, also follow [`scripts/scraping/AGENTS.md`](scripts/scraping/AGENTS.md) (including local `psql` via `sudo -u postgres`).
 
 ---
@@ -110,7 +112,7 @@ For focused maintenance tasks such as fixing Detekt issues, small bug fixes, or 
 
 When changes touch test code, test fixtures, fake implementations, or test-only Gradle dependencies, always run the affected module test tasks automatically before finishing the task. Do not skip test execution in those cases.
 
-When changes touch UI code, Compose screens/routes/view models, `androidDeviceTest` sources, or shared test fixtures/fakes used by Android UI tests, also run the Android UI test suite with `./gradlew connectedAndroidTest` before finishing the task. If the environment cannot run instrumented Android tests, explicitly report that as a blocker instead of silently skipping them.
+When changes touch UI code, Compose screens/routes/view models, `androidDeviceTest` sources, or shared test fixtures/fakes used by Android UI tests, also run the Android UI test suite with `./gradlew connectedAndroidTest` before finishing the task. Prefer a focused tag set with `-PuiTestTags=...` when only some features changed (see [`.agents/instructions/ui-test-tags.md`](.agents/instructions/ui-test-tags.md)); use `UiTestEssential` or the relevant feature tags, and `UiTestAll` / no property for a full suite. If the environment cannot run instrumented Android tests, explicitly report that as a blocker instead of silently skipping them.
 
 For Kotlin Multiplatform modules, run concrete target test tasks (for example `jvmTest`) instead of non-existent aggregate task names like `commonTest`.
 

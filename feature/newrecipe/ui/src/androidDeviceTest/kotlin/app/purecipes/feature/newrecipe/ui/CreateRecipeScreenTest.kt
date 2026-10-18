@@ -36,6 +36,8 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestNewRecipe
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -50,9 +52,11 @@ private const val STEP_REORDER_DRAG_FRAME_DELAY_MILLIS = 16L
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestNewRecipe
 class CreateRecipeScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun createRecipeScreenSavesAndDisplaysRecipe() = runRecompositionTrackingUiTest {
 		val repository = FakeCreatedRecipeRepository()
 		var saved = false

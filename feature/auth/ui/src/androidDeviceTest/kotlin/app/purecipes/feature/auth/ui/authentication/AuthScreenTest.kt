@@ -53,6 +53,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeConsentRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.fakeAuthUser
+import app.purecipes.shared.testfixtures.uitest.UiTestAuth
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.assertStable
 import dejavu.runRecompositionTrackingUiTest
@@ -63,6 +64,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestAuth
 class AuthScreenTest {
 
 	@Test

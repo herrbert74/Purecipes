@@ -32,6 +32,7 @@ import app.purecipes.feature.recipedetails.ui.navigation.RecipeDetailsDestinatio
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import app.purecipes.feature.search.ui.navigation.SearchDestination
+import app.purecipes.shared.testfixtures.uitest.UiTestMain
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import org.junit.Rule
@@ -40,6 +41,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestMain
 class MainScreenHardwareBackTest {
 
 	@get:Rule

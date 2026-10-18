@@ -84,6 +84,8 @@ import app.purecipes.shared.testfixtures.fake.FakeSearchPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestSearch
 import app.purecipes.shared.ui.component.BROWSE_TILE_TAG_PREFIX
 import app.purecipes.shared.ui.component.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -97,6 +99,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestSearch
 class RecipeSearchScreenTest {
 
 	@Test
@@ -117,6 +120,7 @@ class RecipeSearchScreenTest {
 	}
 
 	@Test
+	@UiTestEssential
 	fun searchScreenShowsTotalMatchesCount() = runRecompositionTrackingUiTest {
 		val searchRepository = FakeRecipeSearchRepository(
 			result = com.github.michaelbull.result.Ok(

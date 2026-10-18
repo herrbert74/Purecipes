@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.subscription.domain.model.AdsDisplayOverride
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
 import app.purecipes.feature.subscription.domain.model.PremiumStatusOverride
+import app.purecipes.shared.testfixtures.uitest.UiTestSubscription
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestSubscription
 class MonetisationDebugOverridesPanelTest {
 
 	@Test

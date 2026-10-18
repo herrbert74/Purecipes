@@ -23,6 +23,7 @@ import app.purecipes.feature.recipedetails.ui.navigation.installRecipeDetailsFlo
 import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import app.purecipes.feature.search.ui.navigation.SearchDestination
+import app.purecipes.shared.testfixtures.uitest.UiTestMain
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
@@ -31,6 +32,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@UiTestMain
 class MainScreenRecipeSelectionTest {
 
 	@get:Rule
