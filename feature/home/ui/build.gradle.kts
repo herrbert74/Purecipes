@@ -26,6 +26,7 @@ kotlin {
 				implementation(project(":feature:ads:ui"))
 				implementation(project(":feature:library:domain"))
 				implementation(project(":feature:recipedetails:domain"))
+				implementation(project(":feature:search:domain"))
 				implementation(project(":shared:data"))
 				implementation(libs.jetbrains.androidXNavigation3Ui)
 				implementation(libs.jetbrains.composeMaterial3AdaptiveNavigation3)

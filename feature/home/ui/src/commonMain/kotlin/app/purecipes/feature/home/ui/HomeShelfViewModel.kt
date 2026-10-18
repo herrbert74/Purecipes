@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -32,6 +33,7 @@ private const val PAGE_SIZE = 20
 class HomeShelfViewModel(
 	private val getHomeShelfPage: GetHomeShelfPageUseCase,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
+	private val observeSearchFilterChanges: ObserveSearchFilterChangesUseCase,
 	@Assisted private val shelfId: HomeShelfId,
 	@Assisted private val collectionSlug: String?,
 	@Assisted private val habitCuisine: String?,
@@ -66,6 +68,11 @@ class HomeShelfViewModel(
 		startFavoriteEventsCollection()
 		viewModelScope.launch {
 			loadPage(FIRST_PAGE_NUMBER)
+		}
+		viewModelScope.launch {
+			observeSearchFilterChanges().collect {
+				refresh()
+			}
 		}
 	}
 

@@ -54,6 +54,7 @@ import app.purecipes.feature.onboarding.domain.usecase.IsOnboardingCompletedUseC
 import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCase
 import app.purecipes.feature.search.domain.usecase.GetSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.GetUserPantryUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.feature.search.domain.usecase.SaveSearchFiltersUseCase
 import app.purecipes.feature.search.domain.usecase.SearchRecipesUseCase
 import app.purecipes.feature.search.domain.usecase.UpdateUserPantryUseCase
@@ -185,6 +186,8 @@ interface CommonAppGraph : ViewModelGraph {
 	val getSearchFiltersUseCase: GetSearchFiltersUseCase
 
 	val saveSearchFiltersUseCase: SaveSearchFiltersUseCase
+
+	val observeSearchFilterChangesUseCase: ObserveSearchFilterChangesUseCase
 
 	val getUserPantryUseCase: GetUserPantryUseCase
 

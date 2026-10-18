@@ -12,6 +12,7 @@ import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
 import app.purecipes.feature.library.domain.model.FavoriteEvent
 import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeFeed
@@ -55,6 +56,7 @@ class HomeViewModel(
 	private val homeFeedRefresh: HomeFeedRefreshCoordinator,
 	private val observeFavoriteEvents: ObserveFavoriteEventsUseCase,
 	private val observeRecipeViews: ObserveRecipeViewsUseCase,
+	private val observeSearchFilterChanges: ObserveSearchFilterChangesUseCase,
 	private val searchReadiness: SearchReadinessCoordinator,
 	@Assisted private val sessionKey: String?,
 ) : ViewModel() {
@@ -99,6 +101,18 @@ class HomeViewModel(
 				if (revision > 0) {
 					refreshHomeFeatureRequest()
 				}
+			}
+		}
+		viewModelScope.launch {
+			homeFeedRefresh.shelvesRevision.collect { revision ->
+				if (revision > 0) {
+					refreshHomeShelves()
+				}
+			}
+		}
+		viewModelScope.launch {
+			observeSearchFilterChanges().collect {
+				refreshHomeShelves()
 			}
 		}
 	}
