@@ -44,6 +44,8 @@ import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestLibrary
 import app.purecipes.shared.ui.component.RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
@@ -59,9 +61,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestLibrary
 class LibraryScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun favoritesScreenDoesNotRecomposeTitle() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {

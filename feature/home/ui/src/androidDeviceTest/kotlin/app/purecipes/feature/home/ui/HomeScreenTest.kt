@@ -32,6 +32,8 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestHome
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
@@ -42,9 +44,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestHome
 class HomeScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun loadingHomeShowsShelfSkeleton() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {

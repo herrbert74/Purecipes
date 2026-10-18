@@ -27,6 +27,8 @@ import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestAuth
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
@@ -37,9 +39,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestAuth
 class SignInScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun signInScreenShowsForgotPasswordButton() = runRecompositionTrackingUiTest {
 		setSignInScreen()
 		onNodeWithTag(SIGN_IN_FORGOT_PASSWORD_TAG).assertIsDisplayed()

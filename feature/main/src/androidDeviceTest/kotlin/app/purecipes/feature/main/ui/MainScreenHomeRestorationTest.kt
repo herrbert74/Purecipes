@@ -35,6 +35,7 @@ import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
+import app.purecipes.shared.testfixtures.uitest.UiTestMain
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
@@ -44,6 +45,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestMain
 class MainScreenHomeRestorationTest {
 
 	@get:Rule

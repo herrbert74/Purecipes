@@ -2,6 +2,44 @@
 
 includeBuild("build-logic")
 
+val uiTestTagPackage = "app.purecipes.shared.testfixtures.uitest"
+val knownUiTestTags = listOf(
+	"UiTestEssential",
+	"UiTestAuth",
+	"UiTestCooking",
+	"UiTestFeatureRequests",
+	"UiTestHome",
+	"UiTestLibrary",
+	"UiTestMain",
+	"UiTestNewRecipe",
+	"UiTestOnboarding",
+	"UiTestRecipeDetails",
+	"UiTestSearch",
+	"UiTestSettings",
+	"UiTestSubscription",
+)
+val annotationProperty = "android.testInstrumentationRunnerArguments.annotation"
+val uiTestTagsProperty = startParameter.projectProperties["uiTestTags"]
+if (!uiTestTagsProperty.isNullOrBlank() && !startParameter.projectProperties.containsKey(annotationProperty)) {
+	val requested = uiTestTagsProperty
+		.split(',')
+		.map { it.trim() }
+		.filter { it.isNotEmpty() }
+	if (requested.none { it == "UiTestAll" }) {
+		val unknown = requested.filterNot { it in knownUiTestTags }
+		require(unknown.isEmpty()) {
+			"Unknown uiTestTags: ${unknown.joinToString()}. Known: ${knownUiTestTags.joinToString()} UiTestAll"
+		}
+		val selected = (requested + "UiTestEssential").toSet()
+		val resolved = knownUiTestTags
+			.filter { it in selected }
+			.joinToString(",") { "$uiTestTagPackage.$it" }
+		val projectProperties = LinkedHashMap(startParameter.projectProperties)
+		projectProperties[annotationProperty] = resolved
+		startParameter.setProjectProperties(projectProperties)
+	}
+}
+
 pluginManagement {
 	repositories {
 		google()

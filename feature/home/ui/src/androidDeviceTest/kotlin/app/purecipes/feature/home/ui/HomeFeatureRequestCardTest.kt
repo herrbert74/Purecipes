@@ -8,6 +8,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestStatus
+import app.purecipes.shared.testfixtures.uitest.UiTestHome
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -17,6 +18,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestHome
 class HomeFeatureRequestCardTest {
 
 	@Test

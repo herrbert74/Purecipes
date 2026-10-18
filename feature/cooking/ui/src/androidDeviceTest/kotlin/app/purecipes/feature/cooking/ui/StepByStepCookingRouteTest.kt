@@ -43,6 +43,8 @@ import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
+import app.purecipes.shared.testfixtures.uitest.UiTestCooking
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.assertRecompositions
@@ -54,9 +56,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestCooking
 class StepByStepCookingRouteTest {
 
 	@Test
+	@UiTestEssential
 	fun cookingRouteShowsRecipeTitleProgressAndSwipeableSteps() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {

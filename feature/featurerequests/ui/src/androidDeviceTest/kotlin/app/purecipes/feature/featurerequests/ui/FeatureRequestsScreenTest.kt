@@ -14,6 +14,8 @@ import app.purecipes.feature.featurerequests.domain.usecase.ObserveFeatureReques
 import app.purecipes.feature.featurerequests.domain.usecase.ToggleFeatureRequestVoteUseCase
 import app.purecipes.shared.testfixtures.fake.FakeFeatureRequestsRepository
 import app.purecipes.shared.testfixtures.fake.fakeFeatureRequest
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestFeatureRequests
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -22,9 +24,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestFeatureRequests
 class FeatureRequestsScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun listUpdatesCommentCountAfterCommentAddedEvent() = runRecompositionTrackingUiTest {
 		val request = fakeFeatureRequest(id = REQUEST_ID, title = "Dark mode", voteCount = 6, commentCount = 0)
 		val repository = FakeFeatureRequestsRepository(initialFeatureRequests = listOf(request))

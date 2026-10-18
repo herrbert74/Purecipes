@@ -7,6 +7,7 @@ UI_TEST_MODULES=(
 	feature/featurerequests/ui
 	feature/home/ui
 	feature/library/ui
+	feature/main
 	feature/newrecipe/ui
 	feature/onboarding/ui
 	feature/recipedetails/ui
@@ -15,13 +16,13 @@ UI_TEST_MODULES=(
 	feature/subscription/ui
 )
 
-expected_test_count="$(
-	grep -r '@Test' feature/*/ui/src/androidDeviceTest --include='*.kt' | wc -l | tr -d '[:space:]'
-)"
+UI_TEST_TAGS="${UI_TEST_TAGS:-UiTestAll}"
+expected_test_count="$(python3 .github/scripts/count-ui-tests-for-tags.py "${UI_TEST_TAGS}")"
 executed_test_count=0
 failure_count=0
 error_count=0
 missing_count=0
+modules_with_results=0
 
 print_failed_tests() {
 	python3 - "$1" <<'PY'
@@ -53,10 +54,16 @@ for module in "${UI_TEST_MODULES[@]}"; do
 	results_dir="${module}/build/outputs/androidTest-results/connected/androidMain"
 	report_file="$(find "${results_dir}" -maxdepth 1 -name 'TEST-*.xml' -print -quit 2>/dev/null || true)"
 	if [[ -z "${report_file}" ]]; then
-		echo "::error::Missing connected Android test results XML under ${results_dir}"
-		missing_count=$((missing_count + 1))
+		if [[ "${UI_TEST_TAGS}" == "UiTestAll" ]]; then
+			echo "::error::Missing connected Android test results XML under ${results_dir}"
+			missing_count=$((missing_count + 1))
+		else
+			echo "No connected Android test results under ${results_dir} (ok when filtered)."
+		fi
 		continue
 	fi
+
+	modules_with_results=$((modules_with_results + 1))
 
 	testsuites_tag="$(grep -m1 '<testsuites ' "${report_file}" || true)"
 	if [[ -z "${testsuites_tag}" ]]; then
@@ -89,7 +96,11 @@ if [[ "${missing_count}" -gt 0 ]]; then
 fi
 
 if [[ "${executed_test_count}" -lt "${expected_test_count}" ]]; then
-	echo "::error::Expected at least ${expected_test_count} connected UI tests from source, but results recorded ${executed_test_count}."
+	echo "::error::Expected at least ${expected_test_count} connected UI tests for tags '${UI_TEST_TAGS}', but results recorded ${executed_test_count}."
+fi
+
+if [[ "${expected_test_count}" -gt 0 && "${executed_test_count}" -eq 0 ]]; then
+	echo "::error::Expected ${expected_test_count} connected UI tests for tags '${UI_TEST_TAGS}', but none executed."
 fi
 
 if [[ "${failure_count}" -gt 0 || "${error_count}" -gt 0 ]]; then
@@ -100,4 +111,4 @@ if [[ "${missing_count}" -gt 0 || "${executed_test_count}" -lt "${expected_test_
 	exit 1
 fi
 
-echo "Verified ${executed_test_count} connected UI tests across ${#UI_TEST_MODULES[@]} modules."
+echo "Verified ${executed_test_count} connected UI tests across ${modules_with_results} module(s) for tags '${UI_TEST_TAGS}'."

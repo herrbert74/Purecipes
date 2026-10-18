@@ -12,6 +12,8 @@ import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestSettings
 import app.purecipes.shared.ui.component.USDA_NUTRITION_ATTRIBUTION
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
@@ -23,9 +25,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestSettings
 class AboutScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun aboutScreenShowsVersionText() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {

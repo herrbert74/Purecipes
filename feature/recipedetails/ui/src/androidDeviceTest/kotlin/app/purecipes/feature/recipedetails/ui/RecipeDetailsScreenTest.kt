@@ -42,6 +42,8 @@ import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestRecipeDetails
 import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
 import app.purecipes.shared.ui.component.RecipeDetailsSection
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -52,9 +54,11 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestRecipeDetails
 class RecipeDetailsScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun recipeDetailsScreenShowsTitleIngredientsAndSteps() = runRecompositionTrackingUiTest {
 		val favoritesRepository = FakeFavoritesRepository()
 		val cookbooksRepository = FakeCookbooksRepository()

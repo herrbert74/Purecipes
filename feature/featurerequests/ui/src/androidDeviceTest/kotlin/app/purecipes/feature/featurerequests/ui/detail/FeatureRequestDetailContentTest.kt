@@ -13,6 +13,7 @@ import app.purecipes.feature.featurerequests.ui.FeatureRequestDetailUiState
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestStatus
+import app.purecipes.shared.testfixtures.uitest.UiTestFeatureRequests
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestFeatureRequests
 class FeatureRequestDetailContentTest {
 
 	@Test

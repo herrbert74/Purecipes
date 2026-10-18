@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestOnboarding
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
@@ -19,9 +21,11 @@ private const val PAGE_SETTLE_MILLIS = 5_000L
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
+@UiTestOnboarding
 class OnboardingScreenTest {
 
 	@Test
+	@UiTestEssential
 	fun onboardingStartsOnTheFirstPage() = runRecompositionTrackingUiTest {
 		setOnboardingContent()
 
