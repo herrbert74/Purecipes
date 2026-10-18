@@ -44,6 +44,88 @@ class FdcFoodMatcherTest {
 	}
 
 	@Test
+	fun matchCatalogueNameUsesPreferredDescriptionForVinegar() {
+		val distilledVinegar = FdcFoundationFood(
+			sourceName = FDC_SR_LEGACY_SOURCE_NAME,
+			fdcId = 172237L,
+			description = "Vinegar, distilled",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val redWineVinegar = FdcFoundationFood(
+			sourceName = FDC_SR_LEGACY_SOURCE_NAME,
+			fdcId = 172240L,
+			description = "Vinegar, red wine",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val pearlOnionsInVinegar = FdcFoundationFood(
+			sourceName = "fdc_branded",
+			fdcId = 1039081L,
+			description = "PEARL ONIONS IN BALSAMIC VINEGAR OF MODENA IGP",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val allFoods = listOf(distilledVinegar, redWineVinegar, pearlOnionsInVinegar)
+
+		FdcFoodMatcher.matchCatalogueName("Vinegar", allFoods)?.description shouldBe "Vinegar, distilled"
+		FdcFoodMatcher.matchCatalogueName("Red Wine Vinegar", allFoods)?.description shouldBe "Vinegar, red wine"
+		FdcFoodMatcher.matchAlias("vinegar", allFoods)?.description shouldBe "Vinegar, distilled"
+		FdcFoodMatcher.matchAlias("red wine vinegar", allFoods)?.description shouldBe "Vinegar, red wine"
+	}
+
+	@Test
+	fun matchAliasResolvesChineseBlackVinegar() {
+		val blackVinegar = FdcFoundationFood(
+			sourceName = "fdc_branded",
+			fdcId = 2086290L,
+			description = "BLACK VINEGAR",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val distilledVinegar = FdcFoundationFood(
+			sourceName = FDC_SR_LEGACY_SOURCE_NAME,
+			fdcId = 172237L,
+			description = "Vinegar, distilled",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+
+		FdcFoodMatcher.matchAlias(
+			"chinese black vinegar",
+			listOf(distilledVinegar, blackVinegar),
+		)?.description shouldBe "BLACK VINEGAR"
+		FdcFoodMatcher.matchAlias(
+			"dark chinese vinegar",
+			listOf(distilledVinegar, blackVinegar),
+		)?.description shouldBe "BLACK VINEGAR"
+	}
+
+	@Test
+	fun matchCatalogueNameUsesPreferredDescriptionForOregano() {
+		val driedOregano = FdcFoundationFood(
+			sourceName = FDC_SR_LEGACY_SOURCE_NAME,
+			fdcId = 171328L,
+			description = "Spices, oregano, dried",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val olivesWithOregano = FdcFoundationFood(
+			sourceName = "fdc_branded",
+			fdcId = 2400354L,
+			description = "PITTED KALAMATA OLIVES WITH OREGANO & A TOUCH OF OLIVE OIL, OREGANO & OLIVE OIL",
+			nutrients = emptyList(),
+			portions = emptyList(),
+		)
+		val allFoods = listOf(driedOregano, olivesWithOregano)
+
+		FdcFoodMatcher.matchCatalogueName("Oregano", allFoods)?.description shouldBe "Spices, oregano, dried"
+		FdcFoodMatcher.matchAlias("oregano", allFoods)?.description shouldBe "Spices, oregano, dried"
+		FdcFoodMatcher.matchAlias("fresh oregano", allFoods)?.description shouldBe "Spices, oregano, dried"
+		FdcFoodMatcher.matchAlias("oregano leaves", allFoods)?.description shouldBe "Spices, oregano, dried"
+	}
+
+	@Test
 	fun matchSearchTermDoesNotChoosePrefixFalsePositives() {
 		val butter = FdcFoundationFood(
 			sourceName = FDC_FOUNDATION_SOURCE_NAME,

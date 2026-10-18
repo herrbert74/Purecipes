@@ -848,6 +848,53 @@ class NutritionSeedAliasIndexTest {
 		aliases["unsalted butter"] shouldBe 8
 	}
 
+	@Test
+	fun mergeAppliesVinegarAliases() {
+		val distilledVinegar = food(
+			id = 1,
+			displayName = "Vinegar, distilled",
+			normalizedName = "vinegar distilled",
+		)
+		val redWineVinegar = food(
+			id = 2,
+			displayName = "Vinegar, red wine",
+			normalizedName = "vinegar red wine",
+		)
+		val blackVinegar = food(
+			id = 3,
+			displayName = "BLACK VINEGAR",
+			normalizedName = "black vinegar",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(distilledVinegar, redWineVinegar, blackVinegar),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["vinegar"] shouldBe 1
+		aliases["red wine vinegar"] shouldBe 2
+		aliases["good quality red wine vinegar"] shouldBe 2
+		aliases["chinese black vinegar"] shouldBe 3
+		aliases["dark chinese vinegar"] shouldBe 3
+	}
+
+	@Test
+	fun mergeAppliesOreganoAliases() {
+		val driedOregano = food(
+			id = 1,
+			displayName = "Spices, oregano, dried",
+			normalizedName = "spices oregano dried",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(driedOregano),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["oregano"] shouldBe 1
+		aliases["fresh oregano"] shouldBe 1
+		aliases["fresh oregano leaves"] shouldBe 1
+		aliases["oregano leaves"] shouldBe 1
+	}
+
 	private fun food(id: Int, displayName: String, normalizedName: String): NutritionFoodRecord =
 		NutritionFoodRecord(
 			id = id,

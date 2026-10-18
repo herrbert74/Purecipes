@@ -26,6 +26,66 @@ class IngredientLineParserTest {
 	}
 
 	@Test
+	fun parseStripsTrailingOptional() {
+		val parsed = IngredientLineParser.parse("2 teaspoons dried oregano, optional")
+		parsed.quantity shouldBe BigDecimal("2")
+		parsed.unit shouldBe "tsp"
+		parsed.parsedName shouldBe "dried oregano"
+		parsed.isMeasurable shouldBe true
+
+		val dill = IngredientLineParser.parse("1 tablespoon minced fresh dill, optional")
+		dill.quantity shouldBe BigDecimal("1")
+		dill.unit shouldBe "tbsp"
+		dill.parsedName shouldBe "minced fresh dill"
+		dill.isMeasurable shouldBe true
+
+		val soda = IngredientLineParser.parse("1/8 teaspoon baking soda, optional")
+		soda.quantity shouldBe BigDecimal("0.1250")
+		soda.unit shouldBe "tsp"
+		soda.parsedName shouldBe "baking soda"
+		soda.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseNormalizesPinchToHalfGram() {
+		val pinchOfSalt = IngredientLineParser.parse("pinch of salt")
+		pinchOfSalt.quantity shouldBe BigDecimal("0.5")
+		pinchOfSalt.unit shouldBe "g"
+		pinchOfSalt.parsedName shouldBe "salt"
+		pinchOfSalt.isMeasurable shouldBe true
+
+		val onePinch = IngredientLineParser.parse("1 pinch salt")
+		onePinch.quantity shouldBe BigDecimal("0.5")
+		onePinch.unit shouldBe "g"
+		onePinch.parsedName shouldBe "salt"
+		onePinch.isMeasurable shouldBe true
+
+		val twoPinches = IngredientLineParser.parse("2 pinches salt")
+		twoPinches.quantity shouldBe BigDecimal("1.0")
+		twoPinches.unit shouldBe "g"
+		twoPinches.parsedName shouldBe "salt"
+		twoPinches.isMeasurable shouldBe true
+
+		val tinyPinch = IngredientLineParser.parse("very tiny pinch kosher salt")
+		tinyPinch.quantity shouldBe BigDecimal("0.5")
+		tinyPinch.unit shouldBe "g"
+		tinyPinch.parsedName shouldBe "kosher salt"
+		tinyPinch.isMeasurable shouldBe true
+
+		val capitalizedPinch = IngredientLineParser.parse("Pinch salt")
+		capitalizedPinch.quantity shouldBe BigDecimal("0.5")
+		capitalizedPinch.unit shouldBe "g"
+		capitalizedPinch.parsedName shouldBe "salt"
+		capitalizedPinch.isMeasurable shouldBe true
+
+		val pinchSaltAndPepper = IngredientLineParser.parse("1 pinch salt and pepper to taste")
+		pinchSaltAndPepper.quantity shouldBe BigDecimal("0.5")
+		pinchSaltAndPepper.unit shouldBe "g"
+		pinchSaltAndPepper.parsedName shouldBe "salt and pepper to taste"
+		pinchSaltAndPepper.isMeasurable shouldBe true
+	}
+
+	@Test
 	fun parseMarksUnstructuredLinesAsNotMeasurable() {
 		val parsed = IngredientLineParser.parse("12 large")
 

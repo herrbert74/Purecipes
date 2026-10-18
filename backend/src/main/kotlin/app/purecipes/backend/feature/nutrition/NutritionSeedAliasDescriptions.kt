@@ -28,6 +28,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val BEER_DESCRIPTION = "Alcoholic beverage, beer, regular, all"
 	internal const val BELL_PEPPER_DESCRIPTION = "Peppers, sweet, green, raw"
 	internal const val BLACK_PEPPER_DESCRIPTION = "Spices, pepper, black"
+	internal const val BLACK_VINEGAR_DESCRIPTION = "BLACK VINEGAR"
 	internal const val BLACK_BEAN_DESCRIPTION =
 		"Beans, black, mature seeds, cooked, boiled, without salt"
 	internal const val BLACK_EYED_PEA_DESCRIPTION =
@@ -83,6 +84,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val CHICKPEA_FLOUR_DESCRIPTION = "Chickpea flour (besan)"
 	internal const val CHILI_POWDER_DESCRIPTION = "Spices, chili powder"
 	internal const val CHORIZO_DESCRIPTION = "Sausage, pork, chorizo, link or ground, raw"
+	internal const val CHINKIANG_VINEGAR_DESCRIPTION = "CHINKIANG VINEGAR"
 	internal const val CIDER_VINEGAR_DESCRIPTION = "Vinegar, cider"
 	internal const val CILANTRO_DESCRIPTION = "Coriander (cilantro) leaves, raw"
 	internal const val CINNAMON_DESCRIPTION = "Spices, cinnamon, ground"
@@ -227,6 +229,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val QUESO_FRESCO_DESCRIPTION = "Cheese, fresh, queso fresco"
 	internal const val RED_BELL_PEPPER_DESCRIPTION = "Peppers, sweet, red, raw"
 	internal const val RED_WINE_DESCRIPTION = "Alcoholic beverage, wine, table, red"
+	internal const val RED_WINE_VINEGAR_DESCRIPTION = "Vinegar, red wine"
 	internal const val RICE_DESCRIPTION = "Rice, white, long grain, unenriched, raw"
 	internal const val RICE_FALLBACK_DESCRIPTION = "Rice, white, long-grain, regular, raw, unenriched"
 	internal const val COOKED_RICE_DESCRIPTION =

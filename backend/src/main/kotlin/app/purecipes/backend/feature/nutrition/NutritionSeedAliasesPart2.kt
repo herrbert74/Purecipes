@@ -19,6 +19,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BELL_PEPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_BEAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_PEPPER_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUE_CHEESE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREADCRUMB_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREAD_FLOUR_DESCRIPTION
@@ -52,6 +53,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CH
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKPEA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKPEA_FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHILI_POWDER_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHINKIANG_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHORIZO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CIDER_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CILANTRO_DESCRIPTION
@@ -157,6 +159,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.QU
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RADICCHIO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_BELL_PEPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_WINE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_WINE_VINEGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_NOODLE_DESCRIPTION
@@ -817,7 +820,8 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("dark chilli powder", CHILI_POWDER_DESCRIPTION, CAYENNE_DESCRIPTION),
 		NutritionSeedAlias(
 			"dark chinese vinegar",
-			WHITE_VINEGAR_DESCRIPTION,
+			BLACK_VINEGAR_DESCRIPTION,
+			CHINKIANG_VINEGAR_DESCRIPTION,
 			BALSAMIC_VINEGAR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
@@ -918,6 +922,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("good mayonnaise bread", MAYONNAISE_DESCRIPTION),
 		NutritionSeedAlias(
 			"good quality red wine vinegar",
+			RED_WINE_VINEGAR_DESCRIPTION,
 			CIDER_VINEGAR_DESCRIPTION,
 			WHITE_VINEGAR_DESCRIPTION,
 			BALSAMIC_VINEGAR_DESCRIPTION,
@@ -1116,6 +1121,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("red potatoes very", POTATO_DESCRIPTION),
 		NutritionSeedAlias(
 			"red wine vinegar italian",
+			RED_WINE_VINEGAR_DESCRIPTION,
 			CIDER_VINEGAR_DESCRIPTION,
 			WHITE_VINEGAR_DESCRIPTION,
 			BALSAMIC_VINEGAR_DESCRIPTION,
@@ -1338,6 +1344,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("vegan puff pastry", PUFF_PASTRY_DESCRIPTION),
 		NutritionSeedAlias(
 			"vegan red wine vinegar",
+			RED_WINE_VINEGAR_DESCRIPTION,
 			CIDER_VINEGAR_DESCRIPTION,
 			WHITE_VINEGAR_DESCRIPTION,
 			BALSAMIC_VINEGAR_DESCRIPTION,

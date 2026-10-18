@@ -108,6 +108,10 @@ internal object IngredientLineParser {
 		"""(?i)(?:,\s*)?unopened\b(?:\s*,?\s*labels?\s+removed)?""",
 	)
 
+	private val trailingOptionalPattern = Regex(
+		"""(?i)(?:,\s*)?\boptional(?:ly)?\b\.?\s*$""",
+	)
+
 	private val parentheticalNoiseFoodTokens = setOf(
 		"about",
 		"approximately",
@@ -224,6 +228,7 @@ internal object IngredientLineParser {
 		rest = stripLengthUnits(rest)
 		rest = stripParentheticalClauses(rest)
 		rest = stripUnopenedLabelNoise(rest)
+		rest = stripTrailingOptionalNoise(rest)
 		rest = stripRedundantFromClause(rest)
 		rest = recoverFoodNameIfOrphanCollapsed(rest, rawText)
 		if (unit == null) {
@@ -476,18 +481,23 @@ internal object IngredientLineParser {
 	private fun skipSizeTokens(value: String): String {
 		var rest = value.trim()
 		while (rest.isNotEmpty()) {
-			val dimension = leadingDimensionPattern.find(rest)
-			if (dimension != null && dimension.range.first == 0) {
-				rest = rest.substring(dimension.range.last + 1).trim()
-				continue
-			}
-			val token = firstToken(rest).lowercase()
-			if (token !in IngredientLineParserLexicon.sizeTokens) {
-				return rest
-			}
-			rest = dropFirstWord(rest)
+			val next = advanceSizeTokenOrDimension(rest) ?: break
+			rest = next
 		}
 		return rest
+	}
+
+	private fun advanceSizeTokenOrDimension(rest: String): String? {
+		val dimension = leadingDimensionPattern.find(rest)
+		val token = firstToken(rest).lowercase()
+		val afterToken = dropFirstWord(rest)
+		val nextAfterVery = firstToken(afterToken).lowercase()
+		val isVerySize = token == "very" && nextAfterVery in IngredientLineParserLexicon.sizeTokens
+		return when {
+			dimension != null && dimension.range.first == 0 -> rest.substring(dimension.range.last + 1).trim()
+			isVerySize || token in IngredientLineParserLexicon.sizeTokens -> afterToken
+			else -> null
+		}
 	}
 
 	private fun skipRecipeToken(value: String): String {
@@ -612,6 +622,12 @@ internal object IngredientLineParser {
 		return when {
 			unit == null -> LeadingAmount(quantity = quantity, unit = null, rest = "")
 			unit in IngredientLineParserLexicon.pinchUnits -> LeadingAmount(
+				quantity = amount.multiply(BigDecimal("0.5")),
+				unit = "g",
+				rest = "",
+			)
+
+			unit in IngredientLineParserLexicon.dashUnits -> LeadingAmount(
 				quantity = amount.multiply(BigDecimal("0.25")),
 				unit = "tsp",
 				rest = "",
@@ -988,6 +1004,11 @@ internal object IngredientLineParser {
 			.trim()
 			.trimEnd(',')
 			.trim()
+
+	private fun stripTrailingOptionalNoise(value: String): String {
+		val stripped = trailingOptionalPattern.replace(value.trim(), "").trim().trimEnd(',').trim()
+		return if (stripped.isNotBlank()) stripped else value.trim()
+	}
 
 	private fun stripRedundantFromClause(value: String): String {
 		val match = Regex("""^(.*?)\s+from\b\s+(.+)$""", RegexOption.IGNORE_CASE)
