@@ -3,6 +3,7 @@ package app.purecipes.backend
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.fake.FakeSessionService
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeCollectionSource
 import app.purecipes.shared.domain.model.HomeFeed
@@ -1223,6 +1224,244 @@ class HomeFeedRouteTest {
 		response.status shouldBe HttpStatusCode.OK
 		return json.decodeFromString(SearchResultsPage.serializer(), response.bodyAsText())
 	}
+
+	@Test
+	fun `home feed filters all shelves according to user dietary preferences`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertSearchFilters(
+			db = db,
+			userId = 1L,
+			filters = SearchFilters(dietaryPreferences = setOf(DietaryPreference.VEGAN)),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 1,
+				title = "Vegan Breakfast 1",
+				createdAt = "2024-01-01 00:00:00",
+				imageUrl = PHOTO,
+				step = "Cook",
+				cuisine = "Italian",
+				mealType = "BREAKFAST",
+				totalTime = 15,
+				dietaryPreferences = listOf("VEGAN"),
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 2,
+				title = "Meat Breakfast",
+				createdAt = "2024-01-02 00:00:00",
+				imageUrl = PHOTO,
+				step = "Cook",
+				cuisine = "Italian",
+				mealType = "BREAKFAST",
+				totalTime = 15,
+				dietaryPreferences = emptyList(),
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 3,
+				title = "Vegan Breakfast 2",
+				createdAt = "2024-01-03 00:00:00",
+				imageUrl = PHOTO,
+				step = "Cook",
+				cuisine = "Italian",
+				mealType = "BREAKFAST",
+				totalTime = 20,
+				dietaryPreferences = listOf("VEGAN"),
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 4,
+				title = "Vegan Breakfast 3",
+				createdAt = "2024-01-04 00:00:00",
+				imageUrl = PHOTO,
+				step = "Cook",
+				cuisine = "Italian",
+				mealType = "BREAKFAST",
+				totalTime = 25,
+				dietaryPreferences = listOf("VEGAN"),
+			),
+		)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 5,
+				title = "Vegan Breakfast 4",
+				createdAt = "2024-01-05 00:00:00",
+				imageUrl = PHOTO,
+				step = "Cook",
+				cuisine = "Italian",
+				mealType = "BREAKFAST",
+				totalTime = 25,
+				dietaryPreferences = listOf("VEGAN"),
+			),
+		)
+		insertFavorite(db, recipeId = 1, createdAt = "2024-01-01 00:00:00")
+		insertFavorite(db, recipeId = 2, createdAt = "2024-01-02 00:00:00")
+		insertFavorite(db, recipeId = 3, createdAt = "2024-01-03 00:00:00")
+		insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 2, event = "OPEN", createdAt = "2024-01-02 00:00:00")
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 1,
+				slug = "editor-picks",
+				title = "Editor Picks",
+				source = HomeCollectionSource.EDITORIAL.name,
+				position = 1,
+				recipePositions = listOf(1 to 1, 2 to 2),
+			),
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val unauthenticatedFeed = homeFeed(localHour = BREAKFAST_HOUR)
+		unauthenticatedFeed.shelf(HomeShelfId.NEW).recipes.map { it.title } shouldContainExactly listOf(
+			"Vegan Breakfast 4",
+			"Vegan Breakfast 3",
+			"Vegan Breakfast 2",
+			"Meat Breakfast",
+			"Vegan Breakfast 1",
+		)
+		unauthenticatedFeed.shelf(HomeShelfId.COLLECTION).recipes.map { it.title } shouldContainExactly listOf(
+			"Vegan Breakfast 1",
+			"Meat Breakfast",
+		)
+
+		val authenticatedFeed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		authenticatedFeed.shelves.forEach { shelf ->
+			shelf.recipes.all { it.title != "Meat Breakfast" } shouldBe true
+			shelf.filters.dietaryPreferences shouldBe setOf(DietaryPreference.VEGAN)
+		}
+		authenticatedFeed.shelf(HomeShelfId.NEW).recipes.map { it.title } shouldContainExactly listOf(
+			"Vegan Breakfast 4",
+			"Vegan Breakfast 3",
+			"Vegan Breakfast 2",
+			"Vegan Breakfast 1",
+		)
+		authenticatedFeed.shelf(HomeShelfId.FAVORITES).recipes.map { it.title } shouldContainExactly listOf(
+			"Vegan Breakfast 2",
+			"Vegan Breakfast 1",
+		)
+		authenticatedFeed.shelf(HomeShelfId.RECENTLY_VIEWED).recipes.map { it.title } shouldContainExactly listOf(
+			"Vegan Breakfast 1",
+		)
+		authenticatedFeed.shelf(HomeShelfId.COLLECTION).recipes.map { it.title } shouldContainExactly listOf(
+			"Vegan Breakfast 1",
+		)
+	}
+
+	@Test
+	fun `home shelf and collection pagination endpoints filter according to user dietary preferences`() =
+		testApplication {
+			val db = createRecipeSearchRouteTestDb()
+			seedAppUsersForSearchRouteTest(db)
+			insertSearchFilters(
+				db = db,
+				userId = 1L,
+				filters = SearchFilters(dietaryPreferences = setOf(DietaryPreference.VEGAN)),
+			)
+			insertHomeRecipe(
+				db,
+				HomeRecipeSeed(
+					id = 1,
+					title = "Vegan Breakfast 1",
+					createdAt = "2024-01-01 00:00:00",
+					imageUrl = PHOTO,
+					step = "Cook",
+					cuisine = "Italian",
+					mealType = "BREAKFAST",
+					totalTime = 15,
+					dietaryPreferences = listOf("VEGAN"),
+				),
+			)
+			insertHomeRecipe(
+				db,
+				HomeRecipeSeed(
+					id = 2,
+					title = "Meat Breakfast",
+					createdAt = "2024-01-02 00:00:00",
+					imageUrl = PHOTO,
+					step = "Cook",
+					cuisine = "Italian",
+					mealType = "BREAKFAST",
+					totalTime = 15,
+					dietaryPreferences = emptyList(),
+				),
+			)
+			insertHomeRecipe(
+				db,
+				HomeRecipeSeed(
+					id = 3,
+					title = "Vegan Breakfast 2",
+					createdAt = "2024-01-03 00:00:00",
+					imageUrl = PHOTO,
+					step = "Cook",
+					cuisine = "Italian",
+					mealType = "BREAKFAST",
+					totalTime = 20,
+					dietaryPreferences = listOf("VEGAN"),
+				),
+			)
+			insertFavorite(db, recipeId = 1, createdAt = "2024-01-01 00:00:00")
+			insertFavorite(db, recipeId = 2, createdAt = "2024-01-02 00:00:00")
+			insertFavorite(db, recipeId = 3, createdAt = "2024-01-03 00:00:00")
+			insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-01 00:00:00")
+			insertRecipeActivity(db, recipeId = 2, event = "OPEN", createdAt = "2024-01-02 00:00:00")
+			insertHomeCollection(
+				db,
+				HomeCollectionSeed(
+					id = 1,
+					slug = "editor-picks",
+					title = "Editor Picks",
+					source = HomeCollectionSource.EDITORIAL.name,
+					position = 1,
+					recipePositions = listOf(1 to 1, 2 to 2),
+				),
+			)
+			application { module(db = db, sessionService = signedInSessionService()) }
+
+			val unauthenticatedFavorites = shelfPage(HomeShelfId.FAVORITES, pageNumber = 1, accessToken = null)
+			unauthenticatedFavorites.totalMatches shouldBe 0
+			unauthenticatedFavorites.items shouldBe emptyList()
+
+			val authenticatedFavorites = shelfPage(HomeShelfId.FAVORITES, pageNumber = 1, accessToken = "session-token")
+			authenticatedFavorites.totalMatches shouldBe 2
+			authenticatedFavorites.items.map { it.title } shouldContainExactly listOf(
+				"Vegan Breakfast 2",
+				"Vegan Breakfast 1",
+			)
+
+			val authenticatedRecent =
+				shelfPage(HomeShelfId.RECENTLY_VIEWED, pageNumber = 1, accessToken = "session-token")
+			authenticatedRecent.totalMatches shouldBe 1
+			authenticatedRecent.items.map { it.title } shouldContainExactly listOf(
+				"Vegan Breakfast 1",
+			)
+
+			val authenticatedNew = shelfPage(HomeShelfId.NEW, pageNumber = 1, accessToken = "session-token")
+			authenticatedNew.totalMatches shouldBe 2
+			authenticatedNew.items.map { it.title } shouldContainExactly listOf(
+				"Vegan Breakfast 2",
+				"Vegan Breakfast 1",
+			)
+
+			val authenticatedCollection = collectionPage(
+				slug = "editor-picks",
+				pageNumber = 1,
+				pageSize = 10,
+				accessToken = "session-token",
+			)
+			authenticatedCollection.totalMatches shouldBe 1
+			authenticatedCollection.items.map { it.title } shouldContainExactly listOf("Vegan Breakfast 1")
+		}
 }
 
 private fun HomeFeed.shelf(id: HomeShelfId) = shelves.first { shelf -> shelf.id == id }
@@ -1233,8 +1472,8 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 			"""
 				INSERT INTO recipes (
 					id, title, description, image_url, cuisine, meal_type, total_time, is_private, created_at,
-					created_by_user_id
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+					created_by_user_id, dietary_preferences
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			""".trimIndent(),
 		).use { statement ->
 			statement.setInt(1, seed.id)
@@ -1255,6 +1494,7 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 			} else {
 				statement.setLong(10, seed.createdByUserId)
 			}
+			statement.setArray(11, connection.createArrayOf("text", seed.dietaryPreferences.toTypedArray()))
 			statement.executeUpdate()
 		}
 		if (seed.ingredient != null) {
@@ -1294,6 +1534,22 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 				statement.setString(2, seed.step)
 				statement.executeUpdate()
 			}
+		}
+	}
+}
+
+private fun insertSearchFilters(db: Db, userId: Long, filters: SearchFilters) {
+	val json = Json.encodeToString(SearchFilters.serializer(), filters)
+	db.dataSource.connection.use { connection ->
+		connection.prepareStatement(
+			"""
+				INSERT INTO search_filters (user_id, filters_json, updated_at)
+				VALUES (?, ?, CURRENT_TIMESTAMP)
+			""".trimIndent(),
+		).use { statement ->
+			statement.setLong(1, userId)
+			statement.setString(2, json)
+			statement.executeUpdate()
 		}
 	}
 }
@@ -1546,6 +1802,7 @@ private data class HomeRecipeSeed(
 	val ingredient: String? = null,
 	val isPrivate: Boolean = false,
 	val createdByUserId: Long? = null,
+	val dietaryPreferences: List<String> = emptyList(),
 )
 
 private const val PHOTO = "https://example.com/photo.jpg"

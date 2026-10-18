@@ -11,6 +11,7 @@ import app.purecipes.backend.feature.recipe.readSearchRecipeCandidates
 import app.purecipes.backend.feature.recipe.recipeCompletenessScoreSql
 import app.purecipes.shared.domain.model.CookingTimeRange
 import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
@@ -21,6 +22,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.domain.model.cuisineFromRawValue
+import kotlinx.serialization.json.Json
 import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
@@ -43,16 +45,6 @@ private const val FAVORITES_SHELF_TITLE = "Your favorites"
 
 private const val RECENTLY_VIEWED_SHELF_TITLE = "Recently viewed"
 
-private const val RECENTLY_VIEWED_USER_PARAMETER = 1
-
-private const val RECENTLY_VIEWED_EVENT_PARAMETER = 2
-
-private const val RECENTLY_VIEWED_OWNER_PARAMETER = 3
-
-private const val RECENTLY_VIEWED_LIMIT_PARAMETER = 4
-
-private const val RECENTLY_VIEWED_OFFSET_PARAMETER = 5
-
 class HomeFeedRepository(
 	private val dataSource: DataSource,
 ) {
@@ -66,7 +58,8 @@ class HomeFeedRepository(
 	fun loadHomeFeed(userId: Long?, localHour: Int): HomeFeed {
 		val mealType = mealTypeForLocalHour(localHour)
 		val shelves = dataSource.connection.use { connection ->
-			buildShelves(connection, userId, mealType)
+			val dietaryPreferences = loadDietaryPreferences(connection, userId)
+			buildShelves(connection, userId, mealType, dietaryPreferences)
 		}
 		return HomeFeed(
 			shelves = shelves,
@@ -89,17 +82,20 @@ class HomeFeedRepository(
 		)
 		val mealType = mealTypeForLocalHour(localHour)
 		return dataSource.connection.use { connection ->
+			val dietaryPreferences = loadDietaryPreferences(connection, userId)
 			when (shelfId) {
 				HomeShelfId.FAVORITES -> favoriteShelfPage(
 					connection = connection,
 					userId = userId,
 					window = window,
+					dietaryPreferences = dietaryPreferences,
 				)
 
 				HomeShelfId.RECENTLY_VIEWED -> recentlyViewedShelfPage(
 					connection = connection,
 					userId = userId,
 					window = window,
+					dietaryPreferences = dietaryPreferences,
 				)
 
 				HomeShelfId.HABIT -> habitShelfPage(
@@ -107,6 +103,7 @@ class HomeFeedRepository(
 					userId = userId,
 					window = window,
 					habitCuisine = null,
+					dietaryPreferences = dietaryPreferences,
 				)
 
 				HomeShelfId.NEW,
@@ -118,6 +115,7 @@ class HomeFeedRepository(
 					mealType = mealType,
 					shelfId = shelfId,
 					window = window,
+					dietaryPreferences = dietaryPreferences,
 				)
 
 				HomeShelfId.COLLECTION -> emptyShelfPage(window)
@@ -138,11 +136,13 @@ class HomeFeedRepository(
 			pageSize = normalizedPageSize,
 		)
 		return dataSource.connection.use { connection ->
+			val dietaryPreferences = loadDietaryPreferences(connection, userId)
 			habitShelfPage(
 				connection = connection,
 				userId = userId,
 				window = window,
 				habitCuisine = habitCuisine,
+				dietaryPreferences = dietaryPreferences,
 			)
 		}
 	}
@@ -156,12 +156,14 @@ class HomeFeedRepository(
 		val normalizedPageNumber = pageNumber.coerceAtLeast(1)
 		val normalizedPageSize = pageSize.coerceIn(1, RecipeRepositorySql.SEARCH_WITH_FILTERS_MAX_LIMIT)
 		return dataSource.connection.use { connection ->
+			val dietaryPreferences = loadDietaryPreferences(connection, userId)
 			collectionRepository.page(
 				connection = connection,
 				userId = userId,
 				slug = slug,
 				pageNumber = normalizedPageNumber,
 				pageSize = normalizedPageSize,
+				dietaryPreferences = dietaryPreferences,
 			)
 		}
 	}
@@ -170,6 +172,7 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		mealType: MealType,
+		dietaryPreferences: Set<DietaryPreference>,
 	): List<HomeShelf> {
 		return buildList {
 			val newest = queryPublicShelf(
@@ -185,8 +188,8 @@ class HomeFeedRepository(
 								WHERE new_steps.recipe_id = r.id
 							)
 						""".trimIndent(),
-					),
-					params = emptyList(),
+					) + dietaryConditions(dietaryPreferences),
+					params = dietaryParams(dietaryPreferences),
 					order = SearchRecipeOrder.NEWEST,
 				),
 			)
@@ -195,37 +198,42 @@ class HomeFeedRepository(
 					HomeShelf(
 						id = HomeShelfId.NEW,
 						title = NEW_SHELF_TITLE,
+						filters = SearchFilters(dietaryPreferences = dietaryPreferences),
 						recipes = newest,
 					),
 				)
 			}
-			val rightNow = queryMealShelf(connection, userId, mealType)
+			val rightNow = queryMealShelf(connection, userId, mealType, dietaryPreferences)
 			if (rightNow.isNotEmpty()) {
 				add(
 					HomeShelf(
 						id = HomeShelfId.RIGHT_NOW,
 						title = mealType.displayName,
-						filters = SearchFilters(mealTypes = setOf(mealType)),
+						filters = SearchFilters(
+							mealTypes = setOf(mealType),
+							dietaryPreferences = dietaryPreferences,
+						),
 						recipes = rightNow,
 					),
 				)
 			}
-			val quick = queryQuickShelf(connection, userId, mealType)
+			val quick = queryQuickShelf(connection, userId, mealType, dietaryPreferences)
 			if (quick != null) {
 				add(quick)
 			}
 			if (userId != null) {
-				val recentlyViewed = queryRecentlyViewedShelf(connection, userId)
+				val recentlyViewed = queryRecentlyViewedShelf(connection, userId, dietaryPreferences)
 				if (recentlyViewed.isNotEmpty()) {
 					add(
 						HomeShelf(
 							id = HomeShelfId.RECENTLY_VIEWED,
 							title = RECENTLY_VIEWED_SHELF_TITLE,
+							filters = SearchFilters(dietaryPreferences = dietaryPreferences),
 							recipes = recentlyViewed,
 						),
 					)
 				}
-				val habit = queryHabitShelf(connection, userId)
+				val habit = queryHabitShelf(connection, userId, dietaryPreferences)
 				if (habit != null) {
 					add(habit)
 				}
@@ -237,14 +245,16 @@ class HomeFeedRepository(
 						userId = userId,
 						excludedCuisines = excludedCuisines,
 						limit = activityLimit,
+						dietaryPreferences = dietaryPreferences,
 					),
 				)
-				val favorites = queryFavoriteShelf(connection, userId)
+				val favorites = queryFavoriteShelf(connection, userId, dietaryPreferences)
 				if (favorites.isNotEmpty()) {
 					add(
 						HomeShelf(
 							id = HomeShelfId.FAVORITES,
 							title = FAVORITES_SHELF_TITLE,
+							filters = SearchFilters(dietaryPreferences = dietaryPreferences),
 							recipes = favorites,
 						),
 					)
@@ -254,6 +264,7 @@ class HomeFeedRepository(
 				collectionRepository.liveShelves(
 					connection = connection,
 					userId = userId,
+					dietaryPreferences = dietaryPreferences,
 				),
 			)
 		}
@@ -263,13 +274,14 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		mealType: MealType,
+		dietaryPreferences: Set<DietaryPreference>,
 	): List<RecipeSummary> {
 		return queryPublicShelf(
 			connection = connection,
 			userId = userId,
 			query = ShelfQuery(
-				extraConditions = listOf("r.meal_type = ?"),
-				params = listOf(mealType.name),
+				extraConditions = listOf("r.meal_type = ?") + dietaryConditions(dietaryPreferences),
+				params = listOf(mealType.name) + dietaryParams(dietaryPreferences),
 				order = SearchRecipeOrder.CATALOG,
 			),
 		)
@@ -279,9 +291,10 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		mealType: MealType,
+		dietaryPreferences: Set<DietaryPreference>,
 	): HomeShelf? {
-		val conditions = quickConditions()
-		val params = listOf(mealType.name)
+		val conditions = quickConditions() + dietaryConditions(dietaryPreferences)
+		val params = listOf(mealType.name) + dietaryParams(dietaryPreferences)
 		val whereClause = publicWhereClause(conditions)
 		val matchCount = countSearchWithFiltersRecipes(connection, whereClause, params)
 		val recipes = if (matchCount < QUICK_SHELF_MINIMUM_RECIPES) {
@@ -306,6 +319,7 @@ class HomeFeedRepository(
 				filters = SearchFilters(
 					mealTypes = setOf(mealType),
 					cookingTimeRanges = setOf(CookingTimeRange.UNDER_30),
+					dietaryPreferences = dietaryPreferences,
 				),
 				recipes = recipes,
 			)
@@ -339,9 +353,12 @@ class HomeFeedRepository(
 	private fun queryFavoriteShelf(
 		connection: Connection,
 		userId: Long,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 		limit: Int = HOME_SHELF_PAGE_SIZE,
 		offset: Int = 0,
 	): List<RecipeSummary> {
+		val extraConditions = dietaryConditions(dietaryPreferences)
+		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
 				${recipeCompletenessScoreSql("r")} AS completeness_score,
@@ -350,14 +367,19 @@ class HomeFeedRepository(
 			INNER JOIN favorites fav ON fav.recipe_id = r.id
 			WHERE fav.user_id = ?
 				AND (r.is_private = FALSE OR r.created_by_user_id = ?)
+				$extraWhere
 			ORDER BY fav.created_at DESC, r.id DESC
 			LIMIT ? OFFSET ?
 		""".trimIndent()
 		val recipes = connection.prepareStatement(sql).use { statement ->
-			statement.setLong(1, userId)
-			statement.setLong(2, userId)
-			statement.setInt(3, limit)
-			statement.setInt(4, offset)
+			var paramIndex = 1
+			statement.setLong(paramIndex++, userId)
+			statement.setLong(paramIndex++, userId)
+			dietaryPreferences.forEach { pref ->
+				statement.setString(paramIndex++, pref.name)
+			}
+			statement.setInt(paramIndex++, limit)
+			statement.setInt(paramIndex++, offset)
 			recipeRepository.readSearchRecipeCandidates(statement).map { candidate ->
 				candidate.summary.copy(isFavorite = true)
 			}
@@ -368,9 +390,12 @@ class HomeFeedRepository(
 	private fun queryRecentlyViewedShelf(
 		connection: Connection,
 		userId: Long,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 		limit: Int = HOME_SHELF_PAGE_SIZE,
 		offset: Int = 0,
 	): List<RecipeSummary> {
+		val extraConditions = dietaryConditions(dietaryPreferences)
+		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
 				${recipeCompletenessScoreSql("r")} AS completeness_score,
@@ -382,16 +407,21 @@ class HomeFeedRepository(
 				WHERE user_id = ? AND event = ?
 				GROUP BY recipe_id
 			) viewed ON viewed.recipe_id = r.id
-			WHERE r.is_private = FALSE OR r.created_by_user_id = ?
+			WHERE (r.is_private = FALSE OR r.created_by_user_id = ?)
+				$extraWhere
 			ORDER BY viewed.viewed_at DESC, r.id DESC
 			LIMIT ? OFFSET ?
 		""".trimIndent()
 		val recipes = connection.prepareStatement(sql).use { statement ->
-			statement.setLong(RECENTLY_VIEWED_USER_PARAMETER, userId)
-			statement.setString(RECENTLY_VIEWED_EVENT_PARAMETER, RecipeActivityEvent.OPEN.name)
-			statement.setLong(RECENTLY_VIEWED_OWNER_PARAMETER, userId)
-			statement.setInt(RECENTLY_VIEWED_LIMIT_PARAMETER, limit)
-			statement.setInt(RECENTLY_VIEWED_OFFSET_PARAMETER, offset)
+			var paramIndex = 1
+			statement.setLong(paramIndex++, userId)
+			statement.setString(paramIndex++, RecipeActivityEvent.OPEN.name)
+			statement.setLong(paramIndex++, userId)
+			dietaryPreferences.forEach { pref ->
+				statement.setString(paramIndex++, pref.name)
+			}
+			statement.setInt(paramIndex++, limit)
+			statement.setInt(paramIndex++, offset)
 			recipeRepository.readSearchRecipeCandidates(statement).map { candidate -> candidate.summary }
 		}
 		return markFavorites(
@@ -404,12 +434,13 @@ class HomeFeedRepository(
 	private fun queryHabitShelf(
 		connection: Connection,
 		userId: Long,
+		dietaryPreferences: Set<DietaryPreference>,
 	): HomeShelf? {
 		val cuisine = dominantFavoriteCuisine(connection, userId) ?: return null
 		val recipes = queryPublicShelf(
 			connection = connection,
 			userId = userId,
-			query = habitShelfQuery(cuisine),
+			query = habitShelfQuery(cuisine, dietaryPreferences),
 		)
 		return if (recipes.isEmpty()) {
 			null
@@ -417,7 +448,10 @@ class HomeFeedRepository(
 			HomeShelf(
 				id = HomeShelfId.HABIT,
 				title = cuisine.displayName,
-				filters = SearchFilters(cuisines = setOf(cuisine)),
+				filters = SearchFilters(
+					cuisines = setOf(cuisine),
+					dietaryPreferences = dietaryPreferences,
+				),
 				recipes = recipes,
 			)
 		}
@@ -428,6 +462,7 @@ class HomeFeedRepository(
 		userId: Long,
 		excludedCuisines: Set<Cuisine>,
 		limit: Int,
+		dietaryPreferences: Set<DietaryPreference>,
 	): List<HomeShelf> {
 		if (limit <= 0) {
 			return emptyList()
@@ -440,6 +475,7 @@ class HomeFeedRepository(
 					connection = connection,
 					userId = userId,
 					cuisine = candidate.cuisine,
+					dietaryPreferences = dietaryPreferences,
 				)
 			}
 			.take(limit)
@@ -449,11 +485,12 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long,
 		cuisine: Cuisine,
+		dietaryPreferences: Set<DietaryPreference>,
 	): HomeShelf? {
 		val recipes = queryPublicShelf(
 			connection = connection,
 			userId = userId,
-			query = habitShelfQuery(cuisine),
+			query = habitShelfQuery(cuisine, dietaryPreferences),
 		)
 		return if (recipes.isEmpty()) {
 			null
@@ -461,7 +498,10 @@ class HomeFeedRepository(
 			HomeShelf(
 				id = HomeShelfId.HABIT,
 				title = cuisine.displayName,
-				filters = SearchFilters(cuisines = setOf(cuisine)),
+				filters = SearchFilters(
+					cuisines = setOf(cuisine),
+					dietaryPreferences = dietaryPreferences,
+				),
 				recipes = recipes,
 				habitCuisine = cuisine.displayName,
 			)
@@ -473,13 +513,14 @@ class HomeFeedRepository(
 		userId: Long?,
 		window: PageWindow,
 		habitCuisine: String?,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage {
 		val cuisine = when {
 			habitCuisine != null -> cuisineFromRawValue(habitCuisine)
 			userId == null -> null
 			else -> dominantFavoriteCuisine(connection, userId)
 		}
-		val query = if (cuisine == null) null else habitShelfQuery(cuisine)
+		val query = if (cuisine == null) null else habitShelfQuery(cuisine, dietaryPreferences)
 		val totalMatches = if (query == null) {
 			0
 		} else {
@@ -567,8 +608,9 @@ class HomeFeedRepository(
 		mealType: MealType,
 		shelfId: HomeShelfId,
 		window: PageWindow,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage {
-		val query = publicShelfQuery(shelfId, mealType)
+		val query = publicShelfQuery(shelfId, mealType, dietaryPreferences)
 		val whereClause = publicWhereClause(query.extraConditions)
 		val totalMatches = countSearchWithFiltersRecipes(connection, whereClause, query.params)
 		val recipes = queryPublicShelf(
@@ -590,14 +632,16 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		window: PageWindow,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage {
-		val totalMatches = if (userId == null) 0 else countFavorites(connection, userId)
+		val totalMatches = if (userId == null) 0 else countFavorites(connection, userId, dietaryPreferences)
 		val recipes = if (userId == null) {
 			emptyList()
 		} else {
 			queryFavoriteShelf(
 				connection = connection,
 				userId = userId,
+				dietaryPreferences = dietaryPreferences,
 				limit = window.pageSize,
 				offset = window.offset,
 			)
@@ -614,14 +658,16 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		window: PageWindow,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage {
-		val totalMatches = if (userId == null) 0 else countRecentlyViewed(connection, userId)
+		val totalMatches = if (userId == null) 0 else countRecentlyViewed(connection, userId, dietaryPreferences)
 		val recipes = if (userId == null) {
 			emptyList()
 		} else {
 			queryRecentlyViewedShelf(
 				connection = connection,
 				userId = userId,
+				dietaryPreferences = dietaryPreferences,
 				limit = window.pageSize,
 				offset = window.offset,
 			)
@@ -634,7 +680,11 @@ class HomeFeedRepository(
 		)
 	}
 
-	private fun publicShelfQuery(shelfId: HomeShelfId, mealType: MealType): ShelfQuery {
+	private fun publicShelfQuery(
+		shelfId: HomeShelfId,
+		mealType: MealType,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
+	): ShelfQuery {
 		return when (shelfId) {
 			HomeShelfId.NEW -> ShelfQuery(
 				extraConditions = listOf(
@@ -646,20 +696,20 @@ class HomeFeedRepository(
 							WHERE new_steps.recipe_id = r.id
 						)
 					""".trimIndent(),
-				),
-				params = emptyList(),
+				) + dietaryConditions(dietaryPreferences),
+				params = dietaryParams(dietaryPreferences),
 				order = SearchRecipeOrder.NEWEST,
 			)
 
 			HomeShelfId.RIGHT_NOW -> ShelfQuery(
-				extraConditions = listOf("r.meal_type = ?"),
-				params = listOf(mealType.name),
+				extraConditions = listOf("r.meal_type = ?") + dietaryConditions(dietaryPreferences),
+				params = listOf(mealType.name) + dietaryParams(dietaryPreferences),
 				order = SearchRecipeOrder.CATALOG,
 			)
 
 			HomeShelfId.QUICK -> ShelfQuery(
-				extraConditions = quickConditions(),
-				params = listOf(mealType.name),
+				extraConditions = quickConditions() + dietaryConditions(dietaryPreferences),
+				params = listOf(mealType.name) + dietaryParams(dietaryPreferences),
 				order = SearchRecipeOrder.CATALOG,
 			)
 
@@ -680,7 +730,13 @@ class HomeFeedRepository(
 		)
 	}
 
-	private fun countRecentlyViewed(connection: Connection, userId: Long): Int {
+	private fun countRecentlyViewed(
+		connection: Connection,
+		userId: Long,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
+	): Int {
+		val extraConditions = dietaryConditions(dietaryPreferences)
+		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT COUNT(*)
 			FROM recipes r
@@ -690,29 +746,45 @@ class HomeFeedRepository(
 				WHERE user_id = ? AND event = ?
 				GROUP BY recipe_id
 			) viewed ON viewed.recipe_id = r.id
-			WHERE r.is_private = FALSE OR r.created_by_user_id = ?
+			WHERE (r.is_private = FALSE OR r.created_by_user_id = ?)
+				$extraWhere
 		""".trimIndent()
 		return connection.prepareStatement(sql).use { statement ->
-			statement.setLong(RECENTLY_VIEWED_USER_PARAMETER, userId)
-			statement.setString(RECENTLY_VIEWED_EVENT_PARAMETER, RecipeActivityEvent.OPEN.name)
-			statement.setLong(RECENTLY_VIEWED_OWNER_PARAMETER, userId)
+			var paramIndex = 1
+			statement.setLong(paramIndex++, userId)
+			statement.setString(paramIndex++, RecipeActivityEvent.OPEN.name)
+			statement.setLong(paramIndex++, userId)
+			dietaryPreferences.forEach { pref ->
+				statement.setString(paramIndex++, pref.name)
+			}
 			statement.executeQuery().use { resultSet ->
 				if (resultSet.next()) resultSet.getInt(1) else 0
 			}
 		}
 	}
 
-	private fun countFavorites(connection: Connection, userId: Long): Int {
+	private fun countFavorites(
+		connection: Connection,
+		userId: Long,
+		dietaryPreferences: Set<DietaryPreference> = emptySet(),
+	): Int {
+		val extraConditions = dietaryConditions(dietaryPreferences)
+		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT COUNT(*)
 			FROM recipes r
 			INNER JOIN favorites fav ON fav.recipe_id = r.id
 			WHERE fav.user_id = ?
 				AND (r.is_private = FALSE OR r.created_by_user_id = ?)
+				$extraWhere
 		""".trimIndent()
 		return connection.prepareStatement(sql).use { statement ->
-			statement.setLong(1, userId)
-			statement.setLong(2, userId)
+			var paramIndex = 1
+			statement.setLong(paramIndex++, userId)
+			statement.setLong(paramIndex++, userId)
+			dietaryPreferences.forEach { pref ->
+				statement.setString(paramIndex++, pref.name)
+			}
 			statement.executeQuery().use { resultSet ->
 				if (resultSet.next()) resultSet.getInt(1) else 0
 			}
@@ -786,10 +858,13 @@ private data class ActivityCuisineCandidate(
 	val latestEventAtMillis: Long,
 )
 
-private fun habitShelfQuery(cuisine: Cuisine): ShelfQuery {
+private fun habitShelfQuery(
+	cuisine: Cuisine,
+	dietaryPreferences: Set<DietaryPreference> = emptySet(),
+): ShelfQuery {
 	return ShelfQuery(
-		extraConditions = listOf("r.cuisine = ?"),
-		params = listOf(cuisine.displayName),
+		extraConditions = listOf("r.cuisine = ?") + dietaryConditions(dietaryPreferences),
+		params = listOf(cuisine.displayName) + dietaryParams(dietaryPreferences),
 		order = SearchRecipeOrder.CATALOG,
 	)
 }
@@ -833,4 +908,37 @@ private fun readFavoriteCuisineSaves(resultSet: ResultSet): List<FavoriteCuisine
 			)
 		}
 	}
+}
+
+private const val GET_SEARCH_FILTERS_SQL = """
+	SELECT filters_json
+	FROM search_filters
+	WHERE user_id = ?
+"""
+
+private val homeFeedJson = Json { ignoreUnknownKeys = true }
+
+private fun loadDietaryPreferences(connection: Connection, userId: Long?): Set<DietaryPreference> {
+	if (userId == null) return emptySet()
+	return connection.prepareStatement(GET_SEARCH_FILTERS_SQL).use { statement ->
+		statement.setLong(1, userId)
+		statement.executeQuery().use { resultSet ->
+			if (resultSet.next()) {
+				val json = resultSet.getString("filters_json")
+				runCatching {
+					homeFeedJson.decodeFromString<SearchFilters>(json).dietaryPreferences
+				}.getOrDefault(emptySet())
+			} else {
+				emptySet()
+			}
+		}
+	}
+}
+
+private fun dietaryConditions(dietaryPreferences: Set<DietaryPreference>): List<String> {
+	return dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
+}
+
+private fun dietaryParams(dietaryPreferences: Set<DietaryPreference>): List<Any> {
+	return dietaryPreferences.map { it.name }
 }
