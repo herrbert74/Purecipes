@@ -18,8 +18,7 @@ scripts/scraping/
     ├── normalize_existing_ingredients.sh         # wrapper for the above
     ├── backfill_ingredient_requirements.main.kts # optional-flag backfill
     ├── backfill_ingredient_alternatives.main.kts # OR-group backfill (legacy / rule changes)
-    ├── backfill_merge_incomplete_alternatives.main.kts # rejoin over-split OR groups
-    └── backfill_merge_incomplete_alternatives.sh       # wrapper for the above
+    └── backfill_merge_incomplete_alternatives.main.kts # rejoin over-split OR groups
 ```
 
 | File | Role | When to use | Examples |
@@ -32,7 +31,6 @@ scripts/scraping/
 | [`oneoff/backfill_ingredient_requirements.main.kts`](oneoff/backfill_ingredient_requirements.main.kts) | **One-off backfill** — set `ingredients.requirement` on existing DB rows | Legacy data **or** after optional-detection rule changes. | `optional: parsley, to garnish` → `OPTIONAL`; `(optional)` / `to serve` suffixes |
 | [`oneoff/backfill_ingredient_alternatives.main.kts`](oneoff/backfill_ingredient_alternatives.main.kts) | **One-off backfill** — split combined `or` lines into `ALTERNATIVE` rows | Legacy data **or** after alternative/OR rule changes. | `parsley or tarragon` → two rows + `alternative_group_key`; `2 tbsp parsley or fresh tarragon` → shared quantity on both |
 | [`oneoff/backfill_merge_incomplete_alternatives.main.kts`](oneoff/backfill_merge_incomplete_alternatives.main.kts) | **One-off backfill** — rejoin over-split `ALTERNATIVE` clusters, then re-expand with current OR rules | After incomplete-first-side / join-continued-`or` guards; fixes display rows without reimport. | `2 tablespoons mini` + `…regular chocolate chips` → one joined line |
-| [`oneoff/backfill_merge_incomplete_alternatives.sh`](oneoff/backfill_merge_incomplete_alternatives.sh) | Shell wrapper that clears the Kotlin script cache, then runs the script above | Same as above; avoids stale cached library code on macOS. | `./scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.sh --db-name purecipes --dry-run true` |
 
 ### `ScrapedIngredientLines.kt`
 
@@ -292,8 +290,10 @@ kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts \
 Database-only. Finds existing `ALTERNATIVE` clusters, joins them with ` or `, and keeps the change only when current `ScrapedIngredientLines` rules collapse that join back to a single row (incomplete first side, optional keep-as-single, etc.). Genuine multi-side alternatives are left untouched. Recipe ids stay stable; recalculate nutrition for affected recipes afterward.
 
 ```bash
-./scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.sh \
+kotlin scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.main.kts \
   --db-name purecipes \
+  --db-user postgres \
+  --db-password postgres \
   --dry-run true \
   --verbose true
 ```

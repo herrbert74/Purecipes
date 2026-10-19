@@ -3,6 +3,9 @@
 @file:DependsOn("org.postgresql:postgresql:42.7.14")
 @file:Import("../ScrapedIngredientLines.kt")
 
+// Cache-bust when ScrapedIngredientLines.kt changes (invalidates kotlin-main-kts jars).
+// backfill-merge-incomplete-v4
+
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
