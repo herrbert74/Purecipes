@@ -165,6 +165,28 @@ fun mergedReplacementIfCollapsed(joinedText: String): ReplacementIngredient? {
 	}
 }
 
+fun toReplacement(row: IngredientRow): ReplacementIngredient =
+	ReplacementIngredient(
+		text = row.text,
+		requirement = row.requirement,
+		alternativeGroupKey = row.alternativeGroupKey,
+	)
+
+fun alternativeClusterAt(rows: List<IngredientRow>, index: Int): List<IngredientRow> {
+	val row = rows[index]
+	val groupKey = row.alternativeGroupKey
+	val isAltClusterStart = row.requirement == "ALTERNATIVE" &&
+		groupKey != null &&
+		(index == 0 || rows[index - 1].alternativeGroupKey != groupKey)
+	return if (!isAltClusterStart) {
+		emptyList()
+	} else {
+		rows.drop(index).takeWhile { candidate ->
+			candidate.requirement == "ALTERNATIVE" && candidate.alternativeGroupKey == groupKey
+		}
+	}
+}
+
 fun replacementsForGroup(
 	rows: List<IngredientRow>,
 ): Pair<List<ReplacementIngredient>, Boolean> {
@@ -172,49 +194,21 @@ fun replacementsForGroup(
 	var index = 0
 	var changed = false
 	while (index < rows.size) {
-		val row = rows[index]
-		val groupKey = row.alternativeGroupKey
-		val isAltClusterStart = row.requirement == "ALTERNATIVE" &&
-			groupKey != null &&
-			(index == 0 || rows[index - 1].alternativeGroupKey != groupKey)
-		if (!isAltClusterStart) {
-			replacements += ReplacementIngredient(
-				text = row.text,
-				requirement = row.requirement,
-				alternativeGroupKey = row.alternativeGroupKey,
-			)
-			index += 1
-			continue
-		}
-
-		val cluster = rows.drop(index).takeWhile { candidate ->
-			candidate.requirement == "ALTERNATIVE" && candidate.alternativeGroupKey == groupKey
-		}
+		val cluster = alternativeClusterAt(rows, index)
 		if (cluster.size < 2) {
-			replacements += ReplacementIngredient(
-				text = row.text,
-				requirement = row.requirement,
-				alternativeGroupKey = row.alternativeGroupKey,
-			)
+			replacements += toReplacement(rows[index])
 			index += 1
-			continue
-		}
-
-		val joinedText = cluster.joinToString(separator = " or ") { member -> member.text }
-		val merged = mergedReplacementIfCollapsed(joinedText)
-		if (merged == null) {
-			cluster.forEach { member ->
-				replacements += ReplacementIngredient(
-					text = member.text,
-					requirement = member.requirement,
-					alternativeGroupKey = member.alternativeGroupKey,
-				)
-			}
 		} else {
-			changed = true
-			replacements += merged
+			val joinedText = cluster.joinToString(separator = " or ") { member -> member.text }
+			val merged = mergedReplacementIfCollapsed(joinedText)
+			if (merged == null) {
+				replacements += cluster.map(::toReplacement)
+			} else {
+				changed = true
+				replacements += merged
+			}
+			index += cluster.size
 		}
-		index += cluster.size
 	}
 	return replacements to changed
 }
