@@ -301,6 +301,11 @@ internal object NutritionSeedAliasesPart2 {
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
 		),
 		NutritionSeedAlias(
+			"chicken breasts tenderloins",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
+		),
+		NutritionSeedAlias(
 			"boneless skinless chicken thighs poked fork",
 			CHICKEN_THIGH_DESCRIPTION,
 			CHICKEN_THIGH_FALLBACK_DESCRIPTION,
@@ -1189,6 +1194,11 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("sichuan peppercorns spice mill", BLACK_PEPPER_DESCRIPTION),
 		NutritionSeedAlias(
 			"skinless boneless chicken breasts grain",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"chicken breasts grain",
 			CHICKEN_BREAST_DESCRIPTION,
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
 		),

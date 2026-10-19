@@ -2,6 +2,8 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
+// cache-bust: alt-or-incomplete-v10
+
 data class IngredientTestCase(
 	val description: String,
 	val input: String,
@@ -189,6 +191,23 @@ val alternativeCases = listOf(
 		input = "2 tbsp parsley or fresh tarragon",
 		expected = listOf("2 tbsp parsley", "2 tbsp fresh tarragon"),
 	),
+	AlternativeTestCase(
+		description = "keeps shared-head mini or regular chocolate chips together",
+		input = "2 tablespoons mini or regular chocolate chips, optional",
+		expected = listOf("2 tablespoons mini or regular chocolate chips, optional"),
+	),
+	AlternativeTestCase(
+		description = "keeps incomplete shredded poached or chicken together",
+		input = "1 1/2 pounds shredded poached or 1 store-bought rotisserie chicken meat",
+		expected = listOf(
+			"1 1/2 pounds shredded poached or 1 store-bought rotisserie chicken meat",
+		),
+	),
+	AlternativeTestCase(
+		description = "keeps plum or Roma tomatoes together",
+		input = "4 plum or Roma tomatoes (about 442 g), halved",
+		expected = listOf("4 plum or Roma tomatoes (about 442 g), halved"),
+	),
 )
 
 val normalizeTextCases = listOf(
@@ -239,6 +258,13 @@ val splitCases = listOf(
 		description = "splits concatenated ingredients and adds spaces",
 		input = "flour60g butter2tbsp",
 		expected = listOf("flour", "60 g butter", "2 tbsp"),
+	),
+	SplitTestCase(
+		description = "joins trailing or with the next line",
+		input = "1 pound melting cheese such as queso Chihuahua or\nMozzarella, shredded",
+		expected = listOf(
+			"1 pound melting cheese such as queso Chihuahua or Mozzarella, shredded",
+		),
 	),
 )
 

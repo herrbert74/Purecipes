@@ -23,19 +23,19 @@ internal class RecipeNutritionCalculator(
 ) {
 
 	fun calculate(ingredients: List<RecipeIngredientRow>): RecipeNutritionCalculationResult {
-		val seenAlternativeKeys = mutableSetOf<Int>()
-		val ingredientResults = ingredients.map { ingredient ->
-			val countsTowardTotals = countsTowardNutritionTotals(ingredient, seenAlternativeKeys)
-			calculateIngredient(ingredient).copy(countsTowardTotals = countsTowardTotals)
+		val ingredientResults = ingredients.map(::calculateIngredient)
+		val countsTowardTotalsByIndex = resolveCountsTowardTotals(ingredients, ingredientResults)
+		val flaggedResults = ingredientResults.mapIndexed { index, result ->
+			result.copy(countsTowardTotals = countsTowardTotalsByIndex[index])
 		}
 
-		val countableResults = ingredientResults.filter { result ->
+		val countableResults = flaggedResults.filter { result ->
 			result.countsTowardTotals &&
 				!IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) &&
 				NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
 		}
 		if (countableResults.isEmpty()) {
-			return RecipeNutritionCalculationResult(totals = null, ingredientResults = ingredientResults)
+			return RecipeNutritionCalculationResult(totals = null, ingredientResults = flaggedResults)
 		}
 
 		var calories = BigDecimal.ZERO
@@ -81,7 +81,7 @@ internal class RecipeNutritionCalculator(
 
 		return RecipeNutritionCalculationResult(
 			totals = totals,
-			ingredientResults = ingredientResults,
+			ingredientResults = flaggedResults,
 		)
 	}
 
@@ -122,17 +122,46 @@ internal class RecipeNutritionCalculator(
 		}
 	}
 
-	private fun countsTowardNutritionTotals(
-		ingredient: RecipeIngredientRow,
-		seenAlternativeKeys: MutableSet<Int>,
-	): Boolean = when (ingredient.requirement) {
-		"OPTIONAL" -> false
-		"ALTERNATIVE" -> {
-			val groupKey = ingredient.alternativeGroupKey ?: return true
-			seenAlternativeKeys.add(groupKey)
+	private fun resolveCountsTowardTotals(
+		ingredients: List<RecipeIngredientRow>,
+		results: List<IngredientNutritionCalculationResult>,
+	): List<Boolean> {
+		val chosenAlternativeIngredientId = linkedMapOf<Int, Int>()
+		ingredients.zip(results).forEach { (ingredient, result) ->
+			if (ingredient.requirement != "ALTERNATIVE") {
+				return@forEach
+			}
+			val groupKey = ingredient.alternativeGroupKey ?: return@forEach
+			val existingId = chosenAlternativeIngredientId[groupKey]
+			val candidateMatched = result.foodMatch != null && result.grams != null
+			when {
+				existingId == null -> chosenAlternativeIngredientId[groupKey] = ingredient.ingredientId
+				candidateMatched -> {
+					val existingIndex = ingredients.indexOfFirst { row ->
+						row.ingredientId == existingId
+					}
+					val existingMatched = existingIndex >= 0 &&
+						results[existingIndex].foodMatch != null &&
+						results[existingIndex].grams != null
+					if (!existingMatched) {
+						chosenAlternativeIngredientId[groupKey] = ingredient.ingredientId
+					}
+				}
+			}
 		}
 
-		else -> true
+		return ingredients.map { ingredient ->
+			when (ingredient.requirement) {
+				"OPTIONAL" -> false
+				"ALTERNATIVE" -> {
+					val groupKey = ingredient.alternativeGroupKey
+						?: return@map true
+					chosenAlternativeIngredientId[groupKey] == ingredient.ingredientId
+				}
+
+				else -> true
+			}
+		}
 	}
 
 	private fun addNullable(

@@ -166,6 +166,54 @@ class RecipeNutritionCalculatorTest {
 	}
 
 	@Test
+	fun calculatePrefersMatchedAlternativeInGroup() {
+		val chocolate = NutritionFoodRecord(
+			id = 21,
+			displayName = "Candies, milk chocolate",
+			normalizedName = "candies milk chocolate",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal("535"),
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val lookupIndex = NutritionLookupIndex(
+			foodById = mapOf(21 to chocolate),
+			foodIdByNormalizedAlias = mapOf("chocolate chips" to 21),
+			measuresByFoodId = mapOf(21 to mapOf("tbsp" to BigDecimal("10"))),
+		)
+		val calculator = RecipeNutritionCalculator(lookupIndex)
+		val result = calculator.calculate(
+			listOf(
+				RecipeIngredientRow(
+					ingredientId = 31,
+					rawText = "2 tablespoons mini",
+					requirement = "ALTERNATIVE",
+					alternativeGroupKey = 7,
+				),
+				RecipeIngredientRow(
+					ingredientId = 32,
+					rawText = "2 tablespoons regular chocolate chips",
+					requirement = "ALTERNATIVE",
+					alternativeGroupKey = 7,
+				),
+			),
+		)
+
+		result.ingredientResults[0].countsTowardTotals shouldBe false
+		result.ingredientResults[0].foodMatch shouldBe null
+		result.ingredientResults[1].countsTowardTotals shouldBe true
+		result.ingredientResults[1].foodMatch?.foodId shouldBe 21
+		result.totals?.matchedIngredientCount shouldBe 1
+		result.totals?.isComplete shouldBe true
+		result.collectIngredientIssues() shouldBe emptyList()
+	}
+
+	@Test
 	fun calculateUsesSupplementalShallotPieceGrams() {
 		val shallot = NutritionFoodRecord(
 			id = 8,

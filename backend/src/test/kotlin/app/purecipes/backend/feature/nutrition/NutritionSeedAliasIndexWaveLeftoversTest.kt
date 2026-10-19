@@ -1174,6 +1174,292 @@ class NutritionSeedAliasIndexWaveLeftoversTest {
 		aliases["assorted fruit"].shouldBeNull()
 	}
 
+	@Test
+	fun mergeAppliesIssue350UnmatchedIngredientAliases() {
+		val selfRising = food(
+			id = 1401,
+			displayName = "Wheat flour, white, all-purpose, self-rising, enriched",
+			normalizedName = "wheat flour white all purpose self rising enriched",
+		)
+		val yeast = food(
+			id = 1402,
+			displayName = "Leavening agents, yeast, baker's, active dry",
+			normalizedName = "leavening agents yeast bakers active dry",
+		)
+		val potatoFlour = food(
+			id = 1403,
+			displayName = "Potato flour",
+			normalizedName = "potato flour",
+		)
+		val cornstarch = food(
+			id = 1404,
+			displayName = "Cornstarch",
+			normalizedName = "cornstarch",
+		)
+		val salt = food(
+			id = 1405,
+			displayName = "Salt, table",
+			normalizedName = "salt table",
+		)
+		val cornTortilla = food(
+			id = 1406,
+			displayName = "Tortillas, ready-to-bake or -fry, corn",
+			normalizedName = "tortillas ready to bake or fry corn",
+		)
+		val pasta = food(
+			id = 1407,
+			displayName = "Pasta, dry, unenriched",
+			normalizedName = "pasta dry unenriched",
+		)
+		val almonds = food(
+			id = 1408,
+			displayName = "Nuts, almonds",
+			normalizedName = "nuts almonds",
+		)
+		val grapes = food(
+			id = 1409,
+			displayName = "Grapes, red or green (European type, such as Thompson seedless), raw",
+			normalizedName = "grapes red or green european type such as thompson seedless raw",
+		)
+		val beer = food(
+			id = 1410,
+			displayName = "Alcoholic beverage, beer, regular, all",
+			normalizedName = "alcoholic beverage beer regular all",
+		)
+		val beefShin = food(
+			id = 1411,
+			displayName = "Beef, New Zealand, imported, hind shin, separable lean only, raw",
+			normalizedName = "beef new zealand imported hind shin separable lean only raw",
+		)
+		val iceberg = food(
+			id = 1412,
+			displayName = "Lettuce, iceberg (includes crisphead types), raw",
+			normalizedName = "lettuce iceberg includes crisphead types raw",
+		)
+		val sausage = food(
+			id = 1413,
+			displayName = "Pork sausage, link/patty, unprepared",
+			normalizedName = "pork sausage link patty unprepared",
+		)
+		val chickenBreast = food(
+			id = 1414,
+			displayName = "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+			normalizedName = "chicken broiler or fryers breast skinless boneless meat only raw",
+		)
+		val chickenThigh = food(
+			id = 1415,
+			displayName = "Chicken, broilers or fryers, dark meat, thigh, meat only, raw",
+			normalizedName = "chicken broilers or fryers dark meat thigh meat only raw",
+		)
+		val chickpea = food(
+			id = 1416,
+			displayName =
+				"Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+			normalizedName = "chickpeas garbanzo beans bengal gram mature seeds cooked boiled without salt",
+		)
+		val kidneyBean = food(
+			id = 1417,
+			displayName = "Kidney beans, NFS",
+			normalizedName = "kidney beans nfs",
+		)
+		val wholeChicken = food(
+			id = 1418,
+			displayName = "Chicken, broilers or fryers, meat and skin, raw",
+			normalizedName = "chicken broilers or fryers meat and skin raw",
+		)
+		val tortillaChips = food(
+			id = 1419,
+			displayName = "Snacks, tortilla chips, plain, white corn, salted",
+			normalizedName = "snacks tortilla chips plain white corn salted",
+		)
+		val cod = food(
+			id = 1420,
+			displayName = "Fish, cod, Atlantic, raw",
+			normalizedName = "fish cod atlantic raw",
+		)
+		val pepper = food(
+			id = 1421,
+			displayName = "Spices, pepper, black",
+			normalizedName = "spices pepper black",
+		)
+		val halloumi = food(
+			id = 1422,
+			displayName = "HALLOUMI THE MEDITERRANEAN GRILLING CHEESE, HALLOUMI",
+			normalizedName = "halloumi the mediterranean grilling cheese halloumi",
+		)
+		val greenBean = food(
+			id = 1423,
+			displayName = "Green beans, raw",
+			normalizedName = "green beans raw",
+		)
+		val cheddar = food(
+			id = 1424,
+			displayName = "Cheese, cheddar",
+			normalizedName = "cheese cheddar",
+		)
+		val milkChocolate = food(
+			id = 1425,
+			displayName = "Candies, milk chocolate",
+			normalizedName = "candies milk chocolate",
+		)
+		val strawberry = food(
+			id = 1426,
+			displayName = "Strawberries, raw",
+			normalizedName = "strawberries raw",
+		)
+		val riceCrispy = food(
+			id = 1427,
+			displayName = "Cereal, rice crispy, plain",
+			normalizedName = "cereal rice crispy plain",
+		)
+		val scallop = food(
+			id = 1428,
+			displayName = "Mollusks, scallop, mixed species, raw",
+			normalizedName = "mollusks scallop mixed species raw",
+		)
+		val skirt = food(
+			id = 1429,
+			displayName =
+				"Beef, plate steak, boneless, outside skirt, separable lean and fat, " +
+					"trimmed to 0\" fat, all grades, raw",
+			normalizedName =
+				"beef plate steak boneless outside skirt separable lean and fat " +
+					"trimmed to 0 fat all grades raw",
+		)
+		val baguette = food(
+			id = 1430,
+			displayName = "Bread, french or vienna (includes sourdough)",
+			normalizedName = "bread french or vienna includes sourdough",
+		)
+		val sparkling = food(
+			id = 1431,
+			displayName =
+				"Beverages, GEROLSTEINER BRUNNEN GmbH & Co. KG (Gerolsteiner), " +
+					"naturally sparkling, mineral bottled water",
+			normalizedName =
+				"beverages gerolsteiner brunnen gmbh co kg gerolsteiner " +
+					"naturally sparkling mineral bottled water",
+		)
+		val stirFry = food(
+			id = 1432,
+			displayName = "LEE KUM KEE, VEGETARIAN STIR-FRY SAUCE",
+			normalizedName = "lee kum kee vegetarian stir fry sauce",
+		)
+		val water = food(
+			id = 1433,
+			displayName = "Water, tap",
+			normalizedName = "water tap",
+		)
+		val hominy = food(
+			id = 1434,
+			displayName = "Hominy, canned, white",
+			normalizedName = "hominy canned white",
+		)
+		val topSirloin = food(
+			id = 1435,
+			displayName =
+				"Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8\" fat, all grades, raw",
+			normalizedName =
+				"beef top sirloin steak separable lean and fat trimmed to 1 8 fat all grades raw",
+		)
+		val duck = food(
+			id = 1436,
+			displayName = "Duck, domesticated, meat only, raw",
+			normalizedName = "duck domesticated meat only raw",
+		)
+		val goatCheese = food(
+			id = 1437,
+			displayName = "Cheese, goat, soft type",
+			normalizedName = "cheese goat soft type",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(
+				selfRising,
+				yeast,
+				potatoFlour,
+				cornstarch,
+				salt,
+				cornTortilla,
+				pasta,
+				almonds,
+				grapes,
+				beer,
+				beefShin,
+				iceberg,
+				sausage,
+				chickenBreast,
+				chickenThigh,
+				chickpea,
+				kidneyBean,
+				wholeChicken,
+				tortillaChips,
+				cod,
+				pepper,
+				halloumi,
+				greenBean,
+				cheddar,
+				milkChocolate,
+				strawberry,
+				riceCrispy,
+				scallop,
+				skirt,
+				baguette,
+				sparkling,
+				stirFry,
+				water,
+				hominy,
+				topSirloin,
+				duck,
+				goatCheese,
+			),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["self rising flour"] shouldBe 1401
+		aliases["active yeast"] shouldBe 1402
+		aliases["potato starch"] shouldBe 1403
+		aliases["celery salt"] shouldBe 1405
+		aliases["onion salt"] shouldBe 1405
+		aliases["corn tortillas white"] shouldBe 1406
+		aliases["white corn tortillas"] shouldBe 1406
+		aliases["lasagne"] shouldBe 1407
+		aliases["salted roasted almonds"] shouldBe 1408
+		aliases["seedless grapes"] shouldBe 1409
+		aliases["red seedless grapes"] shouldBe 1409
+		aliases["ale"] shouldBe 1410
+		aliases["beef shin"] shouldBe 1411
+		aliases["bibb lettuce"] shouldBe 1412
+		aliases["bulk pork sausage"] shouldBe 1413
+		aliases["chicken supremes"] shouldBe 1414
+		aliases["cooked chicken thigh"] shouldBe 1415
+		aliases["cooked chickpeas"] shouldBe 1416
+		aliases["cooked kidney beans"] shouldBe 1417
+		aliases["cooked rotisserie chicken"] shouldBe 1418
+		aliases["corn tortilla chips"] shouldBe 1419
+		aliases["frozen cod"] shouldBe 1420
+		aliases["green pepper corns"] shouldBe 1421
+		aliases["halloumi cheese"] shouldBe 1422
+		aliases["long beans"] shouldBe 1423
+		aliases["mild cheddar cheese"] shouldBe 1424
+		aliases["milk chocolate chips"] shouldBe 1425
+		aliases["mixed berries"] shouldBe 1426
+		aliases["rice krispies"] shouldBe 1427
+		aliases["rice starch"] shouldBe 1404
+		aliases["sea scallops"] shouldBe 1428
+		aliases["skirt"] shouldBe 1429
+		aliases["sourdough bread"] shouldBe 1430
+		aliases["sparkling water"] shouldBe 1431
+		aliases["stir fry sauce"] shouldBe 1432
+		aliases["water heated"] shouldBe 1433
+		aliases["white hominy"] shouldBe 1434
+		aliases["top sirloin roast"] shouldBe 1435
+		aliases["boneless top sirloin roast"] shouldBe 1435
+		aliases["duck breasts"] shouldBe 1436
+		aliases["gevrik goats cheese"] shouldBe 1437
+		aliases["mini"].shouldBeNull()
+		aliases["poached"].shouldBeNull()
+	}
+
 	private fun food(id: Int, displayName: String, normalizedName: String): NutritionFoodRecord =
 		NutritionFoodRecord(
 			id = id,

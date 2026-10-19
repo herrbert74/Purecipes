@@ -17,7 +17,9 @@ scripts/scraping/
     ├── normalize_existing_ingredients.main.kts   # text backfill (legacy / rule changes)
     ├── normalize_existing_ingredients.sh         # wrapper for the above
     ├── backfill_ingredient_requirements.main.kts # optional-flag backfill
-    └── backfill_ingredient_alternatives.main.kts # OR-group backfill (legacy / rule changes)
+    ├── backfill_ingredient_alternatives.main.kts # OR-group backfill (legacy / rule changes)
+    ├── backfill_merge_incomplete_alternatives.main.kts # rejoin over-split OR groups
+    └── backfill_merge_incomplete_alternatives.sh       # wrapper for the above
 ```
 
 | File | Role | When to use | Examples |
@@ -29,6 +31,8 @@ scripts/scraping/
 | [`oneoff/normalize_existing_ingredients.sh`](oneoff/normalize_existing_ingredients.sh) | Shell wrapper that clears the Kotlin script cache, then runs the script above | Same as above; avoids stale cached library code on macOS. | `./scripts/scraping/oneoff/normalize_existing_ingredients.sh --db-name purecipes --dry-run true` |
 | [`oneoff/backfill_ingredient_requirements.main.kts`](oneoff/backfill_ingredient_requirements.main.kts) | **One-off backfill** — set `ingredients.requirement` on existing DB rows | Legacy data **or** after optional-detection rule changes. | `optional: parsley, to garnish` → `OPTIONAL`; `(optional)` / `to serve` suffixes |
 | [`oneoff/backfill_ingredient_alternatives.main.kts`](oneoff/backfill_ingredient_alternatives.main.kts) | **One-off backfill** — split combined `or` lines into `ALTERNATIVE` rows | Legacy data **or** after alternative/OR rule changes. | `parsley or tarragon` → two rows + `alternative_group_key`; `2 tbsp parsley or fresh tarragon` → shared quantity on both |
+| [`oneoff/backfill_merge_incomplete_alternatives.main.kts`](oneoff/backfill_merge_incomplete_alternatives.main.kts) | **One-off backfill** — rejoin over-split `ALTERNATIVE` clusters, then re-expand with current OR rules | After incomplete-first-side / join-continued-`or` guards; fixes display rows without reimport. | `2 tablespoons mini` + `…regular chocolate chips` → one joined line |
+| [`oneoff/backfill_merge_incomplete_alternatives.sh`](oneoff/backfill_merge_incomplete_alternatives.sh) | Shell wrapper that clears the Kotlin script cache, then runs the script above | Same as above; avoids stale cached library code on macOS. | `./scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.sh --db-name purecipes --dry-run true` |
 
 ### `ScrapedIngredientLines.kt`
 
@@ -39,6 +43,7 @@ This is the **single source of scraped-ingredient processing** for imports. It i
 - `oneoff/normalize_existing_ingredients.main.kts`
 - `oneoff/backfill_ingredient_requirements.main.kts`
 - `oneoff/backfill_ingredient_alternatives.main.kts`
+- `oneoff/backfill_merge_incomplete_alternatives.main.kts`
 
 **Naming:** the old name `RecipeIngredientNormalization.kt` suggested text formatting only. The library also filters headings/equipment, splits concatenated lines, detects optional ingredients, and splits OR alternatives. `ScrapedIngredientLines` reflects that scope: raw **lines** from a scrape → `ProcessedScrapedIngredient` rows (display `text` + `requirement` + optional `alternative_group_key`).
 
@@ -93,6 +98,7 @@ Real-world OR example: [BBC Good Food — chicken with fennel](https://www.bbc.c
 | Fix *old* or *out-of-date* ingredient text | `oneoff/normalize_existing_ingredients.main.kts` | Re-run when **normalization rules** change, not only for ancient imports. | After improving fraction or unit spacing logic |
 | Fix *old* or *out-of-date* optional flags | `oneoff/backfill_ingredient_requirements.main.kts` | DB only; does not touch JSON files. | After new garnish/`(optional)` detection rules |
 | Fix *old* or *out-of-date* OR groups | `oneoff/backfill_ingredient_alternatives.main.kts` | DB only; splits combined `or` lines. | After first deploy of alternative-ingredient support |
+| Fix *over-split* incomplete OR groups | `oneoff/backfill_merge_incomplete_alternatives.main.kts` | DB only; rejoins clusters that current rules keep as one line. | After incomplete-first-side / join-continued-`or` guards |
 | Verify scraped-ingredient rules | `recipe_site_scraper_ingredient_test.main.kts` | No database or network. | Run before bulk backfill or re-import |
 
 **One-off scripts are not only for “historical” data.** Use them whenever **existing** DB rows (or saved scrape JSON, for normalize) were produced under **older** `ScrapedIngredientLines` rules — for example after you ship better alternative parsing, optional detection, or unit/fraction normalization. Workflow: update rules and tests → dry-run backfill → apply → recalculate nutrition → run enrichment. Fresh scrapes after the rule change do not need backfill.
@@ -276,6 +282,17 @@ Database-only. Splits combined `parsley or tarragon` lines into multiple `ALTERN
 
 ```bash
 kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts \
+  --db-name purecipes \
+  --dry-run true \
+  --verbose true
+```
+
+### Merge over-split incomplete alternatives (`backfill_merge_incomplete_alternatives`)
+
+Database-only. Finds existing `ALTERNATIVE` clusters, joins them with ` or `, and keeps the change only when current `ScrapedIngredientLines` rules collapse that join back to a single row (incomplete first side, optional keep-as-single, etc.). Genuine multi-side alternatives are left untouched. Recipe ids stay stable; recalculate nutrition for affected recipes afterward.
+
+```bash
+./scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.sh \
   --db-name purecipes \
   --dry-run true \
   --verbose true
