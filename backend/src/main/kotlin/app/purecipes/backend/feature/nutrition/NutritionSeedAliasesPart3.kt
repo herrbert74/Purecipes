@@ -602,6 +602,11 @@ internal object NutritionSeedAliasesPart3 {
 			CHICKEN_THIGH_FALLBACK_DESCRIPTION
 		),
 		NutritionSeedAlias(
+			"mixed chicken thighs drumsticks",
+			CHICKEN_THIGH_DESCRIPTION,
+			CHICKEN_THIGH_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias(
 			"mochiko sweet rice flour",
 			FLOUR_DESCRIPTION,
 			RICE_DESCRIPTION
@@ -920,6 +925,11 @@ internal object NutritionSeedAliasesPart3 {
 			CHICKEN_THIGH_DESCRIPTION
 		),
 		NutritionSeedAlias(
+			"chicken breasts thighs",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_THIGH_DESCRIPTION
+		),
+		NutritionSeedAlias(
 			"skinless chicken fillets",
 			CHICKEN_BREAST_DESCRIPTION,
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION
@@ -1173,7 +1183,17 @@ internal object NutritionSeedAliasesPart3 {
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION
 		),
 		NutritionSeedAlias(
+			"chicken breast long",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_BREAST_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias(
 			"boneless skinless chicken breast two",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_BREAST_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"chicken breast two",
 			CHICKEN_BREAST_DESCRIPTION,
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION
 		),

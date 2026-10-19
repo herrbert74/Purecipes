@@ -133,19 +133,36 @@ internal class IngredientFoodMatchReporter(
 		}
 
 	private fun classifyIngredientRows(rows: List<IngredientFoodMatchRow>): List<ClassifiedIngredientLine> {
-		val seenAlternativeKeysByRecipe = mutableMapOf<Int, MutableSet<Int>>()
+		val chosenAlternativeKeysByRecipe = chosenAlternativeRowsByRecipe(rows)
 		return rows.mapNotNull { row ->
-			val seenKeys = seenAlternativeKeysByRecipe.getOrPut(row.recipeId) { mutableSetOf() }
 			val labelSource = row.parsedName?.trim().orEmpty().ifBlank { row.ingredientText }
 			val countable = !IngredientVocabulary.isIgnorableIngredientLine(row.ingredientText) &&
 				NutritionNameNormalizer.hasMeaningfulFoodName(labelSource) &&
-				countsTowardMatching(row.requirement, row.alternativeGroupKey, seenKeys)
+				countsTowardMatching(row, chosenAlternativeKeysByRecipe)
 			when {
 				countable -> classifyLine(row)
 				else -> null
 			}
 		}
 	}
+
+	private fun chosenAlternativeRowsByRecipe(
+		rows: List<IngredientFoodMatchRow>,
+	): Map<Int, Map<Int, IngredientFoodMatchRow>> =
+		rows
+			.filter { row ->
+				row.requirement == "ALTERNATIVE" && row.alternativeGroupKey != null
+			}
+			.groupBy { row -> row.recipeId }
+			.mapValues { (_, recipeRows) ->
+				recipeRows
+					.groupBy { row -> row.alternativeGroupKey!! }
+					.mapValues { (_, groupRows) ->
+						groupRows.firstOrNull { row -> row.foodId != null && row.gramsResolved != null }
+							?: groupRows.firstOrNull { row -> row.foodId != null }
+							?: groupRows.first()
+					}
+			}
 
 	private fun classifyLine(row: IngredientFoodMatchRow): ClassifiedIngredientLine {
 		val parsedLabel = row.parsedName?.trim().orEmpty().ifBlank { row.ingredientText }
@@ -248,12 +265,14 @@ private data class ClassifiedIngredientLine(
 )
 
 private fun countsTowardMatching(
-	requirement: String,
-	alternativeGroupKey: Int?,
-	seenAlternativeKeys: MutableSet<Int>,
-): Boolean = when (requirement) {
+	row: IngredientFoodMatchRow,
+	chosenAlternativeKeysByRecipe: Map<Int, Map<Int, IngredientFoodMatchRow>>,
+): Boolean = when (row.requirement) {
 	"OPTIONAL" -> false
-	"ALTERNATIVE" -> alternativeGroupKey == null || seenAlternativeKeys.add(alternativeGroupKey)
+	"ALTERNATIVE" -> {
+		val groupKey = row.alternativeGroupKey ?: return true
+		chosenAlternativeKeysByRecipe[row.recipeId]?.get(groupKey) === row
+	}
 	else -> true
 }
 

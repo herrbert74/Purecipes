@@ -553,7 +553,34 @@ internal object NutritionSeedAliasDescriptions {
 
 	internal const val SATAY_SAUCE_DESCRIPTION = "SATAY SAUCE"
 
-	internal const val STIR_FRY_SAUCE_DESCRIPTION = "STIR FRY SAUCE"
+	internal const val STIR_FRY_SAUCE_DESCRIPTION = "LEE KUM KEE, VEGETARIAN STIR-FRY SAUCE"
+
+	internal const val POTATO_FLOUR_DESCRIPTION = "Potato flour"
+
+	internal const val HOMINY_WHITE_DESCRIPTION = "Hominy, canned, white"
+
+	internal const val BEEF_SHANK_DESCRIPTION =
+		"Beef, shank crosscuts, separable lean only, trimmed to 1/4\" fat, choice, raw"
+
+	internal const val BEEF_SHIN_DESCRIPTION =
+		"Beef, New Zealand, imported, hind shin, separable lean only, raw"
+
+	internal const val BEEF_TOP_SIRLOIN_DESCRIPTION =
+		"Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8\" fat, all grades, raw"
+
+	internal const val RICE_CRISPY_CEREAL_DESCRIPTION = "Cereal, rice crispy, plain"
+
+	internal const val SPARKLING_WATER_DESCRIPTION =
+		"Beverages, GEROLSTEINER BRUNNEN GmbH & Co. KG (Gerolsteiner), naturally sparkling, mineral bottled water"
+
+	internal const val TORTILLA_CHIPS_DESCRIPTION =
+		"Snacks, tortilla chips, plain, white corn, salted"
+
+	internal const val KIDNEY_BEAN_DESCRIPTION = "Kidney beans, NFS"
+
+	internal const val GREEN_BEAN_DESCRIPTION = "Green beans, raw"
+
+	internal const val GOAT_CHEESE_DESCRIPTION = "Cheese, goat, soft type"
 
 	internal const val SUNFLOWER_BUTTER_DESCRIPTION = "Seeds, sunflower seed butter, without salt"
 

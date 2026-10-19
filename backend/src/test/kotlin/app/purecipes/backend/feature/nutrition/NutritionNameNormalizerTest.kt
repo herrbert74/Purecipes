@@ -21,13 +21,13 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("double-concentrated tomato paste") shouldBe "double tomato paste"
 		NutritionNameNormalizer.forLookup("chickpeas, drained") shouldBe "chickpeas"
 		NutritionNameNormalizer.forLookup("boneless skinless chicken breast halves") shouldBe
-			"boneless skinless chicken breast"
+			"chicken breast"
 		NutritionNameNormalizer.forLookup("unsalted butter thick") shouldBe "unsalted butter"
 		NutritionNameNormalizer.forLookup("carrots inch thick rounds") shouldBe "carrots"
 		NutritionNameNormalizer.forLookup("chicken thigh bone removed") shouldBe "chicken thigh"
 		NutritionNameNormalizer.forLookup("inch knob ginger") shouldBe "ginger"
 		NutritionNameNormalizer.forLookup("boneless skinless chicken breasts bite sized") shouldBe
-			"boneless skinless chicken breasts"
+			"chicken breasts"
 	}
 
 	@Test
@@ -85,7 +85,7 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("celery sticks") shouldBe "celery"
 		NutritionNameNormalizer.forLookup("white sandwich bread crusts") shouldBe "white sandwich bread"
 		NutritionNameNormalizer.forLookup("skinless boneless chicken breast pounded") shouldBe
-			"skinless boneless chicken breast"
+			"chicken breast"
 		NutritionNameNormalizer.forLookup("carrots julienned") shouldBe "carrots"
 		NutritionNameNormalizer.forLookup("butter extra greasing") shouldBe "butter"
 		NutritionNameNormalizer.forLookup("cinnamon stick broken small") shouldBe "cinnamon"
@@ -134,7 +134,7 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("bone chicken breast skin") shouldBe "chicken breast"
 		NutritionNameNormalizer.forLookup("bone skin chicken thighs") shouldBe "chicken thighs"
 		NutritionNameNormalizer.forLookup("mixed skinless bone chicken thighs drumsticks") shouldBe
-			"mixed skinless chicken thighs drumsticks"
+			"mixed chicken thighs drumsticks"
 		NutritionNameNormalizer.forLookup("ancho chiles water") shouldBe "ancho chiles"
 		NutritionNameNormalizer.forLookup("basmati rice water") shouldBe "basmati rice"
 		NutritionNameNormalizer.forLookup("chickpea water") shouldBe "chickpea"
@@ -355,7 +355,10 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("flaky sea salt") shouldBe "flaky sea salt"
 		NutritionNameNormalizer.forLookup("long grain rice") shouldBe "long grain rice"
 		NutritionNameNormalizer.forLookup("boneless skinless chicken breast") shouldBe
-			"boneless skinless chicken breast"
+			"chicken breast"
+		NutritionNameNormalizer.forLookup("boneless chicken breast") shouldBe "chicken breast"
+		NutritionNameNormalizer.forLookup("boneless duck breasts") shouldBe "duck breasts"
+		NutritionNameNormalizer.forLookup("boneless top sirloin roast") shouldBe "top sirloin roast"
 		NutritionNameNormalizer.forLookup("frozen peas") shouldBe "frozen peas"
 		NutritionNameNormalizer.forLookup("sesame seeds") shouldBe "sesame seeds"
 	}
@@ -597,7 +600,21 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.hasMeaningfulFoodName("12 large") shouldBe false
 		NutritionNameNormalizer.hasMeaningfulFoodName("2") shouldBe false
 		NutritionNameNormalizer.hasMeaningfulFoodName("5") shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName("mini") shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName("poached") shouldBe false
+		NutritionNameNormalizer.hasMeaningfulFoodName("shredded poached") shouldBe false
 		NutritionNameNormalizer.hasMeaningfulFoodName("corn oil") shouldBe true
 		NutritionNameNormalizer.hasMeaningfulFoodName("pickled jalapeño") shouldBe true
+	}
+
+	@Test
+	fun forLookupPrefersCompleteSideOfOrWhenLeftIsIncomplete() {
+		NutritionNameNormalizer.forLookup(
+			"shredded poached or store-bought rotisserie chicken meat",
+		) shouldBe "rotisserie chicken"
+		NutritionNameNormalizer.forLookup(
+			"mini or regular chocolate chips",
+		) shouldBe "chocolate chips"
+		NutritionNameNormalizer.forLookup("parsley or tarragon") shouldBe "parsley"
 	}
 }

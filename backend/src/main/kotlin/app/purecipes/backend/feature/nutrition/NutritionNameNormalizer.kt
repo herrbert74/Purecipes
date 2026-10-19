@@ -8,7 +8,7 @@ internal object NutritionNameNormalizer {
 
 	private val SUCH_AS_CLAUSE = Regex(""",?\s*such as\b.*""", RegexOption.IGNORE_CASE)
 
-	private val OR_CLAUSE = Regex("""\s+or\b.*""", RegexOption.IGNORE_CASE)
+	private val OR_SPLIT_CLAUSE = Regex("""\s+or\b(.*)""", RegexOption.IGNORE_CASE)
 
 	private val YOUR_CLAUSE = Regex("""\s+your\b.*""", RegexOption.IGNORE_CASE)
 
@@ -148,14 +148,17 @@ internal object NutritionNameNormalizer {
 		"medium",
 		"melted",
 		"minced",
+		"mini",
 		"moons",
 		"needed",
+		"regular",
 		"note",
 		"notes",
 		"patted",
 		"peeled",
 		"picked",
 		"pitted",
+		"poached",
 		"pounded",
 		"preferably",
 		"quartered",
@@ -546,6 +549,8 @@ internal object NutritionNameNormalizer {
 		"jumbo",
 		"large",
 		"medium",
+		"mini",
+		"regular",
 		"small",
 	)
 
@@ -765,9 +770,32 @@ internal object NutritionNameNormalizer {
 		"tuna",
 	)
 
+	private val poultryPrepAnchors = setOf(
+		"chicken",
+		"chickens",
+		"duck",
+		"ducks",
+		"hen",
+		"hens",
+		"turkey",
+		"turkeys",
+	)
+
 	private val fishPrepStripTokens = setOf(
 		"boneless",
 		"skinless",
+	)
+
+	private val beefBonelessAnchors = setOf(
+		"beef",
+		"roast",
+		"sirloin",
+		"steak",
+		"steaks",
+	)
+
+	private val beefBonelessStripTokens = setOf(
+		"boneless",
 	)
 
 	private val spiceVarietyAnchors = setOf(
@@ -1062,7 +1090,7 @@ internal object NutritionNameNormalizer {
 
 	private fun stripLookupClauses(value: String): String {
 		var result = SUCH_AS_CLAUSE.replace(value, "")
-		result = OR_CLAUSE.replace(result, "")
+		result = preferCompleteOrClause(result)
 		result = YOUR_CLAUSE.replace(result, "")
 		result = YOU_CLAUSE.replace(result, "")
 		result = LIKE_CLAUSE.replace(result, "")
@@ -1094,6 +1122,32 @@ internal object NutritionNameNormalizer {
 		return result.trim()
 	}
 
+	private fun preferCompleteOrClause(value: String): String {
+		val match = OR_SPLIT_CLAUSE.find(value)
+		if (match == null) {
+			return value
+		}
+		val before = value.substring(0, match.range.first).trim()
+		val after = match.groupValues[1].trim()
+		val preferBefore = after.isBlank() ||
+			clauseHasFoodToken(before) ||
+			!clauseHasFoodToken(after)
+		return if (preferBefore) before else after
+	}
+
+	private fun clauseHasFoodToken(value: String): Boolean {
+		val normalized = normalize(value)
+		return tokens(normalized).any { token ->
+			token !in preparationTokens &&
+				token !in sizeOnlyTokens &&
+				token !in fillerTokens &&
+				token !in measureLeftoverTokens &&
+				token !in brandTokens &&
+				token !in packagingTokens &&
+				!token.all(Char::isDigit)
+		}
+	}
+
 	private fun postFilterLookupTokens(tokens: List<String>, hadCreamOf: Boolean): List<String> {
 		var result = rewriteLookupTokens(tokens)
 		result = restoreCreamOfConnector(result, hadCreamOf)
@@ -1111,6 +1165,8 @@ internal object NutritionNameNormalizer {
 		result = stripFlourProtein(result)
 		result = stripCrustDescriptors(result)
 		result = stripFishPrep(result)
+		result = stripPoultryPrep(result)
+		result = stripBeefBoneless(result)
 		result = stripSpiceVariety(result)
 		result = stripPastryFrozen(result)
 		result = stripAfterProductNoun(result)
@@ -1270,6 +1326,18 @@ internal object NutritionNameNormalizer {
 		val canStrip = tokens.size >= 2 &&
 			tokens.any { token -> token in fishPrepAnchors }
 		return if (canStrip) stripWhenOthersRemain(tokens, fishPrepStripTokens) else tokens
+	}
+
+	private fun stripPoultryPrep(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			tokens.any { token -> token in poultryPrepAnchors }
+		return if (canStrip) stripWhenOthersRemain(tokens, fishPrepStripTokens) else tokens
+	}
+
+	private fun stripBeefBoneless(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			tokens.any { token -> token in beefBonelessAnchors }
+		return if (canStrip) stripWhenOthersRemain(tokens, beefBonelessStripTokens) else tokens
 	}
 
 	private fun stripSpiceVariety(tokens: List<String>): List<String> {

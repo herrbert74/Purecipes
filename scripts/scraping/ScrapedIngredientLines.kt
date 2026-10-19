@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "retailer-brands-v9"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v10"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -239,23 +239,41 @@ fun splitIngredientLine(raw: String): List<String> {
 		return emptyList()
 	}
 
-	return normalized
+	val lineParts = normalized
 		.split('\n')
-		.flatMap { line ->
-			val trimmedLine = line.trim()
-			if (trimmedLine.isBlank()) {
-				emptyList()
-			} else {
-				val shouldSplitConcatenated =
-					trimmedLine.length > MAX_INGREDIENT_LENGTH ||
-						concatenatedIngredientSplitRegex.findAll(trimmedLine).any { it.range.first > 0 }
-				if (shouldSplitConcatenated) {
-					splitConcatenatedIngredient(trimmedLine)
-				} else {
-					listOf(trimmedLine)
-				}
-			}
+		.map { line -> line.trim() }
+		.filter { line -> line.isNotBlank() }
+	return joinOrContinuedLines(lineParts).flatMap { trimmedLine ->
+		val shouldSplitConcatenated =
+			trimmedLine.length > MAX_INGREDIENT_LENGTH ||
+				concatenatedIngredientSplitRegex.findAll(trimmedLine).any { it.range.first > 0 }
+		if (shouldSplitConcatenated) {
+			splitConcatenatedIngredient(trimmedLine)
+		} else {
+			listOf(trimmedLine)
 		}
+	}
+}
+
+internal fun joinOrContinuedLines(lines: List<String>): List<String> {
+	if (lines.isEmpty()) {
+		return emptyList()
+	}
+	val joined = mutableListOf<String>()
+	var index = 0
+	while (index < lines.size) {
+		var line = lines[index]
+		while (
+			line.endsWith(" or", ignoreCase = true) &&
+			index + 1 < lines.size
+		) {
+			index++
+			line = "${line.trimEnd()} ${lines[index]}"
+		}
+		joined += line
+		index++
+	}
+	return joined
 }
 
 val ingredientToolKeywords = listOf(
@@ -343,7 +361,7 @@ private const val ALTERNATIVE_SEPARATOR = " or "
 private const val ALTERNATIVE_SEPARATOR_LENGTH = 4
 
 private val alternativeQuantityPrefixRegex = Regex(
-	pattern = """^((?:\d+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+)(?:\s+\w+)?(?:\s+of)?\s+)""",
+	pattern = """^((?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?)(?:\s+\w+)?(?:\s+of)?\s+)""",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 private val alternativeOfPrefixRegex = Regex(
@@ -465,10 +483,14 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 }
 
 fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient> {
-	if (sanitized.requirement == "OPTIONAL") {
+	val parts = splitAlternativeParts(sanitized.text)
+	val keepAsSingle = sanitized.requirement == "OPTIONAL" ||
+		parts.size <= 1 ||
+		isIncompleteAlternativeFoodName(parts.first())
+	if (keepAsSingle) {
 		return listOf(sanitized)
 	}
-	val alternativeTexts = expandAlternativeParts(splitAlternativeParts(sanitized.text))
+	val alternativeTexts = expandAlternativeParts(parts)
 	return if (alternativeTexts.size <= 1) {
 		listOf(sanitized)
 	} else {
@@ -476,6 +498,55 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 			ProcessedScrapedIngredient(text = text, requirement = "ALTERNATIVE")
 		}
 	}
+}
+
+private val incompleteAlternativeTokens = setOf(
+	"baby",
+	"chopped",
+	"cold",
+	"cooked",
+	"diced",
+	"dried",
+	"extra",
+	"fresh",
+	"frozen",
+	"ground",
+	"half",
+	"hot",
+	"jumbo",
+	"large",
+	"light",
+	"medium",
+	"mini",
+	"mild",
+	"plum",
+	"poached",
+	"raw",
+	"regular",
+	"roma",
+	"sharp",
+	"shredded",
+	"sliced",
+	"small",
+	"sweet",
+	"thick",
+	"thin",
+	"whole",
+)
+
+private const val MIN_ALTERNATIVE_FOOD_TOKEN_LENGTH = 3
+
+private fun alternativeFoodTokens(text: String): List<String> {
+	val withoutQuantity = alternativeQuantityPrefixRegex.replace(text.trim(), "")
+	return withoutQuantity
+		.lowercase(Locale.ROOT)
+		.split(Regex("[^a-z0-9]+"))
+		.filter { token -> token.length >= MIN_ALTERNATIVE_FOOD_TOKEN_LENGTH }
+}
+
+private fun isIncompleteAlternativeFoodName(text: String): Boolean {
+	val tokens = alternativeFoodTokens(text)
+	return tokens.isEmpty() || tokens.all { token -> token in incompleteAlternativeTokens }
 }
 
 fun appendSanitizedIngredientLines(

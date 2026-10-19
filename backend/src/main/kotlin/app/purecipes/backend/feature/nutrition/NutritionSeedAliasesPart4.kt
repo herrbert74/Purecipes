@@ -1,5 +1,6 @@
 package app.purecipes.backend.feature.nutrition
 
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ALMOND_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ANCHOVY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.APPLE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BACON_DESCRIPTION
@@ -12,9 +13,12 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_BRISKET_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_CHUCK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_OXTAIL_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_SHANK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_SHIN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_SKIRT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_STRIP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_TONGUE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_TOP_SIRLOIN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BISCUIT_MIX_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLACK_BEAN_DESCRIPTION
@@ -45,6 +49,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CH
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKEN_LIVER_PATE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKEN_THIGH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKEN_THIGH_FALLBACK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHICKPEA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHILI_CON_CARNE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHILI_POWDER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHILI_WITH_BEANS_DESCRIPTION
@@ -57,6 +62,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CO
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CONDENSED_MILK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORNED_BEEF_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORNMEAL_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORNSTARCH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORN_COB_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORN_FLOUR_YELLOW_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORN_TORTILLA_DESCRIPTION
@@ -72,6 +78,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CU
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CURRY_POWDER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.DUCK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_NOODLE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_WHITE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_WHITE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_YOLK_DESCRIPTION
@@ -85,13 +92,16 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.FR
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GARAM_MASALA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GARLIC_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GINGER_FRESH_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GOAT_CHEESE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GRAPES_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GRAPE_JUICE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_BEAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_TEA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HALLOUMI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HARD_CANDY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HIBISCUS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HOISIN_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HOMINY_WHITE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HOT_CHILI_GREEN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HOT_CHILI_RED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HOT_SAUCE_DESCRIPTION
@@ -104,6 +114,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.JA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.JELLY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.JELLY_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.KALE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.KIDNEY_BEAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.KIWI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LADYFINGER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LAMB_MINCE_DESCRIPTION
@@ -140,9 +151,11 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PO
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PORK_LOIN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PORK_MINCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PORK_RIBS_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PORK_SAUSAGE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POTATO_CHIPS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POTATO_CHIPS_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POTATO_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POTATO_FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POULTRY_SEASONING_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POWDERED_SUGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POWDERED_SUGAR_FALLBACK_DESCRIPTION
@@ -155,14 +168,17 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_BELL_PEPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_WINE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RHUBARB_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_CRISPY_CEREAL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROMAINE_LETTUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALMON_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALSA_VERDE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALTED_COD_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SATAY_SAUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SAZON_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SCALLOP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SELF_RISING_FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SERRANO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SESAME_SEED_DESCRIPTION
@@ -171,10 +187,12 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SI
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SNAPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SOYBEAN_OIL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SOY_SAUCE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPARKLING_WATER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPINACH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPRING_ONION_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SQUID_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.STIR_FRY_SAUCE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.STRAWBERRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SUGAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SUNFLOWER_BUTTER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SWEET_AND_SOUR_SAUCE_DESCRIPTION
@@ -187,6 +205,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TO
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TOMATO_DICED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TOMATO_RAW_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TOMATO_SAUCE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TORTILLA_CHIPS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TUNA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TURKEY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TURNIP_DESCRIPTION
@@ -1129,6 +1148,155 @@ internal object NutritionSeedAliasesPart4 {
 		NutritionSeedAlias(
 			"cow feet",
 			BEEF_OXTAIL_DESCRIPTION
+		),
+		NutritionSeedAlias("ale", BEER_DESCRIPTION),
+		NutritionSeedAlias(
+			"beef shin",
+			BEEF_SHIN_DESCRIPTION,
+			BEEF_SHANK_DESCRIPTION,
+			BEEF_CHUCK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"bibb lettuce",
+			ICEBERG_LETTUCE_DESCRIPTION,
+			ROMAINE_LETTUCE_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"bulk pork sausage",
+			PORK_SAUSAGE_DESCRIPTION
+		),
+		NutritionSeedAlias("celery salt", SALT_DESCRIPTION),
+		NutritionSeedAlias(
+			"chicken supremes",
+			CHICKEN_BREAST_DESCRIPTION,
+			CHICKEN_BREAST_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"cooked chicken thigh",
+			CHICKEN_THIGH_DESCRIPTION,
+			CHICKEN_THIGH_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias("cooked chickpeas", CHICKPEA_DESCRIPTION),
+		NutritionSeedAlias("cooked kidney beans", KIDNEY_BEAN_DESCRIPTION),
+		NutritionSeedAlias(
+			"cooked rotisserie chicken",
+			WHOLE_CHICKEN_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"corn tortilla chips",
+			TORTILLA_CHIPS_DESCRIPTION,
+			CORN_TORTILLA_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"corn tortillas white",
+			CORN_TORTILLA_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"duck breast",
+			DUCK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"duck breasts",
+			DUCK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"extra bacon",
+			BACON_UNPREPARED_DESCRIPTION,
+			BACON_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"extra egg noodles",
+			EGG_NOODLE_DESCRIPTION,
+			PASTA_DESCRIPTION
+		),
+		NutritionSeedAlias("frozen cod", COD_DESCRIPTION),
+		NutritionSeedAlias(
+			"gevrik goats cheese",
+			GOAT_CHEESE_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"green pepper corns",
+			BLACK_PEPPER_DESCRIPTION
+		),
+		NutritionSeedAlias("halloumi cheese", HALLOUMI_DESCRIPTION),
+		NutritionSeedAlias("lasagne", PASTA_DESCRIPTION, EGG_NOODLE_DESCRIPTION),
+		NutritionSeedAlias(
+			"long beans",
+			GREEN_BEAN_DESCRIPTION
+		),
+		NutritionSeedAlias("mild cheddar cheese", CHEDDAR_DESCRIPTION),
+		NutritionSeedAlias(
+			"milk chocolate chips",
+			MILK_CHOCOLATE_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"mixed berries",
+			STRAWBERRY_DESCRIPTION,
+			BLUEBERRY_DESCRIPTION
+		),
+		NutritionSeedAlias("onion salt", SALT_DESCRIPTION),
+		NutritionSeedAlias(
+			"potato starch",
+			POTATO_FLOUR_DESCRIPTION,
+			CORNSTARCH_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"red seedless grapes",
+			GRAPES_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"rice krispies",
+			RICE_CRISPY_CEREAL_DESCRIPTION,
+			READY_TO_EAT_CEREAL_DESCRIPTION
+		),
+		NutritionSeedAlias("rice starch", CORNSTARCH_DESCRIPTION),
+		NutritionSeedAlias(
+			"salted roasted almonds",
+			ALMOND_DESCRIPTION
+		),
+		NutritionSeedAlias("sea scallops", SCALLOP_DESCRIPTION),
+		NutritionSeedAlias("seedless grapes", GRAPES_DESCRIPTION),
+		NutritionSeedAlias(
+			"skirt",
+			BEEF_SKIRT_DESCRIPTION,
+			BEEF_STRIP_DESCRIPTION,
+			BEEF_CHUCK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"sparkling water",
+			SPARKLING_WATER_DESCRIPTION,
+			WATER_DESCRIPTION,
+			WATER_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"stir fry sauce",
+			STIR_FRY_SAUCE_DESCRIPTION,
+			SOY_SAUCE_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"top sirloin roast",
+			BEEF_TOP_SIRLOIN_DESCRIPTION,
+			BEEF_STRIP_DESCRIPTION,
+			BEEF_CHUCK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"boneless top sirloin roast",
+			BEEF_TOP_SIRLOIN_DESCRIPTION,
+			BEEF_STRIP_DESCRIPTION,
+			BEEF_CHUCK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"water heated",
+			WATER_DESCRIPTION,
+			WATER_FALLBACK_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"white corn tortillas",
+			CORN_TORTILLA_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"white hominy",
+			HOMINY_WHITE_DESCRIPTION
 		),
 	)
 }

@@ -267,6 +267,7 @@ internal object NutritionSeedAliasesPart1 {
 
 	val aliases: List<NutritionSeedAlias> = listOf(
 		NutritionSeedAlias("achiote paste", PAPRIKA_DESCRIPTION),
+		NutritionSeedAlias("active yeast", INSTANT_YEAST_DESCRIPTION),
 		NutritionSeedAlias("agave nectar", AGAVE_SYRUP_DESCRIPTION),
 		NutritionSeedAlias(
 			"aged sherry vinegar",
@@ -863,7 +864,9 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("seeds from cardamom pods using pestle mortar", CARDAMOM_DESCRIPTION),
 		NutritionSeedAlias("self raising flour", SELF_RISING_FLOUR_DESCRIPTION),
 		NutritionSeedAlias("self raising flour sifted", SELF_RISING_FLOUR_DESCRIPTION),
+		NutritionSeedAlias("self rising flour", SELF_RISING_FLOUR_DESCRIPTION),
 		NutritionSeedAlias("self-raising flour", SELF_RISING_FLOUR_DESCRIPTION),
+		NutritionSeedAlias("self-rising flour", SELF_RISING_FLOUR_DESCRIPTION),
 		NutritionSeedAlias("serrano chile", SERRANO_DESCRIPTION, HOT_CHILI_GREEN_DESCRIPTION),
 		NutritionSeedAlias("serrano chillies", SERRANO_DESCRIPTION, HOT_CHILI_GREEN_DESCRIPTION),
 		NutritionSeedAlias("sesame oil", SESAME_OIL_DESCRIPTION),
@@ -1081,6 +1084,7 @@ internal object NutritionSeedAliasesPart1 {
 		NutritionSeedAlias("sherry", DESSERT_WINE_DRY_DESCRIPTION),
 		NutritionSeedAlias("soy sauce", SOY_SAUCE_DESCRIPTION),
 		NutritionSeedAlias("sourdough", BAGUETTE_DESCRIPTION),
+		NutritionSeedAlias("sourdough bread", BAGUETTE_DESCRIPTION, ITALIAN_BREAD_DESCRIPTION),
 		NutritionSeedAlias("spinach", SPINACH_DESCRIPTION),
 		NutritionSeedAlias("sriracha", SRIRACHA_DESCRIPTION, HOT_SAUCE_DESCRIPTION),
 		NutritionSeedAlias("tarragon", TARRAGON_DESCRIPTION),
