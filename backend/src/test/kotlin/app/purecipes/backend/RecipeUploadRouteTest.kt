@@ -123,7 +123,8 @@ class RecipeUploadRouteTest {
 						"steps": ["Trim the carrots", "Roast until tender"],
 						"imageUrl": "https://example.com/carrots.jpg",
 						"cuisine": "Mediterranean",
-						"yields": "4 servings"
+						"yields": "4 servings",
+						"appliances": ["OVEN", "FOOD_PROCESSOR"]
 					}
 				""".trimIndent(),
 			)
@@ -135,6 +136,7 @@ class RecipeUploadRouteTest {
 			createResponseBody,
 			jsonField("description", "Sweet and savory side dish."),
 		)
+		assertBodyContains(createResponseBody, """"appliances":["OVEN","FOOD_PROCESSOR"]""")
 		assertBodyContains(createResponseBody, jsonField("measurementSystem", "MIXED"))
 		db.dataSource.connection.use { connection ->
 			connection.prepareStatement("SELECT measurement_system FROM recipes WHERE id = ?").use { statement ->
@@ -164,7 +166,8 @@ class RecipeUploadRouteTest {
 								"ingredients": ["1900 mL vegetable stock"]
 							}
 						],
-						"steps": ["Trim the carrots", "Roast with honey"]
+						"steps": ["Trim the carrots", "Roast with honey"],
+						"appliances": ["AIR_FRYER"]
 					}
 				""".trimIndent(),
 			)
@@ -173,6 +176,7 @@ class RecipeUploadRouteTest {
 		val updateResponseBody = updateResponse.bodyAsText()
 		assertBodyContains(updateResponseBody, jsonField("title", "Honey Roasted Carrots"))
 		assertBodyContains(updateResponseBody, jsonField("description", "Updated side dish."))
+		assertBodyContains(updateResponseBody, """"appliances":["AIR_FRYER"]""")
 		assertBodyContains(updateResponseBody, jsonField("measurementSystem", "METRIC"))
 		db.dataSource.connection.use { connection ->
 			connection.prepareStatement("SELECT measurement_system FROM recipes WHERE id = ?").use { statement ->

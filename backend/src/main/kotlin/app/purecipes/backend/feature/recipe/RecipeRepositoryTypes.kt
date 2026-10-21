@@ -19,6 +19,7 @@ internal data class RecipeRecord(
 	val calorieRange: String?,
 	val dietaryPreferences: List<String>,
 	val tags: List<String>,
+	val appliances: List<String> = emptyList(),
 	val isPrivate: Boolean,
 	val createdByUserId: Long?,
 ) {

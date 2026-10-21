@@ -20,6 +20,7 @@ internal fun ResultSet.toRecipeRecord(): RecipeRecord {
 		calorieRange = getNullableString("calorie_range"),
 		dietaryPreferences = getStringArray("dietary_preferences"),
 		tags = getStringArray("tags"),
+		appliances = getStringArray("appliances"),
 		isPrivate = getBoolean("is_private"),
 		createdByUserId = getNullableLong("created_by_user_id"),
 	)

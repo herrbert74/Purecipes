@@ -90,6 +90,7 @@ internal const val RECIPES_TABLE_SQL = """
 		calorie_range VARCHAR(20),
 		dietary_preferences TEXT ARRAY,
 		tags TEXT ARRAY,
+		appliances TEXT ARRAY,
 		source_url TEXT UNIQUE,
 		measurement_system VARCHAR(32),
 		created_by_user_id BIGINT REFERENCES app_users(id) ON DELETE SET NULL,
@@ -162,6 +163,10 @@ internal const val RECIPES_ADD_TAGS_SQL = """
 
 internal const val RECIPES_ADD_CATALOG_RANK_SQL = """
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS catalog_rank INTEGER
+"""
+
+internal const val RECIPES_ADD_APPLIANCES_SQL = """
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS appliances TEXT ARRAY
 """
 
 internal const val INGREDIENT_GROUPS_TABLE_SQL = """

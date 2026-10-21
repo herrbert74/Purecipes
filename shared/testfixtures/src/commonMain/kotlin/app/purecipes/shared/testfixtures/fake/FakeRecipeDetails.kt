@@ -1,5 +1,6 @@
 package app.purecipes.shared.testfixtures.fake
 
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementSystem
@@ -21,6 +22,7 @@ fun fakeRecipeDetails(
 	yields: String? = "2 servings",
 	cuisine: Cuisine? = Cuisine.ITALIAN,
 	measurementSystem: MeasurementSystem? = null,
+	appliances: Set<Appliance> = emptySet(),
 ): RecipeDetails = RecipeDetails(
 	id = id,
 	title = title,
@@ -32,4 +34,5 @@ fun fakeRecipeDetails(
 	yields = yields,
 	cuisine = cuisine,
 	measurementSystem = measurementSystem,
+	appliances = appliances,
 )
