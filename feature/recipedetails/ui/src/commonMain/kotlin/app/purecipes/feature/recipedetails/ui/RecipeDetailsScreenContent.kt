@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
@@ -99,4 +100,5 @@ val marketingRecipeDetails = RecipeDetails(
 	mealType = MealType.DINNER,
 	difficultyLevel = DifficultyLevel.EASY,
 	dietaryPreferences = setOf(DietaryPreference.GLUTEN_FREE),
+	appliances = setOf(Appliance.STOVETOP),
 )

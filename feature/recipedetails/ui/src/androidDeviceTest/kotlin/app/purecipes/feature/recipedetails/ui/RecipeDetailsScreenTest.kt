@@ -28,6 +28,7 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DifficultyLevel
 import app.purecipes.shared.domain.model.IngredientGroup
@@ -94,6 +95,7 @@ class RecipeDetailsScreenTest {
 								cuisine = Cuisine.MEDITERRANEAN,
 							).copy(
 								difficultyLevel = DifficultyLevel.EASY,
+								appliances = setOf(Appliance.OVEN),
 								nutrition = RecipeNutrition(
 									recipeTotals = NutritionSummary(calories = 180.0, protein = 3.0),
 								),
@@ -110,6 +112,9 @@ class RecipeDetailsScreenTest {
 		onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText("35 min"))
 		onNodeWithText("35 min").assertIsDisplayed()
+		onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
+			.performScrollToNode(hasTestTag("metadataPillChip:Oven"))
+		onNodeWithTag("metadataPillChip:Oven").assertIsDisplayed()
 		onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasText("Start cooking"))
 		onNodeWithText("Start cooking").assertIsDisplayed()
