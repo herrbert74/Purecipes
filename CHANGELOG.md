@@ -4,6 +4,22 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.16.0] - 2026-10-22
+
+### Added
+
+- Required kitchen appliances on recipe details, step-by-step cooking, recipe cards, and search filters.
+- Appliance selection when creating recipes.
+
+### Changed
+
+- Recipe details screen uses an edge-to-edge layout with smooth transitions and parallax header.
+- Home feed filters shelves by saved dietary preferences.
+
+### Fixed
+
+- Improved nutrition matching accuracy for common ingredients.
+
 ## [0.15.0] - 2026-10-15
 
 ### Added
