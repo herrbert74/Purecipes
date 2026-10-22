@@ -6,6 +6,7 @@ plugins {
 }
 
 aboutLibraries {
+	offlineMode = true
 	export {
 		outputFile = file("src/commonMain/composeResources/files/aboutlibraries.json")
 		prettyPrint = true
