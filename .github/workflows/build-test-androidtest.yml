@@ -165,21 +165,24 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: >-
-            ./gradlew
-            --max-workers=2
-            --no-parallel
-            --no-build-cache
-            --no-configuration-cache
-            -Pkotlin.native.enableKlibsCrossCompilation=false
-            -Pkotlin.native.ignoreDisabledTargets=true
-            "-PuiTestTags=${{ steps.ui-test-tags.outputs.tags }}"
-            "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC"
-            "-Dkotlin.daemon.jvmargs=-Xmx4g -XX:+UseParallelGC"
-            connectedAndroidTest;
+          script: |
+            gradle_status=0
+            ./gradlew \
+              --max-workers=2 \
+              --no-parallel \
+              --no-build-cache \
+              --no-configuration-cache \
+              -Pkotlin.native.enableKlibsCrossCompilation=false \
+              -Pkotlin.native.ignoreDisabledTargets=true \
+              "-PuiTestTags=${{ steps.ui-test-tags.outputs.tags }}" \
+              "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC" \
+              "-Dkotlin.daemon.jvmargs=-Xmx4g -XX:+UseParallelGC" \
+              connectedAndroidTest || gradle_status=$?
             killall -INT crashpad_handler || true
+            exit $gradle_status
 
       - name: Verify instrumented UI tests executed
+        if: success() || failure()
         env:
           UI_TEST_TAGS: ${{ steps.ui-test-tags.outputs.tags }}
         run: ./.github/scripts/verify-connected-ui-tests.sh

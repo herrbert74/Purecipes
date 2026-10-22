@@ -37,6 +37,9 @@ if (!uiTestTagsProperty.isNullOrBlank() && !startParameter.projectProperties.con
 		val projectProperties = LinkedHashMap(startParameter.projectProperties)
 		projectProperties[annotationProperty] = resolved
 		startParameter.setProjectProperties(projectProperties)
+		gradle.beforeProject {
+			extensions.extraProperties[annotationProperty] = resolved
+		}
 	}
 }
 
