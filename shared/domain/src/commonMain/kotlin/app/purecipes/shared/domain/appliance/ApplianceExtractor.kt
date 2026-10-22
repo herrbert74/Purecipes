@@ -77,6 +77,9 @@ object ApplianceExtractor {
 		Rule(Appliance.WAFFLE_MAKER, waffleMakerRegex),
 	)
 
+	fun extractAppliances(stepText: String): Set<Appliance> =
+		extractAppliances(instructionsText = stepText)
+
 	fun extractAppliances(
 		instructions: List<String> = emptyList(),
 		instructionsText: String? = null,
