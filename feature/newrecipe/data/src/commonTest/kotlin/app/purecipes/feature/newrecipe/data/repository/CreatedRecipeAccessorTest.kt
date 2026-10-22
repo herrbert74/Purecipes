@@ -8,6 +8,7 @@ import app.purecipes.feature.newrecipe.data.image.RecipeImageUpload
 import app.purecipes.feature.newrecipe.data.image.RecipeImageUploader
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeIngredient
 import com.github.michaelbull.result.Err
@@ -44,6 +45,7 @@ class CreatedRecipeAccessorTest {
 				totalTime = 20,
 				yields = "2 servings",
 				cuisine = Cuisine.ITALIAN,
+				appliances = setOf(Appliance.AIR_FRYER, Appliance.OVEN),
 			),
 		).get().shouldNotBeNull()
 
@@ -51,6 +53,7 @@ class CreatedRecipeAccessorTest {
 
 		savedRecipe.id shouldBe 1
 		savedRecipe.isPrivate shouldBe false
+		savedRecipe.appliances shouldBe setOf(Appliance.AIR_FRYER, Appliance.OVEN)
 		storedRecipes shouldBe listOf(savedRecipe)
 	}
 

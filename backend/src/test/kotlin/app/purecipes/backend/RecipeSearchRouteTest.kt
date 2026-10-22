@@ -630,4 +630,51 @@ class RecipeSearchRouteTest {
 		responseBody.contains("Chicken With Herb Choice") shouldBe true
 	}
 
+	@Test
+	fun `search filters recipes by required appliance`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		val sessionService = FakeSessionService(
+			initialSessions = listOf(
+				FakeSessionService.createSession(),
+			),
+			createMode = FakeSessionService.CreateMode.RETURN_FIRST_OR_GENERATE,
+		)
+
+		application {
+			module(
+				db = db,
+				sessionService = sessionService,
+			)
+		}
+
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "Air Fryer Wings",
+			ingredients = recipeIngredientsForRouteTest("Chicken wings", "Salt"),
+			appliances = listOf("AIR_FRYER"),
+		)
+		createRecipeForSearchRouteTest(
+			accessToken = sessionService.session.accessToken,
+			title = "Slow Cooker Stew",
+			ingredients = recipeIngredientsForRouteTest("Beef", "Carrot"),
+			appliances = listOf("SLOW_COOKER"),
+		)
+
+		val airFryerResponse = searchWithFiltersForSearchRouteTest(
+			"""
+				{
+					"query": "",
+					"filters": {
+						"appliances": ["AIR_FRYER"]
+					}
+				}
+			""".trimIndent(),
+			accessToken = sessionService.session.accessToken,
+		)
+
+		airFryerResponse.contains("Air Fryer Wings") shouldBe true
+		airFryerResponse.contains("Slow Cooker Stew") shouldBe false
+	}
+
 }

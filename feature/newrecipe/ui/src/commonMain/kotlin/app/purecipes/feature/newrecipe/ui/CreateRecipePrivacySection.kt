@@ -16,8 +16,8 @@ import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CREATE_RECIPE_PRIVACY_SWITCH_TAG = "createRecipePrivacySwitch"
-internal const val METADATA_GROUP_ITEM_COUNT = 4
-internal const val PRIVACY_METADATA_INDEX = 3
+internal const val METADATA_GROUP_ITEM_COUNT = 5
+internal const val PRIVACY_METADATA_INDEX = 4
 
 @Composable
 internal fun CreateRecipePrivacySection(

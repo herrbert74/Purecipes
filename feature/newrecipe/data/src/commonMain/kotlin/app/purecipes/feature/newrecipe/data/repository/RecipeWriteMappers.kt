@@ -19,5 +19,6 @@ internal fun SaveCreatedRecipeRequest.toRecipeWriteRequest(imageUrl: String? = t
 		yields = yields,
 		cuisine = cuisine,
 		isPrivate = isPrivate,
+		appliances = appliances,
 	)
 }

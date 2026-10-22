@@ -40,6 +40,7 @@ internal fun <T : Any> FilterChipSection(
 	modifier: Modifier = Modifier,
 	isLocked: Boolean = false,
 	onLockedClick: () -> Unit = {},
+	leadingIcon: @Composable ((T) -> Unit)? = null,
 ) {
 	var collapsed by rememberSaveable { mutableStateOf(true) }
 	val selectedLabels = items.filter { it in selected }.map(itemLabel)
@@ -89,6 +90,9 @@ internal fun <T : Any> FilterChipSection(
 								onSelectionChange(updated)
 							},
 							label = { Text(itemLabel(item)) },
+							leadingIcon = leadingIcon?.let { icon ->
+								{ icon(item) }
+							},
 							modifier = Modifier.testTag(filterChipTag(title, itemLabel(item))),
 						)
 					}

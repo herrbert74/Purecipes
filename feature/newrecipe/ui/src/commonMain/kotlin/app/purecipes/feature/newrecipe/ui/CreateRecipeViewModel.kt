@@ -24,6 +24,7 @@ import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUse
 import app.purecipes.shared.domain.ingredient.IngredientLineParser
 import app.purecipes.shared.domain.ingredient.IngredientUnitTokens
 import app.purecipes.shared.domain.ingredient.nutritionIngredientTexts
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientRequirement
 import app.purecipes.shared.domain.model.MeasurementSystem
@@ -83,6 +84,9 @@ class CreateRecipeViewModel(
 		private set
 
 	var selectedCuisine by mutableStateOf<Cuisine?>(null)
+		private set
+
+	var selectedAppliances by mutableStateOf<Set<Appliance>>(emptySet())
 		private set
 
 	var isPrivate by mutableStateOf(false)
@@ -234,6 +238,10 @@ class CreateRecipeViewModel(
 		selectedCuisine = value
 	}
 
+	fun onAppliancesChange(value: Set<Appliance>) {
+		selectedAppliances = value
+	}
+
 	fun onIsPrivateChange(value: Boolean) {
 		if (value && !canMakePrivate) {
 			trackEvent(
@@ -256,7 +264,7 @@ class CreateRecipeViewModel(
 		}
 	}
 
-	fun loadRecipe(recipeId: Int) {
+	private fun loadRecipe(recipeId: Int) {
 		if (editingRecipeId == recipeId && !isLoadingRecipe) {
 			return
 		}
@@ -288,6 +296,7 @@ class CreateRecipeViewModel(
 		totalTimeInput = ""
 		yieldsInput = ""
 		selectedCuisine = null
+		selectedAppliances = emptySet()
 		isPrivate = false
 		loadedIsPrivate = false
 		nutritionEstimate = null
@@ -335,6 +344,7 @@ class CreateRecipeViewModel(
 					yields = yieldsInput,
 					cuisine = selectedCuisine,
 					isPrivate = isPrivate,
+					appliances = selectedAppliances,
 				),
 			)
 
@@ -378,6 +388,7 @@ class CreateRecipeViewModel(
 		totalTimeInput = recipe.totalTime?.toString().orEmpty()
 		yieldsInput = recipe.yields.orEmpty()
 		selectedCuisine = recipe.cuisine
+		selectedAppliances = recipe.appliances
 		isPrivate = recipe.isPrivate
 		loadedIsPrivate = recipe.isPrivate
 		nutritionEstimate = recipe.nutrition?.recipeTotals

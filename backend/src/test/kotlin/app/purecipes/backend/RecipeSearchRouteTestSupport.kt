@@ -34,6 +34,7 @@ internal suspend fun ApplicationTestBuilder.createRecipeForSearchRouteTest(
 	accessToken: String,
 	title: String,
 	ingredients: List<RecipeIngredient>,
+	appliances: List<String> = emptyList(),
 ) {
 	val ingredientsJson = ingredients.joinToString(separator = ",") { ingredient ->
 		buildString {
@@ -44,6 +45,7 @@ internal suspend fun ApplicationTestBuilder.createRecipeForSearchRouteTest(
 			append("}")
 		}
 	}
+	val appliancesJson = appliances.joinToString(separator = ",") { "\"$it\"" }
 	val response = client.post("/recipes") {
 		header(HttpHeaders.Authorization, "Bearer $accessToken")
 		contentType(ContentType.Application.Json)
@@ -57,7 +59,8 @@ internal suspend fun ApplicationTestBuilder.createRecipeForSearchRouteTest(
 							"ingredients": [$ingredientsJson]
 						}
 					],
-					"steps": ["Step 1"]
+					"steps": ["Step 1"],
+					"appliances": [$appliancesJson]
 				}
 			""".trimIndent(),
 		)

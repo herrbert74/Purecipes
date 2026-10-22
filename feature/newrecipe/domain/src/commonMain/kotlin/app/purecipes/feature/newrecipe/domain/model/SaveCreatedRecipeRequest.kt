@@ -1,5 +1,6 @@
 package app.purecipes.feature.newrecipe.domain.model
 
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeIngredient
 
@@ -14,4 +15,5 @@ data class SaveCreatedRecipeRequest(
 	val yields: String? = null,
 	val cuisine: Cuisine? = null,
 	val isPrivate: Boolean = false,
+	val appliances: Set<Appliance> = emptySet(),
 )

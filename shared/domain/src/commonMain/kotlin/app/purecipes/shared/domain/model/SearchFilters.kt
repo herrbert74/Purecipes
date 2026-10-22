@@ -12,6 +12,7 @@ data class SearchFilters(
 	val cookingMethods: Set<CookingMethod> = emptySet(),
 	val calorieRanges: Set<CalorieRange> = emptySet(),
 	val nutritionFilters: Set<NutritionFilter> = emptySet(),
+	val appliances: Set<Appliance> = emptySet(),
 ) {
 
 	val isEmpty: Boolean
@@ -22,7 +23,8 @@ data class SearchFilters(
 			difficultyLevels.isEmpty() &&
 			cookingMethods.isEmpty() &&
 			calorieRanges.isEmpty() &&
-			nutritionFilters.isEmpty()
+			nutritionFilters.isEmpty() &&
+			appliances.isEmpty()
 
 	fun hasPremiumFilters(): Boolean =
 		calorieRanges.isNotEmpty() || nutritionFilters.isNotEmpty()
@@ -43,6 +45,7 @@ data class SearchFilters(
 			cookingMethods = emptySet(),
 			calorieRanges = emptySet(),
 			nutritionFilters = emptySet(),
+			appliances = emptySet(),
 		)
 	}
 }
