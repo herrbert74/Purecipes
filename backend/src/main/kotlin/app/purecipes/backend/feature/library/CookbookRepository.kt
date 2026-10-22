@@ -1,5 +1,6 @@
 package app.purecipes.backend.feature.library
 
+import app.purecipes.backend.feature.recipe.readAppliances
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookRef
 import app.purecipes.shared.domain.model.CookbookSummary
@@ -277,6 +278,7 @@ class CookbookRepository(
 				measurementSystem = rs.getNullableMeasurementSystem("measurement_system"),
 				isFavorite = true,
 				isPrivate = rs.getBoolean("is_private"),
+				appliances = rs.readAppliances(),
 			)
 		}
 		return out
@@ -371,7 +373,7 @@ class CookbookRepository(
 		"""
 
 		const val COOKBOOK_RECIPES_PAGE_SQL = """
-			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
+			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private, r.appliances
 			FROM cookbook_recipes cr
 			INNER JOIN favorites f ON f.recipe_id = cr.recipe_id AND f.user_id = ?
 			INNER JOIN recipes r ON r.id = cr.recipe_id

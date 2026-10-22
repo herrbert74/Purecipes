@@ -41,7 +41,7 @@ internal object RecipeRepositorySql {
 	"""
 
 	const val FAVORITES_PAGE_SQL = """
-		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
+		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private, r.appliances
 		FROM favorites f
 		INNER JOIN recipes r ON r.id = f.recipe_id
 		WHERE f.user_id = ?

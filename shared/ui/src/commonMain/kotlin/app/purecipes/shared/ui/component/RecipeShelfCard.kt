@@ -30,6 +30,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import kotlinx.collections.immutable.toImmutableSet
 
 private const val SHELF_TITLE_MAX_LINES = 2
 private const val PREP_TIME_UNKNOWN = "Prep time unknown"
@@ -99,11 +100,21 @@ internal fun RecipeShelfCard(
 					maxLines = SHELF_TITLE_MAX_LINES,
 					overflow = TextOverflow.Ellipsis,
 				)
-				Text(
-					text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
-					style = PurecipesTheme.typography.bodySmall,
-					color = PurecipesTheme.colorScheme.onSurface,
-				)
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.CenterVertically,
+				) {
+					Text(
+						text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
+						style = PurecipesTheme.typography.bodySmall,
+						color = PurecipesTheme.colorScheme.onSurface,
+					)
+					RecipeCardApplianceIcons(
+						appliances = recipe.appliances.toImmutableSet(),
+						tint = PurecipesTheme.colorScheme.onSurfaceVariant,
+					)
+				}
 			}
 		}
 	}

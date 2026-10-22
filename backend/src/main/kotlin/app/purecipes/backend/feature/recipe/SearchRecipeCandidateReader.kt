@@ -16,6 +16,7 @@ internal fun RecipeRepository.readRecipeSummary(rs: ResultSet): RecipeSummary {
 		measurementSystem = rs.getNullableMeasurementSystem("measurement_system")
 			?: loadMeasurementSystemForRecipe(recipeId),
 		isPrivate = rs.getBoolean("is_private"),
+		appliances = rs.readAppliances(),
 	)
 }
 

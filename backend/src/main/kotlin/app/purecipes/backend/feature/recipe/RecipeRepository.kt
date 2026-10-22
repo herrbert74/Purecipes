@@ -578,6 +578,7 @@ internal fun RecipeRepository.querySearchWithFiltersRecipes(
 
 	val sql = """
 		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
+			r.appliances,
 			${recipeCompletenessScoreSql("r")} AS completeness_score,
 			r.created_at
 		FROM recipes r

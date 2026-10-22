@@ -3,6 +3,7 @@ package app.purecipes.backend.feature.library
 import app.purecipes.backend.feature.recipe.RecipeRepository
 import app.purecipes.backend.feature.recipe.RecipeRepositorySql
 import app.purecipes.backend.feature.recipe.getNullableMeasurementSystem
+import app.purecipes.backend.feature.recipe.readAppliances
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.domain.model.cuisineFromRawValue
@@ -93,6 +94,7 @@ class FavoritesRepository(
 						?: recipeRepository.loadMeasurementSystemForRecipe(recipeId),
 					isFavorite = true,
 					isPrivate = rs.getBoolean("is_private"),
+					appliances = rs.readAppliances(),
 				),
 			)
 		}

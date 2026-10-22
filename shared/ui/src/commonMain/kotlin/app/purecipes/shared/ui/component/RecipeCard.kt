@@ -30,6 +30,7 @@ import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import kotlinx.collections.immutable.toImmutableSet
 
 const val RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX = "recipeCardDeleteButton:"
 const val RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX = "recipeCardEditButton:"
@@ -140,11 +141,21 @@ fun RecipeCard(
 					style = PurecipesTheme.typography.titleMedium,
 					color = colors.onColorContainer,
 				)
-				Text(
-					text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
-					style = PurecipesTheme.typography.bodyMedium,
-					color = colors.onColorContainer,
-				)
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.CenterVertically,
+				) {
+					Text(
+						text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
+						style = PurecipesTheme.typography.bodyMedium,
+						color = colors.onColorContainer,
+					)
+					RecipeCardApplianceIcons(
+						appliances = recipe.appliances.toImmutableSet(),
+						tint = colors.onColorContainer,
+					)
+				}
 			}
 		}
 	}

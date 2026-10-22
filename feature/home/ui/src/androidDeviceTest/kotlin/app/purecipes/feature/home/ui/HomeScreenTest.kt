@@ -26,6 +26,7 @@ import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
 import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
 import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
@@ -36,6 +37,7 @@ import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestHome
+import app.purecipes.shared.ui.component.RECIPE_CARD_APPLIANCE_ICON_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
@@ -185,6 +187,46 @@ class HomeScreenTest {
 		searchReadiness = SearchReadinessCoordinator(),
 		sessionKey = sessionKey,
 	)
+
+	@Test
+	fun homeCardDisplaysApplianceIconsWhenPresent() = runRecompositionTrackingUiTest {
+		val recipeWithAppliance = recipeSummary(id = 10, title = "Air Fried Chicken").copy(
+			appliances = setOf(Appliance.AIR_FRYER),
+		)
+		val viewModel = homeViewModel(
+			homeFeedRepository = FakeHomeFeedRepository(
+				result = Ok(
+					HomeFeed(
+						shelves = listOf(
+							HomeShelf(
+								id = HomeShelfId.FAVORITES,
+								title = "Your favorites",
+								recipes = listOf(recipeWithAppliance),
+							),
+						),
+					),
+				),
+			),
+			sessionKey = "home-appliance-test",
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				HomeScreen(
+					sessionKey = "home-appliance-test",
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText("Air Fried Chicken").fetchSemanticsNodes().isNotEmpty()
+		}
+
+		onNodeWithTag(
+			testTag = "$RECIPE_CARD_APPLIANCE_ICON_PREFIX${Appliance.AIR_FRYER.name}",
+			useUnmergedTree = true,
+		).assertIsDisplayed()
+	}
 
 	private fun scrollableShelves(): List<HomeShelf> = listOf(
 		shelf(id = HomeShelfId.NEW, title = FIRST_SHELF_TITLE, recipeId = 11),
