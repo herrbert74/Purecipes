@@ -14,6 +14,7 @@ plugins {
 }
 
 aboutLibraries {
+	offlineMode = true
 	export {
 		outputFile = file("src/main/res/raw/aboutlibraries.json")
 		prettyPrint = true
