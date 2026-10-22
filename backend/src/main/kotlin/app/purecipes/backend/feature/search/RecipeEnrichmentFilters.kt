@@ -1,5 +1,6 @@
 package app.purecipes.backend.feature.search
 
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.DifficultyLevel
@@ -51,6 +52,7 @@ internal fun addEnrichmentFilterConditions(
 		valueSelector = CalorieRange::name,
 	)
 	addDietaryPreferenceFilters(filters, conditions, params)
+	addApplianceFilters(filters, conditions, params)
 	addNutritionFilters(filters, conditions)
 }
 
@@ -81,6 +83,19 @@ private fun addDietaryPreferenceFilters(
 	val parts = filters.dietaryPreferences.map { "? = ANY(r.dietary_preferences)" }
 	conditions.add("(${parts.joinToString(" AND ")})")
 	filters.dietaryPreferences.forEach { params.add(it.name) }
+}
+
+private fun addApplianceFilters(
+	filters: SearchFilters,
+	conditions: MutableList<String>,
+	params: MutableList<Any>,
+) {
+	if (filters.appliances.isEmpty() || filters.appliances.size >= Appliance.entries.size) {
+		return
+	}
+	val parts = filters.appliances.map { "? = ANY(r.appliances)" }
+	conditions.add("(${parts.joinToString(" OR ")})")
+	filters.appliances.forEach { params.add(it.name) }
 }
 
 private fun addNutritionFilters(

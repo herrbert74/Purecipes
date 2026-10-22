@@ -97,4 +97,5 @@ internal fun RecipeDetails.toRecipeSummary(): RecipeSummary =
 		imageUrl = imageUrl,
 		totalTime = totalTime,
 		isPrivate = isPrivate,
+		appliances = appliances,
 	)

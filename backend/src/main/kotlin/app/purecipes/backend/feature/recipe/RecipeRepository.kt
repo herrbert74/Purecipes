@@ -4,6 +4,7 @@ import app.purecipes.backend.feature.search.IngredientVocabulary
 import app.purecipes.shared.domain.ingredient.ingredientSlots
 import app.purecipes.shared.domain.ingredient.singleMissingIngredientLabel
 import app.purecipes.shared.domain.ingredient.slotIsOptional
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.Cuisine
@@ -106,26 +107,7 @@ class RecipeRepository(
 			ps.setInt(1, recipeId)
 			ps.executeQuery().use { rs ->
 				if (!rs.next()) return@use null
-
-				RecipeRecord(
-					id = rs.getInt("id"),
-					title = rs.getString("title"),
-					description = rs.getNullableString("description"),
-					instructions = rs.getNullableString("instructions"),
-					totalTime = rs.getObject("total_time") as? Int,
-					yields = rs.getNullableString("yields"),
-					imageUrl = rs.getNullableString("image_url"),
-					cuisine = rs.getNullableString("cuisine"),
-					mealType = rs.getNullableString("meal_type"),
-					measurementSystem = rs.getNullableMeasurementSystem("measurement_system"),
-					difficulty = rs.getNullableString("difficulty"),
-					cookingMethod = rs.getNullableString("cooking_method"),
-					calorieRange = rs.getNullableString("calorie_range"),
-					dietaryPreferences = rs.getStringArray("dietary_preferences"),
-					tags = rs.getStringArray("tags"),
-					isPrivate = rs.getBoolean("is_private"),
-					createdByUserId = rs.getNullableLong("created_by_user_id"),
-				)
+				rs.toRecipeRecord()
 			}
 		}
 	}
@@ -182,6 +164,9 @@ class RecipeRepository(
 				.mapNotNull { runCatching { DietaryPreference.valueOf(it) }.getOrNull() }
 				.toSet(),
 			tags = recipeRecord.tags.toSet(),
+			appliances = recipeRecord.appliances
+				.mapNotNull { runCatching { Appliance.valueOf(it) }.getOrNull() }
+				.toSet(),
 			nutrition = nutrition,
 			isPrivate = recipeRecord.isPrivate,
 		)
@@ -454,6 +439,8 @@ class RecipeRepository(
 			ps.setString(RecipeRepositorySql.EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
 			ps.setLong(RecipeRepositorySql.NINTH_PARAMETER_INDEX, userId)
 			ps.setBoolean(RecipeRepositorySql.TENTH_PARAMETER_INDEX, request.isPrivate)
+			val appliancesArray = conn.createArrayOf("text", request.appliances.map { it.name }.toTypedArray())
+			ps.setArray(RecipeRepositorySql.ELEVENTH_PARAMETER_INDEX, appliancesArray)
 			ps.executeUpdate()
 			ps.generatedId()
 		}
@@ -471,7 +458,9 @@ class RecipeRepository(
 			ps.setString(RecipeRepositorySql.SEVENTH_PARAMETER_INDEX, request.cuisine?.displayName)
 			ps.setString(RecipeRepositorySql.EIGHTH_PARAMETER_INDEX, measurementSystem?.name)
 			ps.setBoolean(RecipeRepositorySql.NINTH_PARAMETER_INDEX, request.isPrivate)
-			ps.setInt(RecipeRepositorySql.TENTH_PARAMETER_INDEX, recipeId)
+			val appliancesArray = conn.createArrayOf("text", request.appliances.map { it.name }.toTypedArray())
+			ps.setArray(RecipeRepositorySql.TENTH_PARAMETER_INDEX, appliancesArray)
+			ps.setInt(RecipeRepositorySql.ELEVENTH_PARAMETER_INDEX, recipeId)
 			ps.executeUpdate()
 		}
 	}
@@ -589,6 +578,7 @@ internal fun RecipeRepository.querySearchWithFiltersRecipes(
 
 	val sql = """
 		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
+			r.appliances,
 			${recipeCompletenessScoreSql("r")} AS completeness_score,
 			r.created_at
 		FROM recipes r

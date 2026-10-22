@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.DifficultyLevel
@@ -43,6 +44,7 @@ import app.purecipes.shared.ui.component.RecipeStatChipsRow
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.launch
 
 const val RECIPE_DETAILS_CONTENT_TAG = "recipeDetailsContent"
@@ -156,6 +158,13 @@ internal fun RecipeDetailsContent(
 			RecipeMetadataRow(
 				recipe = recipe,
 				isRecipeConverted = isRecipeConverted,
+				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
+			)
+		}
+
+		item {
+			RecipeAppliancesRow(
+				appliances = recipe.appliances.toImmutableSet(),
 				modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
 			)
 		}
@@ -285,6 +294,7 @@ private val previewRecipeDetails = RecipeDetails(
 	mealType = MealType.DINNER,
 	difficultyLevel = DifficultyLevel.EASY,
 	dietaryPreferences = setOf(DietaryPreference.VEGETARIAN),
+	appliances = setOf(Appliance.STOVETOP),
 	nutrition = RecipeNutrition(
 		recipeTotals = NutritionSummary(
 			calories = 640.0,

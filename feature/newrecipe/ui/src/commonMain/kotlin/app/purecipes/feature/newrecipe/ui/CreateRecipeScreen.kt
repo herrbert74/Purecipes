@@ -27,6 +27,7 @@ import app.purecipes.shared.ui.component.BackNavigationButton
 import app.purecipes.shared.ui.component.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import kotlinx.collections.immutable.toImmutableSet
 
 typealias RememberRecipeImagePicker = @Composable (
 	onImageSelect: (String) -> Unit,
@@ -173,6 +174,7 @@ fun CreateRecipeScreen(
 					CreateRecipeForm(
 						selectedSection = viewModel.selectedSection,
 						selectedCuisine = viewModel.selectedCuisine,
+						selectedAppliances = viewModel.selectedAppliances.toImmutableSet(),
 						descriptionInput = viewModel.descriptionInput,
 						formErrorMessage = viewModel.formErrorMessage,
 						fieldErrors = viewModel.fieldErrors,
@@ -192,6 +194,7 @@ fun CreateRecipeScreen(
 							viewModel.onImageUrlChange("")
 						},
 						onCuisineChange = viewModel::onCuisineChange,
+						onAppliancesChange = viewModel::onAppliancesChange,
 						onDescriptionChange = viewModel::onDescriptionChange,
 						onImageUrlChange = { value ->
 							isImportingImage = false

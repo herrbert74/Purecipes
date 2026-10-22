@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SheetState
@@ -27,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.CookingTimeRange
@@ -39,6 +43,7 @@ import app.purecipes.shared.domain.model.NutritionFilter
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.VerticalScrollbar
+import app.purecipes.shared.ui.icon.appliance.icon
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
@@ -356,6 +361,22 @@ private fun RecipeFiltersTabContent(
 				selected = filters.cookingMethods.toImmutableSet(),
 				itemLabel = { it.displayName },
 				onSelectionChange = { onFiltersChange(filters.copy(cookingMethods = it)) },
+			)
+		}
+		item {
+			FilterChipSection(
+				title = "Appliances",
+				items = Appliance.entries.toImmutableList(),
+				selected = filters.appliances.toImmutableSet(),
+				itemLabel = { it.displayName },
+				leadingIcon = { appliance ->
+					Icon(
+						imageVector = appliance.icon,
+						contentDescription = null,
+						modifier = Modifier.size(FilterChipDefaults.IconSize),
+					)
+				},
+				onSelectionChange = { onFiltersChange(filters.copy(appliances = it)) },
 			)
 		}
 		item {

@@ -68,6 +68,7 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -87,6 +88,7 @@ import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestSearch
 import app.purecipes.shared.ui.component.BROWSE_TILE_TAG_PREFIX
+import app.purecipes.shared.ui.component.RECIPE_CARD_APPLIANCE_ICON_PREFIX
 import app.purecipes.shared.ui.component.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
@@ -213,6 +215,40 @@ class RecipeSearchScreenTest {
 			testTag = "${RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX}2",
 			useUnmergedTree = true,
 		).assertDoesNotExist()
+	}
+
+	@Test
+	fun searchScreenDisplaysApplianceIconsOnRecipeCards() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository(
+			result = com.github.michaelbull.result.Ok(
+				listOf(
+					RecipeSummary(
+						id = 1,
+						title = "Tomato Pasta",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 20,
+						appliances = setOf(Appliance.OVEN),
+					),
+				),
+			),
+		)
+
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		openTitleSearch(viewModel)
+		assertDisplayedInSearchResults("Tomato Pasta")
+		onNodeWithTag(
+			testTag = "$RECIPE_CARD_APPLIANCE_ICON_PREFIX${Appliance.OVEN.name}",
+			useUnmergedTree = true,
+		).assertIsDisplayed()
 	}
 
 	@Test

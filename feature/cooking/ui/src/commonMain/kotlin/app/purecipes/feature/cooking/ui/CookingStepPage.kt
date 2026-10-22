@@ -11,9 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
 internal fun CookingStepPage(
@@ -24,6 +27,7 @@ internal fun CookingStepPage(
 	onDurationClick: (CookingStepHighlight.Duration) -> Unit,
 	onPrimaryAction: () -> Unit,
 	modifier: Modifier = Modifier,
+	appliances: ImmutableSet<Appliance> = persistentSetOf(),
 	timer: CookingTimerState? = null,
 	onDismissTimer: () -> Unit = {},
 ) {
@@ -31,11 +35,18 @@ internal fun CookingStepPage(
 		modifier = modifier.fillMaxSize(),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
-		Text(
-			text = "Step $stepNumber of $stepCount",
-			style = PurecipesTheme.typography.titleMedium,
-			color = PurecipesTheme.colorScheme.primary,
-		)
+		Column(
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+		) {
+			Text(
+				text = "Step $stepNumber of $stepCount",
+				style = PurecipesTheme.typography.titleMedium,
+				color = PurecipesTheme.colorScheme.primary,
+			)
+			if (appliances.isNotEmpty()) {
+				CookingStepApplianceBadges(appliances = appliances)
+			}
+		}
 		Column(
 			modifier = Modifier
 				.weight(1f)

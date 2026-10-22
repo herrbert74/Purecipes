@@ -13,6 +13,7 @@ import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.subscription.domain.model.SubscriptionState
 import app.purecipes.feature.subscription.domain.model.SubscriptionStatus
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.MeasurementPreferences
@@ -216,7 +217,7 @@ class CreateRecipeViewModelTest {
 			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
 		)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 		viewModel.onRecipeIdChanged(recipeId = null)
 
@@ -231,7 +232,7 @@ class CreateRecipeViewModelTest {
 		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe))
 		val viewModel = createViewModel(repository = repository)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 
 		viewModel.isEditing shouldBe true
@@ -250,7 +251,7 @@ class CreateRecipeViewModelTest {
 			analyticsRepository = analyticsRepository,
 		)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 		viewModel.onTitleChange("Creamy Tomato Pasta")
 		viewModel.saveRecipe()
@@ -271,7 +272,7 @@ class CreateRecipeViewModelTest {
 			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
 		)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 		viewModel.onTitleChange("Creamy Tomato Pasta")
 		viewModel.saveRecipe()
@@ -431,7 +432,7 @@ class CreateRecipeViewModelTest {
 			analyticsRepository = analyticsRepository,
 		)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 		viewModel.onIsPrivateChange(false)
 		viewModel.saveRecipe()
@@ -455,7 +456,7 @@ class CreateRecipeViewModelTest {
 			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
 		)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 
 		viewModel.isPrivate shouldBe true
@@ -475,7 +476,7 @@ class CreateRecipeViewModelTest {
 			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
 		)
 
-		viewModel.loadRecipe(recipe.id)
+		viewModel.onRecipeIdChanged(recipe.id)
 		advanceUntilIdle()
 
 		viewModel.ingredientsEditor.rows.first().primary shouldBe IngredientPartInput(
@@ -515,6 +516,50 @@ class CreateRecipeViewModelTest {
 			"bunch",
 			"pack",
 		)
+	}
+
+	@Test
+	fun `loading recipe populates selected appliances`() = runViewModelTest {
+		val recipe = sampleCreatedRecipe().copy(
+			appliances = setOf(Appliance.AIR_FRYER, Appliance.OVEN),
+		)
+		val viewModel = createViewModel(
+			repository = FakeCreatedRecipeRepository(initialRecipes = listOf(recipe)),
+		)
+
+		viewModel.onRecipeIdChanged(recipe.id)
+		advanceUntilIdle()
+
+		viewModel.selectedAppliances shouldBe setOf(Appliance.AIR_FRYER, Appliance.OVEN)
+	}
+
+	@Test
+	fun `appliances change updates state`() = runViewModelTest {
+		val viewModel = createViewModel()
+
+		viewModel.onAppliancesChange(setOf(Appliance.AIR_FRYER))
+		viewModel.selectedAppliances shouldBe setOf(Appliance.AIR_FRYER)
+
+		viewModel.onAppliancesChange(setOf(Appliance.AIR_FRYER, Appliance.OVEN))
+		viewModel.selectedAppliances shouldBe setOf(Appliance.AIR_FRYER, Appliance.OVEN)
+
+		viewModel.onAppliancesChange(emptySet())
+		viewModel.selectedAppliances shouldBe emptySet()
+	}
+
+	@Test
+	fun `saving a recipe includes selected appliances in request`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = createViewModel(repository = repository)
+
+		viewModel.onTitleChange("Air Fryer Wings")
+		viewModel.onDescriptionChange("Crispy chicken wings.")
+		viewModel.onStepChange(index = 0, value = "Air fry at 200C for 20 minutes")
+		viewModel.onAppliancesChange(setOf(Appliance.AIR_FRYER))
+		viewModel.saveRecipe()
+		advanceUntilIdle()
+
+		repository.savedRequests.single().appliances shouldBe setOf(Appliance.AIR_FRYER)
 	}
 }
 

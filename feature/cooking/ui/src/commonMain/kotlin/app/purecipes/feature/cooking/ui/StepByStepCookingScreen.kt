@@ -24,6 +24,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.domain.appliance.ApplianceExtractor
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
@@ -33,6 +34,7 @@ import app.purecipes.shared.ui.component.CenteredMessageContent
 import app.purecipes.shared.ui.component.ShowLoading
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -222,11 +224,21 @@ internal fun StepByStepCookingScreen(
 					onFindMoreRecipes = onFindMoreRecipes,
 				)
 			} else {
+				val stepAppliances = remember(recipe.steps[page], recipe.appliances) {
+					val detected = ApplianceExtractor.extractAppliances(recipe.steps[page])
+					val matched = if (recipe.appliances.isNotEmpty()) {
+						detected.intersect(recipe.appliances)
+					} else {
+						detected
+					}
+					matched.toImmutableSet()
+				}
 				CookingStepPage(
 					stepNumber = page + 1,
 					stepCount = recipe.steps.size,
 					step = recipe.steps[page],
 					isLastStep = page == recipe.steps.lastIndex,
+					appliances = stepAppliances,
 					timer = activeTimer.takeIf { page == pagerState.currentPage },
 					onDismissTimer = onDismissTimer,
 					onDurationClick = onDurationClick,

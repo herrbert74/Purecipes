@@ -20,10 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
+internal const val APPLIANCES_FIELD_TAG = "createRecipeAppliancesField"
 internal const val CUISINE_FIELD_TAG = "createRecipeCuisineField"
 internal const val DESCRIPTION_FIELD_TAG = "createRecipeDescriptionField"
 internal const val TITLE_FIELD_TAG = "createRecipeTitleField"
@@ -33,8 +37,9 @@ internal const val YIELDS_FIELD_TAG = "createRecipeYieldsField"
 internal const val YIELDS_ROW_TAG = "createRecipeYieldsRow"
 
 private const val CUISINE_ITEM_INDEX = 0
-private const val TOTAL_TIME_ITEM_INDEX = 1
-private const val YIELDS_ITEM_INDEX = 2
+private const val APPLIANCES_ITEM_INDEX = 1
+private const val TOTAL_TIME_ITEM_INDEX = 2
+private const val YIELDS_ITEM_INDEX = 3
 
 @Composable
 internal fun CreateRecipeAboutSection(
@@ -45,6 +50,7 @@ internal fun CreateRecipeAboutSection(
 	isSaving: Boolean,
 	imagePickerErrorMessage: String?,
 	selectedCuisine: Cuisine?,
+	selectedAppliances: ImmutableSet<Appliance>,
 	totalTimeInput: String,
 	yieldsInput: String,
 	isPrivate: Boolean,
@@ -55,6 +61,7 @@ internal fun CreateRecipeAboutSection(
 	onTitleChange: (String) -> Unit,
 	onDescriptionChange: (String) -> Unit,
 	onCuisineChange: (Cuisine?) -> Unit,
+	onAppliancesChange: (Set<Appliance>) -> Unit,
 	onTotalTimeChange: (String) -> Unit,
 	onYieldsChange: (String) -> Unit,
 	onIsPrivateChange: (Boolean) -> Unit,
@@ -64,6 +71,7 @@ internal fun CreateRecipeAboutSection(
 	totalTimeError: String? = null,
 ) {
 	var showCuisineSheet by remember { mutableStateOf(false) }
+	var showAppliancesSheet by remember { mutableStateOf(false) }
 	val colors = createRecipeSegmentedListColors()
 
 	Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
@@ -123,6 +131,25 @@ internal fun CreateRecipeAboutSection(
 				},
 				content = { Text(text = "Cuisine") },
 			)
+			SegmentedListItem(
+				onClick = { showAppliancesSheet = true },
+				shapes = ListItemDefaults.segmentedShapes(
+					index = APPLIANCES_ITEM_INDEX,
+					count = METADATA_GROUP_ITEM_COUNT,
+				),
+				modifier = Modifier.testTag(APPLIANCES_FIELD_TAG),
+				colors = colors,
+				trailingContent = {
+					Icon(
+						imageVector = AppIcons.KeyboardArrowRight,
+						contentDescription = null,
+					)
+				},
+				supportingContent = {
+					Text(text = formatSelectedAppliances(selectedAppliances))
+				},
+				content = { Text(text = "Appliances") },
+			)
 			ExpandableMetadataField(
 				index = TOTAL_TIME_ITEM_INDEX,
 				label = "Total time",
@@ -164,7 +191,21 @@ internal fun CreateRecipeAboutSection(
 			onDismiss = { showCuisineSheet = false },
 		)
 	}
+
+	if (showAppliancesSheet) {
+		CreateRecipeAppliancesPickerSheet(
+			selectedAppliances = selectedAppliances,
+			onAppliancesChange = onAppliancesChange,
+			onDismiss = { showAppliancesSheet = false },
+		)
+	}
 }
+
+private fun formatSelectedAppliances(selectedAppliances: Set<Appliance>): String =
+	when {
+		selectedAppliances.isEmpty() -> "Not set"
+		else -> selectedAppliances.sortedBy { it.displayName }.joinToString { it.displayName }
+	}
 
 @Composable
 private fun ExpandableMetadataField(
@@ -258,6 +299,7 @@ private fun CreateRecipeAboutSectionPreview() {
 			isSaving = false,
 			imagePickerErrorMessage = null,
 			selectedCuisine = Cuisine.ITALIAN,
+			selectedAppliances = persistentSetOf(Appliance.AIR_FRYER, Appliance.OVEN),
 			totalTimeInput = "25",
 			yieldsInput = "2 servings",
 			isPrivate = false,
@@ -268,6 +310,7 @@ private fun CreateRecipeAboutSectionPreview() {
 			onTitleChange = {},
 			onDescriptionChange = {},
 			onCuisineChange = {},
+			onAppliancesChange = {},
 			onTotalTimeChange = {},
 			onYieldsChange = {},
 			onIsPrivateChange = {},

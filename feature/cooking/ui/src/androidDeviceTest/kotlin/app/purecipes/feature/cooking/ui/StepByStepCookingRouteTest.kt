@@ -30,6 +30,7 @@ import app.purecipes.feature.recipedetails.domain.usecase.GetRecipeDetailsUseCas
 import app.purecipes.feature.recipedetails.domain.usecase.RecordRecipeActivityUseCase
 import app.purecipes.feature.sharing.domain.repository.ShareRepository
 import app.purecipes.feature.sharing.domain.usecase.ShareRecipeUseCase
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.CookbookListPage
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.domain.model.Cuisine
@@ -127,6 +128,46 @@ class StepByStepCookingRouteTest {
 
 		onNodeWithText("Find more recipes").performClick()
 		assertTrue(findMoreClicked)
+	}
+
+	@Test
+	fun cookingRouteDisplaysStepSpecificApplianceBadges() = runRecompositionTrackingUiTest {
+		val recipeWithAppliances = fakeRecipeDetails(
+			id = 15,
+			title = "Air Fried Crispy Tofu",
+			steps = listOf(
+				"Cut tofu into cubes and toss with cornstarch.",
+				"Preheat the air fryer to 200°C and cook for 15 minutes.",
+			),
+		).copy(appliances = setOf(Appliance.AIR_FRYER))
+		setTrackedContent {
+			PurecipesTheme {
+				StepByStepCookingRoute(
+					recipeId = 15,
+					canManageFavorites = true,
+					onBack = {},
+					onFindMoreRecipes = {},
+					viewModel = stepByStepCookingViewModelForTest(
+						recipeId = 15,
+						recipeDetailsRepository = FakeRecipeDetailsRepository(recipeWithAppliances),
+					),
+				)
+			}
+		}
+
+		onNodeWithTag(
+			testTag = "$COOKING_STEP_APPLIANCE_CHIP_PREFIX${Appliance.AIR_FRYER.name}",
+			useUnmergedTree = true,
+		).assertDoesNotExist()
+
+		onNodeWithText("Cut tofu into cubes and toss with cornstarch.").performTouchInput {
+			swipeLeft()
+		}
+
+		onNodeWithTag(
+			testTag = "$COOKING_STEP_APPLIANCE_CHIP_PREFIX${Appliance.AIR_FRYER.name}",
+			useUnmergedTree = true,
+		).assertIsDisplayed()
 	}
 
 	@Test

@@ -2,6 +2,7 @@
 @file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 @file:DependsOn("org.postgresql:postgresql:42.7.14")
 @file:Import("ScrapedIngredientLines.kt")
+@file:Import("ScrapedAppliances.kt")
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -79,7 +80,8 @@ data class RecipeData(
 	val cuisine: String?,
 	val category: String?,
 	val links: Map<String, String?>,
-	val sourceUrl: String
+	val sourceUrl: String,
+	val appliances: List<String> = emptyList(),
 ) {
 
 	fun toJsonObject(): JsonObject = buildRecipeJsonObject(this)
@@ -141,6 +143,12 @@ private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
 		put("category", JsonPrimitive(recipe.category ?: ""))
 		put("links", linksObject)
 		put("source_url", JsonPrimitive(recipe.sourceUrl))
+		put(
+			"appliances",
+			kotlinx.serialization.json.buildJsonArray {
+				recipe.appliances.forEach { add(JsonPrimitive(it)) }
+			},
+		)
 	}
 }
 
@@ -735,6 +743,20 @@ fun parseRecipe(rawJson: String): RecipeData? {
 	val instructionsText = root["instructions"]?.jsonPrimitive?.contentOrNull.orEmpty().ifBlank {
 		instructionList.joinToString("\n").trim()
 	}
+	val jsonAppliances = root["appliances"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }
+	val category = root["category"]?.jsonPrimitive?.contentOrNull
+	val categoryColumns = mapCategoryToColumns(category)
+	val appliances = if (!jsonAppliances.isNullOrEmpty()) {
+		jsonAppliances
+	} else {
+		extractScrapedAppliances(
+			instructionList = instructionList,
+			instructions = instructionsText,
+			title = title,
+			description = root["description"]?.jsonPrimitive?.contentOrNull,
+			cookingMethod = categoryColumns.cookingMethod,
+		)
+	}
 
 	return if (title.isBlank() || ingredientGroups.isEmpty()) {
 		null
@@ -752,9 +774,10 @@ fun parseRecipe(rawJson: String): RecipeData? {
 			nutrients = nutrients,
 			language = root["language"]?.jsonPrimitive?.contentOrNull ?: "en",
 			cuisine = root["cuisine"]?.jsonPrimitive?.contentOrNull,
-			category = root["category"]?.jsonPrimitive?.contentOrNull,
+			category = category,
 			links = links,
-			sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty()
+			sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty(),
+			appliances = appliances,
 		)
 	}
 }
@@ -842,10 +865,12 @@ fun ensureSchema(connection: Connection) {
 		is_private BOOLEAN NOT NULL DEFAULT FALSE,
 		scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		catalog_rank INTEGER
+		catalog_rank INTEGER,
+		appliances TEXT[]
 	);
 
 	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS catalog_rank INTEGER;
+	ALTER TABLE recipes ADD COLUMN IF NOT EXISTS appliances TEXT[];
 
 	CREATE TABLE IF NOT EXISTS ingredient_groups (
 		id SERIAL PRIMARY KEY,
@@ -1274,9 +1299,10 @@ private fun insertRecipeRecord(
 		dietary_preferences,
 		tags,
 		source_url,
-		measurement_system
+		measurement_system,
+		appliances
 	)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	RETURNING id
 	""".trimIndent(),
 ).use { ps ->
@@ -1296,6 +1322,7 @@ private fun insertRecipeRecord(
 	setTextArrayOrNull(ps, connection, 14, categoryColumns.tags)
 	ps.setString(15, recipe.sourceUrl)
 	ps.setString(16, measurementSystem)
+	setTextArrayOrNull(ps, connection, 17, recipe.appliances)
 	ps.executeQuery().use { rs ->
 		rs.next()
 		rs.getInt(1)

@@ -504,6 +504,7 @@ class FakePurecipesApi(
 			yields = yields,
 			cuisine = cuisine,
 			isPrivate = isPrivate,
+			appliances = appliances,
 		)
 	}
 

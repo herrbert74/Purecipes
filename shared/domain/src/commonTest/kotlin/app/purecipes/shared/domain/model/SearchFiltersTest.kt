@@ -16,8 +16,18 @@ class SearchFiltersTest {
 	}
 
 	@Test
+	fun `filters with appliances have isEmpty false`() {
+		SearchFilters(appliances = setOf(Appliance.AIR_FRYER)).isEmpty shouldBe false
+	}
+
+	@Test
 	fun `default filters are empty`() {
 		SearchFilters.default().isEmpty shouldBe true
+	}
+
+	@Test
+	fun `default filters have no appliances selected`() {
+		SearchFilters.default().appliances shouldBe emptySet()
 	}
 
 	@Test

@@ -27,6 +27,7 @@ data class RecipeDetails(
 	val calorieRange: CalorieRange? = null,
 	val dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	val tags: Set<String> = emptySet(),
+	val appliances: Set<Appliance> = emptySet(),
 	val nutrition: RecipeNutrition? = null,
 	val isPrivate: Boolean = false,
 )

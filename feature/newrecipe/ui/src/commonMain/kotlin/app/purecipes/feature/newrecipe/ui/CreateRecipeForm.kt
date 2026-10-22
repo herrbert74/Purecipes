@@ -11,15 +11,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.ui.component.NutritionSummaryCard
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
 internal fun CreateRecipeForm(
 	selectedSection: CreateRecipeSection,
 	selectedCuisine: Cuisine?,
+	selectedAppliances: ImmutableSet<Appliance>,
 	descriptionInput: String,
 	formErrorMessage: String?,
 	fieldErrors: CreateRecipeFieldErrors,
@@ -35,6 +39,7 @@ internal fun CreateRecipeForm(
 	nutritionEstimate: NutritionSummary?,
 	onClearImageClick: () -> Unit,
 	onCuisineChange: (Cuisine?) -> Unit,
+	onAppliancesChange: (Set<Appliance>) -> Unit,
 	onDescriptionChange: (String) -> Unit,
 	onImageUrlChange: (String) -> Unit,
 	onPickImageClick: (() -> Unit)?,
@@ -80,6 +85,7 @@ internal fun CreateRecipeForm(
 				isSaving = isSaving,
 				imagePickerErrorMessage = imagePickerErrorMessage,
 				selectedCuisine = selectedCuisine,
+				selectedAppliances = selectedAppliances,
 				totalTimeInput = totalTimeInput,
 				yieldsInput = yieldsInput,
 				isPrivate = isPrivate,
@@ -90,6 +96,7 @@ internal fun CreateRecipeForm(
 				onTitleChange = onTitleChange,
 				onDescriptionChange = onDescriptionChange,
 				onCuisineChange = onCuisineChange,
+				onAppliancesChange = onAppliancesChange,
 				onTotalTimeChange = onTotalTimeChange,
 				onYieldsChange = onYieldsChange,
 				onIsPrivateChange = onIsPrivateChange,
@@ -186,6 +193,7 @@ private fun CreateRecipeFormLightPreview() {
 				CreateRecipeForm(
 					selectedSection = CreateRecipeSection.About,
 					selectedCuisine = Cuisine.ITALIAN,
+					selectedAppliances = persistentSetOf(Appliance.AIR_FRYER, Appliance.OVEN),
 					descriptionInput = "A quick weeknight dinner with pantry staples.",
 					formErrorMessage = null,
 					fieldErrors = CreateRecipeFieldErrors(),
@@ -219,6 +227,7 @@ private fun CreateRecipeFormLightPreview() {
 					nutritionEstimate = null,
 					onClearImageClick = {},
 					onCuisineChange = {},
+					onAppliancesChange = {},
 					onDescriptionChange = {},
 					onImageUrlChange = {},
 					onPickImageClick = {},

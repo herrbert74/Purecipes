@@ -29,6 +29,7 @@ import app.purecipes.feature.newrecipe.domain.usecase.EstimateRecipeNutritionUse
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.SaveCreatedRecipeUseCase
 import app.purecipes.feature.subscription.domain.usecase.ObservePremiumStatusUseCase
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
@@ -176,6 +177,22 @@ class CreateRecipeScreenTest {
 		onAllNodesWithText("Italian", useUnmergedTree = true).fetchSemanticsNodes().size shouldBe 1
 		onNodeWithText("American", useUnmergedTree = true).performClick()
 		onNodeWithText("American").assertIsDisplayed()
+	}
+
+	@Test
+	fun createRecipeScreenSelectsAppliance() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				CreateRecipeScreen(
+					canUploadRecipes = true,
+					viewModel = createRecipeViewModelForTest(),
+				)
+			}
+		}
+
+		onNodeWithTag(APPLIANCES_FIELD_TAG).performScrollTo().performClick()
+		onNodeWithText("Air Fryer", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithTag(createRecipeApplianceItemTag(Appliance.AIR_FRYER)).performClick()
 	}
 
 	@Test

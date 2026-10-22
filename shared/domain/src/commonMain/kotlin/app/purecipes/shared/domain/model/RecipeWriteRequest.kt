@@ -13,4 +13,5 @@ data class RecipeWriteRequest(
 	val yields: String? = null,
 	val cuisine: Cuisine? = null,
 	val isPrivate: Boolean = false,
+	val appliances: Set<Appliance> = emptySet(),
 )

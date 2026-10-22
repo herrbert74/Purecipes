@@ -12,4 +12,5 @@ data class RecipeSummary(
 	val measurementSystem: MeasurementSystem? = null,
 	val isFavorite: Boolean = false,
 	val isPrivate: Boolean = false,
+	val appliances: Set<Appliance> = emptySet(),
 )

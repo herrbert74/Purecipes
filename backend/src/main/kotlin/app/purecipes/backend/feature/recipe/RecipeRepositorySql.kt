@@ -24,6 +24,8 @@ internal object RecipeRepositorySql {
 
 	const val TENTH_PARAMETER_INDEX = 10
 
+	const val ELEVENTH_PARAMETER_INDEX = 11
+
 	const val ADD_FAVORITE_SQL = """
 		INSERT INTO favorites (user_id, recipe_id)
 		VALUES (?, ?)
@@ -39,7 +41,7 @@ internal object RecipeRepositorySql {
 	"""
 
 	const val FAVORITES_PAGE_SQL = """
-		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private
+		SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private, r.appliances
 		FROM favorites f
 		INNER JOIN recipes r ON r.id = f.recipe_id
 		WHERE f.user_id = ?
@@ -61,7 +63,7 @@ internal object RecipeRepositorySql {
 	const val CREATED_RECIPES_SQL = """
 		SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
 		       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system,
-		       is_private, created_by_user_id
+		       is_private, created_by_user_id, appliances
 		FROM recipes
 		WHERE created_by_user_id = ?
 		ORDER BY created_at DESC, id DESC
@@ -79,7 +81,7 @@ internal object RecipeRepositorySql {
 	const val RECIPE_SQL = """
 		SELECT id, title, description, instructions, total_time, yields, image_url, cuisine,
 		       meal_type, difficulty, cooking_method, calorie_range, dietary_preferences, tags, measurement_system,
-		       is_private, created_by_user_id
+		       is_private, created_by_user_id, appliances
 		FROM recipes
 		WHERE id = ?
 	"""
@@ -87,9 +89,9 @@ internal object RecipeRepositorySql {
 	const val CREATE_RECIPE_SQL = """
 		INSERT INTO recipes (
 			title, description, instructions, total_time, yields, image_url, cuisine, measurement_system,
-			created_by_user_id, is_private
+			created_by_user_id, is_private, appliances
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	"""
 
 	const val UPDATE_RECIPE_SQL = """
@@ -102,7 +104,8 @@ internal object RecipeRepositorySql {
 			image_url = ?,
 			cuisine = ?,
 			measurement_system = ?,
-			is_private = ?
+			is_private = ?,
+			appliances = ?
 		WHERE id = ?
 	"""
 
