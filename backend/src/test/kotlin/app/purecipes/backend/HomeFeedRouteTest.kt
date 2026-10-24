@@ -2,6 +2,7 @@ package app.purecipes.backend
 
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.fake.FakeSessionService
+import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
 import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
@@ -1462,6 +1463,51 @@ class HomeFeedRouteTest {
 			authenticatedCollection.totalMatches shouldBe 1
 			authenticatedCollection.items.map { it.title } shouldContainExactly listOf("Vegan Breakfast 1")
 		}
+
+	@Test
+	fun `recently viewed, favorites, and editorial shelves include recipe appliances`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		seedAppUsersForSearchRouteTest(db)
+		insertHomeRecipe(
+			db,
+			HomeRecipeSeed(
+				id = 1,
+				title = "Crispy Fries",
+				createdAt = "2024-01-01 00:00:00",
+				imageUrl = PHOTO,
+				step = "Air fry",
+				appliances = listOf("AIR_FRYER", "OVEN"),
+			),
+		)
+		insertFavorite(db, recipeId = 1, createdAt = "2024-01-01 00:00:00")
+		insertRecipeActivity(db, recipeId = 1, event = "OPEN", createdAt = "2024-01-02 00:00:00")
+		insertHomeCollection(
+			db,
+			HomeCollectionSeed(
+				id = 1,
+				slug = "air-fryer-picks",
+				title = "Air Fryer Picks",
+				source = HomeCollectionSource.EDITORIAL.name,
+				position = 1,
+				recipePositions = listOf(1 to 1),
+			),
+		)
+		application { module(db = db, sessionService = signedInSessionService()) }
+
+		val feed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		val expectedAppliances = setOf(Appliance.AIR_FRYER, Appliance.OVEN)
+		feed.shelf(HomeShelfId.RECENTLY_VIEWED).recipes.single().appliances shouldBe expectedAppliances
+		feed.shelf(HomeShelfId.FAVORITES).recipes.single().appliances shouldBe expectedAppliances
+		feed.shelves.first { it.collectionSlug == "air-fryer-picks" }
+			.recipes.single().appliances shouldBe expectedAppliances
+
+		shelfPage(HomeShelfId.RECENTLY_VIEWED, pageNumber = 1, accessToken = "session-token")
+			.items.single().appliances shouldBe expectedAppliances
+		shelfPage(HomeShelfId.FAVORITES, pageNumber = 1, accessToken = "session-token")
+			.items.single().appliances shouldBe expectedAppliances
+		collectionPage(slug = "air-fryer-picks", pageNumber = 1, pageSize = 10, accessToken = "session-token")
+			.items.single().appliances shouldBe expectedAppliances
+	}
 }
 
 private fun HomeFeed.shelf(id: HomeShelfId) = shelves.first { shelf -> shelf.id == id }
@@ -1472,8 +1518,8 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 			"""
 				INSERT INTO recipes (
 					id, title, description, image_url, cuisine, meal_type, total_time, is_private, created_at,
-					created_by_user_id, dietary_preferences
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+					created_by_user_id, dietary_preferences, appliances
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			""".trimIndent(),
 		).use { statement ->
 			statement.setInt(1, seed.id)
@@ -1495,6 +1541,7 @@ private fun insertHomeRecipe(db: Db, seed: HomeRecipeSeed) {
 				statement.setLong(10, seed.createdByUserId)
 			}
 			statement.setArray(11, connection.createArrayOf("text", seed.dietaryPreferences.toTypedArray()))
+			statement.setArray(12, connection.createArrayOf("text", seed.appliances.toTypedArray()))
 			statement.executeUpdate()
 		}
 		if (seed.ingredient != null) {
@@ -1803,6 +1850,7 @@ private data class HomeRecipeSeed(
 	val isPrivate: Boolean = false,
 	val createdByUserId: Long? = null,
 	val dietaryPreferences: List<String> = emptyList(),
+	val appliances: List<String> = emptyList(),
 )
 
 private const val PHOTO = "https://example.com/photo.jpg"

@@ -361,6 +361,7 @@ class HomeFeedRepository(
 		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
+				r.appliances,
 				${recipeCompletenessScoreSql("r")} AS completeness_score,
 				r.created_at
 			FROM recipes r
@@ -398,6 +399,7 @@ class HomeFeedRepository(
 		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
+				r.appliances,
 				${recipeCompletenessScoreSql("r")} AS completeness_score,
 				r.created_at
 			FROM recipes r
