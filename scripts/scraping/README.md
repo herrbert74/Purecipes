@@ -10,7 +10,8 @@ Agent maintenance rules (schema sync, site patterns, validation) live in [`AGENT
 
 ```
 scripts/scraping/
-├── ScrapedIngredientLines.kt          # shared library (not runnable)
+├── ScrapedAppliances.kt               # shared appliance extraction library (not runnable)
+├── ScrapedIngredientLines.kt          # shared ingredient library (not runnable)
 ├── recipe_site_scraper.main.kts       # primary scraper (ongoing)
 ├── recipe_site_scraper_ingredient_test.main.kts
 └── oneoff/
@@ -18,11 +19,13 @@ scripts/scraping/
     ├── normalize_existing_ingredients.sh         # wrapper for the above
     ├── backfill_ingredient_requirements.main.kts # optional-flag backfill
     ├── backfill_ingredient_alternatives.main.kts # OR-group backfill (legacy / rule changes)
-    └── backfill_merge_incomplete_alternatives.main.kts # rejoin over-split OR groups
+    ├── backfill_merge_incomplete_alternatives.main.kts # rejoin over-split OR groups
+    └── backfill_recipe_appliances.main.kts       # backfill appliances column for existing recipes
 ```
 
 | File | Role | When to use | Examples |
 |------|------|-------------|----------|
+| [`ScrapedAppliances.kt`](ScrapedAppliances.kt) | **Shared library** — extract appliance names (`OVEN`, `AIR_FRYER`, `BLENDER`, etc.) from recipe instructions, titles, descriptions, and cooking methods | Not run directly. Imported by `recipe_site_scraper.main.kts` and `backfill_recipe_appliances.main.kts`. | `preheat oven to 180°C` → `OVEN`; `pulse in food processor` → `FOOD_PROCESSOR` |
 | [`ScrapedIngredientLines.kt`](ScrapedIngredientLines.kt) | **Shared library** — turn raw scraped ingredient strings into structured import rows (text cleanup, sanitization, optional/requirement detection, OR groups) | Not run directly. Imported by every `.main.kts` script below. | `60g Gruyère` → `60 g Gruyère`; `For the sauce:` → dropped; `parsley or tarragon` → two `ALTERNATIVE` rows |
 | [`recipe_site_scraper.main.kts`](recipe_site_scraper.main.kts) | **Primary scraper** — discover URLs, scrape sites, write JSON, import into Postgres | Normal day-to-day imports and re-imports. | `--mode web` + URL list; `--mode json` re-import from `{output}/recipes/` |
 | [`recipe_site_scraper_ingredient_test.main.kts`](recipe_site_scraper_ingredient_test.main.kts) | **Offline tests** for `ScrapedIngredientLines.kt` | After changing scraped-ingredient rules; before bulk imports or one-off backfills. | Asserts cases in that file (spacing, fractions, alternatives, splits) |
@@ -31,6 +34,24 @@ scripts/scraping/
 | [`oneoff/backfill_ingredient_requirements.main.kts`](oneoff/backfill_ingredient_requirements.main.kts) | **One-off backfill** — set `ingredients.requirement` on existing DB rows | Legacy data **or** after optional-detection rule changes. | `optional: parsley, to garnish` → `OPTIONAL`; `(optional)` / `to serve` suffixes |
 | [`oneoff/backfill_ingredient_alternatives.main.kts`](oneoff/backfill_ingredient_alternatives.main.kts) | **One-off backfill** — split combined `or` lines into `ALTERNATIVE` rows | Legacy data **or** after alternative/OR rule changes. | `parsley or tarragon` → two rows + `alternative_group_key`; `2 tbsp parsley or fresh tarragon` → shared quantity on both |
 | [`oneoff/backfill_merge_incomplete_alternatives.main.kts`](oneoff/backfill_merge_incomplete_alternatives.main.kts) | **One-off backfill** — rejoin over-split `ALTERNATIVE` clusters, then re-expand with current OR rules | After incomplete-first-side / join-continued-`or` guards; fixes display rows without reimport. | `2 tablespoons mini` + `…regular chocolate chips` → one joined line |
+| [`oneoff/backfill_recipe_appliances.main.kts`](oneoff/backfill_recipe_appliances.main.kts) | **One-off backfill** — populate `recipes.appliances` array from instructions and metadata | Legacy data or after appliance keyword rule changes. | Scans `instruction_steps` and updates `recipes.appliances` |
+
+### `ScrapedAppliances.kt`
+
+This is the **shared library for appliance detection** on imports and backfills. It is `@file:Import`‑ed by:
+
+- `recipe_site_scraper.main.kts`
+- `oneoff/backfill_recipe_appliances.main.kts`
+
+It extracts standard appliance identifiers from recipe instruction lines, instructions text, titles, descriptions, and cooking methods:
+
+- **Supported appliances:** `AIR_FRYER`, `BLENDER`, `DEEP_FRYER`, `FOOD_PROCESSOR`, `GRILL`, `HAND_MIXER`, `IMMERSION_BLENDER`, `JUICER`, `KETTLE`, `MICROWAVE`, `OVEN`, `PASTA_MAKER`, `PRESSURE_COOKER`, `SANDWICH_MAKER`, `SLOW_COOKER`, `SPICE_GRINDER`, `STEAMER`, `STOVETOP`, `WAFFLE_MAKER`.
+- **False positive guards:**
+  - Dutch oven mentions are stripped before oven keyword matching so Dutch oven pots on stovetops do not trigger `OVEN`.
+  - Immersion/stick/hand blenders are extracted as `IMMERSION_BLENDER` and stripped before matching standard `BLENDER`.
+  - Cooking method metadata (e.g. `BAKE`, `ROAST`, `AIR_FRY`, `GRILL`, `SLOW_COOK`) triggers corresponding appliances even if the appliance noun is omitted from the instructions.
+
+**New imports:** the main scraper automatically runs appliance detection on every recipe during web import or JSON re-import (when `appliances` is missing from the JSON). Detected appliances are written to `{id}-{slug}.json` and inserted into PostgreSQL `recipes.appliances`. You do **not** need a separate backfill for freshly scraped recipes.
 
 ### `ScrapedIngredientLines.kt`
 
@@ -93,13 +114,15 @@ Real-world OR example: [BBC Good Food — chicken with fennel](https://www.bbc.c
 | Ingredient text cleanup on import | `ScrapedIngredientLines.kt` (via main scraper) | Always applied at import time. | `60g` → `60 g` on every new row |
 | Optional/required flags on import | Same library + main scraper DB insert | New rows get `requirement` automatically. | `optional: …` → `OPTIONAL` |
 | OR groups on import | Same library + main scraper DB insert | New rows get `ALTERNATIVE` + `alternative_group_key`. | `parsley or tarragon` → two linked rows |
+| Appliance extraction on import | `ScrapedAppliances.kt` (via main scraper) | Always applied at import time; saved to JSON and DB `recipes.appliances`. | `preheat oven to 180°C` → `OVEN` |
 | Fix *old* or *out-of-date* ingredient text | `oneoff/normalize_existing_ingredients.main.kts` | Re-run when **normalization rules** change, not only for ancient imports. | After improving fraction or unit spacing logic |
 | Fix *old* or *out-of-date* optional flags | `oneoff/backfill_ingredient_requirements.main.kts` | DB only; does not touch JSON files. | After new garnish/`(optional)` detection rules |
 | Fix *old* or *out-of-date* OR groups | `oneoff/backfill_ingredient_alternatives.main.kts` | DB only; splits combined `or` lines. | After first deploy of alternative-ingredient support |
 | Fix *over-split* incomplete OR groups | `oneoff/backfill_merge_incomplete_alternatives.main.kts` | DB only; rejoins clusters that current rules keep as one line. | After incomplete-first-side / join-continued-`or` guards |
+| Fix *old* or *out-of-date* appliances | `oneoff/backfill_recipe_appliances.main.kts` | DB only; re-scans instructions and metadata to update `recipes.appliances` array. | After adding new appliance rules or keywords |
 | Verify scraped-ingredient rules | `recipe_site_scraper_ingredient_test.main.kts` | No database or network. | Run before bulk backfill or re-import |
 
-**One-off scripts are not only for “historical” data.** Use them whenever **existing** DB rows (or saved scrape JSON, for normalize) were produced under **older** `ScrapedIngredientLines` rules — for example after you ship better alternative parsing, optional detection, or unit/fraction normalization. Workflow: update rules and tests → dry-run backfill → apply → recalculate nutrition → run enrichment. Fresh scrapes after the rule change do not need backfill.
+**One-off scripts are not only for “historical” data.** Use them whenever **existing** DB rows (or saved scrape JSON, for normalize) were produced under **older** `ScrapedIngredientLines` or `ScrapedAppliances` rules — for example after you ship better alternative parsing, optional detection, unit/fraction normalization, or new appliance keywords. Workflow: update rules and tests → dry-run backfill → apply → recalculate nutrition → run enrichment. Fresh scrapes after the rule change do not need backfill.
 
 ---
 
@@ -120,9 +143,9 @@ You can also let the script discover URLs via the SimpleScraper API (`--simplesc
 1. Discover URLs (SimpleScraper API) or read URLs from a local file.
 2. Filter URLs to recipe-detail paths (site-specific regex in `knownWebsites`).
 3. Scrape recipe data with `recipe-scrapers` (Python, invoked from Kotlin).
-4. Process ingredient lines via `ScrapedIngredientLines.kt`.
-5. Save JSON under the output folder as `{DB_ID}-{slug}.json`.
-6. Insert into local PostgreSQL.
+4. Process ingredient lines via `ScrapedIngredientLines.kt` and detect appliances via `ScrapedAppliances.kt`.
+5. Save JSON under the output folder as `{DB_ID}-{slug}.json` (including `appliances` array).
+6. Insert into local PostgreSQL (including `recipes.appliances`).
 7. Optionally run `./gradlew calculateRecipeNutrition` for imported recipe IDs.
 
 **Modes:**
@@ -297,6 +320,21 @@ kotlin scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.main.kts \
   --dry-run true \
   --verbose true
 ```
+
+### Backfill recipe appliances (`backfill_recipe_appliances`)
+
+Database-only. Scans recipe instruction steps, titles, descriptions, and cooking methods across existing recipes in PostgreSQL and populates the `recipes.appliances` text array using `ScrapedAppliances.kt`. Use after introducing appliance support or updating appliance keyword rules.
+
+```bash
+kotlin scripts/scraping/oneoff/backfill_recipe_appliances.main.kts \
+  --db-name purecipes \
+  --db-user postgres \
+  --db-password postgres \
+  --dry-run true \
+  --verbose true
+```
+
+Remove `--dry-run true` to commit the updates to the database.
 
 ---
 
