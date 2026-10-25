@@ -94,6 +94,11 @@ If possible find a way to restart in the same request, for example by using ask 
 
 For issues, pull requests, checks, releases, and other GitHub tasks, use the GitHub CLI (`gh`). Do not use the `user-github` MCP server.
 
+## Rule: Branch naming and commit messages
+
+* **Branch naming:** Always prefix ticket branches with the GitHub issue number and an underscore (`<issue-number>_<short-slug>`, for example `389_home-shelves-appliances` or `358_appliances`). Do **not** use subfolder prefixes such as `fix/`, `bugfix/`, or `feature/`, even for bug fixes. (Release branches use the release skill convention `release/vX.Y.Z-changelog`.)
+* **Commit messages:** Prefix commits that close a ticket (or the final commit on a multi-commit issue branch) with `Fix #<issue-number>` so GitHub closes the issue automatically when the PR is merged (for example `Fix #389 Include recipe appliances in Recently Viewed, Favorites, and Editorial home shelves`).
+
 ## Rule: Use kotlin-result library
 
 Do not use try/catch structure for network calls or similar. Use the Outcome class instead, which is a type alias 
