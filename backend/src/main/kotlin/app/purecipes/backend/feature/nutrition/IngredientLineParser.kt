@@ -95,6 +95,12 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val leadingOrPackPattern = Regex(
+		"""^or\s+(?:$QUANTITY_PATTERN)\s*[x×*]\s*(?:$QUANTITY_PATTERN)\s*""" +
+			"""(?:${IngredientLineParserLexicon.TRAILING_MASS_UNITS})\b\s*""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val parentheticalPackAmountPattern = Regex(
 		"""^($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s+""" +
 			"""([a-zA-Z][a-zA-Z.\-]*)\s*$""",
@@ -605,11 +611,12 @@ internal object IngredientLineParser {
 		leadingParentheticalPattern.replaceFirst(value, "").trim()
 
 	private fun stripContainerWords(value: String): String {
-		val token = firstToken(value).lowercase()
+		val withoutOrPack = leadingOrPackPattern.replaceFirst(value.trim(), "").trim()
+		val token = firstToken(withoutOrPack).lowercase()
 		if (token !in IngredientLineParserLexicon.containerTokens) {
-			return value.trim()
+			return withoutOrPack
 		}
-		var rest = dropFirstWord(value)
+		var rest = dropFirstWord(withoutOrPack)
 		if (firstToken(rest).lowercase() == "of") {
 			rest = dropFirstWord(rest)
 		}

@@ -660,5 +660,8 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("Prepared levain") shouldBe "levain"
 		NutritionNameNormalizer.forLookup("Fermented starter") shouldBe "starter"
 		NutritionNameNormalizer.forLookup("Ripe rye starter") shouldBe "rye starter"
+		NutritionNameNormalizer.forLookup("Flavorless neutral oil") shouldBe "neutral oil"
+		NutritionNameNormalizer.forLookup("Stone-ground whole wheat flour") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("onion, finely diced and sautéed until golden") shouldBe "onion"
 	}
 }

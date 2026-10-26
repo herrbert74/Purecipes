@@ -54,6 +54,8 @@ internal object NutritionNameNormalizer {
 
 	private val BEFORE_MEASURING_PHRASE = Regex("""(?i)\bbefore\s+measuring\b""")
 
+	private val UNTIL_GOLDEN_PHRASE = Regex("""(?i)\buntil\s+golden(?:\s+brown)?\b""")
+
 	private val FOR_FLOURING_PHRASE = Regex("""(?i)\bfor\s+flouring\b""")
 
 	private val FOR_SHAPING_PHRASE = Regex("""(?i)\bfor\s+shaping\b""")
@@ -214,6 +216,7 @@ internal object NutritionNameNormalizer {
 
 	private val flourProteinStripTokens = setOf(
 		"protein",
+		"stone",
 	)
 
 	private val crustAnchors = setOf(
@@ -643,6 +646,7 @@ internal object NutritionNameNormalizer {
 		result = SORTED_OVER_PHRASE.replace(result, "")
 		result = VINE_RIPENED_PHRASE.replace(result, "")
 		result = BEFORE_MEASURING_PHRASE.replace(result, "")
+		result = UNTIL_GOLDEN_PHRASE.replace(result, "")
 		result = FOR_FLOURING_PHRASE.replace(result, "")
 		result = FOR_SHAPING_PHRASE.replace(result, "")
 		result = FOR_CAKE_PANS_PHRASE.replace(result, "")

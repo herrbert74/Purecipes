@@ -1262,5 +1262,11 @@ class IngredientLineParserTest {
 		carawaySeeds.unit shouldBe "tsp"
 		carawaySeeds.parsedName shouldBe "Caraway seeds"
 		carawaySeeds.isMeasurable shouldBe true
+
+		val salmonCans = IngredientLineParser.parse("1 x 416 g or 2 x 213 g cans red or pink wild Alaska salmon")
+		salmonCans.quantity shouldBe BigDecimal("416")
+		salmonCans.unit shouldBe "g"
+		salmonCans.parsedName shouldBe "red or pink wild Alaska salmon"
+		salmonCans.isMeasurable shouldBe true
 	}
 }
