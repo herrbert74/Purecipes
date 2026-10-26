@@ -647,4 +647,18 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("Lukewarm milk") shouldBe "milk"
 		NutritionNameNormalizer.forLookup("Whole milk, lukewarm") shouldBe "whole milk"
 	}
+
+	@Test
+	fun forLookupStripsStarterStateModifiersFromSourdoughLevainAndMadre() {
+		NutritionNameNormalizer.forLookup("Active sourdough starter") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Sourdough starter culture") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Mature sourdough starter") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Stiff sourdough starter") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Active pasta madre") shouldBe "pasta madre"
+		NutritionNameNormalizer.forLookup("Active pasta madre / stiff sourdough starter") shouldBe
+			"pasta madre sourdough starter"
+		NutritionNameNormalizer.forLookup("Prepared levain") shouldBe "levain"
+		NutritionNameNormalizer.forLookup("Fermented starter") shouldBe "starter"
+		NutritionNameNormalizer.forLookup("Ripe rye starter") shouldBe "rye starter"
+	}
 }

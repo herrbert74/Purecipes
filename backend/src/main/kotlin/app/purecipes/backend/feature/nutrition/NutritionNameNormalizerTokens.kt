@@ -264,6 +264,7 @@ internal object NutritionNameNormalizerTokens {
 		"fridge",
 		"from",
 		"frying",
+		"fully",
 		"garnish",
 		"garnishing",
 		"glue",
@@ -277,6 +278,7 @@ internal object NutritionNameNormalizerTokens {
 		"heavier",
 		"high",
 		"holes",
+		"hour",
 		"hours",
 		"husk",
 		"husked",
@@ -530,5 +532,24 @@ internal object NutritionNameNormalizerTokens {
 		"whole",
 		"wholemeal",
 		"yellow",
+	)
+
+	val starterAnchorTokens = setOf(
+		"discard",
+		"levain",
+		"madre",
+		"sourdough",
+		"starter",
+	)
+
+	val starterModifierTokens = setOf(
+		"active",
+		"culture",
+		"fed",
+		"fermented",
+		"liquid",
+		"mature",
+		"refreshed",
+		"stiff",
 	)
 }

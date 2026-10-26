@@ -239,6 +239,8 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val ROMAINE_LETTUCE_DESCRIPTION = "Lettuce, cos or romaine, raw"
 	internal const val ROMANO_DESCRIPTION = "Cheese, romano"
 	internal const val ROSEMARY_DESCRIPTION = "Rosemary, fresh"
+	internal const val RYE_FLOUR_DARK_DESCRIPTION = "Rye flour, dark"
+	internal const val RYE_FLOUR_MEDIUM_DESCRIPTION = "Rye flour, medium"
 	internal const val SALAMI_DESCRIPTION = "Salami, dry or hard, pork"
 	internal const val SALT_DESCRIPTION = "Salt, table"
 	internal const val SELF_RISING_FLOUR_DESCRIPTION = "Wheat flour, white, all-purpose, self-rising, enriched"

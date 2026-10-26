@@ -704,6 +704,7 @@ internal object NutritionNameNormalizer {
 		result = stripSplitPrep(result)
 		result = stripBunsWhenRolls(result)
 		result = stripFlourProtein(result)
+		result = stripStarterModifiers(result)
 		result = stripCrustDescriptors(result)
 		result = stripFishPrep(result)
 		result = stripPoultryPrep(result)
@@ -877,6 +878,16 @@ internal object NutritionNameNormalizer {
 		val canStrip = tokens.size >= 2 &&
 			tokens.any { token -> token in flourAnchors }
 		return if (canStrip) stripWhenOthersRemain(tokens, flourProteinStripTokens) else tokens
+	}
+
+	private fun stripStarterModifiers(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			tokens.any { token -> token in NutritionNameNormalizerTokens.starterAnchorTokens }
+		return if (canStrip) {
+			stripWhenOthersRemain(tokens, NutritionNameNormalizerTokens.starterModifierTokens)
+		} else {
+			tokens
+		}
 	}
 
 	private fun stripFishPrep(tokens: List<String>): List<String> {

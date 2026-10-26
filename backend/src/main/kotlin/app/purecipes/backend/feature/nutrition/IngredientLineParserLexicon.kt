@@ -341,8 +341,12 @@ internal object IngredientLineParserLexicon {
 		"bean",
 		"cornmeal",
 		"cranberries",
+		"levain",
+		"madre",
 		"peas",
 		"rice",
+		"sourdough",
+		"starter",
 		"sugar",
 	)
 

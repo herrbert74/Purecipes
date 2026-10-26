@@ -55,6 +55,7 @@ internal object IngredientVocabulary {
 		"from stage ",
 		"stage 1 mixture",
 		"stage 2 mixture",
+		"until tripling",
 	)
 
 	private val ignorableLineExactFilters = setOf(

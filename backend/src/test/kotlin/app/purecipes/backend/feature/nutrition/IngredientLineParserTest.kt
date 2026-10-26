@@ -1233,5 +1233,10 @@ class IngredientLineParserTest {
 
 		val bigaReference = IngredientLineParser.parse("All of the Biga (from above)")
 		bigaReference.isMeasurable shouldBe false
+
+		val madreRefreshment = IngredientLineParser.parse(
+			"Pasta Madre (refreshed 2–3 times at a 1:1:0.45 ratio until tripling consistently)",
+		)
+		madreRefreshment.isMeasurable shouldBe false
 	}
 }

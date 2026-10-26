@@ -27,6 +27,8 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BL
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUEBERRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUE_CHEESE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREADCRUMB_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREAD_FLOUR_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREAD_FLOUR_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BULGUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BURGER_BUN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BUTTER_BEAN_DESCRIPTION
@@ -172,6 +174,8 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RI
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROMAINE_LETTUCE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RYE_FLOUR_DARK_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RYE_FLOUR_MEDIUM_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALMON_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALSA_VERDE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALTED_COD_DESCRIPTION
@@ -1297,6 +1301,133 @@ internal object NutritionSeedAliasesPart4 {
 		NutritionSeedAlias(
 			"white hominy",
 			HOMINY_WHITE_DESCRIPTION
+		),
+		NutritionSeedAlias(
+			"active apple yeast",
+			WATER_DESCRIPTION,
+			WATER_FALLBACK_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"active levain",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"active pasta madre",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"active pasta madre stiff sourdough starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"active sourdough starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"active sourdough starter levain",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"fermented starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"levain",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"madre",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"mature sourdough starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"pasta madre",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"pasta madre sourdough starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"ripe rye starter",
+			RYE_FLOUR_DARK_DESCRIPTION,
+			RYE_FLOUR_MEDIUM_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"rye levain",
+			RYE_FLOUR_DARK_DESCRIPTION,
+			RYE_FLOUR_MEDIUM_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"rye sourdough starter",
+			RYE_FLOUR_DARK_DESCRIPTION,
+			RYE_FLOUR_MEDIUM_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"rye starter",
+			RYE_FLOUR_DARK_DESCRIPTION,
+			RYE_FLOUR_MEDIUM_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"sourdough discard",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"sourdough levain",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"sourdough starter culture",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"sourdough starter levain",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"stiff sourdough starter",
+			BREAD_FLOUR_DESCRIPTION,
+			BREAD_FLOUR_FALLBACK_DESCRIPTION,
+			FLOUR_DESCRIPTION,
 		),
 	)
 }
