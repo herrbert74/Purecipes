@@ -158,10 +158,19 @@ You can also let the script discover URLs via the SimpleScraper API (`--simplesc
 | Site | Notes |
 |------|--------|
 | allrecipes.com | |
+| bbc.co.uk/food (`bbcfood`) | |
+| bbcgoodfood.com (`bbcgoodfood`) | |
 | bonappetit.com | |
+| breadtopia.com (`breadtopia`) | |
 | epicurious.com | |
 | foodnetwork.co.uk | |
+| greatbritishrecipes.com (`greatbritishrecipes`) | |
+| jamieoliver.com (`jamieoliver`) | |
+| maryberry.co.uk (`maryberry`) | |
 | mob.co.uk | |
+| natashasbaking.com (`natashasbaking`) | |
+| paulhollywood.com (`paulhollywood`) | |
+| prue-leith.com (`prueleith`) | |
 | seriouseats.com | |
 
 Each site has a URL regex in `knownWebsites`. Override with `--recipe-url-pattern` if needed.

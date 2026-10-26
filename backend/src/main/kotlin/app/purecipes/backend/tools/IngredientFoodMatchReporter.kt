@@ -7,9 +7,18 @@ import java.math.BigDecimal
 import java.sql.ResultSet
 import javax.sql.DataSource
 
+internal data class RecipeReference(
+	val recipeId: Int,
+	val recipeTitle: String,
+) {
+
+	fun format(): String = "Recipe $recipeId: $recipeTitle"
+}
+
 internal data class FrequencyCount(
 	val label: String,
 	val count: Int,
+	val recipes: List<RecipeReference> = emptyList(),
 )
 
 internal data class IngredientFoodMatchReportData(
@@ -56,19 +65,19 @@ internal class IngredientFoodMatchReporter(
 			neverParsedNames = frequencyCounts(
 				classified,
 				IngredientFoodMatchGapKind.NEVER_PARSED,
-			) { it.label },
+			),
 			notMeasurableNames = frequencyCounts(
 				classified,
 				IngredientFoodMatchGapKind.NOT_MEASURABLE,
-			) { it.label },
+			),
 			unmatchedNames = frequencyCounts(
 				classified,
 				IngredientFoodMatchGapKind.NO_FOOD,
-			) { it.label },
+			),
 			unresolvedGramsNames = frequencyCounts(
 				classified,
 				IngredientFoodMatchGapKind.NO_GRAMS,
-			) { it.label },
+			),
 			totalRecipes = recipes.size,
 			calculatedNutritionCount = recipes.count { it.calculationSource == CALCULATION_SOURCE_CALCULATED },
 			scrapedNutritionCount = recipes.count { it.calculationSource == CALCULATION_SOURCE_SCRAPED },
@@ -183,6 +192,10 @@ internal class IngredientFoodMatchReporter(
 			kind = kind,
 			label = label,
 			gramsSource = row.gramsSource,
+			recipe = RecipeReference(
+				recipeId = row.recipeId,
+				recipeTitle = row.recipeTitle,
+			),
 		)
 	}
 
@@ -194,6 +207,7 @@ internal class IngredientFoodMatchReporter(
 		const val INGREDIENT_ROWS_SQL = """
 			SELECT
 				r.id AS recipe_id,
+				r.title AS recipe_title,
 				i.ingredient AS ingredient_text,
 				i.requirement,
 				i.alternative_group_key,
@@ -238,6 +252,7 @@ private enum class IngredientFoodMatchGapKind {
 
 private data class IngredientFoodMatchRow(
 	val recipeId: Int,
+	val recipeTitle: String,
 	val ingredientText: String,
 	val requirement: String,
 	val alternativeGroupKey: Int?,
@@ -262,6 +277,7 @@ private data class ClassifiedIngredientLine(
 	val kind: IngredientFoodMatchGapKind,
 	val label: String,
 	val gramsSource: String?,
+	val recipe: RecipeReference,
 )
 
 private fun countsTowardMatching(
@@ -273,6 +289,7 @@ private fun countsTowardMatching(
 		val groupKey = row.alternativeGroupKey ?: return true
 		chosenAlternativeKeysByRecipe[row.recipeId]?.get(groupKey) === row
 	}
+
 	else -> true
 }
 
@@ -289,18 +306,17 @@ private fun unresolvedGramsLabel(parsedName: String, unit: String?): String =
 private fun frequencyCounts(
 	lines: List<ClassifiedIngredientLine>,
 	kind: IngredientFoodMatchGapKind,
-	labelSelector: (ClassifiedIngredientLine) -> String,
 ): List<FrequencyCount> =
-	frequencyCounts(
-		lines.filter { it.kind == kind }.map(labelSelector),
-	)
-
-private fun frequencyCounts(labels: List<String>): List<FrequencyCount> =
-	labels
-		.filter { it.isNotBlank() }
-		.groupingBy { it }
-		.eachCount()
-		.map { (label, count) -> FrequencyCount(label = label, count = count) }
+	lines
+		.filter { it.kind == kind && it.label.isNotBlank() }
+		.groupBy { it.label }
+		.map { (label, matchingLines) ->
+			FrequencyCount(
+				label = label,
+				count = matchingLines.size,
+				recipes = matchingLines.map(ClassifiedIngredientLine::recipe),
+			)
+		}
 		.sortedWith(compareByDescending<FrequencyCount> { it.count }.thenBy { it.label })
 
 private fun StringBuilder.appendFrequencySection(title: String, rows: List<FrequencyCount>) {
@@ -310,7 +326,14 @@ private fun StringBuilder.appendFrequencySection(title: String, rows: List<Frequ
 	appendLine()
 	appendLine("$title (${rows.size} unique)")
 	rows.forEach { row ->
-		appendLine("  ${row.count} x ${row.label}")
+		if (row.count == 1 && row.recipes.size == 1) {
+			appendLine("  ${row.count} x ${row.label} (${row.recipes.single().format()})")
+		} else {
+			appendLine("  ${row.count} x ${row.label}")
+			row.recipes.forEach { recipe ->
+				appendLine("    ${recipe.format()}")
+			}
+		}
 	}
 }
 
@@ -329,6 +352,7 @@ private fun ResultSet.toIngredientFoodMatchRow(): IngredientFoodMatchRow {
 	val ingredientText = getString("ingredient_text")?.trim().orEmpty()
 	return IngredientFoodMatchRow(
 		recipeId = getInt("recipe_id"),
+		recipeTitle = getString("recipe_title") ?: "",
 		ingredientText = ingredientText,
 		requirement = getString("requirement") ?: "REQUIRED",
 		alternativeGroupKey = getNullableInt("alternative_group_key"),

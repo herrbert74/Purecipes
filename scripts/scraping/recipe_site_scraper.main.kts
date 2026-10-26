@@ -6,10 +6,12 @@
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -58,6 +60,70 @@ val knownWebsites = mapOf(
 		url = "https://www.mob.co.uk",
 		recipePattern = Regex("^/recipes/(?!collections|categories)[^/]+$"),
 	),
+	"natashasbaking" to SiteConfig(
+		url = "https://natashasbaking.com",
+		recipePattern = Regex(
+			"^/(?!category/|tag/|author/|page/|feed/|comments/|wp-|xmlrpc|" +
+				"shop/?$|cart/?$|checkout/?$|courses/?$|privacypolicy/?$|" +
+				"terms-conditions/?$|sourdough-guide/?$|panettone/?$|" +
+				"croissant-recipes-and-techniques/?$)[a-z0-9-]+/?$",
+		),
+	),
+	"breadtopia" to SiteConfig(
+		url = "https://breadtopia.com",
+		recipePattern = Regex(
+			"^/(?!store(?:/|$)|faq(?:/|$)|category/|tag/|author/|page/|feed/|" +
+				"comments/|wp-|xmlrpc|blog/?$|contact/?$|about/?$|my-account(?:/|$)|" +
+				"my-lists(?:/|$)|track-order/?$|wishlist(?:/|$)|starter/?$|" +
+				"regenerative-agriculture/?$|kudos/?$|breadtopia-rewards-program/?$|" +
+				"how-to-bake-bread/?$|masienda/?$|check-my-gift-certificate/?$|" +
+				"sdbook/?$|real-bread-bakers/?$|newsletter-signup/?$|wholesale/?$|" +
+				"gluten-free/?$|live-sourdough-starter/?$|clay-baker/?$)[a-z0-9-]+/?$",
+		),
+	),
+	"greatbritishrecipes" to SiteConfig(
+		url = "https://greatbritishrecipes.com",
+		recipePattern = Regex(
+			"^/(?!recipes/?$|about-great-british-recipes/?$|subscribe/?$|" +
+				"suscribe/?$|privacy-policy(?:-2)?/?$|disclosure/?$|contact/?$|" +
+				"feed/|comments/|wp-|xmlrpc|category/|tag/|author/|page/)" +
+				"(?![a-z0-9-]+-recipes/?$)[a-z0-9-]+/?$",
+		),
+	),
+	"bbcgoodfood" to SiteConfig(
+		url = "https://www.bbcgoodfood.com",
+		recipePattern = Regex("^/recipes/(?!collection/|category/)[^/]+/?$"),
+	),
+	"bbcfood" to SiteConfig(
+		url = "https://www.bbc.co.uk/food",
+		recipePattern = Regex("^/food/recipes/[^/]+/?$"),
+	),
+	"jamieoliver" to SiteConfig(
+		url = "https://www.jamieoliver.com/recipes/all",
+		recipePattern = Regex(
+			"^/recipes/(?!all/?$|new/?$|books/|course/|dishtype/|occasion/|" +
+				"special-diets/|family-favourites/|tv/|world/|ingredients?/)" +
+				"[^/]+/[^/]+/?$",
+		),
+	),
+	"maryberry" to SiteConfig(
+		url = "https://www.maryberry.co.uk/recipes",
+		recipePattern = Regex("^/recipes/recipe/[^/]+/?$"),
+	),
+	"paulhollywood" to SiteConfig(
+		url = "https://www.paulhollywood.com/recipes-1",
+		recipePattern = Regex("^/post/[^/]+/?$"),
+	),
+	"prueleith" to SiteConfig(
+		url = "https://prue-leith.com/cooking",
+		recipePattern = Regex(
+			"^/(?!cooking(?:/|$)|tv-show(?:/|$)|home-garden(?:/|$)|fashion(?:/|$)|" +
+				"travel(?:/|$)|trueprue(?:/|$)|books(?:/|$)|products(?:/|$)|" +
+				"search(?:/|$)|terms-and-conditions/?$|privacy-policy/?$|contact/?$|" +
+				"uncategorized(?:/|$)|feed/|comments/|wp-|xmlrpc|category/|tag/|" +
+				"author/|page/)[a-z0-9-]+/?$",
+		),
+	),
 )
 
 val json = Json {
@@ -89,7 +155,7 @@ data class RecipeData(
 
 private fun buildIngredientGroupsJson(
 	ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>,
-): JsonArray = kotlinx.serialization.json.buildJsonArray {
+): JsonArray = buildJsonArray {
 	ingredientGroups.forEach { (groupName, items) ->
 		add(
 			buildJsonObject {
@@ -101,7 +167,7 @@ private fun buildIngredientGroupsJson(
 }
 
 private fun buildIngredientItemsJson(items: List<ProcessedScrapedIngredient>): JsonArray =
-	kotlinx.serialization.json.buildJsonArray {
+	buildJsonArray {
 		items.forEach { ingredient ->
 			add(
 				buildJsonObject {
@@ -117,7 +183,7 @@ private fun buildIngredientItemsJson(items: List<ProcessedScrapedIngredient>): J
 
 private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
 	val ingredientGroupsArray = buildIngredientGroupsJson(recipe.ingredientGroups)
-	val instructionListArray = kotlinx.serialization.json.buildJsonArray {
+	val instructionListArray = buildJsonArray {
 		recipe.instructionList.forEach { add(JsonPrimitive(it)) }
 	}
 	val nutrientsObject = buildJsonObject {
@@ -145,7 +211,7 @@ private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
 		put("source_url", JsonPrimitive(recipe.sourceUrl))
 		put(
 			"appliances",
-			kotlinx.serialization.json.buildJsonArray {
+			buildJsonArray {
 				recipe.appliances.forEach { add(JsonPrimitive(it)) }
 			},
 		)
@@ -482,7 +548,174 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 	import re
 	import sys
 	import urllib.request
+	from urllib.parse import urljoin, urlparse
+	from bs4 import BeautifulSoup
 	from recipe_scrapers import scrape_html
+
+	def parse_minutes(text):
+		if not text:
+			return None
+		t = text.lower()
+		hm = re.search(r'(\d+)\s*(?:hours?|hrs?|h\b)', t)
+		mm = re.search(r'(\d+)\s*(?:minutes?|mins?|m\b)', t)
+		total = (int(hm.group(1)) * 60 if hm else 0) + (int(mm.group(1)) if mm else 0)
+		return total if total > 0 else None
+
+	def fallback_scrape_dom(html, url):
+		soup = BeautifulSoup(html, "html.parser")
+		host = urlparse(url).netloc.replace("www.", "").lower()
+		h1 = soup.find("h1")
+		title = h1.get_text(" ", strip=True) if h1 else ""
+		og_img = soup.find("meta", property="og:image")
+		image = urljoin(url, og_img["content"].strip()) if og_img and og_img.get("content") else None
+		yields = None
+		prep_time = None
+		cook_time = None
+		category = None
+		ingredient_groups = []
+		instruction_list = []
+
+		if "maryberry.co.uk" in host:
+			im_div = soup.select_one(".RecipeOverviewGrid .ImCellIm")
+			if im_div and im_div.get("style"):
+				m = re.search(r"url\(['\"]?([^'\")]+)['\"]?\)", im_div["style"])
+				if m:
+					image = urljoin(url, m.group(1))
+			active_cats = [
+				a.get_text(" ", strip=True)
+				for a in soup.select(".CourseList a.Active")
+				if a.get_text(strip=True)
+			]
+			if active_cats:
+				category = ", ".join(active_cats)
+			for label in soup.select(".RecipeMeta .Label"):
+				txt = label.get_text(" ", strip=True)
+				if txt.lower().startswith("serves:"):
+					yields = txt.split(":", 1)[1].strip() or txt
+				elif txt.lower().startswith("cook time:"):
+					cook_time = parse_minutes(txt)
+				elif txt.lower().startswith("prep time:"):
+					prep_time = parse_minutes(txt)
+			ul = soup.select_one("ul.IngredientsList")
+			if ul:
+				cur_name, cur_items = None, []
+				for li in ul.find_all("li", recursive=False):
+					if "Heading" in (li.get("class") or []):
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						cur_name = li.get_text(" ", strip=True)
+					else:
+						val = li.get_text(" ", strip=True)
+						if val:
+							cur_items.append(val)
+				if cur_items:
+					ingredient_groups.append((cur_name, cur_items))
+			for li in soup.select(".NumberedList li.Item"):
+				divs = li.find_all("div", recursive=False)
+				step_txt = divs[-1].get_text(" ", strip=True) if divs else li.get_text(" ", strip=True)
+				if step_txt:
+					instruction_list.append(step_txt)
+		elif "paulhollywood.com" in host:
+			article = soup.find("article") or soup.find("main") or soup
+			mode, cur_name, cur_items = None, None, []
+			for el in article.find_all(["h2", "h3", "h4", "p", "li"]):
+				txt = el.get_text(" ", strip=True).lstrip("\ufeff").strip()
+				if not txt:
+					continue
+				low = txt.lower()
+				if el.name in ("h2", "h3"):
+					if low == "ingredients":
+						mode = "ing"
+						continue
+					if low in ("method", "instructions"):
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						mode = "inst"
+						continue
+					if mode is not None:
+						break
+				elif mode is None and el.name in ("h4", "p") and len(txt) < 40:
+					if any(k in low for k in ("serves", "makes", "slices", "rolls", "buns", "loaf", "loaves", "portions")):
+						yields = txt
+				elif mode == "ing":
+					if el.name == "h4":
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						cur_name = txt
+					elif el.name in ("p", "li") and not (el.name == "p" and el.find_parent("li") is not None):
+						cur_items.append(txt)
+				elif mode == "inst":
+					if el.name == "li":
+						instruction_list.append(txt)
+					elif el.name == "p" and el.find_parent("li") is None and not low.startswith("find more recipes"):
+						instruction_list.append(txt)
+			if cur_items:
+				ingredient_groups.append((cur_name, cur_items))
+		elif "prue-leith.com" in host:
+			article = soup.find("article") or soup.find("main")
+			if article:
+				cat_el = article.select_one(".catergory, .category")
+				if cat_el:
+					category = cat_el.get_text(" ", strip=True)
+				has_ing_marker, cur_name, cur_items = False, None, []
+				for el in article.find_all(["p", "ul", "ol", "h2", "h3", "h4"]):
+					if el.find_parent(["ul", "ol"]) is not None:
+						continue
+					txt = el.get_text(" ", strip=True)
+					low = txt.lower()
+					if el.name == "p":
+						if low.startswith("prep time"):
+							prep_time = parse_minutes(txt)
+						elif low.startswith("cook time"):
+							cook_time = parse_minutes(txt)
+						elif low.startswith("serves") or low.startswith("makes"):
+							yields = txt
+						elif "ingredients" in low and len(txt) < 40:
+							has_ing_marker = True
+						elif len(txt) < 60 and (el.find("em") or el.find("strong")):
+							if cur_items:
+								ingredient_groups.append((cur_name, cur_items))
+								cur_items = []
+							cur_name = txt.rstrip(":")
+					elif el.name == "ul":
+						items = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
+						if items and (has_ing_marker or prep_time or cook_time or yields):
+							cur_items.extend(items)
+					elif el.name == "ol":
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						steps = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
+						instruction_list.extend(steps)
+				if cur_items:
+					ingredient_groups.append((cur_name, cur_items))
+
+		if not ingredient_groups:
+			return None
+		total_time = ((prep_time or 0) + (cook_time or 0)) or None
+		return {
+			"title": title or "Untitled Recipe",
+			"ingredient_groups": [
+				{"name": (n or ""), "ingredients": lst}
+				for (n, lst) in ingredient_groups
+			],
+			"instruction_list": instruction_list,
+			"instructions": "\n".join(instruction_list).strip(),
+			"total_time": total_time,
+			"prep_time": prep_time,
+			"cook_time": cook_time,
+			"yields": yields,
+			"image": image,
+			"nutrients": {},
+			"language": "en",
+			"cuisine": None,
+			"category": category,
+			"links": {"canonical": url},
+			"source_url": url
+		}
 
 	url = sys.argv[1]
 	try:
@@ -495,7 +728,14 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 			"",
 			html,
 		)
-		s = scrape_html(html, org_url=url)
+		try:
+			s = scrape_html(html, org_url=url, supported_only=False)
+		except Exception:
+			fallback_payload = fallback_scrape_dom(html, url)
+			if fallback_payload is not None:
+				print(json.dumps(fallback_payload, ensure_ascii=False))
+				raise SystemExit(0)
+			raise
 
 		def safe(name, default=None):
 			fn = getattr(s, name, None)
@@ -787,7 +1027,7 @@ private fun parseIngredientGroupsFromRoot(
 ): List<Pair<String?, List<ProcessedScrapedIngredient>>> =
 	root["ingredient_groups"]?.jsonArray
 		?.mapNotNull(::parseStoredIngredientGroupJson)
-		?.flatMap { (name, items) -> processScrapedIngredientGroups(name, items) }
+		?.flatMap { (name, items) -> processStoredScrapedIngredientGroups(name, items) }
 		?.filter { (_, items) -> items.isNotEmpty() }
 		?: emptyList()
 
@@ -796,7 +1036,7 @@ private fun parseStoredIngredientGroupJson(
 ): Pair<String?, List<ProcessedScrapedIngredient>>? =
 	when (groupEl) {
 		is JsonObject -> parseIngredientGroupObject(groupEl)
-		is kotlinx.serialization.json.JsonArray -> parseIngredientGroupArray(groupEl)
+		is JsonArray -> parseIngredientGroupArray(groupEl)
 		else -> null
 	}
 
@@ -811,7 +1051,7 @@ private fun parseIngredientGroupObject(
 }
 
 private fun parseIngredientGroupArray(
-	groupArray: kotlinx.serialization.json.JsonArray,
+	groupArray: JsonArray,
 ): Pair<String?, List<ProcessedScrapedIngredient>>? {
 	val name = groupArray.getOrNull(0)?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
 	val items = groupArray.getOrNull(1)?.jsonArray
@@ -1476,7 +1716,7 @@ fun calculateNutritionForRecipes(config: Config, recipeIds: List<Int>) {
 		if (repoRoot == null) {
 			println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
 		} else {
-			println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+			println("Skipping nutrition calculation: gradlew not found at ${gradlew?.path}")
 		}
 		return
 	}
