@@ -4,7 +4,7 @@
 @file:Import("../ScrapedIngredientLines.kt")
 
 // Cache-bust when ScrapedIngredientLines.kt changes (invalidates kotlin-main-kts jars).
-// backfill-merge-incomplete-v4
+// backfill-merge-incomplete-v5
 
 import java.sql.Connection
 import java.sql.DriverManager
@@ -153,6 +153,51 @@ fun loadIngredientsByGroup(connection: Connection): Map<Int, List<IngredientRow>
 		}
 	}.groupBy { row -> row.groupId }
 
+private val legacyQuantityPrefixRegex = Regex(
+	pattern = """^((?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)(?:\s+\w+)?(?:\s+of)?\s+)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val legacyOfPrefixRegex = Regex(
+	pattern = """^(.*\bof\s+)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+private val trailingParentheticalRegex = Regex(
+	pattern = """\s*\([^)]+\)\s*$""",
+)
+
+fun reconstructJoinedAlternativeText(cluster: List<IngredientRow>): String {
+	if (cluster.isEmpty()) {
+		return ""
+	}
+	val firstRaw = cluster.first().text.trim()
+	val lastRaw = cluster.last().text.trim()
+	val sharedSuffix = trailingParentheticalRegex.find(lastRaw)?.value
+	val firstText = if (
+		cluster.size > 1 &&
+		sharedSuffix != null &&
+		firstRaw.endsWith(sharedSuffix)
+	) {
+		firstRaw.removeSuffix(sharedSuffix).trim()
+	} else {
+		firstRaw
+	}
+	val sharedPrefix = legacyQuantityPrefixRegex.find(firstText)?.value
+		?: legacyOfPrefixRegex.find(firstText)?.value
+
+	return cluster.mapIndexed { index, row ->
+		if (index == 0) {
+			firstText
+		} else {
+			val text = row.text.trim()
+			if (sharedPrefix != null && text.startsWith(sharedPrefix, ignoreCase = true)) {
+				text.substring(sharedPrefix.length).trim()
+			} else {
+				text
+			}
+		}
+	}.joinToString(separator = " or ")
+}
+
 fun mergedReplacementIfCollapsed(joinedText: String): ReplacementIngredient? {
 	val sanitized = sanitizeIngredientLine(joinedText) ?: return null
 	val expanded = expandProcessedAlternatives(sanitized)
@@ -202,7 +247,7 @@ fun replacementsForGroup(
 			replacements += toReplacement(rows[index])
 			index += 1
 		} else {
-			val joinedText = cluster.joinToString(separator = " or ") { member -> member.text }
+			val joinedText = reconstructJoinedAlternativeText(cluster)
 			val merged = mergedReplacementIfCollapsed(joinedText)
 			if (merged == null) {
 				replacements += cluster.map(::toReplacement)

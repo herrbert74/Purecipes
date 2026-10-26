@@ -47,6 +47,8 @@ internal object IngredientLineParser {
 
 	private val parentheticalPattern = Regex("""\(([^)]+)\)""")
 
+	private val innermostParentheticalPattern = Regex("""\([^()]+\)""")
+
 	private val innerAmountPattern = Regex(
 		"""^($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:;.*)?$""",
 		RegexOption.IGNORE_CASE,
@@ -940,7 +942,7 @@ internal object IngredientLineParser {
 				)
 		return when {
 			!usableUnit -> null
-			isParentheticalNoiseFoodName(foodName) -> LeadingAmount(
+			foodName.startsWith("/") || isParentheticalNoiseFoodName(foodName) -> LeadingAmount(
 				quantity = foodQuantity,
 				unit = foodUnit,
 				rest = "",
@@ -995,8 +997,17 @@ internal object IngredientLineParser {
 			?: innerAmountPattern.find(semicolonInner)
 	}
 
-	private fun stripParentheticalClauses(value: String): String =
-		extraWhitespacePattern.replace(parentheticalPattern.replace(value, " "), " ").trim()
+	private fun stripParentheticalClauses(value: String): String {
+		var result = value
+		while (innermostParentheticalPattern.containsMatchIn(result)) {
+			result = innermostParentheticalPattern.replace(result, " ")
+		}
+		return extraWhitespacePattern
+			.replace(result.replace("(", " ").replace(")", " "), " ")
+			.trim()
+			.trimEnd(',')
+			.trim()
+	}
 
 	private fun stripUnopenedLabelNoise(value: String): String =
 		extraWhitespacePattern

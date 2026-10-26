@@ -45,6 +45,16 @@ internal object IngredientVocabulary {
 		"prepared through step",
 		"fillings of your choice",
 		"of your choosing",
+		"all of the ",
+		"all of your prepared",
+		"(all of it)",
+		"from above",
+		"from the stage above",
+		"from build above",
+		"prepared above",
+		"from stage ",
+		"stage 1 mixture",
+		"stage 2 mixture",
 	)
 
 	private val ignorableLineExactFilters = setOf(
@@ -87,6 +97,7 @@ internal object IngredientVocabulary {
 	)
 
 	private val orphanModifierTokens = setOf(
+		"all",
 		"bone",
 		"bone-in",
 		"boiled",

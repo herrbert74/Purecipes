@@ -1205,4 +1205,33 @@ class IngredientLineParserTest {
 		large.parsedName shouldBe "sugar diamonds"
 		large.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseHandlesDualUnitParentheticalsNestedParenthesesAndWholeOrSplitChicken() {
+		val condensed = IngredientLineParser.parse("1 can (14 oz / 396 g) Sweetened condensed milk")
+		condensed.quantity shouldBe BigDecimal("14")
+		condensed.unit shouldBe "oz"
+		condensed.parsedName shouldBe "Sweetened condensed milk"
+		condensed.isMeasurable shouldBe true
+
+		val filteredWater = IngredientLineParser.parse("Filtered water")
+		filteredWater.quantity shouldBe BigDecimal.ONE
+		filteredWater.unit shouldBe "cup"
+		filteredWater.parsedName shouldBe "Filtered water"
+		filteredWater.isMeasurable shouldBe true
+
+		val chicken = IngredientLineParser.parse("2 whole or 4 split chicken breasts, bone-in, skin on")
+		chicken.quantity shouldBe BigDecimal("2")
+		chicken.unit shouldBe "piece"
+		chicken.isMeasurable shouldBe true
+
+		val nestedEggs = IngredientLineParser.parse("100 g Eggs ((2 large), room temperature)")
+		nestedEggs.quantity shouldBe BigDecimal("100")
+		nestedEggs.unit shouldBe "g"
+		nestedEggs.parsedName shouldBe "Eggs"
+		nestedEggs.isMeasurable shouldBe true
+
+		val bigaReference = IngredientLineParser.parse("All of the Biga (from above)")
+		bigaReference.isMeasurable shouldBe false
+	}
 }

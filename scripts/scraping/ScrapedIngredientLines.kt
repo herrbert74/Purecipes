@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v10"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v11"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -22,7 +22,7 @@ private val optionalParentheticalRegex = Regex(
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 private val toGarnishOrServeSuffixRegex = Regex(
-	pattern = """[,;]?\s*(to garnish|to serve|for garnish|for serving)\s*$""",
+	pattern = """[,;]?\s*\(?\s*(to garnish|to serve|for garnish|for serving)\s*\)?\s*$""",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 private val plusExtraToServeSuffixRegex = Regex(
@@ -360,8 +360,17 @@ fun normalizeIngredientGroupName(raw: String): String? {
 private const val ALTERNATIVE_SEPARATOR = " or "
 private const val ALTERNATIVE_SEPARATOR_LENGTH = 4
 
+private const val ALTERNATIVE_LEADING_QUANTITY_PATTERN =
+	"""(?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)"""
+
+private const val ALTERNATIVE_LEADING_UNIT_PATTERN =
+	"""(?:g|kg|ml|l|oz|lbs?|tsps?|tbsps?|teaspoons?|tablespoons?|cups?|pinch(?:es)?|dash(?:es)?|""" +
+		"""handfuls?|bags?|cans?|tins?|packs?|packages?|packets?|jars?|bottles?|slices?|cloves?|""" +
+		"""stalks?|sprigs?|heads?|bunch(?:es)?|pieces?|pounds?|ounces?|grams?|kilograms?|""" +
+		"""liters?|litres?|milliliters?|millilitres?)"""
+
 private val alternativeQuantityPrefixRegex = Regex(
-	pattern = """^((?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?)(?:\s+\w+)?(?:\s+of)?\s+)""",
+	pattern = """^($ALTERNATIVE_LEADING_QUANTITY_PATTERN(?:\s+$ALTERNATIVE_LEADING_UNIT_PATTERN)?(?:\s+of)?\s+)""",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 private val alternativeOfPrefixRegex = Regex(
@@ -370,6 +379,9 @@ private val alternativeOfPrefixRegex = Regex(
 )
 private val trailingParentheticalSuffixRegex = Regex(
 	pattern = """\s*\([^)]+\)\s*$""",
+)
+private val inlineParentheticalRegex = Regex(
+	pattern = """\([^)]*\)""",
 )
 
 private fun splitAlternativeParts(text: String): List<String> {
@@ -390,13 +402,13 @@ private fun splitAlternativeParts(text: String): List<String> {
 		}
 		if (
 			depth == 0 &&
-				text.regionMatches(
-					index,
-					ALTERNATIVE_SEPARATOR,
-					0,
-					ALTERNATIVE_SEPARATOR_LENGTH,
-					ignoreCase = true,
-				)
+			text.regionMatches(
+				index,
+				ALTERNATIVE_SEPARATOR,
+				0,
+				ALTERNATIVE_SEPARATOR_LENGTH,
+				ignoreCase = true,
+			)
 		) {
 			parts += text.substring(start, index).trim()
 			index += ALTERNATIVE_SEPARATOR_LENGTH
@@ -421,13 +433,13 @@ private fun containsAlternativeSeparator(text: String): Boolean {
 		}
 		if (
 			depth == 0 &&
-				text.regionMatches(
-					index,
-					ALTERNATIVE_SEPARATOR,
-					0,
-					ALTERNATIVE_SEPARATOR_LENGTH,
-					ignoreCase = true,
-				)
+			text.regionMatches(
+				index,
+				ALTERNATIVE_SEPARATOR,
+				0,
+				ALTERNATIVE_SEPARATOR_LENGTH,
+				ignoreCase = true,
+			)
 		) {
 			return true
 		}
@@ -486,7 +498,7 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 	val parts = splitAlternativeParts(sanitized.text)
 	val keepAsSingle = sanitized.requirement == "OPTIONAL" ||
 		parts.size <= 1 ||
-		isIncompleteAlternativeFoodName(parts.first())
+		parts.any(::isIncompleteAlternativeFoodName)
 	if (keepAsSingle) {
 		return listOf(sanitized)
 	}
@@ -501,47 +513,113 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 }
 
 private val incompleteAlternativeTokens = setOf(
+	"all",
 	"baby",
+	"black",
+	"bleached",
+	"boiling",
+	"bottled",
+	"brown",
+	"chilled",
 	"chopped",
+	"chunks",
+	"clear",
+	"coarse",
 	"cold",
 	"cooked",
+	"crushed",
+	"cubed",
+	"cubes",
+	"dark",
 	"diced",
+	"distilled",
 	"dried",
+	"dry",
 	"extra",
+	"filtered",
+	"fine",
+	"finely",
+	"flat",
 	"fresh",
 	"frozen",
+	"golden",
+	"grated",
+	"green",
 	"ground",
 	"half",
+	"halved",
+	"halves",
+	"heavy",
 	"hot",
 	"jumbo",
 	"large",
 	"light",
+	"lukewarm",
+	"mashed",
 	"medium",
-	"mini",
+	"melted",
 	"mild",
+	"minced",
+	"mineral",
+	"mini",
+	"peeled",
+	"plain",
 	"plum",
 	"poached",
+	"puree",
+	"pureed",
+	"quartered",
+	"quarters",
 	"raw",
+	"red",
 	"regular",
+	"ripe",
+	"roasted",
 	"roma",
+	"rough",
+	"roughly",
+	"rye",
+	"salted",
 	"sharp",
 	"shredded",
+	"sifted",
 	"sliced",
+	"slices",
 	"small",
+	"smoked",
+	"smooth",
+	"soft",
+	"softened",
+	"sparkling",
+	"split",
+	"still",
+	"strong",
 	"sweet",
 	"thick",
 	"thin",
+	"thinly",
+	"toasted",
+	"unbleached",
+	"unsalted",
+	"unsweetened",
+	"warm",
+	"white",
 	"whole",
+	"wholemeal",
+	"yellow",
 )
 
 private const val MIN_ALTERNATIVE_FOOD_TOKEN_LENGTH = 3
 
 private fun alternativeFoodTokens(text: String): List<String> {
-	val withoutQuantity = alternativeQuantityPrefixRegex.replace(text.trim(), "")
+	val withoutParentheticals = inlineParentheticalRegex.replace(text, " ").trim()
+	val withoutQuantity = alternativeQuantityPrefixRegex.replace(withoutParentheticals, "")
 	return withoutQuantity
 		.lowercase(Locale.ROOT)
 		.split(Regex("[^a-z0-9]+"))
-		.filter { token -> token.length >= MIN_ALTERNATIVE_FOOD_TOKEN_LENGTH }
+		.filter { token ->
+			token.length >= MIN_ALTERNATIVE_FOOD_TOKEN_LENGTH && !token.all(Char::isDigit)
+		}
 }
 
 private fun isIncompleteAlternativeFoodName(text: String): Boolean {
@@ -579,17 +657,27 @@ fun appendSanitizedIngredientLines(
 fun processScrapedIngredientGroups(
 	groupName: String?,
 	rawItems: List<String>,
+): List<Pair<String?, List<ProcessedScrapedIngredient>>> =
+	processStoredScrapedIngredientGroups(
+		groupName = groupName,
+		storedItems = rawItems.map { rawItem -> ProcessedScrapedIngredient(text = rawItem) },
+	)
+
+fun processStoredScrapedIngredientGroups(
+	groupName: String?,
+	storedItems: List<ProcessedScrapedIngredient>,
 ): List<Pair<String?, List<ProcessedScrapedIngredient>>> {
-	if (rawItems.isEmpty()) {
+	if (storedItems.isEmpty()) {
 		return emptyList()
 	}
 
 	val processedGroups = mutableListOf<Pair<String?, List<ProcessedScrapedIngredient>>>()
 	var currentGroupName = groupName
 	var currentItems = mutableListOf<ProcessedScrapedIngredient>()
-	var nextAlternativeGroupKey = 1
+	var nextAlternativeGroupKey = (storedItems.mapNotNull { it.alternativeGroupKey }.maxOrNull() ?: 0) + 1
 
-	rawItems.forEach { rawItem ->
+	storedItems.forEach { storedItem ->
+		val rawItem = storedItem.text
 		if (isIngredientGroupHeading(rawItem)) {
 			if (currentItems.isNotEmpty()) {
 				processedGroups += (currentGroupName to currentItems.toList())
@@ -597,7 +685,9 @@ fun processScrapedIngredientGroups(
 			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
 			currentItems = mutableListOf()
 		} else {
+			val startIndex = currentItems.size
 			appendSanitizedIngredientLines(currentItems, rawItem) { nextAlternativeGroupKey++ }
+			preserveStoredRequirement(currentItems, startIndex, storedItem)
 		}
 	}
 
@@ -606,4 +696,23 @@ fun processScrapedIngredientGroups(
 	}
 
 	return processedGroups
+}
+
+private fun preserveStoredRequirement(
+	currentItems: MutableList<ProcessedScrapedIngredient>,
+	startIndex: Int,
+	storedItem: ProcessedScrapedIngredient,
+) {
+	if (storedItem.requirement == "REQUIRED") {
+		return
+	}
+	for (i in startIndex until currentItems.size) {
+		val added = currentItems[i]
+		if (added.requirement == "REQUIRED") {
+			currentItems[i] = added.copy(
+				requirement = storedItem.requirement,
+				alternativeGroupKey = storedItem.alternativeGroupKey,
+			)
+		}
+	}
 }

@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v10
+// cache-bust: alt-or-incomplete-v11
 
 data class IngredientTestCase(
 	val description: String,
@@ -207,6 +207,46 @@ val alternativeCases = listOf(
 		description = "keeps plum or Roma tomatoes together",
 		input = "4 plum or Roma tomatoes (about 442 g), halved",
 		expected = listOf("4 plum or Roma tomatoes (about 442 g), halved"),
+	),
+	AlternativeTestCase(
+		description = "keeps Strong 00 or type 0 flour together",
+		input = "50 g Strong 00 or type 0 flour",
+		expected = listOf("50 g Strong 00 or type 0 flour"),
+	),
+	AlternativeTestCase(
+		description = "keeps Bottled mineral or spring water together",
+		input = "Bottled mineral or spring water (enough to cover fruit)",
+		expected = listOf("Bottled mineral or spring water (enough to cover fruit)"),
+	),
+	AlternativeTestCase(
+		description = "keeps White or apple cider vinegar together",
+		input = "2 tbsp White or apple cider vinegar",
+		expected = listOf("2 tbsp White or apple cider vinegar"),
+	),
+	AlternativeTestCase(
+		description = "keeps Chocolate Chips or Chunks together",
+		input = "170 g Chocolate Chips or Chunks",
+		expected = listOf("170 g Chocolate Chips or Chunks"),
+	),
+	AlternativeTestCase(
+		description = "keeps Smooth strawberry juice or puree together",
+		input = "4 tbsp Smooth strawberry juice or puree",
+		expected = listOf("4 tbsp Smooth strawberry juice or puree"),
+	),
+	AlternativeTestCase(
+		description = "keeps finely minced or grated garlic together",
+		input = "3 Garlic cloves, finely minced or grated",
+		expected = listOf("3 Garlic cloves, finely minced or grated"),
+	),
+	AlternativeTestCase(
+		description = "keeps Extra dark rye or rice flour together",
+		input = "Extra dark rye or rice flour (for dusting)",
+		expected = listOf("Extra dark rye or rice flour (for dusting)"),
+	),
+	AlternativeTestCase(
+		description = "keeps wholemeal or seven-grain bread together",
+		input = "8–10 slices of wholemeal or seven-grain bread",
+		expected = listOf("8–10 slices of wholemeal or seven-grain bread"),
 	),
 )
 

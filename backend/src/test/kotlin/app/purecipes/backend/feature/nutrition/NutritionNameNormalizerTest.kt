@@ -616,5 +616,35 @@ class NutritionNameNormalizerTest {
 			"mini or regular chocolate chips",
 		) shouldBe "chocolate chips"
 		NutritionNameNormalizer.forLookup("parsley or tarragon") shouldBe "parsley"
+		NutritionNameNormalizer.forLookup(
+			"whole or 4 split chicken breasts, bone-in, skin on",
+		) shouldBe "chicken breasts"
+		NutritionNameNormalizer.forLookup(
+			"Strong 00 or type 0 flour",
+		) shouldBe "flour"
+		NutritionNameNormalizer.forLookup(
+			"dark rye or rice flour",
+		) shouldBe "dark rye flour"
+		NutritionNameNormalizer.forLookup(
+			"Bottled mineral or spring water",
+		) shouldBe "water"
+		NutritionNameNormalizer.forLookup(
+			"White or apple cider vinegar",
+		) shouldBe "apple cider vinegar"
+		NutritionNameNormalizer.forLookup(
+			"wholemeal or seven-grain bread",
+		) shouldBe "seven grain bread"
+	}
+
+	@Test
+	fun forLookupPreservesWaterAndMilkFromOverEagerModifierStripping() {
+		NutritionNameNormalizer.forLookup("Filtered water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("First water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Second water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Hot boiling water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Lukewarm water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("spring water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Lukewarm milk") shouldBe "milk"
+		NutritionNameNormalizer.forLookup("Whole milk, lukewarm") shouldBe "whole milk"
 	}
 }

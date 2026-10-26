@@ -373,6 +373,7 @@ internal object IngredientLineParserTokens {
 	)
 
 	val orphanModifierOnlyTokens = setOf(
+		"all",
 		"bone",
 		"bone-in",
 		"boiled",
