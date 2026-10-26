@@ -912,8 +912,13 @@ class NutritionSeedAliasIndexTest {
 			displayName = "Water, tap",
 			normalizedName = "water tap",
 		)
+		val vanillaExtract = food(
+			id = 4,
+			displayName = "Vanilla extract",
+			normalizedName = "vanilla extract",
+		)
 		val aliases = NutritionSeedAliasIndex.merge(
-			foods = listOf(breadFlour, darkRyeFlour, water),
+			foods = listOf(breadFlour, darkRyeFlour, water, vanillaExtract),
 			storedAliases = emptyMap(),
 		)
 
@@ -929,6 +934,7 @@ class NutritionSeedAliasIndexTest {
 		aliases["rye starter"] shouldBe 2
 		aliases["rye levain"] shouldBe 2
 		aliases["active apple yeast"] shouldBe 3
+		aliases["vanilla"] shouldBe 4
 	}
 
 	private fun food(id: Int, displayName: String, normalizedName: String): NutritionFoodRecord =

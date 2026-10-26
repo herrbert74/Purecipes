@@ -286,6 +286,7 @@ internal object IngredientLineParserTokens {
 		"marinade",
 		"marinara",
 		"miso",
+		"nutella",
 		"paste",
 		"sauce",
 		"sriracha",
@@ -315,6 +316,7 @@ internal object IngredientLineParserTokens {
 		"seasoning",
 		"spice",
 		"spices",
+		"vanilla",
 		"yeast",
 	)
 

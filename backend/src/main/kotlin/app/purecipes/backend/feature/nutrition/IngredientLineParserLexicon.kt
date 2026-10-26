@@ -116,7 +116,7 @@ internal object IngredientLineParserLexicon {
 		"tubs",
 	)
 
-	val defaultSingleCountUnits = setOf("clove", "piece", "tsp", "tbsp", "cup")
+	val defaultSingleCountUnits = setOf("clove", "egg", "piece", "tsp", "tbsp", "cup")
 
 	val countNounTokens = setOf(
 		"stalk",
@@ -310,6 +310,7 @@ internal object IngredientLineParserLexicon {
 		"sumac",
 		"turmeric",
 		"cardamom",
+		"caraway",
 		"cloves",
 		"basil",
 		"parsley",

@@ -1238,5 +1238,29 @@ class IngredientLineParserTest {
 			"Pasta Madre (refreshed 2–3 times at a 1:1:0.45 ratio until tripling consistently)",
 		)
 		madreRefreshment.isMeasurable shouldBe false
+
+		val largeEgg = IngredientLineParser.parse("Large Egg")
+		largeEgg.quantity shouldBe BigDecimal.ONE
+		largeEgg.unit shouldBe "egg"
+		largeEgg.parsedName shouldBe "Egg"
+		largeEgg.isMeasurable shouldBe true
+
+		val nutella = IngredientLineParser.parse("Nutella (or preferred filling like jam or garlic butter)")
+		nutella.quantity shouldBe BigDecimal.ONE
+		nutella.unit shouldBe "tbsp"
+		nutella.parsedName shouldBe "Nutella"
+		nutella.isMeasurable shouldBe true
+
+		val vanilla = IngredientLineParser.parse("Vanilla (to taste)")
+		vanilla.quantity shouldBe BigDecimal.ONE
+		vanilla.unit shouldBe "tsp"
+		vanilla.parsedName shouldBe "Vanilla"
+		vanilla.isMeasurable shouldBe true
+
+		val carawaySeeds = IngredientLineParser.parse("Caraway seeds (to taste, added at the very end of mixing)")
+		carawaySeeds.quantity shouldBe BigDecimal.ONE
+		carawaySeeds.unit shouldBe "tsp"
+		carawaySeeds.parsedName shouldBe "Caraway seeds"
+		carawaySeeds.isMeasurable shouldBe true
 	}
 }

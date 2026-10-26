@@ -213,6 +213,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TO
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TUNA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TURKEY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.TURNIP_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.VANILLA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WALNUT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WASABI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.WATERMELON_DESCRIPTION
@@ -1428,6 +1429,10 @@ internal object NutritionSeedAliasesPart4 {
 			BREAD_FLOUR_DESCRIPTION,
 			BREAD_FLOUR_FALLBACK_DESCRIPTION,
 			FLOUR_DESCRIPTION,
+		),
+		NutritionSeedAlias(
+			"vanilla",
+			VANILLA_DESCRIPTION,
 		),
 	)
 }
