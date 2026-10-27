@@ -215,6 +215,7 @@ internal object IngredientVocabulary {
 		"ascorbic acid vitamin c",
 		"assorted fruit",
 		"bread butter table",
+		"candy eyes",
 		"crushed vitamin c tablet",
 		"edible gold dust",
 		"edible gold glitter",
