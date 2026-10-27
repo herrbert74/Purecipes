@@ -1027,7 +1027,7 @@ internal object IngredientLineParser {
 			.trim()
 
 	private fun stripTrailingOptionalNoise(value: String): String {
-		val stripped = trailingOptionalPattern.replace(value.trim(), "").trim().trimEnd(',').trim()
+		val stripped = trailingOptionalPattern.replace(value.trim(), "").trim().trimEnd(',', '*').trim()
 		return if (stripped.isNotBlank()) stripped else value.trim()
 	}
 

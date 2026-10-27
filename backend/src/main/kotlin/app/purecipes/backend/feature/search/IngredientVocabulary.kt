@@ -44,11 +44,14 @@ internal object IngredientVocabulary {
 		"can be used in recipes that call",
 		"prepared through step",
 		"fillings of your choice",
-		"of your choosing",
+		"herbs and vegetables of your choosing",
 		"all of the ",
 		"all of your prepared",
 		"(all of it)",
-		"from above",
+		"dough from above",
+		"mixture from above",
+		"recipe from above",
+		"sponge from above",
 		"from the stage above",
 		"from build above",
 		"prepared above",
@@ -67,6 +70,8 @@ internal object IngredientVocabulary {
 		"marinade",
 		"sauce",
 		"salad",
+		"sourdough",
+		"yeast",
 		"toppings",
 		"topping",
 		"kosher",
@@ -206,8 +211,11 @@ internal object IngredientVocabulary {
 	)
 
 	private val ignorableNonFoodPhrases = setOf(
+		"ascorbic acid",
+		"ascorbic acid vitamin c",
 		"assorted fruit",
 		"bread butter table",
+		"crushed vitamin c tablet",
 		"edible gold dust",
 		"edible gold glitter",
 		"food grade lye",
@@ -220,6 +228,8 @@ internal object IngredientVocabulary {
 		"sausage casing",
 		"sausage casings",
 		"something crunchy",
+		"vitamin c",
+		"vitamin c tablet",
 		"yellow food colouring",
 		"yellow food coloring",
 	)
@@ -378,10 +388,7 @@ internal object IngredientVocabulary {
 
 	private fun isIgnorableNonFoodLine(lower: String, normalized: String): Boolean {
 		val lookup = NutritionNameNormalizer.forLookup(lower)
-		if (normalized in ignorableNonFoodPhrases ||
-			lower in ignorableNonFoodPhrases ||
-			lookup in ignorableNonFoodPhrases
-		) {
+		if (matchesDirectNonFoodPhrase(lower, normalized, lookup)) {
 			return true
 		}
 		val tokens = tokensAfterQuantityAndArticles(lower)
@@ -392,6 +399,20 @@ internal object IngredientVocabulary {
 		return afterQuantity in ignorableNonFoodPhrases ||
 			NutritionNameNormalizer.forLookup(afterQuantity) in ignorableNonFoodPhrases
 	}
+
+	private fun matchesDirectNonFoodPhrase(lower: String, normalized: String, lookup: String): Boolean {
+		val exactMatches = normalized in ignorableNonFoodPhrases || lower in ignorableNonFoodPhrases
+		val derivedMatches = lookup in ignorableNonFoodPhrases || containsAnyNonFoodPhrase(lower, normalized)
+		return exactMatches || derivedMatches
+	}
+
+	private val ignorableDoughConditionerPhrases = setOf(
+		"ascorbic acid",
+		"vitamin c",
+	)
+
+	private fun containsAnyNonFoodPhrase(lower: String, normalized: String): Boolean =
+		ignorableDoughConditionerPhrases.any { phrase -> lower.contains(phrase) || normalized.contains(phrase) }
 
 	private fun isOrphanModifierOnlyLine(lower: String): Boolean {
 		val tokens = tokensAfterQuantityAndArticles(lower)

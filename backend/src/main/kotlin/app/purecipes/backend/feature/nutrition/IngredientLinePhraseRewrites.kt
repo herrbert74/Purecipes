@@ -15,16 +15,24 @@ internal object IngredientLinePhraseRewrites {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val slicedFruitPattern = Regex(
+		"""^(?:sliced\s+fruit(?:\s+of\s+your\s+choosing)?)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	fun rewrite(value: String): String? {
 		val trimmed = value.trim()
 		val instruction = leadingInstructionPattern.matchEntire(trimmed)
 		val sizeAlternative = sizeAlternativePattern.matchEntire(trimmed)
+		val slicedFruit = slicedFruitPattern.matchEntire(trimmed)
 		return when {
 			instruction != null -> instruction.groupValues[REGEX_GROUP_FIRST].trim()
 			sizeAlternative != null -> listOf(
 				sizeAlternative.groupValues[REGEX_GROUP_FIRST],
 				sizeAlternative.groupValues[REGEX_GROUP_SECOND].trim(),
 			).joinToString(" ")
+
+			slicedFruit != null -> "1 cup $trimmed"
 
 			else -> null
 		}

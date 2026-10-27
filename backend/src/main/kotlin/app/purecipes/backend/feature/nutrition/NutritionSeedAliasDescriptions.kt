@@ -47,6 +47,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val BREADCRUMB_DESCRIPTION = "Bread, crumbs, dry, grated, plain"
 	internal const val BROCCOLI_DESCRIPTION = "Broccoli, raw"
 	internal const val BROWN_SUGAR_DESCRIPTION = "Sugars, brown"
+	internal const val BUCKWHEAT_FLOUR_DESCRIPTION = "Buckwheat flour, whole-groat"
 	internal const val BURGER_BUN_DESCRIPTION = "Rolls, hamburger or hotdog, plain"
 	internal const val BUTTER_BEAN_DESCRIPTION =
 		"Lima beans, large, mature seeds, cooked, boiled, without salt"

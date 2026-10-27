@@ -139,6 +139,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Banana",
 			"Date",
 			"Fig",
+			"Fruit",
 			"Grapes",
 			"Lemon",
 			"Lime",
@@ -204,6 +205,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 	IngredientCatalogueGroup(
 		name = "Grains & Cereals",
 		items = listOf(
+			"Buckwheat",
 			"Cornmeal",
 			"Couscous",
 			"Oats",
@@ -217,10 +219,12 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 		name = "Herbs & Spices",
 		items = listOf(
 			"Allspice",
+			"Anise Seed",
 			"Basil",
 			"Bay Leaf",
 			"Black Pepper",
 			"Cajun Seasoning",
+			"Caraway Seed",
 			"Cardamom",
 			"Chili",
 			"Chilli Flakes",
@@ -237,6 +241,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Garam Masala",
 			"Ginger",
 			"Lemongrass",
+			"Mahlep",
 			"Mint",
 			"Nigella Seed",
 			"Nutmeg",
@@ -246,6 +251,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Parsley",
 			"Rosemary",
 			"Sage",
+			"Salt",
 			"Shawarma Spice",
 			"Sichuan Peppercorns",
 			"Star Anise",
@@ -283,9 +289,11 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Coconut Oil",
 			"Grapeseed Oil",
 			"Groundnut Oil",
+			"Lard",
 			"Olive Oil",
 			"Sesame Oil",
 			"Sunflower Oil",
+			"Vegetable Oil",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -307,8 +315,11 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Baking Soda",
 			"Cornflour",
 			"Flour",
+			"Psyllium Husk",
 			"Sourdough Starter",
+			"Tapioca Starch",
 			"Vanilla",
+			"Yeast",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -319,6 +330,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Harissa",
 			"Hoisin Sauce",
 			"Hot Sauce",
+			"Jam",
 			"Ketchup",
 			"Mango Chutney",
 			"Marinara Sauce",
@@ -328,6 +340,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Olive Brine",
 			"Oyster Sauce",
 			"Peri Peri Seasoning",
+			"Pesto",
 			"Soy Sauce",
 			"Sriracha",
 			"Tahini",
@@ -355,6 +368,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Capers",
 			"Coconut Milk",
 			"Diced Tomatoes",
+			"Olives",
 			"Passata",
 			"Tomato Paste",
 		),
@@ -367,6 +381,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Lemonade",
 			"Orange Juice",
 			"Tea",
+			"Water",
 		),
 	),
 	IngredientCatalogueGroup(
@@ -390,13 +405,17 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Brazil Nuts",
 			"Cashews",
 			"Chestnuts",
+			"Chia Seeds",
+			"Flaxseed",
 			"Hazelnuts",
 			"Macadamia Nuts",
 			"Peanuts",
 			"Pecans",
 			"Pine Nuts",
 			"Pistachios",
+			"Pumpkin Seeds",
 			"Sesame",
+			"Sunflower Seeds",
 			"Walnuts",
 		),
 	),
@@ -426,6 +445,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 			"Brown Sugar",
 			"Golden Syrup",
 			"Honey",
+			"Malt Extract",
 			"Maple Syrup",
 			"Sugar",
 		),
@@ -464,6 +484,7 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 )
 
 object IngredientCatalogue {
+
 	val groups: List<IngredientCatalogueGroup> = catalogueGroups
 
 	val allItems: Set<String> = groups.flatMap { it.items }.toSet()

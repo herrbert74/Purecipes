@@ -492,6 +492,40 @@ class NutritionLookupIndexTest {
 			measuresByFoodId = emptyMap(),
 		)
 
+	@Test
+	fun findFoodMatchesChoppedFruitAndLye() {
+		val foods = listOf(
+			food(
+				id = 1,
+				displayName = NutritionSeedAliasDescriptions.APPLE_DESCRIPTION,
+				normalizedName = NutritionNameNormalizer.normalize(
+					NutritionSeedAliasDescriptions.APPLE_DESCRIPTION,
+				),
+			),
+			food(
+				id = 2,
+				displayName = NutritionSeedAliasDescriptions.BAKING_SODA_DESCRIPTION,
+				normalizedName = NutritionNameNormalizer.normalize(
+					NutritionSeedAliasDescriptions.BAKING_SODA_DESCRIPTION,
+				),
+			),
+		)
+		val aliases = NutritionSeedAliasIndex.merge(foods, emptyMap())
+		val index = NutritionLookupIndex(
+			foodById = foods.associateBy { it.id },
+			foodIdByNormalizedAlias = aliases,
+			measuresByFoodId = emptyMap(),
+		)
+
+		val match1 = index.findFood("chopped fruit")
+		match1.shouldNotBeNull()
+		match1.foodId shouldBe 1
+
+		val match2 = index.findFood("food grade lye")
+		match2.shouldNotBeNull()
+		match2.foodId shouldBe 2
+	}
+
 	private fun food(
 		id: Int,
 		displayName: String,

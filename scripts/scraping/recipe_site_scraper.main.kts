@@ -4,6 +4,8 @@
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
 
+// cache-bust: alt-or-incomplete-v18
+
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -768,6 +770,9 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 					elif isinstance(g, dict):
 						name = g.get("name")
 						items = g.get("ingredients")
+					elif hasattr(g, "purpose") and hasattr(g, "ingredients"):
+						name = g.purpose
+						items = g.ingredients
 					else:
 						name, items = None, g
 
@@ -951,6 +956,7 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 		is JsonPrimitive -> ingredientEl.contentOrNull?.trim()?.takeIf(String::isNotBlank)?.let {
 			ProcessedScrapedIngredient(text = it)
 		}
+
 		is JsonObject -> {
 			val text = ingredientEl["text"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
 			if (text.isBlank()) {
@@ -970,6 +976,7 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 				)
 			}
 		}
+
 		else -> null
 	}
 
@@ -1843,6 +1850,7 @@ fun importFilesToConnection(connection: Connection, jsonFiles: List<File>): List
 				recipeId?.let(importedRecipeIds::add)
 				if (imported % 100 == 0) println("Imported $imported so far...")
 			}
+
 			ImportOutcome.DUPLICATE -> duplicates++
 			ImportOutcome.ERROR -> errors++
 		}
@@ -1895,102 +1903,103 @@ if (config.mode == "json") {
 	println("Import mode: reading JSON files from ${recipesDir.path} into database")
 	importJsonFilesToDb(config, recipesDir)
 } else {
-println("Discovering URLs from $websiteUrl")
-val discovered = extractUrls(config, websiteUrl)
-println("Discovered ${discovered.size} candidate URLs")
+	println("Discovering URLs from $websiteUrl")
+	val discovered = extractUrls(config, websiteUrl)
+	println("Discovered ${discovered.size} candidate URLs")
 
-// `discovered` URLs are the raw set returned by the discovery service. They may
-// include listing pages, unrelated pages, duplicates, or pages from a different
-// subdomain. `filterRecipeUrls` applies host and path filtering to keep only
-// likely recipe pages for the configured website.
-val filtered = filterRecipeUrls(discovered, websiteUrl, config.recipeUrlPattern)
-println("Filtered to ${filtered.size} recipe URLs after host/pattern filtering")
+	// `discovered` URLs are the raw set returned by the discovery service. They may
+	// include listing pages, unrelated pages, duplicates, or pages from a different
+	// subdomain. `filterRecipeUrls` applies host and path filtering to keep only
+	// likely recipe pages for the configured website.
+	val filtered = filterRecipeUrls(discovered, websiteUrl, config.recipeUrlPattern)
+	println("Filtered to ${filtered.size} recipe URLs after host/pattern filtering")
 
-val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb) {
-	val existing = precheckExistingUrls(config, filtered)
-	if (existing.isNotEmpty()) {
-		println("Pre-check: skipping ${existing.size} URLs already in database")
-	}
-	val pending = filtered.filterNot { existing.contains(it) }
-	if (config.maxUrls > 0) pending.take(config.maxUrls) else pending
-} else {
-	if (config.maxUrls > 0) filtered.take(config.maxUrls) else filtered
-}
-
-// At this point we have already filtered discovered URLs down to recipe candidates.
-// If `selectedAfterDbPrecheck` is empty, it means either no URLs passed the host/pattern
-// rules or the database precheck excluded all remaining candidates.
-val queue = ArrayDeque(selectedAfterDbPrecheck)
-val processed = mutableSetOf<String>()
-println("Processing ${selectedAfterDbPrecheck.size} filtered recipe URLs")
-
-val dbConnection: Connection? = if (config.mode == "web") {
-	openConnection(config).also { conn ->
-		conn.autoCommit = false
-		ensureSchema(conn)
-	}
-} else {
-	null
-}
-
-val scraped = mutableListOf<Pair<RecipeData, Int?>>()
-while (queue.isNotEmpty()) {
-	val url = queue.removeFirst()
-	if (processed.add(url)) {
-		val recipe = scrapeRecipeWithPython(url)
-		if (recipe == null) {
-			val extraLinks = extractRecipeLinksFromCollectionPage(url, config.simpleScraperTimeoutSeconds)
-				.filterNot { processed.contains(it) }
-
-			if (extraLinks.isNotEmpty()) {
-				println("Expanded listing URL -> found ${extraLinks.size} recipe links: $url")
-				extraLinks.forEach { queue.addLast(it) }
-			} else {
-				println("Skipped: $url")
-			}
-		} else {
-			val dbId = dbConnection?.let { saveRecipe(it, recipe) }
-			scraped += (recipe to dbId)
-
-			val siteName = try {
-				URI(recipe.sourceUrl).host?.removePrefix("www.")?.lowercase(Locale.getDefault())?.ifBlank { "unknown" }
-			} catch (_: Exception) {
-				null
-			} ?: "unknown"
-			val siteDir = File(recipesDir, siteName).apply { mkdirs() }
-			if (dbId != null) {
-				val name = "%05d-%s.json".format(dbId, slugify(recipe.title).take(100))
-				val file = File(siteDir, name)
-				file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
-				println("Saved [db=$dbId]: ${file.path}")
-			} else if (dbConnection != null) {
-				println("Duplicate in DB, skipped file: ${recipe.sourceUrl}")
-			} else {
-				val name = "%s.json".format(slugify(recipe.title).take(100))
-				val file = File(siteDir, name)
-				file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
-				println("Saved: ${file.path}")
-			}
-
-			if (config.maxUrls > 0 && scraped.size >= config.maxUrls) {
-				println("Reached --max-urls limit (${config.maxUrls})")
-				break
-			}
+	val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb) {
+		val existing = precheckExistingUrls(config, filtered)
+		if (existing.isNotEmpty()) {
+			println("Pre-check: skipping ${existing.size} URLs already in database")
 		}
-		if (config.sleepMillis > 0) Thread.sleep(config.sleepMillis)
+		val pending = filtered.filterNot { existing.contains(it) }
+		if (config.maxUrls > 0) pending.take(config.maxUrls) else pending
+	} else {
+		if (config.maxUrls > 0) filtered.take(config.maxUrls) else filtered
 	}
-}
 
-dbConnection?.close()
+	// At this point we have already filtered discovered URLs down to recipe candidates.
+	// If `selectedAfterDbPrecheck` is empty, it means either no URLs passed the host/pattern
+	// rules or the database precheck excluded all remaining candidates.
+	val queue = ArrayDeque(selectedAfterDbPrecheck)
+	val processed = mutableSetOf<String>()
+	println("Processing ${selectedAfterDbPrecheck.size} filtered recipe URLs")
 
-println("Successfully scraped ${scraped.size} recipes")
+	val dbConnection: Connection? = if (config.mode == "web") {
+		openConnection(config).also { conn ->
+			conn.autoCommit = false
+			ensureSchema(conn)
+		}
+	} else {
+		null
+	}
 
-val alreadyInserted = scraped.count { (_, id) -> id != null }
-val duplicates = scraped.size - alreadyInserted
-println("Database import complete. Imported=$alreadyInserted Duplicates=$duplicates")
+	val scraped = mutableListOf<Pair<RecipeData, Int?>>()
+	while (queue.isNotEmpty()) {
+		val url = queue.removeFirst()
+		if (processed.add(url)) {
+			val recipe = scrapeRecipeWithPython(url)
+			if (recipe == null) {
+				val extraLinks = extractRecipeLinksFromCollectionPage(url, config.simpleScraperTimeoutSeconds)
+					.filterNot { processed.contains(it) }
 
-if (config.calculateNutrition) {
-	val importedRecipeIds = scraped.mapNotNull { (_, recipeId) -> recipeId }
-	calculateNutritionForRecipes(config, importedRecipeIds)
-}
+				if (extraLinks.isNotEmpty()) {
+					println("Expanded listing URL -> found ${extraLinks.size} recipe links: $url")
+					extraLinks.forEach { queue.addLast(it) }
+				} else {
+					println("Skipped: $url")
+				}
+			} else {
+				val dbId = dbConnection?.let { saveRecipe(it, recipe) }
+				scraped += (recipe to dbId)
+
+				val siteName = try {
+					URI(recipe.sourceUrl).host?.removePrefix("www.")?.lowercase(Locale.getDefault())
+						?.ifBlank { "unknown" }
+				} catch (_: Exception) {
+					null
+				} ?: "unknown"
+				val siteDir = File(recipesDir, siteName).apply { mkdirs() }
+				if (dbId != null) {
+					val name = "%05d-%s.json".format(dbId, slugify(recipe.title).take(100))
+					val file = File(siteDir, name)
+					file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
+					println("Saved [db=$dbId]: ${file.path}")
+				} else if (dbConnection != null) {
+					println("Duplicate in DB, skipped file: ${recipe.sourceUrl}")
+				} else {
+					val name = "%s.json".format(slugify(recipe.title).take(100))
+					val file = File(siteDir, name)
+					file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
+					println("Saved: ${file.path}")
+				}
+
+				if (config.maxUrls > 0 && scraped.size >= config.maxUrls) {
+					println("Reached --max-urls limit (${config.maxUrls})")
+					break
+				}
+			}
+			if (config.sleepMillis > 0) Thread.sleep(config.sleepMillis)
+		}
+	}
+
+	dbConnection?.close()
+
+	println("Successfully scraped ${scraped.size} recipes")
+
+	val alreadyInserted = scraped.count { (_, id) -> id != null }
+	val duplicates = scraped.size - alreadyInserted
+	println("Database import complete. Imported=$alreadyInserted Duplicates=$duplicates")
+
+	if (config.calculateNutrition) {
+		val importedRecipeIds = scraped.mapNotNull { (_, recipeId) -> recipeId }
+		calculateNutritionForRecipes(config, importedRecipeIds)
+	}
 }
