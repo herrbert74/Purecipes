@@ -664,4 +664,14 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("Stone-ground whole wheat flour") shouldBe "whole wheat flour"
 		NutritionNameNormalizer.forLookup("onion, finely diced and sautéed until golden") shouldBe "onion"
 	}
+
+	@Test
+	fun forLookupNormalizesBreadtopiaGrainsAndClauses() {
+		NutritionNameNormalizer.forLookup("einkorn wheat flour") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("einkorn berries") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("bolted yecora rojo flour") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("spelt berries") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("Bread flour*") shouldBe "bread flour"
+		NutritionNameNormalizer.forLookup("chamomile tea, cooled to below 90°F") shouldBe "chamomile tea"
+	}
 }

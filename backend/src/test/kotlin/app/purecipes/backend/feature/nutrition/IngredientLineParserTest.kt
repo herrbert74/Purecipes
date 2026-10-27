@@ -1268,5 +1268,22 @@ class IngredientLineParserTest {
 		salmonCans.unit shouldBe "g"
 		salmonCans.parsedName shouldBe "red or pink wild Alaska salmon"
 		salmonCans.isMeasurable shouldBe true
+
+		val eggBeaten = IngredientLineParser.parse("To brush on the dough before baking, 1 egg beaten")
+		eggBeaten.quantity shouldBe BigDecimal.ONE
+		eggBeaten.unit shouldBe "egg"
+		eggBeaten.parsedName shouldBe "egg beaten"
+		eggBeaten.isMeasurable shouldBe true
+
+		val jalapeno = IngredientLineParser.parse("1 large or 2 small jalapeños, de-seeded, sliced, briefly sauteed")
+		jalapeno.quantity shouldBe BigDecimal.ONE
+		jalapeno.parsedName shouldBe "jalapeños, de-seeded, sliced, briefly sauteed"
+		jalapeno.isMeasurable shouldBe true
+
+		val maldon = IngredientLineParser.parse("Maldon sea salt")
+		maldon.quantity shouldBe BigDecimal.ONE
+		maldon.unit shouldBe "tsp"
+		maldon.parsedName shouldBe "Maldon sea salt"
+		maldon.isMeasurable shouldBe true
 	}
 }

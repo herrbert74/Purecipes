@@ -569,7 +569,9 @@ internal object NutritionNameNormalizer {
 		normalized.split(' ').filter { token -> token.length >= MIN_TOKEN_LENGTH }
 
 	fun forLookup(value: String): String {
-		val withoutClause = stripLookupClauses(value.substringBefore(';').trim())
+		val withoutClause = stripLookupClauses(
+			NutritionNameClauseRules.strip(value.substringBefore(';').trim()),
+		)
 		val normalized = normalize(withoutClause)
 		val rawTokens = tokens(normalized)
 		val hadCreamOf = CREAM_OF_PHRASE.containsMatchIn(normalized)
@@ -695,6 +697,7 @@ internal object NutritionNameNormalizer {
 
 	private fun postFilterLookupTokens(tokens: List<String>, hadCreamOf: Boolean): List<String> {
 		var result = rewriteLookupTokens(tokens)
+		result = NutritionGrainFlourRules.rewrite(result)
 		result = restoreCreamOfConnector(result, hadCreamOf)
 		result = stripGluedPrepAndFollowing(result)
 		result = collapseRepeatedPhrase(result)

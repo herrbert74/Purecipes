@@ -342,6 +342,15 @@ internal object IngredientVocabulary {
 		)
 	}
 
+	private fun isHeadingOrInstructionLike(lower: String, trimmed: String): Boolean =
+		lower.endsWith(':') ||
+			ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
+			ignorableLineExactFilters.contains(lower) ||
+			lower.contains("recipe follows") ||
+			ignorableServingClauses.any { lower.contains(it) } ||
+			ignorableInstructionClauses.any { lower.contains(it) } ||
+			IngredientHeadingRules.isSectionHeadingOrNote(trimmed)
+
 	fun isIgnorableIngredientLine(ingredientLine: String): Boolean {
 		val trimmed = ingredientLine.trim().removePrefix("-").removePrefix("*").trim()
 		if (trimmed.isBlank()) {
@@ -350,13 +359,7 @@ internal object IngredientVocabulary {
 
 		val lower = trimmed.lowercase()
 		val hasDigit = lower.any(Char::isDigit)
-		val headingLike =
-			lower.endsWith(':') ||
-				ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
-				ignorableLineExactFilters.contains(lower) ||
-				lower.contains("recipe follows") ||
-				ignorableServingClauses.any { lower.contains(it) } ||
-				ignorableInstructionClauses.any { lower.contains(it) }
+		val headingLike = isHeadingOrInstructionLike(lower, trimmed)
 		val normalized = IngredientNameMatching.normalizeIngredientText(trimmed)
 		val normalizedTokens = normalized.split(' ').filter { token -> token.isNotEmpty() }.toSet()
 		val equipmentLike = ignorableEquipmentKeywords.any { keyword ->

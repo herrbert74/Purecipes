@@ -271,11 +271,14 @@ internal object IngredientLineParser {
 		)
 	}
 
+	private fun rewriteEarlySpecialCases(value: String): String? =
+		rewriteSugarDiamonds(value) ?: IngredientLinePhraseRewrites.rewrite(value)
+
 	private fun rewriteSpecialPhrases(value: String): String {
 		val trimmed = value.trim()
-		val sugarDiamonds = rewriteSugarDiamonds(trimmed)
-		if (sugarDiamonds != null) {
-			return sugarDiamonds
+		val early = rewriteEarlySpecialCases(trimmed)
+		if (early != null) {
+			return early
 		}
 		val seeds = seedsFromVanillaPodPattern.matchEntire(trimmed)
 		val peel = peelFromCitrusPattern.find(trimmed)

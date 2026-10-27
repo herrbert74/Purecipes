@@ -312,6 +312,7 @@ internal object IngredientLineParserLexicon {
 		"cardamom",
 		"caraway",
 		"cloves",
+		"maldon",
 		"basil",
 		"parsley",
 		"cilantro",
