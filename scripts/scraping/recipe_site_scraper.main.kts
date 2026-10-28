@@ -96,10 +96,6 @@ val knownWebsites = mapOf(
 		url = "https://www.bbcgoodfood.com",
 		recipePattern = Regex("^/recipes/(?!collection/|category/)[^/]+/?$"),
 	),
-	"bbcfood" to SiteConfig(
-		url = "https://www.bbc.co.uk/food",
-		recipePattern = Regex("^/food/recipes/[^/]+/?$"),
-	),
 	"jamieoliver" to SiteConfig(
 		url = "https://www.jamieoliver.com/recipes/all",
 		recipePattern = Regex(

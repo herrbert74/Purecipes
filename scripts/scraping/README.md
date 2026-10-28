@@ -104,7 +104,7 @@ Representative inputs and outcomes (from [`recipe_site_scraper_ingredient_test.m
 | OR + shared quantity | `2 tbsp parsley or fresh tarragon` | `2 tbsp parsley`, `2 tbsp fresh tarragon` |
 | OR + shared “of” + suffix | `small bunch of parsley or tarragon (about 30g)` | `small bunch of parsley (about 30g)`, `small bunch of tarragon (about 30g)` |
 
-Real-world OR example: [BBC Good Food — chicken with fennel](https://www.bbc.co.uk/food/recipes/chicken_with_fennel_81483) (`parsley or tarragon` style lines).
+Real-world OR example: BBC Good Food (`parsley or tarragon` style lines).
 
 ### Ongoing workflow vs one-off scripts
 
@@ -158,7 +158,6 @@ You can also let the script discover URLs via the SimpleScraper API (`--simplesc
 | Site | Notes |
 |------|--------|
 | allrecipes.com | |
-| bbc.co.uk/food (`bbcfood`) | |
 | bbcgoodfood.com (`bbcgoodfood`) | |
 | bonappetit.com | |
 | breadtopia.com (`breadtopia`) | |
