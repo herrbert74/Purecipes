@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v18"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v20"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -530,7 +530,7 @@ private const val ALTERNATIVE_LEADING_QUANTITY_PATTERN =
 
 private const val ALTERNATIVE_LEADING_UNIT_PATTERN =
 	"""(?:g|kg|ml|l|oz|lbs?|tsps?|tbsps?|teaspoons?|tablespoons?|cups?|pinch(?:es)?|dash(?:es)?|""" +
-		"""handfuls?|bags?|cans?|tins?|packs?|packages?|packets?|jars?|bottles?|slices?|cloves?|""" +
+		"""handfuls?|bags?|cans?|tins?|packs?|packages?|packets?|jars?|bottles?|slices?|rashers?|cloves?|""" +
 		"""stalks?|sprigs?|heads?|bunch(?:es)?|pieces?|pounds?|ounces?|grams?|kilograms?|""" +
 		"""liters?|litres?|milliliters?|millilitres?)"""
 
@@ -649,10 +649,14 @@ private fun expandAlternativePart(firstAlternative: String, part: String): Strin
 }
 
 private val sharedAlternativeNounTokens = setOf(
+	"broth",
 	"butter",
+	"cracker",
+	"crackers",
 	"flour",
 	"milk",
 	"oil",
+	"stock",
 	"sugar",
 	"vinegar",
 	"water",
@@ -699,6 +703,9 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 		sanitized.text.contains(" are fine", ignoreCase = true) ||
 		sanitized.text.contains(" is fine", ignoreCase = true) ||
 		sanitized.text.contains("ideally ", ignoreCase = true) ||
+		sanitized.text.contains("preferably ", ignoreCase = true) ||
+		sanitized.text.contains("available in ", ignoreCase = true) ||
+		sanitized.text.contains("if you like", ignoreCase = true) ||
 		parts.any(::isIncompleteAlternativeFoodName)
 	if (keepAsSingle) {
 		return listOf(sanitized)
@@ -715,6 +722,7 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 
 private val incompleteAlternativeTokens = setOf(
 	"all",
+	"available",
 	"baby",
 	"black",
 	"bleached",
@@ -726,6 +734,7 @@ private val incompleteAlternativeTokens = setOf(
 	"chunks",
 	"clear",
 	"coarse",
+	"coarsely",
 	"cold",
 	"cooked",
 	"crushed",
@@ -761,20 +770,25 @@ private val incompleteAlternativeTokens = setOf(
 	"jumbo",
 	"large",
 	"light",
+	"like",
 	"lukewarm",
 	"mashed",
+	"matchsticks",
 	"medium",
 	"melted",
 	"mild",
 	"minced",
 	"mineral",
 	"mini",
+	"online",
+	"organic",
 	"peeled",
 	"plain",
 	"plum",
 	"poached",
 	"powder",
 	"powders",
+	"preferably",
 	"puree",
 	"pureed",
 	"quartered",
@@ -804,6 +818,7 @@ private val incompleteAlternativeTokens = setOf(
 	"sparkling",
 	"split",
 	"still",
+	"stoneground",
 	"strong",
 	"sweet",
 	"thick",
@@ -811,6 +826,7 @@ private val incompleteAlternativeTokens = setOf(
 	"thinly",
 	"toasted",
 	"unbleached",
+	"unrefined",
 	"unsalted",
 	"unsweetened",
 	"warm",

@@ -317,6 +317,8 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val GREEN_TEA_DESCRIPTION = "Beverages, tea, green, ready to drink, unsweetened"
 
 	internal const val ORANGE_JUICE_DESCRIPTION = "Orange juice, raw"
+	internal const val ORANGE_JUICE_FALLBACK_DESCRIPTION = "Orange juice, 100%,  freshly squeezed"
+	internal const val TANGERINE_JUICE_DESCRIPTION = "Tangerine juice, 100%"
 	internal const val ORANGE_PEEL_DESCRIPTION = "Orange peel, raw"
 
 	internal const val PARSNIP_DESCRIPTION = "Parsnips, raw"
@@ -365,6 +367,8 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val MOZZARELLA_DESCRIPTION = "Cheese, mozzarella, whole milk"
 
 	internal const val MOZZARELLA_LOW_MOISTURE_DESCRIPTION = "Cheese, mozzarella, low moisture, part-skim"
+
+	internal const val NON_ALCOHOLIC_SPIRIT_DESCRIPTION = "Non-alcoholic spirit, gin alternative"
 
 	internal const val OATS_DESCRIPTION = "Cereals, oats, regular and quick, not fortified, dry"
 
@@ -612,4 +616,30 @@ internal object NutritionSeedAliasDescriptions {
 
 	internal const val CREAM_OF_MUSHROOM_SOUP_DESCRIPTION =
 		"Soup, cream of mushroom, canned, condensed"
+
+	internal const val BAGEL_CHIPS_DESCRIPTION = "Bagel chips"
+
+	internal const val CHAMOMILE_TEA_DESCRIPTION = "Beverages, tea, herb, brewed, chamomile"
+
+	internal const val CHAMOMILE_TEA_FALLBACK_DESCRIPTION = "Tea, hot, chamomile"
+
+	internal const val COFFEE_BREWED_DESCRIPTION = "Coffee, brewed"
+
+	internal const val GINGER_ALE_DESCRIPTION = "Soft drink, ginger ale"
+
+	internal const val HASH_BROWNS_DESCRIPTION = "Potatoes, hash brown, refrigerated, unprepared"
+
+	internal const val LIQUEUR_DESCRIPTION = "Liqueur"
+
+	internal const val MERINGUE_DESCRIPTION = "Meringues"
+
+	internal const val POUND_CAKE_DESCRIPTION = "Cake, pound"
+
+	internal const val SALSA_RED_DESCRIPTION = "Salsa, red"
+
+	internal const val SALTINE_CRACKER_DESCRIPTION = "Crackers, saltine"
+
+	internal const val SEAWEED_DRIED_DESCRIPTION = "Seaweed, dried"
+
+	internal const val TEQUILA_DESCRIPTION = "Tequila"
 }

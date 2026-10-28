@@ -336,6 +336,40 @@ internal const val NUTRITION_FOODS_NORMALIZED_NAME_INDEX_SQL = """
 	ON nutrition_foods (normalized_name)
 """
 
+internal const val NUTRITION_FOODS_SEED_CUSTOM_SQL = """
+	INSERT INTO nutrition_foods (
+		source_name,
+		source_id,
+		display_name,
+		normalized_name,
+		calories_per_100g,
+		protein_per_100g,
+		carbohydrates_per_100g,
+		fat_per_100g,
+		fiber_per_100g,
+		sugar_per_100g,
+		sodium_per_100g,
+		source_metadata
+	)
+	SELECT
+		'purecipes_custom',
+		'non_alcoholic_spirit',
+		'Non-alcoholic spirit, gin alternative',
+		'non alcoholic spirit gin alternative',
+		2.00,
+		0.00,
+		0.50,
+		0.00,
+		0.00,
+		0.00,
+		1.00,
+		'Curated non-alcoholic botanical spirit'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'non_alcoholic_spirit'
+	)
+"""
+
 internal const val NUTRITION_FOOD_ALIASES_TABLE_SQL = """
 	CREATE TABLE IF NOT EXISTS nutrition_food_aliases (
 		id SERIAL PRIMARY KEY,

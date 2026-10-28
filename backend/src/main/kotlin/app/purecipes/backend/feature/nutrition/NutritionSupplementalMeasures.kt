@@ -36,6 +36,7 @@ internal object NutritionSupplementalMeasures {
 	private const val CAULIFLOWER_DESCRIPTION = "Cauliflower, raw"
 	private const val CELERIAC_DESCRIPTION = "Celeriac, raw"
 	private const val CELERY_DESCRIPTION = "Celery, raw"
+	private const val CHAMOMILE_TEA_DESCRIPTION = "Beverages, tea, herb, brewed, chamomile"
 	private const val CHEDDAR_DESCRIPTION = "Cheese, cheddar"
 	private const val CHICKEN_WHOLE_DESCRIPTION = "Chicken, broilers or fryers, meat and skin, raw"
 	private const val CHICKEN_THIGH_DESCRIPTION = "Chicken, thigh, boneless, skinless, raw"
@@ -68,7 +69,9 @@ internal object NutritionSupplementalMeasures {
 	private const val ITALIAN_SAUSAGE_DESCRIPTION = "Sausage, Italian, pork, mild, raw"
 	private const val JALAPENO_DESCRIPTION = "Peppers, jalapeno, raw"
 	private const val KALE_DESCRIPTION = "Kale, raw"
+	private const val LADYFINGER_DESCRIPTION = "Cookies, ladyfingers, without lemon juice and rind"
 	private const val LEMONGRASS_DESCRIPTION = "Lemon grass (citronella), raw"
+	private const val MERINGUE_DESCRIPTION = "Meringues"
 	private const val MINT_DESCRIPTION = "Spearmint, fresh"
 	private const val MOZZARELLA_DESCRIPTION = "Cheese, mozzarella, whole milk"
 	private const val MUSHROOM_DESCRIPTION = "Mushrooms, white, raw"
@@ -83,12 +86,15 @@ internal object NutritionSupplementalMeasures {
 	private const val PLANTAIN_SURVEY_DESCRIPTION = "Plantain, raw"
 	private const val PLANTAIN_YELLOW_DESCRIPTION = "Plantains, yellow, raw"
 	private const val PORK_SAUSAGE_DESCRIPTION = "Pork sausage, link/patty, unprepared"
+	private const val POUND_CAKE_DESCRIPTION = "Cake, pound"
 	private const val RADICCHIO_DESCRIPTION = "Radicchio, raw"
 	private const val RADISH_DESCRIPTION = "Radishes, raw"
 	private const val RED_CABBAGE_DESCRIPTION = "Cabbage, red, raw"
 	private const val ROMAINE_LETTUCE_DESCRIPTION = "Lettuce, cos or romaine, raw"
 	private const val ROSEMARY_FRESH_DESCRIPTION = "Rosemary, fresh"
 	private const val SALMON_DESCRIPTION = "Fish, salmon, Atlantic, farmed, raw"
+	private const val SALTINE_CRACKER_DESCRIPTION = "Crackers, saltine"
+	private const val SEAWEED_DRIED_DESCRIPTION = "Seaweed, dried"
 	private const val SERRANO_DESCRIPTION = "Peppers, serrano, raw"
 	private const val SHALLOT_DESCRIPTION = "Shallots, raw"
 	private const val SHRIMP_DESCRIPTION = "Crustaceans, shrimp, mixed species, raw"
@@ -119,6 +125,7 @@ internal object NutritionSupplementalMeasures {
 		CAULIFLOWER_DESCRIPTION to pieceGrams("588"),
 		CELERIAC_DESCRIPTION to pieceGrams("600"),
 		CELERY_DESCRIPTION to pieceGrams("40"),
+		CHAMOMILE_TEA_DESCRIPTION to pieceGrams("2"),
 		CHEDDAR_DESCRIPTION to listOf(
 			SupplementalMeasure(measureName = "tbsp", gramsPerMeasure = BigDecimal("7")),
 			SupplementalMeasure(measureName = "piece", gramsPerMeasure = BigDecimal("28")),
@@ -132,6 +139,7 @@ internal object NutritionSupplementalMeasures {
 		CILANTRO_DESCRIPTION to pieceGrams("2"),
 		CINNAMON_DESCRIPTION to listOf(
 			SupplementalMeasure(measureName = "tsp", gramsPerMeasure = BigDecimal("2.6")),
+			SupplementalMeasure(measureName = "piece", gramsPerMeasure = BigDecimal("2.6")),
 		),
 		CLOVE_SPICE_DESCRIPTION to listOf(
 			SupplementalMeasure(measureName = "clove", gramsPerMeasure = BigDecimal("0.1")),
@@ -157,7 +165,9 @@ internal object NutritionSupplementalMeasures {
 		ITALIAN_SAUSAGE_DESCRIPTION to pieceGrams("80"),
 		JALAPENO_DESCRIPTION to pieceGrams("14"),
 		KALE_DESCRIPTION to pieceGrams("10"),
+		LADYFINGER_DESCRIPTION to pieceGrams("11"),
 		LEMONGRASS_DESCRIPTION to pieceGrams("25"),
+		MERINGUE_DESCRIPTION to pieceGrams("15"),
 		MINT_DESCRIPTION to pieceGrams("1"),
 		MOZZARELLA_DESCRIPTION to pieceGrams("125"),
 		MUSHROOM_DESCRIPTION to pieceGrams("18"),
@@ -172,12 +182,15 @@ internal object NutritionSupplementalMeasures {
 		PLANTAIN_SURVEY_DESCRIPTION to pieceGrams("179"),
 		PLANTAIN_YELLOW_DESCRIPTION to pieceGrams("179"),
 		PORK_SAUSAGE_DESCRIPTION to pieceGrams("56"),
+		POUND_CAKE_DESCRIPTION to pieceGrams("40"),
 		RADICCHIO_DESCRIPTION to pieceGrams("100"),
 		RADISH_DESCRIPTION to pieceGrams("5"),
 		RED_CABBAGE_DESCRIPTION to pieceGrams("839"),
 		ROMAINE_LETTUCE_DESCRIPTION to pieceGrams("150"),
 		ROSEMARY_FRESH_DESCRIPTION to pieceGrams("1"),
 		SALMON_DESCRIPTION to pieceGrams("170"),
+		SALTINE_CRACKER_DESCRIPTION to pieceGrams("3"),
+		SEAWEED_DRIED_DESCRIPTION to pieceGrams("3"),
 		SERRANO_DESCRIPTION to pieceGrams("6"),
 		SHALLOT_DESCRIPTION to pieceGrams("30"),
 		SHRIMP_DESCRIPTION to pieceGrams("20"),

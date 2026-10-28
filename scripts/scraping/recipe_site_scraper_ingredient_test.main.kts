@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v18
+// cache-bust: alt-or-incomplete-v20
 
 data class IngredientTestCase(
 	val description: String,
@@ -359,6 +359,36 @@ val alternativeCases = listOf(
 			"240 g high gluten flour",
 			"240 g bread flour with added vital wheat gluten",
 		),
+	),
+	AlternativeTestCase(
+		description = "keeps preferably organic or stoneground together",
+		input = "250g strong white bread flour preferably organic or stoneground",
+		expected = listOf("250 g strong white bread flour preferably organic or stoneground"),
+	),
+	AlternativeTestCase(
+		description = "keeps cut into matchsticks or coarsely grated together",
+		input = "2 carrots cut into matchsticks or coarsely grated",
+		expected = listOf("2 carrots cut into matchsticks or coarsely grated"),
+	),
+	AlternativeTestCase(
+		description = "keeps available in shops or online together",
+		input = "1 tsp kewra (pandan) water available in Asian shops or online",
+		expected = listOf("1 tsp kewra (pandan) water available in Asian shops or online"),
+	),
+	AlternativeTestCase(
+		description = "keeps or more if you like together",
+		input = "1 tbsp extra virgin olive oil or melted butter or more if you like",
+		expected = listOf("1 tbsp extra virgin olive oil or melted butter or more if you like"),
+	),
+	AlternativeTestCase(
+		description = "borrows rasher unit for alternative",
+		input = "12 rashers smoked streaky bacon or pancetta",
+		expected = listOf("12 rashers smoked streaky bacon", "12 rashers pancetta"),
+	),
+	AlternativeTestCase(
+		description = "appends shared cracker noun to first alternative",
+		input = "35-40 saltine or other salted crackers",
+		expected = listOf("35-40 saltine crackers", "35-40 other salted crackers"),
 	),
 )
 
