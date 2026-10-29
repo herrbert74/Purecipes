@@ -202,6 +202,7 @@ internal object IngredientLineParserTokens {
 		"prawn",
 		"prawns",
 		"prosciutto",
+		"rabbit",
 		"shank",
 		"shanks",
 		"shrimp",

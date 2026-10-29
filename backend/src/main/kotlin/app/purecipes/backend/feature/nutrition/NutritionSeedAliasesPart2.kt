@@ -677,6 +677,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("cassia bark often sold cinnamon", CINNAMON_DESCRIPTION),
 		NutritionSeedAlias("cauliflower head", CAULIFLOWER_DESCRIPTION),
 		NutritionSeedAlias("celery stalk thin half", CELERY_DESCRIPTION),
+		NutritionSeedAlias("chaat masala", CURRY_POWDER_DESCRIPTION, CUMIN_DESCRIPTION),
 		NutritionSeedAlias("chaat masala seasoning", CURRY_POWDER_DESCRIPTION, CUMIN_DESCRIPTION),
 		NutritionSeedAlias("chapati flour", FLOUR_DESCRIPTION),
 		NutritionSeedAlias("cheddar using holes grater", CHEDDAR_DESCRIPTION),
@@ -1007,6 +1008,8 @@ internal object NutritionSeedAliasesPart2 {
 			BASIL_DESCRIPTION,
 			BASIL_FALLBACK_DESCRIPTION,
 		),
+		NutritionSeedAlias("italian sausage casing", PORK_SAUSAGE_DESCRIPTION),
+		NutritionSeedAlias("italian sausage casings", PORK_SAUSAGE_DESCRIPTION),
 		NutritionSeedAlias(
 			"jaggery brown sugar you find jaggery",
 			BROWN_SUGAR_DESCRIPTION,

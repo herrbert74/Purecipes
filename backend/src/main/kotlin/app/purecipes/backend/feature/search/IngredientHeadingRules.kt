@@ -50,8 +50,11 @@ internal object IngredientHeadingRules {
 		"custard",
 		"inclusions",
 		"oatmeal",
+		"pate",
+		"pâté",
 		"rye sourdough",
 		"scald",
+		"slaw",
 		"sweet stiff levain",
 	)
 

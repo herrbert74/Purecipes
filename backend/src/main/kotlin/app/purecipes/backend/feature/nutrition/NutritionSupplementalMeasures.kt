@@ -21,9 +21,11 @@ internal object NutritionSupplementalMeasures {
 	private const val YELLOW_ONION_FDC_ID = 790646L
 	private const val YELLOW_PEPPER_FDC_ID = 169383L
 
+	private const val ALMOND_DESCRIPTION = "Nuts, almonds"
 	private const val ARTICHOKE_DESCRIPTION = "Artichokes, (globe or french), raw"
 	private const val BACON_COOKED_DESCRIPTION = "Pork, cured, bacon, cooked, baked"
 	private const val BACON_UNPREPARED_DESCRIPTION = "Pork, cured, bacon, unprepared"
+	private const val BAGUETTE_DESCRIPTION = "Bread, french or vienna (includes sourdough)"
 	private const val BANANA_DESCRIPTION = "Bananas, raw"
 	private const val BASIL_FRESH_DESCRIPTION = "Basil, fresh"
 	private const val BASIL_RAW_DESCRIPTION = "Basil, raw"
@@ -38,6 +40,7 @@ internal object NutritionSupplementalMeasures {
 	private const val CELERY_DESCRIPTION = "Celery, raw"
 	private const val CHAMOMILE_TEA_DESCRIPTION = "Beverages, tea, herb, brewed, chamomile"
 	private const val CHEDDAR_DESCRIPTION = "Cheese, cheddar"
+	private const val CHICORY_WITLOOF_DESCRIPTION = "Chicory, witloof, raw"
 	private const val CHICKEN_WHOLE_DESCRIPTION = "Chicken, broilers or fryers, meat and skin, raw"
 	private const val CHICKEN_THIGH_DESCRIPTION = "Chicken, thigh, boneless, skinless, raw"
 	private const val CHICKEN_THIGH_FALLBACK_DESCRIPTION =
@@ -52,10 +55,13 @@ internal object NutritionSupplementalMeasures {
 	private const val CORN_TORTILLA_DESCRIPTION = "Tortillas, ready-to-bake or -fry, corn"
 	private const val DILL_FRESH_DESCRIPTION = "Dill weed, fresh"
 	private const val ENDIVE_DESCRIPTION = "Endive, raw"
+	private const val EUROPEAN_CHESTNUTS_DESCRIPTION = "Nuts, chestnuts, european, boiled and steamed"
 	private const val FENNEL_BULB_DESCRIPTION = "Fennel, bulb, raw"
 	private const val FENNEL_BULB_SURVEY_DESCRIPTION = "Fennel bulb, raw"
 	private const val FLOUR_TORTILLA_DESCRIPTION =
 		"Tortillas, ready-to-bake or -fry, flour, refrigerated"
+	private const val GAME_MEAT_RABBIT_RAW_DESCRIPTION =
+		"Game meat, rabbit, domesticated, composite of cuts, raw"
 	private const val GARLIC_DESCRIPTION = "Garlic, raw"
 	private const val GELATIN_DESCRIPTION = "Gelatins, dry powder, unsweetened"
 	private const val GINGER_FRESH_DESCRIPTION = "Ginger root, raw"
@@ -85,6 +91,7 @@ internal object NutritionSupplementalMeasures {
 	private const val PLANTAIN_GREEN_DESCRIPTION = "Plantains, green, raw"
 	private const val PLANTAIN_SURVEY_DESCRIPTION = "Plantain, raw"
 	private const val PLANTAIN_YELLOW_DESCRIPTION = "Plantains, yellow, raw"
+	private const val PLUMS_DRIED_PRUNES_DESCRIPTION = "Plums, dried (prunes), uncooked"
 	private const val PORK_SAUSAGE_DESCRIPTION = "Pork sausage, link/patty, unprepared"
 	private const val POUND_CAKE_DESCRIPTION = "Cake, pound"
 	private const val RADICCHIO_DESCRIPTION = "Radicchio, raw"
@@ -110,9 +117,11 @@ internal object NutritionSupplementalMeasures {
 	private const val YELLOW_PEPPER_DESCRIPTION = "Peppers, sweet, yellow, raw"
 
 	private val pieceMeasuresByDisplayName: Map<String, List<SupplementalMeasure>> = mapOf(
+		ALMOND_DESCRIPTION to pieceGrams("1.2"),
 		ARTICHOKE_DESCRIPTION to pieceGrams("128"),
 		BACON_COOKED_DESCRIPTION to pieceGrams("8"),
 		BACON_UNPREPARED_DESCRIPTION to pieceGrams("28"),
+		BAGUETTE_DESCRIPTION to pieceGrams("25"),
 		BANANA_DESCRIPTION to pieceGrams("118"),
 		BASIL_FRESH_DESCRIPTION to pieceGrams("2"),
 		BASIL_RAW_DESCRIPTION to pieceGrams("2"),
@@ -130,6 +139,7 @@ internal object NutritionSupplementalMeasures {
 			SupplementalMeasure(measureName = "tbsp", gramsPerMeasure = BigDecimal("7")),
 			SupplementalMeasure(measureName = "piece", gramsPerMeasure = BigDecimal("28")),
 		),
+		CHICORY_WITLOOF_DESCRIPTION to pieceGrams("50"),
 		CHICKEN_WHOLE_DESCRIPTION to pieceGrams("1400"),
 		CHICKEN_THIGH_DESCRIPTION to pieceGrams("116"),
 		CHICKEN_THIGH_FALLBACK_DESCRIPTION to pieceGrams("116"),
@@ -148,9 +158,11 @@ internal object NutritionSupplementalMeasures {
 		CORN_TORTILLA_DESCRIPTION to pieceGrams("26"),
 		DILL_FRESH_DESCRIPTION to pieceGrams("1"),
 		ENDIVE_DESCRIPTION to pieceGrams("85"),
+		EUROPEAN_CHESTNUTS_DESCRIPTION to pieceGrams("8.5"),
 		FENNEL_BULB_DESCRIPTION to pieceGrams("234"),
 		FENNEL_BULB_SURVEY_DESCRIPTION to pieceGrams("234"),
 		FLOUR_TORTILLA_DESCRIPTION to pieceGrams("43"),
+		GAME_MEAT_RABBIT_RAW_DESCRIPTION to pieceGrams("1300"),
 		GARLIC_DESCRIPTION to listOf(
 			SupplementalMeasure(measureName = "clove", gramsPerMeasure = BigDecimal("3")),
 			SupplementalMeasure(measureName = "piece", gramsPerMeasure = BigDecimal("3")),
@@ -181,6 +193,7 @@ internal object NutritionSupplementalMeasures {
 		PLANTAIN_GREEN_DESCRIPTION to pieceGrams("140"),
 		PLANTAIN_SURVEY_DESCRIPTION to pieceGrams("179"),
 		PLANTAIN_YELLOW_DESCRIPTION to pieceGrams("179"),
+		PLUMS_DRIED_PRUNES_DESCRIPTION to pieceGrams("10"),
 		PORK_SAUSAGE_DESCRIPTION to pieceGrams("56"),
 		POUND_CAKE_DESCRIPTION to pieceGrams("40"),
 		RADICCHIO_DESCRIPTION to pieceGrams("100"),

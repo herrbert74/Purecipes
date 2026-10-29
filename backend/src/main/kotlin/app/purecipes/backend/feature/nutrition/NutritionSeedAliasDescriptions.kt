@@ -258,6 +258,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val SERRANO_DESCRIPTION = "Peppers, serrano, raw"
 	internal const val SESAME_OIL_DESCRIPTION = "Oil, sesame, salad or cooking"
 	internal const val SESAME_SEED_DESCRIPTION = "Seeds, sesame seeds, whole, dried"
+	internal const val SEMOLINA_DESCRIPTION = "Semolina, unenriched"
 	internal const val SHALLOT_DESCRIPTION = "Shallots, raw"
 	internal const val SHRIMP_DESCRIPTION = "Crustaceans, shrimp, raw"
 	internal const val SINGLE_CREAM_DESCRIPTION =
@@ -642,4 +643,32 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val SEAWEED_DRIED_DESCRIPTION = "Seaweed, dried"
 
 	internal const val TEQUILA_DESCRIPTION = "Tequila"
+
+	internal const val CHICORY_WITLOOF_DESCRIPTION = "Chicory, witloof, raw"
+
+	internal const val CLEMENTINES_DESCRIPTION = "Clementines, raw"
+
+	internal const val COUSCOUS_DRY_DESCRIPTION = "Couscous, dry"
+
+	internal const val EUROPEAN_CHESTNUTS_DESCRIPTION =
+		"Nuts, chestnuts, european, boiled and steamed"
+
+	internal const val FIGS_RAW_DESCRIPTION = "Figs, raw"
+
+	internal const val GAME_MEAT_RABBIT_RAW_DESCRIPTION =
+		"Game meat, rabbit, domesticated, composite of cuts, raw"
+
+	internal const val HORSERADISH_PREPARED_DESCRIPTION = "Horseradish, prepared"
+
+	internal const val JACK_MACKEREL_CANNED_DESCRIPTION =
+		"Fish, mackerel, jack, canned, drained solids"
+
+	internal const val LETTUCE_BUTTERHEAD_DESCRIPTION =
+		"Lettuce, butterhead (includes boston and bibb types), raw"
+
+	internal const val LETTUCE_GREEN_LEAF_DESCRIPTION = "Lettuce, green leaf, raw"
+
+	internal const val PLUMS_DRIED_PRUNES_DESCRIPTION = "Plums, dried (prunes), uncooked"
+
+	internal const val TROUT_RAW_DESCRIPTION = "Fish, trout, mixed species, raw"
 }

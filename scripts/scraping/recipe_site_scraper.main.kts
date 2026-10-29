@@ -4,7 +4,7 @@
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
 
-// cache-bust: alt-or-incomplete-v20
+// cache-bust: alt-or-incomplete-v21
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -1644,10 +1644,40 @@ private fun saveRecipeInstructions(connection: Connection, recipe: RecipeData, r
 	}
 }
 
+private val scrapedServingsRegex = Regex(
+	pattern = """(\d+(?:\.\d+)?)\s*(?:servings?|serves|portions?|people|items?|pieces?|pancakes?|""" +
+		"""biscuits?|cookies?|rolls?|muffins?|cupcakes?|buns?|bars?|loaves|loaf|batch|pie)""",
+	option = RegexOption.IGNORE_CASE,
+)
+
+private val scrapedLeadingCountRegex = Regex(
+	pattern = """^(\d+(?:\.\d+)?)\s*(?:x\s*)?(?:servings?|serves|items?|pieces?)""",
+	option = RegexOption.IGNORE_CASE,
+)
+
+private fun parseScrapedServingCount(yields: String?): Double? {
+	val trimmed = yields?.trim().orEmpty()
+	if (trimmed.isEmpty()) {
+		return null
+	}
+	val match = scrapedServingsRegex.find(trimmed) ?: scrapedLeadingCountRegex.find(trimmed)
+	val count = match?.groupValues?.getOrNull(1)?.toDoubleOrNull()
+	return if (count == null || count <= 0.0) null else count
+}
+
+private fun scaleScrapedNutrient(value: String?, multiplier: Double): Double? {
+	val parsed = parseNumber(value) ?: return null
+	return java.math.BigDecimal.valueOf(parsed * multiplier)
+		.setScale(2, java.math.RoundingMode.HALF_UP)
+		.toDouble()
+}
+
 private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeData, recipeId: Int) {
 	if (!recipe.hasScrapedNutrition()) {
 		return
 	}
+	val servingCount = parseScrapedServingCount(recipe.yields)
+	val multiplier = if (servingCount != null && servingCount > 0.0) servingCount else 1.0
 	val nutrients = recipe.nutrients
 	connection.prepareStatement(
 		"""
@@ -1660,9 +1690,10 @@ private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeDat
 			fiber,
 			sugar,
 			sodium,
-			calculation_source
+			calculation_source,
+			serving_count
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (recipe_id) DO UPDATE SET
 			calories = EXCLUDED.calories,
 			protein = EXCLUDED.protein,
@@ -1671,18 +1702,20 @@ private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeDat
 			fiber = EXCLUDED.fiber,
 			sugar = EXCLUDED.sugar,
 			sodium = EXCLUDED.sodium,
-			calculation_source = EXCLUDED.calculation_source
+			calculation_source = EXCLUDED.calculation_source,
+			serving_count = EXCLUDED.serving_count
 		""".trimIndent(),
 	).use { ps ->
 		ps.setInt(1, recipeId)
-		ps.setObject(2, parseNumber(nutrients["calories"]))
-		ps.setObject(3, parseNumber(nutrients["protein"]))
-		ps.setObject(4, parseNumber(nutrients["carbohydrates"]))
-		ps.setObject(5, parseNumber(nutrients["fat"]))
-		ps.setObject(6, parseNumber(nutrients["fiber"]))
-		ps.setObject(7, parseNumber(nutrients["sugar"]))
-		ps.setObject(8, parseNumber(nutrients["sodium"]))
+		ps.setObject(2, scaleScrapedNutrient(nutrients["calories"], multiplier))
+		ps.setObject(3, scaleScrapedNutrient(nutrients["protein"], multiplier))
+		ps.setObject(4, scaleScrapedNutrient(nutrients["carbohydrates"], multiplier))
+		ps.setObject(5, scaleScrapedNutrient(nutrients["fat"], multiplier))
+		ps.setObject(6, scaleScrapedNutrient(nutrients["fiber"], multiplier))
+		ps.setObject(7, scaleScrapedNutrient(nutrients["sugar"], multiplier))
+		ps.setObject(8, scaleScrapedNutrient(nutrients["sodium"], multiplier))
 		ps.setString(9, "scraped")
+		ps.setObject(10, servingCount)
 		ps.executeUpdate()
 	}
 }

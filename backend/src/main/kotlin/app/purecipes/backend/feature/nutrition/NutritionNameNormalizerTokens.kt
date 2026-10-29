@@ -111,6 +111,7 @@ internal object NutritionNameNormalizerTokens {
 		"separated",
 		"separately",
 		"shaken",
+		"shelled",
 		"shredded",
 		"shucked",
 		"sifted",

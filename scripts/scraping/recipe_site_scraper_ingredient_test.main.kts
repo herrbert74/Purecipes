@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v20
+// cache-bust: alt-or-incomplete-v21
 
 data class IngredientTestCase(
 	val description: String,
@@ -389,6 +389,16 @@ val alternativeCases = listOf(
 		description = "appends shared cracker noun to first alternative",
 		input = "35-40 saltine or other salted crackers",
 		expected = listOf("35-40 saltine crackers", "35-40 other salted crackers"),
+	),
+	AlternativeTestCase(
+		description = "keeps frozen ones together with cranberries",
+		input = "500 g fresh cranberries (defrosted) or frozen ones",
+		expected = listOf("500 g fresh cranberries (defrosted) or frozen ones"),
+	),
+	AlternativeTestCase(
+		description = "borrows wine glasses unit for alternative",
+		input = "2 wine glasses of dry white vermouth or dry white wine",
+		expected = listOf("2 wine glasses of dry white vermouth", "2 wine glasses of dry white wine"),
 	),
 )
 

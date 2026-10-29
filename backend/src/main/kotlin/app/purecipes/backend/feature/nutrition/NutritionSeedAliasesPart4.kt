@@ -190,6 +190,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SAZON_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SCALLOP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SELF_RISING_FLOUR_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SEMOLINA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SERRANO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SESAME_SEED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SHRIMP_DESCRIPTION
@@ -356,6 +357,7 @@ internal object NutritionSeedAliasesPart4 {
 		NutritionSeedAlias("multigrain spaghetti", PASTA_DESCRIPTION),
 		NutritionSeedAlias("non hydrogenated lard", LARD_DESCRIPTION),
 		NutritionSeedAlias("oil anchovy", ANCHOVY_DESCRIPTION),
+		NutritionSeedAlias("peanut dipping sauce", PEANUT_SAUCE_DESCRIPTION, PEANUT_BUTTER_DESCRIPTION),
 		NutritionSeedAlias("peanut dipping sauce below", PEANUT_BUTTER_DESCRIPTION),
 		NutritionSeedAlias(
 			"persian leekschives green scallions",
@@ -1534,7 +1536,7 @@ internal object NutritionSeedAliasesPart4 {
 		),
 		NutritionSeedAlias(
 			"semolina flour",
-			PASTA_DESCRIPTION,
+			SEMOLINA_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
 			FLOUR_DESCRIPTION,
 		),

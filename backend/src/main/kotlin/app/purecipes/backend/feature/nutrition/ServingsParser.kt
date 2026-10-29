@@ -8,12 +8,13 @@ internal data class ParsedServings(
 internal object ServingsParser {
 
 	private val SERVING_COUNT_REGEX = Regex(
-		pattern = """(\d+(?:\.\d+)?)\s*(?:servings?|serves|portions?|people)""",
+		pattern = """(\d+(?:\.\d+)?)\s*(?:servings?|serves|portions?|people|items?|pieces?|pancakes?|""" +
+			"""biscuits?|cookies?|rolls?|muffins?|cupcakes?|buns?|bars?|loaves|loaf|batch|pie)""",
 		option = RegexOption.IGNORE_CASE,
 	)
 
 	private val LEADING_COUNT_REGEX = Regex(
-		pattern = """^(\d+(?:\.\d+)?)\s*(?:x\s*)?(?:servings?|serves)""",
+		pattern = """^(\d+(?:\.\d+)?)\s*(?:x\s*)?(?:servings?|serves|items?|pieces?)""",
 		option = RegexOption.IGNORE_CASE,
 	)
 

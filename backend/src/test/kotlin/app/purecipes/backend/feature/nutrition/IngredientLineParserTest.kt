@@ -1286,4 +1286,91 @@ class IngredientLineParserTest {
 		maldon.parsedName shouldBe "Maldon sea salt"
 		maldon.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseParsesBritishSpecialtiesAndPackMultipliers() {
+		val oats = IngredientLineParser.parse("1 mug of porridge oats (150g)")
+		oats.quantity shouldBe BigDecimal("150")
+		oats.unit shouldBe "g"
+		oats.parsedName shouldBe "porridge oats"
+		oats.isMeasurable shouldBe true
+
+		val coriander = IngredientLineParser.parse("1 bunch of fresh coriander (30g)")
+		coriander.quantity shouldBe BigDecimal("30")
+		coriander.unit shouldBe "g"
+		coriander.parsedName shouldBe "fresh coriander"
+		coriander.isMeasurable shouldBe true
+
+		val sausages = IngredientLineParser.parse("6 higher-welfare Cumberland sausages (400 g total)")
+		sausages.quantity shouldBe BigDecimal("400")
+		sausages.unit shouldBe "g"
+		sausages.parsedName shouldBe "Cumberland sausages"
+		sausages.isMeasurable shouldBe true
+
+		val pastry = IngredientLineParser.parse("2 x 375 g packets of ready-rolled all-butter puff pastry")
+		pastry.quantity shouldBe BigDecimal("750")
+		pastry.unit shouldBe "g"
+		pastry.parsedName shouldBe "puff pastry"
+		pastry.isMeasurable shouldBe true
+
+		val rum = IngredientLineParser.parse("1 swig of rum")
+		rum.quantity shouldBe BigDecimal.ONE
+		rum.unit shouldBe "tbsp"
+		rum.parsedName shouldBe "rum"
+		rum.isMeasurable shouldBe true
+
+		val asparagus = IngredientLineParser.parse("8 large asparagus spears")
+		asparagus.quantity shouldBe BigDecimal("8")
+		asparagus.unit shouldBe "piece"
+		asparagus.parsedName shouldBe "asparagus"
+		asparagus.isMeasurable shouldBe true
+
+		val bacon = IngredientLineParser.parse("4 rashers of higher-welfare smoked streaky bacon")
+		bacon.quantity shouldBe BigDecimal("4")
+		bacon.unit shouldBe "piece"
+		bacon.parsedName shouldBe "smoked streaky bacon"
+		bacon.isMeasurable shouldBe true
+
+		val rabbit = IngredientLineParser.parse("1 whole rabbit, skinned, including offal")
+		rabbit.quantity shouldBe BigDecimal.ONE
+		rabbit.unit shouldBe "piece"
+		rabbit.parsedName shouldBe "whole rabbit"
+		rabbit.isMeasurable shouldBe true
+
+		val gem = IngredientLineParser.parse("2 little gem lettuces")
+		gem.quantity shouldBe BigDecimal("2")
+		gem.unit shouldBe "piece"
+		gem.parsedName shouldBe "little gem lettuces"
+		gem.isMeasurable shouldBe true
+
+		val couscous = IngredientLineParser.parse("150 g wholewheat couscous")
+		couscous.quantity shouldBe BigDecimal("150")
+		couscous.unit shouldBe "g"
+		couscous.parsedName shouldBe "wholewheat couscous"
+		couscous.isMeasurable shouldBe true
+
+		val crostini = IngredientLineParser.parse("Crostini")
+		crostini.quantity shouldBe BigDecimal("12")
+		crostini.unit shouldBe "piece"
+		crostini.parsedName shouldBe "crostini"
+		crostini.isMeasurable shouldBe true
+
+		val fryingOil = IngredientLineParser.parse("vegetable oil, for frying")
+		fryingOil.quantity shouldBe BigDecimal("2")
+		fryingOil.unit shouldBe "tbsp"
+		fryingOil.parsedName shouldBe "vegetable oil"
+		fryingOil.isMeasurable shouldBe true
+
+		val vermouth = IngredientLineParser.parse("2 wine glasses of dry white vermouth (dry Martini or Noilly Prat)")
+		vermouth.quantity shouldBe BigDecimal("300")
+		vermouth.unit shouldBe "ml"
+		vermouth.parsedName shouldBe "dry vermouth"
+		vermouth.isMeasurable shouldBe true
+
+		val mintSprig = IngredientLineParser.parse("1 sprig each of fresh mint, basil and rosemary")
+		mintSprig.quantity shouldBe BigDecimal.ONE
+		mintSprig.unit shouldBe "tsp"
+		mintSprig.parsedName shouldBe "fresh mint"
+		mintSprig.isMeasurable shouldBe true
+	}
 }

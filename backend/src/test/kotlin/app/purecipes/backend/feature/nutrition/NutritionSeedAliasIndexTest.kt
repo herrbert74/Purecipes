@@ -922,10 +922,10 @@ class NutritionSeedAliasIndexTest {
 			displayName = "Salt, table",
 			normalizedName = "salt table",
 		)
-		val pasta = food(
+		val semolina = food(
 			id = 6,
-			displayName = "Pasta, dry, unenriched",
-			normalizedName = "pasta dry unenriched",
+			displayName = "Semolina, unenriched",
+			normalizedName = "semolina unenriched",
 		)
 		val fennel = food(
 			id = 7,
@@ -933,7 +933,7 @@ class NutritionSeedAliasIndexTest {
 			normalizedName = "spices fennel seed",
 		)
 		val aliases = NutritionSeedAliasIndex.merge(
-			foods = listOf(breadFlour, darkRyeFlour, water, vanillaExtract, salt, pasta, fennel),
+			foods = listOf(breadFlour, darkRyeFlour, water, vanillaExtract, salt, semolina, fennel),
 			storedAliases = emptyMap(),
 		)
 

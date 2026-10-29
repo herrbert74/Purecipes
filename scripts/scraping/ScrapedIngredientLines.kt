@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v20"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v21"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -325,9 +325,12 @@ val structuralHeadingExactFilters = setOf(
 	"inclusions",
 	"lye bath",
 	"oatmeal",
+	"pate",
+	"pâté",
 	"poolish",
 	"porridge",
 	"scald",
+	"slaw",
 	"sourdough",
 	"stiff levain",
 	"sweet stiff levain",
@@ -467,7 +470,8 @@ fun sanitizeIngredientLine(raw: String): ProcessedScrapedIngredient? {
 			ingredientHeadingExactFilters.contains(lower) ||
 			structuralHeadingExactFilters.contains(lower) ||
 			lower.contains("recipe follows")
-	val isEquipmentLike = !hasDigit && ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
+	val isEquipmentLike = (!hasDigit || lower.contains("set of")) &&
+		ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
 
 	return if (isHeadingLike || isEquipmentLike) {
 		null
@@ -531,6 +535,7 @@ private const val ALTERNATIVE_LEADING_QUANTITY_PATTERN =
 private const val ALTERNATIVE_LEADING_UNIT_PATTERN =
 	"""(?:g|kg|ml|l|oz|lbs?|tsps?|tbsps?|teaspoons?|tablespoons?|cups?|pinch(?:es)?|dash(?:es)?|""" +
 		"""handfuls?|bags?|cans?|tins?|packs?|packages?|packets?|jars?|bottles?|slices?|rashers?|cloves?|""" +
+		"""glasses?|wine glasses?|mugs?|""" +
 		"""stalks?|sprigs?|heads?|bunch(?:es)?|pieces?|pounds?|ounces?|grams?|kilograms?|""" +
 		"""liters?|litres?|milliliters?|millilitres?)"""
 
@@ -781,6 +786,8 @@ private val incompleteAlternativeTokens = setOf(
 	"mineral",
 	"mini",
 	"online",
+	"one",
+	"ones",
 	"organic",
 	"peeled",
 	"plain",
