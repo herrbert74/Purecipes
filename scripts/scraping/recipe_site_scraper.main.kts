@@ -4,7 +4,7 @@
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
 
-// cache-bust: alt-or-incomplete-v21
+// cache-bust: alt-or-incomplete-v22
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -750,7 +750,38 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 		title = (safe("title", "") or "").strip()
 		title_missing = not title
 
+		def extract_jamie_oliver_groups(soup):
+			ing_div = soup.select_one(".ingredients-rich-text")
+			if not ing_div:
+				return None
+			groups, cur_name, cur_items = [], None, []
+			for p in ing_div.find_all("p"):
+				txt = p.get_text(" ", strip=True)
+				if not txt:
+					continue
+				strong = p.find("strong")
+				is_heading = (
+					"type-h5" in p.get("class", [])
+					or (strong and strong.get_text(strip=True) == txt)
+					or (txt.isupper() and not any(c.isdigit() for c in txt))
+				)
+				if is_heading:
+					if cur_items or cur_name:
+						groups.append((cur_name, cur_items))
+						cur_items = []
+					cur_name = txt
+				else:
+					cur_items.append(txt)
+			if cur_items or cur_name:
+				groups.append((cur_name, cur_items))
+			return groups if len(groups) > 1 or (len(groups) == 1 and groups[0][0]) else None
+
 		ingredient_groups = safe("ingredient_groups")
+		if "jamieoliver.com" in url.lower():
+			page_soup = getattr(s, "soup", None) or BeautifulSoup(html, "html.parser")
+			jo_groups = extract_jamie_oliver_groups(page_soup)
+			if jo_groups:
+				ingredient_groups = jo_groups
 		ingredients = safe("ingredients", []) or []
 		if ingredient_groups is None:
 			ingredient_groups = [(None, ingredients)]
