@@ -43,7 +43,7 @@ let package = Package(
     .package(path: "subpackages/io_github_mirzemehdi_kmpauth_facebook_3_0_6"),
     .package(path: "subpackages/io_github_mirzemehdi_kmpauth_firebase_3_0_6"),
     .package(path: "subpackages/io_github_mirzemehdi_kmpauth_google_3_0_6"),
-    .package(path: "subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_1")
+    .package(path: "subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2")
   ],
   targets: [
     .target(
@@ -79,7 +79,7 @@ let package = Package(
         .product(name: "io_github_mirzemehdi_kmpauth_facebook_3_0_6", package: "io_github_mirzemehdi_kmpauth_facebook_3_0_6"),
         .product(name: "io_github_mirzemehdi_kmpauth_firebase_3_0_6", package: "io_github_mirzemehdi_kmpauth_firebase_3_0_6"),
         .product(name: "io_github_mirzemehdi_kmpauth_google_3_0_6", package: "io_github_mirzemehdi_kmpauth_google_3_0_6"),
-        .product(name: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_1", package: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_1")
+        .product(name: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2", package: "io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2")
       ]
     )
   ]

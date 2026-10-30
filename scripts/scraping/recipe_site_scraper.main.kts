@@ -1,5 +1,5 @@
 #!/usr/bin/env kotlin
-@file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+@file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
 @file:DependsOn("org.postgresql:postgresql:42.7.14")
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
