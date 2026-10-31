@@ -15,11 +15,12 @@ internal object NutritionNameClauseRules {
 	private val butNotClause = Regex("""(?i),?\s+but\s+not\b.*$""")
 
 	private val toVerbClause = Regex(
-		"""(?i),?\s+to\s+(?:sprinkle|brush|thin|cut|top|dust|coat|garnish|serve|scatter|drizzle|decorate)\b.*$""",
+		"""(?i),?\s+to\s+(?:sprinkle|brush|thin|cut|top|dust|coat|garnish|serve|scatter|""" +
+			"""drizzle|decorate|season|taste|glaze)\b.*$""",
 	)
 
 	private val forGerundClause = Regex(
-		"""(?i),?\s+for\s+(?:brushing|dusting|sprinkling|serving|garnishing|greasing|coating)\b.*$""",
+		"""(?i),?\s+for\s+(?:brushing|dusting|sprinkling|serving|garnishing|greasing|coating|glazing|dipping)\b.*$""",
 	)
 
 	private val noNeedClause = Regex("""(?i),?\s+no\s+need\b.*$""")

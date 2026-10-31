@@ -26,7 +26,9 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEET_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BELL_PEPPER_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BISCOTTI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUE_CHEESE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREADCRUMB_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREAD_FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BREAD_FLOUR_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BRIE_DESCRIPTION
@@ -36,7 +38,9 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BU
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BUTTERNUT_SQUASH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CANDIED_FRUIT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CANOLA_OIL_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CARAMEL_TOPPING_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CARDAMOM_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CAVIAR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CAYENNE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHAMOMILE_TEA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CHAMOMILE_TEA_FALLBACK_DESCRIPTION
@@ -105,6 +109,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LIQUEUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.MAYONNAISE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.MERINGUE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.MILK_CHOCOLATE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.MILK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.MOLASSES_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.MOZZARELLA_DESCRIPTION
@@ -139,6 +144,8 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RASPBERRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RED_WINE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_CRISPY_CEREAL_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RICE_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROASTED_SALTED_PEANUTS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROMAINE_LETTUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RUTABAGA_DESCRIPTION
@@ -148,6 +155,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALT_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SEAWEED_DRIED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SHALLOT_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SHRIMP_COOKED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SHRIMP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPINACH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SQUID_DESCRIPTION
@@ -652,5 +660,18 @@ internal object NutritionSeedAliasesPart5 {
 		NutritionSeedAlias("squid bodies tentacles whole", SQUID_DESCRIPTION),
 		NutritionSeedAlias("white chocolate decorate", WHITE_CHOCOLATE_DESCRIPTION),
 		NutritionSeedAlias("white chocolate", WHITE_CHOCOLATE_DESCRIPTION),
+		NutritionSeedAlias("candied ginger", CANDIED_FRUIT_DESCRIPTION, GINGER_FRESH_DESCRIPTION),
+		NutritionSeedAlias("fish roe", CAVIAR_DESCRIPTION),
+		NutritionSeedAlias("beetroot juice", BEET_DESCRIPTION),
+		NutritionSeedAlias("candied fruit peel", CANDIED_FRUIT_DESCRIPTION),
+		NutritionSeedAlias("caramel sauce", CARAMEL_TOPPING_DESCRIPTION),
+		NutritionSeedAlias("cooked prawns", SHRIMP_COOKED_DESCRIPTION, SHRIMP_DESCRIPTION),
+		NutritionSeedAlias("raw prawns", SHRIMP_DESCRIPTION),
+		NutritionSeedAlias("fruit jam", JAM_DESCRIPTION),
+		NutritionSeedAlias("paella rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("toffee chocolate", MILK_CHOCOLATE_DESCRIPTION),
+		NutritionSeedAlias("vegetable bouillon powder", VEGETABLE_BROTH_DESCRIPTION),
+		NutritionSeedAlias("white breadcrumbs", BREADCRUMB_DESCRIPTION),
+		NutritionSeedAlias("biscotti", BISCOTTI_DESCRIPTION),
 	)
 }

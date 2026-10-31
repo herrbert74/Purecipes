@@ -30,6 +30,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val BEET_DESCRIPTION = "Beets, raw"
 	internal const val BEER_DESCRIPTION = "Alcoholic beverage, beer, regular, all"
 	internal const val BELL_PEPPER_DESCRIPTION = "Peppers, sweet, green, raw"
+	internal const val BISCOTTI_DESCRIPTION = "Cookie, biscotti"
 	internal const val BLACK_PEPPER_DESCRIPTION = "Spices, pepper, black"
 	internal const val BLACK_VINEGAR_DESCRIPTION = "BLACK VINEGAR"
 	internal const val BLACK_BEAN_DESCRIPTION =
@@ -62,6 +63,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val CABBAGE_RED_DESCRIPTION = "Cabbage, red, raw"
 	internal const val CAKE_FLOUR_DESCRIPTION = "Wheat flour, white, cake, enriched"
 	internal const val CANDIED_FRUIT_DESCRIPTION = "Candied fruit"
+	internal const val CARAMEL_TOPPING_DESCRIPTION = "Toppings, butterscotch or caramel"
 	internal const val CAPERS_DESCRIPTION = "Capers, canned"
 	internal const val CANNELLINI_DESCRIPTION =
 		"Beans, great northern, mature seeds, cooked, boiled, without salt"
@@ -69,6 +71,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val CARDAMOM_DESCRIPTION = "Spices, cardamom"
 	internal const val CARROT_DESCRIPTION = "Carrots, raw"
 	internal const val CAULIFLOWER_DESCRIPTION = "Cauliflower, raw"
+	internal const val CAVIAR_DESCRIPTION = "Fish, caviar, black and red, granular"
 	internal const val CAYENNE_DESCRIPTION = "Spices, pepper, red or cayenne"
 	internal const val CELERIAC_DESCRIPTION = "Celeriac, raw"
 	internal const val CELERY_DESCRIPTION = "Celery, raw"
@@ -261,6 +264,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val SEMOLINA_DESCRIPTION = "Semolina, unenriched"
 	internal const val SHALLOT_DESCRIPTION = "Shallots, raw"
 	internal const val SHRIMP_DESCRIPTION = "Crustaceans, shrimp, raw"
+	internal const val SHRIMP_COOKED_DESCRIPTION = "Crustaceans, shrimp, cooked"
 	internal const val SINGLE_CREAM_DESCRIPTION =
 		"Cream, fluid, light (coffee cream or table cream)"
 	internal const val SKIM_MILK_DESCRIPTION =

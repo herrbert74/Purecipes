@@ -347,6 +347,7 @@ internal object IngredientLineParserTokens {
 	)
 
 	val defaultPiecePreparedTokens = setOf(
+		"biscotti",
 		"cane",
 		"canes",
 		"capsicum",

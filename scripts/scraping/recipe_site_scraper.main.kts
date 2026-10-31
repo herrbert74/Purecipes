@@ -117,7 +117,7 @@ val knownWebsites = mapOf(
 		recipePattern = Regex(
 			"^/(?!cooking(?:/|$)|tv-show(?:/|$)|home-garden(?:/|$)|fashion(?:/|$)|" +
 				"travel(?:/|$)|trueprue(?:/|$)|books(?:/|$)|products(?:/|$)|" +
-				"search(?:/|$)|terms-and-conditions/?$|privacy-policy/?$|contact/?$|" +
+				"search(?:/|$)|terms-and-conditions/?$|privacy-policy/?$|contact/?$|press/?$|" +
 				"uncategorized(?:/|$)|feed/|comments/|wp-|xmlrpc|category/|tag/|" +
 				"author/|page/)[a-z0-9-]+/?$",
 		),
@@ -690,38 +690,106 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 				cat_el = article.select_one(".catergory, .category")
 				if cat_el:
 					category = cat_el.get_text(" ", strip=True)
-				has_ing_marker, cur_name, cur_items = False, None, []
-				for el in article.find_all(["p", "ul", "ol", "h2", "h3", "h4"]):
-					if el.find_parent(["ul", "ol"]) is not None:
+				if category and any(non_food in category.lower() for non_food in ["fashion", "travel", "home & garden", "#trueprue", "books", "trueprue"]):
+					article = None
+			if article:
+				for p in article.find_all(["p", "h3", "h4", "div"]):
+					if p.find_parent(["ul", "ol"]):
 						continue
-					txt = el.get_text(" ", strip=True)
+					txt = p.get_text(" ", strip=True)
 					low = txt.lower()
-					if el.name == "p":
-						if low.startswith("prep time"):
-							prep_time = parse_minutes(txt)
-						elif low.startswith("cook time"):
-							cook_time = parse_minutes(txt)
-						elif low.startswith("serves") or low.startswith("makes"):
+					if "prep time" in low and not prep_time:
+						prep_time = parse_minutes(txt.split("cook time")[0] if "cook time" in low else txt)
+					if "cook time" in low and not cook_time:
+						cook_time = parse_minutes(txt[txt.find("cook time"):])
+					if (low.startswith("serves") or low.startswith("makes") or "serves:" in low or "makes:" in low) and not yields:
+						if len(txt) < 60:
 							yields = txt
-						elif "ingredients" in low and len(txt) < 40:
-							has_ing_marker = True
-						elif len(txt) < 60 and (el.find("em") or el.find("strong")):
-							if cur_items:
-								ingredient_groups.append((cur_name, cur_items))
-								cur_items = []
-							cur_name = txt.rstrip(":")
-					elif el.name == "ul":
-						items = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
-						if items and (has_ing_marker or prep_time or cook_time or yields):
-							cur_items.extend(items)
-					elif el.name == "ol":
+
+				def is_quantity_line(t):
+					s = t.strip()
+					return bool(s and re.match(r"^(?:\d|[¼½¾⅓⅔⅛⅜⅝⅞]|pinch|large pinch|small pinch|handful|few|a few|juice|zest|a sprig|sprig|silver charms)", s, re.I))
+
+				raw_elements = [el for el in article.find_all(["h2", "h3", "h4", "h5", "h6", "p", "ul", "ol"]) if el.find_parent(["ul", "ol"]) is None]
+				elements = []
+				for el in raw_elements:
+					txt = el.get_text(" ", strip=True)
+					if txt:
+						elements.append((el, txt, txt.lower().rstrip(":")))
+
+				method_idx = None
+				for idx, (el, txt, low) in enumerate(elements):
+					if low in ["method", "instructions", "directions", "to make"] or low.startswith("method") or low.startswith("instructions"):
+						method_idx = idx
+						break
+					if el.name == "ol":
+						method_idx = idx
+						break
+
+				if method_idx is None:
+					found_ings = False
+					for idx, (el, txt, low) in enumerate(elements):
+						if is_quantity_line(txt):
+							found_ings = True
+						elif found_ings and el.name == "p" and len(txt) > 35 and not is_quantity_line(txt):
+							method_idx = idx
+							break
+
+				if method_idx is not None:
+					ing_start_idx = None
+					for idx in range(method_idx):
+						el, txt, low = elements[idx]
+						if low in ["ingredients"] or low.startswith("ingredients") or re.match(r"^for\s+(?:the\s+)?[a-z\s]+$", low):
+							ing_start_idx = idx
+							break
+						if el.name == "ul":
+							ing_start_idx = idx
+							break
+						if el.name == "p" and is_quantity_line(txt):
+							ing_start_idx = idx
+							break
+
+					if ing_start_idx is not None:
+						cur_name, cur_items = None, []
+						for idx in range(ing_start_idx, method_idx):
+							el, txt, low = elements[idx]
+							if low in ["ingredients"] or low.startswith("ingredients"):
+								continue
+							if low.startswith("for ") or re.match(r"^(?:for\s+[a-z\s]+|to\s+serve|topping|filling|base|icing|cake|dough):?$", low):
+								if cur_items:
+									ingredient_groups.append((cur_name, cur_items))
+									cur_items = []
+								cur_name = txt.rstrip(":")
+								continue
+							if el.name == "ul":
+								items = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
+								cur_items.extend(items)
+							elif el.name == "p":
+								p_lines = [line.strip() for line in el.get_text("\n", strip=True).splitlines() if line.strip()]
+								for p_line in p_lines:
+									is_subgroup = (el.find(["strong", "b", "em", "h4", "h5"]) and len(p_line) < 40) or (len(p_line) < 30 and not is_quantity_line(p_line))
+									if is_subgroup and not is_quantity_line(p_line):
+										if cur_items:
+											ingredient_groups.append((cur_name, cur_items))
+											cur_items = []
+										cur_name = p_line.rstrip(":")
+									else:
+										cur_items.append(p_line)
 						if cur_items:
 							ingredient_groups.append((cur_name, cur_items))
-							cur_items = []
-						steps = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
-						instruction_list.extend(steps)
-				if cur_items:
-					ingredient_groups.append((cur_name, cur_items))
+
+						for idx in range(method_idx, len(elements)):
+							el, txt, low = elements[idx]
+							if low in ["method", "instructions", "directions", "to make"] or low.startswith("method") or low.startswith("instructions"):
+								continue
+							if any(low.startswith(p) for p in ["tip:", "tips:", "taken from", "tags:", "photograph", "this cake will keep", "you might also like"]):
+								break
+							if el.name in ["ol", "ul"]:
+								steps = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
+								instruction_list.extend(steps)
+							elif el.name == "p":
+								if len(txt) > 20 and not (el.find("strong") and len(txt) < 40):
+									instruction_list.append(txt)
 
 		if not ingredient_groups:
 			return None
@@ -764,6 +832,10 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 			fallback_payload = fallback_scrape_dom(html, url)
 			if fallback_payload is not None:
 				print(json.dumps(fallback_payload, ensure_ascii=False))
+				raise SystemExit(0)
+			host_check = urlparse(url).netloc.replace("www.", "").lower()
+			if any(known in host_check for known in ("maryberry.co.uk", "paulhollywood.com", "prue-leith.com")):
+				print("__SCRAPE_NO_DATA__:not a recipe page or missing recipe details")
 				raise SystemExit(0)
 			raise
 

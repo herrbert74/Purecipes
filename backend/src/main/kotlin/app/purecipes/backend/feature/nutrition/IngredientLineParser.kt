@@ -496,6 +496,7 @@ internal object IngredientLineParser {
 			value.forEach { character ->
 				when {
 					character == '–' || character == '—' -> append('-')
+					character == '\u00A0' -> append(' ')
 					else -> {
 						val fraction = unicodeFractions[character]
 						if (fraction == null) {
@@ -1597,8 +1598,8 @@ internal object IngredientLineParser {
 			"kg", "kilogram", "kilograms" -> "kg"
 			"ml", "milliliter", "millilitre", "milliliters", "millilitres" -> "ml"
 			"l", "liter", "litre", "liters", "litres" -> "l"
-			"tsp", "tsps", "teaspoon", "teaspoons" -> "tsp"
-			"tbsp", "tbsps", "tablespoon", "tablespoons" -> "tbsp"
+			"tsp", "tsps", "teaspoon", "teaspoons", "tspn" -> "tsp"
+			"tbsp", "tbsps", "tbs", "tablespoon", "tablespoons" -> "tbsp"
 			"cup", "cups" -> "cup"
 			"oz", "ounce", "ounces" -> "oz"
 			"lb", "lbs", "pound", "pounds" -> "lb"
