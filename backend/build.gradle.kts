@@ -181,7 +181,16 @@ tasks.register<JavaExec>("reportIngredientFoodMatches") {
 	description = "Reports ingredient lines missing food-table matches or gram weights"
 	classpath = sourceSets.main.get().runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.IngredientFoodMatchReportKt")
-	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
+	val extraArgs = buildList {
+		project.findProperty("report.output")?.toString()?.let {
+			add("--output")
+			add(it)
+		}
+		if (project.findProperty("report.includeScraped")?.toString() == "true") {
+			add("--include-scraped")
+		}
+	}
+	args = extraArgs
 }
 
 tasks.register<JavaExec>("calculateRecipeNutrition") {

@@ -89,6 +89,7 @@ private fun collectUnknownIngredients(
 		if (normalizedIngredient.isEmpty()) {
 			return@mapNotNull null
 		}
+
 		if (IngredientVocabulary.isIgnorableIngredientLine(normalizedIngredient)) {
 			return@mapNotNull null
 		}

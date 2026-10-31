@@ -54,6 +54,8 @@ internal object NutritionNameNormalizer {
 
 	private val BEFORE_MEASURING_PHRASE = Regex("""(?i)\bbefore\s+measuring\b""")
 
+	private val UNTIL_GOLDEN_PHRASE = Regex("""(?i)\buntil\s+golden(?:\s+brown)?\b""")
+
 	private val FOR_FLOURING_PHRASE = Regex("""(?i)\bfor\s+flouring\b""")
 
 	private val FOR_SHAPING_PHRASE = Regex("""(?i)\bfor\s+shaping\b""")
@@ -71,488 +73,6 @@ internal object NutritionNameNormalizer {
 	private val TEMPERATURE_LEFTOVER = Regex("""^\d+o(?:f)?$""")
 
 	private val COMBINING_MARKS = Regex("\\p{M}+")
-
-	private val preparationTokens = setOf(
-		"batons",
-		"beaten",
-		"bias",
-		"bite",
-		"blanched",
-		"boned",
-		"broken",
-		"butterflied",
-		"center",
-		"charred",
-		"chilled",
-		"chiffonade",
-		"chopped",
-		"chunks",
-		"cleaned",
-		"coarsely",
-		"cold",
-		"concentrated",
-		"cooled",
-		"core",
-		"cored",
-		"crispy",
-		"crosswise",
-		"crumbled",
-		"crusted",
-		"crushed",
-		"cubed",
-		"cubes",
-		"cut",
-		"cutlet",
-		"cutlets",
-		"debearded",
-		"defrosted",
-		"deseeded",
-		"desiccated",
-		"deveined",
-		"diagonal",
-		"diagonally",
-		"dice",
-		"diced",
-		"divided",
-		"drained",
-		"dried",
-		"drizzled",
-		"dry",
-		"eighths",
-		"fillet",
-		"fillets",
-		"fine",
-		"finely",
-		"florets",
-		"fresh",
-		"freshly",
-		"grated",
-		"ground",
-		"halved",
-		"halves",
-		"hearts",
-		"homemade",
-		"hulled",
-		"inch",
-		"inches",
-		"intact",
-		"juiced",
-		"julienned",
-		"knob",
-		"knobs",
-		"large",
-		"leaves",
-		"lengthwise",
-		"lightly",
-		"mashed",
-		"medium",
-		"melted",
-		"minced",
-		"mini",
-		"moons",
-		"needed",
-		"regular",
-		"note",
-		"notes",
-		"patted",
-		"peeled",
-		"picked",
-		"pitted",
-		"poached",
-		"pounded",
-		"preferably",
-		"quartered",
-		"remove",
-		"removed",
-		"ribbons",
-		"rinsed",
-		"room",
-		"roughly",
-		"rounds",
-		"scraped",
-		"scrubbed",
-		"see",
-		"seeded",
-		"separated",
-		"separately",
-		"shaken",
-		"shredded",
-		"shucked",
-		"sifted",
-		"sized",
-		"skinned",
-		"sliced",
-		"slices",
-		"slightly",
-		"small",
-		"smashed",
-		"smoked",
-		"snipped",
-		"soaked",
-		"softened",
-		"solid",
-		"spooned",
-		"squeezed",
-		"stale",
-		"stem",
-		"stemmed",
-		"stems",
-		"stewing",
-		"stirred",
-		"strips",
-		"temperature",
-		"tenderized",
-		"thawed",
-		"thick",
-		"thin",
-		"thinly",
-		"toasted",
-		"torn",
-		"trimmed",
-		"uncooked",
-		"undrained",
-		"unpeeled",
-		"untoasted",
-		"vertically",
-		"warm",
-		"warmed",
-		"washed",
-		"wedges",
-		"whacked",
-		"whipped",
-		"whisked",
-		"wide",
-		"wilted",
-		"zested",
-	)
-
-	private val measureLeftoverTokens = setOf(
-		"about",
-		"and",
-		"approx",
-		"approximately",
-		"cup",
-		"cups",
-		"each",
-		"fluid",
-		"gram",
-		"grams",
-		"kilo",
-		"kilogram",
-		"kilograms",
-		"liter",
-		"liters",
-		"litre",
-		"litres",
-		"milliliter",
-		"milliliters",
-		"millilitre",
-		"millilitres",
-		"only",
-		"or",
-		"ounce",
-		"ounces",
-		"plus",
-		"pound",
-		"pounds",
-		"sprigs",
-		"stalks",
-		"tablespoon",
-		"tablespoons",
-		"tbsp",
-		"tbsps",
-		"teaspoon",
-		"teaspoons",
-		"ten",
-		"tender",
-		"total",
-		"tsp",
-		"tsps",
-		"weight",
-		"with",
-	)
-
-	private val fillerTokens = setOf(
-		"above",
-		"according",
-		"additional",
-		"against",
-		"along",
-		"around",
-		"attached",
-		"between",
-		"bottled",
-		"bottoms",
-		"bought",
-		"brewed",
-		"british",
-		"brushing",
-		"bulbs",
-		"but",
-		"buttery",
-		"changes",
-		"cheesecloth",
-		"clear",
-		"combination",
-		"cook",
-		"cooking",
-		"couple",
-		"crusts",
-		"cutting",
-		"day",
-		"deep",
-		"depending",
-		"desired",
-		"diameter",
-		"directions",
-		"discarded",
-		"dredging",
-		"drizzling",
-		"dusting",
-		"easy",
-		"ends",
-		"english",
-		"equal",
-		"evenly",
-		"excess",
-		"eyeball",
-		"fashioned",
-		"few",
-		"fillings",
-		"fitted",
-		"flavored",
-		"flavoured",
-		"flatten",
-		"flouring",
-		"for",
-		"fork",
-		"free",
-		"fridge",
-		"from",
-		"frying",
-		"garnish",
-		"garnishing",
-		"glue",
-		"good",
-		"granules",
-		"grater",
-		"greasing",
-		"griddling",
-		"grinder",
-		"hand",
-		"heavier",
-		"high",
-		"holes",
-		"hours",
-		"husk",
-		"husked",
-		"husks",
-		"individual",
-		"inedible",
-		"instructions",
-		"into",
-		"juices",
-		"knife",
-		"label",
-		"larger",
-		"layers",
-		"lean",
-		"least",
-		"left",
-		"lengths",
-		"less",
-		"liberal",
-		"loosely",
-		"lumps",
-		"may",
-		"minutes",
-		"more",
-		"mortar",
-		"much",
-		"multiple",
-		"natural",
-		"need",
-		"oiling",
-		"old",
-		"ones",
-		"optional",
-		"organic",
-		"packed",
-		"pale",
-		"palm",
-		"palmfuls",
-		"pan",
-		"paper",
-		"part",
-		"parts",
-		"peaks",
-		"percent",
-		"percentage",
-		"pestle",
-		"piece",
-		"pieces",
-		"pint",
-		"poaching",
-		"poked",
-		"preference",
-		"prepared",
-		"pressed",
-		"pure",
-		"quality",
-		"range",
-		"recipe",
-		"regular",
-		"remaining",
-		"rendered",
-		"reserved",
-		"rims",
-		"ripe",
-		"rolling",
-		"runs",
-		"sauteing",
-		"seam",
-		"sections",
-		"segments",
-		"serve",
-		"serving",
-		"shaping",
-		"shot",
-		"side",
-		"sieve",
-		"size",
-		"smaller",
-		"soft",
-		"soften",
-		"some",
-		"spicy",
-		"sprinkling",
-		"square",
-		"stick",
-		"sticks",
-		"still",
-		"stones",
-		"store",
-		"straight",
-		"strained",
-		"style",
-		"suga",
-		"surface",
-		"taken",
-		"taste",
-		"than",
-		"the",
-		"their",
-		"then",
-		"thickness",
-		"thoroughly",
-		"through",
-		"tied",
-		"tips",
-		"tops",
-		"tough",
-		"towels",
-		"turn",
-		"turns",
-		"unevenly",
-		"unopened",
-		"until",
-		"using",
-		"variety",
-		"very",
-		"volume",
-		"way",
-		"well",
-		"will",
-		"without",
-		"woodland",
-		"wooden",
-		"woody",
-		"yield",
-	)
-
-	private val brandTokens = setOf(
-		"aldi",
-		"asda",
-		"baker",
-		"bens",
-		"bisquick",
-		"brand",
-		"cape",
-		"coop",
-		"cooperative",
-		"creationz",
-		"estate",
-		"fairtrade",
-		"ghirardelli",
-		"heinz",
-		"hellmann",
-		"hellmanns",
-		"knorr",
-		"kraft",
-		"lawry",
-		"lawrys",
-		"lidl",
-		"louis",
-		"loved",
-		"marks",
-		"morrison",
-		"morrisons",
-		"operative",
-		"patak",
-		"philadelphia",
-		"sainsbury",
-		"sainsburys",
-		"sargento",
-		"spencer",
-		"tabasco",
-		"tesco",
-		"uncle",
-		"waitrose",
-	)
-
-	private val packagingTokens = setOf(
-		"bag",
-		"bags",
-		"block",
-		"bottle",
-		"bottles",
-		"box",
-		"boxes",
-		"bunch",
-		"bunches",
-		"can",
-		"cans",
-		"carton",
-		"container",
-		"containers",
-		"envelope",
-		"head",
-		"heads",
-		"jar",
-		"jars",
-		"loaf",
-		"pack",
-		"package",
-		"packages",
-		"packet",
-		"packets",
-		"pot",
-		"sheet",
-		"sheets",
-		"tin",
-		"tins",
-	)
-
-	private val sizeOnlyTokens = setOf(
-		"extra",
-		"extra-large",
-		"jumbo",
-		"large",
-		"medium",
-		"mini",
-		"regular",
-		"small",
-	)
 
 	private val presenceStripTokens = setOf(
 		"bone",
@@ -640,7 +160,24 @@ internal object NutritionNameNormalizer {
 		"rose",
 		"soda",
 		"sparkling",
+		"spring",
 		"tonic",
+	)
+
+	private val plainWaterModifierTokens = setOf(
+		"boiling",
+		"cold",
+		"first",
+		"hot",
+		"ice",
+		"lukewarm",
+		"mineral",
+		"second",
+		"spring",
+		"tap",
+		"tepid",
+		"unchlorinated",
+		"warm",
 	)
 
 	private val hotWaterKeepAnchors = setOf(
@@ -687,6 +224,7 @@ internal object NutritionNameNormalizer {
 
 	private val flourProteinStripTokens = setOf(
 		"protein",
+		"stone",
 	)
 
 	private val crustAnchors = setOf(
@@ -1039,7 +577,9 @@ internal object NutritionNameNormalizer {
 		normalized.split(' ').filter { token -> token.length >= MIN_TOKEN_LENGTH }
 
 	fun forLookup(value: String): String {
-		val withoutClause = stripLookupClauses(value.substringBefore(';').trim())
+		val withoutClause = stripLookupClauses(
+			NutritionNameClauseRules.strip(value.substringBefore(';').trim()),
+		)
 		val normalized = normalize(withoutClause)
 		val rawTokens = tokens(normalized)
 		val hadCreamOf = CREAM_OF_PHRASE.containsMatchIn(normalized)
@@ -1050,11 +590,11 @@ internal object NutritionNameNormalizer {
 		val filtered = rawTokens.filterNot { token ->
 			token.all(Char::isDigit) ||
 				TEMPERATURE_LEFTOVER.matches(token) ||
-				token in preparationTokens ||
-				token in measureLeftoverTokens ||
-				token in fillerTokens ||
-				token in brandTokens ||
-				token in packagingTokens
+				token in NutritionNameNormalizerTokens.preparationTokens ||
+				token in NutritionNameNormalizerTokens.measureLeftoverTokens ||
+				token in NutritionNameNormalizerTokens.fillerTokens ||
+				token in NutritionNameNormalizerTokens.brandTokens ||
+				token in NutritionNameNormalizerTokens.packagingTokens
 		}
 		val withoutSpiceGrinder = if (hadGrinder) {
 			filtered.filterNot { token -> token == "spice" }
@@ -1082,10 +622,13 @@ internal object NutritionNameNormalizer {
 	fun hasMeaningfulFoodName(value: String): Boolean {
 		val lookup = forLookup(value)
 		if (lookup.isNotBlank()) {
-			return true
+			return lookup != "all"
 		}
 		val normalizedTokens = tokens(normalize(value)).filterNot { token -> token.all(Char::isDigit) }
-		return normalizedTokens.any { token -> token !in sizeOnlyTokens && token !in preparationTokens }
+		return normalizedTokens.any { token ->
+			token !in NutritionNameNormalizerTokens.sizeOnlyTokens &&
+				token !in NutritionNameNormalizerTokens.preparationTokens
+		}
 	}
 
 	private fun stripLookupClauses(value: String): String {
@@ -1113,6 +656,7 @@ internal object NutritionNameNormalizer {
 		result = SORTED_OVER_PHRASE.replace(result, "")
 		result = VINE_RIPENED_PHRASE.replace(result, "")
 		result = BEFORE_MEASURING_PHRASE.replace(result, "")
+		result = UNTIL_GOLDEN_PHRASE.replace(result, "")
 		result = FOR_FLOURING_PHRASE.replace(result, "")
 		result = FOR_SHAPING_PHRASE.replace(result, "")
 		result = FOR_CAKE_PANS_PHRASE.replace(result, "")
@@ -1129,27 +673,39 @@ internal object NutritionNameNormalizer {
 		}
 		val before = value.substring(0, match.range.first).trim()
 		val after = match.groupValues[1].trim()
+		val beforeHasFood = clauseHasFoodToken(before)
+		val afterTokens = tokens(normalize(after))
+		val beforeTokens = tokens(normalize(before))
+		val missingSharedFlour = beforeHasFood &&
+			afterTokens.lastOrNull() == "flour" &&
+			"flour" !in beforeTokens
 		val preferBefore = after.isBlank() ||
-			clauseHasFoodToken(before) ||
+			beforeHasFood ||
 			!clauseHasFoodToken(after)
-		return if (preferBefore) before else after
+		return when {
+			missingSharedFlour -> "$before flour"
+			preferBefore -> before
+			else -> after
+		}
 	}
 
 	private fun clauseHasFoodToken(value: String): Boolean {
 		val normalized = normalize(value)
 		return tokens(normalized).any { token ->
-			token !in preparationTokens &&
-				token !in sizeOnlyTokens &&
-				token !in fillerTokens &&
-				token !in measureLeftoverTokens &&
-				token !in brandTokens &&
-				token !in packagingTokens &&
+			token !in NutritionNameNormalizerTokens.preparationTokens &&
+				token !in NutritionNameNormalizerTokens.sizeOnlyTokens &&
+				token !in NutritionNameNormalizerTokens.fillerTokens &&
+				token !in NutritionNameNormalizerTokens.measureLeftoverTokens &&
+				token !in NutritionNameNormalizerTokens.brandTokens &&
+				token !in NutritionNameNormalizerTokens.packagingTokens &&
+				token !in NutritionNameNormalizerTokens.incompleteOrClauseTokens &&
 				!token.all(Char::isDigit)
 		}
 	}
 
 	private fun postFilterLookupTokens(tokens: List<String>, hadCreamOf: Boolean): List<String> {
 		var result = rewriteLookupTokens(tokens)
+		result = NutritionGrainFlourRules.rewrite(result)
 		result = restoreCreamOfConnector(result, hadCreamOf)
 		result = stripGluedPrepAndFollowing(result)
 		result = collapseRepeatedPhrase(result)
@@ -1163,6 +719,7 @@ internal object NutritionNameNormalizer {
 		result = stripSplitPrep(result)
 		result = stripBunsWhenRolls(result)
 		result = stripFlourProtein(result)
+		result = stripStarterModifiers(result)
 		result = stripCrustDescriptors(result)
 		result = stripFishPrep(result)
 		result = stripPoultryPrep(result)
@@ -1187,9 +744,11 @@ internal object NutritionNameNormalizer {
 		result = keepFirstCoherentFood(result)
 		result = dedupeWhenSkirt(result)
 		result = stripTrailingCakePans(result)
+		result = stripLeadingAllWhenNotPurpose(result)
 		result = stripTrailingWhenOthersRemain(result, trailingStripTokens)
 		result = stripTrailingDressing(result)
 		result = stripHotFromWater(result)
+		result = stripPlainWaterModifiers(result)
 		result = stripTrailingLiquid(result)
 		result = stripOrphanFlat(result)
 		result = stripSugarJunk(result)
@@ -1263,6 +822,20 @@ internal object NutritionNameNormalizer {
 		return if (canStrip) tokens.filterNot { token -> token == "hot" } else tokens
 	}
 
+	private fun stripPlainWaterModifiers(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			"water" in tokens &&
+			tokens.all { token -> token == "water" || token in plainWaterModifierTokens }
+		return if (canStrip) listOf("water") else tokens
+	}
+
+	private fun stripLeadingAllWhenNotPurpose(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			tokens.first() == "all" &&
+			tokens[1] != "purpose"
+		return if (canStrip) tokens.drop(1) else tokens
+	}
+
 	private fun dedupeAdjacentExceptHalf(tokens: List<String>): List<String> {
 		if (tokens.size < 2) {
 			return tokens
@@ -1311,7 +884,7 @@ internal object NutritionNameNormalizer {
 	private fun stripGluedPrepAndFollowing(tokens: List<String>): List<String> {
 		val cutIndex = tokens.indexOfFirst { token ->
 			val match = PREP_WITH_TRAILING_DIGITS.matchEntire(token)
-			match != null && match.groupValues[1] in preparationTokens
+			match != null && match.groupValues[1] in NutritionNameNormalizerTokens.preparationTokens
 		}
 		return if (cutIndex >= 0) tokens.subList(0, cutIndex) else tokens
 	}
@@ -1320,6 +893,16 @@ internal object NutritionNameNormalizer {
 		val canStrip = tokens.size >= 2 &&
 			tokens.any { token -> token in flourAnchors }
 		return if (canStrip) stripWhenOthersRemain(tokens, flourProteinStripTokens) else tokens
+	}
+
+	private fun stripStarterModifiers(tokens: List<String>): List<String> {
+		val canStrip = tokens.size >= 2 &&
+			tokens.any { token -> token in NutritionNameNormalizerTokens.starterAnchorTokens }
+		return if (canStrip) {
+			stripWhenOthersRemain(tokens, NutritionNameNormalizerTokens.starterModifierTokens)
+		} else {
+			tokens
+		}
 	}
 
 	private fun stripFishPrep(tokens: List<String>): List<String> {

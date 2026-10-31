@@ -616,5 +616,62 @@ class NutritionNameNormalizerTest {
 			"mini or regular chocolate chips",
 		) shouldBe "chocolate chips"
 		NutritionNameNormalizer.forLookup("parsley or tarragon") shouldBe "parsley"
+		NutritionNameNormalizer.forLookup(
+			"whole or 4 split chicken breasts, bone-in, skin on",
+		) shouldBe "chicken breasts"
+		NutritionNameNormalizer.forLookup(
+			"Strong 00 or type 0 flour",
+		) shouldBe "flour"
+		NutritionNameNormalizer.forLookup(
+			"dark rye or rice flour",
+		) shouldBe "dark rye flour"
+		NutritionNameNormalizer.forLookup(
+			"Bottled mineral or spring water",
+		) shouldBe "water"
+		NutritionNameNormalizer.forLookup(
+			"White or apple cider vinegar",
+		) shouldBe "apple cider vinegar"
+		NutritionNameNormalizer.forLookup(
+			"wholemeal or seven-grain bread",
+		) shouldBe "seven grain bread"
+	}
+
+	@Test
+	fun forLookupPreservesWaterAndMilkFromOverEagerModifierStripping() {
+		NutritionNameNormalizer.forLookup("Filtered water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("First water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Second water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Hot boiling water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Lukewarm water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("spring water") shouldBe "water"
+		NutritionNameNormalizer.forLookup("Lukewarm milk") shouldBe "milk"
+		NutritionNameNormalizer.forLookup("Whole milk, lukewarm") shouldBe "whole milk"
+	}
+
+	@Test
+	fun forLookupStripsStarterStateModifiersFromSourdoughLevainAndMadre() {
+		NutritionNameNormalizer.forLookup("Active sourdough starter") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Sourdough starter culture") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Mature sourdough starter") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Stiff sourdough starter") shouldBe "sourdough starter"
+		NutritionNameNormalizer.forLookup("Active pasta madre") shouldBe "pasta madre"
+		NutritionNameNormalizer.forLookup("Active pasta madre / stiff sourdough starter") shouldBe
+			"pasta madre sourdough starter"
+		NutritionNameNormalizer.forLookup("Prepared levain") shouldBe "levain"
+		NutritionNameNormalizer.forLookup("Fermented starter") shouldBe "starter"
+		NutritionNameNormalizer.forLookup("Ripe rye starter") shouldBe "rye starter"
+		NutritionNameNormalizer.forLookup("Flavorless neutral oil") shouldBe "neutral oil"
+		NutritionNameNormalizer.forLookup("Stone-ground whole wheat flour") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("onion, finely diced and sautéed until golden") shouldBe "onion"
+	}
+
+	@Test
+	fun forLookupNormalizesBreadtopiaGrainsAndClauses() {
+		NutritionNameNormalizer.forLookup("einkorn wheat flour") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("einkorn berries") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("bolted yecora rojo flour") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("spelt berries") shouldBe "whole wheat flour"
+		NutritionNameNormalizer.forLookup("Bread flour*") shouldBe "bread flour"
+		NutritionNameNormalizer.forLookup("chamomile tea, cooled to below 90°F") shouldBe "chamomile tea"
 	}
 }

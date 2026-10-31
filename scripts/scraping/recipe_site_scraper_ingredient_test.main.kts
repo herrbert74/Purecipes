@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v10
+// cache-bust: alt-or-incomplete-v22
 
 data class IngredientTestCase(
 	val description: String,
@@ -97,6 +97,26 @@ val sanitizeCases = listOf(
 		expected = null,
 	),
 	IngredientTestCase(
+		description = "filters solution for boiling heading",
+		input = "Honey Solution for Boiling",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters optional percentage lines",
+		input = "optional 0.34% ground cardamom, cinnamon, or ginger",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters all of the assembly lines",
+		input = "All of the sweet stiff levain",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "strips trailing asterisk note marker",
+		input = "1/2 tsp ground mahlep (1-2 tsp) *",
+		expected = "1/2 tsp ground mahlep (1-2 tsp)",
+	),
+	IngredientTestCase(
 		description = "filters equipment-like lines",
 		input = "Large mixing bowl",
 		expected = null,
@@ -161,6 +181,105 @@ val sanitizeCases = listOf(
 		input = "250gonions, diced",
 		expected = "250gonions, diced",
 	),
+	IngredientTestCase(
+		description = "filters dough conditioners like ascorbic acid / vitamin c",
+		input = "OPTIONAL: 1 pinch ascorbic acid (Vitamin C)",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "parses optional ingredient with quantity as optional ingredient",
+		input = "OPTIONAL: 1 pinch salt",
+		expected = "1 pinch salt",
+	),
+	IngredientTestCase(
+		description = "filters first dough structural heading",
+		input = "First Dough",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters second dough structural heading",
+		input = "Second Dough",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters lye bath structural heading",
+		input = "Lye Bath",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters timing and scale instruction notes",
+		input =
+			"~36 hours Time(Note that volumetric measures are inherently " +
+				"inaccurate - especially for flour where 1 cup is going to be " +
+				"a very different amount of flour for you and for me and even " +
+				"for you one time vs. another time. You should get a scale.)",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters baker percentages note",
+		input = "Baker's Percentages",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "strips prep label from optional ingredient",
+		input = "optional egg wash: 1 egg beaten",
+		expected = "1 egg beaten",
+	),
+	IngredientTestCase(
+		description = "drops scaled dough heading",
+		input = "Dough for 4 breakfast pizzas * see notes for scaling tips",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters equipment structural heading",
+		input = "Equipment",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters uppercase equipment structural heading",
+		input = "EQUIPMENT",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters pastry structural heading",
+		input = "Pastry",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters to finish structural heading",
+		input = "To finish",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters to serve structural heading",
+		input = "To serve",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "preserves vulgar fraction spice ingredient line",
+		input = "- ½ tsp ground all spice",
+		expected = "½ tsp ground all spice",
+	),
+	IngredientTestCase(
+		description = "filters bamboo skewers",
+		input = "16 bamboo skewers",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters colourful paper straws",
+		input = "12 colourful paper straws",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters pudding rings",
+		input = "4 pudding rings",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters biscuit cutter",
+		input = "A 2½\"-diameter biscuit cutter",
+		expected = null,
+	),
 )
 
 data class AlternativeTestCase(
@@ -208,9 +327,174 @@ val alternativeCases = listOf(
 		input = "4 plum or Roma tomatoes (about 442 g), halved",
 		expected = listOf("4 plum or Roma tomatoes (about 442 g), halved"),
 	),
+	AlternativeTestCase(
+		description = "keeps Strong 00 or type 0 flour together",
+		input = "50 g Strong 00 or type 0 flour",
+		expected = listOf("50 g Strong 00 or type 0 flour"),
+	),
+	AlternativeTestCase(
+		description = "keeps Bottled mineral or spring water together",
+		input = "Bottled mineral or spring water (enough to cover fruit)",
+		expected = listOf("Bottled mineral or spring water (enough to cover fruit)"),
+	),
+	AlternativeTestCase(
+		description = "keeps White or apple cider vinegar together",
+		input = "2 tbsp White or apple cider vinegar",
+		expected = listOf("2 tbsp White or apple cider vinegar"),
+	),
+	AlternativeTestCase(
+		description = "keeps Chocolate Chips or Chunks together",
+		input = "170 g Chocolate Chips or Chunks",
+		expected = listOf("170 g Chocolate Chips or Chunks"),
+	),
+	AlternativeTestCase(
+		description = "keeps Smooth strawberry juice or puree together",
+		input = "4 tbsp Smooth strawberry juice or puree",
+		expected = listOf("4 tbsp Smooth strawberry juice or puree"),
+	),
+	AlternativeTestCase(
+		description = "keeps finely minced or grated garlic together",
+		input = "3 Garlic cloves, finely minced or grated",
+		expected = listOf("3 Garlic cloves, finely minced or grated"),
+	),
+	AlternativeTestCase(
+		description = "keeps rolled or flaked oat groats together",
+		input = "83 grams rolled or flaked oat groats (1 cup)",
+		expected = listOf("83 grams rolled or flaked oat groats (1 cup)"),
+	),
+	AlternativeTestCase(
+		description = "keeps psyllium husk powder or flakes together",
+		input = "12 grams psyllium husk powder or flakes (2 Tbsp)",
+		expected = listOf("12 grams psyllium husk powder or flakes (2 Tbsp)"),
+	),
+	AlternativeTestCase(
+		description = "keeps tomatoes to cut in half or grate together",
+		input = "1-2 juicy, sweet-acidic tomatoes to cut in half or grate",
+		expected = listOf("1-2 juicy, sweet-acidic tomatoes to cut in half or grate"),
+	),
+	AlternativeTestCase(
+		description = "keeps quantity specification with or more intact",
+		input = "75 grams or more dried currants or raisins (1/2 cup)",
+		expected = listOf("75 grams or more dried currants or raisins (1/2 cup)"),
+	),
+	AlternativeTestCase(
+		description = "expands light olive or avocado oil with shared noun suffix",
+		input = "65 grams light olive or avocado oil (1/3 cup)",
+		expected = listOf(
+			"65 grams light olive oil (1/3 cup)",
+			"65 grams avocado oil (1/3 cup)",
+		),
+	),
+	AlternativeTestCase(
+		description = "keeps Extra dark rye or rice flour together",
+		input = "Extra dark rye or rice flour (for dusting)",
+		expected = listOf("Extra dark rye or rice flour (for dusting)"),
+	),
+	AlternativeTestCase(
+		description = "keeps wholemeal or seven-grain bread together",
+		input = "8–10 slices of wholemeal or seven-grain bread",
+		expected = listOf("8–10 slices of wholemeal or seven-grain bread"),
+	),
+	AlternativeTestCase(
+		description = "keeps conversational semicolon alternative list together",
+		input = "260-520 grams flour, ideally rye or whole wheat; all purpose or bread flour are fine (2-4 cups)",
+		expected = listOf(
+			"260-520 grams flour, ideally rye or whole wheat; all purpose or bread flour are fine (2-4 cups)",
+		),
+	),
+	AlternativeTestCase(
+		description = "trims hyphens surrounding or in alternative",
+		input = "240 g high gluten flour - or - bread flour with added vital wheat gluten",
+		expected = listOf(
+			"240 g high gluten flour",
+			"240 g bread flour with added vital wheat gluten",
+		),
+	),
+	AlternativeTestCase(
+		description = "keeps preferably organic or stoneground together",
+		input = "250g strong white bread flour preferably organic or stoneground",
+		expected = listOf("250 g strong white bread flour preferably organic or stoneground"),
+	),
+	AlternativeTestCase(
+		description = "keeps cut into matchsticks or coarsely grated together",
+		input = "2 carrots cut into matchsticks or coarsely grated",
+		expected = listOf("2 carrots cut into matchsticks or coarsely grated"),
+	),
+	AlternativeTestCase(
+		description = "keeps available in shops or online together",
+		input = "1 tsp kewra (pandan) water available in Asian shops or online",
+		expected = listOf("1 tsp kewra (pandan) water available in Asian shops or online"),
+	),
+	AlternativeTestCase(
+		description = "keeps or more if you like together",
+		input = "1 tbsp extra virgin olive oil or melted butter or more if you like",
+		expected = listOf("1 tbsp extra virgin olive oil or melted butter or more if you like"),
+	),
+	AlternativeTestCase(
+		description = "borrows rasher unit for alternative",
+		input = "12 rashers smoked streaky bacon or pancetta",
+		expected = listOf("12 rashers smoked streaky bacon", "12 rashers pancetta"),
+	),
+	AlternativeTestCase(
+		description = "appends shared cracker noun to first alternative",
+		input = "35-40 saltine or other salted crackers",
+		expected = listOf("35-40 saltine crackers", "35-40 other salted crackers"),
+	),
+	AlternativeTestCase(
+		description = "keeps frozen ones together with cranberries",
+		input = "500 g fresh cranberries (defrosted) or frozen ones",
+		expected = listOf("500 g fresh cranberries (defrosted) or frozen ones"),
+	),
+	AlternativeTestCase(
+		description = "borrows wine glasses unit for alternative",
+		input = "2 wine glasses of dry white vermouth or dry white wine",
+		expected = listOf("2 wine glasses of dry white vermouth", "2 wine glasses of dry white wine"),
+	),
+	AlternativeTestCase(
+		description = "keeps caster or icing sugar together",
+		input = "Caster or icing sugar for sprinkling",
+		expected = listOf("Caster or icing sugar for sprinkling"),
+	),
+	AlternativeTestCase(
+		description = "keeps icing or caster sugar together",
+		input = "Icing or caster sugar for dusting",
+		expected = listOf("Icing or caster sugar for dusting"),
+	),
+	AlternativeTestCase(
+		description = "appends shared kosher salt to first alternative for Diamond Crystal",
+		input = "1 tsp. Diamond Crystal or 1 ½ tsp. Morton kosher salt",
+		expected = listOf("1 tsp. Diamond Crystal kosher salt", "1 ½ tsp. Morton kosher salt"),
+	),
+	AlternativeTestCase(
+		description = "keeps fresh or frozen cranberries with vulgar fraction together",
+		input = "1¼ cups fresh or frozen cranberries",
+		expected = listOf("1¼ cups fresh or frozen cranberries"),
+	),
+	AlternativeTestCase(
+		description = "keeps low-fat or nonfat buttermilk together",
+		input = "1¼ cups (or more) low-fat or nonfat buttermilk",
+		expected = listOf("1¼ cups (or more) low-fat or nonfat buttermilk"),
+	),
+	AlternativeTestCase(
+		description = "keeps broken or chopped chocolate baking bar together",
+		input = "6 ounces Ghirardelli Semi-Sweet Chocolate baking bar, broken or chopped into 1-inch pieces",
+		expected = listOf(
+			"6 ounces Ghirardelli Semi-Sweet Chocolate baking bar, broken or chopped into 1-inch pieces",
+		),
+	),
+	AlternativeTestCase(
+		description = "appends shared apples noun to first alternative",
+		input = "3 large Honeycrisp or Fuji apples",
+		expected = listOf("3 large Honeycrisp apples", "3 Fuji apples"),
+	),
 )
 
 val normalizeTextCases = listOf(
+	IngredientTestCase(
+		description = "parenthesizes soaked-in clause",
+		input = "80g raisins, soaked in 120 ml water - or - 60 ml water + 60 ml rum",
+		expected = "80 g raisins (soaked in 120 ml water - or - 60 ml water + 60 ml rum)",
+	),
 	IngredientTestCase(
 		description = "adds space between grams and quantity",
 		input = "60g Gruyère",
@@ -268,13 +552,67 @@ val splitCases = listOf(
 	),
 )
 
+fun runGroupProcessingTests() {
+	val input = listOf(
+		ProcessedScrapedIngredient("Dough for 4 breakfast pizzas * see notes for scaling tips"),
+		ProcessedScrapedIngredient("300 grams flour"),
+		ProcessedScrapedIngredient("First Dough"),
+		ProcessedScrapedIngredient("240 g high gluten flour"),
+		ProcessedScrapedIngredient("Second Dough"),
+		ProcessedScrapedIngredient("All of the First Dough"),
+		ProcessedScrapedIngredient("OPTIONAL: 1 pinch salt"),
+		ProcessedScrapedIngredient(
+			"~36 hours Time(Note that volumetric measures are inherently inaccurate - you should get a scale.)",
+		),
+		ProcessedScrapedIngredient("YEAST"),
+		ProcessedScrapedIngredient("3 grams instant yeast (1 tsp)"),
+		ProcessedScrapedIngredient("Equipment"),
+		ProcessedScrapedIngredient("A 24 cm pie plate"),
+		ProcessedScrapedIngredient("Baking tray"),
+	)
+	val groups = processStoredScrapedIngredientGroups(null, input)
+	if (groups.size != 4) {
+		error("Expected 4 groups, got ${groups.size}")
+	}
+	if (groups[0].first != "Dough for 4 breakfast pizzas") {
+		error("Expected group 0 name 'Dough for 4 breakfast pizzas', got '${groups[0].first}'")
+	}
+	if (groups[0].second.map { it.text } != listOf("300 grams flour")) {
+		error("Unexpected group 0 items: ${groups[0].second}")
+	}
+	if (groups[1].first != "First Dough") {
+		error("Expected group 1 name 'First Dough', got '${groups[1].first}'")
+	}
+	if (groups[1].second.map { it.text } != listOf("240 g high gluten flour")) {
+		error("Unexpected group 1 items: ${groups[1].second}")
+	}
+	if (groups[2].first != "Second Dough") {
+		error("Expected group 2 name 'Second Dough', got '${groups[2].first}'")
+	}
+	val group2Texts = groups[2].second.map { it.text }
+	if (group2Texts != listOf("1 pinch salt")) {
+		error("Unexpected group 2 items: ${groups[2].second}")
+	}
+	val saltReq = groups[2].second.last().requirement
+	if (saltReq != "OPTIONAL") {
+		error("Expected salt requirement 'OPTIONAL', got '$saltReq'")
+	}
+	if (groups[3].first != "YEAST") {
+		error("Expected group 3 name 'YEAST', got '${groups[3].first}'")
+	}
+	if (groups[3].second.map { it.text } != listOf("3 grams instant yeast (1 tsp)")) {
+		error("Unexpected group 3 items: ${groups[3].second}")
+	}
+}
+
 fun main() {
 	runSanitizeTests(sanitizeCases)
 	runNormalizeIngredientTextTests(normalizeTextCases)
 	runSplitTests(splitCases)
 	runAlternativeTests(alternativeCases)
+	runGroupProcessingTests()
 	println(
-		"All ${sanitizeCases.size + normalizeTextCases.size + splitCases.size + alternativeCases.size} " +
+		"All ${sanitizeCases.size + normalizeTextCases.size + splitCases.size + alternativeCases.size + 1} " +
 			"scraped ingredient line tests passed.",
 	)
 }

@@ -47,6 +47,8 @@ internal object IngredientLineParser {
 
 	private val parentheticalPattern = Regex("""\(([^)]+)\)""")
 
+	private val innermostParentheticalPattern = Regex("""\([^()]+\)""")
+
 	private val innerAmountPattern = Regex(
 		"""^($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:;.*)?$""",
 		RegexOption.IGNORE_CASE,
@@ -93,6 +95,12 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val leadingOrPackPattern = Regex(
+		"""^or\s+(?:$QUANTITY_PATTERN)\s*[x×*]\s*(?:$QUANTITY_PATTERN)\s*""" +
+			"""(?:${IngredientLineParserLexicon.TRAILING_MASS_UNITS})\b\s*""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val parentheticalPackAmountPattern = Regex(
 		"""^($QUANTITY_PATTERN)\s*-?\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s+""" +
 			"""([a-zA-Z][a-zA-Z.\-]*)\s*$""",
@@ -126,6 +134,11 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val leadingApproximationPattern = Regex(
+		"""^(?:about|approximately|approx\.?)\s+""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val trailingAboutAmountPattern = Regex(
 		"""(?:,\s*)?(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*-?\s*""" +
 			"""([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:total)?\s*$""",
@@ -156,7 +169,23 @@ internal object IngredientLineParser {
 	)
 
 	private val leadingMeasurePlusPattern = Regex(
-		"""^($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s+plus\s+(.+)$""",
+		"""^($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?(?:\s*\([^)]*\))?\s*,?\s*plus\s+(.+)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val dualParentheticalPlusPattern = Regex(
+		pattern = """\(($QUANTITY_PATTERN)\s*(g|kg|ml|l|oz|lb)\b[^)]*\)[^)]*plus[^(]*""" +
+			"""\(($QUANTITY_PATTERN)\s*(g|kg|ml|l|oz|lb)\b[^)]*\)""",
+		options = setOf(RegexOption.IGNORE_CASE),
+	)
+
+	private val internalParentheticalPlusPattern = Regex(
+		"""\(($QUANTITY_PATTERN)\s*plus\s*($QUANTITY_PATTERN)\s*(g|kg|ml|l|oz|lb)\b[^)]*\)""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val secondMeasurePattern = Regex(
+		"""^($QUANTITY_PATTERN)\s*([a-zA-Z][a-zA-Z.\-]*)\.?\s+(.+)$""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -192,7 +221,9 @@ internal object IngredientLineParser {
 
 	fun parse(rawLine: String): ParsedIngredientLine {
 		val rawText = rawLine.trim()
-		if (IngredientVocabulary.isIgnorableIngredientLine(rawText)) {
+		val rewrittenText = rewriteSpecialPhrases(rawText)
+		val textToInspect = if (rewrittenText != rawText) rewrittenText else rawText
+		if (IngredientVocabulary.isIgnorableIngredientLine(textToInspect)) {
 			return ParsedIngredientLine(
 				rawText = rawText,
 				quantity = null,
@@ -202,7 +233,7 @@ internal object IngredientLineParser {
 			)
 		}
 
-		var rest = canonicalizeLine(rewriteSpecialPhrases(rawText))
+		var rest = canonicalizeLine(rewrittenText)
 		val leadingAmount = consumeLeadingQuantityAndPack(rest)
 		var quantity = leadingAmount.quantity
 		var unit = leadingAmount.unit
@@ -235,18 +266,13 @@ internal object IngredientLineParser {
 			unit = inferCountUnit(rest, hasQuantity = quantity != null)
 		}
 		val normalizedAmount = normalizeInformalUnits(quantity = quantity, unit = unit)
-		quantity = normalizedAmount.quantity
-		unit = normalizedAmount.unit
-		if (unit == null && NutritionNameNormalizer.hasMeaningfulFoodName(rest)) {
-			val defaults = defaultUnquantifiedMeasure(rest)
-			if (defaults.unit != null) {
-				quantity = quantity ?: defaults.quantity
-				unit = defaults.unit
-			}
-		}
-		if (quantity == null && unit in IngredientLineParserLexicon.defaultSingleCountUnits) {
-			quantity = BigDecimal.ONE
-		}
+		val defaultedAmount = resolveDefaultAmount(
+			quantity = normalizedAmount.quantity,
+			unit = normalizedAmount.unit,
+			rest = rest,
+		)
+		quantity = defaultedAmount.first
+		unit = defaultedAmount.second
 
 		rest = bayLeafName(rest)
 		val parsedName = resolvedParsedName(unit = unit, rest = rest, rawText = rawText)
@@ -263,18 +289,39 @@ internal object IngredientLineParser {
 		)
 	}
 
+	private fun resolveDefaultAmount(
+		quantity: BigDecimal?,
+		unit: String?,
+		rest: String,
+	): Pair<BigDecimal?, String?> {
+		var q = quantity
+		var u = unit
+		if (u == null && NutritionNameNormalizer.hasMeaningfulFoodName(rest)) {
+			val defaults = defaultUnquantifiedMeasure(rest)
+			if (defaults.unit != null) {
+				q = q ?: defaults.quantity
+				u = defaults.unit
+			}
+		}
+		if (q == null && u in IngredientLineParserLexicon.defaultSingleCountUnits) {
+			q = BigDecimal.ONE
+		}
+		return q to u
+	}
+
+	private fun rewriteEarlySpecialCases(value: String): String? =
+		rewriteSugarDiamonds(value) ?: IngredientLinePhraseRewrites.rewrite(value)
+
 	private fun rewriteSpecialPhrases(value: String): String {
 		val trimmed = value.trim()
-		val sugarDiamonds = rewriteSugarDiamonds(trimmed)
-		if (sugarDiamonds != null) {
-			return sugarDiamonds
-		}
-		val seeds = seedsFromVanillaPodPattern.matchEntire(trimmed)
-		val peel = peelFromCitrusPattern.find(trimmed)
-		val suchAs = suchAsClausePattern.find(trimmed)
-		val couple = coupleOfPattern.matchEntire(trimmed)
-		val plus = leadingMeasurePlusPattern.matchEntire(trimmed)
-		val parenFood = quantityParenFoodPattern.matchEntire(trimmed)
+		val early = rewriteEarlySpecialCases(trimmed)
+		val base = early ?: trimmed
+		val seeds = seedsFromVanillaPodPattern.matchEntire(base)
+		val peel = peelFromCitrusPattern.find(base)
+		val suchAs = suchAsClausePattern.find(base)
+		val couple = coupleOfPattern.matchEntire(base)
+		val plus = leadingMeasurePlusPattern.matchEntire(base)
+		val parenFood = quantityParenFoodPattern.matchEntire(base)
 		return when {
 			seeds != null -> "${seeds.groupValues[REGEX_GROUP_FIRST]} vanilla pod"
 			peel != null -> "${peel.groupValues[REGEX_GROUP_FIRST]} peel"
@@ -284,10 +331,15 @@ internal object IngredientLineParser {
 				parenFood.groupValues[REGEX_GROUP_FOURTH],
 			).joinToString(" ").trim()
 
-			plus != null -> rewritePlusClause(plus.groupValues[REGEX_GROUP_THIRD].trim())
+			plus != null -> rewritePlusClause(
+				firstQty = plus.groupValues[REGEX_GROUP_FIRST],
+				firstUnit = plus.groupValues[REGEX_GROUP_SECOND],
+				tail = plus.groupValues[REGEX_GROUP_THIRD].trim(),
+				fullLine = base,
+			)
 			couple != null -> "$COUPLE_COUNT ${couple.groupValues[REGEX_GROUP_FIRST].trim()}"
-			suchAs != null && looksLikeVagueLeadIn(value) -> suchAs.groupValues[REGEX_GROUP_FIRST].trim()
-			else -> value
+			suchAs != null && looksLikeVagueLeadIn(base) -> suchAs.groupValues[REGEX_GROUP_FIRST].trim()
+			else -> base
 		}
 	}
 
@@ -304,21 +356,130 @@ internal object IngredientLineParser {
 		}
 	}
 
-	private fun rewritePlusClause(tail: String): String {
-		val mass = parentheticalMassInPlusPattern.find(tail) ?: return tail
-		val food = extraWhitespacePattern
+	private fun rewritePlusClause(
+		firstQty: String,
+		firstUnit: String,
+		tail: String,
+		fullLine: String,
+	): String = rewriteParentheticalPlus(fullLine = fullLine, tail = tail)
+		?: rewriteSecondMeasure(firstQty = firstQty, firstUnit = firstUnit, tail = tail)
+		?: tail
+
+	private fun rewriteSecondMeasure(
+		firstQty: String,
+		firstUnit: String,
+		tail: String,
+	): String? {
+		val second = secondMeasurePattern.matchEntire(tail) ?: return null
+		val secondQty = second.groupValues[REGEX_GROUP_FIRST]
+		val secondUnit = second.groupValues[REGEX_GROUP_SECOND]
+		val food = second.groupValues[REGEX_GROUP_THIRD].trim()
+		val combined = sumCompoundQuantities(
+			firstQtyStr = firstQty,
+			firstUnitStr = firstUnit,
+			secondQtyStr = secondQty,
+			secondUnitStr = secondUnit,
+		)
+		return when {
+			combined != null -> "${combined.first.stripTrailingZeros().toPlainString()} ${combined.second} $food"
+			normalizeUnit(secondUnit) != null -> tail
+			else -> "$firstQty $firstUnit $food"
+		}
+	}
+
+	private fun rewriteParentheticalPlus(fullLine: String, tail: String): String? {
+		val dualMatch = dualParentheticalPlusPattern.find(fullLine)
+		val internalMatch = internalParentheticalPlusPattern.find(fullLine)
+		val mass = parentheticalMassInPlusPattern.find(tail)
+		return when {
+			dualMatch != null -> formatSummedParenthetical(
+				q1Str = dualMatch.groupValues[REGEX_GROUP_FIRST],
+				q2Str = dualMatch.groupValues[REGEX_GROUP_THIRD],
+				unit = dualMatch.groupValues[REGEX_GROUP_SECOND],
+				tail = tail,
+			)
+			internalMatch != null -> formatSummedParenthetical(
+				q1Str = internalMatch.groupValues[REGEX_GROUP_FIRST],
+				q2Str = internalMatch.groupValues[REGEX_GROUP_SECOND],
+				unit = internalMatch.groupValues[REGEX_GROUP_THIRD],
+				tail = tail,
+			)
+			mass != null -> formatMassFromTail(mass = mass, tail = tail)
+			else -> null
+		}
+	}
+
+	private fun formatSummedParenthetical(
+		q1Str: String,
+		q2Str: String,
+		unit: String,
+		tail: String,
+	): String? {
+		val q1 = parseQuantity(canonicalizeLine(q1Str))
+		val q2 = parseQuantity(canonicalizeLine(q2Str))
+		return if (q1 != null && q2 != null) {
+			val total = (q1 + q2).stripTrailingZeros().toPlainString()
+			val food = tail.substringAfterLast(')').trim().trimStart(',')
+			"$total $unit $food".trim()
+		} else {
+			null
+		}
+	}
+
+	private fun formatMassFromTail(mass: MatchResult, tail: String): String {
+		val massQty = mass.groupValues[REGEX_GROUP_SECOND]
+		val massUnit = mass.groupValues[REGEX_GROUP_THIRD]
+		val withoutMass = extraWhitespacePattern
 			.replace(tail.replaceRange(mass.range, " "), " ")
 			.trim()
 			.trimStart(',')
 			.trim()
-		return if (food.isBlank()) {
-			tail
+		val second = secondMeasurePattern.matchEntire(withoutMass)
+		val food = second?.groupValues?.get(REGEX_GROUP_THIRD)?.trim() ?: withoutMass
+		return if (food.isBlank()) tail else "$massQty $massUnit $food"
+	}
+
+	private fun sumCompoundQuantities(
+		firstQtyStr: String,
+		firstUnitStr: String,
+		secondQtyStr: String,
+		secondUnitStr: String,
+	): Pair<BigDecimal, String>? {
+		val q1 = parseQuantity(canonicalizeLine(firstQtyStr))
+		val q2 = parseQuantity(canonicalizeLine(secondQtyStr))
+		val u1 = normalizeUnit(firstUnitStr)
+		val u2 = normalizeUnit(secondUnitStr)
+		val quantities = if (q1 != null && q2 != null) q1 to q2 else null
+		val units = if (u1 != null && u2 != null) u1 to u2 else null
+		return if (quantities != null && units != null) {
+			calculateCombinedAmount(quantities = quantities, units = units)
 		} else {
-			listOf(
-				mass.groupValues[REGEX_GROUP_SECOND],
-				mass.groupValues[REGEX_GROUP_THIRD],
-				food,
-			).joinToString(" ")
+			null
+		}
+	}
+
+	private fun calculateCombinedAmount(
+		quantities: Pair<BigDecimal, BigDecimal>,
+		units: Pair<String, String>,
+	): Pair<BigDecimal, String>? {
+		val (q1, q2) = quantities
+		val (u1, u2) = units
+		val tspMultiplier = BigDecimal(3)
+		val cupToTbspMultiplier = BigDecimal(16)
+		val cupToTspMultiplier = BigDecimal(48)
+		val mlMultiplier = BigDecimal(15)
+		val butterGramMultiplier = BigDecimal(14)
+
+		return when {
+			u1 == u2 -> (q1 + q2) to u1
+			u1 == "tbsp" && u2 == "tsp" -> (q1.multiply(tspMultiplier) + q2) to "tsp"
+			u1 == "tsp" && u2 == "tbsp" -> (q1 + q2.multiply(tspMultiplier)) to "tsp"
+			u1 == "cup" && u2 == "tbsp" -> (q1.multiply(cupToTbspMultiplier) + q2) to "tbsp"
+			u1 == "cup" && u2 == "tsp" -> (q1.multiply(cupToTspMultiplier) + q2) to "tsp"
+			u1 == "ml" && u2 == "tbsp" -> (q1 + q2.multiply(mlMultiplier)) to "ml"
+			u1 == "tbsp" && u2 == "ml" -> (q1.multiply(mlMultiplier) + q2) to "ml"
+			u1 == "g" && u2 == "tbsp" -> (q1 + q2.multiply(butterGramMultiplier)) to "g"
+			else -> null
 		}
 	}
 
@@ -335,6 +496,7 @@ internal object IngredientLineParser {
 			value.forEach { character ->
 				when {
 					character == '–' || character == '—' -> append('-')
+					character == '\u00A0' -> append(' ')
 					else -> {
 						val fraction = unicodeFractions[character]
 						if (fraction == null) {
@@ -352,7 +514,8 @@ internal object IngredientLineParser {
 	}
 
 	private fun consumeLeadingQuantityAndPack(value: String): LeadingAmount {
-		val withoutDimensions = skipLeadingDimensions(value)
+		val withoutApprox = leadingApproximationPattern.replace(value.trim(), "")
+		val withoutDimensions = skipLeadingDimensions(withoutApprox)
 		val leadingParenthetical = leadingParentheticalAmountPattern.find(withoutDimensions)
 		if (leadingParenthetical != null) {
 			return LeadingAmount(
@@ -603,11 +766,12 @@ internal object IngredientLineParser {
 		leadingParentheticalPattern.replaceFirst(value, "").trim()
 
 	private fun stripContainerWords(value: String): String {
-		val token = firstToken(value).lowercase()
+		val withoutOrPack = leadingOrPackPattern.replaceFirst(value.trim(), "").trim()
+		val token = firstToken(withoutOrPack).lowercase()
 		if (token !in IngredientLineParserLexicon.containerTokens) {
-			return value.trim()
+			return withoutOrPack
 		}
-		var rest = dropFirstWord(value)
+		var rest = dropFirstWord(withoutOrPack)
 		if (firstToken(rest).lowercase() == "of") {
 			rest = dropFirstWord(rest)
 		}
@@ -940,7 +1104,7 @@ internal object IngredientLineParser {
 				)
 		return when {
 			!usableUnit -> null
-			isParentheticalNoiseFoodName(foodName) -> LeadingAmount(
+			foodName.startsWith("/") || isParentheticalNoiseFoodName(foodName) -> LeadingAmount(
 				quantity = foodQuantity,
 				unit = foodUnit,
 				rest = "",
@@ -995,8 +1159,17 @@ internal object IngredientLineParser {
 			?: innerAmountPattern.find(semicolonInner)
 	}
 
-	private fun stripParentheticalClauses(value: String): String =
-		extraWhitespacePattern.replace(parentheticalPattern.replace(value, " "), " ").trim()
+	private fun stripParentheticalClauses(value: String): String {
+		var result = value
+		while (innermostParentheticalPattern.containsMatchIn(result)) {
+			result = innermostParentheticalPattern.replace(result, " ")
+		}
+		return extraWhitespacePattern
+			.replace(result.replace("(", " ").replace(")", " "), " ")
+			.trim()
+			.trimEnd(',')
+			.trim()
+	}
 
 	private fun stripUnopenedLabelNoise(value: String): String =
 		extraWhitespacePattern
@@ -1006,7 +1179,7 @@ internal object IngredientLineParser {
 			.trim()
 
 	private fun stripTrailingOptionalNoise(value: String): String {
-		val stripped = trailingOptionalPattern.replace(value.trim(), "").trim().trimEnd(',').trim()
+		val stripped = trailingOptionalPattern.replace(value.trim(), "").trim().trimEnd(',', '*').trim()
 		return if (stripped.isNotBlank()) stripped else value.trim()
 	}
 
@@ -1318,6 +1491,7 @@ internal object IngredientLineParser {
 		"lamb",
 		"pig",
 		"pork",
+		"rabbit",
 		"salmon",
 		"tuna",
 		"turkey",
@@ -1424,8 +1598,8 @@ internal object IngredientLineParser {
 			"kg", "kilogram", "kilograms" -> "kg"
 			"ml", "milliliter", "millilitre", "milliliters", "millilitres" -> "ml"
 			"l", "liter", "litre", "liters", "litres" -> "l"
-			"tsp", "tsps", "teaspoon", "teaspoons" -> "tsp"
-			"tbsp", "tbsps", "tablespoon", "tablespoons" -> "tbsp"
+			"tsp", "tsps", "teaspoon", "teaspoons", "tspn" -> "tsp"
+			"tbsp", "tbsps", "tbs", "tablespoon", "tablespoons" -> "tbsp"
 			"cup", "cups" -> "cup"
 			"oz", "ounce", "ounces" -> "oz"
 			"lb", "lbs", "pound", "pounds" -> "lb"

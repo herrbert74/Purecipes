@@ -8,6 +8,7 @@ internal data class RecipeNutritionPersistResult(
 	val totals: CalculatedNutritionTotals?,
 	val ingredientCount: Int,
 	val issues: List<IngredientNutritionIssue>,
+	val allIssues: List<IngredientNutritionIssue> = issues,
 )
 
 private const val SCRAPED_CALCULATION_SOURCE = "scraped"
@@ -31,7 +32,8 @@ internal class RecipeNutritionService(
 			recipeId = recipeId,
 			totals = calculation.totals,
 			ingredientCount = ingredients.size,
-			issues = calculation.collectIngredientIssues(),
+			issues = calculation.collectIngredientIssues(onlyCountableTowardsTotals = true),
+			allIssues = calculation.collectIngredientIssues(onlyCountableTowardsTotals = false),
 		)
 	}
 

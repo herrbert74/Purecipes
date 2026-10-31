@@ -4,12 +4,16 @@
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
 
+// cache-bust: alt-or-incomplete-v22
+
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -58,6 +62,66 @@ val knownWebsites = mapOf(
 		url = "https://www.mob.co.uk",
 		recipePattern = Regex("^/recipes/(?!collections|categories)[^/]+$"),
 	),
+	"natashasbaking" to SiteConfig(
+		url = "https://natashasbaking.com",
+		recipePattern = Regex(
+			"^/(?!category/|tag/|author/|page/|feed/|comments/|wp-|xmlrpc|" +
+				"shop/?$|cart/?$|checkout/?$|courses/?$|privacypolicy/?$|" +
+				"terms-conditions/?$|sourdough-guide/?$|panettone/?$|" +
+				"croissant-recipes-and-techniques/?$)[a-z0-9-]+/?$",
+		),
+	),
+	"breadtopia" to SiteConfig(
+		url = "https://breadtopia.com",
+		recipePattern = Regex(
+			"^/(?!store(?:/|$)|faq(?:/|$)|category/|tag/|author/|page/|feed/|" +
+				"comments/|wp-|xmlrpc|blog/?$|contact/?$|about/?$|my-account(?:/|$)|" +
+				"my-lists(?:/|$)|track-order/?$|wishlist(?:/|$)|starter/?$|" +
+				"regenerative-agriculture/?$|kudos/?$|breadtopia-rewards-program/?$|" +
+				"how-to-bake-bread/?$|masienda/?$|check-my-gift-certificate/?$|" +
+				"sdbook/?$|real-bread-bakers/?$|newsletter-signup/?$|wholesale/?$|" +
+				"gluten-free/?$|live-sourdough-starter/?$|clay-baker/?$)[a-z0-9-]+/?$",
+		),
+	),
+	"greatbritishrecipes" to SiteConfig(
+		url = "https://greatbritishrecipes.com",
+		recipePattern = Regex(
+			"^/(?!recipes/?$|about-great-british-recipes/?$|subscribe/?$|" +
+				"suscribe/?$|privacy-policy(?:-2)?/?$|disclosure/?$|contact/?$|" +
+				"feed/|comments/|wp-|xmlrpc|category/|tag/|author/|page/)" +
+				"(?![a-z0-9-]+-recipes/?$)[a-z0-9-]+/?$",
+		),
+	),
+	"bbcgoodfood" to SiteConfig(
+		url = "https://www.bbcgoodfood.com",
+		recipePattern = Regex("^/recipes/(?!collection/|category/)[^/]+/?$"),
+	),
+	"jamieoliver" to SiteConfig(
+		url = "https://www.jamieoliver.com/recipes/all",
+		recipePattern = Regex(
+			"^/recipes/(?!all/?$|new/?$|books/|course/|dishtype/|occasion/|" +
+				"special-diets/|family-favourites/|tv/|world/|ingredients?/)" +
+				"[^/]+/[^/]+/?$",
+		),
+	),
+	"maryberry" to SiteConfig(
+		url = "https://www.maryberry.co.uk/recipes",
+		recipePattern = Regex("^/recipes/recipe/[^/]+/?$"),
+	),
+	"paulhollywood" to SiteConfig(
+		url = "https://www.paulhollywood.com/recipes-1",
+		recipePattern = Regex("^/post/[^/]+/?$"),
+	),
+	"prueleith" to SiteConfig(
+		url = "https://prue-leith.com/cooking",
+		recipePattern = Regex(
+			"^/(?!cooking(?:/|$)|tv-show(?:/|$)|home-garden(?:/|$)|fashion(?:/|$)|" +
+				"travel(?:/|$)|trueprue(?:/|$)|books(?:/|$)|products(?:/|$)|" +
+				"search(?:/|$)|terms-and-conditions/?$|privacy-policy/?$|contact/?$|press/?$|" +
+				"uncategorized(?:/|$)|feed/|comments/|wp-|xmlrpc|category/|tag/|" +
+				"author/|page/)[a-z0-9-]+/?$",
+		),
+	),
 )
 
 val json = Json {
@@ -89,7 +153,7 @@ data class RecipeData(
 
 private fun buildIngredientGroupsJson(
 	ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>,
-): JsonArray = kotlinx.serialization.json.buildJsonArray {
+): JsonArray = buildJsonArray {
 	ingredientGroups.forEach { (groupName, items) ->
 		add(
 			buildJsonObject {
@@ -101,7 +165,7 @@ private fun buildIngredientGroupsJson(
 }
 
 private fun buildIngredientItemsJson(items: List<ProcessedScrapedIngredient>): JsonArray =
-	kotlinx.serialization.json.buildJsonArray {
+	buildJsonArray {
 		items.forEach { ingredient ->
 			add(
 				buildJsonObject {
@@ -117,7 +181,7 @@ private fun buildIngredientItemsJson(items: List<ProcessedScrapedIngredient>): J
 
 private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
 	val ingredientGroupsArray = buildIngredientGroupsJson(recipe.ingredientGroups)
-	val instructionListArray = kotlinx.serialization.json.buildJsonArray {
+	val instructionListArray = buildJsonArray {
 		recipe.instructionList.forEach { add(JsonPrimitive(it)) }
 	}
 	val nutrientsObject = buildJsonObject {
@@ -145,7 +209,7 @@ private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
 		put("source_url", JsonPrimitive(recipe.sourceUrl))
 		put(
 			"appliances",
-			kotlinx.serialization.json.buildJsonArray {
+			buildJsonArray {
 				recipe.appliances.forEach { add(JsonPrimitive(it)) }
 			},
 		)
@@ -482,7 +546,274 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 	import re
 	import sys
 	import urllib.request
+	from urllib.parse import urljoin, urlparse
+	from bs4 import BeautifulSoup
 	from recipe_scrapers import scrape_html
+
+	def parse_minutes(text):
+		if not text:
+			return None
+		t = text.lower()
+		hm = re.search(r'(\d+)\s*(?:hours?|hrs?|h\b)', t)
+		mm = re.search(r'(\d+)\s*(?:minutes?|mins?|m\b)', t)
+		total = (int(hm.group(1)) * 60 if hm else 0) + (int(mm.group(1)) if mm else 0)
+		return total if total > 0 else None
+
+	def fallback_scrape_dom(html, url):
+		soup = BeautifulSoup(html, "html.parser")
+		host = urlparse(url).netloc.replace("www.", "").lower()
+		h1 = soup.find("h1")
+		title = h1.get_text(" ", strip=True) if h1 else ""
+		og_img = soup.find("meta", property="og:image")
+		image = urljoin(url, og_img["content"].strip()) if og_img and og_img.get("content") else None
+		yields = None
+		prep_time = None
+		cook_time = None
+		category = None
+		ingredient_groups = []
+		instruction_list = []
+
+		if "maryberry.co.uk" in host:
+			im_div = soup.select_one(".RecipeOverviewGrid .ImCellIm")
+			if im_div and im_div.get("style"):
+				m = re.search(r"url\(['\"]?([^'\")]+)['\"]?\)", im_div["style"])
+				if m:
+					image = urljoin(url, m.group(1))
+			active_cats = [
+				a.get_text(" ", strip=True)
+				for a in soup.select(".CourseList a.Active")
+				if a.get_text(strip=True)
+			]
+			if active_cats:
+				category = ", ".join(active_cats)
+			for label in soup.select(".RecipeMeta .Label"):
+				txt = label.get_text(" ", strip=True)
+				if txt.lower().startswith("serves:"):
+					yields = txt.split(":", 1)[1].strip() or txt
+				elif txt.lower().startswith("cook time:"):
+					cook_time = parse_minutes(txt)
+				elif txt.lower().startswith("prep time:"):
+					prep_time = parse_minutes(txt)
+			ul = soup.select_one("ul.IngredientsList")
+			if ul:
+				cur_name, cur_items = None, []
+				for li in ul.find_all("li", recursive=False):
+					if "Heading" in (li.get("class") or []):
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						cur_name = li.get_text(" ", strip=True)
+					else:
+						val = li.get_text(" ", strip=True)
+						if val:
+							cur_items.append(val)
+				if cur_items:
+					ingredient_groups.append((cur_name, cur_items))
+			for li in soup.select(".NumberedList li.Item"):
+				divs = li.find_all("div", recursive=False)
+				step_txt = divs[-1].get_text(" ", strip=True) if divs else li.get_text(" ", strip=True)
+				if step_txt:
+					instruction_list.append(step_txt)
+		elif "paulhollywood.com" in host:
+			article = soup.find("article") or soup.find("main") or soup
+			ing_has_li = False
+			check_ing = False
+			for check_el in article.find_all(["h2", "h3", "li"]):
+				c_low = check_el.get_text(" ", strip=True).lower()
+				if check_el.name in ("h2", "h3"):
+					if c_low == "ingredients":
+						check_ing = True
+						continue
+					if c_low in ("method", "instructions") and check_ing:
+						break
+				elif check_ing and check_el.name == "li":
+					ing_has_li = True
+					break
+			mode, cur_name, cur_items = None, None, []
+			for el in article.find_all(["h2", "h3", "h4", "p", "li"]):
+				txt = el.get_text(" ", strip=True).lstrip("\ufeff").strip()
+				if not txt:
+					continue
+				low = txt.lower()
+				if el.name in ("h2", "h3"):
+					if low == "ingredients":
+						mode = "ing"
+						continue
+					if low in ("method", "instructions"):
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						mode = "inst"
+						continue
+					if mode is not None:
+						break
+				elif mode is None and el.name in ("h4", "p") and len(txt) < 40:
+					if any(k in low for k in ("serves", "makes", "slices", "rolls", "buns", "loaf", "loaves", "portions")):
+						yields = txt
+				elif mode == "ing":
+					if low.startswith("tags:") or low.startswith("taken from") or low.startswith("for more of paul"):
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+							cur_items = []
+						mode = None
+						continue
+					if ing_has_li:
+						if el.name in ("h4", "p") and el.find_parent("li") is None:
+							if cur_items:
+								ingredient_groups.append((cur_name, cur_items))
+								cur_items = []
+							cur_name = txt
+						elif el.name == "li":
+							cur_items.append(txt)
+					else:
+						if el.name == "h4":
+							if cur_items:
+								ingredient_groups.append((cur_name, cur_items))
+								cur_items = []
+							cur_name = txt
+						elif el.name in ("p", "li") and not (el.name == "p" and el.find_parent("li") is not None):
+							cur_items.append(txt)
+				elif mode == "inst":
+					if any(low.startswith(p) for p in ("taken from", "photograph", "tags:", "find more recipes", "for more of paul")):
+						mode = None
+						continue
+					if el.name == "li":
+						if not any(low == tag for tag in ("cakes", "pies", "bread", "breads", "baking", "biscuits", "desserts", "pastry", "christmas recipes", "paul hollywood", "paul hollywood recipes")):
+							instruction_list.append(txt)
+					elif el.name == "p" and el.find_parent("li") is None:
+						instruction_list.append(txt)
+			if cur_items:
+				ingredient_groups.append((cur_name, cur_items))
+		elif "prue-leith.com" in host:
+			article = soup.find("article") or soup.find("main")
+			if article:
+				cat_el = article.select_one(".catergory, .category")
+				if cat_el:
+					category = cat_el.get_text(" ", strip=True)
+				if category and any(non_food in category.lower() for non_food in ["fashion", "travel", "home & garden", "#trueprue", "books", "trueprue"]):
+					article = None
+			if article:
+				for p in article.find_all(["p", "h3", "h4", "div"]):
+					if p.find_parent(["ul", "ol"]):
+						continue
+					txt = p.get_text(" ", strip=True)
+					low = txt.lower()
+					if "prep time" in low and not prep_time:
+						prep_time = parse_minutes(txt.split("cook time")[0] if "cook time" in low else txt)
+					if "cook time" in low and not cook_time:
+						cook_time = parse_minutes(txt[txt.find("cook time"):])
+					if (low.startswith("serves") or low.startswith("makes") or "serves:" in low or "makes:" in low) and not yields:
+						if len(txt) < 60:
+							yields = txt
+
+				def is_quantity_line(t):
+					s = t.strip()
+					return bool(s and re.match(r"^(?:\d|[¼½¾⅓⅔⅛⅜⅝⅞]|pinch|large pinch|small pinch|handful|few|a few|juice|zest|a sprig|sprig|silver charms)", s, re.I))
+
+				raw_elements = [el for el in article.find_all(["h2", "h3", "h4", "h5", "h6", "p", "ul", "ol"]) if el.find_parent(["ul", "ol"]) is None]
+				elements = []
+				for el in raw_elements:
+					txt = el.get_text(" ", strip=True)
+					if txt:
+						elements.append((el, txt, txt.lower().rstrip(":")))
+
+				method_idx = None
+				for idx, (el, txt, low) in enumerate(elements):
+					if low in ["method", "instructions", "directions", "to make"] or low.startswith("method") or low.startswith("instructions"):
+						method_idx = idx
+						break
+					if el.name == "ol":
+						method_idx = idx
+						break
+
+				if method_idx is None:
+					found_ings = False
+					for idx, (el, txt, low) in enumerate(elements):
+						if is_quantity_line(txt):
+							found_ings = True
+						elif found_ings and el.name == "p" and len(txt) > 35 and not is_quantity_line(txt):
+							method_idx = idx
+							break
+
+				if method_idx is not None:
+					ing_start_idx = None
+					for idx in range(method_idx):
+						el, txt, low = elements[idx]
+						if low in ["ingredients"] or low.startswith("ingredients") or re.match(r"^for\s+(?:the\s+)?[a-z\s]+$", low):
+							ing_start_idx = idx
+							break
+						if el.name == "ul":
+							ing_start_idx = idx
+							break
+						if el.name == "p" and is_quantity_line(txt):
+							ing_start_idx = idx
+							break
+
+					if ing_start_idx is not None:
+						cur_name, cur_items = None, []
+						for idx in range(ing_start_idx, method_idx):
+							el, txt, low = elements[idx]
+							if low in ["ingredients"] or low.startswith("ingredients"):
+								continue
+							if low.startswith("for ") or re.match(r"^(?:for\s+[a-z\s]+|to\s+serve|topping|filling|base|icing|cake|dough):?$", low):
+								if cur_items:
+									ingredient_groups.append((cur_name, cur_items))
+									cur_items = []
+								cur_name = txt.rstrip(":")
+								continue
+							if el.name == "ul":
+								items = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
+								cur_items.extend(items)
+							elif el.name == "p":
+								p_lines = [line.strip() for line in el.get_text("\n", strip=True).splitlines() if line.strip()]
+								for p_line in p_lines:
+									is_subgroup = (el.find(["strong", "b", "em", "h4", "h5"]) and len(p_line) < 40) or (len(p_line) < 30 and not is_quantity_line(p_line))
+									if is_subgroup and not is_quantity_line(p_line):
+										if cur_items:
+											ingredient_groups.append((cur_name, cur_items))
+											cur_items = []
+										cur_name = p_line.rstrip(":")
+									else:
+										cur_items.append(p_line)
+						if cur_items:
+							ingredient_groups.append((cur_name, cur_items))
+
+						for idx in range(method_idx, len(elements)):
+							el, txt, low = elements[idx]
+							if low in ["method", "instructions", "directions", "to make"] or low.startswith("method") or low.startswith("instructions"):
+								continue
+							if any(low.startswith(p) for p in ["tip:", "tips:", "taken from", "tags:", "photograph", "this cake will keep", "you might also like"]):
+								break
+							if el.name in ["ol", "ul"]:
+								steps = [li.get_text(" ", strip=True) for li in el.find_all("li", recursive=False) if li.get_text(strip=True)]
+								instruction_list.extend(steps)
+							elif el.name == "p":
+								if len(txt) > 20 and not (el.find("strong") and len(txt) < 40):
+									instruction_list.append(txt)
+
+		if not ingredient_groups:
+			return None
+		total_time = ((prep_time or 0) + (cook_time or 0)) or None
+		return {
+			"title": title or "Untitled Recipe",
+			"ingredient_groups": [
+				{"name": (n or ""), "ingredients": lst}
+				for (n, lst) in ingredient_groups
+			],
+			"instruction_list": instruction_list,
+			"instructions": "\n".join(instruction_list).strip(),
+			"total_time": total_time,
+			"prep_time": prep_time,
+			"cook_time": cook_time,
+			"yields": yields,
+			"image": image,
+			"nutrients": {},
+			"language": "en",
+			"cuisine": None,
+			"category": category,
+			"links": {"canonical": url},
+			"source_url": url
+		}
 
 	url = sys.argv[1]
 	try:
@@ -495,7 +826,18 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 			"",
 			html,
 		)
-		s = scrape_html(html, org_url=url)
+		try:
+			s = scrape_html(html, org_url=url, supported_only=False)
+		except Exception:
+			fallback_payload = fallback_scrape_dom(html, url)
+			if fallback_payload is not None:
+				print(json.dumps(fallback_payload, ensure_ascii=False))
+				raise SystemExit(0)
+			host_check = urlparse(url).netloc.replace("www.", "").lower()
+			if any(known in host_check for known in ("maryberry.co.uk", "paulhollywood.com", "prue-leith.com")):
+				print("__SCRAPE_NO_DATA__:not a recipe page or missing recipe details")
+				raise SystemExit(0)
+			raise
 
 		def safe(name, default=None):
 			fn = getattr(s, name, None)
@@ -512,7 +854,38 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 		title = (safe("title", "") or "").strip()
 		title_missing = not title
 
+		def extract_jamie_oliver_groups(soup):
+			ing_div = soup.select_one(".ingredients-rich-text")
+			if not ing_div:
+				return None
+			groups, cur_name, cur_items = [], None, []
+			for p in ing_div.find_all("p"):
+				txt = p.get_text(" ", strip=True)
+				if not txt:
+					continue
+				strong = p.find("strong")
+				is_heading = (
+					"type-h5" in p.get("class", [])
+					or (strong and strong.get_text(strip=True) == txt)
+					or (txt.isupper() and not any(c.isdigit() for c in txt))
+				)
+				if is_heading:
+					if cur_items or cur_name:
+						groups.append((cur_name, cur_items))
+						cur_items = []
+					cur_name = txt
+				else:
+					cur_items.append(txt)
+			if cur_items or cur_name:
+				groups.append((cur_name, cur_items))
+			return groups if len(groups) > 1 or (len(groups) == 1 and groups[0][0]) else None
+
 		ingredient_groups = safe("ingredient_groups")
+		if "jamieoliver.com" in url.lower():
+			page_soup = getattr(s, "soup", None) or BeautifulSoup(html, "html.parser")
+			jo_groups = extract_jamie_oliver_groups(page_soup)
+			if jo_groups:
+				ingredient_groups = jo_groups
 		ingredients = safe("ingredients", []) or []
 		if ingredient_groups is None:
 			ingredient_groups = [(None, ingredients)]
@@ -528,6 +901,9 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 					elif isinstance(g, dict):
 						name = g.get("name")
 						items = g.get("ingredients")
+					elif hasattr(g, "purpose") and hasattr(g, "ingredients"):
+						name = g.purpose
+						items = g.ingredients
 					else:
 						name, items = None, g
 
@@ -711,6 +1087,7 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 		is JsonPrimitive -> ingredientEl.contentOrNull?.trim()?.takeIf(String::isNotBlank)?.let {
 			ProcessedScrapedIngredient(text = it)
 		}
+
 		is JsonObject -> {
 			val text = ingredientEl["text"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
 			if (text.isBlank()) {
@@ -730,6 +1107,7 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 				)
 			}
 		}
+
 		else -> null
 	}
 
@@ -787,7 +1165,7 @@ private fun parseIngredientGroupsFromRoot(
 ): List<Pair<String?, List<ProcessedScrapedIngredient>>> =
 	root["ingredient_groups"]?.jsonArray
 		?.mapNotNull(::parseStoredIngredientGroupJson)
-		?.flatMap { (name, items) -> processScrapedIngredientGroups(name, items) }
+		?.flatMap { (name, items) -> processStoredScrapedIngredientGroups(name, items) }
 		?.filter { (_, items) -> items.isNotEmpty() }
 		?: emptyList()
 
@@ -796,7 +1174,7 @@ private fun parseStoredIngredientGroupJson(
 ): Pair<String?, List<ProcessedScrapedIngredient>>? =
 	when (groupEl) {
 		is JsonObject -> parseIngredientGroupObject(groupEl)
-		is kotlinx.serialization.json.JsonArray -> parseIngredientGroupArray(groupEl)
+		is JsonArray -> parseIngredientGroupArray(groupEl)
 		else -> null
 	}
 
@@ -811,7 +1189,7 @@ private fun parseIngredientGroupObject(
 }
 
 private fun parseIngredientGroupArray(
-	groupArray: kotlinx.serialization.json.JsonArray,
+	groupArray: JsonArray,
 ): Pair<String?, List<ProcessedScrapedIngredient>>? {
 	val name = groupArray.getOrNull(0)?.jsonPrimitive?.contentOrNull?.trim().orEmpty().ifBlank { null }
 	val items = groupArray.getOrNull(1)?.jsonArray
@@ -1401,10 +1779,40 @@ private fun saveRecipeInstructions(connection: Connection, recipe: RecipeData, r
 	}
 }
 
+private val scrapedServingsRegex = Regex(
+	pattern = """(\d+(?:\.\d+)?)\s*(?:servings?|serves|portions?|people|items?|pieces?|pancakes?|""" +
+		"""biscuits?|cookies?|rolls?|muffins?|cupcakes?|buns?|bars?|loaves|loaf|batch|pie)""",
+	option = RegexOption.IGNORE_CASE,
+)
+
+private val scrapedLeadingCountRegex = Regex(
+	pattern = """^(\d+(?:\.\d+)?)\s*(?:x\s*)?(?:servings?|serves|items?|pieces?)""",
+	option = RegexOption.IGNORE_CASE,
+)
+
+private fun parseScrapedServingCount(yields: String?): Double? {
+	val trimmed = yields?.trim().orEmpty()
+	if (trimmed.isEmpty()) {
+		return null
+	}
+	val match = scrapedServingsRegex.find(trimmed) ?: scrapedLeadingCountRegex.find(trimmed)
+	val count = match?.groupValues?.getOrNull(1)?.toDoubleOrNull()
+	return if (count == null || count <= 0.0) null else count
+}
+
+private fun scaleScrapedNutrient(value: String?, multiplier: Double): Double? {
+	val parsed = parseNumber(value) ?: return null
+	return java.math.BigDecimal.valueOf(parsed * multiplier)
+		.setScale(2, java.math.RoundingMode.HALF_UP)
+		.toDouble()
+}
+
 private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeData, recipeId: Int) {
 	if (!recipe.hasScrapedNutrition()) {
 		return
 	}
+	val servingCount = parseScrapedServingCount(recipe.yields)
+	val multiplier = if (servingCount != null && servingCount > 0.0) servingCount else 1.0
 	val nutrients = recipe.nutrients
 	connection.prepareStatement(
 		"""
@@ -1417,9 +1825,10 @@ private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeDat
 			fiber,
 			sugar,
 			sodium,
-			calculation_source
+			calculation_source,
+			serving_count
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (recipe_id) DO UPDATE SET
 			calories = EXCLUDED.calories,
 			protein = EXCLUDED.protein,
@@ -1428,18 +1837,20 @@ private fun saveScrapedRecipeNutrition(connection: Connection, recipe: RecipeDat
 			fiber = EXCLUDED.fiber,
 			sugar = EXCLUDED.sugar,
 			sodium = EXCLUDED.sodium,
-			calculation_source = EXCLUDED.calculation_source
+			calculation_source = EXCLUDED.calculation_source,
+			serving_count = EXCLUDED.serving_count
 		""".trimIndent(),
 	).use { ps ->
 		ps.setInt(1, recipeId)
-		ps.setObject(2, parseNumber(nutrients["calories"]))
-		ps.setObject(3, parseNumber(nutrients["protein"]))
-		ps.setObject(4, parseNumber(nutrients["carbohydrates"]))
-		ps.setObject(5, parseNumber(nutrients["fat"]))
-		ps.setObject(6, parseNumber(nutrients["fiber"]))
-		ps.setObject(7, parseNumber(nutrients["sugar"]))
-		ps.setObject(8, parseNumber(nutrients["sodium"]))
+		ps.setObject(2, scaleScrapedNutrient(nutrients["calories"], multiplier))
+		ps.setObject(3, scaleScrapedNutrient(nutrients["protein"], multiplier))
+		ps.setObject(4, scaleScrapedNutrient(nutrients["carbohydrates"], multiplier))
+		ps.setObject(5, scaleScrapedNutrient(nutrients["fat"], multiplier))
+		ps.setObject(6, scaleScrapedNutrient(nutrients["fiber"], multiplier))
+		ps.setObject(7, scaleScrapedNutrient(nutrients["sugar"], multiplier))
+		ps.setObject(8, scaleScrapedNutrient(nutrients["sodium"], multiplier))
 		ps.setString(9, "scraped")
+		ps.setObject(10, servingCount)
 		ps.executeUpdate()
 	}
 }
@@ -1476,7 +1887,7 @@ fun calculateNutritionForRecipes(config: Config, recipeIds: List<Int>) {
 		if (repoRoot == null) {
 			println("Skipping nutrition calculation: could not find repository root (settings.gradle.kts)")
 		} else {
-			println("Skipping nutrition calculation: gradlew not found at ${gradlew.path}")
+			println("Skipping nutrition calculation: gradlew not found at ${gradlew?.path}")
 		}
 		return
 	}
@@ -1603,6 +2014,7 @@ fun importFilesToConnection(connection: Connection, jsonFiles: List<File>): List
 				recipeId?.let(importedRecipeIds::add)
 				if (imported % 100 == 0) println("Imported $imported so far...")
 			}
+
 			ImportOutcome.DUPLICATE -> duplicates++
 			ImportOutcome.ERROR -> errors++
 		}
@@ -1655,102 +2067,103 @@ if (config.mode == "json") {
 	println("Import mode: reading JSON files from ${recipesDir.path} into database")
 	importJsonFilesToDb(config, recipesDir)
 } else {
-println("Discovering URLs from $websiteUrl")
-val discovered = extractUrls(config, websiteUrl)
-println("Discovered ${discovered.size} candidate URLs")
+	println("Discovering URLs from $websiteUrl")
+	val discovered = extractUrls(config, websiteUrl)
+	println("Discovered ${discovered.size} candidate URLs")
 
-// `discovered` URLs are the raw set returned by the discovery service. They may
-// include listing pages, unrelated pages, duplicates, or pages from a different
-// subdomain. `filterRecipeUrls` applies host and path filtering to keep only
-// likely recipe pages for the configured website.
-val filtered = filterRecipeUrls(discovered, websiteUrl, config.recipeUrlPattern)
-println("Filtered to ${filtered.size} recipe URLs after host/pattern filtering")
+	// `discovered` URLs are the raw set returned by the discovery service. They may
+	// include listing pages, unrelated pages, duplicates, or pages from a different
+	// subdomain. `filterRecipeUrls` applies host and path filtering to keep only
+	// likely recipe pages for the configured website.
+	val filtered = filterRecipeUrls(discovered, websiteUrl, config.recipeUrlPattern)
+	println("Filtered to ${filtered.size} recipe URLs after host/pattern filtering")
 
-val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb) {
-	val existing = precheckExistingUrls(config, filtered)
-	if (existing.isNotEmpty()) {
-		println("Pre-check: skipping ${existing.size} URLs already in database")
-	}
-	val pending = filtered.filterNot { existing.contains(it) }
-	if (config.maxUrls > 0) pending.take(config.maxUrls) else pending
-} else {
-	if (config.maxUrls > 0) filtered.take(config.maxUrls) else filtered
-}
-
-// At this point we have already filtered discovered URLs down to recipe candidates.
-// If `selectedAfterDbPrecheck` is empty, it means either no URLs passed the host/pattern
-// rules or the database precheck excluded all remaining candidates.
-val queue = ArrayDeque(selectedAfterDbPrecheck)
-val processed = mutableSetOf<String>()
-println("Processing ${selectedAfterDbPrecheck.size} filtered recipe URLs")
-
-val dbConnection: Connection? = if (config.mode == "web") {
-	openConnection(config).also { conn ->
-		conn.autoCommit = false
-		ensureSchema(conn)
-	}
-} else {
-	null
-}
-
-val scraped = mutableListOf<Pair<RecipeData, Int?>>()
-while (queue.isNotEmpty()) {
-	val url = queue.removeFirst()
-	if (processed.add(url)) {
-		val recipe = scrapeRecipeWithPython(url)
-		if (recipe == null) {
-			val extraLinks = extractRecipeLinksFromCollectionPage(url, config.simpleScraperTimeoutSeconds)
-				.filterNot { processed.contains(it) }
-
-			if (extraLinks.isNotEmpty()) {
-				println("Expanded listing URL -> found ${extraLinks.size} recipe links: $url")
-				extraLinks.forEach { queue.addLast(it) }
-			} else {
-				println("Skipped: $url")
-			}
-		} else {
-			val dbId = dbConnection?.let { saveRecipe(it, recipe) }
-			scraped += (recipe to dbId)
-
-			val siteName = try {
-				URI(recipe.sourceUrl).host?.removePrefix("www.")?.lowercase(Locale.getDefault())?.ifBlank { "unknown" }
-			} catch (_: Exception) {
-				null
-			} ?: "unknown"
-			val siteDir = File(recipesDir, siteName).apply { mkdirs() }
-			if (dbId != null) {
-				val name = "%05d-%s.json".format(dbId, slugify(recipe.title).take(100))
-				val file = File(siteDir, name)
-				file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
-				println("Saved [db=$dbId]: ${file.path}")
-			} else if (dbConnection != null) {
-				println("Duplicate in DB, skipped file: ${recipe.sourceUrl}")
-			} else {
-				val name = "%s.json".format(slugify(recipe.title).take(100))
-				val file = File(siteDir, name)
-				file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
-				println("Saved: ${file.path}")
-			}
-
-			if (config.maxUrls > 0 && scraped.size >= config.maxUrls) {
-				println("Reached --max-urls limit (${config.maxUrls})")
-				break
-			}
+	val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb) {
+		val existing = precheckExistingUrls(config, filtered)
+		if (existing.isNotEmpty()) {
+			println("Pre-check: skipping ${existing.size} URLs already in database")
 		}
-		if (config.sleepMillis > 0) Thread.sleep(config.sleepMillis)
+		val pending = filtered.filterNot { existing.contains(it) }
+		if (config.maxUrls > 0) pending.take(config.maxUrls) else pending
+	} else {
+		if (config.maxUrls > 0) filtered.take(config.maxUrls) else filtered
 	}
-}
 
-dbConnection?.close()
+	// At this point we have already filtered discovered URLs down to recipe candidates.
+	// If `selectedAfterDbPrecheck` is empty, it means either no URLs passed the host/pattern
+	// rules or the database precheck excluded all remaining candidates.
+	val queue = ArrayDeque(selectedAfterDbPrecheck)
+	val processed = mutableSetOf<String>()
+	println("Processing ${selectedAfterDbPrecheck.size} filtered recipe URLs")
 
-println("Successfully scraped ${scraped.size} recipes")
+	val dbConnection: Connection? = if (config.mode == "web") {
+		openConnection(config).also { conn ->
+			conn.autoCommit = false
+			ensureSchema(conn)
+		}
+	} else {
+		null
+	}
 
-val alreadyInserted = scraped.count { (_, id) -> id != null }
-val duplicates = scraped.size - alreadyInserted
-println("Database import complete. Imported=$alreadyInserted Duplicates=$duplicates")
+	val scraped = mutableListOf<Pair<RecipeData, Int?>>()
+	while (queue.isNotEmpty()) {
+		val url = queue.removeFirst()
+		if (processed.add(url)) {
+			val recipe = scrapeRecipeWithPython(url)
+			if (recipe == null) {
+				val extraLinks = extractRecipeLinksFromCollectionPage(url, config.simpleScraperTimeoutSeconds)
+					.filterNot { processed.contains(it) }
 
-if (config.calculateNutrition) {
-	val importedRecipeIds = scraped.mapNotNull { (_, recipeId) -> recipeId }
-	calculateNutritionForRecipes(config, importedRecipeIds)
-}
+				if (extraLinks.isNotEmpty()) {
+					println("Expanded listing URL -> found ${extraLinks.size} recipe links: $url")
+					extraLinks.forEach { queue.addLast(it) }
+				} else {
+					println("Skipped: $url")
+				}
+			} else {
+				val dbId = dbConnection?.let { saveRecipe(it, recipe) }
+				scraped += (recipe to dbId)
+
+				val siteName = try {
+					URI(recipe.sourceUrl).host?.removePrefix("www.")?.lowercase(Locale.getDefault())
+						?.ifBlank { "unknown" }
+				} catch (_: Exception) {
+					null
+				} ?: "unknown"
+				val siteDir = File(recipesDir, siteName).apply { mkdirs() }
+				if (dbId != null) {
+					val name = "%05d-%s.json".format(dbId, slugify(recipe.title).take(100))
+					val file = File(siteDir, name)
+					file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
+					println("Saved [db=$dbId]: ${file.path}")
+				} else if (dbConnection != null) {
+					println("Duplicate in DB, skipped file: ${recipe.sourceUrl}")
+				} else {
+					val name = "%s.json".format(slugify(recipe.title).take(100))
+					val file = File(siteDir, name)
+					file.writeText(json.encodeToString(JsonObject.serializer(), recipe.toJsonObject()))
+					println("Saved: ${file.path}")
+				}
+
+				if (config.maxUrls > 0 && scraped.size >= config.maxUrls) {
+					println("Reached --max-urls limit (${config.maxUrls})")
+					break
+				}
+			}
+			if (config.sleepMillis > 0) Thread.sleep(config.sleepMillis)
+		}
+	}
+
+	dbConnection?.close()
+
+	println("Successfully scraped ${scraped.size} recipes")
+
+	val alreadyInserted = scraped.count { (_, id) -> id != null }
+	val duplicates = scraped.size - alreadyInserted
+	println("Database import complete. Imported=$alreadyInserted Duplicates=$duplicates")
+
+	if (config.calculateNutrition) {
+		val importedRecipeIds = scraped.mapNotNull { (_, recipeId) -> recipeId }
+		calculateNutritionForRecipes(config, importedRecipeIds)
+	}
 }

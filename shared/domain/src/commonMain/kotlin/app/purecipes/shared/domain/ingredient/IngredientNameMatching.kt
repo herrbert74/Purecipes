@@ -81,10 +81,28 @@ object IngredientNameMatching {
 	}
 
 	fun normalizeIngredientName(value: String): String =
-		normalizeWhitespace(value.lowercase().replace(Regex("[^a-z0-9]+"), " "))
+		normalizeWhitespace(stripDiacritics(value.lowercase()).replace(Regex("[^a-z0-9]+"), " "))
 
 	fun normalizeIngredientText(value: String): String =
-		normalizeWhitespace(value.lowercase().replace(Regex("[^a-z0-9]+"), " "))
+		normalizeWhitespace(stripDiacritics(value.lowercase()).replace(Regex("[^a-z0-9]+"), " "))
+
+	private fun stripDiacritics(value: String): String = buildString(value.length) {
+		for (char in value) {
+			append(
+				when (char) {
+					'á', 'à', 'ä', 'â', 'ã', 'å', 'ā' -> 'a'
+					'é', 'è', 'ë', 'ê', 'ē' -> 'e'
+					'í', 'ì', 'ï', 'î', 'ī' -> 'i'
+					'ó', 'ò', 'ö', 'ô', 'õ', 'ø', 'ō' -> 'o'
+					'ú', 'ù', 'ü', 'û', 'ū' -> 'u'
+					'ñ' -> 'n'
+					'ç' -> 'c'
+					'ý', 'ÿ' -> 'y'
+					else -> char
+				},
+			)
+		}
+	}
 
 	private fun buildAliasIndex(): Map<String, Set<String>> = buildMap {
 		IngredientAliasGroups.groups.forEach { group ->
@@ -121,11 +139,18 @@ object IngredientNameMatching {
 		val prefixMatch = ingredientWords.size >= phraseWords.size && phraseWords.isNotEmpty() &&
 			ingredientWords.windowed(size = phraseWords.size, step = 1).any { window ->
 				window.zip(phraseWords).all { (ingredientWord, phraseWord) ->
-					ingredientWord.startsWith(phraseWord)
+					wordMatchesSearchPhraseWord(ingredientWord, phraseWord)
 				}
 			}
 
 		return normalizedPhrase.isNotBlank() && (exactMatch || prefixMatch)
+	}
+
+	private fun wordMatchesSearchPhraseWord(ingredientWord: String, phraseWord: String): Boolean {
+		val singularWord = singularizeLastWord(ingredientWord)
+		return ingredientWord.startsWith(phraseWord) ||
+			singularWord == phraseWord ||
+			singularWord.startsWith(phraseWord)
 	}
 
 	private fun singularizeLastWord(value: String): String {

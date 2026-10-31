@@ -86,6 +86,22 @@ class IngredientNameMatchingTest {
 	}
 
 	@Test
+	fun `matches plural berries ending in ies`() {
+		IngredientNameMatching.matchesAnyIngredient(
+			ingredientLine = "1 cup fresh blueberries",
+			ingredientNames = listOf("Blueberry"),
+		) shouldBe true
+	}
+
+	@Test
+	fun `matches jalapeno with diacritics`() {
+		IngredientNameMatching.matchesAnyIngredient(
+			ingredientLine = "1 large or 2 small jalapeños, sliced",
+			ingredientNames = listOf("Jalapeno"),
+		) shouldBe true
+	}
+
+	@Test
 	fun `catalogueAliasSiblings returns prawns for shrimp`() {
 		IngredientNameMatching.catalogueAliasSiblings(
 			ingredientName = "Shrimp",

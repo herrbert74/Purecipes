@@ -15,5 +15,6 @@ internal object NutritionSeedAliases {
 
 	val aliases: List<NutritionSeedAlias> =
 		NutritionSeedAliasesPart1.aliases + NutritionSeedAliasesPart2.aliases +
-			NutritionSeedAliasesPart3.aliases + NutritionSeedAliasesPart4.aliases
+			NutritionSeedAliasesPart3.aliases + NutritionSeedAliasesPart4.aliases +
+			NutritionSeedAliasesPart5.aliases
 }

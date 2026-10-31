@@ -21,12 +21,15 @@ internal object IngredientVocabulary {
 		"preheat ",
 		"can be found",
 		"this all purpose",
+		"toppings of",
 		"toppings,",
 		"topping,",
 	)
 
 	private val ignorableServingClauses = listOf(
 		"(to serve)",
+		"(see tips below)",
+		", to serve",
 		"(for serving",
 		", for serving",
 		", for garnish",
@@ -44,7 +47,21 @@ internal object IngredientVocabulary {
 		"can be used in recipes that call",
 		"prepared through step",
 		"fillings of your choice",
-		"of your choosing",
+		"herbs and vegetables of your choosing",
+		"all of the ",
+		"all of your prepared",
+		"(all of it)",
+		"dough from above",
+		"mixture from above",
+		"recipe from above",
+		"sponge from above",
+		"from the stage above",
+		"from build above",
+		"prepared above",
+		"from stage ",
+		"stage 1 mixture",
+		"stage 2 mixture",
+		"until tripling",
 	)
 
 	private val ignorableLineExactFilters = setOf(
@@ -56,6 +73,8 @@ internal object IngredientVocabulary {
 		"marinade",
 		"sauce",
 		"salad",
+		"sourdough",
+		"yeast",
 		"toppings",
 		"topping",
 		"kosher",
@@ -87,6 +106,7 @@ internal object IngredientVocabulary {
 	)
 
 	private val orphanModifierTokens = setOf(
+		"all",
 		"bone",
 		"bone-in",
 		"boiled",
@@ -194,13 +214,30 @@ internal object IngredientVocabulary {
 	)
 
 	private val ignorableNonFoodPhrases = setOf(
+		"ascorbic acid",
+		"ascorbic acid vitamin c",
 		"assorted fruit",
+		"black food colouring",
+		"black food coloring",
+		"black icing pen",
 		"bread butter table",
+		"candy eyes",
+		"crushed vitamin c tablet",
 		"edible gold dust",
 		"edible gold glitter",
+		"feta and spinach scones to serve",
+		"feta and spinach scones to serve see tips below",
+		"fondant icing",
 		"food grade lye",
 		"food grade lye crystals",
+		"icing eyes",
+		"icing pen",
+		"liquorice and strawberry laces and other sweets",
+		"liquorice and strawberry laces and other sweets such as jelly fangs and liquorice allsorts",
 		"mastic crystals",
+		"mixed coloured fondant icing",
+		"multicoloured sugar-coated chocolate buttons",
+		"multicoloured sugar coated chocolate buttons",
 		"nigella seed",
 		"nigella seeds",
 		"perilla",
@@ -208,6 +245,9 @@ internal object IngredientVocabulary {
 		"sausage casing",
 		"sausage casings",
 		"something crunchy",
+		"toppings of peanut butter and jam",
+		"vitamin c",
+		"vitamin c tablet",
 		"yellow food colouring",
 		"yellow food coloring",
 	)
@@ -221,6 +261,7 @@ internal object IngredientVocabulary {
 		"bundt",
 		"casserole dish",
 		"cling film",
+		"clingfilm",
 		"colander",
 		"cutter",
 		"food processor",
@@ -230,17 +271,23 @@ internal object IngredientVocabulary {
 		"knife",
 		"mandoline",
 		"microplane",
+		"oven-proof dish",
 		"pan",
 		"pastry bag",
 		"pot",
 		"pressure cooker",
 		"removable bottom",
+		"roasting tin",
 		"saucepan",
+		"sandwich tin",
+		"sandwich tins",
 		"skewer",
 		"slotted spoon",
+		"spatula",
 		"spoon",
 		"springform",
 		"star tip",
+		"tongs",
 		"toothpick",
 		"whisk",
 	)
@@ -330,6 +377,15 @@ internal object IngredientVocabulary {
 		)
 	}
 
+	private fun isHeadingOrInstructionLike(lower: String, trimmed: String): Boolean =
+		lower.endsWith(':') ||
+			ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
+			ignorableLineExactFilters.contains(lower) ||
+			lower.contains("recipe follows") ||
+			ignorableServingClauses.any { lower.contains(it) } ||
+			ignorableInstructionClauses.any { lower.contains(it) } ||
+			IngredientHeadingRules.isSectionHeadingOrNote(trimmed)
+
 	fun isIgnorableIngredientLine(ingredientLine: String): Boolean {
 		val trimmed = ingredientLine.trim().removePrefix("-").removePrefix("*").trim()
 		if (trimmed.isBlank()) {
@@ -338,13 +394,7 @@ internal object IngredientVocabulary {
 
 		val lower = trimmed.lowercase()
 		val hasDigit = lower.any(Char::isDigit)
-		val headingLike =
-			lower.endsWith(':') ||
-				ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
-				ignorableLineExactFilters.contains(lower) ||
-				lower.contains("recipe follows") ||
-				ignorableServingClauses.any { lower.contains(it) } ||
-				ignorableInstructionClauses.any { lower.contains(it) }
+		val headingLike = isHeadingOrInstructionLike(lower, trimmed)
 		val normalized = IngredientNameMatching.normalizeIngredientText(trimmed)
 		val normalizedTokens = normalized.split(' ').filter { token -> token.isNotEmpty() }.toSet()
 		val equipmentLike = ignorableEquipmentKeywords.any { keyword ->
@@ -363,10 +413,7 @@ internal object IngredientVocabulary {
 
 	private fun isIgnorableNonFoodLine(lower: String, normalized: String): Boolean {
 		val lookup = NutritionNameNormalizer.forLookup(lower)
-		if (normalized in ignorableNonFoodPhrases ||
-			lower in ignorableNonFoodPhrases ||
-			lookup in ignorableNonFoodPhrases
-		) {
+		if (matchesDirectNonFoodPhrase(lower, normalized, lookup)) {
 			return true
 		}
 		val tokens = tokensAfterQuantityAndArticles(lower)
@@ -377,6 +424,22 @@ internal object IngredientVocabulary {
 		return afterQuantity in ignorableNonFoodPhrases ||
 			NutritionNameNormalizer.forLookup(afterQuantity) in ignorableNonFoodPhrases
 	}
+
+	private fun matchesDirectNonFoodPhrase(lower: String, normalized: String, lookup: String): Boolean {
+		val exactMatches = normalized in ignorableNonFoodPhrases || lower in ignorableNonFoodPhrases
+		val derivedMatches = lookup in ignorableNonFoodPhrases || containsAnyNonFoodPhrase(lower, normalized)
+		return exactMatches || derivedMatches
+	}
+
+	private val ignorableDoughConditionerPhrases = setOf(
+		"ascorbic acid",
+		"food colouring",
+		"food coloring",
+		"vitamin c",
+	)
+
+	private fun containsAnyNonFoodPhrase(lower: String, normalized: String): Boolean =
+		ignorableDoughConditionerPhrases.any { phrase -> lower.contains(phrase) || normalized.contains(phrase) }
 
 	private fun isOrphanModifierOnlyLine(lower: String): Boolean {
 		val tokens = tokensAfterQuantityAndArticles(lower)

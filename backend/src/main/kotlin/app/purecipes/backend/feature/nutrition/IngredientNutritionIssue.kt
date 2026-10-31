@@ -15,10 +15,14 @@ internal data class IngredientNutritionIssue(
 	val kind: IngredientNutritionIssueKind,
 )
 
-internal fun RecipeNutritionCalculationResult.collectIngredientIssues(): List<IngredientNutritionIssue> =
+internal fun RecipeNutritionCalculationResult.collectIngredientIssues(
+	onlyCountableTowardsTotals: Boolean = true,
+): List<IngredientNutritionIssue> =
 	ingredientResults.mapNotNull { result ->
-		if (!result.countsTowardTotals ||
-			IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) ||
+		if (onlyCountableTowardsTotals && !result.countsTowardTotals) {
+			return@mapNotNull null
+		}
+		if (IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) ||
 			!NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
 		) {
 			return@mapNotNull null
