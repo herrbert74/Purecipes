@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v21"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v22"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -127,14 +127,16 @@ val ingredientHeadingPrefixFilters = listOf(
 )
 
 val ingredientHeadingExactFilters = setOf(
-	"for",
 	"dough",
 	"filling",
+	"for",
 	"garnish",
 	"garnishes",
 	"marinade",
-	"sauce",
 	"salad",
+	"sauce",
+	"tag",
+	"tags",
 	"toppings",
 )
 
@@ -312,28 +314,78 @@ val ingredientToolKeywords = listOf(
 	"whisk",
 )
 
+val standaloneEquipmentKeywords = listOf(
+	"biscuit cutter",
+	"cookie cutter",
+	"flan ring",
+	"paper straw",
+	"paper straws",
+	"pastry cutter",
+	"pudding ring",
+	"pudding rings",
+	"skewer",
+	"skewers",
+	"tart ring",
+	"toothpick",
+	"toothpicks",
+)
+
 val structuralHeadingExactFilters = setOf(
 	"aromatic mix",
+	"base",
 	"batter",
+	"bread spice",
+	"cake mixture",
+	"chocolate, almond and orange biscotti",
 	"crumble",
 	"crust",
 	"custard",
-	"first dough",
-	"second dough",
-	"main dough",
+	"enriched bread dough",
+	"equipment",
+	"equipment list",
 	"final dough",
+	"first dough",
+	"frangipane",
+	"frangipane filling",
+	"hot water crust pastry",
 	"inclusions",
+	"lime filling",
+	"lime fillng",
 	"lye bath",
+	"macaron paste",
+	"main dough",
+	"meringue",
 	"oatmeal",
+	"paste",
+	"pastry",
 	"pate",
 	"pâté",
+	"pizza dough",
 	"poolish",
 	"porridge",
+	"rough puff pastry",
+	"rum butter",
 	"scald",
+	"second dough",
+	"shortcrust pastry",
 	"slaw",
 	"sourdough",
+	"special equipment",
+	"spice blend",
+	"spice mix",
+	"spice paste",
+	"sponge cake",
 	"stiff levain",
+	"sweet pastry",
+	"sweet shortcrust",
+	"sweet shortcrust pastry",
 	"sweet stiff levain",
+	"swiss meringue",
+	"to assemble",
+	"to decorate",
+	"to finish",
+	"to serve",
+	"tomato sauce",
 	"topping",
 	"toppings",
 	"wash",
@@ -348,21 +400,24 @@ private val headingLastWords = setOf(
 	"boiling",
 	"boule",
 	"bread",
+	"buttercream",
 	"conchas",
 	"crumble",
 	"crust",
 	"custard",
 	"ferment",
 	"filling",
+	"flavouring",
 	"ingredients",
 	"inclusions",
 	"loaf",
+	"meringue",
+	"pastry",
 	"percentages",
 	"poolish",
 	"porridge",
 	"solution",
 	"sourdough",
-	"spice",
 	"starter",
 	"topping",
 	"toppings",
@@ -388,7 +443,32 @@ private val doughHeadingFirstWords = setOf(
 private const val MIN_UPPERCASE_HEADING_WORDS = 2
 private const val MAX_DOUGH_HEADING_WORDS = 3
 
-private val excludedHeadingFirstWords = setOf("all", "half", "part", "rest", "each", "both", "pinch", "dash")
+private val excludedHeadingFirstWords = setOf(
+	"all",
+	"both",
+	"cup",
+	"cups",
+	"dash",
+	"each",
+	"g",
+	"half",
+	"kg",
+	"l",
+	"lbs",
+	"ml",
+	"oz",
+	"part",
+	"pinch",
+	"rest",
+	"tablespoon",
+	"tablespoons",
+	"tbsp",
+	"tbsps",
+	"teaspoon",
+	"teaspoons",
+	"tsp",
+	"tsps",
+)
 
 private val percentLineRegex = Regex("""^(?:optional\s+|~\s*|approx(?:\.|\s+))?\d+(?:\.\d+)?\s*%""")
 
@@ -430,7 +510,8 @@ private fun isStructuralHeading(original: String, lower: String): Boolean {
 		.map { word -> word.trim(',', ':', '.') }
 		.filter { word -> word.isNotEmpty() }
 	val firstWord = words.firstOrNull() ?: ""
-	if (words.isEmpty() || stripped.any(Char::isDigit) || firstWord in excludedHeadingFirstWords) {
+	val hasDigitOrFraction = stripped.any { it.isDigit() || it in "½⅓⅔¼¾⅛⅜⅝⅞" }
+	if (words.isEmpty() || hasDigitOrFraction || firstWord in excludedHeadingFirstWords) {
 		return false
 	}
 	val lastWord = words.last()
@@ -470,8 +551,14 @@ fun sanitizeIngredientLine(raw: String): ProcessedScrapedIngredient? {
 			ingredientHeadingExactFilters.contains(lower) ||
 			structuralHeadingExactFilters.contains(lower) ||
 			lower.contains("recipe follows")
-	val isEquipmentLike = (!hasDigit || lower.contains("set of")) &&
-		ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
+	val isStandaloneEquipment = standaloneEquipmentKeywords.any { keyword ->
+		lower.contains(keyword) && !lower.contains("strawb")
+	}
+	val isEquipmentLike = isStandaloneEquipment ||
+		(
+			(!hasDigit || lower.contains("set of")) &&
+				ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
+		)
 
 	return if (isHeadingLike || isEquipmentLike) {
 		null
@@ -530,7 +617,8 @@ private const val ALTERNATIVE_SEPARATOR = " or "
 private const val ALTERNATIVE_SEPARATOR_LENGTH = 4
 
 private const val ALTERNATIVE_LEADING_QUANTITY_PATTERN =
-	"""(?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)"""
+	"""(?:\d+\s+[½⅓⅔¼¾⅛⅜⅝⅞]|\d+[½⅓⅔¼¾⅛⅜⅝⅞]|[½⅓⅔¼¾⅛⅜⅝⅞]|""" +
+		"""\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)"""
 
 private const val ALTERNATIVE_LEADING_UNIT_PATTERN =
 	"""(?:g|kg|ml|l|oz|lbs?|tsps?|tbsps?|teaspoons?|tablespoons?|cups?|pinch(?:es)?|dash(?:es)?|""" +
@@ -633,9 +721,14 @@ private fun containsAlternativeSeparator(text: String): Boolean {
 	return false
 }
 
+private fun startsWithQuantity(text: String): Boolean {
+	val first = text.firstOrNull() ?: return false
+	return first.isDigit() || first in "½⅓⅔¼¾⅛⅜⅝⅞"
+}
+
 private fun expandAlternativePart(firstAlternative: String, part: String): String {
 	val trimmed = stripSurroundingHyphens(part)
-	if (trimmed.firstOrNull()?.isDigit() == true) {
+	if (startsWithQuantity(trimmed)) {
 		return trimmed
 	}
 
@@ -654,6 +747,7 @@ private fun expandAlternativePart(firstAlternative: String, part: String): Strin
 }
 
 private val sharedAlternativeNounTokens = setOf(
+	"apples",
 	"broth",
 	"butter",
 	"cracker",
@@ -661,6 +755,7 @@ private val sharedAlternativeNounTokens = setOf(
 	"flour",
 	"milk",
 	"oil",
+	"salt",
 	"stock",
 	"sugar",
 	"vinegar",
@@ -684,11 +779,18 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 	}
 	val sharedSuffix = trailingParentheticalSuffixRegex.find(cleanedParts.last())?.value
 	val lastPartBase = inlineParentheticalRegex.replace(cleanedParts.last(), " ").trim()
-	val lastNoun = lastPartBase.split(Regex("""\s+""")).lastOrNull()?.lowercase(Locale.ROOT)
-	val needsSharedNoun = lastNoun != null &&
-		lastNoun in sharedAlternativeNounTokens &&
-		!firstAlternative.contains(lastNoun, ignoreCase = true)
-	val sharedNounSuffix = if (needsSharedNoun) " $lastNoun" else ""
+	val firstLower = firstAlternative.lowercase(Locale.ROOT)
+	val lastLower = lastPartBase.lowercase(Locale.ROOT)
+	val isKosherSaltSuffix = lastLower.contains("kosher salt") && !firstLower.contains("salt")
+	val firstHasNoun = sharedAlternativeNounTokens.any { firstLower.contains(it) }
+	val lastNoun = lastLower
+		.split(Regex("""[^a-zA-Z]+"""))
+		.lastOrNull { it in sharedAlternativeNounTokens }
+	val sharedNounSuffix = when {
+		isKosherSaltSuffix -> " kosher salt"
+		!firstHasNoun && lastNoun != null -> " $lastNoun"
+		else -> ""
+	}
 
 	return expanded.mapIndexed { partIndex, text ->
 		if (partIndex == 0) {
@@ -700,18 +802,30 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 	}
 }
 
+private val keepSingleAlternativePhrases = listOf(
+	" are fine",
+	" is fine",
+	"ideally ",
+	"preferably ",
+	"available in ",
+	"if you like",
+	"as needed",
+	"to taste",
+	"more to taste",
+	"such as ",
+	"serving suggestion",
+)
+
+private fun shouldKeepAlternativeAsSingle(text: String, parts: List<String>): Boolean =
+	text.contains(';') ||
+		keepSingleAlternativePhrases.any { phrase -> text.contains(phrase, ignoreCase = true) } ||
+		parts.any(::isIncompleteAlternativeFoodName)
+
 fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient> {
 	val parts = splitAlternativeParts(sanitized.text)
 	val keepAsSingle = sanitized.requirement == "OPTIONAL" ||
 		parts.size <= 1 ||
-		sanitized.text.contains(';') ||
-		sanitized.text.contains(" are fine", ignoreCase = true) ||
-		sanitized.text.contains(" is fine", ignoreCase = true) ||
-		sanitized.text.contains("ideally ", ignoreCase = true) ||
-		sanitized.text.contains("preferably ", ignoreCase = true) ||
-		sanitized.text.contains("available in ", ignoreCase = true) ||
-		sanitized.text.contains("if you like", ignoreCase = true) ||
-		parts.any(::isIncompleteAlternativeFoodName)
+		shouldKeepAlternativeAsSingle(sanitized.text, parts)
 	if (keepAsSingle) {
 		return listOf(sanitized)
 	}
@@ -733,7 +847,11 @@ private val incompleteAlternativeTokens = setOf(
 	"bleached",
 	"boiling",
 	"bottled",
+	"bought",
+	"broken",
 	"brown",
+	"buttered",
+	"caster",
 	"chilled",
 	"chopped",
 	"chunks",
@@ -752,6 +870,7 @@ private val incompleteAlternativeTokens = setOf(
 	"dried",
 	"dry",
 	"extra",
+	"fat",
 	"filtered",
 	"fine",
 	"finely",
@@ -760,6 +879,7 @@ private val incompleteAlternativeTokens = setOf(
 	"flakes",
 	"flat",
 	"fresh",
+	"freshly",
 	"frozen",
 	"golden",
 	"granules",
@@ -771,11 +891,17 @@ private val incompleteAlternativeTokens = setOf(
 	"halved",
 	"halves",
 	"heavy",
+	"homemade",
 	"hot",
+	"icing",
+	"inch",
+	"into",
 	"jumbo",
+	"kosher",
 	"large",
 	"light",
 	"like",
+	"low",
 	"lukewarm",
 	"mashed",
 	"matchsticks",
@@ -785,11 +911,14 @@ private val incompleteAlternativeTokens = setOf(
 	"minced",
 	"mineral",
 	"mini",
+	"needed",
+	"nonfat",
 	"online",
 	"one",
 	"ones",
 	"organic",
 	"peeled",
+	"pieces",
 	"plain",
 	"plum",
 	"poached",
@@ -811,6 +940,7 @@ private val incompleteAlternativeTokens = setOf(
 	"roughly",
 	"rye",
 	"salted",
+	"serving",
 	"sharp",
 	"shredded",
 	"sifted",
@@ -826,8 +956,12 @@ private val incompleteAlternativeTokens = setOf(
 	"split",
 	"still",
 	"stoneground",
+	"store",
 	"strong",
+	"suggestion",
+	"suggestions",
 	"sweet",
+	"taste",
 	"thick",
 	"thin",
 	"thinly",
@@ -836,6 +970,7 @@ private val incompleteAlternativeTokens = setOf(
 	"unrefined",
 	"unsalted",
 	"unsweetened",
+	"vegetable",
 	"warm",
 	"white",
 	"whole",
@@ -888,6 +1023,26 @@ fun appendSanitizedIngredientLines(
 	}
 }
 
+fun isEquipmentGroupName(name: String?): Boolean {
+	if (name.isNullOrBlank()) {
+		return false
+	}
+	val lower = name.trim().lowercase(Locale.ROOT)
+	return lower == "equipment" ||
+		lower == "equipment list" ||
+		lower == "special equipment" ||
+		lower.startsWith("equipment ") ||
+		lower.endsWith(" equipment")
+}
+
+fun isIgnorableGroupName(name: String?): Boolean {
+	if (name.isNullOrBlank()) {
+		return false
+	}
+	val lower = name.trim().lowercase(Locale.ROOT).removeSuffix(":")
+	return isEquipmentGroupName(lower) || lower == "tag" || lower == "tags"
+}
+
 fun processScrapedIngredientGroups(
 	groupName: String?,
 	rawItems: List<String>,
@@ -916,7 +1071,7 @@ fun processStoredScrapedIngredientGroups(
 			return@forEach
 		}
 		if (isIngredientGroupHeading(rawItem)) {
-			if (currentItems.isNotEmpty()) {
+			if (currentItems.isNotEmpty() && !isIgnorableGroupName(currentGroupName)) {
 				processedGroups += (currentGroupName to currentItems.toList())
 			}
 			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
@@ -928,7 +1083,7 @@ fun processStoredScrapedIngredientGroups(
 		}
 	}
 
-	if (currentItems.isNotEmpty()) {
+	if (currentItems.isNotEmpty() && !isIgnorableGroupName(currentGroupName)) {
 		processedGroups += (currentGroupName to currentItems.toList())
 	}
 

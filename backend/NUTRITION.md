@@ -97,9 +97,10 @@ Read stored parse and match rows without recalculating nutrition. With no extra 
 ```bash
 ./gradlew reportIngredientFoodMatches
 ./gradlew reportIngredientFoodMatches -Preport.output=/tmp/ingredient-food-match-report.txt
+./gradlew reportIngredientFoodMatches -Preport.includeScraped=true
 ```
 
-The report counts countable ingredient lines (required, plus one option per alternative group) that were never parsed, were not measurable, had no food match, or had a food but no gram weight. Frequency lists group parsed names with `NutritionNameNormalizer.forLookup`, so `Halloumi` and `halloumi` appear once. It also lists recipes whose nutrition totals came from the website (`scraped`) rather than calculation.
+The report counts countable measured ingredient lines (required, plus one option per alternative group) that were not measurable, had no food match, or had a food but no gram weight. Frequency lists group parsed names with `NutritionNameNormalizer.forLookup`, so `Halloumi` and `halloumi` appear once. By default, the list of recipes with scraped nutrition totals is omitted; pass `-Preport.includeScraped=true` to include it.
 
 Run `calculateRecipeNutrition` first when you want the report to reflect a fresh matcher pass.
 

@@ -217,6 +217,7 @@ internal object IngredientLineParserTokens {
 		"feta",
 		"halloumi",
 		"mascarpone",
+		"mozarella",
 		"mozzarella",
 	)
 
@@ -339,6 +340,8 @@ internal object IngredientLineParserTokens {
 		"couscous",
 		"drippings",
 		"hominy",
+		"oat",
+		"oats",
 		"okra",
 		"spaghetti",
 	)
@@ -361,6 +364,7 @@ internal object IngredientLineParserTokens {
 		"karaage",
 		"morcilla",
 		"pastry",
+		"patissiere",
 		"quesadilla",
 		"quesadillas",
 		"salad",

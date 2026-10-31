@@ -616,6 +616,19 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 					instruction_list.append(step_txt)
 		elif "paulhollywood.com" in host:
 			article = soup.find("article") or soup.find("main") or soup
+			ing_has_li = False
+			check_ing = False
+			for check_el in article.find_all(["h2", "h3", "li"]):
+				c_low = check_el.get_text(" ", strip=True).lower()
+				if check_el.name in ("h2", "h3"):
+					if c_low == "ingredients":
+						check_ing = True
+						continue
+					if c_low in ("method", "instructions") and check_ing:
+						break
+				elif check_ing and check_el.name == "li":
+					ing_has_li = True
+					break
 			mode, cur_name, cur_items = None, None, []
 			for el in article.find_all(["h2", "h3", "h4", "p", "li"]):
 				txt = el.get_text(" ", strip=True).lstrip("\ufeff").strip()
@@ -638,17 +651,36 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 					if any(k in low for k in ("serves", "makes", "slices", "rolls", "buns", "loaf", "loaves", "portions")):
 						yields = txt
 				elif mode == "ing":
-					if el.name == "h4":
+					if low.startswith("tags:") or low.startswith("taken from") or low.startswith("for more of paul"):
 						if cur_items:
 							ingredient_groups.append((cur_name, cur_items))
 							cur_items = []
-						cur_name = txt
-					elif el.name in ("p", "li") and not (el.name == "p" and el.find_parent("li") is not None):
-						cur_items.append(txt)
+						mode = None
+						continue
+					if ing_has_li:
+						if el.name in ("h4", "p") and el.find_parent("li") is None:
+							if cur_items:
+								ingredient_groups.append((cur_name, cur_items))
+								cur_items = []
+							cur_name = txt
+						elif el.name == "li":
+							cur_items.append(txt)
+					else:
+						if el.name == "h4":
+							if cur_items:
+								ingredient_groups.append((cur_name, cur_items))
+								cur_items = []
+							cur_name = txt
+						elif el.name in ("p", "li") and not (el.name == "p" and el.find_parent("li") is not None):
+							cur_items.append(txt)
 				elif mode == "inst":
+					if any(low.startswith(p) for p in ("taken from", "photograph", "tags:", "find more recipes", "for more of paul")):
+						mode = None
+						continue
 					if el.name == "li":
-						instruction_list.append(txt)
-					elif el.name == "p" and el.find_parent("li") is None and not low.startswith("find more recipes"):
+						if not any(low == tag for tag in ("cakes", "pies", "bread", "breads", "baking", "biscuits", "desserts", "pastry", "christmas recipes", "paul hollywood", "paul hollywood recipes")):
+							instruction_list.append(txt)
+					elif el.name == "p" and el.find_parent("li") is None:
 						instruction_list.append(txt)
 			if cur_items:
 				ingredient_groups.append((cur_name, cur_items))

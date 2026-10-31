@@ -671,4 +671,38 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val PLUMS_DRIED_PRUNES_DESCRIPTION = "Plums, dried (prunes), uncooked"
 
 	internal const val TROUT_RAW_DESCRIPTION = "Fish, trout, mixed species, raw"
+
+	internal const val ALMOND_PASTE_DESCRIPTION = "Nuts, almond paste"
+
+	internal const val APRICOT_DRIED_DESCRIPTION = "Apricot, dried"
+
+	internal const val BEEF_TALLOW_DESCRIPTION = "Fat, beef tallow"
+
+	internal const val BRIE_DESCRIPTION = "Cheese, brie"
+
+	internal const val CHIVES_DESCRIPTION = "Chives, raw"
+
+	internal const val CUSTARD_DESCRIPTION = "Custard"
+
+	internal const val GINGERSNAP_DESCRIPTION = "Cookies, gingersnaps"
+
+	internal const val HAZELNUTS_DESCRIPTION = "Hazelnuts"
+
+	internal const val ICE_CREAM_DESCRIPTION = "Ice cream, vanilla"
+
+	internal const val JAM_DESCRIPTION = "Jam"
+
+	internal const val PROSCIUTTO_DESCRIPTION = "Ham, prosciutto"
+
+	internal const val TANGERINES_DESCRIPTION = "Tangerines, (mandarin oranges), raw"
+
+	internal const val ARTICHOKE_DESCRIPTION = "Artichokes, (globe or french), raw"
+
+	internal const val DATES_DESCRIPTION = "Dates, medjool"
+
+	internal const val PROVOLONE_DESCRIPTION = "Cheese, provolone"
+
+	internal const val BANANA_PEPPER_DESCRIPTION = "Peppers, banana, raw"
+
+	internal const val WHITE_CHOCOLATE_DESCRIPTION = "Candies, white chocolate"
 }

@@ -23,7 +23,6 @@ internal data class FrequencyCount(
 
 internal data class IngredientFoodMatchReportData(
 	val countableLines: Int,
-	val neverParsedCount: Int,
 	val notMeasurableCount: Int,
 	val noFoodCount: Int,
 	val noGramsCount: Int,
@@ -31,7 +30,6 @@ internal data class IngredientFoodMatchReportData(
 	val massGramCount: Int,
 	val measureGramCount: Int,
 	val densityGramCount: Int,
-	val neverParsedNames: List<FrequencyCount>,
 	val notMeasurableNames: List<FrequencyCount>,
 	val unmatchedNames: List<FrequencyCount>,
 	val unresolvedGramsNames: List<FrequencyCount>,
@@ -54,7 +52,6 @@ internal class IngredientFoodMatchReporter(
 		val matched = classified.filter { line -> line.kind == IngredientFoodMatchGapKind.MATCHED }
 		return IngredientFoodMatchReportData(
 			countableLines = classified.size,
-			neverParsedCount = classified.count { it.kind == IngredientFoodMatchGapKind.NEVER_PARSED },
 			notMeasurableCount = classified.count { it.kind == IngredientFoodMatchGapKind.NOT_MEASURABLE },
 			noFoodCount = classified.count { it.kind == IngredientFoodMatchGapKind.NO_FOOD },
 			noGramsCount = classified.count { it.kind == IngredientFoodMatchGapKind.NO_GRAMS },
@@ -62,10 +59,6 @@ internal class IngredientFoodMatchReporter(
 			massGramCount = matched.count { it.gramsSource == GramWeightSource.MASS },
 			measureGramCount = matched.count { it.gramsSource == GramWeightSource.MEASURE },
 			densityGramCount = matched.count { it.gramsSource == GramWeightSource.DENSITY },
-			neverParsedNames = frequencyCounts(
-				classified,
-				IngredientFoodMatchGapKind.NEVER_PARSED,
-			),
 			notMeasurableNames = frequencyCounts(
 				classified,
 				IngredientFoodMatchGapKind.NOT_MEASURABLE,
@@ -90,10 +83,12 @@ internal class IngredientFoodMatchReporter(
 		)
 	}
 
-	fun format(data: IngredientFoodMatchReportData): String = buildString {
+	fun format(
+		data: IngredientFoodMatchReportData,
+		includeScrapedRecipes: Boolean = false,
+	): String = buildString {
 		appendLine("Ingredient food-table matching report")
 		appendLine("Countable ingredient lines: ${data.countableLines}")
-		appendLine("Never parsed: ${data.neverParsedCount}")
 		appendLine("Not measurable: ${data.notMeasurableCount}")
 		appendLine("No food match: ${data.noFoodCount}")
 		appendLine("No gram weight: ${data.noGramsCount}")
@@ -108,11 +103,12 @@ internal class IngredientFoodMatchReporter(
 		appendLine("Complete estimates: ${data.completeEstimateCount}")
 		appendLine("Partial estimates: ${data.partialEstimateCount}")
 		appendLine("Without nutrition row: ${data.missingNutritionCount}")
-		appendFrequencySection("Never parsed ingredient lines", data.neverParsedNames)
 		appendFrequencySection("Not measurable parsed names", data.notMeasurableNames)
 		appendFrequencySection("Unmatched parsed names", data.unmatchedNames)
 		appendFrequencySection("Unresolved gram weights", data.unresolvedGramsNames)
-		appendLineList("Scraped nutrition recipes", data.scrapedRecipes)
+		if (includeScrapedRecipes) {
+			appendLineList("Scraped nutrition recipes", data.scrapedRecipes)
+		}
 	}
 
 	private fun loadIngredientRows(): List<IngredientFoodMatchRow> =
@@ -145,7 +141,8 @@ internal class IngredientFoodMatchReporter(
 		val chosenAlternativeKeysByRecipe = chosenAlternativeRowsByRecipe(rows)
 		return rows.mapNotNull { row ->
 			val labelSource = row.parsedName?.trim().orEmpty().ifBlank { row.ingredientText }
-			val countable = !IngredientVocabulary.isIgnorableIngredientLine(row.ingredientText) &&
+			val countable = row.hasMeasurement &&
+				!IngredientVocabulary.isIgnorableIngredientLine(row.ingredientText) &&
 				NutritionNameNormalizer.hasMeaningfulFoodName(labelSource) &&
 				countsTowardMatching(row, chosenAlternativeKeysByRecipe)
 			when {
@@ -177,14 +174,12 @@ internal class IngredientFoodMatchReporter(
 		val parsedLabel = row.parsedName?.trim().orEmpty().ifBlank { row.ingredientText }
 		val groupedParsedLabel = groupedParsedName(parsedLabel)
 		val kind = when {
-			!row.hasMeasurement -> IngredientFoodMatchGapKind.NEVER_PARSED
 			!row.isMeasurable -> IngredientFoodMatchGapKind.NOT_MEASURABLE
 			row.foodId == null -> IngredientFoodMatchGapKind.NO_FOOD
 			row.gramsResolved == null -> IngredientFoodMatchGapKind.NO_GRAMS
 			else -> IngredientFoodMatchGapKind.MATCHED
 		}
 		val label = when (kind) {
-			IngredientFoodMatchGapKind.NEVER_PARSED -> row.ingredientText
 			IngredientFoodMatchGapKind.NO_GRAMS -> unresolvedGramsLabel(groupedParsedLabel, row.unit)
 			else -> groupedParsedLabel
 		}
@@ -243,7 +238,6 @@ internal class IngredientFoodMatchReporter(
 }
 
 private enum class IngredientFoodMatchGapKind {
-	NEVER_PARSED,
 	NOT_MEASURABLE,
 	NO_FOOD,
 	NO_GRAMS,

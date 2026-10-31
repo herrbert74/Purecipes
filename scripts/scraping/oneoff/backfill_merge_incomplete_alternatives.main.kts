@@ -4,7 +4,7 @@
 @file:Import("../ScrapedIngredientLines.kt")
 
 // Cache-bust when ScrapedIngredientLines.kt changes (invalidates kotlin-main-kts jars).
-// backfill-merge-incomplete-v8
+// backfill-merge-incomplete-v12
 
 import java.sql.Connection
 import java.sql.DriverManager
@@ -154,7 +154,9 @@ fun loadIngredientsByGroup(connection: Connection): Map<Int, List<IngredientRow>
 	}.groupBy { row -> row.groupId }
 
 private val legacyQuantityPrefixRegex = Regex(
-	pattern = """^((?:\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)(?:\s+\w+)?(?:\s+of)?\s+)""",
+	pattern = """^((?:\d+\s+[½⅓⅔¼¾⅛⅜⅝⅞]|\d+[½⅓⅔¼¾⅛⅜⅝⅞]|[½⅓⅔¼¾⅛⅜⅝⅞]|""" +
+		"""\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)""" +
+		"""(?:\s+[a-zA-Z.]+)?(?:\s+of)?\s+)""",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
 private val legacyOfPrefixRegex = Regex(
@@ -164,6 +166,11 @@ private val legacyOfPrefixRegex = Regex(
 private val trailingParentheticalRegex = Regex(
 	pattern = """\s*\([^)]+\)\s*$""",
 )
+
+private fun startsWithQuantity(text: String): Boolean {
+	val first = text.firstOrNull() ?: return false
+	return first.isDigit() || first in "½⅓⅔¼¾⅛⅜⅝⅞"
+}
 
 fun reconstructJoinedAlternativeText(cluster: List<IngredientRow>): String {
 	if (cluster.isEmpty()) {
@@ -189,8 +196,11 @@ fun reconstructJoinedAlternativeText(cluster: List<IngredientRow>): String {
 			firstText
 		} else {
 			val text = row.text.trim()
-			if (sharedPrefix != null && text.startsWith(sharedPrefix, ignoreCase = true)) {
-				text.substring(sharedPrefix.length).trim()
+			val canStrip = sharedPrefix != null &&
+				text.startsWith(sharedPrefix, ignoreCase = true) &&
+				!startsWithQuantity(text.substring(sharedPrefix.length).trim())
+			if (canStrip) {
+				text.substring(sharedPrefix!!.length).trim()
 			} else {
 				text
 			}
@@ -198,18 +208,30 @@ fun reconstructJoinedAlternativeText(cluster: List<IngredientRow>): String {
 	}.joinToString(separator = " or ")
 }
 
-fun mergedReplacementIfCollapsed(joinedText: String): ReplacementIngredient? {
+fun mergedReplacements(
+	cluster: List<IngredientRow>,
+	joinedText: String,
+): List<ReplacementIngredient>? {
 	val sanitized = sanitizeIngredientLine(joinedText) ?: return null
 	val expanded = expandProcessedAlternatives(sanitized)
-	val alternativeCount = expanded.count { item -> item.requirement == "ALTERNATIVE" }
-	return if (alternativeCount <= 1 && expanded.size == 1) {
-		ReplacementIngredient(
-			text = expanded.first().text,
-			requirement = expanded.first().requirement,
-			alternativeGroupKey = null,
+	val groupKey = cluster.first().alternativeGroupKey
+	val unchanged = expanded.map { it.text } == cluster.map { it.text }
+	return when {
+		unchanged -> null
+		expanded.size == 1 -> listOf(
+			ReplacementIngredient(
+				text = expanded.first().text,
+				requirement = expanded.first().requirement,
+				alternativeGroupKey = null,
+			),
 		)
-	} else {
-		null
+		else -> expanded.map { item ->
+			ReplacementIngredient(
+				text = item.text,
+				requirement = item.requirement,
+				alternativeGroupKey = if (item.requirement == "ALTERNATIVE") groupKey else null,
+			)
+		}
 	}
 }
 
@@ -248,7 +270,7 @@ fun replacementsForGroup(
 			index += 1
 		} else {
 			val joinedText = reconstructJoinedAlternativeText(cluster)
-			val merged = mergedReplacementIfCollapsed(joinedText)
+			val merged = mergedReplacements(cluster, joinedText)
 			if (merged == null) {
 				replacements += cluster.map(::toReplacement)
 			} else {

@@ -134,6 +134,11 @@ internal object IngredientLineParser {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val leadingApproximationPattern = Regex(
+		"""^(?:about|approximately|approx\.?)\s+""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val trailingAboutAmountPattern = Regex(
 		"""(?:,\s*)?(?:about|approximately|approx\.?)\s+($QUANTITY_PATTERN)\s*-?\s*""" +
 			"""([a-zA-Z][a-zA-Z.\-]*)\.?\s*(?:total)?\s*$""",
@@ -508,7 +513,8 @@ internal object IngredientLineParser {
 	}
 
 	private fun consumeLeadingQuantityAndPack(value: String): LeadingAmount {
-		val withoutDimensions = skipLeadingDimensions(value)
+		val withoutApprox = leadingApproximationPattern.replace(value.trim(), "")
+		val withoutDimensions = skipLeadingDimensions(withoutApprox)
 		val leadingParenthetical = leadingParentheticalAmountPattern.find(withoutDimensions)
 		if (leadingParenthetical != null) {
 			return LeadingAmount(

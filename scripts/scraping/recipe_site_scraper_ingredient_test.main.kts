@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v21
+// cache-bust: alt-or-incomplete-v22
 
 data class IngredientTestCase(
 	val description: String,
@@ -230,6 +230,56 @@ val sanitizeCases = listOf(
 		input = "Dough for 4 breakfast pizzas * see notes for scaling tips",
 		expected = null,
 	),
+	IngredientTestCase(
+		description = "filters equipment structural heading",
+		input = "Equipment",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters uppercase equipment structural heading",
+		input = "EQUIPMENT",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters pastry structural heading",
+		input = "Pastry",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters to finish structural heading",
+		input = "To finish",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters to serve structural heading",
+		input = "To serve",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "preserves vulgar fraction spice ingredient line",
+		input = "- ½ tsp ground all spice",
+		expected = "½ tsp ground all spice",
+	),
+	IngredientTestCase(
+		description = "filters bamboo skewers",
+		input = "16 bamboo skewers",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters colourful paper straws",
+		input = "12 colourful paper straws",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters pudding rings",
+		input = "4 pudding rings",
+		expected = null,
+	),
+	IngredientTestCase(
+		description = "filters biscuit cutter",
+		input = "A 2½\"-diameter biscuit cutter",
+		expected = null,
+	),
 )
 
 data class AlternativeTestCase(
@@ -400,6 +450,43 @@ val alternativeCases = listOf(
 		input = "2 wine glasses of dry white vermouth or dry white wine",
 		expected = listOf("2 wine glasses of dry white vermouth", "2 wine glasses of dry white wine"),
 	),
+	AlternativeTestCase(
+		description = "keeps caster or icing sugar together",
+		input = "Caster or icing sugar for sprinkling",
+		expected = listOf("Caster or icing sugar for sprinkling"),
+	),
+	AlternativeTestCase(
+		description = "keeps icing or caster sugar together",
+		input = "Icing or caster sugar for dusting",
+		expected = listOf("Icing or caster sugar for dusting"),
+	),
+	AlternativeTestCase(
+		description = "appends shared kosher salt to first alternative for Diamond Crystal",
+		input = "1 tsp. Diamond Crystal or 1 ½ tsp. Morton kosher salt",
+		expected = listOf("1 tsp. Diamond Crystal kosher salt", "1 ½ tsp. Morton kosher salt"),
+	),
+	AlternativeTestCase(
+		description = "keeps fresh or frozen cranberries with vulgar fraction together",
+		input = "1¼ cups fresh or frozen cranberries",
+		expected = listOf("1¼ cups fresh or frozen cranberries"),
+	),
+	AlternativeTestCase(
+		description = "keeps low-fat or nonfat buttermilk together",
+		input = "1¼ cups (or more) low-fat or nonfat buttermilk",
+		expected = listOf("1¼ cups (or more) low-fat or nonfat buttermilk"),
+	),
+	AlternativeTestCase(
+		description = "keeps broken or chopped chocolate baking bar together",
+		input = "6 ounces Ghirardelli Semi-Sweet Chocolate baking bar, broken or chopped into 1-inch pieces",
+		expected = listOf(
+			"6 ounces Ghirardelli Semi-Sweet Chocolate baking bar, broken or chopped into 1-inch pieces",
+		),
+	),
+	AlternativeTestCase(
+		description = "appends shared apples noun to first alternative",
+		input = "3 large Honeycrisp or Fuji apples",
+		expected = listOf("3 large Honeycrisp apples", "3 Fuji apples"),
+	),
 )
 
 val normalizeTextCases = listOf(
@@ -479,6 +566,9 @@ fun runGroupProcessingTests() {
 		),
 		ProcessedScrapedIngredient("YEAST"),
 		ProcessedScrapedIngredient("3 grams instant yeast (1 tsp)"),
+		ProcessedScrapedIngredient("Equipment"),
+		ProcessedScrapedIngredient("A 24 cm pie plate"),
+		ProcessedScrapedIngredient("Baking tray"),
 	)
 	val groups = processStoredScrapedIngredientGroups(null, input)
 	if (groups.size != 4) {

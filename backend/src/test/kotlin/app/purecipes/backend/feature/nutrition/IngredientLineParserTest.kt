@@ -1372,5 +1372,32 @@ class IngredientLineParserTest {
 		mintSprig.unit shouldBe "tsp"
 		mintSprig.parsedName shouldBe "fresh mint"
 		mintSprig.isMeasurable shouldBe true
+
+		val buttermilk = IngredientLineParser.parse("About 400 ml buttermilk")
+		buttermilk.quantity shouldBe BigDecimal("400")
+		buttermilk.unit shouldBe "ml"
+		buttermilk.parsedName shouldBe "buttermilk"
+		buttermilk.isMeasurable shouldBe true
+
+		val mincemeatJar = IngredientLineParser.parse("1 jar of 410 g mincemeat")
+		mincemeatJar.quantity shouldBe BigDecimal("410")
+		mincemeatJar.unit shouldBe "g"
+		mincemeatJar.parsedName shouldBe "mincemeat"
+		mincemeatJar.isMeasurable shouldBe true
+
+		val satsumas = IngredientLineParser.parse("2 satsumas, segmented")
+		satsumas.quantity shouldBe BigDecimal("2")
+		satsumas.unit shouldBe "piece"
+		satsumas.isMeasurable shouldBe true
+
+		val eschalions = IngredientLineParser.parse("8 eschalions (banana shallots)")
+		eschalions.quantity shouldBe BigDecimal("8")
+		eschalions.unit shouldBe "piece"
+		eschalions.isMeasurable shouldBe true
+
+		val rolledOats = IngredientLineParser.parse("Rolled Oats")
+		rolledOats.quantity shouldBe BigDecimal.ONE
+		rolledOats.unit shouldBe "cup"
+		rolledOats.isMeasurable shouldBe true
 	}
 }

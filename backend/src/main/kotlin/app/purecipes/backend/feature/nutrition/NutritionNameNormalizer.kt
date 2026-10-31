@@ -165,6 +165,7 @@ internal object NutritionNameNormalizer {
 	)
 
 	private val plainWaterModifierTokens = setOf(
+		"boiling",
 		"cold",
 		"first",
 		"hot",
@@ -174,6 +175,7 @@ internal object NutritionNameNormalizer {
 		"second",
 		"spring",
 		"tap",
+		"tepid",
 		"unchlorinated",
 		"warm",
 	)

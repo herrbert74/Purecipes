@@ -229,6 +229,11 @@ internal object IngredientLinePhraseRewrites {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val containerOfWeightPattern = Regex(
+		"""^(\d+)\s+(?:jars?|tins?|pots?|tubs?|packets?|cans?)\s+of\s+(\d+(?:\.\d+)?)\s*(g|ml)\s+(.+)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val swigOfRumPattern = Regex(
 		"""^1\s+swig\s+of\s+rum$""",
 		RegexOption.IGNORE_CASE,
@@ -529,7 +534,7 @@ internal object IngredientLinePhraseRewrites {
 		val bunch = bunchWithGramsPattern.matchEntire(trimmed)
 		val weight = parentheticalWeightPattern.matchEntire(trimmed)
 		val cabbage = cabbageWeightPattern.matchEntire(trimmed)
-		val pack = packMultiplierPattern.matchEntire(trimmed)
+		val pack = packMultiplierPattern.matchEntire(trimmed) ?: containerOfWeightPattern.matchEntire(trimmed)
 		val heaped = heapedTeaspoonPattern.matchEntire(trimmed)
 		val capers = capersInBrinePattern.matchEntire(trimmed)
 		val stock = hotVegetableStockPattern.matchEntire(trimmed)

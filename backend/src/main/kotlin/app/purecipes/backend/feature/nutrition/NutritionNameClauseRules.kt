@@ -8,10 +8,18 @@ internal object NutritionNameClauseRules {
 
 	private val exampleClause = Regex("""(?i)\s+e\.g\b.*$""")
 
+	private val avoidingClause = Regex("""(?i),?\s+avoiding\b.*$""")
+
+	private val seedsScrapedOutClause = Regex("""(?i),?\s+seeds\s+(?:scraped\s+)?out\b.*$""")
+
 	private val butNotClause = Regex("""(?i),?\s+but\s+not\b.*$""")
 
 	private val toVerbClause = Regex(
-		"""(?i),?\s+to\s+(?:sprinkle|brush|thin|cut|top|dust|coat|garnish|serve|scatter|drizzle)\b.*$""",
+		"""(?i),?\s+to\s+(?:sprinkle|brush|thin|cut|top|dust|coat|garnish|serve|scatter|drizzle|decorate)\b.*$""",
+	)
+
+	private val forGerundClause = Regex(
+		"""(?i),?\s+for\s+(?:brushing|dusting|sprinkling|serving|garnishing|greasing|coating)\b.*$""",
 	)
 
 	private val noNeedClause = Regex("""(?i),?\s+no\s+need\b.*$""")
@@ -31,8 +39,11 @@ internal object NutritionNameClauseRules {
 		result = asteriskClause.replace(result, "")
 		result = slashAlternativeClause.replace(result, "")
 		result = exampleClause.replace(result, "")
+		result = avoidingClause.replace(result, "")
+		result = seedsScrapedOutClause.replace(result, "")
 		result = butNotClause.replace(result, "")
 		result = toVerbClause.replace(result, "")
+		result = forGerundClause.replace(result, "")
 		result = noNeedClause.replace(result, "")
 		result = yeastSourdoughClause.replace(result, "")
 		result = ideallyClause.replace(result, "")
