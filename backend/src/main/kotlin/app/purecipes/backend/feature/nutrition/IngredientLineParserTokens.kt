@@ -194,12 +194,17 @@ internal object IngredientLineParserTokens {
 	val defaultPieceProteinTokens = setOf(
 		"artichoke",
 		"artichokes",
+		"chipolata",
+		"chipolatas",
 		"ham",
 		"oyster",
 		"oysters",
 		"prawn",
 		"prawns",
 		"prosciutto",
+		"rabbit",
+		"shank",
+		"shanks",
 		"shrimp",
 		"shrimps",
 		"squid",
@@ -212,6 +217,7 @@ internal object IngredientLineParserTokens {
 		"feta",
 		"halloumi",
 		"mascarpone",
+		"mozarella",
 		"mozzarella",
 	)
 
@@ -286,6 +292,7 @@ internal object IngredientLineParserTokens {
 		"marinade",
 		"marinara",
 		"miso",
+		"nutella",
 		"paste",
 		"sauce",
 		"sriracha",
@@ -315,6 +322,7 @@ internal object IngredientLineParserTokens {
 		"seasoning",
 		"spice",
 		"spices",
+		"vanilla",
 		"yeast",
 	)
 
@@ -332,6 +340,8 @@ internal object IngredientLineParserTokens {
 		"couscous",
 		"drippings",
 		"hominy",
+		"oat",
+		"oats",
 		"okra",
 		"spaghetti",
 	)
@@ -354,6 +364,7 @@ internal object IngredientLineParserTokens {
 		"karaage",
 		"morcilla",
 		"pastry",
+		"patissiere",
 		"quesadilla",
 		"quesadillas",
 		"salad",
@@ -373,6 +384,7 @@ internal object IngredientLineParserTokens {
 	)
 
 	val orphanModifierOnlyTokens = setOf(
+		"all",
 		"bone",
 		"bone-in",
 		"boiled",

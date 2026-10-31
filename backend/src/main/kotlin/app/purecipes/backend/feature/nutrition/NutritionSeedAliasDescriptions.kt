@@ -23,7 +23,10 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val BAY_LEAF_DESCRIPTION = "Bay leaf, dried"
 	internal const val BAY_LEAF_SPICE_DESCRIPTION = "Spices, bay leaf"
 	internal const val BEANSPROUT_DESCRIPTION = "Mung beans, mature seeds, sprouted, raw"
+	internal const val BEEF_BOUILLON_DESCRIPTION =
+		"Soup, beef broth bouillon and consomme, canned, condensed"
 	internal const val BEEF_CHUCK_DESCRIPTION = "Beef, stew meat"
+	internal const val BEEF_SHORT_RIBS_DESCRIPTION = "Beef, shortribs"
 	internal const val BEET_DESCRIPTION = "Beets, raw"
 	internal const val BEER_DESCRIPTION = "Alcoholic beverage, beer, regular, all"
 	internal const val BELL_PEPPER_DESCRIPTION = "Peppers, sweet, green, raw"
@@ -47,6 +50,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val BREADCRUMB_DESCRIPTION = "Bread, crumbs, dry, grated, plain"
 	internal const val BROCCOLI_DESCRIPTION = "Broccoli, raw"
 	internal const val BROWN_SUGAR_DESCRIPTION = "Sugars, brown"
+	internal const val BUCKWHEAT_FLOUR_DESCRIPTION = "Buckwheat flour, whole-groat"
 	internal const val BURGER_BUN_DESCRIPTION = "Rolls, hamburger or hotdog, plain"
 	internal const val BUTTER_BEAN_DESCRIPTION =
 		"Lima beans, large, mature seeds, cooked, boiled, without salt"
@@ -57,6 +61,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val CABBAGE_GREEN_DESCRIPTION = "Cabbage, green, raw"
 	internal const val CABBAGE_RED_DESCRIPTION = "Cabbage, red, raw"
 	internal const val CAKE_FLOUR_DESCRIPTION = "Wheat flour, white, cake, enriched"
+	internal const val CANDIED_FRUIT_DESCRIPTION = "Candied fruit"
 	internal const val CAPERS_DESCRIPTION = "Capers, canned"
 	internal const val CANNELLINI_DESCRIPTION =
 		"Beans, great northern, mature seeds, cooked, boiled, without salt"
@@ -164,6 +169,8 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val KETCHUP_DESCRIPTION = "Catsup"
 	internal const val LAMB_CHOP_DESCRIPTION = "Lamb, chop"
 	internal const val LAMB_MINCE_DESCRIPTION = "Lamb, ground, raw"
+	internal const val LAMB_SHANK_DESCRIPTION =
+		"Lamb, foreshank, separable lean and fat, trimmed to 1/4\" fat, choice, cooked, braised"
 	internal const val LEEK_DESCRIPTION = "Leeks, (bulb and lower leaf-portion), raw"
 	internal const val LEMON_DESCRIPTION = "Lemons, raw, without peel"
 	internal const val LEMON_JUICE_DESCRIPTION = "Lemon juice, raw"
@@ -190,6 +197,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val NUTMEG_DESCRIPTION = "Spices, nutmeg, ground"
 	internal const val OAT_MILK_DESCRIPTION = "Oat milk, unsweetened, plain, refrigerated"
 	internal const val OAT_MILK_SURVEY_DESCRIPTION = "Oat milk"
+	internal const val OAT_BRAN_DESCRIPTION = "Oat bran, raw"
 	internal const val OLIVE_OIL_DESCRIPTION = "Oil, olive, extra virgin"
 	internal const val OLIVE_OIL_FALLBACK_DESCRIPTION = "Oil, olive, salad or cooking"
 	internal const val OLIVE_DESCRIPTION = "Olives, ripe, canned (small-extra large)"
@@ -210,6 +218,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val PEANUT_OIL_DESCRIPTION = "Oil, peanut"
 	internal const val PEANUT_OIL_FALLBACK_DESCRIPTION = "Oil, peanut, salad or cooking"
 	internal const val PECAN_DESCRIPTION = "Nuts, pecans"
+	internal const val PIGEON_DESCRIPTION = "Dove, cooked (includes squab)"
 	internal const val PINE_NUT_DESCRIPTION = "Nuts, pine nuts, dried"
 	internal const val PINTO_BEAN_DESCRIPTION = "Beans, pinto, mature seeds, cooked, boiled, without salt"
 	internal const val PITA_DESCRIPTION = "Bread, pita, white, enriched"
@@ -223,6 +232,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val PORK_RIBS_DESCRIPTION =
 		"Pork, fresh, spareribs, separable lean and fat, raw"
 	internal const val PORK_SAUSAGE_DESCRIPTION = "Pork sausage, link/patty, unprepared"
+	internal const val PORK_SAUSAGE_PIECE_DESCRIPTION = "Pork sausage"
 	internal const val POTATO_DESCRIPTION = "Potatoes, flesh and skin, raw"
 	internal const val PUMPKIN_CANNED_DESCRIPTION = "Pumpkin, canned, without salt"
 	internal const val PUFF_PASTRY_DESCRIPTION = "Puff pastry, frozen, ready-to-bake"
@@ -239,12 +249,16 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val ROMAINE_LETTUCE_DESCRIPTION = "Lettuce, cos or romaine, raw"
 	internal const val ROMANO_DESCRIPTION = "Cheese, romano"
 	internal const val ROSEMARY_DESCRIPTION = "Rosemary, fresh"
+	internal const val RUTABAGA_DESCRIPTION = "Rutabagas, raw"
+	internal const val RYE_FLOUR_DARK_DESCRIPTION = "Rye flour, dark"
+	internal const val RYE_FLOUR_MEDIUM_DESCRIPTION = "Rye flour, medium"
 	internal const val SALAMI_DESCRIPTION = "Salami, dry or hard, pork"
 	internal const val SALT_DESCRIPTION = "Salt, table"
 	internal const val SELF_RISING_FLOUR_DESCRIPTION = "Wheat flour, white, all-purpose, self-rising, enriched"
 	internal const val SERRANO_DESCRIPTION = "Peppers, serrano, raw"
 	internal const val SESAME_OIL_DESCRIPTION = "Oil, sesame, salad or cooking"
 	internal const val SESAME_SEED_DESCRIPTION = "Seeds, sesame seeds, whole, dried"
+	internal const val SEMOLINA_DESCRIPTION = "Semolina, unenriched"
 	internal const val SHALLOT_DESCRIPTION = "Shallots, raw"
 	internal const val SHRIMP_DESCRIPTION = "Crustaceans, shrimp, raw"
 	internal const val SINGLE_CREAM_DESCRIPTION =
@@ -278,6 +292,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val VANILLA_DESCRIPTION = "Vanilla extract"
 	internal const val VEGETABLE_BROTH_DESCRIPTION = "Soup, vegetable broth, ready to serve"
 	internal const val VEGGIE_BURGER_DESCRIPTION = "Veggie burgers or soyburgers, unprepared"
+	internal const val VENISON_DESCRIPTION = "Venison, NFS"
 	internal const val WALNUT_DESCRIPTION = "Nuts, walnuts, english"
 	internal const val WATER_CHESTNUT_DESCRIPTION =
 		"Waterchestnuts, chinese, canned, solids and liquids"
@@ -303,6 +318,8 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val GREEN_TEA_DESCRIPTION = "Beverages, tea, green, ready to drink, unsweetened"
 
 	internal const val ORANGE_JUICE_DESCRIPTION = "Orange juice, raw"
+	internal const val ORANGE_JUICE_FALLBACK_DESCRIPTION = "Orange juice, 100%,  freshly squeezed"
+	internal const val TANGERINE_JUICE_DESCRIPTION = "Tangerine juice, 100%"
 	internal const val ORANGE_PEEL_DESCRIPTION = "Orange peel, raw"
 
 	internal const val PARSNIP_DESCRIPTION = "Parsnips, raw"
@@ -351,6 +368,8 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val MOZZARELLA_DESCRIPTION = "Cheese, mozzarella, whole milk"
 
 	internal const val MOZZARELLA_LOW_MOISTURE_DESCRIPTION = "Cheese, mozzarella, low moisture, part-skim"
+
+	internal const val NON_ALCOHOLIC_SPIRIT_DESCRIPTION = "Non-alcoholic spirit, gin alternative"
 
 	internal const val OATS_DESCRIPTION = "Cereals, oats, regular and quick, not fortified, dry"
 
@@ -487,6 +506,9 @@ internal object NutritionSeedAliasDescriptions {
 
 	internal const val WHOLE_WHEAT_BREAD_DESCRIPTION = "Bread, whole-wheat, commercially prepared"
 
+	internal const val WHOLE_WHEAT_FLOUR_DESCRIPTION =
+		"Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)"
+
 	internal const val WONTON_WRAPPER_DESCRIPTION = "Wonton wrappers (includes egg roll wrappers)"
 
 	internal const val BEEF_SKIRT_DESCRIPTION =
@@ -595,4 +617,92 @@ internal object NutritionSeedAliasDescriptions {
 
 	internal const val CREAM_OF_MUSHROOM_SOUP_DESCRIPTION =
 		"Soup, cream of mushroom, canned, condensed"
+
+	internal const val BAGEL_CHIPS_DESCRIPTION = "Bagel chips"
+
+	internal const val CHAMOMILE_TEA_DESCRIPTION = "Beverages, tea, herb, brewed, chamomile"
+
+	internal const val CHAMOMILE_TEA_FALLBACK_DESCRIPTION = "Tea, hot, chamomile"
+
+	internal const val COFFEE_BREWED_DESCRIPTION = "Coffee, brewed"
+
+	internal const val GINGER_ALE_DESCRIPTION = "Soft drink, ginger ale"
+
+	internal const val HASH_BROWNS_DESCRIPTION = "Potatoes, hash brown, refrigerated, unprepared"
+
+	internal const val LIQUEUR_DESCRIPTION = "Liqueur"
+
+	internal const val MERINGUE_DESCRIPTION = "Meringues"
+
+	internal const val POUND_CAKE_DESCRIPTION = "Cake, pound"
+
+	internal const val SALSA_RED_DESCRIPTION = "Salsa, red"
+
+	internal const val SALTINE_CRACKER_DESCRIPTION = "Crackers, saltine"
+
+	internal const val SEAWEED_DRIED_DESCRIPTION = "Seaweed, dried"
+
+	internal const val TEQUILA_DESCRIPTION = "Tequila"
+
+	internal const val CHICORY_WITLOOF_DESCRIPTION = "Chicory, witloof, raw"
+
+	internal const val CLEMENTINES_DESCRIPTION = "Clementines, raw"
+
+	internal const val COUSCOUS_DRY_DESCRIPTION = "Couscous, dry"
+
+	internal const val EUROPEAN_CHESTNUTS_DESCRIPTION =
+		"Nuts, chestnuts, european, boiled and steamed"
+
+	internal const val FIGS_RAW_DESCRIPTION = "Figs, raw"
+
+	internal const val GAME_MEAT_RABBIT_RAW_DESCRIPTION =
+		"Game meat, rabbit, domesticated, composite of cuts, raw"
+
+	internal const val HORSERADISH_PREPARED_DESCRIPTION = "Horseradish, prepared"
+
+	internal const val JACK_MACKEREL_CANNED_DESCRIPTION =
+		"Fish, mackerel, jack, canned, drained solids"
+
+	internal const val LETTUCE_BUTTERHEAD_DESCRIPTION =
+		"Lettuce, butterhead (includes boston and bibb types), raw"
+
+	internal const val LETTUCE_GREEN_LEAF_DESCRIPTION = "Lettuce, green leaf, raw"
+
+	internal const val PLUMS_DRIED_PRUNES_DESCRIPTION = "Plums, dried (prunes), uncooked"
+
+	internal const val TROUT_RAW_DESCRIPTION = "Fish, trout, mixed species, raw"
+
+	internal const val ALMOND_PASTE_DESCRIPTION = "Nuts, almond paste"
+
+	internal const val APRICOT_DRIED_DESCRIPTION = "Apricot, dried"
+
+	internal const val BEEF_TALLOW_DESCRIPTION = "Fat, beef tallow"
+
+	internal const val BRIE_DESCRIPTION = "Cheese, brie"
+
+	internal const val CHIVES_DESCRIPTION = "Chives, raw"
+
+	internal const val CUSTARD_DESCRIPTION = "Custard"
+
+	internal const val GINGERSNAP_DESCRIPTION = "Cookies, gingersnaps"
+
+	internal const val HAZELNUTS_DESCRIPTION = "Hazelnuts"
+
+	internal const val ICE_CREAM_DESCRIPTION = "Ice cream, vanilla"
+
+	internal const val JAM_DESCRIPTION = "Jam"
+
+	internal const val PROSCIUTTO_DESCRIPTION = "Ham, prosciutto"
+
+	internal const val TANGERINES_DESCRIPTION = "Tangerines, (mandarin oranges), raw"
+
+	internal const val ARTICHOKE_DESCRIPTION = "Artichokes, (globe or french), raw"
+
+	internal const val DATES_DESCRIPTION = "Dates, medjool"
+
+	internal const val PROVOLONE_DESCRIPTION = "Cheese, provolone"
+
+	internal const val BANANA_PEPPER_DESCRIPTION = "Peppers, banana, raw"
+
+	internal const val WHITE_CHOCOLATE_DESCRIPTION = "Candies, white chocolate"
 }

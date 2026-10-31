@@ -177,6 +177,20 @@ class IngredientVocabularyTest {
 	}
 
 	@Test
+	fun `marks breadtopia section headings and non ingredient notes as ignorable`() {
+		IngredientVocabulary.isIgnorableIngredientLine("Baker's Percentages") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Baker's Percentages:") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Lye Bath") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine(
+			"Scald (one hour before mixing the dough)",
+		) shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine("Field and Sweet Corn Porridge") shouldBe true
+		IngredientVocabulary.isIgnorableIngredientLine(
+			"If possible, use the weight measurements rather than volume for this recipe.",
+		) shouldBe true
+	}
+
+	@Test
 	fun `does not ignore real foods near non food phrases`() {
 		IngredientVocabulary.isIgnorableIngredientLine("mild italian sausage casings") shouldBe false
 		IngredientVocabulary.isIgnorableIngredientLine("gold potatoes") shouldBe false

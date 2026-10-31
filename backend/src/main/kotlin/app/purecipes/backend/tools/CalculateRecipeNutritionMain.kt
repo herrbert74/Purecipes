@@ -66,13 +66,13 @@ private fun printRecipeResult(result: RecipeNutritionPersistResult, verbose: Boo
 			"complete=${totals.isComplete}, " +
 			"calories=${totals.calories}",
 	)
-	if (verbose && result.issues.isNotEmpty()) {
+	if ((verbose || !totals.isComplete) && result.allIssues.isNotEmpty()) {
 		printRecipeIssues(result)
 	}
 }
 
 private fun printRecipeIssues(result: RecipeNutritionPersistResult) {
-	result.issues.forEach { issue ->
+	result.allIssues.forEach { issue ->
 		println("  [${issue.kind}] ${issue.rawText} -> ${issue.parsedName}")
 	}
 }
@@ -103,7 +103,7 @@ private fun printBackfillSummary(results: List<RecipeNutritionPersistResult>) {
 
 private fun printUnmatchedIngredientReport(results: List<RecipeNutritionPersistResult>) {
 	val unmatchedCounts = results
-		.flatMap(RecipeNutritionPersistResult::issues)
+		.flatMap(RecipeNutritionPersistResult::allIssues)
 		.filter { issue -> issue.kind == IngredientNutritionIssueKind.NO_FOOD_MATCH }
 		.groupingBy { issue -> groupedParsedName(issue.parsedName) }
 		.eachCount()

@@ -120,15 +120,13 @@ class IngredientFoodMatchReporterTest {
 
 		val report = IngredientFoodMatchReporter(dataSource).collect()
 
-		report.countableLines shouldBe 6
-		report.neverParsedCount shouldBe 1
+		report.countableLines shouldBe 5
 		report.notMeasurableCount shouldBe 1
 		report.noFoodCount shouldBe 1
 		report.noGramsCount shouldBe 1
 		report.matchedCount shouldBe 2
 		report.measureGramCount shouldBe 1
 		report.densityGramCount shouldBe 1
-		report.neverParsedNames.map { it.label } shouldContain "never parsed line"
 		report.notMeasurableNames.map { it.label } shouldContain "salt"
 		report.unmatchedNames.map { it.label } shouldContain "mystery spice"
 		report.unresolvedGramsNames.map { it.label } shouldContain "olive oil (cup)"
@@ -149,13 +147,23 @@ class IngredientFoodMatchReporterTest {
 				ReportTestIngredient("2 tbsp tarragon", requirement = "ALTERNATIVE", alternativeGroupKey = 1),
 			),
 		)
+		val ingredientIds = loadIngredientIds(dataSource, recipeId)
+		insertMeasurement(
+			dataSource,
+			MeasurementInsert(
+				ingredientId = ingredientIds[2],
+				rawText = "2 tbsp parsley",
+				parsedName = "parsley",
+				isMeasurable = false,
+			),
+		)
 		insertCalculatedNutrition(dataSource, recipeId, isComplete = false)
 
 		val report = IngredientFoodMatchReporter(dataSource).collect()
 
 		report.countableLines shouldBe 1
-		report.neverParsedCount shouldBe 1
-		report.neverParsedNames.single().label shouldBe "2 tbsp parsley"
+		report.notMeasurableCount shouldBe 1
+		report.notMeasurableNames.single().label shouldBe "parsley"
 		report.calculatedNutritionCount shouldBe 1
 		report.partialEstimateCount shouldBe 1
 		report.completeEstimateCount shouldBe 0
@@ -220,6 +228,10 @@ class IngredientFoodMatchReporterTest {
 		report.noFoodCount shouldBe 2
 		report.unmatchedNames.single().label shouldBe "halloumi"
 		report.unmatchedNames.single().count shouldBe 2
+		report.unmatchedNames.single().recipes shouldBe listOf(
+			RecipeReference(recipeId = recipeId, recipeTitle = "Halloumi recipe"),
+			RecipeReference(recipeId = recipeId, recipeTitle = "Halloumi recipe"),
+		)
 	}
 
 	@Test
@@ -229,10 +241,9 @@ class IngredientFoodMatchReporterTest {
 			IngredientFoodMatchReporter(db.dataSource).collect(),
 		)
 
-		text.lines().take(10) shouldBe listOf(
+		text.lines().take(9) shouldBe listOf(
 			"Ingredient food-table matching report",
 			"Countable ingredient lines: 0",
-			"Never parsed: 0",
 			"Not measurable: 0",
 			"No food match: 0",
 			"No gram weight: 0",
@@ -240,6 +251,95 @@ class IngredientFoodMatchReporterTest {
 			"  Gram source mass: 0",
 			"  Gram source measure: 0",
 			"  Gram source density fallback: 0",
+		)
+	}
+
+	@Test
+	fun formatOmitsScrapedRecipesByDefaultAndIncludesWhenRequested() {
+		val db = createInMemoryDb("ingredient_food_match_scraped_format")
+		val dataSource = db.dataSource
+		val recipeId = insertRecipe(
+			dataSource = dataSource,
+			title = "Scraped pie",
+			ingredients = listOf(ReportTestIngredient("1 cup sugar")),
+		)
+		insertScrapedNutrition(dataSource, recipeId)
+		val reporter = IngredientFoodMatchReporter(dataSource)
+		val data = reporter.collect()
+
+		val defaultText = reporter.format(data)
+		defaultText.contains("Scraped nutrition recipes") shouldBe false
+
+		val withScrapedText = reporter.format(data, includeScrapedRecipes = true)
+		withScrapedText.contains("Scraped nutrition recipes") shouldBe true
+		withScrapedText.contains("Recipe $recipeId: Scraped pie") shouldBe true
+	}
+
+	@Test
+	fun formatWritesInlineRecipeForSingleOccurrenceAndIndentedLinesForMultipleOccurrences() {
+		val db = createInMemoryDb("ingredient_food_match_format_recipes")
+		val dataSource = db.dataSource
+		val firstRecipeId = insertRecipe(
+			dataSource = dataSource,
+			title = "First recipe",
+			ingredients = listOf(
+				ReportTestIngredient("100 g Halloumi"),
+				ReportTestIngredient("1 pinch sumac"),
+			),
+		)
+		val secondRecipeId = insertRecipe(
+			dataSource = dataSource,
+			title = "Second recipe",
+			ingredients = listOf(
+				ReportTestIngredient("50 g halloumi"),
+			),
+		)
+		val firstIngredientIds = loadIngredientIds(dataSource, firstRecipeId)
+		val secondIngredientIds = loadIngredientIds(dataSource, secondRecipeId)
+		insertMeasurement(
+			dataSource,
+			MeasurementInsert(
+				ingredientId = firstIngredientIds[0],
+				rawText = "100 g Halloumi",
+				quantity = BigDecimal("100"),
+				unit = "g",
+				parsedName = "Halloumi",
+				isMeasurable = true,
+			),
+		)
+		insertMeasurement(
+			dataSource,
+			MeasurementInsert(
+				ingredientId = firstIngredientIds[1],
+				rawText = "1 pinch sumac",
+				parsedName = "sumac",
+				isMeasurable = false,
+			),
+		)
+		insertMeasurement(
+			dataSource,
+			MeasurementInsert(
+				ingredientId = secondIngredientIds[0],
+				rawText = "50 g halloumi",
+				quantity = BigDecimal("50"),
+				unit = "g",
+				parsedName = "halloumi",
+				isMeasurable = true,
+			),
+		)
+
+		val reporter = IngredientFoodMatchReporter(dataSource)
+		val text = reporter.format(reporter.collect())
+
+		text.lines().dropWhile { it != "Not measurable parsed names (1 unique)" } shouldBe listOf(
+			"Not measurable parsed names (1 unique)",
+			"  1 x sumac (Recipe $firstRecipeId: First recipe)",
+			"",
+			"Unmatched parsed names (1 unique)",
+			"  2 x halloumi",
+			"    Recipe $firstRecipeId: First recipe",
+			"    Recipe $secondRecipeId: Second recipe",
+			"",
 		)
 	}
 }

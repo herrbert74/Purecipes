@@ -895,6 +895,71 @@ class NutritionSeedAliasIndexTest {
 		aliases["oregano leaves"] shouldBe 1
 	}
 
+	@Test
+	fun mergeAppliesSourdoughLevainMadreAndRyeStarterAliases() {
+		val breadFlour = food(
+			id = 1,
+			displayName = "Flour, bread, white, enriched, unbleached",
+			normalizedName = "flour bread white enriched unbleached",
+		)
+		val darkRyeFlour = food(
+			id = 2,
+			displayName = "Rye flour, dark",
+			normalizedName = "rye flour dark",
+		)
+		val water = food(
+			id = 3,
+			displayName = "Water, tap",
+			normalizedName = "water tap",
+		)
+		val vanillaExtract = food(
+			id = 4,
+			displayName = "Vanilla extract",
+			normalizedName = "vanilla extract",
+		)
+		val salt = food(
+			id = 5,
+			displayName = "Salt, table",
+			normalizedName = "salt table",
+		)
+		val semolina = food(
+			id = 6,
+			displayName = "Semolina, unenriched",
+			normalizedName = "semolina unenriched",
+		)
+		val fennel = food(
+			id = 7,
+			displayName = "Spices, fennel seed",
+			normalizedName = "spices fennel seed",
+		)
+		val aliases = NutritionSeedAliasIndex.merge(
+			foods = listOf(breadFlour, darkRyeFlour, water, vanillaExtract, salt, semolina, fennel),
+			storedAliases = emptyMap(),
+		)
+
+		aliases["sourdough starter"] shouldBe 1
+		aliases["active sourdough starter"] shouldBe 1
+		aliases["sourdough starter culture"] shouldBe 1
+		aliases["sourdough discard"] shouldBe 1
+		aliases["pasta madre"] shouldBe 1
+		aliases["active pasta madre"] shouldBe 1
+		aliases["levain"] shouldBe 1
+		aliases["starter"] shouldBe 1
+		aliases["rye sourdough starter"] shouldBe 2
+		aliases["rye starter"] shouldBe 2
+		aliases["rye levain"] shouldBe 2
+		aliases["active apple yeast"] shouldBe 3
+		aliases["vanilla"] shouldBe 4
+		aliases["baking salt"] shouldBe 5
+		aliases["semolina flour"] shouldBe 6
+		aliases["strong bread flour"] shouldBe 1
+		aliases["strong panettone flour"] shouldBe 1
+		aliases["whole rye flour"] shouldBe 2
+		aliases["bread spice"] shouldBe 7
+		aliases["maldon"] shouldBe 5
+		aliases["chamomile tea"] shouldBe 3
+	}
+
 	private fun food(id: Int, displayName: String, normalizedName: String): NutritionFoodRecord =
 		NutritionFoodRecord(
 			id = id,

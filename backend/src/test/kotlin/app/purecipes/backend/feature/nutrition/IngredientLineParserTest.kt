@@ -1205,4 +1205,199 @@ class IngredientLineParserTest {
 		large.parsedName shouldBe "sugar diamonds"
 		large.isMeasurable shouldBe true
 	}
+
+	@Test
+	fun parseHandlesDualUnitParentheticalsNestedParenthesesAndWholeOrSplitChicken() {
+		val condensed = IngredientLineParser.parse("1 can (14 oz / 396 g) Sweetened condensed milk")
+		condensed.quantity shouldBe BigDecimal("14")
+		condensed.unit shouldBe "oz"
+		condensed.parsedName shouldBe "Sweetened condensed milk"
+		condensed.isMeasurable shouldBe true
+
+		val filteredWater = IngredientLineParser.parse("Filtered water")
+		filteredWater.quantity shouldBe BigDecimal.ONE
+		filteredWater.unit shouldBe "cup"
+		filteredWater.parsedName shouldBe "Filtered water"
+		filteredWater.isMeasurable shouldBe true
+
+		val chicken = IngredientLineParser.parse("2 whole or 4 split chicken breasts, bone-in, skin on")
+		chicken.quantity shouldBe BigDecimal("2")
+		chicken.unit shouldBe "piece"
+		chicken.isMeasurable shouldBe true
+
+		val nestedEggs = IngredientLineParser.parse("100 g Eggs ((2 large), room temperature)")
+		nestedEggs.quantity shouldBe BigDecimal("100")
+		nestedEggs.unit shouldBe "g"
+		nestedEggs.parsedName shouldBe "Eggs"
+		nestedEggs.isMeasurable shouldBe true
+
+		val bigaReference = IngredientLineParser.parse("All of the Biga (from above)")
+		bigaReference.isMeasurable shouldBe false
+
+		val madreRefreshment = IngredientLineParser.parse(
+			"Pasta Madre (refreshed 2–3 times at a 1:1:0.45 ratio until tripling consistently)",
+		)
+		madreRefreshment.isMeasurable shouldBe false
+
+		val largeEgg = IngredientLineParser.parse("Large Egg")
+		largeEgg.quantity shouldBe BigDecimal.ONE
+		largeEgg.unit shouldBe "egg"
+		largeEgg.parsedName shouldBe "Egg"
+		largeEgg.isMeasurable shouldBe true
+
+		val nutella = IngredientLineParser.parse("Nutella (or preferred filling like jam or garlic butter)")
+		nutella.quantity shouldBe BigDecimal.ONE
+		nutella.unit shouldBe "tbsp"
+		nutella.parsedName shouldBe "Nutella"
+		nutella.isMeasurable shouldBe true
+
+		val vanilla = IngredientLineParser.parse("Vanilla (to taste)")
+		vanilla.quantity shouldBe BigDecimal.ONE
+		vanilla.unit shouldBe "tsp"
+		vanilla.parsedName shouldBe "Vanilla"
+		vanilla.isMeasurable shouldBe true
+
+		val carawaySeeds = IngredientLineParser.parse("Caraway seeds (to taste, added at the very end of mixing)")
+		carawaySeeds.quantity shouldBe BigDecimal.ONE
+		carawaySeeds.unit shouldBe "tsp"
+		carawaySeeds.parsedName shouldBe "Caraway seeds"
+		carawaySeeds.isMeasurable shouldBe true
+
+		val salmonCans = IngredientLineParser.parse("1 x 416 g or 2 x 213 g cans red or pink wild Alaska salmon")
+		salmonCans.quantity shouldBe BigDecimal("416")
+		salmonCans.unit shouldBe "g"
+		salmonCans.parsedName shouldBe "red or pink wild Alaska salmon"
+		salmonCans.isMeasurable shouldBe true
+
+		val eggBeaten = IngredientLineParser.parse("To brush on the dough before baking, 1 egg beaten")
+		eggBeaten.quantity shouldBe BigDecimal.ONE
+		eggBeaten.unit shouldBe "egg"
+		eggBeaten.parsedName shouldBe "egg beaten"
+		eggBeaten.isMeasurable shouldBe true
+
+		val jalapeno = IngredientLineParser.parse("1 large or 2 small jalapeños, de-seeded, sliced, briefly sauteed")
+		jalapeno.quantity shouldBe BigDecimal.ONE
+		jalapeno.parsedName shouldBe "jalapeños, de-seeded, sliced, briefly sauteed"
+		jalapeno.isMeasurable shouldBe true
+
+		val maldon = IngredientLineParser.parse("Maldon sea salt")
+		maldon.quantity shouldBe BigDecimal.ONE
+		maldon.unit shouldBe "tsp"
+		maldon.parsedName shouldBe "Maldon sea salt"
+		maldon.isMeasurable shouldBe true
+	}
+
+	@Test
+	fun parseParsesBritishSpecialtiesAndPackMultipliers() {
+		val oats = IngredientLineParser.parse("1 mug of porridge oats (150g)")
+		oats.quantity shouldBe BigDecimal("150")
+		oats.unit shouldBe "g"
+		oats.parsedName shouldBe "porridge oats"
+		oats.isMeasurable shouldBe true
+
+		val coriander = IngredientLineParser.parse("1 bunch of fresh coriander (30g)")
+		coriander.quantity shouldBe BigDecimal("30")
+		coriander.unit shouldBe "g"
+		coriander.parsedName shouldBe "fresh coriander"
+		coriander.isMeasurable shouldBe true
+
+		val sausages = IngredientLineParser.parse("6 higher-welfare Cumberland sausages (400 g total)")
+		sausages.quantity shouldBe BigDecimal("400")
+		sausages.unit shouldBe "g"
+		sausages.parsedName shouldBe "Cumberland sausages"
+		sausages.isMeasurable shouldBe true
+
+		val pastry = IngredientLineParser.parse("2 x 375 g packets of ready-rolled all-butter puff pastry")
+		pastry.quantity shouldBe BigDecimal("750")
+		pastry.unit shouldBe "g"
+		pastry.parsedName shouldBe "puff pastry"
+		pastry.isMeasurable shouldBe true
+
+		val rum = IngredientLineParser.parse("1 swig of rum")
+		rum.quantity shouldBe BigDecimal.ONE
+		rum.unit shouldBe "tbsp"
+		rum.parsedName shouldBe "rum"
+		rum.isMeasurable shouldBe true
+
+		val asparagus = IngredientLineParser.parse("8 large asparagus spears")
+		asparagus.quantity shouldBe BigDecimal("8")
+		asparagus.unit shouldBe "piece"
+		asparagus.parsedName shouldBe "asparagus"
+		asparagus.isMeasurable shouldBe true
+
+		val bacon = IngredientLineParser.parse("4 rashers of higher-welfare smoked streaky bacon")
+		bacon.quantity shouldBe BigDecimal("4")
+		bacon.unit shouldBe "piece"
+		bacon.parsedName shouldBe "smoked streaky bacon"
+		bacon.isMeasurable shouldBe true
+
+		val rabbit = IngredientLineParser.parse("1 whole rabbit, skinned, including offal")
+		rabbit.quantity shouldBe BigDecimal.ONE
+		rabbit.unit shouldBe "piece"
+		rabbit.parsedName shouldBe "whole rabbit"
+		rabbit.isMeasurable shouldBe true
+
+		val gem = IngredientLineParser.parse("2 little gem lettuces")
+		gem.quantity shouldBe BigDecimal("2")
+		gem.unit shouldBe "piece"
+		gem.parsedName shouldBe "little gem lettuces"
+		gem.isMeasurable shouldBe true
+
+		val couscous = IngredientLineParser.parse("150 g wholewheat couscous")
+		couscous.quantity shouldBe BigDecimal("150")
+		couscous.unit shouldBe "g"
+		couscous.parsedName shouldBe "wholewheat couscous"
+		couscous.isMeasurable shouldBe true
+
+		val crostini = IngredientLineParser.parse("Crostini")
+		crostini.quantity shouldBe BigDecimal("12")
+		crostini.unit shouldBe "piece"
+		crostini.parsedName shouldBe "crostini"
+		crostini.isMeasurable shouldBe true
+
+		val fryingOil = IngredientLineParser.parse("vegetable oil, for frying")
+		fryingOil.quantity shouldBe BigDecimal("2")
+		fryingOil.unit shouldBe "tbsp"
+		fryingOil.parsedName shouldBe "vegetable oil"
+		fryingOil.isMeasurable shouldBe true
+
+		val vermouth = IngredientLineParser.parse("2 wine glasses of dry white vermouth (dry Martini or Noilly Prat)")
+		vermouth.quantity shouldBe BigDecimal("300")
+		vermouth.unit shouldBe "ml"
+		vermouth.parsedName shouldBe "dry vermouth"
+		vermouth.isMeasurable shouldBe true
+
+		val mintSprig = IngredientLineParser.parse("1 sprig each of fresh mint, basil and rosemary")
+		mintSprig.quantity shouldBe BigDecimal.ONE
+		mintSprig.unit shouldBe "tsp"
+		mintSprig.parsedName shouldBe "fresh mint"
+		mintSprig.isMeasurable shouldBe true
+
+		val buttermilk = IngredientLineParser.parse("About 400 ml buttermilk")
+		buttermilk.quantity shouldBe BigDecimal("400")
+		buttermilk.unit shouldBe "ml"
+		buttermilk.parsedName shouldBe "buttermilk"
+		buttermilk.isMeasurable shouldBe true
+
+		val mincemeatJar = IngredientLineParser.parse("1 jar of 410 g mincemeat")
+		mincemeatJar.quantity shouldBe BigDecimal("410")
+		mincemeatJar.unit shouldBe "g"
+		mincemeatJar.parsedName shouldBe "mincemeat"
+		mincemeatJar.isMeasurable shouldBe true
+
+		val satsumas = IngredientLineParser.parse("2 satsumas, segmented")
+		satsumas.quantity shouldBe BigDecimal("2")
+		satsumas.unit shouldBe "piece"
+		satsumas.isMeasurable shouldBe true
+
+		val eschalions = IngredientLineParser.parse("8 eschalions (banana shallots)")
+		eschalions.quantity shouldBe BigDecimal("8")
+		eschalions.unit shouldBe "piece"
+		eschalions.isMeasurable shouldBe true
+
+		val rolledOats = IngredientLineParser.parse("Rolled Oats")
+		rolledOats.quantity shouldBe BigDecimal.ONE
+		rolledOats.unit shouldBe "cup"
+		rolledOats.isMeasurable shouldBe true
+	}
 }

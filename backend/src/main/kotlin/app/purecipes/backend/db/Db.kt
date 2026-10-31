@@ -62,6 +62,7 @@ class Db private constructor(
 					statement.execute(RECIPES_ADD_APPLIANCES_SQL)
 					statement.execute(NUTRITION_FOODS_TABLE_SQL)
 					statement.execute(NUTRITION_FOODS_NORMALIZED_NAME_INDEX_SQL)
+					statement.execute(NUTRITION_FOODS_SEED_CUSTOM_SQL)
 					statement.execute(NUTRITION_FOOD_ALIASES_TABLE_SQL)
 					statement.execute(NUTRITION_FOOD_MEASURES_TABLE_SQL)
 					statement.execute(INGREDIENT_GROUPS_TABLE_SQL)
