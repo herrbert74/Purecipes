@@ -377,6 +377,33 @@ internal object IngredientVocabulary {
 		)
 	}
 
+	private val sectionHeadingExactFilters = setOf(
+		"dough",
+		"filling",
+		"garnish",
+		"garnishes",
+		"marinade",
+		"sauce",
+		"salad",
+		"sourdough",
+		"toppings",
+		"topping",
+	)
+
+	private val nonHeadingColonPrefixFilters = listOf(
+		"special equipment",
+		"equipment list",
+		"in the box",
+		"from your cupboard",
+		"shopping list",
+		"serve with",
+		"to garnish",
+		"serving suggestion",
+		"suggestion",
+		"other suggested",
+		"suggested",
+	)
+
 	private fun isHeadingOrInstructionLike(lower: String, trimmed: String): Boolean =
 		lower.endsWith(':') ||
 			ignorableLinePrefixFilters.any { lower.startsWith(it) } ||
@@ -386,6 +413,40 @@ internal object IngredientVocabulary {
 			ignorableInstructionClauses.any { lower.contains(it) } ||
 			IngredientHeadingRules.isSectionHeadingOrNote(trimmed)
 
+	fun isEquipmentLine(ingredientLine: String): Boolean {
+		val trimmed = ingredientLine.trim().removePrefix("-").removePrefix("*").trim()
+		val lower = trimmed.lowercase()
+		val hasEquipmentPrefix = lower.startsWith("special equipment") || lower.startsWith("equipment list")
+		return when {
+			trimmed.isBlank() -> false
+			hasEquipmentPrefix -> true
+			else -> {
+				val hasDigit = lower.any(Char::isDigit)
+				val normalized = IngredientNameMatching.normalizeIngredientText(trimmed)
+				val normalizedTokens = normalized.split(' ').filter { token -> token.isNotEmpty() }.toSet()
+				val equipmentLike = ignorableEquipmentKeywords.any { keyword ->
+					equipmentKeywordMatches(normalized, normalizedTokens, keyword) &&
+						(!hasDigit || keyword !in digitSensitiveEquipmentKeywords)
+				}
+				equipmentLike || isEquipmentOnlyLine(normalizedTokens)
+			}
+		}
+	}
+
+	fun isSectionHeadingLine(ingredientLine: String): Boolean {
+		val trimmed = ingredientLine.trim().removePrefix("-").removePrefix("*").trim()
+		if (trimmed.isBlank()) {
+			return false
+		}
+		val lower = trimmed.lowercase()
+		val endsWithColonHeading = lower.endsWith(':') &&
+			nonHeadingColonPrefixFilters.none { prefix -> lower.startsWith(prefix) }
+		return endsWithColonHeading ||
+			lower.startsWith("for ") ||
+			lower in sectionHeadingExactFilters ||
+			IngredientHeadingRules.isSectionHeading(trimmed)
+	}
+
 	fun isIgnorableIngredientLine(ingredientLine: String): Boolean {
 		val trimmed = ingredientLine.trim().removePrefix("-").removePrefix("*").trim()
 		if (trimmed.isBlank()) {
@@ -393,22 +454,14 @@ internal object IngredientVocabulary {
 		}
 
 		val lower = trimmed.lowercase()
-		val hasDigit = lower.any(Char::isDigit)
 		val headingLike = isHeadingOrInstructionLike(lower, trimmed)
 		val normalized = IngredientNameMatching.normalizeIngredientText(trimmed)
-		val normalizedTokens = normalized.split(' ').filter { token -> token.isNotEmpty() }.toSet()
-		val equipmentLike = ignorableEquipmentKeywords.any { keyword ->
-			if (!equipmentKeywordMatches(normalized, normalizedTokens, keyword)) {
-				return@any false
-			}
-			!hasDigit || keyword !in digitSensitiveEquipmentKeywords
-		}
-		val equipmentOnly = isEquipmentOnlyLine(normalizedTokens)
+		val equipment = isEquipmentLine(ingredientLine)
 		val orphanOnly = isOrphanModifierOnlyLine(lower)
 		val quantityOnly = isQuantityOnlyMeasureLine(lower)
 		val nonFoodLike = isIgnorableNonFoodLine(lower, normalized)
 
-		return headingLike || equipmentLike || equipmentOnly || orphanOnly || quantityOnly || nonFoodLike
+		return headingLike || equipment || orphanOnly || quantityOnly || nonFoodLike
 	}
 
 	private fun isIgnorableNonFoodLine(lower: String, normalized: String): Boolean {

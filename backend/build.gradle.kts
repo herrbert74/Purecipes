@@ -193,6 +193,44 @@ tasks.register<JavaExec>("reportIngredientFoodMatches") {
 	args = extraArgs
 }
 
+tasks.register<JavaExec>("snapshotIngredients") {
+	group = "verification"
+	description = "Exports names.tsv and lines.tsv ingredient snapshots from the database"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientSnapshotMainKt")
+	val snapshotDir = project.findProperty("snapshot.dir")?.toString().orEmpty()
+	val snapshotMode = project.findProperty("snapshot.mode")?.toString().orEmpty().ifBlank { "write" }
+	val extraArgs = buildList {
+		add("--mode=$snapshotMode")
+		if (snapshotDir.isNotBlank()) {
+			add("--dir=$snapshotDir")
+		}
+		if (project.findProperty("snapshot.failOnDiff")?.toString() == "true") {
+			add("--fail-on-diff")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("diffIngredientSnapshot") {
+	group = "verification"
+	description = "Diffs the database ingredient snapshot against committed names.tsv and lines.tsv"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientSnapshotMainKt")
+	val snapshotDir = project.findProperty("snapshot.dir")?.toString().orEmpty()
+	val failOnDiff = project.findProperty("snapshot.failOnDiff")?.toString() != "false"
+	val extraArgs = buildList {
+		add("--mode=diff")
+		if (snapshotDir.isNotBlank()) {
+			add("--dir=$snapshotDir")
+		}
+		if (failOnDiff) {
+			add("--fail-on-diff")
+		}
+	}
+	args = extraArgs
+}
+
 tasks.register<JavaExec>("calculateRecipeNutrition") {
 	group = "application"
 	description = "Calculates and stores recipe nutrition from parsed ingredients"

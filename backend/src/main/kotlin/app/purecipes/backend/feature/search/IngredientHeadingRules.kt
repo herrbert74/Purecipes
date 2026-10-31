@@ -14,7 +14,12 @@ internal object IngredientHeadingRules {
 
 	private val whitespacePattern = Regex("""\s+""")
 
-	private val linePrefixes = listOf(
+	private val headingLinePrefixes = listOf(
+		"dough for",
+		"pre-dough",
+	)
+
+	private val noteLinePrefixes = listOf(
 		"baker's percent",
 		"baker’s percent",
 		"bakers percent",
@@ -28,13 +33,13 @@ internal object IngredientHeadingRules {
 		"volume measurements",
 		"these recipes were",
 		"(reduce",
-		"dough for",
-		"pre-dough",
 		"chestnut meal,",
 		"chestnut flour and meal,",
 		"dried fruit and candied peel alternative",
 		"honey solution",
 	)
+
+	private val linePrefixes = headingLinePrefixes + noteLinePrefixes
 
 	private val lineClauses = listOf(
 		"approximations",
@@ -93,6 +98,21 @@ internal object IngredientHeadingRules {
 		"second",
 	)
 
+	fun isSectionHeading(line: String): Boolean {
+		val trimmed = line.trim()
+		val lower = trimmed.lowercase()
+		val withoutParentheses = parentheticalPattern.replace(lower, " ").trim()
+		val isExplicitNote = percentLinePattern.containsMatchIn(lower) ||
+			noteLinePrefixes.any { prefix -> lower.startsWith(prefix) } ||
+			lineClauses.any { clause -> lower.contains(clause) }
+		return !isExplicitNote && (
+			headingLinePrefixes.any { prefix -> lower.startsWith(prefix) } ||
+				lower in exactLines ||
+				withoutParentheses in exactLines ||
+				isStructuralHeading(trimmed, lower, includeAsteriskNotes = false)
+			)
+	}
+
 	fun isSectionHeadingOrNote(line: String): Boolean {
 		val lower = line.trim().lowercase()
 		val withoutParentheses = parentheticalPattern.replace(lower, " ").trim()
@@ -101,10 +121,14 @@ internal object IngredientHeadingRules {
 			lineClauses.any { clause -> lower.contains(clause) } ||
 			lower in exactLines ||
 			withoutParentheses in exactLines ||
-			isStructuralHeading(line.trim(), lower)
+			isStructuralHeading(line.trim(), lower, includeAsteriskNotes = true)
 	}
 
-	private fun isStructuralHeading(original: String, lower: String): Boolean {
+	private fun isStructuralHeading(
+		original: String,
+		lower: String,
+		includeAsteriskNotes: Boolean,
+	): Boolean {
 		val withoutParentheses = parentheticalPattern.replace(lower, " ")
 		val stripped = asteriskClausePattern.replace(withoutParentheses, " ").trim()
 		val words = stripped
@@ -116,7 +140,9 @@ internal object IngredientHeadingRules {
 		}
 		val lastWord = words.last()
 		val firstWord = words.first()
-		val hasAsteriskNote = lower.contains('*') && words.size >= MIN_ASTERISK_HEADING_WORDS
+		val hasAsteriskNote = includeAsteriskNotes &&
+			lower.contains('*') &&
+			words.size >= MIN_ASTERISK_HEADING_WORDS
 		val isUppercaseHeading = original == original.uppercase() &&
 			original.any(Char::isLetter) &&
 			words.size >= MIN_UPPERCASE_HEADING_WORDS
