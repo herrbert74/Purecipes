@@ -11,8 +11,6 @@ private const val ARG_FAIL_ON_DIFF = "--fail-on-diff"
 private const val ARG_SEED_PINS = "--seed-pins"
 private const val MODE_DIFF = "diff"
 private const val MODE_WRITE = "write"
-private const val NAMES_FILE_NAME = "names.tsv"
-private const val LINES_FILE_NAME = "lines.tsv"
 
 fun main(args: Array<String>) {
 	val dirPath = args.firstOrNull { it.startsWith(ARG_DIR_PREFIX) }
@@ -26,8 +24,8 @@ fun main(args: Array<String>) {
 	val seedPins = args.contains(ARG_SEED_PINS)
 
 	val snapshotDir = resolveSnapshotDir(dirPath)
-	val namesFile = File(snapshotDir, NAMES_FILE_NAME)
-	val linesFile = File(snapshotDir, LINES_FILE_NAME)
+	val namesFile = File(snapshotDir, IngredientSnapshotExporter.NAMES_FILE_NAME)
+	val linesFile = File(snapshotDir, IngredientSnapshotExporter.LINES_FILE_NAME)
 
 	val existingNames = if (namesFile.isFile) {
 		IngredientSnapshotExporter.parseNamesTsv(namesFile.readText())

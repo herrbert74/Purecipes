@@ -18,8 +18,8 @@ internal data class NutritionFoodMatch(
 )
 
 internal class NutritionLookupIndex(
-	private val foodById: Map<Int, NutritionFoodRecord>,
-	private val foodIdByNormalizedAlias: Map<String, Int>,
+	internal val foodById: Map<Int, NutritionFoodRecord>,
+	internal val foodIdByNormalizedAlias: Map<String, Int>,
 	private val measuresByFoodId: Map<Int, Map<String, BigDecimal>>,
 	private val pinnedFoodIdByLookupName: Map<String, Int> = emptyMap(),
 ) {

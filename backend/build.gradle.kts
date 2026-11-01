@@ -116,6 +116,7 @@ dependencies {
 	implementation(libs.ktor.serverStatusPages)
 
 	implementation(libs.postgresql)
+	implementation(libs.tensorflowJava)
 
 	testImplementation(kotlin("test"))
 	testImplementation(libs.h2)
@@ -231,6 +232,39 @@ tasks.register<JavaExec>("diffIngredientSnapshot") {
 		}
 		if (failOnDiff) {
 			add("--fail-on-diff")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("suggestIngredientMatches") {
+	group = "verification"
+	description = "Generates offline lexical/trigram and optional local ML-embedding suggestions into suggestions.tsv"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientSuggestionMainKt")
+	val suggestDir = project.findProperty("suggest.dir")?.toString().orEmpty()
+	val suggestScope = project.findProperty("suggest.scope")?.toString().orEmpty()
+	val suggestQuery = project.findProperty("suggest.query")?.toString().orEmpty()
+	val suggestLimit = project.findProperty("suggest.limit")?.toString().orEmpty()
+	val modelPath = project.findProperty("suggest.modelPath")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (suggestDir.isNotBlank()) {
+			add("--dir=$suggestDir")
+		}
+		if (suggestScope.isNotBlank()) {
+			add("--scope=$suggestScope")
+		}
+		if (suggestQuery.isNotBlank()) {
+			add("--query=$suggestQuery")
+		}
+		if (suggestLimit.isNotBlank()) {
+			add("--limit=$suggestLimit")
+		}
+		if (modelPath.isNotBlank()) {
+			add("--model-path=$modelPath")
+		}
+		if (project.findProperty("suggest.accept")?.toString() == "true") {
+			add("--accept")
 		}
 	}
 	args = extraArgs

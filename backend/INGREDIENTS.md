@@ -94,6 +94,19 @@ For the few lines rules should not try to generalise. Keyed by `source_url` + `r
 | `group_name` | Optional override for `ingredient_groups.name` |
 | `quantity`, `unit`, `lookup_name` | Optional parser overrides when `kind = ingredient` |
 
+### `suggestions.tsv` — candidate suggestions for review
+
+Generated offline by `./gradlew suggestIngredientMatches`. The first 8 columns match `names.tsv` so reviewed rows can either be copied directly or promoted in place by changing `status` from `suggested` to `pinned` and running `./gradlew suggestIngredientMatches -Psuggest.accept=true`.
+
+| Column | Meaning |
+|--------|---------|
+| `lookup_name`, `status`, `pantry_item`, `fdc_source`, `fdc_id`, `fdc_description`, `match_source`, `line_count` | Proposed `names.tsv` row (`status = suggested`; change to `pinned` to accept) |
+| `confidence` | Candidate score (`0.00`–`1.00`) |
+| `current_pantry_item`, `current_fdc_source`, `current_fdc_id`, `current_fdc_description`, `current_match_source` | Current state in `names.tsv` |
+| `sample_recipe_title`, `sample_raw_text` | Sample recipe context for human or agent review |
+| `alternative_candidates` | Runner-up USDA FDC candidates (`fdc_source:fdc_id (description)`) |
+| `rationale` | Why the candidate was selected (synonym, trailing head phrase, token/trigram similarity, or local ML embedding) |
+
 ### Snapshot and rebuild commands
 
 Recompute the derived ingredient layer (`ingredient_groups`, `ingredients`, `ingredient_measurements`, `ingredient_nutrition_matches`, `ingredient_nutrition_contributions`, and `nutrition`) for all scraped recipes from the saved JSON archive (`~/Purecipes/recipeoutput/recipes`, falling back to current database rows) while preserving `recipes.id`:
@@ -113,6 +126,14 @@ Diff the current database against the committed `names.tsv` and `lines.tsv` with
 
 ```bash
 ./gradlew diffIngredientSnapshot
+```
+
+Generate candidate matches for unmatched (or token-guessed / unpinned) lookup names into `backend/data/ingredients/suggestions.tsv` (pass `-Psuggest.scope=unmatched|tokens|unpinned|all`, `-Psuggest.query=...`, or `-Psuggest.modelPath=...` / `USE_MODEL_PATH=...` for local ML semantic embeddings; after setting `status = pinned` on reviewed rows in `suggestions.tsv`, promote them into `names.tsv` with `-Psuggest.accept=true`):
+
+```bash
+./gradlew suggestIngredientMatches
+./gradlew suggestIngredientMatches -Psuggest.scope=tokens
+./gradlew suggestIngredientMatches -Psuggest.accept=true
 ```
 
 ## Group headings in context
@@ -167,7 +188,7 @@ Each step is a separate commit or PR, validated and reviewed before the next.
 2. **Stable recipe identity and JSON line re-processing.** JSON import upserts by `source_url` and preserves ids. Add a `rebuildIngredientData` task that recomputes the derived layer for scraped recipes from saved JSON (`~/Purecipes/recipeoutput/recipes`), rejoining any previously over-split `ALTERNATIVE` clusters and re-running `ScrapedIngredientLines` rules (so bad splits like `"1 pound (450 g) ground beef, pork, veal, or any combination"` → `"1 pound any combination"` are repaired automatically).
 3. **Pins.** Load `names.tsv` rows where `status = pinned` in the import-time food and pantry matchers with top precedence. Seed pins from currently confirmed matches.
 4. **Contextual headings.** Single shared heading rule set, composite-name rule, `line-overrides.tsv`.
-5. **Suggestion tool.** Offline candidate generation and LLM reranking into `suggestions.tsv`.
+5. **Suggestion tool.** Offline candidate generation and local ML semantic ranking into `suggestions.tsv`.
 6. **Agent skill.** Codify the review loop and the "pin before rule" policy under `.agents/skills/`.
 
 ## Decisions

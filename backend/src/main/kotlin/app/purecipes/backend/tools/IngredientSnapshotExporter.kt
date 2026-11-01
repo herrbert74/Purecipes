@@ -266,6 +266,8 @@ internal class IngredientSnapshotExporter(
 
 	companion object {
 
+		const val NAMES_FILE_NAME = "names.tsv"
+		const val LINES_FILE_NAME = "lines.tsv"
 		const val STATUS_AUTO = "auto"
 		const val STATUS_PINNED = "pinned"
 

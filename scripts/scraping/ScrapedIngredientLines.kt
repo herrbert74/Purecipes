@@ -406,7 +406,6 @@ private val headingLastWords = setOf(
 	"bath",
 	"boiling",
 	"boule",
-	"bread",
 	"buttercream",
 	"conchas",
 	"crumble",
