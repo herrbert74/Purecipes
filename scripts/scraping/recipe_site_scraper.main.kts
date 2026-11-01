@@ -4,7 +4,7 @@
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
 
-// cache-bust: alt-or-incomplete-v22
+// cache-bust: alt-or-incomplete-v27
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -243,6 +243,7 @@ data class Config(
 	val dbPassword: String?,
 	val precheckDb: Boolean,
 	val calculateNutrition: Boolean,
+	val upsertExisting: Boolean = false,
 	val debug: Boolean,
 )
 
@@ -274,10 +275,11 @@ fun printUsageAndExit(message: String? = null): Nothing {
 		--db-password <password>                  Default: postgres
 		--precheck-db true|false                  Default: true (postgres mode)
 		--calculate-nutrition true|false          Default: true (postgres import modes)
+		--upsert-existing true|false              Default: true in json mode, false in web mode
 
 	Modes:
 		web   Scrape recipes from the web, save JSON files with DB IDs, and insert into Postgres.
-		json  Read previously saved JSON files from <output_dir>/ and insert them into Postgres.
+		json  Read previously saved JSON files from <output_dir>/ and insert/upsert them into Postgres.
 
 	Notes:
 		- Uses Python recipe-scrapers per URL, invoked from Kotlin script.
@@ -306,6 +308,7 @@ private val allowedOptions = setOf(
 	"--db-password",
 	"--precheck-db",
 	"--calculate-nutrition",
+	"--upsert-existing",
 )
 
 fun parseOptions(scriptArgs: Array<String>): Config {
@@ -343,9 +346,10 @@ private fun buildConfig(website: String, outputDir: String, options: Map<String,
 		dbName = options["--db-name"] ?: "purecipes",
 		dbUser = options["--db-user"] ?: "postgres",
 		dbPassword = options["--db-password"] ?: "postgres",
-		precheckDb = boolOptions["precheck"] ?: true,
-		calculateNutrition = boolOptions["calculateNutrition"] ?: true,
-		debug = boolOptions["debug"] ?: false,
+		precheckDb = boolOptions.getValue("precheck"),
+		calculateNutrition = boolOptions.getValue("calculateNutrition"),
+		upsertExisting = boolOptions.getValue("upsertExisting"),
+		debug = boolOptions.getValue("debug"),
 	)
 }
 
@@ -368,6 +372,9 @@ private fun parseBoolOptions(options: Map<String, String>): Map<String, Boolean>
 	boolOpts["precheck"] = (options["--precheck-db"] ?: "true").equals("true", ignoreCase = true)
 	boolOpts["calculateNutrition"] =
 		(options["--calculate-nutrition"] ?: "true").equals("true", ignoreCase = true)
+	val defaultUpsert = if ((options["--mode"] ?: "web") == "json") "true" else "false"
+	boolOpts["upsertExisting"] =
+		(options["--upsert-existing"] ?: defaultUpsert).equals("true", ignoreCase = true)
 	boolOpts["debug"] = (options["--debug"] ?: "false").equals("true", ignoreCase = true)
 	return boolOpts
 }
@@ -1420,14 +1427,17 @@ fun ensureSchema(connection: Connection) {
 	connection.commit()
 }
 
-fun isDuplicate(connection: Connection, sourceUrl: String): Boolean {
-	connection.prepareStatement("SELECT 1 FROM recipes WHERE source_url = ?").use { ps ->
+fun findRecipeIdBySourceUrl(connection: Connection, sourceUrl: String): Int? {
+	connection.prepareStatement("SELECT id FROM recipes WHERE source_url = ?").use { ps ->
 		ps.setString(1, sourceUrl)
 		ps.executeQuery().use { rs ->
-			return rs.next()
+			return if (rs.next()) rs.getInt(1) else null
 		}
 	}
 }
+
+fun isDuplicate(connection: Connection, sourceUrl: String): Boolean =
+	findRecipeIdBySourceUrl(connection, sourceUrl) != null
 
 fun parseNumber(value: String?): Double? {
 	if (value.isNullOrBlank()) return null
@@ -1639,19 +1649,91 @@ fun detectMeasurementSystem(ingredientGroups: List<Pair<String?, List<ProcessedS
 	}
 }
 
-fun saveRecipe(connection: Connection, recipe: RecipeData): Int? {
-	if (isDuplicate(connection, recipe.sourceUrl)) return null
+fun saveRecipe(
+	connection: Connection,
+	recipe: RecipeData,
+	upsertExisting: Boolean = false,
+): Int? {
+	val existingId = findRecipeIdBySourceUrl(connection, recipe.sourceUrl)
+	if (existingId != null && !upsertExisting) return null
 	val measurementSystem = detectMeasurementSystem(recipe.ingredientGroups)
 	val categoryColumns = mapCategoryToColumns(recipe.category)
 	if (categoryColumns.unmatchedLabels.isNotEmpty()) {
 		println("Unmapped category labels for ${recipe.sourceUrl}: ${categoryColumns.unmatchedLabels.joinToString()}")
 	}
-	val recipeId = insertRecipeRecord(connection, recipe, categoryColumns, measurementSystem)
+	val recipeId = if (existingId == null) {
+		insertRecipeRecord(connection, recipe, categoryColumns, measurementSystem)
+	} else {
+		updateRecipeRecord(connection, existingId, recipe, categoryColumns, measurementSystem)
+		deleteRecipeDerivedRowsForUpsert(connection, existingId)
+		existingId
+	}
 	saveRecipeIngredientGroups(connection, recipe, recipeId)
 	saveRecipeInstructions(connection, recipe, recipeId)
 	saveScrapedRecipeNutrition(connection, recipe, recipeId)
 	connection.commit()
 	return recipeId
+}
+
+private fun updateRecipeRecord(
+	connection: Connection,
+	recipeId: Int,
+	recipe: RecipeData,
+	categoryColumns: ScrapedCategoryColumns,
+	measurementSystem: String?,
+) {
+	connection.prepareStatement(
+		"""
+		UPDATE recipes SET
+			title = ?,
+			instructions = ?,
+			total_time = ?,
+			prep_time = ?,
+			cook_time = ?,
+			yields = ?,
+			image_url = ?,
+			language = ?,
+			cuisine = ?,
+			meal_type = ?,
+			difficulty = ?,
+			cooking_method = ?,
+			dietary_preferences = ?,
+			tags = ?,
+			measurement_system = ?,
+			appliances = ?
+		WHERE id = ?
+		""".trimIndent(),
+	).use { ps ->
+		ps.setString(1, recipe.title)
+		ps.setString(2, recipe.instructions)
+		ps.setObject(3, recipe.totalTime)
+		ps.setObject(4, recipe.prepTime)
+		ps.setObject(5, recipe.cookTime)
+		ps.setString(6, recipe.yields)
+		ps.setString(7, recipe.image)
+		ps.setString(8, recipe.language ?: "en")
+		ps.setString(9, recipe.cuisine)
+		ps.setString(10, categoryColumns.mealType)
+		ps.setString(11, categoryColumns.difficulty)
+		ps.setString(12, categoryColumns.cookingMethod)
+		setTextArrayOrNull(ps, connection, 13, categoryColumns.dietaryPreferences)
+		setTextArrayOrNull(ps, connection, 14, categoryColumns.tags)
+		ps.setString(15, measurementSystem)
+		setTextArrayOrNull(ps, connection, 16, recipe.appliances)
+		ps.setInt(17, recipeId)
+		ps.executeUpdate()
+	}
+}
+
+private fun deleteRecipeDerivedRowsForUpsert(connection: Connection, recipeId: Int) {
+	connection.prepareStatement("DELETE FROM ingredient_groups WHERE recipe_id = ?").use { ps ->
+		ps.setInt(1, recipeId)
+		ps.executeUpdate()
+	}
+	connection.prepareStatement("DELETE FROM instruction_steps WHERE recipe_id = ?").use { ps ->
+		ps.setInt(1, recipeId)
+		ps.executeUpdate()
+	}
 }
 
 private fun insertRecipeRecord(
@@ -1994,20 +2076,24 @@ fun importJsonFilesToDb(config: Config, recipesDir: File) {
 	openConnection(config).use { connection ->
 		connection.autoCommit = false
 		ensureSchema(connection)
-		val importedRecipeIds = importFilesToConnection(connection, jsonFiles)
+		val importedRecipeIds = importFilesToConnection(connection, jsonFiles, config.upsertExisting)
 		if (config.calculateNutrition) {
 			calculateNutritionForRecipes(config, importedRecipeIds)
 		}
 	}
 }
 
-fun importFilesToConnection(connection: Connection, jsonFiles: List<File>): List<Int> {
+fun importFilesToConnection(
+	connection: Connection,
+	jsonFiles: List<File>,
+	upsertExisting: Boolean = true,
+): List<Int> {
 	var imported = 0
 	var duplicates = 0
 	var errors = 0
 	val importedRecipeIds = mutableListOf<Int>()
 	for (file in jsonFiles) {
-		val (outcome, recipeId) = processRecipeFile(connection, file)
+		val (outcome, recipeId) = processRecipeFile(connection, file, upsertExisting)
 		when (outcome) {
 			ImportOutcome.SUCCESS -> {
 				imported++
@@ -2027,12 +2113,16 @@ private enum class ImportOutcome {
 	SUCCESS, DUPLICATE, ERROR
 }
 
-private fun processRecipeFile(connection: Connection, file: File): Pair<ImportOutcome, Int?> {
+private fun processRecipeFile(
+	connection: Connection,
+	file: File,
+	upsertExisting: Boolean,
+): Pair<ImportOutcome, Int?> {
 	val recipe = safeParseRecipeFile(file)
 	return when {
 		recipe == null -> ImportOutcome.ERROR to null
 		else -> {
-			val recipeId = saveRecipe(connection, recipe)
+			val recipeId = saveRecipe(connection, recipe, upsertExisting)
 			if (recipeId == null) {
 				ImportOutcome.DUPLICATE to null
 			} else {
@@ -2078,7 +2168,7 @@ if (config.mode == "json") {
 	val filtered = filterRecipeUrls(discovered, websiteUrl, config.recipeUrlPattern)
 	println("Filtered to ${filtered.size} recipe URLs after host/pattern filtering")
 
-	val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb) {
+	val selectedAfterDbPrecheck = if (config.mode == "web" && config.precheckDb && !config.upsertExisting) {
 		val existing = precheckExistingUrls(config, filtered)
 		if (existing.isNotEmpty()) {
 			println("Pre-check: skipping ${existing.size} URLs already in database")
@@ -2121,7 +2211,7 @@ if (config.mode == "json") {
 					println("Skipped: $url")
 				}
 			} else {
-				val dbId = dbConnection?.let { saveRecipe(it, recipe) }
+				val dbId = dbConnection?.let { saveRecipe(it, recipe, config.upsertExisting) }
 				scraped += (recipe to dbId)
 
 				val siteName = try {

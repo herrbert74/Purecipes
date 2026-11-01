@@ -74,6 +74,8 @@ val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resource
 
 sourceSets {
 	main {
+		kotlin.srcDir(rootProject.file("scripts/scraping"))
+		kotlin.exclude("**/*.kts")
 		resources.srcDir(generatedBackendResourcesDir)
 	}
 }
@@ -226,6 +228,36 @@ tasks.register<JavaExec>("diffIngredientSnapshot") {
 		}
 		if (failOnDiff) {
 			add("--fail-on-diff")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("rebuildIngredientData") {
+	group = "application"
+	description = "Recomputes scraped ingredient groups, lines, measurements, and nutrition from DB and JSON archive"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.RebuildIngredientDataMainKt")
+	val jsonDir = project.findProperty("rebuild.jsonDir")?.toString().orEmpty()
+	val restoreLinesTsv = project.findProperty("rebuild.restoreLinesTsv")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (jsonDir.isNotBlank()) {
+			add("--json-dir=$jsonDir")
+		}
+		if (restoreLinesTsv.isNotBlank()) {
+			add("--restore-lines-tsv=$restoreLinesTsv")
+		}
+		if (project.findProperty("rebuild.fromJson")?.toString() == "true") {
+			add("--from-json")
+		}
+		if (project.findProperty("rebuild.noSyncJson")?.toString() == "true") {
+			add("--no-sync-json")
+		}
+		if (project.findProperty("rebuild.noJson")?.toString() == "true") {
+			add("--no-json")
+		}
+		if (project.findProperty("rebuild.onlyChangedLines")?.toString() == "true") {
+			add("--only-changed-lines")
 		}
 	}
 	args = extraArgs

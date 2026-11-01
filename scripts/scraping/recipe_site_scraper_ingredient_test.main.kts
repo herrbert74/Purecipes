@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v22
+// cache-bust: alt-or-incomplete-v27
 
 data class IngredientTestCase(
 	val description: String,
@@ -487,6 +487,16 @@ val alternativeCases = listOf(
 		input = "3 large Honeycrisp or Fuji apples",
 		expected = listOf("3 large Honeycrisp apples", "3 Fuji apples"),
 	),
+	AlternativeTestCase(
+		description = "keeps ground beef, pork, veal, or any combination together",
+		input = "1 pound (450 g) ground beef, pork, veal, or any combination",
+		expected = listOf("1 pound (450 g) ground beef, pork, veal, or any combination"),
+	),
+	AlternativeTestCase(
+		description = "keeps flour alternatives with of your choice together",
+		input = "165 grams soft white whole wheat flour, or another flour of your choice",
+		expected = listOf("165 grams soft white whole wheat flour, or another flour of your choice"),
+	),
 )
 
 val normalizeTextCases = listOf(
@@ -602,6 +612,31 @@ fun runGroupProcessingTests() {
 	}
 	if (groups[3].second.map { it.text } != listOf("3 grams instant yeast (1 tsp)")) {
 		error("Unexpected group 3 items: ${groups[3].second}")
+	}
+
+	val overSplitStored = listOf(
+		ProcessedScrapedIngredient(
+			text = "1 pound (450 g) ground beef, pork, veal,",
+			requirement = "ALTERNATIVE",
+			alternativeGroupKey = 1,
+		),
+		ProcessedScrapedIngredient(
+			text = "1 pound any combination",
+			requirement = "ALTERNATIVE",
+			alternativeGroupKey = 1,
+		),
+	)
+	val rejoinedGroups = processStoredScrapedIngredientGroups(null, overSplitStored)
+	val rejoinedItems = rejoinedGroups.single().second
+	if (rejoinedItems != listOf(
+			ProcessedScrapedIngredient(
+				text = "1 pound (450 g) ground beef, pork, veal, or any combination",
+				requirement = "REQUIRED",
+				alternativeGroupKey = null,
+			),
+		)
+	) {
+		error("Expected rejoined cluster to collapse to single REQUIRED row, got $rejoinedItems")
 	}
 }
 

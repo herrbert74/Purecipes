@@ -31,7 +31,7 @@ data class NormalizeConfig(
 	val dbPassword: String?,
 )
 
-private val expectedScrapedIngredientRulesChecksum = "alt-or-incomplete-v22"
+private val expectedScrapedIngredientRulesChecksum = "alt-or-incomplete-v27"
 
 private val gluedQuantitySampleRegex = Regex("""\d+(?:\.\d+)?[A-Za-z]""")
 

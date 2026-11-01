@@ -86,7 +86,13 @@ One row per scraped ingredient line. Catches classification and parser drift tha
 
 For the few lines rules should not try to generalise. Keyed by `source_url` + `raw_text`; columns override `kind`, `group_name`, `quantity`, `unit`, or `lookup_name`. Example: mark `Chimichurri` as a `heading` in one recipe and keep it as an `ingredient` in another.
 
-### Snapshot commands
+### Snapshot and rebuild commands
+
+Recompute the derived ingredient layer (`ingredient_groups`, `ingredients`, `ingredient_measurements`, `ingredient_nutrition_matches`, `ingredient_nutrition_contributions`, and `nutrition`) for all scraped recipes from the saved JSON archive (`~/Purecipes/recipeoutput/recipes`, falling back to current database rows) while preserving `recipes.id`:
+
+```bash
+./gradlew rebuildIngredientData
+```
 
 Write or refresh `backend/data/ingredients/names.tsv` and `backend/data/ingredients/lines.tsv` from the current database (preserving any `pinned` rows in `names.tsv` and printing a diff summary if previous files exist):
 

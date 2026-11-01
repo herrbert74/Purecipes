@@ -23,9 +23,11 @@ internal class RecipeNutritionService(
 		lookupRepository = NutritionLookupRepository(dataSource),
 	)
 
-	fun calculateAndPersist(recipeId: Int): RecipeNutritionPersistResult {
+	fun calculateAndPersist(
+		recipeId: Int,
+		lookupIndex: NutritionLookupIndex = lookupRepository.loadIndex(),
+	): RecipeNutritionPersistResult {
 		val ingredients = recipeNutritionRepository.loadRecipeIngredients(recipeId)
-		val lookupIndex = lookupRepository.loadIndex()
 		val calculation = RecipeNutritionCalculator(lookupIndex).calculate(ingredients)
 		persist(recipeId, calculation, lookupIndex)
 		return RecipeNutritionPersistResult(
@@ -38,10 +40,15 @@ internal class RecipeNutritionService(
 	}
 
 	fun calculateAndPersistAll(): List<RecipeNutritionPersistResult> =
-		recipeNutritionRepository.listRecipeIds().map(::calculateAndPersist)
+		calculateAndPersistRecipeIds(recipeNutritionRepository.listRecipeIds())
 
-	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> =
-		recipeIds.map(::calculateAndPersist)
+	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> {
+		if (recipeIds.isEmpty()) {
+			return emptyList()
+		}
+		val lookupIndex = lookupRepository.loadIndex()
+		return recipeIds.map { recipeId -> calculateAndPersist(recipeId, lookupIndex) }
+	}
 
 	private fun persist(
 		recipeId: Int,

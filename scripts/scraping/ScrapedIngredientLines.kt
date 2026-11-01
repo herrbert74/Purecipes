@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v22"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "alt-or-incomplete-v27"
 
 data class ProcessedScrapedIngredient(
 	val text: String,
@@ -558,7 +558,7 @@ fun sanitizeIngredientLine(raw: String): ProcessedScrapedIngredient? {
 		(
 			(!hasDigit || lower.contains("set of")) &&
 				ingredientToolKeywords.any { keyword -> lower.contains(keyword) }
-		)
+			)
 
 	return if (isHeadingLike || isEquipmentLike) {
 		null
@@ -782,7 +782,10 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 	val firstLower = firstAlternative.lowercase(Locale.ROOT)
 	val lastLower = lastPartBase.lowercase(Locale.ROOT)
 	val isKosherSaltSuffix = lastLower.contains("kosher salt") && !firstLower.contains("salt")
-	val firstHasNoun = sharedAlternativeNounTokens.any { firstLower.contains(it) }
+	val firstTokens = firstLower.split(Regex("""[^a-zA-Z]+""")).toSet()
+	val firstHasNoun = firstTokens.any { token ->
+		sharedAlternativeNounTokens.any { noun -> token == noun || token.endsWith(noun) }
+	}
 	val lastNoun = lastLower
 		.split(Regex("""[^a-zA-Z]+"""))
 		.lastOrNull { it in sharedAlternativeNounTokens }
@@ -805,7 +808,12 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 private val keepSingleAlternativePhrases = listOf(
 	" are fine",
 	" is fine",
+	"a combination",
+	"a mixture",
+	"any combination",
+	"any mixture",
 	"ideally ",
+	"of your choice",
 	"preferably ",
 	"available in ",
 	"if you like",
@@ -814,12 +822,17 @@ private val keepSingleAlternativePhrases = listOf(
 	"more to taste",
 	"such as ",
 	"serving suggestion",
+	"your choice",
 )
 
-private fun shouldKeepAlternativeAsSingle(text: String, parts: List<String>): Boolean =
-	text.contains(';') ||
-		keepSingleAlternativePhrases.any { phrase -> text.contains(phrase, ignoreCase = true) } ||
+private fun shouldKeepAlternativeAsSingle(text: String, parts: List<String>): Boolean {
+	val withoutParentheticals = inlineParentheticalRegex.replace(text, " ")
+	return text.contains(';') ||
+		keepSingleAlternativePhrases.any { phrase ->
+			withoutParentheticals.contains(phrase, ignoreCase = true)
+		} ||
 		parts.any(::isIncompleteAlternativeFoodName)
+}
 
 fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient> {
 	val parts = splitAlternativeParts(sanitized.text)
@@ -841,11 +854,13 @@ fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<Pro
 
 private val incompleteAlternativeTokens = setOf(
 	"all",
+	"any",
 	"available",
 	"baby",
 	"black",
 	"bleached",
 	"boiling",
+	"both",
 	"bottled",
 	"bought",
 	"broken",
@@ -853,12 +868,14 @@ private val incompleteAlternativeTokens = setOf(
 	"buttered",
 	"caster",
 	"chilled",
+	"choice",
 	"chopped",
 	"chunks",
 	"clear",
 	"coarse",
 	"coarsely",
 	"cold",
+	"combination",
 	"cooked",
 	"crushed",
 	"cubed",
@@ -869,8 +886,11 @@ private val incompleteAlternativeTokens = setOf(
 	"distilled",
 	"dried",
 	"dry",
+	"either",
 	"extra",
 	"fat",
+	"favorite",
+	"favourite",
 	"filtered",
 	"fine",
 	"finely",
@@ -911,12 +931,15 @@ private val incompleteAlternativeTokens = setOf(
 	"minced",
 	"mineral",
 	"mini",
+	"mix",
+	"mixture",
 	"needed",
 	"nonfat",
 	"online",
 	"one",
 	"ones",
 	"organic",
+	"package",
 	"peeled",
 	"pieces",
 	"plain",
@@ -944,6 +967,7 @@ private val incompleteAlternativeTokens = setOf(
 	"sharp",
 	"shredded",
 	"sifted",
+	"similar",
 	"slice",
 	"sliced",
 	"slices",
@@ -958,6 +982,7 @@ private val incompleteAlternativeTokens = setOf(
 	"stoneground",
 	"store",
 	"strong",
+	"substitute",
 	"suggestion",
 	"suggestions",
 	"sweet",
@@ -970,6 +995,7 @@ private val incompleteAlternativeTokens = setOf(
 	"unrefined",
 	"unsalted",
 	"unsweetened",
+	"variety",
 	"vegetable",
 	"warm",
 	"white",
@@ -999,11 +1025,17 @@ private fun isIncompleteAlternativeFoodName(text: String): Boolean {
 fun appendSanitizedIngredientLines(
 	currentItems: MutableList<ProcessedScrapedIngredient>,
 	rawItem: String,
+	storedRequirement: String = "REQUIRED",
 	nextAlternativeGroupKey: () -> Int,
 ) {
 	splitIngredientLine(rawItem).forEach { line ->
 		sanitizeIngredientLine(line)?.let { sanitizedItem ->
-			val expandedItems = expandProcessedAlternatives(sanitizedItem)
+			val effectiveSanitized = if (storedRequirement == "OPTIONAL" && sanitizedItem.requirement == "REQUIRED") {
+				sanitizedItem.copy(requirement = "OPTIONAL")
+			} else {
+				sanitizedItem
+			}
+			val expandedItems = expandProcessedAlternatives(effectiveSanitized)
 			val alternativeCount = expandedItems.count { item -> item.requirement == "ALTERNATIVE" }
 			if (alternativeCount > 1) {
 				val groupKey = nextAlternativeGroupKey()
@@ -1052,6 +1084,96 @@ fun processScrapedIngredientGroups(
 		storedItems = rawItems.map { rawItem -> ProcessedScrapedIngredient(text = rawItem) },
 	)
 
+private val storedClusterQuantityPrefixRegex = Regex(
+	pattern = """^((?:\d+\s+[½⅓⅔¼¾⅛⅜⅝⅞]|\d+[½⅓⅔¼¾⅛⅜⅝⅞]|[½⅓⅔¼¾⅛⅜⅝⅞]|""" +
+		"""\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)""" +
+		"""(?:\s+[a-zA-Z.]+)?(?:\s+of)?\s+)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private val storedClusterOfPrefixRegex = Regex(
+	pattern = """^(.*\bof\s+)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+fun reconstructJoinedAlternativeClusterText(cluster: List<ProcessedScrapedIngredient>): String {
+	if (cluster.isEmpty()) {
+		return ""
+	}
+	val firstRaw = cluster.first().text.trim()
+	val lastRaw = cluster.last().text.trim()
+	val sharedSuffix = trailingParentheticalSuffixRegex.find(lastRaw)?.value
+	val firstText = if (
+		cluster.size > 1 &&
+		sharedSuffix != null &&
+		firstRaw.endsWith(sharedSuffix)
+	) {
+		firstRaw.removeSuffix(sharedSuffix).trim()
+	} else {
+		firstRaw
+	}
+	val sharedPrefix = storedClusterQuantityPrefixRegex.find(firstText)?.value
+		?: storedClusterOfPrefixRegex.find(firstText)?.value
+
+	return cluster.mapIndexed { index, row ->
+		if (index == 0) {
+			firstText
+		} else {
+			val text = row.text.trim()
+			val canStrip = sharedPrefix != null &&
+				text.startsWith(sharedPrefix, ignoreCase = true) &&
+				!startsWithQuantity(text.substring(sharedPrefix.length).trim())
+			if (canStrip) {
+				text.substring(sharedPrefix.length).trim()
+			} else {
+				text
+			}
+		}
+	}.joinToString(separator = " or ")
+}
+
+private fun storedAlternativeClusterAt(
+	items: List<ProcessedScrapedIngredient>,
+	index: Int,
+): List<ProcessedScrapedIngredient> {
+	val item = items[index]
+	val groupKey = item.alternativeGroupKey
+	val isStart = item.requirement == "ALTERNATIVE" &&
+		groupKey != null &&
+		(index == 0 || items[index - 1].alternativeGroupKey != groupKey)
+	return if (!isStart) {
+		emptyList()
+	} else {
+		items.drop(index).takeWhile { candidate ->
+			candidate.requirement == "ALTERNATIVE" && candidate.alternativeGroupKey == groupKey
+		}
+	}
+}
+
+fun rejoinStoredAlternativeClusters(
+	storedItems: List<ProcessedScrapedIngredient>,
+): List<ProcessedScrapedIngredient> {
+	val result = mutableListOf<ProcessedScrapedIngredient>()
+	var index = 0
+	while (index < storedItems.size) {
+		val cluster = storedAlternativeClusterAt(storedItems, index)
+		if (cluster.size < 2) {
+			result += storedItems[index]
+			index += 1
+		} else {
+			val joinedText = reconstructJoinedAlternativeClusterText(cluster)
+			val expanded = sanitizeIngredientLine(joinedText)?.let(::expandProcessedAlternatives)
+			if (expanded != null && expanded.size == 1) {
+				result += ProcessedScrapedIngredient(text = joinedText)
+			} else {
+				result += cluster
+			}
+			index += cluster.size
+		}
+	}
+	return result
+}
+
 fun processStoredScrapedIngredientGroups(
 	groupName: String?,
 	storedItems: List<ProcessedScrapedIngredient>,
@@ -1060,12 +1182,13 @@ fun processStoredScrapedIngredientGroups(
 		return emptyList()
 	}
 
+	val rejoinedItems = rejoinStoredAlternativeClusters(storedItems)
 	val processedGroups = mutableListOf<Pair<String?, List<ProcessedScrapedIngredient>>>()
 	var currentGroupName = groupName
 	var currentItems = mutableListOf<ProcessedScrapedIngredient>()
-	var nextAlternativeGroupKey = (storedItems.mapNotNull { it.alternativeGroupKey }.maxOrNull() ?: 0) + 1
+	var nextAlternativeGroupKey = (rejoinedItems.mapNotNull { it.alternativeGroupKey }.maxOrNull() ?: 0) + 1
 
-	storedItems.forEach { storedItem ->
+	rejoinedItems.forEach { storedItem ->
 		val rawItem = storedItem.text
 		if (isIgnorableInstructionOrNote(rawItem)) {
 			return@forEach
@@ -1076,9 +1199,15 @@ fun processStoredScrapedIngredientGroups(
 			}
 			currentGroupName = normalizeIngredientGroupName(rawItem) ?: currentGroupName
 			currentItems = mutableListOf()
+		} else if (storedItem.requirement == "ALTERNATIVE" && storedItem.alternativeGroupKey != null) {
+			currentItems += storedItem.copy(text = normalizeIngredientText(rawItem))
 		} else {
 			val startIndex = currentItems.size
-			appendSanitizedIngredientLines(currentItems, rawItem) { nextAlternativeGroupKey++ }
+			appendSanitizedIngredientLines(
+				currentItems = currentItems,
+				rawItem = rawItem,
+				storedRequirement = storedItem.requirement,
+			) { nextAlternativeGroupKey++ }
 			preserveStoredRequirement(currentItems, startIndex, storedItem)
 		}
 	}
