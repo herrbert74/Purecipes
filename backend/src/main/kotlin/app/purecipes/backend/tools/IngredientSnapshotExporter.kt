@@ -2,6 +2,9 @@ package app.purecipes.backend.tools
 
 import app.purecipes.backend.feature.nutrition.FDC_BRANDED_SOURCE_NAME
 import app.purecipes.backend.feature.nutrition.FdcFoodMatchingSupport
+import app.purecipes.backend.feature.nutrition.IngredientLineOverride
+import app.purecipes.backend.feature.nutrition.IngredientLineOverrideKey
+import app.purecipes.backend.feature.nutrition.IngredientLineOverridesLoader
 import app.purecipes.backend.feature.nutrition.IngredientLineParser
 import app.purecipes.backend.feature.nutrition.NutritionNameNormalizer
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliases
@@ -17,15 +20,18 @@ internal class IngredientSnapshotExporter(
 		existingNames: List<IngredientNameSnapshotRow> = emptyList(),
 		seedPins: Boolean = false,
 		verifyPinnedMatchesAgainstDb: Boolean = false,
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride> =
+			IngredientLineOverridesLoader.loadDefaultOverrides(),
 	): IngredientSnapshotData {
 		val dbRows = loadDbRows()
-		val lineRows = buildLineSnapshotRows(dbRows)
+		val lineRows = buildLineSnapshotRows(dbRows, lineOverrides)
 		val nameRows = buildNameSnapshotRows(
 			dbRows = dbRows,
 			lineRows = lineRows,
 			existingNames = existingNames,
 			seedPins = seedPins,
 			verifyPinnedMatchesAgainstDb = verifyPinnedMatchesAgainstDb,
+			lineOverrides = lineOverrides,
 		)
 		return IngredientSnapshotData(
 			names = nameRows,
@@ -35,6 +41,7 @@ internal class IngredientSnapshotExporter(
 
 	private fun buildLineSnapshotRows(
 		dbRows: List<DbIngredientSnapshotRow>,
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride>,
 	): List<IngredientLineSnapshotRow> =
 		dbRows
 			.groupBy(DbIngredientSnapshotRow::sourceUrl)
@@ -59,6 +66,9 @@ internal class IngredientSnapshotExporter(
 										groupIndex = normalizedGroupIndex,
 										lineIndex = normalizedLineIndex,
 									),
+									override = lineOverrides[
+										IngredientLineOverrideKey(row.sourceUrl, row.rawText.trim()),
+									],
 								)
 							}
 					}
@@ -77,22 +87,30 @@ internal class IngredientSnapshotExporter(
 			}
 		}
 
-	private fun toLineSnapshotRow(row: DbIngredientSnapshotRow): IngredientLineSnapshotRow {
+	private fun toLineSnapshotRow(
+		row: DbIngredientSnapshotRow,
+		override: IngredientLineOverride? = null,
+	): IngredientLineSnapshotRow {
 		val parsedFallback = if (row.parsedName == null) {
 			IngredientLineParser.parse(row.rawText)
 		} else {
 			null
 		}
-		val parsedName = row.parsedName ?: parsedFallback?.parsedName.orEmpty()
-		val kind = IngredientSnapshotClassifier.classifyLineKind(row.rawText, parsedName)
+		val parsedName = override?.lookupName?.ifBlank { null }
+			?: row.parsedName
+			?: parsedFallback?.parsedName.orEmpty()
+		val kind = override?.kind?.ifBlank { null }
+			?: IngredientSnapshotClassifier.classifyLineKind(row.rawText, parsedName)
 		val isIngredient = kind == IngredientSnapshotClassifier.KIND_INGREDIENT
 		val quantity = if (isIngredient) {
-			formatQuantity(row.quantity ?: parsedFallback?.quantity)
+			override?.quantity?.ifBlank { null }
+				?: formatQuantity(row.quantity ?: parsedFallback?.quantity)
 		} else {
 			""
 		}
 		val unit = if (isIngredient) {
-			(row.unit ?: parsedFallback?.unit).orEmpty()
+			override?.unit?.ifBlank { null }
+				?: (row.unit ?: parsedFallback?.unit).orEmpty()
 		} else {
 			""
 		}
@@ -101,13 +119,14 @@ internal class IngredientSnapshotExporter(
 		} else {
 			""
 		}
+		val groupName = override?.groupName?.ifBlank { null } ?: row.groupName.orEmpty()
 		return IngredientLineSnapshotRow(
 			sourceUrl = sanitizeTsvField(row.sourceUrl),
 			groupIndex = row.groupIndex,
 			lineIndex = row.lineIndex,
 			rawText = sanitizeTsvField(row.rawText),
 			kind = kind,
-			groupName = sanitizeTsvField(row.groupName.orEmpty()),
+			groupName = sanitizeTsvField(groupName),
 			quantity = quantity,
 			unit = sanitizeTsvField(unit),
 			lookupName = sanitizeTsvField(lookupName),
@@ -122,6 +141,7 @@ internal class IngredientSnapshotExporter(
 		existingNames: List<IngredientNameSnapshotRow>,
 		seedPins: Boolean,
 		verifyPinnedMatchesAgainstDb: Boolean,
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride>,
 	): List<IngredientNameSnapshotRow> {
 		val pinnedByLookupName = existingNames
 			.filter { row -> row.status == STATUS_PINNED }
@@ -132,7 +152,7 @@ internal class IngredientSnapshotExporter(
 		val ingredientLinesByLookup = lineRows
 			.filter { row -> row.kind == IngredientSnapshotClassifier.KIND_INGREDIENT && row.lookupName.isNotEmpty() }
 			.groupBy { row -> row.lookupName }
-		val foodCandidatesByLookup = buildFoodCandidatesByLookup(dbRows)
+		val foodCandidatesByLookup = buildFoodCandidatesByLookup(dbRows, lineOverrides)
 		val allLookupNames = (ingredientLinesByLookup.keys + pinnedByLookupName.keys).toSortedSet()
 
 		return allLookupNames.map { lookupName ->
@@ -207,10 +227,15 @@ internal class IngredientSnapshotExporter(
 
 	private fun buildFoodCandidatesByLookup(
 		dbRows: List<DbIngredientSnapshotRow>,
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride>,
 	): Map<String, List<FoodCandidate>> =
 		dbRows.mapNotNull { row ->
-			val parsedName = row.parsedName ?: IngredientLineParser.parse(row.rawText).parsedName
-			val kind = IngredientSnapshotClassifier.classifyLineKind(row.rawText, parsedName)
+			val override = lineOverrides[IngredientLineOverrideKey(row.sourceUrl, row.rawText.trim())]
+			val parsedName = override?.lookupName?.ifBlank { null }
+				?: row.parsedName
+				?: IngredientLineParser.parse(row.rawText).parsedName
+			val kind = override?.kind?.ifBlank { null }
+				?: IngredientSnapshotClassifier.classifyLineKind(row.rawText, parsedName)
 			val lookupName = resolveLookupName(parsedName)
 			val fdcSource = row.fdcSource
 			val fdcId = row.fdcId

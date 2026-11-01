@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: alt-or-incomplete-v27
+// cache-bust: contextual-headings-v28
 
 data class IngredientTestCase(
 	val description: String,
@@ -637,6 +637,56 @@ fun runGroupProcessingTests() {
 		)
 	) {
 		error("Expected rejoined cluster to collapse to single REQUIRED row, got $rejoinedItems")
+	}
+
+	val contextualRecipeGroups = processRecipeScrapedIngredientGroups(
+		groups = listOf(
+			null to listOf(
+				ProcessedScrapedIngredient("Cauliflower"),
+				ProcessedScrapedIngredient("2 cauliflowers"),
+				ProcessedScrapedIngredient("2 tbsp vegetable oil"),
+				ProcessedScrapedIngredient("Chimichurri"),
+				ProcessedScrapedIngredient("1 bunch fresh flat-leaf parsley"),
+				ProcessedScrapedIngredient("4 cloves garlic, peeled"),
+				ProcessedScrapedIngredient("2 tbsp chimichurri"),
+				ProcessedScrapedIngredient("optional: a couple of splashes of Worcestershire sauce"),
+				ProcessedScrapedIngredient("Special garnish"),
+				ProcessedScrapedIngredient("1 tbsp toasted sesame seeds"),
+			),
+		),
+		context = RecipeHeadingContext(
+			recipeTitle = "Chimichurri Cauliflower Steaks with Mashed Sweet Potatoes",
+			recipeInstructions =
+				"For the cauliflower:\n1. Preheat oven.\n" +
+					"For the chimichurri:\n1. Pulse parsley and garlic.",
+			lineOverridesByRawText = mapOf(
+				"Special garnish" to ScrapedLineOverride(
+					kind = "heading",
+					groupName = "Herb Garnish",
+				),
+			),
+		),
+	)
+	val expectedContextualGroups = listOf(
+		"Cauliflower" to listOf(
+			ProcessedScrapedIngredient("2 cauliflowers"),
+			ProcessedScrapedIngredient("2 tbsp vegetable oil"),
+		),
+		"Chimichurri" to listOf(
+			ProcessedScrapedIngredient("1 bunch fresh flat-leaf parsley"),
+			ProcessedScrapedIngredient("4 cloves garlic, peeled"),
+			ProcessedScrapedIngredient("2 tbsp chimichurri"),
+			ProcessedScrapedIngredient(
+				text = "a couple of splashes of Worcestershire sauce",
+				requirement = "OPTIONAL",
+			),
+		),
+		"Herb Garnish" to listOf(
+			ProcessedScrapedIngredient("1 tbsp toasted sesame seeds"),
+		),
+	)
+	if (contextualRecipeGroups != expectedContextualGroups) {
+		error("Unexpected contextual groups: $contextualRecipeGroups")
 	}
 }
 

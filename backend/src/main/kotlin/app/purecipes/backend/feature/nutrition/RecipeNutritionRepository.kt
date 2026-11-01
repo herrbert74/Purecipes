@@ -65,6 +65,7 @@ internal data class RecipeIngredientRow(
 	val rawText: String,
 	val requirement: String = "REQUIRED",
 	val alternativeGroupKey: Int? = null,
+	val sourceUrl: String = "",
 )
 
 internal class RecipeNutritionRepository(
@@ -75,9 +76,15 @@ internal class RecipeNutritionRepository(
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
 				"""
-				SELECT i.id, i.ingredient, i.requirement, i.alternative_group_key
+				SELECT
+					i.id,
+					i.ingredient,
+					i.requirement,
+					i.alternative_group_key,
+					COALESCE(r.source_url, '') AS source_url
 				FROM ingredients i
 				JOIN ingredient_groups ig ON ig.id = i.ingredient_group_id
+				JOIN recipes r ON r.id = ig.recipe_id
 				WHERE ig.recipe_id = ?
 					AND i.ingredient IS NOT NULL
 				ORDER BY ig.order_index ASC, i.order_index ASC
@@ -95,6 +102,7 @@ internal class RecipeNutritionRepository(
 										rawText = rawText,
 										requirement = resultSet.getString("requirement") ?: "REQUIRED",
 										alternativeGroupKey = resultSet.getObject("alternative_group_key") as? Int,
+										sourceUrl = resultSet.getString("source_url")?.trim().orEmpty(),
 									),
 								)
 							}

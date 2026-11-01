@@ -84,7 +84,15 @@ One row per scraped ingredient line. Catches classification and parser drift tha
 
 ### `line-overrides.tsv` — per-line decisions
 
-For the few lines rules should not try to generalise. Keyed by `source_url` + `raw_text`; columns override `kind`, `group_name`, `quantity`, `unit`, or `lookup_name`. Example: mark `Chimichurri` as a `heading` in one recipe and keep it as an `ingredient` in another.
+For the few lines rules should not try to generalise. Keyed by `source_url` + `raw_text`; non-empty columns override `kind`, `group_name`, `quantity`, `unit`, or `lookup_name` during `rebuildIngredientData`, `calculateRecipeNutrition`, and `snapshotIngredients`. Example: mark `Chimichurri` as a `heading` in one recipe and keep it as an `ingredient` in another.
+
+| Column | Meaning |
+|--------|---------|
+| `source_url` | Recipe key (stable across databases) |
+| `raw_text` | Exact ingredient line text |
+| `kind` | Optional override: `ingredient`, `heading`, `note`, or `equipment` |
+| `group_name` | Optional override for `ingredient_groups.name` |
+| `quantity`, `unit`, `lookup_name` | Optional parser overrides when `kind = ingredient` |
 
 ### Snapshot and rebuild commands
 

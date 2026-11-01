@@ -1,6 +1,7 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.db.Db
+import app.purecipes.backend.feature.nutrition.IngredientLineOverridesLoader
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -40,10 +41,17 @@ fun main(args: Array<String>) {
 	}
 
 	val exporter = IngredientSnapshotExporter(Db.create().dataSource)
+	val lineOverridesFile = File(snapshotDir, IngredientLineOverridesLoader.LINE_OVERRIDES_FILE_NAME)
+	val lineOverrides = if (lineOverridesFile.isFile) {
+		IngredientLineOverridesLoader.loadOverrides(lineOverridesFile.toPath())
+	} else {
+		IngredientLineOverridesLoader.loadDefaultOverrides()
+	}
 	val actual = exporter.collect(
 		existingNames = existingNames,
 		seedPins = seedPins,
 		verifyPinnedMatchesAgainstDb = (mode == MODE_DIFF),
+		lineOverrides = lineOverrides,
 	)
 
 	if (namesFile.isFile || linesFile.isFile) {
@@ -65,6 +73,7 @@ fun main(args: Array<String>) {
 	}
 
 	snapshotDir.mkdirs()
+	IngredientLineOverridesLoader.ensureFileExists(snapshotDir.toPath())
 	namesFile.writeText(IngredientSnapshotExporter.formatNamesTsv(actual.names))
 	linesFile.writeText(IngredientSnapshotExporter.formatLinesTsv(actual.lines))
 	val pinnedCount = actual.names.count { it.status == IngredientSnapshotExporter.STATUS_PINNED }

@@ -16,6 +16,8 @@ private const val SCRAPED_CALCULATION_SOURCE = "scraped"
 internal class RecipeNutritionService(
 	private val recipeNutritionRepository: RecipeNutritionRepository,
 	private val lookupRepository: NutritionLookupRepository,
+	private val lineOverridesProvider: () -> Map<IngredientLineOverrideKey, IngredientLineOverride> =
+		IngredientLineOverridesLoader::loadDefaultOverrides,
 ) {
 
 	constructor(dataSource: DataSource) : this(
@@ -29,9 +31,10 @@ internal class RecipeNutritionService(
 	fun calculateAndPersist(
 		recipeId: Int,
 		lookupIndex: NutritionLookupIndex = lookupRepository.loadIndex(),
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride> = lineOverridesProvider(),
 	): RecipeNutritionPersistResult {
 		val ingredients = recipeNutritionRepository.loadRecipeIngredients(recipeId)
-		val calculation = RecipeNutritionCalculator(lookupIndex).calculate(ingredients)
+		val calculation = RecipeNutritionCalculator(lookupIndex, lineOverrides).calculate(ingredients)
 		persist(recipeId, calculation, lookupIndex)
 		return RecipeNutritionPersistResult(
 			recipeId = recipeId,
@@ -50,7 +53,8 @@ internal class RecipeNutritionService(
 			return emptyList()
 		}
 		val lookupIndex = lookupRepository.loadIndex()
-		return recipeIds.map { recipeId -> calculateAndPersist(recipeId, lookupIndex) }
+		val lineOverrides = lineOverridesProvider()
+		return recipeIds.map { recipeId -> calculateAndPersist(recipeId, lookupIndex, lineOverrides) }
 	}
 
 	private fun persist(

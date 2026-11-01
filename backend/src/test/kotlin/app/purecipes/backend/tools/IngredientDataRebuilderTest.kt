@@ -1,6 +1,8 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.createInMemoryDb
+import app.purecipes.backend.feature.nutrition.IngredientLineOverride
+import app.purecipes.backend.feature.nutrition.IngredientLineOverrideKey
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import java.nio.file.Files
@@ -153,21 +155,80 @@ class IngredientDataRebuilderTest {
 		}
 	}
 
+	@Test
+	fun rebuildPromotesContextualHeadingsAndHonorsLineOverrides() {
+		val db = createInMemoryDb("ingredient_rebuilder_contextual_headings")
+		val dataSource = db.dataSource
+		val sourceUrl = "https://foodnetwork.co.uk/recipes/chimichurri-cauliflower-steaks"
+
+		val recipeId = insertRecipeWithIngredients(
+			dataSource = dataSource,
+			sourceUrl = sourceUrl,
+			title = "Chimichurri Cauliflower Steaks",
+			instructions = "For the cauliflower:\n1. Roast.\nFor the chimichurri:\n1. Blend.",
+			groupName = null,
+			items = listOf(
+				ScrapedIngredientItem(text = "Cauliflower"),
+				ScrapedIngredientItem(text = "2 cauliflowers"),
+				ScrapedIngredientItem(text = "2 tbsp vegetable oil"),
+				ScrapedIngredientItem(text = "Chimichurri"),
+				ScrapedIngredientItem(text = "1 bunch fresh flat-leaf parsley"),
+				ScrapedIngredientItem(text = "4 cloves garlic, peeled"),
+				ScrapedIngredientItem(text = "2 tbsp chimichurri"),
+				ScrapedIngredientItem(text = "Special garnish"),
+				ScrapedIngredientItem(text = "1 tbsp toasted sesame seeds"),
+			),
+		)
+
+		val lineOverrides = mapOf(
+			IngredientLineOverrideKey(
+				sourceUrl = sourceUrl,
+				rawText = "Special garnish",
+			) to IngredientLineOverride(
+				sourceUrl = sourceUrl,
+				rawText = "Special garnish",
+				kind = "heading",
+				groupName = "Garnish",
+			),
+		)
+
+		IngredientDataRebuilder(
+			dataSource = dataSource,
+			recalculateNutrition = {},
+		).rebuild(
+			jsonArchiveDir = null,
+			lineOverrides = lineOverrides,
+		)
+
+		loadGroupedIngredients(dataSource, recipeId) shouldBe listOf(
+			"Cauliflower" to "2 cauliflowers",
+			"Cauliflower" to "2 tbsp vegetable oil",
+			"Chimichurri" to "1 bunch fresh flat-leaf parsley",
+			"Chimichurri" to "4 cloves garlic, peeled",
+			"Chimichurri" to "2 tbsp chimichurri",
+			"Garnish" to "1 tbsp toasted sesame seeds",
+		)
+	}
+
 	private fun insertRecipeWithIngredients(
 		dataSource: DataSource,
 		sourceUrl: String?,
 		groupName: String?,
 		items: List<ScrapedIngredientItem>,
+		title: String = "Test Recipe",
+		instructions: String = "Mix and bake.",
 	): Int =
 		dataSource.connection.use { connection ->
 			val recipeId = connection.prepareStatement(
 				"""
 				INSERT INTO recipes (title, instructions, source_url)
-				VALUES ('Test Recipe', 'Mix and bake.', ?)
+				VALUES (?, ?, ?)
 				""".trimIndent(),
 				Statement.RETURN_GENERATED_KEYS,
 			).use { statement ->
-				statement.setString(1, sourceUrl)
+				statement.setString(1, title)
+				statement.setString(2, instructions)
+				statement.setString(3, sourceUrl)
 				statement.executeUpdate()
 				statement.generatedKeys.use { keys ->
 					check(keys.next())
@@ -249,6 +310,28 @@ class IngredientDataRebuilderTest {
 					buildList {
 						while (resultSet.next()) {
 							add(resultSet.getString("ingredient"))
+						}
+					}
+				}
+			}
+		}
+
+	private fun loadGroupedIngredients(dataSource: DataSource, recipeId: Int): List<Pair<String?, String>> =
+		dataSource.connection.use { connection ->
+			connection.prepareStatement(
+				"""
+				SELECT ig.name, i.ingredient
+				FROM ingredient_groups ig
+				JOIN ingredients i ON i.ingredient_group_id = ig.id
+				WHERE ig.recipe_id = ?
+				ORDER BY ig.order_index, i.order_index
+				""".trimIndent(),
+			).use { statement ->
+				statement.setInt(1, recipeId)
+				statement.executeQuery().use { resultSet ->
+					buildList {
+						while (resultSet.next()) {
+							add(resultSet.getString("name") to resultSet.getString("ingredient"))
 						}
 					}
 				}

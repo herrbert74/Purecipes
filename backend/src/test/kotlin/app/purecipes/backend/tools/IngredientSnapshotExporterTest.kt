@@ -1,12 +1,15 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.createInMemoryDb
+import app.purecipes.backend.feature.nutrition.IngredientLineOverridesLoader
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.math.BigDecimal
+import java.nio.file.Files
 import java.sql.Statement
 import javax.sql.DataSource
+import kotlin.io.path.writeText
 import kotlin.test.Test
 
 class IngredientSnapshotExporterTest {
@@ -250,6 +253,68 @@ class IngredientSnapshotExporterTest {
 		byName.getValue("olive oil").matchSource shouldBe "pinned"
 		byName.getValue("mystery sauce").status shouldBe "auto"
 		byName.getValue("mystery sauce").matchSource shouldBe "tokens"
+	}
+
+	@Test
+	fun collectAppliesLineOverridesAndParsesLineOverridesTsv() {
+		val db = createInMemoryDb("ingredient_snapshot_line_overrides")
+		val dataSource = db.dataSource
+		insertScrapedRecipe(
+			dataSource = dataSource,
+			sourceUrl = "https://example.com/recipes/chimichurri",
+			groupName = null,
+			ingredients = listOf(
+				SnapshotTestIngredient("Chimichurri"),
+				SnapshotTestIngredient("2 tbsp mystery salsa"),
+			),
+		)
+
+		val tempDir = Files.createTempDirectory("purecipes-line-overrides")
+		val overrides = try {
+			val file = IngredientLineOverridesLoader.ensureFileExists(tempDir)
+			file.writeText(
+				listOf(
+					IngredientLineOverridesLoader.LINE_OVERRIDES_HEADER,
+					"https://example.com/recipes/chimichurri\tChimichurri\theading\tChimichurri\t\t\t",
+					"https://example.com/recipes/chimichurri\t2 tbsp mystery salsa\tingredient\t" +
+						"Chimichurri\t3\ttsp\ttomato salsa",
+				).joinToString("\n"),
+			)
+			IngredientLineOverridesLoader.loadOverrides(file)
+		} finally {
+			tempDir.toFile().deleteRecursively()
+		}
+
+		val snapshot = IngredientSnapshotExporter(dataSource).collect(lineOverrides = overrides)
+
+		snapshot.lines shouldBe listOf(
+			IngredientLineSnapshotRow(
+				sourceUrl = "https://example.com/recipes/chimichurri",
+				groupIndex = 0,
+				lineIndex = 0,
+				rawText = "Chimichurri",
+				kind = "heading",
+				groupName = "Chimichurri",
+				quantity = "",
+				unit = "",
+				lookupName = "",
+				requirement = "REQUIRED",
+				alternativeGroupKey = "",
+			),
+			IngredientLineSnapshotRow(
+				sourceUrl = "https://example.com/recipes/chimichurri",
+				groupIndex = 0,
+				lineIndex = 1,
+				rawText = "2 tbsp mystery salsa",
+				kind = "ingredient",
+				groupName = "Chimichurri",
+				quantity = "3",
+				unit = "tsp",
+				lookupName = "tomato salsa",
+				requirement = "REQUIRED",
+				alternativeGroupKey = "",
+			),
+		)
 	}
 }
 

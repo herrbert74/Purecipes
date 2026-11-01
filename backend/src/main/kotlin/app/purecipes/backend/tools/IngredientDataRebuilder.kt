@@ -1,5 +1,8 @@
 package app.purecipes.backend.tools
 
+import app.purecipes.backend.feature.nutrition.IngredientLineOverride
+import app.purecipes.backend.feature.nutrition.IngredientLineOverrideKey
+import app.purecipes.backend.feature.nutrition.IngredientLineOverridesLoader
 import app.purecipes.backend.feature.nutrition.RecipeNutritionService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -40,12 +43,24 @@ internal data class ScrapedIngredientGroup(
 	val ingredients: List<ScrapedIngredientItem>,
 )
 
+internal data class ScrapedRecipeProcessingContext(
+	val recipeTitle: String = "",
+	val recipeInstructions: String = "",
+	val lineOverridesByRawText: Map<String, IngredientLineOverride> = emptyMap(),
+)
+
 internal fun interface ScrapedIngredientGroupProcessor {
 
 	fun processGroup(
 		groupName: String?,
 		storedItems: List<ScrapedIngredientItem>,
 	): List<ScrapedIngredientGroup>
+
+	fun processRecipeGroups(
+		groups: List<ScrapedIngredientGroup>,
+		context: ScrapedRecipeProcessingContext,
+	): List<ScrapedIngredientGroup> =
+		groups.flatMap { group -> processGroup(group.name, group.ingredients) }
 
 	companion object {
 
@@ -68,6 +83,8 @@ internal data class IngredientDataRebuildSummary(
 private data class ScrapedRecipeIdentity(
 	val id: Int,
 	val sourceUrl: String,
+	val title: String,
+	val instructions: String,
 )
 
 private data class StoredDbIngredientRow(
@@ -109,6 +126,8 @@ internal class IngredientDataRebuilder(
 		useJsonAsInput: Boolean = false,
 		syncJsonArchive: Boolean = true,
 		recalculateAllNutrition: Boolean = true,
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride> =
+			IngredientLineOverridesLoader.loadDefaultOverrides(),
 	): IngredientDataRebuildSummary {
 		val jsonEntriesBySourceUrl = loadJsonEntriesBySourceUrl(jsonArchiveDir)
 		val scrapedRecipes = loadScrapedRecipes()
@@ -127,7 +146,17 @@ internal class IngredientDataRebuilder(
 			} else {
 				dbState.groups.ifEmpty { jsonEntry?.groups.orEmpty() }
 			}
-			val reprocessedGroups = reprocessGroups(sourceGroups)
+			val recipeOverrides = lineOverrides
+				.filterKeys { key -> key.sourceUrl == recipe.sourceUrl }
+				.mapKeys { (key, _) -> key.rawText }
+			val reprocessedGroups = reprocessGroups(
+				sourceGroups = sourceGroups,
+				context = ScrapedRecipeProcessingContext(
+					recipeTitle = recipe.title,
+					recipeInstructions = recipe.instructions,
+					lineOverridesByRawText = recipeOverrides,
+				),
+			)
 			val shouldUpdateDb = reprocessedGroups.isNotEmpty() && (
 				reprocessedGroups != dbState.groups || !dbState.hasSequentialOrderIndices
 				)
@@ -195,9 +224,11 @@ internal class IngredientDataRebuilder(
 		return restoredCount
 	}
 
-	internal fun reprocessGroups(sourceGroups: List<ScrapedIngredientGroup>): List<ScrapedIngredientGroup> =
-		sourceGroups
-			.flatMap { group -> processor.processGroup(group.name, group.ingredients) }
+	internal fun reprocessGroups(
+		sourceGroups: List<ScrapedIngredientGroup>,
+		context: ScrapedRecipeProcessingContext = ScrapedRecipeProcessingContext(),
+	): List<ScrapedIngredientGroup> =
+		processor.processRecipeGroups(sourceGroups, context)
 			.map { group ->
 				group.copy(
 					ingredients = group.ingredients.map { item ->
@@ -335,7 +366,7 @@ internal class IngredientDataRebuilder(
 		dataSource.connection.use { connection ->
 			connection.prepareStatement(
 				"""
-				SELECT id, source_url
+				SELECT id, source_url, title, COALESCE(instructions, '') AS instructions
 				FROM recipes
 				WHERE source_url IS NOT NULL
 					AND TRIM(source_url) <> ''
@@ -350,6 +381,8 @@ internal class IngredientDataRebuilder(
 								ScrapedRecipeIdentity(
 									id = resultSet.getInt("id"),
 									sourceUrl = resultSet.getString("source_url").trim(),
+									title = resultSet.getString("title")?.trim().orEmpty(),
+									instructions = resultSet.getString("instructions").orEmpty(),
 								),
 							)
 						}

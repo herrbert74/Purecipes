@@ -1121,13 +1121,17 @@ fun parseStoredIngredientJson(ingredientEl: JsonElement): ProcessedScrapedIngred
 fun parseRecipe(rawJson: String): RecipeData? {
 	val root = runCatching { json.parseToJsonElement(rawJson).jsonObject }.getOrNull() ?: return null
 	val title = root["title"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
-	val ingredientGroups = parseIngredientGroupsFromRoot(root)
 	val instructionList = parseInstructionListFromRoot(root)
 	val nutrients = parseNutrientsFromRoot(root)
 	val links = parseLinksFromRoot(root)
 	val instructionsText = root["instructions"]?.jsonPrimitive?.contentOrNull.orEmpty().ifBlank {
 		instructionList.joinToString("\n").trim()
 	}
+	val ingredientGroups = parseIngredientGroupsFromRoot(
+		root = root,
+		recipeTitle = title,
+		recipeInstructions = instructionsText,
+	)
 	val jsonAppliances = root["appliances"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }
 	val category = root["category"]?.jsonPrimitive?.contentOrNull
 	val categoryColumns = mapCategoryToColumns(category)
@@ -1169,12 +1173,20 @@ fun parseRecipe(rawJson: String): RecipeData? {
 
 private fun parseIngredientGroupsFromRoot(
 	root: JsonObject,
-): List<Pair<String?, List<ProcessedScrapedIngredient>>> =
-	root["ingredient_groups"]?.jsonArray
+	recipeTitle: String,
+	recipeInstructions: String,
+): List<Pair<String?, List<ProcessedScrapedIngredient>>> {
+	val rawGroups = root["ingredient_groups"]?.jsonArray
 		?.mapNotNull(::parseStoredIngredientGroupJson)
-		?.flatMap { (name, items) -> processStoredScrapedIngredientGroups(name, items) }
-		?.filter { (_, items) -> items.isNotEmpty() }
-		?: emptyList()
+		.orEmpty()
+	return processRecipeScrapedIngredientGroups(
+		groups = rawGroups,
+		context = RecipeHeadingContext(
+			recipeTitle = recipeTitle,
+			recipeInstructions = recipeInstructions,
+		),
+	).filter { (_, items) -> items.isNotEmpty() }
+}
 
 private fun parseStoredIngredientGroupJson(
 	groupEl: JsonElement,
