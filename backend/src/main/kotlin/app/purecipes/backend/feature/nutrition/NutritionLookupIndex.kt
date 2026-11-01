@@ -8,6 +8,7 @@ internal data class NutritionFoodRecord(
 	val normalizedName: String,
 	val nutrients: FdcNutrientsPer100g,
 	val sourceName: String = FDC_FOUNDATION_SOURCE_NAME,
+	val sourceId: String = "",
 )
 
 internal data class NutritionFoodMatch(
@@ -20,25 +21,42 @@ internal class NutritionLookupIndex(
 	private val foodById: Map<Int, NutritionFoodRecord>,
 	private val foodIdByNormalizedAlias: Map<String, Int>,
 	private val measuresByFoodId: Map<Int, Map<String, BigDecimal>>,
+	private val pinnedFoodIdByLookupName: Map<String, Int> = emptyMap(),
 ) {
 
 	fun findFood(parsedName: String): NutritionFoodMatch? {
+		val pinQueries = listOf(
+			NutritionNameNormalizer.forLookup(parsedName),
+			NutritionNameNormalizer.normalize(parsedName),
+		).distinct().filter { query -> query.isNotBlank() }
+		if (pinQueries.isEmpty()) {
+			return null
+		}
+
 		val lookupQueries = listOf(
 			NutritionNameNormalizer.normalize(parsedName),
 			NutritionNameNormalizer.forLookup(parsedName),
 		).distinct().filter { query -> query.isNotBlank() }
-		if (lookupQueries.isEmpty()) {
-			return null
-		}
 
-		return lookupQueries.firstNotNullOfOrNull { query ->
-			matchAlias(query) ?: matchExactName(query)
-		} ?: matchBestTokenScore(NutritionNameNormalizer.forLookup(parsedName))
+		return pinQueries.firstNotNullOfOrNull(::matchPinned)
+			?: lookupQueries.firstNotNullOfOrNull { query ->
+				matchAlias(query) ?: matchExactName(query)
+			}
+			?: matchBestTokenScore(NutritionNameNormalizer.forLookup(parsedName))
 	}
 
 	fun food(foodId: Int): NutritionFoodRecord? = foodById[foodId]
 
 	fun measuresForFood(foodId: Int): Map<String, BigDecimal> = measuresByFoodId[foodId].orEmpty()
+
+	private fun matchPinned(normalizedName: String): NutritionFoodMatch? {
+		val foodId = pinnedFoodIdByLookupName[normalizedName] ?: return null
+		return NutritionFoodMatch(
+			foodId = foodId,
+			matchSource = MATCH_SOURCE_PINNED,
+			confidence = PINNED_MATCH_CONFIDENCE,
+		)
+	}
 
 	private fun matchAlias(normalizedName: String): NutritionFoodMatch? {
 		val foodId = foodIdByNormalizedAlias[normalizedName] ?: return null
@@ -106,9 +124,11 @@ internal class NutritionLookupIndex(
 			measuresByFoodId = emptyMap(),
 		)
 
+		private const val MATCH_SOURCE_PINNED = "pinned"
 		private const val MATCH_SOURCE_ALIAS = "alias"
 		private const val MATCH_SOURCE_NAME = "name"
 		private const val MATCH_SOURCE_TOKENS = "tokens"
+		private val PINNED_MATCH_CONFIDENCE = BigDecimal("1.00")
 		private val ALIAS_MATCH_CONFIDENCE = BigDecimal("1.00")
 		private val NAME_MATCH_CONFIDENCE = BigDecimal("0.90")
 		private val TOKEN_MATCH_CONFIDENCE = BigDecimal("0.80")

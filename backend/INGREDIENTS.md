@@ -94,10 +94,11 @@ Recompute the derived ingredient layer (`ingredient_groups`, `ingredients`, `ing
 ./gradlew rebuildIngredientData
 ```
 
-Write or refresh `backend/data/ingredients/names.tsv` and `backend/data/ingredients/lines.tsv` from the current database (preserving any `pinned` rows in `names.tsv` and printing a diff summary if previous files exist):
+Write or refresh `backend/data/ingredients/names.tsv` and `backend/data/ingredients/lines.tsv` from the current database (preserving any `pinned` rows in `names.tsv` and printing a diff summary if previous files exist; pass `-Psnapshot.seedPins=true` to promote confirmed matches to `pinned`):
 
 ```bash
 ./gradlew snapshotIngredients
+./gradlew snapshotIngredients -Psnapshot.seedPins=true
 ```
 
 Diff the current database against the committed `names.tsv` and `lines.tsv` without modifying files (exits non-zero if differences are found; pass `-Psnapshot.failOnDiff=false` for report-only):

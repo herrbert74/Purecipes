@@ -645,7 +645,6 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("butter extra", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("butter lettuce", ICEBERG_LETTUCE_DESCRIPTION, ROMAINE_LETTUCE_DESCRIPTION),
 		NutritionSeedAlias("butter naan", FLATBREAD_DESCRIPTION, PITA_DESCRIPTION),
-		NutritionSeedAlias("butter three", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("caesar mayo", MAYONNAISE_DESCRIPTION),
 		NutritionSeedAlias(
 			"calabrian chile paste",
@@ -1334,7 +1333,6 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("unsalted butter extra", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("unsalted butter frozen", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("unsalted butter loaf", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
-		NutritionSeedAlias("unsalted butter three", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("unsalted white beans", CANNELLINI_DESCRIPTION),
 		NutritionSeedAlias("unsifted confectioners sugar", SUGAR_DESCRIPTION),
 		NutritionSeedAlias("unsweetened full fat coconut milk", COCONUT_MILK_DESCRIPTION),

@@ -1,8 +1,10 @@
 package app.purecipes.backend.tools
 
+import app.purecipes.backend.feature.nutrition.FDC_BRANDED_SOURCE_NAME
 import app.purecipes.backend.feature.nutrition.FdcFoodMatchingSupport
 import app.purecipes.backend.feature.nutrition.IngredientLineParser
 import app.purecipes.backend.feature.nutrition.NutritionNameNormalizer
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliases
 import java.math.BigDecimal
 import java.sql.ResultSet
 import javax.sql.DataSource
@@ -13,10 +15,18 @@ internal class IngredientSnapshotExporter(
 
 	fun collect(
 		existingNames: List<IngredientNameSnapshotRow> = emptyList(),
+		seedPins: Boolean = false,
+		verifyPinnedMatchesAgainstDb: Boolean = false,
 	): IngredientSnapshotData {
 		val dbRows = loadDbRows()
 		val lineRows = buildLineSnapshotRows(dbRows)
-		val nameRows = buildNameSnapshotRows(dbRows, lineRows, existingNames)
+		val nameRows = buildNameSnapshotRows(
+			dbRows = dbRows,
+			lineRows = lineRows,
+			existingNames = existingNames,
+			seedPins = seedPins,
+			verifyPinnedMatchesAgainstDb = verifyPinnedMatchesAgainstDb,
+		)
 		return IngredientSnapshotData(
 			names = nameRows,
 			lines = lineRows,
@@ -110,58 +120,90 @@ internal class IngredientSnapshotExporter(
 		dbRows: List<DbIngredientSnapshotRow>,
 		lineRows: List<IngredientLineSnapshotRow>,
 		existingNames: List<IngredientNameSnapshotRow>,
+		seedPins: Boolean,
+		verifyPinnedMatchesAgainstDb: Boolean,
 	): List<IngredientNameSnapshotRow> {
 		val pinnedByLookupName = existingNames
 			.filter { row -> row.status == STATUS_PINNED }
 			.associateBy { row -> row.lookupName }
+		val pinnedPantryByLookupName = pinnedByLookupName.values
+			.filter { row -> row.pantryItem.isNotEmpty() }
+			.associate { row -> row.lookupName to row.pantryItem }
 		val ingredientLinesByLookup = lineRows
 			.filter { row -> row.kind == IngredientSnapshotClassifier.KIND_INGREDIENT && row.lookupName.isNotEmpty() }
 			.groupBy { row -> row.lookupName }
 		val foodCandidatesByLookup = buildFoodCandidatesByLookup(dbRows)
-		val parsedNamesByLookup = buildParsedNamesByLookup(dbRows)
 		val allLookupNames = (ingredientLinesByLookup.keys + pinnedByLookupName.keys).toSortedSet()
 
 		return allLookupNames.map { lookupName ->
 			val linesForName = ingredientLinesByLookup[lookupName].orEmpty()
+			val bestFood = pickBestFoodCandidate(foodCandidatesByLookup[lookupName].orEmpty())
+			val resolvedPantry = PantryItemResolver.resolve(
+				lookupName = lookupName,
+				pinnedPantryByLookupName = pinnedPantryByLookupName,
+			)
 			val pinned = pinnedByLookupName[lookupName]
 			if (pinned != null) {
-				pinned.copy(
-					matchSource = pinned.matchSource.ifBlank { STATUS_PINNED },
+				resolvePinnedNameRow(
+					pinned = pinned,
+					bestFood = bestFood,
+					resolvedPantry = resolvedPantry,
 					lineCount = linesForName.size,
+					verifyAgainstDb = verifyPinnedMatchesAgainstDb,
 				)
 			} else {
-				val bestFood = pickBestFoodCandidate(foodCandidatesByLookup[lookupName].orEmpty())
-				val pantryItem = PantryItemResolver.resolve(
-					lookupName = lookupName,
-					fallbackNames = parsedNamesByLookup[lookupName].orEmpty(),
-				)
-				IngredientNameSnapshotRow(
+				val autoRow = IngredientNameSnapshotRow(
 					lookupName = lookupName,
 					status = STATUS_AUTO,
-					pantryItem = sanitizeTsvField(pantryItem),
+					pantryItem = sanitizeTsvField(resolvedPantry),
 					fdcSource = sanitizeTsvField(bestFood?.fdcSource.orEmpty()),
 					fdcId = sanitizeTsvField(bestFood?.fdcId.orEmpty()),
 					fdcDescription = sanitizeTsvField(bestFood?.fdcDescription.orEmpty()),
 					matchSource = sanitizeTsvField(bestFood?.matchSource.orEmpty()),
 					lineCount = linesForName.size,
 				)
+				if (seedPins && ConfirmedIngredientMatchSeeder.isConfirmedMatch(autoRow)) {
+					autoRow.copy(
+						status = STATUS_PINNED,
+						matchSource = STATUS_PINNED,
+					)
+				} else {
+					autoRow
+				}
 			}
 		}
 	}
 
-	private fun buildParsedNamesByLookup(
-		dbRows: List<DbIngredientSnapshotRow>,
-	): Map<String, List<String>> =
-		dbRows.mapNotNull { row ->
-			val parsedName = (row.parsedName ?: IngredientLineParser.parse(row.rawText).parsedName).trim()
-			val kind = IngredientSnapshotClassifier.classifyLineKind(row.rawText, parsedName)
-			val lookupName = resolveLookupName(parsedName)
-			if (kind != IngredientSnapshotClassifier.KIND_INGREDIENT || lookupName.isEmpty() || parsedName.isEmpty()) {
-				null
-			} else {
-				lookupName to parsedName
-			}
-		}.groupBy({ it.first }, { it.second })
+	private fun resolvePinnedNameRow(
+		pinned: IngredientNameSnapshotRow,
+		bestFood: FoodCandidate?,
+		resolvedPantry: String,
+		lineCount: Int,
+		verifyAgainstDb: Boolean,
+	): IngredientNameSnapshotRow {
+		val pantryItem = pinned.pantryItem.ifBlank { sanitizeTsvField(resolvedPantry) }
+		return if (verifyAgainstDb && bestFood != null && pinned.fdcId.isNotEmpty()) {
+			IngredientNameSnapshotRow(
+				lookupName = pinned.lookupName,
+				status = STATUS_PINNED,
+				pantryItem = pantryItem,
+				fdcSource = sanitizeTsvField(bestFood.fdcSource),
+				fdcId = sanitizeTsvField(bestFood.fdcId),
+				fdcDescription = sanitizeTsvField(bestFood.fdcDescription),
+				matchSource = sanitizeTsvField(bestFood.matchSource),
+				lineCount = lineCount,
+			)
+		} else {
+			pinned.copy(
+				pantryItem = pantryItem,
+				fdcDescription = pinned.fdcDescription.ifBlank {
+					sanitizeTsvField(bestFood?.fdcDescription.orEmpty())
+				},
+				matchSource = pinned.matchSource.ifBlank { STATUS_PINNED },
+				lineCount = lineCount,
+			)
+		}
+	}
 
 	private fun buildFoodCandidatesByLookup(
 		dbRows: List<DbIngredientSnapshotRow>,
@@ -410,6 +452,52 @@ private data class FoodCandidate(
 	val fdcDescription: String,
 	val matchSource: String,
 )
+
+internal object ConfirmedIngredientMatchSeeder {
+
+	private val confirmedNonBrandedMatchSources = setOf("alias", "name", "pinned")
+
+	private val curatedDescriptionsByLookupKey: Map<String, Set<String>> by lazy {
+		val map = mutableMapOf<String, MutableSet<String>>()
+		NutritionSeedAliases.aliases.forEach { seedAlias ->
+			val sanitizedDescriptions = seedAlias.preferredDescriptions
+				.map(::sanitizeTsvField)
+				.filter(String::isNotEmpty)
+			val keys = listOf(
+				NutritionNameNormalizer.normalize(seedAlias.alias),
+				NutritionNameNormalizer.forLookup(seedAlias.alias),
+			).filter(String::isNotEmpty)
+			keys.forEach { key ->
+				map.getOrPut(key) { linkedSetOf() }.addAll(sanitizedDescriptions)
+			}
+		}
+		map
+	}
+
+	fun isConfirmedMatch(row: IngredientNameSnapshotRow): Boolean {
+		if (row.fdcSource.isBlank() || row.fdcId.isBlank()) {
+			return false
+		}
+		val isNonBrandedConfirmed = row.fdcSource != FDC_BRANDED_SOURCE_NAME &&
+			row.matchSource in confirmedNonBrandedMatchSources
+		return isNonBrandedConfirmed || isCuratedSeedAliasMatch(row.lookupName, row.fdcDescription)
+	}
+
+	fun isCuratedSeedAliasMatch(lookupName: String, fdcDescription: String): Boolean {
+		val sanitizedDescription = sanitizeTsvField(fdcDescription)
+		if (sanitizedDescription.isEmpty()) {
+			return false
+		}
+		val keys = listOf(
+			lookupName.trim(),
+			NutritionNameNormalizer.normalize(lookupName),
+			NutritionNameNormalizer.forLookup(lookupName),
+		).filter(String::isNotEmpty)
+		return keys.any { key ->
+			curatedDescriptionsByLookupKey[key]?.contains(sanitizedDescription) == true
+		}
+	}
+}
 
 private fun resolveLookupName(parsedName: String): String =
 	NutritionNameNormalizer.forLookup(parsedName).ifBlank {

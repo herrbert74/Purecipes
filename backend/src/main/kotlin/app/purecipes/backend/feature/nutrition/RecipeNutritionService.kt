@@ -20,7 +20,10 @@ internal class RecipeNutritionService(
 
 	constructor(dataSource: DataSource) : this(
 		recipeNutritionRepository = RecipeNutritionRepository(dataSource),
-		lookupRepository = NutritionLookupRepository(dataSource),
+		lookupRepository = NutritionLookupRepository(
+			dataSource = dataSource,
+			foodPinsProvider = IngredientPinsLoader::loadDefaultFoodPins,
+		),
 	)
 
 	fun calculateAndPersist(

@@ -175,28 +175,103 @@ internal object PantryItemResolver {
 	private data class IndexedCatalogueItem(
 		val item: String,
 		val normalizedItem: String,
-		val variants: List<String>,
+		val ownForms: Set<String>,
+		val wordCount: Int,
 	)
 
-	private data class CandidateMatch(
-		val item: String,
-		val isExactPhrase: Boolean,
-		val variantWordCount: Int,
-		val variantLength: Int,
-		val itemLength: Int,
+	private val trailingFormWords = setOf(
+		"breast",
+		"breasts",
+		"bulb",
+		"bulbs",
+		"cheese",
+		"chunk",
+		"chunks",
+		"clove",
+		"cloves",
+		"cube",
+		"cubes",
+		"fillet",
+		"fillets",
+		"floret",
+		"florets",
+		"half",
+		"halves",
+		"head",
+		"heads",
+		"kernel",
+		"kernels",
+		"leaf",
+		"leaves",
+		"leg",
+		"legs",
+		"piece",
+		"pieces",
+		"quarter",
+		"quarters",
+		"ring",
+		"rings",
+		"slice",
+		"slices",
+		"spear",
+		"spears",
+		"sprig",
+		"sprigs",
+		"stalk",
+		"stalks",
+		"strip",
+		"strips",
+		"thigh",
+		"thighs",
+		"wedge",
+		"wedges",
+		"wing",
+		"wings",
 	)
+
+	private val nonDairyModifiers = setOf(
+		"almond",
+		"almonds",
+		"apple",
+		"cashew",
+		"cashews",
+		"cocoa",
+		"coconut",
+		"hazelnut",
+		"hazelnuts",
+		"oat",
+		"oats",
+		"peanut",
+		"peanuts",
+		"pistachio",
+		"pistachios",
+		"pumpkin",
+		"rice",
+		"sesame",
+		"shea",
+		"soy",
+		"soya",
+		"sunflower",
+		"tartar",
+	)
+
+	private val singleWordDairyItems = setOf("Butter", "Cream", "Milk")
 
 	private val indexedCatalogue: List<IndexedCatalogueItem> by lazy {
 		IngredientCatalogue.allItems
 			.map { item ->
+				val normalized = IngredientNameMatching.normalizeIngredientName(item)
+				val singular = singularizeLastWord(normalized)
+				val plural = pluralizeLastWord(singular)
 				IndexedCatalogueItem(
 					item = item,
-					normalizedItem = IngredientNameMatching.normalizeIngredientName(item),
-					variants = IngredientNameMatching.ingredientVariants(item).toList(),
+					normalizedItem = normalized,
+					ownForms = setOf(normalized, singular, plural).filter(String::isNotBlank).toSet(),
+					wordCount = normalized.split(' ').size,
 				)
 			}
 			.sortedWith(
-				compareByDescending<IndexedCatalogueItem> { it.normalizedItem.split(' ').size }
+				compareByDescending<IndexedCatalogueItem> { it.wordCount }
 					.thenByDescending { it.normalizedItem.length }
 					.thenBy { it.item },
 			)
@@ -214,71 +289,118 @@ internal object PantryItemResolver {
 		"salt" to "Salt",
 	)
 
-	fun resolve(lookupName: String, fallbackNames: Collection<String> = emptyList()): String {
-		val direct = resolveSingleText(lookupName)
-		if (direct.isNotEmpty()) {
-			return direct
-		}
-		return fallbackNames
-			.asSequence()
-			.map(::resolveSingleText)
-			.filter(String::isNotEmpty)
-			.groupingBy { it }
-			.eachCount()
-			.entries
-			.minWithOrNull(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
-			?.key
-			.orEmpty()
+	fun resolve(
+		lookupName: String,
+		pinnedPantryByLookupName: Map<String, String> = emptyMap(),
+	): String {
+		val pinned = pinnedPantryByLookupName[lookupName]?.trim().orEmpty()
+		return pinned.ifEmpty { resolveSingleText(lookupName) }
 	}
 
 	private fun resolveSingleText(text: String): String {
 		val trimmed = text.trim()
-		return if (trimmed.isEmpty()) {
-			""
-		} else {
-			IngredientLookup.resolveCatalogueIngredient(trimmed, sortedCatalogueNames)
-				?: bestPhraseMatch(trimmed)
-				?: resolveDefaultPantryFallback(trimmed)
+		if (trimmed.isEmpty()) {
+			return ""
 		}
+		return resolveOwnCatalogueMatch(trimmed)
+			?: IngredientLookup.resolveCatalogueIngredient(trimmed, sortedCatalogueNames)
+			?: bestTrailingHeadMatch(trimmed)
+			?: resolveDefaultPantryFallback(trimmed)
 	}
 
-	private fun bestPhraseMatch(text: String): String? {
+	private fun resolveOwnCatalogueMatch(text: String): String? {
+		val normalized = IngredientNameMatching.normalizeIngredientName(text)
+		if (normalized.isBlank()) {
+			return null
+		}
+		val singular = singularizeLastWord(normalized)
+		return indexedCatalogue.firstOrNull { entry ->
+			normalized in entry.ownForms || singular in entry.ownForms
+		}?.item
+	}
+
+	private fun bestTrailingHeadMatch(text: String): String? {
 		val normalizedText = IngredientNameMatching.normalizeIngredientText(text)
 		if (normalizedText.isBlank()) {
 			return null
 		}
-		val paddedText = " $normalizedText "
-		val candidates = indexedCatalogue.mapNotNull { entry ->
-			if (!IngredientNameMatching.matchesAnyIngredient(text, listOf(entry.item))) {
-				return@mapNotNull null
-			}
-			val bestVariant = entry.variants
-				.filter { variant -> IngredientNameMatching.matchesAnyIngredient(text, listOf(variant)) }
-				.maxWithOrNull(
-					compareBy<String> { variant -> paddedText.contains(" $variant ") }
-						.thenBy { variant -> variant.split(' ').size }
-						.thenBy { variant -> variant.length },
-				) ?: entry.normalizedItem
-			val isExactPhrase = paddedText.contains(" $bestVariant ")
-			CandidateMatch(
-				item = entry.item,
-				isExactPhrase = isExactPhrase,
-				variantWordCount = bestVariant.split(' ').size,
-				variantLength = bestVariant.length,
-				itemLength = entry.normalizedItem.length,
-			)
+		val strippedText = stripTrailingFormWords(normalizedText)
+		val candidatePhrases = listOf(normalizedText, strippedText).distinct()
+		return indexedCatalogue.firstOrNull { entry ->
+			candidatePhrases.any { phrase -> matchesTrailingOwnForm(phrase, entry) }
+		}?.item
+	}
+
+	private fun stripTrailingFormWords(normalizedText: String): String {
+		val words = normalizedText.split(' ').filter(String::isNotBlank).toMutableList()
+		while (words.size > 1 && words.last() in trailingFormWords) {
+			words.removeAt(words.lastIndex)
 		}
-		return candidates.minWithOrNull(
-			compareByDescending<CandidateMatch> { it.isExactPhrase }
-				.thenByDescending { it.variantWordCount }
-				.thenByDescending { it.variantLength }
-				.thenByDescending { it.itemLength }
-				.thenBy { it.item },
-		)?.item
+		return words.joinToString(" ")
+	}
+
+	private fun matchesTrailingOwnForm(phrase: String, entry: IndexedCatalogueItem): Boolean {
+		val matchedForm = entry.ownForms.firstOrNull { form ->
+			phrase == form || phrase.endsWith(" $form")
+		} ?: return false
+		val hasNonDairyModifier = entry.item in singleWordDairyItems &&
+			phrase != matchedForm &&
+			phrase.removeSuffix(matchedForm).trim().split(' ').any { word -> word in nonDairyModifiers }
+		return !hasNonDairyModifier
 	}
 
 	private fun resolveDefaultPantryFallback(text: String): String =
 		defaultPantryFallbacks.firstOrNull { (phrase, _) ->
-			IngredientNameMatching.matchesAnyIngredient(text, listOf(phrase))
+			val normalized = IngredientNameMatching.normalizeIngredientText(text)
+			normalized == phrase || normalized.endsWith(" $phrase")
 		}?.second.orEmpty()
+
+	private const val IES_SUFFIX_LENGTH = 3
+	private const val S_SUFFIX_LENGTH = 1
+	private const val SES_DROP_LENGTH = 2
+
+	private fun singularizeLastWord(value: String): String {
+		val words = value.split(' ').filter(String::isNotBlank)
+		if (words.isEmpty()) {
+			return value
+		}
+		val lastWord = words.last()
+		val singularLastWord = when {
+			lastWord.endsWith("ies") && lastWord.length > IES_SUFFIX_LENGTH ->
+				lastWord.dropLast(IES_SUFFIX_LENGTH) + "y"
+
+			lastWord.endsWith("ses") && lastWord.length > IES_SUFFIX_LENGTH ->
+				lastWord.dropLast(SES_DROP_LENGTH)
+
+			lastWord.endsWith("oes") && lastWord.length > IES_SUFFIX_LENGTH ->
+				lastWord.dropLast(IES_SUFFIX_LENGTH) + "o"
+
+			lastWord.endsWith("ves") && lastWord.length > IES_SUFFIX_LENGTH ->
+				lastWord.dropLast(IES_SUFFIX_LENGTH) + "f"
+
+			lastWord.endsWith("s") && !lastWord.endsWith("ss") && lastWord.length > S_SUFFIX_LENGTH ->
+				lastWord.dropLast(S_SUFFIX_LENGTH)
+
+			else -> lastWord
+		}
+		return (words.dropLast(1) + singularLastWord).joinToString(separator = " ")
+	}
+
+	private fun pluralizeLastWord(value: String): String {
+		val words = value.split(' ').filter(String::isNotBlank)
+		if (words.isEmpty()) {
+			return value
+		}
+		val lastWord = words.last()
+		val pluralLastWord = when {
+			lastWord.endsWith("y") && lastWord.length > 1 && lastWord[lastWord.length - 2] !in "aeiou" ->
+				lastWord.dropLast(1) + "ies"
+
+			lastWord.endsWith("s") || lastWord.endsWith("sh") || lastWord.endsWith("ch") || lastWord.endsWith("x") ->
+				"${lastWord}es"
+
+			else -> "${lastWord}s"
+		}
+		return (words.dropLast(1) + pluralLastWord).joinToString(separator = " ")
+	}
 }

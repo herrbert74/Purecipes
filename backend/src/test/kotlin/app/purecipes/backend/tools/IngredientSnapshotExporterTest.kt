@@ -195,6 +195,62 @@ class IngredientSnapshotExporterTest {
 		summary shouldContain "Lines: +0 added, -0 removed, ~1 changed"
 		summary shouldContain "olive oil"
 	}
+
+	@Test
+	fun seedPinsPromotesConfirmedMatchesAndLeavesTokenGuessesAuto() {
+		val db = createInMemoryDb("ingredient_snapshot_seed_pins")
+		val dataSource = db.dataSource
+		val oliveOilFoodId = insertFood(
+			dataSource = dataSource,
+			sourceName = "fdc_sr_legacy",
+			sourceId = "171413",
+			displayName = "Oil, olive, salad or cooking",
+		)
+		val brandedGuessFoodId = insertFood(
+			dataSource = dataSource,
+			sourceName = "fdc_branded",
+			sourceId = "999999",
+			displayName = "RANDOM BRANDED SAUCE",
+		)
+		val recipeId = insertScrapedRecipe(
+			dataSource = dataSource,
+			sourceUrl = "https://example.com/recipes/pins",
+			groupName = null,
+			ingredients = listOf(
+				SnapshotTestIngredient("2 tbsp olive oil"),
+				SnapshotTestIngredient("1 tbsp mystery sauce"),
+			),
+		)
+		val ingredientIds = loadIngredientIds(dataSource, recipeId)
+		insertMeasurementAndMatch(
+			dataSource = dataSource,
+			ingredientId = ingredientIds[0],
+			rawText = "2 tbsp olive oil",
+			quantity = BigDecimal("2.0000"),
+			unit = "tbsp",
+			parsedName = "olive oil",
+			foodId = oliveOilFoodId,
+			matchSource = "alias",
+		)
+		insertMeasurementAndMatch(
+			dataSource = dataSource,
+			ingredientId = ingredientIds[1],
+			rawText = "1 tbsp mystery sauce",
+			quantity = BigDecimal("1.0000"),
+			unit = "tbsp",
+			parsedName = "mystery sauce",
+			foodId = brandedGuessFoodId,
+			matchSource = "tokens",
+		)
+
+		val seeded = IngredientSnapshotExporter(dataSource).collect(seedPins = true)
+		val byName = seeded.names.associateBy(IngredientNameSnapshotRow::lookupName)
+
+		byName.getValue("olive oil").status shouldBe "pinned"
+		byName.getValue("olive oil").matchSource shouldBe "pinned"
+		byName.getValue("mystery sauce").status shouldBe "auto"
+		byName.getValue("mystery sauce").matchSource shouldBe "tokens"
+	}
 }
 
 private data class SnapshotTestIngredient(

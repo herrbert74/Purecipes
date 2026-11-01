@@ -526,6 +526,53 @@ class NutritionLookupIndexTest {
 		match2.foodId shouldBe 2
 	}
 
+	@Test
+	fun findFoodPrefersPinnedMatchOverAliasAndTokenScore() {
+		val pinnedFood = food(
+			id = 10,
+			displayName = "Cheese, halloumi",
+			normalizedName = "cheese halloumi",
+			sourceName = FDC_FOUNDATION_SOURCE_NAME,
+		)
+		val aliasFood = food(
+			id = 20,
+			displayName = "Branded halloumi",
+			normalizedName = "halloumi",
+			sourceName = FDC_BRANDED_SOURCE_NAME,
+		)
+		val index = NutritionLookupIndex(
+			foodById = mapOf(10 to pinnedFood, 20 to aliasFood),
+			foodIdByNormalizedAlias = mapOf("halloumi" to 20),
+			measuresByFoodId = emptyMap(),
+			pinnedFoodIdByLookupName = mapOf("halloumi" to 10),
+		)
+
+		val match = index.findFood("250 g halloumi, sliced")
+		match.shouldNotBeNull()
+		match.foodId shouldBe 10
+		match.matchSource shouldBe "pinned"
+	}
+
+	@Test
+	fun ingredientPinsLoaderParsesPinnedFoodAndPantryRowsFromNamesTsv() {
+		val content = listOf(
+			"lookup_name\tstatus\tpantry_item\tfdc_source\tfdc_id\tfdc_description\tmatch_source\tline_count",
+			"olive oil\tpinned\tOlive Oil\tfdc_sr_legacy\t171413\tOil, olive, salad or cooking\tpinned\t415",
+			"coriander\tauto\tCilantro\tfdc_sr_legacy\t169997\tCoriander (cilantro) leaves, raw\ttokens\t205",
+		).joinToString("\n")
+
+		val pins = IngredientPinsLoader.parsePinsFromNamesTsv(content)
+
+		pins.pantryPinsByLookupName shouldBe mapOf("olive oil" to "Olive Oil")
+		pins.foodPinsByLookupName shouldBe mapOf(
+			"olive oil" to NutritionFoodPin(
+				lookupName = "olive oil",
+				fdcSource = "fdc_sr_legacy",
+				fdcId = "171413",
+			),
+		)
+	}
+
 	private fun food(
 		id: Int,
 		displayName: String,

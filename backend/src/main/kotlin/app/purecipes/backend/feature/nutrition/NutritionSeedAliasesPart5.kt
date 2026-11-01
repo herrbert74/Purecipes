@@ -25,6 +25,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEEF_TALLOW_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEET_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BEET_JUICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BELL_PEPPER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BISCOTTI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.BLUE_CHEESE_DESCRIPTION
@@ -662,7 +663,7 @@ internal object NutritionSeedAliasesPart5 {
 		NutritionSeedAlias("white chocolate", WHITE_CHOCOLATE_DESCRIPTION),
 		NutritionSeedAlias("candied ginger", CANDIED_FRUIT_DESCRIPTION, GINGER_FRESH_DESCRIPTION),
 		NutritionSeedAlias("fish roe", CAVIAR_DESCRIPTION),
-		NutritionSeedAlias("beetroot juice", BEET_DESCRIPTION),
+		NutritionSeedAlias("beetroot juice", BEET_JUICE_DESCRIPTION, BEET_DESCRIPTION),
 		NutritionSeedAlias("candied fruit peel", CANDIED_FRUIT_DESCRIPTION),
 		NutritionSeedAlias("caramel sauce", CARAMEL_TOPPING_DESCRIPTION),
 		NutritionSeedAlias("cooked prawns", SHRIMP_COOKED_DESCRIPTION, SHRIMP_DESCRIPTION),

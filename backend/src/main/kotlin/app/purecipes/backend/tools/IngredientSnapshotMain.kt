@@ -7,6 +7,7 @@ import kotlin.system.exitProcess
 private const val ARG_DIR_PREFIX = "--dir="
 private const val ARG_MODE_PREFIX = "--mode="
 private const val ARG_FAIL_ON_DIFF = "--fail-on-diff"
+private const val ARG_SEED_PINS = "--seed-pins"
 private const val MODE_DIFF = "diff"
 private const val MODE_WRITE = "write"
 private const val NAMES_FILE_NAME = "names.tsv"
@@ -21,6 +22,7 @@ fun main(args: Array<String>) {
 		?.lowercase()
 		?: MODE_WRITE
 	val failOnDiff = args.contains(ARG_FAIL_ON_DIFF)
+	val seedPins = args.contains(ARG_SEED_PINS)
 
 	val snapshotDir = resolveSnapshotDir(dirPath)
 	val namesFile = File(snapshotDir, NAMES_FILE_NAME)
@@ -38,7 +40,11 @@ fun main(args: Array<String>) {
 	}
 
 	val exporter = IngredientSnapshotExporter(Db.create().dataSource)
-	val actual = exporter.collect(existingNames = existingNames)
+	val actual = exporter.collect(
+		existingNames = existingNames,
+		seedPins = seedPins,
+		verifyPinnedMatchesAgainstDb = (mode == MODE_DIFF),
+	)
 
 	if (namesFile.isFile || linesFile.isFile) {
 		val expected = IngredientSnapshotData(names = existingNames, lines = existingLines)
@@ -61,10 +67,11 @@ fun main(args: Array<String>) {
 	snapshotDir.mkdirs()
 	namesFile.writeText(IngredientSnapshotExporter.formatNamesTsv(actual.names))
 	linesFile.writeText(IngredientSnapshotExporter.formatLinesTsv(actual.lines))
+	val pinnedCount = actual.names.count { it.status == IngredientSnapshotExporter.STATUS_PINNED }
 	val pantryMatchedCount = actual.names.count { it.pantryItem.isNotEmpty() }
 	val foodMatchedCount = actual.names.count { it.fdcId.isNotEmpty() }
 	println(
-		"Wrote ${actual.names.size} names ($pantryMatchedCount pantry, $foodMatchedCount food) " +
+		"Wrote ${actual.names.size} names ($pinnedCount pinned, $pantryMatchedCount pantry, $foodMatchedCount food) " +
 			"and ${actual.lines.size} lines to ${snapshotDir.absolutePath}",
 	)
 }

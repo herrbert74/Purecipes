@@ -28,6 +28,7 @@ internal object NutritionSeedAliasDescriptions {
 	internal const val BEEF_CHUCK_DESCRIPTION = "Beef, stew meat"
 	internal const val BEEF_SHORT_RIBS_DESCRIPTION = "Beef, shortribs"
 	internal const val BEET_DESCRIPTION = "Beets, raw"
+	internal const val BEET_JUICE_DESCRIPTION = "Beet juice"
 	internal const val BEER_DESCRIPTION = "Alcoholic beverage, beer, regular, all"
 	internal const val BELL_PEPPER_DESCRIPTION = "Peppers, sweet, green, raw"
 	internal const val BISCOTTI_DESCRIPTION = "Cookie, biscotti"
