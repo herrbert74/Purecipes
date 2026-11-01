@@ -26,6 +26,8 @@ private const val TOKEN_OVERLAP_WEIGHT = 0.55
 private const val HEAD_NOUN_WEIGHT = 0.20
 private const val TRIGRAM_WEIGHT = 0.25
 private const val BRANDED_SOURCE_PENALTY = 0.12
+private const val PRIMARY_HEAD_MISMATCH_PENALTY = 0.35
+private const val PREPARED_DISH_PENALTY = 0.30
 private const val TRIGRAM_SIZE = 3
 private const val SCORE_FORMAT_DECIMALS = "%.2f"
 private const val MAX_ALTERNATIVE_CANDIDATES = 3
@@ -361,6 +363,7 @@ internal object IngredientCandidateScorer {
 	private val tokenSynonyms = mapOf(
 		"aubergine" to "eggplant",
 		"aubergines" to "eggplant",
+		"broth" to "soup",
 		"bucatini" to "pasta",
 		"bulkie" to "roll",
 		"caster" to "granulated",
@@ -382,6 +385,61 @@ internal object IngredientCandidateScorer {
 		"rigatoni" to "pasta",
 		"stock" to "broth",
 		"yoghurt" to "yogurt",
+	)
+
+	private val queryModifierOnlyTokens = setOf(
+		"all",
+		"bone",
+		"bone-in",
+		"boiled",
+		"bought",
+		"canned",
+		"cold",
+		"divided",
+		"dry",
+		"dried",
+		"extra",
+		"fat",
+		"free",
+		"fresh",
+		"frozen",
+		"gluten",
+		"hard",
+		"hot",
+		"kosher",
+		"light",
+		"low",
+		"natural",
+		"optional",
+		"organic",
+		"pure",
+		"raw",
+		"reduced",
+		"refined",
+		"regular",
+		"semi",
+		"sodium",
+		"soft",
+		"store",
+		"store-bought",
+		"storebought",
+		"sweetened",
+		"tinned",
+		"total",
+		"unrefined",
+		"unsweetened",
+		"virgin",
+		"warm",
+	)
+
+	private val preparedDishMarkers = setOf(
+		"applebee's",
+		"casserole",
+		"fast foods",
+		"rellenos",
+		"restaurant",
+		"sandwich",
+		"sandwiches",
 	)
 
 	private val phraseSynonyms = mapOf(
@@ -427,7 +485,7 @@ internal object IngredientCandidateScorer {
 	): List<SuggestedFoodCandidate> {
 		val normalized = NutritionNameNormalizer.forLookup(lookupName)
 		val tokens = NutritionNameNormalizer.tokens(normalized)
-		if (tokens.isEmpty()) {
+		if (tokens.isEmpty() || isModifierOnlyQuery(tokens)) {
 			return emptyList()
 		}
 		val candidateByFoodId = linkedMapOf<Int, SuggestedFoodCandidate>()
@@ -533,11 +591,23 @@ internal object IngredientCandidateScorer {
 					}
 				val trigramSim = trigramDiceSimilarity(queryTrigrams, trigrams(food.normalizedName))
 				val brandedPenalty = if (food.sourceName == FDC_BRANDED_SOURCE_NAME) BRANDED_SOURCE_PENALTY else 0.0
+				val primaryHeadMismatchPenalty = if (hasPrimaryHeadMismatch(food, expandedQueryTokens, tokens)) {
+					PRIMARY_HEAD_MISMATCH_PENALTY
+				} else {
+					0.0
+				}
+				val preparedDishPenalty = if (isPreparedDishMismatch(food, expandedQueryTokens)) {
+					PREPARED_DISH_PENALTY
+				} else {
+					0.0
+				}
 				val combinedScore = (
 					overlapRatio * TOKEN_OVERLAP_WEIGHT +
 						headMatch * HEAD_NOUN_WEIGHT +
 						trigramSim * TRIGRAM_WEIGHT -
-						brandedPenalty
+						brandedPenalty -
+						primaryHeadMismatchPenalty -
+						preparedDishPenalty
 					).coerceIn(0.0, 0.90)
 				if (combinedScore >= MIN_LEXICAL_TRIGRAM_SCORE) {
 					putCandidateIfBetter(
@@ -550,6 +620,41 @@ internal object IngredientCandidateScorer {
 				}
 			}
 		}
+	}
+
+	private fun isModifierOnlyQuery(tokens: List<String>): Boolean =
+		tokens.all { it in queryModifierOnlyTokens }
+
+	private fun hasPrimaryHeadMismatch(
+		food: NutritionFoodRecord,
+		expandedQueryTokens: Set<String>,
+		tokens: List<String>,
+	): Boolean {
+		val primaryHead = food.displayName.substringBefore(',').trim().lowercase(Locale.ROOT)
+		val primaryHeadTokens = NutritionNameNormalizer.tokens(primaryHead)
+		if (primaryHeadTokens.isEmpty()) {
+			return false
+		}
+		val matchesPrimaryHead = primaryHeadTokens.any { headToken ->
+			headToken in expandedQueryTokens ||
+				singularize(headToken) in expandedQueryTokens ||
+				tokenSynonyms[headToken] in expandedQueryTokens
+		} || tokens.any { queryToken ->
+			queryToken in primaryHeadTokens ||
+				singularize(queryToken) in primaryHeadTokens ||
+				tokenSynonyms[queryToken] in primaryHeadTokens
+		}
+		return !matchesPrimaryHead
+	}
+
+	private fun isPreparedDishMismatch(
+		food: NutritionFoodRecord,
+		expandedQueryTokens: Set<String>,
+	): Boolean {
+		val foodTokens = NutritionNameNormalizer.tokens(food.normalizedName)
+		val hasPreparedMarker = foodTokens.any { it in preparedDishMarkers }
+		val queryHasPreparedMarker = expandedQueryTokens.any { it in preparedDishMarkers }
+		return hasPreparedMarker && !queryHasPreparedMarker
 	}
 
 	private fun findDirectFood(

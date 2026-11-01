@@ -49,7 +49,7 @@ internal class LocalEmbeddingIngredientReranker private constructor(
 		}
 		val candidateTexts = input.foodCandidates.map(SuggestedFoodCandidate::fdcDescription)
 		val embeddings = encodeTexts(listOf(input.lookupName) + candidateTexts)
-		val bestMatch = embeddings?.let { findBestCandidateMatch(it, candidateTexts.size) }
+		val bestMatch = embeddings?.let { findBestCandidateMatch(it, input.foodCandidates) }
 		return if (bestMatch == null) {
 			null
 		} else {
@@ -68,20 +68,22 @@ internal class LocalEmbeddingIngredientReranker private constructor(
 
 	private fun findBestCandidateMatch(
 		embeddings: Array<FloatArray>,
-		candidateCount: Int,
+		candidates: List<SuggestedFoodCandidate>,
 	): Pair<Int, Double>? {
 		val queryEmb = embeddings[FIRST_INDEX]
 		var bestIdx = -1
-		var bestSimilarity = MIN_SIMILARITY_FLOOR
-		for (i in 0 until candidateCount) {
+		var bestScore = MIN_SIMILARITY_FLOOR
+		for (i in candidates.indices) {
 			val similarity = cosineSimilarity(queryEmb, embeddings[i + CANDIDATE_OFFSET])
-			if (similarity > bestSimilarity) {
-				bestSimilarity = similarity
+			val candidateBaseRatio = (candidates[i].score / MAX_LEXICAL_SCORE).coerceIn(0.0, 1.0)
+			val blended = similarity * EMBEDDING_WEIGHT + candidateBaseRatio * LEXICAL_WEIGHT
+			if (blended > bestScore) {
+				bestScore = blended
 				bestIdx = i
 			}
 		}
-		return if (bestIdx >= 0 && bestSimilarity >= MINIMUM_EMBEDDING_ACCEPTANCE_THRESHOLD) {
-			bestIdx to bestSimilarity
+		return if (bestIdx >= 0 && bestScore >= MINIMUM_EMBEDDING_ACCEPTANCE_THRESHOLD) {
+			bestIdx to bestScore
 		} else {
 			null
 		}
@@ -169,6 +171,9 @@ internal class LocalEmbeddingIngredientReranker private constructor(
 		const val EMBEDDING_DIM = 512
 		private const val MIN_SIMILARITY_FLOOR = -1.0
 		private const val MINIMUM_EMBEDDING_ACCEPTANCE_THRESHOLD = 0.45
+		private const val EMBEDDING_WEIGHT = 0.70
+		private const val LEXICAL_WEIGHT = 0.30
+		private const val MAX_LEXICAL_SCORE = 0.90
 		private const val SCORE_FORMAT = "%.2f"
 		private const val FIRST_INDEX = 0
 		private const val SECOND_INDEX = 1
