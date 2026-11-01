@@ -247,6 +247,10 @@ tasks.register<JavaExec>("suggestIngredientMatches") {
 	val suggestQuery = project.findProperty("suggest.query")?.toString().orEmpty()
 	val suggestLimit = project.findProperty("suggest.limit")?.toString().orEmpty()
 	val modelPath = project.findProperty("suggest.modelPath")?.toString().orEmpty()
+		.ifBlank {
+			val rootModel = rootProject.file(".use_v4")
+			if (rootModel.isDirectory) rootModel.absolutePath else ""
+		}
 	val extraArgs = buildList {
 		if (suggestDir.isNotBlank()) {
 			add("--dir=$suggestDir")

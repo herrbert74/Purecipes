@@ -42,7 +42,8 @@ fun main(args: Array<String>) {
 	val modelPath = args.firstOrNull { it.startsWith(ARG_MODEL_PATH_PREFIX) }
 		?.removePrefix(ARG_MODEL_PATH_PREFIX)
 		?.takeIf(String::isNotBlank)
-		?: System.getenv("USE_MODEL_PATH").orEmpty()
+		?: System.getenv("USE_MODEL_PATH")?.takeIf(String::isNotBlank)
+		?: resolveDefaultModelPath()
 
 	val dataSource = Db.create().dataSource
 	val namesFile = File(snapshotDir, IngredientSnapshotExporter.NAMES_FILE_NAME)
@@ -83,3 +84,11 @@ private fun resolveSuggestionDir(explicitPath: String?): File {
 		File("backend/data/ingredients")
 	}
 }
+
+private val defaultModelCandidatePaths = listOf(
+	".use_v4",
+	"../.use_v4",
+)
+
+private fun resolveDefaultModelPath(): String? =
+	defaultModelCandidatePaths.firstOrNull { File(it).isDirectory }
