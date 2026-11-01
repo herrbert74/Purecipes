@@ -209,12 +209,14 @@ private val catalogueGroups: List<IngredientCatalogueGroup> = listOf(
 	IngredientCatalogueGroup(
 		name = "Cheeses",
 		items = listOf(
+			"Camembert",
 			"Cheddar",
 			"Cheese",
 			"Feta",
 			"Goat Cheese",
 			"Gruyere",
 			"Halloumi",
+			"Hard Cheese",
 			"Monterey Jack",
 			"Mozzarella",
 			"Paneer",
