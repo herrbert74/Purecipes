@@ -256,6 +256,7 @@ internal object PantryItemResolver {
 	)
 
 	private val singleWordDairyItems = setOf("Butter", "Cream", "Milk")
+	private val genericUmbrellaItems = setOf("Cheese", "Fish")
 
 	private val indexedCatalogue: List<IndexedCatalogueItem> by lazy {
 		IngredientCatalogue.allItems
@@ -271,7 +272,8 @@ internal object PantryItemResolver {
 				)
 			}
 			.sortedWith(
-				compareByDescending<IndexedCatalogueItem> { it.wordCount }
+				compareBy<IndexedCatalogueItem> { it.item in genericUmbrellaItems }
+					.thenByDescending { it.wordCount }
 					.thenByDescending { it.normalizedItem.length }
 					.thenBy { it.item },
 			)
@@ -325,9 +327,19 @@ internal object PantryItemResolver {
 			return null
 		}
 		val strippedText = stripTrailingFormWords(normalizedText)
-		val candidatePhrases = listOf(normalizedText, strippedText).distinct()
+		return if (strippedText != normalizedText) {
+			findTrailingHeadMatch(strippedText) ?: findTrailingHeadMatch(normalizedText)
+		} else {
+			findTrailingHeadMatch(normalizedText)
+		}
+	}
+
+	private fun findTrailingHeadMatch(phrase: String): String? {
+		if (phrase.isBlank()) {
+			return null
+		}
 		return indexedCatalogue.firstOrNull { entry ->
-			candidatePhrases.any { phrase -> matchesTrailingOwnForm(phrase, entry) }
+			matchesTrailingOwnForm(phrase, entry)
 		}?.item
 	}
 

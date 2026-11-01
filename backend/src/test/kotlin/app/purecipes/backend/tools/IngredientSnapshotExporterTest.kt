@@ -316,6 +316,20 @@ class IngredientSnapshotExporterTest {
 			),
 		)
 	}
+
+	@Test
+	fun pantryItemResolverPrefersSpecificCheesesOverGenericCheese() {
+		PantryItemResolver.resolve("feta cheese") shouldBe "Feta"
+		PantryItemResolver.resolve("mild feta cheese") shouldBe "Feta"
+		PantryItemResolver.resolve("camembert cheese") shouldBe "Camembert"
+		PantryItemResolver.resolve("shredded mozzarella cheese") shouldBe "Mozzarella"
+		PantryItemResolver.resolve("goat cheese") shouldBe "Goat Cheese"
+		PantryItemResolver.resolve("fresh goat cheese") shouldBe "Goat Cheese"
+		PantryItemResolver.resolve("grated cheese") shouldBe "Cheese"
+		PantryItemResolver.resolve("cod fillet") shouldBe "Cod"
+		PantryItemResolver.resolve("fennel bulb") shouldBe "Fennel"
+		PantryItemResolver.resolve("chicken breasts") shouldBe "Chicken"
+	}
 }
 
 private data class SnapshotTestIngredient(
