@@ -7,7 +7,6 @@ plugins {
 	alias(libs.plugins.googleServices)
 	alias(libs.plugins.crashlytics)
 	alias(libs.plugins.aboutLibraries)
-	alias(libs.plugins.compose.screenshotTesting)
 	alias(libs.plugins.ksp)
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("dev.zacsweers.metro")
@@ -152,6 +151,32 @@ android {
 		compose = true
 	}
 	experimentalProperties["android.experimental.enableScreenshotTest"] = true
+	testOptions {
+		screenshotTests {
+			create("storeScreenshot") {
+				engineVersion = libs.versions.compose.screenshotTesting.get()
+				targetVariants.add("debug")
+				dependencies {
+					val suiteDependencies = project.dependencies
+					implementation(suiteDependencies.project(mapOf("path" to ":feature:cooking:ui")))
+					implementation(suiteDependencies.project(mapOf("path" to ":feature:library:ui")))
+					implementation(suiteDependencies.project(mapOf("path" to ":feature:recipedetails:ui")))
+					implementation(suiteDependencies.project(mapOf("path" to ":feature:search:ui")))
+					implementation(suiteDependencies.project(mapOf("path" to ":shared:domain")))
+					implementation(suiteDependencies.project(mapOf("path" to ":shared:ui")))
+					implementation(suiteDependencies.platform(libs.androidx.composeBom))
+					implementation(libs.androidx.composeFoundation)
+					implementation(libs.androidx.composeMaterial3)
+					implementation(libs.androidx.composeUiTooling)
+					implementation(libs.androidx.core)
+					implementation(libs.coil.compose)
+					implementation(libs.jetbrains.composeMaterial3AdaptiveNavigationSuite)
+					implementation(libs.kotlinx.collectionsImmutable)
+					implementation(libs.screenshot.validationApi)
+				}
+			}
+		}
+	}
 }
 
 dependencies {
@@ -194,21 +219,6 @@ dependencies {
 	implementation(libs.metrox.viewmodel)
 	implementation(platform(libs.androidx.composeBom))
 	implementation(libs.metro.runtime)
-	screenshotTestImplementation(project(":feature:cooking:ui"))
-	screenshotTestImplementation(project(":feature:library:ui"))
-	screenshotTestImplementation(project(":feature:recipedetails:ui"))
-	screenshotTestImplementation(project(":feature:search:ui"))
-	screenshotTestImplementation(project(":shared:domain"))
-	screenshotTestImplementation(project(":shared:ui"))
-	screenshotTestImplementation(platform(libs.androidx.composeBom))
-	screenshotTestImplementation(libs.androidx.composeFoundation)
-	screenshotTestImplementation(libs.androidx.composeMaterial3)
-	screenshotTestImplementation(libs.androidx.composeUiTooling)
-	screenshotTestImplementation(libs.androidx.core)
-	screenshotTestImplementation(libs.coil.compose)
-	screenshotTestImplementation(libs.jetbrains.composeMaterial3AdaptiveNavigationSuite)
-	screenshotTestImplementation(libs.kotlinx.collectionsImmutable)
-	screenshotTestImplementation(libs.screenshot.validationApi)
 }
 
 private fun Project.releaseSigningStoreFile(): String {
