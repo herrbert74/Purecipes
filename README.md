@@ -60,7 +60,7 @@ Run the application
 - Dependency injection with [Metro](https://zacsweers.github.io/metro/latest/)
 - Database using [androidx-room](https://developer.android.com/training/data-storage/room/)
 - Some modules contain shared [Gradle test fixtures modules](https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures)
-- Using [Compose Preview Screenshot Testing](https://developer.android.com/studio/preview/compose-screenshot-testing) to verify UI
+- Using [Compose Preview Screenshot Testing](https://developer.android.com/studio/preview/compose-screenshot-testing-with-testsuites) to verify UI
 
 ## 🏛 Architecture
 

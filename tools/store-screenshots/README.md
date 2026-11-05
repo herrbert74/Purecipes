@@ -6,7 +6,7 @@ Agent workflow: [`.agents/skills/play-store-screenshots/SKILL.md`](../../.agents
 
 | Step | Command |
 |------|---------|
-| Capture raw UI | `./gradlew :app:updateDebugScreenshotTest` |
+| Capture raw UI | `./gradlew :app:updateDebugStoreScreenshotDefaultTestSuite` |
 | Frame store assets | `./gradlew generateStoreScreenshots` |
 | Preview upload plan | `./gradlew uploadStoreScreenshots -PdryRun` |
 | Upload to Play | `./gradlew uploadStoreScreenshots` |
@@ -44,6 +44,6 @@ If upload returns `403 The caller does not have permission`:
 
 ## Slide copy and themes
 
-Edit `src/main/kotlin/app/purecipes/store/screenshots/MarketingSlides.kt`. Raw captures are `@PreviewTest` composables in `app/src/screenshotTest/.../MarketingScreenshots.kt`.
+Edit `src/main/kotlin/app/purecipes/store/screenshots/MarketingSlides.kt`. Raw captures are `@PreviewTest` composables in `app/src/storeScreenshot/.../MarketingScreenshots.kt`.
 
 Food photos for those captures live in `app/src/debug/res/drawable-nodpi/marketing_*.jpg` and are wired through `MarketingCoilPreview` (Coil preview handler). They ship only with debug builds, not release.

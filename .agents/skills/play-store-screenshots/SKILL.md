@@ -17,7 +17,7 @@ Produce store-ready framed PNGs from real Compose UI captures, then optionally u
 
 Run in order:
 
-1. **Capture raw UI** — `./gradlew :app:updateDebugScreenshotTest`
+1. **Capture raw UI** — `./gradlew :app:updateDebugStoreScreenshotDefaultTestSuite`
 2. **Frame assets** — `./gradlew generateStoreScreenshots`
 3. **Dry-run upload** — `./gradlew uploadStoreScreenshots -PdryRun`
 4. **Upload** — `./gradlew uploadStoreScreenshots` (only when the user asks to publish)
@@ -32,8 +32,8 @@ Sizes: phone 1080×1920, 7" tablet 1200×1920, 10" tablet 1600×2560, feature gr
 
 | Role | Path |
 |------|------|
-| Raw `@PreviewTest` captures | `app/src/screenshotTest/kotlin/app/purecipes/marketing/MarketingScreenshots.kt` |
-| Raw reference PNGs | `app/src/screenshotTestDebug/reference/app/purecipes/marketing/MarketingScreenshotsKt/` |
+| Raw `@PreviewTest` captures | `app/src/storeScreenshot/kotlin/app/purecipes/marketing/MarketingScreenshots.kt` |
+| Raw reference PNGs | `app/src/storeScreenshotDefaultDebug/reference/app/purecipes/marketing/MarketingScreenshotsKt/` |
 | Slide copy + themes | `tools/store-screenshots/.../MarketingSlides.kt` |
 | Frame layout | `tools/store-screenshots/.../MarketingFrame.kt` |
 | Frame generator | `./gradlew generateStoreScreenshots` |
@@ -42,7 +42,7 @@ Sizes: phone 1080×1920, 7" tablet 1200×1920, 10" tablet 1600×2560, feature gr
 ## Adding or changing a slide
 
 1. Prefer a public `*ScreenContent` composable with fake data and no ViewModel (see `RecipeSearchScreenContent`, `RecipeDetailsScreenContent`, `StepByStepCookingScreenContent`). Put previews in the same file as the composable they show; put Content helpers in their own `.kt` file.
-2. Add a `@PreviewTest` + `@Preview(device = MARKETING_DEVICE, …)` in `MarketingScreenshots.kt`. Device spec: `spec:width=1080px,height=2340px,dpi=440`.
+2. Add a `@PreviewTest` + `@Preview(device = MARKETING_DEVICE, …)` in `app/src/storeScreenshot/.../MarketingScreenshots.kt`. Device spec: `spec:width=1080px,height=2340px,dpi=440`.
 3. Register the slide in `MarketingSlides.kt` with:
    - `fileName` (`01.png`, `02.png`, …)
    - title / optional subtitle (one outcome per slide; pass the one-second thumbnail test)
@@ -71,7 +71,7 @@ If upload returns `The caller does not have permission`, invite the service acco
 
 ## Checklist
 
-- raw `@PreviewTest` updated and `updateDebugScreenshotTest` succeeded
+- raw `@PreviewTest` updated and `updateDebugStoreScreenshotDefaultTestSuite` succeeded
 - `MarketingSlides` prefixes match generated reference filenames
 - `generateStoreScreenshots` wrote expected files under `store-listing/`
 - agent reviewed framed PNGs (read the image files)

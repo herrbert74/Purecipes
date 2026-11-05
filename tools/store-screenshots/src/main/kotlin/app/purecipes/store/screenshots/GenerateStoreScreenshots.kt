@@ -4,7 +4,7 @@ import java.io.File
 
 private const val DEFAULT_LANGUAGE = "en-GB"
 private const val RAW_REFERENCE_DIR =
-	"app/src/screenshotTestDebug/reference/app/purecipes/marketing/MarketingScreenshotsKt"
+	"app/src/storeScreenshotDefaultDebug/reference/app/purecipes/marketing/MarketingScreenshotsKt"
 
 fun main(args: Array<String>) {
 	val options = parseArgs(args)
@@ -44,7 +44,7 @@ internal fun resolveRawScreenshot(projectRoot: File, namePrefix: String): File {
 	val directory = File(projectRoot, RAW_REFERENCE_DIR)
 	require(directory.isDirectory) {
 		"Raw screenshot directory missing: ${directory.absolutePath}. " +
-			"Run ./gradlew :app:updateDebugScreenshotTest first."
+			"Run ./gradlew :app:updateDebugStoreScreenshotDefaultTestSuite first."
 	}
 	val matches = directory.listFiles()
 		?.filter { file ->
