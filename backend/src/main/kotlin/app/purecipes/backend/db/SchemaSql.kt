@@ -368,6 +368,168 @@ internal const val NUTRITION_FOODS_SEED_CUSTOM_SQL = """
 		SELECT 1 FROM nutrition_foods
 		WHERE source_name = 'purecipes_custom' AND source_id = 'non_alcoholic_spirit'
 	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'brandy_butter',
+		'Brandy butter',
+		'brandy butter',
+		525.00,
+		0.40,
+		51.00,
+		35.00,
+		0.00,
+		51.00,
+		8.00,
+		'Curated brandy butter (butter, sugar, brandy)'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'brandy_butter'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'wild_garlic_leaves',
+		'Wild garlic leaves, raw',
+		'wild garlic leaves raw',
+		26.00,
+		2.20,
+		2.50,
+		0.30,
+		2.60,
+		1.00,
+		5.00,
+		'Curated wild garlic leaves (Allium ursinum)'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'wild_garlic_leaves'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'galangal_raw',
+		'Galangal root, raw',
+		'galangal root raw',
+		71.00,
+		1.00,
+		15.00,
+		0.50,
+		2.00,
+		0.50,
+		16.00,
+		'Curated galangal root (Alpinia galanga)'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'galangal_raw'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'sourdough_starter',
+		'Sourdough starter (100% hydration)',
+		'sourdough starter 100 hydration',
+		183.00,
+		6.00,
+		36.50,
+		0.90,
+		1.20,
+		0.20,
+		2.00,
+		'Curated sourdough starter (equal parts flour and water)'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'sourdough_starter'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'rye_sourdough_starter',
+		'Rye sourdough starter (100% hydration)',
+		'rye sourdough starter 100 hydration',
+		168.00,
+		4.50,
+		35.00,
+		0.80,
+		7.50,
+		0.50,
+		2.00,
+		'Curated rye sourdough starter (equal parts rye flour and water)'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'rye_sourdough_starter'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'bread_sauce_mix_dry',
+		'Bread sauce mix, dry packet',
+		'bread sauce mix dry packet',
+		330.00,
+		8.10,
+		65.10,
+		3.70,
+		4.40,
+		4.40,
+		3200.00,
+		'Curated bread sauce mix, dry packet powder'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'bread_sauce_mix_dry'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'bread_sauce_prepared',
+		'Bread sauce, prepared',
+		'bread sauce prepared',
+		104.00,
+		3.80,
+		12.50,
+		4.20,
+		0.80,
+		3.90,
+		380.00,
+		'Curated bread sauce, prepared with whole milk and butter'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'bread_sauce_prepared'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'asafoetida_powder',
+		'Asafoetida powder',
+		'asafoetida powder',
+		297.00,
+		4.00,
+		68.00,
+		1.10,
+		4.10,
+		0.00,
+		50.00,
+		'Curated asafoetida (hing) powder compounded with gum arabic/flour'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'asafoetida_powder'
+	)
+	UNION ALL
+	SELECT
+		'purecipes_custom',
+		'pastry_baking_mix',
+		'Pastry baking mix, dry',
+		'pastry baking mix dry',
+		428.00,
+		8.00,
+		63.40,
+		15.40,
+		2.50,
+		3.00,
+		1300.00,
+		'Curated all-purpose pastry/biscuit baking mix, dry'
+	WHERE NOT EXISTS (
+		SELECT 1 FROM nutrition_foods
+		WHERE source_name = 'purecipes_custom' AND source_id = 'pastry_baking_mix'
+	)
 """
 
 internal const val NUTRITION_FOOD_ALIASES_TABLE_SQL = """

@@ -74,6 +74,8 @@ val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resource
 
 sourceSets {
 	main {
+		kotlin.srcDir(rootProject.file("scripts/scraping"))
+		kotlin.exclude("**/*.kts")
 		resources.srcDir(generatedBackendResourcesDir)
 	}
 }
@@ -114,6 +116,7 @@ dependencies {
 	implementation(libs.ktor.serverStatusPages)
 
 	implementation(libs.postgresql)
+	implementation(libs.tensorflowJava)
 
 	testImplementation(kotlin("test"))
 	testImplementation(libs.h2)
@@ -188,6 +191,117 @@ tasks.register<JavaExec>("reportIngredientFoodMatches") {
 		}
 		if (project.findProperty("report.includeScraped")?.toString() == "true") {
 			add("--include-scraped")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("snapshotIngredients") {
+	group = "verification"
+	description = "Exports names.tsv and lines.tsv ingredient snapshots from the database"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientSnapshotMainKt")
+	val snapshotDir = project.findProperty("snapshot.dir")?.toString().orEmpty()
+	val snapshotMode = project.findProperty("snapshot.mode")?.toString().orEmpty().ifBlank { "write" }
+	val extraArgs = buildList {
+		add("--mode=$snapshotMode")
+		if (snapshotDir.isNotBlank()) {
+			add("--dir=$snapshotDir")
+		}
+		if (project.findProperty("snapshot.failOnDiff")?.toString() == "true") {
+			add("--fail-on-diff")
+		}
+		if (project.findProperty("snapshot.seedPins")?.toString() == "true") {
+			add("--seed-pins")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("diffIngredientSnapshot") {
+	group = "verification"
+	description = "Diffs the database ingredient snapshot against committed names.tsv and lines.tsv"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientSnapshotMainKt")
+	val snapshotDir = project.findProperty("snapshot.dir")?.toString().orEmpty()
+	val failOnDiff = project.findProperty("snapshot.failOnDiff")?.toString() != "false"
+	val extraArgs = buildList {
+		add("--mode=diff")
+		if (snapshotDir.isNotBlank()) {
+			add("--dir=$snapshotDir")
+		}
+		if (failOnDiff) {
+			add("--fail-on-diff")
+		}
+		if (project.findProperty("snapshot.seedPins")?.toString() == "true") {
+			add("--seed-pins")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("suggestIngredientMatches") {
+	group = "verification"
+	description = "Generates offline lexical/trigram and optional local ML-embedding suggestions into suggestions.tsv"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.IngredientSuggestionMainKt")
+	val suggestDir = project.findProperty("suggest.dir")?.toString().orEmpty()
+	val suggestScope = project.findProperty("suggest.scope")?.toString().orEmpty()
+	val suggestQuery = project.findProperty("suggest.query")?.toString().orEmpty()
+	val suggestLimit = project.findProperty("suggest.limit")?.toString().orEmpty()
+	val modelPath = project.findProperty("suggest.modelPath")?.toString().orEmpty()
+		.ifBlank {
+			val rootModel = rootProject.file(".use_v4")
+			if (rootModel.isDirectory) rootModel.absolutePath else ""
+		}
+	val extraArgs = buildList {
+		if (suggestDir.isNotBlank()) {
+			add("--dir=$suggestDir")
+		}
+		if (suggestScope.isNotBlank()) {
+			add("--scope=$suggestScope")
+		}
+		if (suggestQuery.isNotBlank()) {
+			add("--query=$suggestQuery")
+		}
+		if (suggestLimit.isNotBlank()) {
+			add("--limit=$suggestLimit")
+		}
+		if (modelPath.isNotBlank()) {
+			add("--model-path=$modelPath")
+		}
+		if (project.findProperty("suggest.accept")?.toString() == "true") {
+			add("--accept")
+		}
+	}
+	args = extraArgs
+}
+
+tasks.register<JavaExec>("rebuildIngredientData") {
+	group = "application"
+	description = "Recomputes scraped ingredient groups, lines, measurements, and nutrition from DB and JSON archive"
+	classpath = sourceSets.main.get().runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.RebuildIngredientDataMainKt")
+	val jsonDir = project.findProperty("rebuild.jsonDir")?.toString().orEmpty()
+	val restoreLinesTsv = project.findProperty("rebuild.restoreLinesTsv")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (jsonDir.isNotBlank()) {
+			add("--json-dir=$jsonDir")
+		}
+		if (restoreLinesTsv.isNotBlank()) {
+			add("--restore-lines-tsv=$restoreLinesTsv")
+		}
+		if (project.findProperty("rebuild.fromJson")?.toString() == "true") {
+			add("--from-json")
+		}
+		if (project.findProperty("rebuild.noSyncJson")?.toString() == "true") {
+			add("--no-sync-json")
+		}
+		if (project.findProperty("rebuild.noJson")?.toString() == "true") {
+			add("--no-json")
+		}
+		if (project.findProperty("rebuild.onlyChangedLines")?.toString() == "true") {
+			add("--only-changed-lines")
 		}
 	}
 	args = extraArgs

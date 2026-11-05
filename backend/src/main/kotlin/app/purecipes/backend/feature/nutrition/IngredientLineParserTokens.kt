@@ -208,6 +208,8 @@ internal object IngredientLineParserTokens {
 		"shrimp",
 		"shrimps",
 		"squid",
+		"steak",
+		"steaks",
 	)
 
 	val defaultPieceCheeseTokens = setOf(

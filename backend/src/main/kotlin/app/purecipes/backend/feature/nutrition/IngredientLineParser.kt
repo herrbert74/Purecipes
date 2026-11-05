@@ -337,6 +337,7 @@ internal object IngredientLineParser {
 				tail = plus.groupValues[REGEX_GROUP_THIRD].trim(),
 				fullLine = base,
 			)
+
 			couple != null -> "$COUPLE_COUNT ${couple.groupValues[REGEX_GROUP_FIRST].trim()}"
 			suchAs != null && looksLikeVagueLeadIn(base) -> suchAs.groupValues[REGEX_GROUP_FIRST].trim()
 			else -> base
@@ -398,12 +399,14 @@ internal object IngredientLineParser {
 				unit = dualMatch.groupValues[REGEX_GROUP_SECOND],
 				tail = tail,
 			)
+
 			internalMatch != null -> formatSummedParenthetical(
 				q1Str = internalMatch.groupValues[REGEX_GROUP_FIRST],
 				q2Str = internalMatch.groupValues[REGEX_GROUP_SECOND],
 				unit = internalMatch.groupValues[REGEX_GROUP_THIRD],
 				tail = tail,
 			)
+
 			mass != null -> formatMassFromTail(mass = mass, tail = tail)
 			else -> null
 		}
@@ -1322,7 +1325,11 @@ internal object IngredientLineParser {
 			return null
 		}
 		val trailing = tokens.last().lowercase().trimEnd(',', ';', '.')
-		return if (trailing in allCountNounTokens()) {
+		val beforeWord = tokens.dropLast(1).joinToString(" ").lowercase()
+		val isAdjectiveOnlyLeaves = (trailing == "leaves" || trailing == "leaf") &&
+			(beforeWord == "mixed" || beforeWord == "salad" || beforeWord == "baby" || beforeWord == "spring")
+		val isExcludedCountNoun = trailing == "steak" || trailing == "steaks" || isAdjectiveOnlyLeaves
+		return if (trailing in allCountNounTokens() && !isExcludedCountNoun) {
 			LeadingAmount(
 				quantity = null,
 				unit = unitForCountNoun(trailing),
@@ -1372,6 +1379,7 @@ internal object IngredientLineParser {
 		return when {
 			afterHasMignon -> listOf("filet", "mignon").joinToString(" ")
 			noun in IngredientLineParserTokens.volumeCountNounTokens -> (before + after).joinToString(" ")
+			noun == "steak" || noun == "steaks" -> (before + noun).joinToString(" ")
 			noun in IngredientLineParserTokens.cutCountNounTokens ||
 				noun == "stalk" ||
 				noun == "stalks" ||
@@ -1410,6 +1418,15 @@ internal object IngredientLineParser {
 		return when {
 			trimmed.equals("bay", ignoreCase = true) -> "bay leaf"
 			compact == "bayleaf" || compact == "bayleaves" -> "bay leaf"
+			trimmed.equals("curry", ignoreCase = true) ||
+				trimmed.equals("fresh curry", ignoreCase = true) ||
+				trimmed.equals("curry shredded", ignoreCase = true) -> "curry leaves"
+
+			compact == "curryleaf" || compact == "curryleaves" -> "curry leaves"
+			compact.endsWith("makrutlime") || compact.endsWith("kaffirlime") -> "$trimmed leaves"
+			compact == "makrutlimeleaf" || compact == "makrutlimeleaves" -> "makrut lime leaves"
+			compact == "kaffirlimeleaf" || compact == "kaffirlimeleaves" -> "kaffir lime leaf"
+			compact == "limeleaf" || compact == "limeleaves" -> "lime leaves"
 			else -> trimmed
 		}
 	}
@@ -1599,7 +1616,7 @@ internal object IngredientLineParser {
 			"ml", "milliliter", "millilitre", "milliliters", "millilitres" -> "ml"
 			"l", "liter", "litre", "liters", "litres" -> "l"
 			"tsp", "tsps", "teaspoon", "teaspoons", "tspn" -> "tsp"
-			"tbsp", "tbsps", "tbs", "tablespoon", "tablespoons" -> "tbsp"
+			"tbsp", "tbsps", "tbs", "tablespoon", "tablespoons", "ttbsp" -> "tbsp"
 			"cup", "cups" -> "cup"
 			"oz", "ounce", "ounces" -> "oz"
 			"lb", "lbs", "pound", "pounds" -> "lb"

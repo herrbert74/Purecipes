@@ -16,17 +16,25 @@ private const val SCRAPED_CALCULATION_SOURCE = "scraped"
 internal class RecipeNutritionService(
 	private val recipeNutritionRepository: RecipeNutritionRepository,
 	private val lookupRepository: NutritionLookupRepository,
+	private val lineOverridesProvider: () -> Map<IngredientLineOverrideKey, IngredientLineOverride> =
+		IngredientLineOverridesLoader::loadDefaultOverrides,
 ) {
 
 	constructor(dataSource: DataSource) : this(
 		recipeNutritionRepository = RecipeNutritionRepository(dataSource),
-		lookupRepository = NutritionLookupRepository(dataSource),
+		lookupRepository = NutritionLookupRepository(
+			dataSource = dataSource,
+			foodPinsProvider = IngredientPinsLoader::loadDefaultFoodPins,
+		),
 	)
 
-	fun calculateAndPersist(recipeId: Int): RecipeNutritionPersistResult {
+	fun calculateAndPersist(
+		recipeId: Int,
+		lookupIndex: NutritionLookupIndex = lookupRepository.loadIndex(),
+		lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride> = lineOverridesProvider(),
+	): RecipeNutritionPersistResult {
 		val ingredients = recipeNutritionRepository.loadRecipeIngredients(recipeId)
-		val lookupIndex = lookupRepository.loadIndex()
-		val calculation = RecipeNutritionCalculator(lookupIndex).calculate(ingredients)
+		val calculation = RecipeNutritionCalculator(lookupIndex, lineOverrides).calculate(ingredients)
 		persist(recipeId, calculation, lookupIndex)
 		return RecipeNutritionPersistResult(
 			recipeId = recipeId,
@@ -38,10 +46,16 @@ internal class RecipeNutritionService(
 	}
 
 	fun calculateAndPersistAll(): List<RecipeNutritionPersistResult> =
-		recipeNutritionRepository.listRecipeIds().map(::calculateAndPersist)
+		calculateAndPersistRecipeIds(recipeNutritionRepository.listRecipeIds())
 
-	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> =
-		recipeIds.map(::calculateAndPersist)
+	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> {
+		if (recipeIds.isEmpty()) {
+			return emptyList()
+		}
+		val lookupIndex = lookupRepository.loadIndex()
+		val lineOverrides = lineOverridesProvider()
+		return recipeIds.map { recipeId -> calculateAndPersist(recipeId, lookupIndex, lineOverrides) }
+	}
 
 	private fun persist(
 		recipeId: Int,
