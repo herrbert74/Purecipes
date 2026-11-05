@@ -101,6 +101,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GR
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GRAPE_JUICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_BEAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_TEA_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GROUND_BEEF_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HALLOUMI_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HARD_CANDY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.HIBISCUS_DESCRIPTION
@@ -124,6 +125,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.KI
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LADYFINGER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LAMB_MINCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LARD_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LATINO_RICE_AND_BLACK_BEANS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LEEK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LEMONGRASS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.LEMON_PEEL_DESCRIPTION
@@ -182,6 +184,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RI
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.ROMAINE_LETTUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RYE_FLOUR_DARK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RYE_FLOUR_MEDIUM_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RYE_SOURDOUGH_STARTER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALMON_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALSA_VERDE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SALTED_COD_DESCRIPTION
@@ -196,6 +199,7 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SE
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SHRIMP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SIMPLE_SYRUP_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SNAPPER_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SOURDOUGH_STARTER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SOYBEAN_OIL_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SOY_SAUCE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.SPARKLING_WATER_DESCRIPTION
@@ -583,7 +587,8 @@ internal object NutritionSeedAliasesPart4 {
 		NutritionSeedAlias("fish mint", MINT_DESCRIPTION),
 		NutritionSeedAlias(
 			"loved british beef mince fat",
-			BEEF_CHUCK_DESCRIPTION
+			GROUND_BEEF_DESCRIPTION,
+			BEEF_CHUCK_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"ginger garlic paste",
@@ -659,8 +664,10 @@ internal object NutritionSeedAliasesPart4 {
 		NutritionSeedAlias("hard hard steamed eggs", EGG_DESCRIPTION),
 		NutritionSeedAlias("hard steamed eggs", EGG_DESCRIPTION),
 		NutritionSeedAlias("cassava woody", CASSAVA_DESCRIPTION),
-		NutritionSeedAlias("loved beef mince fat", BEEF_CHUCK_DESCRIPTION),
-		NutritionSeedAlias("beef mince", BEEF_CHUCK_DESCRIPTION),
+		NutritionSeedAlias("loved beef mince fat", GROUND_BEEF_DESCRIPTION, BEEF_CHUCK_DESCRIPTION),
+		NutritionSeedAlias("beef mince", GROUND_BEEF_DESCRIPTION, BEEF_CHUCK_DESCRIPTION),
+		NutritionSeedAlias("ground beef", GROUND_BEEF_DESCRIPTION),
+		NutritionSeedAlias("minced beef", GROUND_BEEF_DESCRIPTION),
 		NutritionSeedAlias(
 			"tomatoes their juices alternatively use canned tomatoes",
 			TOMATO_RAW_DESCRIPTION,
@@ -705,6 +712,7 @@ internal object NutritionSeedAliasesPart4 {
 		),
 		NutritionSeedAlias("garlic scapes", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("makrut lime", LIME_DESCRIPTION),
+		NutritionSeedAlias("makrut lime leaves", LIME_DESCRIPTION),
 		NutritionSeedAlias(
 			"mochiko",
 			FLOUR_DESCRIPTION,
@@ -875,6 +883,7 @@ internal object NutritionSeedAliasesPart4 {
 			RADICCHIO_DESCRIPTION,
 			ENDIVE_DESCRIPTION
 		),
+		NutritionSeedAlias("frisee", ENDIVE_DESCRIPTION),
 		NutritionSeedAlias("thyme shallots", THYME_FRESH_DESCRIPTION),
 		NutritionSeedAlias(
 			"baguettes",
@@ -1003,9 +1012,10 @@ internal object NutritionSeedAliasesPart4 {
 		NutritionSeedAlias("hoisin garlic stir fry sauce", HOISIN_DESCRIPTION),
 		NutritionSeedAlias(
 			"cuban black beans rice",
+			LATINO_RICE_AND_BLACK_BEANS_DESCRIPTION,
 			BLACK_BEAN_DESCRIPTION,
 			RICE_DESCRIPTION,
-			RICE_FALLBACK_DESCRIPTION
+			RICE_FALLBACK_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"cheddar provolone monterey jack muenster cheese",
@@ -1332,113 +1342,98 @@ internal object NutritionSeedAliasesPart4 {
 		),
 		NutritionSeedAlias(
 			"active pasta madre stiff sourdough starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"active sourdough starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"active sourdough starter levain",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"fermented starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"levain",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"madre",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"mature sourdough starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"pasta madre",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"pasta madre sourdough starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"ripe rye starter",
+			RYE_SOURDOUGH_STARTER_DESCRIPTION,
 			RYE_FLOUR_DARK_DESCRIPTION,
-			RYE_FLOUR_MEDIUM_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"rye levain",
+			RYE_SOURDOUGH_STARTER_DESCRIPTION,
 			RYE_FLOUR_DARK_DESCRIPTION,
-			RYE_FLOUR_MEDIUM_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"rye sourdough starter",
+			RYE_SOURDOUGH_STARTER_DESCRIPTION,
 			RYE_FLOUR_DARK_DESCRIPTION,
-			RYE_FLOUR_MEDIUM_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"rye starter",
+			RYE_SOURDOUGH_STARTER_DESCRIPTION,
 			RYE_FLOUR_DARK_DESCRIPTION,
-			RYE_FLOUR_MEDIUM_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"sourdough discard",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"sourdough levain",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"sourdough starter culture",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"sourdough starter levain",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"stiff sourdough starter",
+			SOURDOUGH_STARTER_DESCRIPTION,
 			BREAD_FLOUR_DESCRIPTION,
-			BREAD_FLOUR_FALLBACK_DESCRIPTION,
-			FLOUR_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"vanilla",

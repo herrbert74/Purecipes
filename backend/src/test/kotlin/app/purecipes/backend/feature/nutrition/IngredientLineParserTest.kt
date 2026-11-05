@@ -7,6 +7,14 @@ import kotlin.test.Test
 class IngredientLineParserTest {
 
 	@Test
+	fun parseCountsExtraEggToGlaze() {
+		val parsed = IngredientLineParser.parse("1 medium egg, lightly beaten, plus an extra egg to glaze")
+		parsed.quantity shouldBe BigDecimal("2")
+		parsed.unit shouldBe "egg"
+		parsed.parsedName shouldBe "eggs"
+	}
+
+	@Test
 	fun parseReadsQuantityUnitAndName() {
 		val parsed = IngredientLineParser.parse("2 cups all-purpose flour")
 
@@ -1399,5 +1407,122 @@ class IngredientLineParserTest {
 		rolledOats.quantity shouldBe BigDecimal.ONE
 		rolledOats.unit shouldBe "cup"
 		rolledOats.isMeasurable shouldBe true
+
+		val boiledMilk = IngredientLineParser.parse("209 g whole milk, brought to a boil")
+		boiledMilk.quantity shouldBe BigDecimal("209")
+		boiledMilk.unit shouldBe "g"
+		boiledMilk.parsedName shouldBe "whole milk"
+
+		val shakenCoconutMilk =
+			IngredientLineParser.parse("1 can unsweetened full-fat coconut milk, shaken well before use")
+		shakenCoconutMilk.parsedName shouldBe "unsweetened full-fat coconut milk"
+
+		val greasingButter = IngredientLineParser.parse("6 tablespoons unsalted butter, plus more for greasing dish")
+		greasingButter.quantity shouldBe BigDecimal("6")
+		greasingButter.unit shouldBe "tbsp"
+		greasingButter.parsedName shouldBe "unsalted butter"
+
+		val smoothYoghurt = IngredientLineParser.parse("225 g plain yoghurt, whisked until smooth")
+		smoothYoghurt.quantity shouldBe BigDecimal("225")
+		smoothYoghurt.unit shouldBe "g"
+		smoothYoghurt.parsedName shouldBe "plain yoghurt"
+
+		val smashedLemongrass = IngredientLineParser.parse(
+			"4 stalks lemongrass (7 ounces; 200 g), bottoms smashed under the flat side of a knife",
+		)
+		smashedLemongrass.parsedName shouldBe "lemongrass"
+
+		val lemoncJuice = IngredientLineParser.parse(
+			"2 tablespoons (30 ml) fresh lemon juice, from 1 medium lemonc",
+		)
+		lemoncJuice.parsedName shouldBe "fresh lemon juice"
+
+		val waterLemonDrops = IngredientLineParser.parse(
+			"200 grams water with a few drops of lemon juice (scant 1 cup)",
+		)
+		waterLemonDrops.parsedName shouldBe "water"
+
+		val lemoZest = IngredientLineParser.parse("Finely grated zest of 1 lemo")
+		lemoZest.parsedName shouldBe "finely grated zest of 1 lemon"
+		NutritionNameNormalizer.forLookup(lemoZest.parsedName) shouldBe "lemon zest"
+
+		val strainedRaspberry = IngredientLineParser.parse(
+			"2 tsp the raspberry juice from about 1/2 cup frozen raspberries melted and pressed thru a mesh strainer",
+		)
+		strainedRaspberry.parsedName shouldBe "raspberry juice"
+
+		val crackedGarlic = IngredientLineParser.parse(
+			"2 large cloves garlic, cracked from skin and split",
+		)
+		crackedGarlic.parsedName shouldBe "garlic"
+
+		val roastedGarlic = IngredientLineParser.parse("1 head garlic, roasted")
+		roastedGarlic.parsedName shouldBe "garlic"
+
+		val seedJalapeno = IngredientLineParser.parse("2 jalapeno peppers, seed and chopped")
+		seedJalapeno.parsedName shouldBe "jalapeno peppers"
+
+		val cabbageStrands = IngredientLineParser.parse(
+			"1 1/2 pounds green cabbage (680 g; about 1 small head), " +
+				"cored and thinly sliced into long strands (about 8 cups sliced)",
+		)
+		cabbageStrands.parsedName shouldBe "green cabbage"
+
+		val beefsteakTomato = IngredientLineParser.parse("1 beefsteak tomato chopped, remove seeds")
+		beefsteakTomato.parsedName shouldBe "beefsteak tomato chopped"
+		NutritionNameNormalizer.forLookup(beefsteakTomato.parsedName) shouldBe "beefsteak tomato"
+
+		val bavette = IngredientLineParser.parse("350 g bavette steak thinly sliced")
+		NutritionNameNormalizer.forLookup(bavette.parsedName) shouldBe "bavette steak"
+
+		val braising = IngredientLineParser.parse("1 kg braising steak mince")
+		NutritionNameNormalizer.forLookup(braising.parsedName) shouldBe "braising steak mince"
+
+		val cube = IngredientLineParser.parse("1 3/8 kg cube steak")
+		NutritionNameNormalizer.forLookup(cube.parsedName) shouldBe "cube steak"
+
+		val strip = IngredientLineParser.parse("strip steaks, 1 1/4 to 1 1/2 inches thick")
+		NutritionNameNormalizer.forLookup(strip.parsedName) shouldBe "strip steaks"
+
+		val topSirloin = IngredientLineParser.parse("2 pounds boneless top sirloin steak roast")
+		NutritionNameNormalizer.forLookup(topSirloin.parsedName) shouldBe "top sirloin steak roast"
+
+		val bulkSweet = IngredientLineParser.parse("12 ounces (340 g) bulk sweet")
+		NutritionNameNormalizer.forLookup(bulkSweet.parsedName).contains("sausage") shouldBe true
+
+		val carrotAcross = IngredientLineParser.parse("1 medium carrot, halved lengthwise and sliced thinly across")
+		NutritionNameNormalizer.forLookup(carrotAcross.parsedName) shouldBe "carrot"
+
+		val carrotBlanched = IngredientLineParser.parse("4 carrots, medium diced, blanched for two minutes")
+		NutritionNameNormalizer.forLookup(carrotBlanched.parsedName) shouldBe "carrots"
+
+		val carrotMatchstick = IngredientLineParser.parse("1/2 cup matchstick-cut carrots")
+		NutritionNameNormalizer.forLookup(carrotMatchstick.parsedName) shouldBe "carrots"
+
+		val leekGrit = IngredientLineParser.parse(
+			"1 large leek (7 ounces; 198 g), washed and rinsed well of grit, " +
+				"white and light green parts halved lengthwise and sliced 1/4-inch thick (about 2 1/2 cups sliced)",
+		)
+		NutritionNameNormalizer.forLookup(leekGrit.parsedName) shouldBe "leek"
+
+		val yukonBowl = IngredientLineParser.parse(
+			"3 Yukon gold potatoes (about 1 pound), peeled, cut into approximately " +
+				"1/8-inch slices and soaked in a large bowl of water",
+		)
+		NutritionNameNormalizer.forLookup(yukonBowl.parsedName) shouldBe "yukon gold potatoes"
+
+		val eggBlend = IngredientLineParser.parse("1 large egg, beaten to blend")
+		NutritionNameNormalizer.forLookup(eggBlend.parsedName) shouldBe "egg"
+
+		val halfHalf = IngredientLineParser.parse("2 cups fat free half-and-half")
+		NutritionNameNormalizer.forLookup(halfHalf.parsedName) shouldBe "half-and-half"
+
+		val yukonOrYellow = IngredientLineParser.parse(
+			"2 small Yukon gold or yellow potatoes (4.2 ounces; 120 g total), peeled and cut into 1/2-inch dice",
+		)
+		NutritionNameNormalizer.forLookup(yukonOrYellow.parsedName) shouldBe "yukon gold potatoes"
+
+		val mozzThin = IngredientLineParser.parse("5 ounces pre sliced thin (see notes)")
+		NutritionNameNormalizer.forLookup(mozzThin.parsedName) shouldBe "mozzarella"
 	}
 }

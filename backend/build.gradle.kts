@@ -233,6 +233,9 @@ tasks.register<JavaExec>("diffIngredientSnapshot") {
 		if (failOnDiff) {
 			add("--fail-on-diff")
 		}
+		if (project.findProperty("snapshot.seedPins")?.toString() == "true") {
+			add("--seed-pins")
+		}
 	}
 	args = extraArgs
 }

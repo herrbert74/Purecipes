@@ -147,7 +147,6 @@ internal class IngredientSnapshotExporter(
 			.filter { row -> row.status == STATUS_PINNED }
 			.associateBy { row -> row.lookupName }
 		val pinnedPantryByLookupName = pinnedByLookupName.values
-			.filter { row -> row.pantryItem.isNotEmpty() }
 			.associate { row -> row.lookupName to row.pantryItem }
 		val ingredientLinesByLookup = lineRows
 			.filter { row -> row.kind == IngredientSnapshotClassifier.KIND_INGREDIENT && row.lookupName.isNotEmpty() }
@@ -167,7 +166,6 @@ internal class IngredientSnapshotExporter(
 				resolvePinnedNameRow(
 					pinned = pinned,
 					bestFood = bestFood,
-					resolvedPantry = resolvedPantry,
 					lineCount = linesForName.size,
 					verifyAgainstDb = verifyPinnedMatchesAgainstDb,
 				)
@@ -197,11 +195,10 @@ internal class IngredientSnapshotExporter(
 	private fun resolvePinnedNameRow(
 		pinned: IngredientNameSnapshotRow,
 		bestFood: FoodCandidate?,
-		resolvedPantry: String,
 		lineCount: Int,
 		verifyAgainstDb: Boolean,
 	): IngredientNameSnapshotRow {
-		val pantryItem = pinned.pantryItem.ifBlank { sanitizeTsvField(resolvedPantry) }
+		val pantryItem = sanitizeTsvField(pinned.pantryItem)
 		return if (verifyAgainstDb && bestFood != null && pinned.fdcId.isNotEmpty()) {
 			IngredientNameSnapshotRow(
 				lookupName = pinned.lookupName,
@@ -394,8 +391,13 @@ internal class IngredientSnapshotExporter(
 				.drop(1)
 				.filter { line -> line.isNotBlank() }
 				.map { line ->
-					val parts = line.split(TSV_SEPARATOR, limit = LINE_COLUMN_COUNT)
-					require(parts.size == LINE_COLUMN_COUNT) {
+					val rawParts = line.split(TSV_SEPARATOR)
+					val parts = if (rawParts.size < LINE_COLUMN_COUNT) {
+						rawParts + List(LINE_COLUMN_COUNT - rawParts.size) { "" }
+					} else {
+						rawParts
+					}
+					require(parts.size >= LINE_COLUMN_COUNT) {
 						"Invalid lines.tsv row (expected $LINE_COLUMN_COUNT columns): $line"
 					}
 					IngredientLineSnapshotRow(

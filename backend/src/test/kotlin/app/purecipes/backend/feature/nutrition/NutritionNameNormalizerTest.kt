@@ -107,7 +107,7 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("sparkling water") shouldBe "sparkling water"
 		NutritionNameNormalizer.forLookup("coconut water") shouldBe "coconut water"
 		NutritionNameNormalizer.forLookup("rose water") shouldBe "rose water"
-		NutritionNameNormalizer.forLookup("half and half") shouldBe "half half"
+		NutritionNameNormalizer.forLookup("half and half") shouldBe "half-and-half"
 		NutritionNameNormalizer.forLookup("bone") shouldBe "bone"
 		NutritionNameNormalizer.forLookup("all purpose flour") shouldBe "all purpose flour"
 		NutritionNameNormalizer.forLookup("green beans") shouldBe "green beans"
@@ -391,7 +391,7 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("egg whites") shouldBe "egg whites"
 		NutritionNameNormalizer.forLookup("flaky sea salt") shouldBe "flaky sea salt"
 		NutritionNameNormalizer.forLookup("long grain rice") shouldBe "long grain rice"
-		NutritionNameNormalizer.forLookup("half and half") shouldBe "half half"
+		NutritionNameNormalizer.forLookup("half and half") shouldBe "half-and-half"
 		NutritionNameNormalizer.forLookup("green beans") shouldBe "green beans"
 		NutritionNameNormalizer.forLookup("pickling spice tied cheesecloth") shouldBe "pickling spice"
 	}
@@ -507,6 +507,8 @@ class NutritionNameNormalizerTest {
 		NutritionNameNormalizer.forLookup("baking powder baking soda") shouldBe "baking powder"
 		NutritionNameNormalizer.forLookup("crusty bread couscous") shouldBe "crusty bread"
 		NutritionNameNormalizer.forLookup("red plums apricots") shouldBe "red plums"
+		NutritionNameNormalizer.forLookup("plum tomatoes") shouldBe "plum tomatoes"
+		NutritionNameNormalizer.forLookup("grape tomatoes") shouldBe "grape tomatoes"
 		NutritionNameNormalizer.forLookup("all purpose flour extra flour") shouldBe
 			"all purpose flour extra flour"
 		NutritionNameNormalizer.forLookup("all purpose flour extra flour rolling") shouldBe

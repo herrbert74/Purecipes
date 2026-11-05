@@ -205,6 +205,8 @@ internal object PantryItemResolver {
 		"leaves",
 		"leg",
 		"legs",
+		"peel",
+		"peels",
 		"piece",
 		"pieces",
 		"quarter",
@@ -227,6 +229,8 @@ internal object PantryItemResolver {
 		"wedges",
 		"wing",
 		"wings",
+		"zest",
+		"zests",
 	)
 
 	private val nonDairyModifiers = setOf(
@@ -295,8 +299,10 @@ internal object PantryItemResolver {
 		lookupName: String,
 		pinnedPantryByLookupName: Map<String, String> = emptyMap(),
 	): String {
-		val pinned = pinnedPantryByLookupName[lookupName]?.trim().orEmpty()
-		return pinned.ifEmpty { resolveSingleText(lookupName) }
+		if (pinnedPantryByLookupName.containsKey(lookupName)) {
+			return pinnedPantryByLookupName[lookupName].orEmpty()
+		}
+		return resolveSingleText(lookupName)
 	}
 
 	private fun resolveSingleText(text: String): String {

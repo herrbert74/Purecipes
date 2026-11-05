@@ -70,6 +70,9 @@ internal object NutritionNameNormalizer {
 
 	private val HEINZ_CREATIONZ_BRAND = Regex("""(?i)\bheinz\s+creationz\b""")
 
+	private val FAT_FREE_HALF_HALF_PHRASE =
+		Regex("""(?i)\b(?:fat[\s-]+free|nonfat|low[\s-]+fat)\s+half[\s-]+and[\s-]+half\b""")
+
 	private val TEMPERATURE_LEFTOVER = Regex("""^\d+o(?:f)?$""")
 
 	private val COMBINING_MARKS = Regex("\\p{M}+")
@@ -86,8 +89,6 @@ internal object NutritionNameNormalizer {
 		"pit",
 		"pits",
 		"skin",
-		"steak",
-		"steaks",
 		"tail",
 	)
 
@@ -136,6 +137,11 @@ internal object NutritionNameNormalizer {
 		"shrimp",
 	)
 
+	private val fatAnchors = setOf(
+		"duck",
+		"goose",
+	)
+
 	private val trailingStripTokens = setOf(
 		"all",
 		"extra",
@@ -167,9 +173,11 @@ internal object NutritionNameNormalizer {
 	private val plainWaterModifierTokens = setOf(
 		"boiling",
 		"cold",
+		"cool",
 		"first",
 		"hot",
 		"ice",
+		"iced",
 		"lukewarm",
 		"mineral",
 		"second",
@@ -538,6 +546,14 @@ internal object NutritionNameNormalizer {
 		"veal",
 	)
 
+	private val proteinProductFollowers = setOf(
+		"bouillon",
+		"broth",
+		"gravy",
+		"soup",
+		"stock",
+	)
+
 	private val productCloserTokens = setOf(
 		"butter",
 		"cream",
@@ -576,6 +592,27 @@ internal object NutritionNameNormalizer {
 	fun tokens(normalized: String): List<String> =
 		normalized.split(' ').filter { token -> token.length >= MIN_TOKEN_LENGTH }
 
+	private val specificGreensTokens = setOf(
+		"arugula",
+		"cabbage",
+		"chard",
+		"kale",
+		"lettuce",
+		"rocket",
+		"spinach",
+	)
+	private val genericLeavesTokens = setOf("baby", "mixed", "salad")
+	private val curryOrLimeAnchorTokens = setOf("curry", "kaffir", "lime", "makrut")
+
+	private fun isCurryOrLimeLeaves(rawTokens: List<String>): Boolean =
+		rawTokens.any { it in curryOrLimeAnchorTokens } &&
+			rawTokens.any { it == "leaf" || it == "leaves" }
+
+	private fun isGenericLeaves(rawTokens: List<String>): Boolean =
+		rawTokens.any { it == "leaf" || it == "leaves" } &&
+			rawTokens.any { it in genericLeavesTokens } &&
+			rawTokens.none { it in specificGreensTokens }
+
 	fun forLookup(value: String): String {
 		val withoutClause = stripLookupClauses(
 			NutritionNameClauseRules.strip(value.substringBefore(';').trim()),
@@ -583,40 +620,53 @@ internal object NutritionNameNormalizer {
 		val normalized = normalize(withoutClause)
 		val rawTokens = tokens(normalized)
 		val hadCreamOf = CREAM_OF_PHRASE.containsMatchIn(normalized)
-		val hadGrinder = "grinder" in rawTokens
-		val hadStewing = "stewing" in rawTokens
-		val hadTips = "tips" in rawTokens
-		val hadStem = "stem" in rawTokens || "stems" in rawTokens
+		val isCurryOrLime = isCurryOrLimeLeaves(rawTokens)
+		val isLeavesRetained = isCurryOrLime || isGenericLeaves(rawTokens)
 		val filtered = rawTokens.filterNot { token ->
-			token.all(Char::isDigit) ||
-				TEMPERATURE_LEFTOVER.matches(token) ||
-				token in NutritionNameNormalizerTokens.preparationTokens ||
-				token in NutritionNameNormalizerTokens.measureLeftoverTokens ||
-				token in NutritionNameNormalizerTokens.fillerTokens ||
-				token in NutritionNameNormalizerTokens.brandTokens ||
-				token in NutritionNameNormalizerTokens.packagingTokens
+			shouldFilterLookupToken(token, isLeavesRetained)
 		}
-		val withoutSpiceGrinder = if (hadGrinder) {
-			filtered.filterNot { token -> token == "spice" }
-		} else {
-			filtered
+		val contextual = stripContextualTokens(filtered, rawTokens, isCurryOrLime)
+		val joined = postFilterLookupTokens(contextual, hadCreamOf).joinToString(" ")
+		return if (joined == "half half") "half-and-half" else joined
+	}
+
+	private fun shouldFilterLookupToken(
+		token: String,
+		isLeavesRetained: Boolean,
+	): Boolean =
+		token.all(Char::isDigit) ||
+			TEMPERATURE_LEFTOVER.matches(token) ||
+			(
+				token in NutritionNameNormalizerTokens.preparationTokens &&
+					(!isLeavesRetained || (token != "leaves" && token != "leaf"))
+			) ||
+			token in NutritionNameNormalizerTokens.measureLeftoverTokens ||
+			token in NutritionNameNormalizerTokens.fillerTokens ||
+			token in NutritionNameNormalizerTokens.brandTokens ||
+			token in NutritionNameNormalizerTokens.packagingTokens
+
+	private fun stripContextualTokens(
+		tokens: List<String>,
+		rawTokens: List<String>,
+		isCurryOrLimeLeaves: Boolean,
+	): List<String> {
+		var result = tokens
+		if ("grinder" in rawTokens) {
+			result = result.filterNot { it == "spice" }
 		}
-		val withoutStewingMeat = if (hadStewing) {
-			withoutSpiceGrinder.filterNot { token -> token == "meat" }
-		} else {
-			withoutSpiceGrinder
+		if ("stewing" in rawTokens) {
+			result = result.filterNot { it == "meat" }
 		}
-		val withoutWingTips = if (hadTips) {
-			withoutStewingMeat.filterNot { token -> token == "wing" || token == "wings" }
-		} else {
-			withoutStewingMeat
+		if ("tips" in rawTokens) {
+			result = result.filterNot { it == "wing" || it == "wings" }
 		}
-		val withoutStemEnd = if (hadStem) {
-			withoutWingTips.filterNot { token -> token == "end" }
-		} else {
-			withoutWingTips
+		if ("stem" in rawTokens || "stems" in rawTokens) {
+			result = result.filterNot { it == "end" }
 		}
-		return postFilterLookupTokens(withoutStemEnd, hadCreamOf).joinToString(" ")
+		if (isCurryOrLimeLeaves) {
+			result = result.map { token -> if (token == "leaf") "leaves" else token }
+		}
+		return result
 	}
 
 	fun hasMeaningfulFoodName(value: String): Boolean {
@@ -663,30 +713,52 @@ internal object NutritionNameNormalizer {
 		result = BLUE_DRAGON_BRAND.replace(result, " ")
 		result = EAST_END_BRAND.replace(result, " ")
 		result = HEINZ_CREATIONZ_BRAND.replace(result, " ")
+		result = FAT_FREE_HALF_HALF_PHRASE.replace(result, "half-and-half")
 		return result.trim()
 	}
 
 	private fun preferCompleteOrClause(value: String): String {
-		val match = OR_SPLIT_CLAUSE.find(value)
-		if (match == null) {
-			return value
-		}
+		val match = OR_SPLIT_CLAUSE.find(value) ?: return value
 		val before = value.substring(0, match.range.first).trim()
 		val after = match.groupValues[1].trim()
 		val beforeHasFood = clauseHasFoodToken(before)
-		val afterTokens = tokens(normalize(after))
-		val beforeTokens = tokens(normalize(before))
-		val missingSharedFlour = beforeHasFood &&
-			afterTokens.lastOrNull() == "flour" &&
-			"flour" !in beforeTokens
+		val afterClause = after.substringBefore(',').trim()
+		val afterTokens = tokens(normalize(afterClause))
+		val beforeTokens = tokens(normalize(before.substringBefore(',').trim()))
+		val sharedNoun = resolveSharedOrNoun(beforeHasFood, beforeTokens, afterTokens)
 		val preferBefore = after.isBlank() ||
 			beforeHasFood ||
 			!clauseHasFoodToken(after)
 		return when {
-			missingSharedFlour -> "$before flour"
+			sharedNoun != null -> "$before $sharedNoun"
 			preferBefore -> before
 			else -> after
 		}
+	}
+
+	private val sharedNounFamilies = listOf(
+		setOf("flour"),
+		setOf("rice"),
+		setOf("oats", "oat"),
+		setOf("potatoes", "potato"),
+		setOf("sausage", "sausages"),
+		setOf("steak", "steaks"),
+		setOf("jalapeno", "jalapenos", "chili", "chilis", "chilies"),
+	)
+
+	private fun resolveSharedOrNoun(
+		beforeHasFood: Boolean,
+		beforeTokens: List<String>,
+		afterTokens: List<String>,
+	): String? {
+		if (!beforeHasFood) return null
+		val targetNoun = afterTokens.dropLastWhile { token ->
+			token in NutritionNameNormalizerTokens.preparationTokens
+		}.lastOrNull() ?: afterTokens.lastOrNull()
+		val family = sharedNounFamilies.firstOrNull { familySet ->
+			targetNoun != null && targetNoun in familySet
+		}
+		return targetNoun.takeIf { family != null && family.none { it in beforeTokens } }
 	}
 
 	private fun clauseHasFoodToken(value: String): Boolean {
@@ -796,11 +868,8 @@ internal object NutritionNameNormalizer {
 		if (productIndexes.size < 2) {
 			return tokens
 		}
-		val zestBeforeJuice = "zest" in tokens &&
-			"juice" in tokens &&
-			tokens.indexOf("zest") < tokens.indexOf("juice")
 		val citrus = tokens.firstOrNull { token -> token in citrusNameTokens }
-		return if (zestBeforeJuice && citrus != null) {
+		return if (citrus != null) {
 			listOf(singularCitrus(citrus), "juice")
 		} else {
 			tokens.subList(0, productIndexes.first() + 1)
@@ -865,7 +934,14 @@ internal object NutritionNameNormalizer {
 	private fun stripGrainCut(tokens: List<String>): List<String> {
 		val canStrip = tokens.size >= 2 &&
 			tokens.any { token -> token in grainCutAnchors }
-		return if (canStrip) stripWhenOthersRemain(tokens, grainCutStripTokens) else tokens
+		if (!canStrip) {
+			return tokens
+		}
+		var result = stripWhenOthersRemain(tokens, grainCutStripTokens)
+		if (tokens.contains("grain") && result.contains("steaks")) {
+			result = stripWhenOthersRemain(result, setOf("steaks"))
+		}
+		return result
 	}
 
 	private fun stripSplitPrep(tokens: List<String>): List<String> {
@@ -1075,16 +1151,27 @@ internal object NutritionNameNormalizer {
 		return if (hasSecondary) tokens.subList(0, breadIndex + 1) else tokens
 	}
 
+	private val tomatoVarietyModifiers = setOf(
+		"grape",
+		"plum",
+		"roma",
+	)
+
+	private val tomatoBaseWords = setOf(
+		"tomato",
+		"tomatoes",
+	)
+
 	private fun stripSecondaryProduce(tokens: List<String>): List<String> {
 		val headIndexes = tokens.mapIndexedNotNull { index, token ->
 			if (token in producePairTokens) index else null
 		}
-		if (headIndexes.size < 2) {
-			return tokens
-		}
-		val firstIndex = headIndexes.first()
+		val firstIndex = headIndexes.firstOrNull() ?: return tokens
 		val firstHead = tokens[firstIndex]
-		val canStrip = headIndexes.drop(1).none { index -> sameFoodStem(firstHead, tokens[index]) }
+		val isCompoundTomato = firstHead in tomatoVarietyModifiers &&
+			tokens.getOrNull(firstIndex + 1) in tomatoBaseWords
+		val canStrip = headIndexes.size >= 2 && !isCompoundTomato &&
+			headIndexes.drop(1).none { index -> sameFoodStem(firstHead, tokens[index]) }
 		return if (canStrip) tokens.subList(0, firstIndex + 1) else tokens
 	}
 
@@ -1108,7 +1195,14 @@ internal object NutritionNameNormalizer {
 			if (token in proteinFoodHeads) index else null
 		}
 		if (proteinIndexes.size >= 2) {
-			candidates.add(proteinIndexes.first())
+			val firstProteinIndex = proteinIndexes.first()
+			val nextIndex = firstProteinIndex + 1
+			val cutIndex = if (nextIndex < tokens.size && tokens[nextIndex] in proteinProductFollowers) {
+				nextIndex
+			} else {
+				firstProteinIndex
+			}
+			candidates.add(cutIndex)
 		}
 		val closerIndex = tokens.indexOfFirst { token -> token in productCloserTokens }
 		val creamOfCloser = closerIndex in 0 until tokens.lastIndex &&
@@ -1149,7 +1243,15 @@ internal object NutritionNameNormalizer {
 			(singular.endsWith("y") && plural == "${singular.dropLast(1)}ies")
 
 	private fun stripWhenOthersRemain(tokens: List<String>, removable: Set<String>): List<String> {
-		val kept = tokens.filterNot { token -> token in removable }
+		val kept = tokens.filterIndexed { index, token ->
+			if (token !in removable) {
+				true
+			} else if (token == "meat" && index > 0 && tokens[index - 1] == "stew") {
+				true
+			} else {
+				false
+			}
+		}
 		return if (kept.isNotEmpty()) kept else tokens
 	}
 
@@ -1159,6 +1261,9 @@ internal object NutritionNameNormalizer {
 		}
 		var end = tokens.size
 		while (end > 1 && tokens[end - 1] in removable) {
+			if (tokens[end - 1] == "fat" && tokens.getOrNull(end - 2) in fatAnchors) {
+				break
+			}
 			end--
 		}
 		return tokens.subList(0, end)

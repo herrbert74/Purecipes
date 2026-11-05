@@ -63,10 +63,12 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CL
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COCOA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COCONUT_MILK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COCONUT_YOGURT_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COOKED_RICE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.COOKING_SPRAY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORIANDER_SEED_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORN_COB_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CORN_TORTILLA_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CREAM_CHEESE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CREAM_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CREAM_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.CREAM_SOUR_DESCRIPTION
@@ -80,7 +82,6 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.DA
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.DESSERT_WINE_DRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.DESSERT_WINE_SWEET_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.DRY_MILK_DESCRIPTION
-import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EDIBLE_PODDED_PEA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_NOODLE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.EGG_YOLK_DESCRIPTION
@@ -89,12 +90,16 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.FI
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.FLATBREAD_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.FLOUR_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.FLOUR_TORTILLA_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.FONTINA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GARLIC_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GARLIC_POWDER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GELATIN_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GHEE_CLARIFIED_BUTTER_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GINGER_FRESH_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GINGER_GROUND_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GOUDA_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GRAHAM_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_BEAN_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_PEAS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_PEAS_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.GREEN_TEA_DESCRIPTION
@@ -154,6 +159,8 @@ import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PO
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PORK_RIBS_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PORK_SAUSAGE_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POTATO_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POWDERED_SUGAR_DESCRIPTION
+import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.POWDERED_SUGAR_FALLBACK_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.PUFF_PASTRY_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.QUESO_FRESCO_DESCRIPTION
 import app.purecipes.backend.feature.nutrition.NutritionSeedAliasDescriptions.RADICCHIO_DESCRIPTION
@@ -218,12 +225,12 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("bottle clam juice", CLAM_JUICE_DESCRIPTION, FISH_SAUCE_DESCRIPTION),
 		NutritionSeedAlias("coriander stalks", CILANTRO_DESCRIPTION),
 		NutritionSeedAlias("crumbled cotija cheese", QUESO_FRESCO_DESCRIPTION, FETA_DESCRIPTION),
-		NutritionSeedAlias("curry leaf", BAY_LEAF_DESCRIPTION, CURRY_POWDER_DESCRIPTION),
+		NutritionSeedAlias("curry leaf", BAY_LEAF_SPICE_DESCRIPTION, CURRY_POWDER_DESCRIPTION),
 		NutritionSeedAlias("gherkin", PICKLE_DESCRIPTION),
 		NutritionSeedAlias("graham cracker", GRAHAM_DESCRIPTION),
 		NutritionSeedAlias("graham cracker sheets", GRAHAM_DESCRIPTION),
 		NutritionSeedAlias("head garlic", GARLIC_DESCRIPTION),
-		NutritionSeedAlias("kaffir lime leaf", LIME_DESCRIPTION, BAY_LEAF_DESCRIPTION),
+		NutritionSeedAlias("kaffir lime leaf", BAY_LEAF_SPICE_DESCRIPTION, BAY_LEAF_DESCRIPTION),
 		NutritionSeedAlias("matcha powder", GREEN_TEA_DESCRIPTION, INSTANT_COFFEE_DESCRIPTION),
 		NutritionSeedAlias("orange blossom water", ORANGE_JUICE_DESCRIPTION, ORANGE_DESCRIPTION),
 		NutritionSeedAlias("parsnips", PARSNIP_DESCRIPTION),
@@ -235,7 +242,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("spring onions whites greens", SPRING_ONION_DESCRIPTION),
 		NutritionSeedAlias("red chiles", HOT_CHILI_RED_DESCRIPTION, CAYENNE_DESCRIPTION),
 		NutritionSeedAlias("red thai chile", HOT_CHILI_RED_DESCRIPTION, CAYENNE_DESCRIPTION),
-		NutritionSeedAlias("california chiles seeds", ANCHO_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
+		NutritionSeedAlias("california chiles", ANCHO_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
 		NutritionSeedAlias("sheet puff pastry", PUFF_PASTRY_DESCRIPTION),
 		NutritionSeedAlias("pouch cooked rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("plant based burger", VEGGIE_BURGER_DESCRIPTION, PLANT_MINCE_DESCRIPTION),
@@ -361,7 +368,12 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("chunk ginger", GINGER_FRESH_DESCRIPTION),
 		NutritionSeedAlias("cinnamon stick", CINNAMON_DESCRIPTION),
 		NutritionSeedAlias("ckickpeas", CHICKPEA_DESCRIPTION),
-		NutritionSeedAlias("clarified butter", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias(
+			"clarified butter",
+			GHEE_CLARIFIED_BUTTER_DESCRIPTION,
+			BUTTER_DESCRIPTION,
+			BUTTER_FALLBACK_DESCRIPTION,
+		),
 		NutritionSeedAlias("clear honey", HONEY_DESCRIPTION),
 		NutritionSeedAlias("cloves garlic", GARLIC_DESCRIPTION),
 		NutritionSeedAlias("cooked jasmine rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
@@ -370,7 +382,12 @@ internal object NutritionSeedAliasesPart2 {
 			CHICKEN_BREAST_DESCRIPTION,
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
 		),
-		NutritionSeedAlias("cooked white rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias(
+			"cooked white rice",
+			COOKED_RICE_DESCRIPTION,
+			RICE_DESCRIPTION,
+			RICE_FALLBACK_DESCRIPTION,
+		),
 		NutritionSeedAlias("coriander seeds", CORIANDER_SEED_DESCRIPTION),
 		NutritionSeedAlias(
 			"country white bread crusts",
@@ -432,7 +449,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("juice zest lime", LIME_JUICE_DESCRIPTION),
 		NutritionSeedAlias("kosher salt seasoning", SALT_DESCRIPTION),
 		NutritionSeedAlias("leftover ham", HAM_DESCRIPTION),
-		NutritionSeedAlias("leftover rice", RICE_DESCRIPTION, RICE_FALLBACK_DESCRIPTION),
+		NutritionSeedAlias("leftover rice", COOKED_RICE_DESCRIPTION),
 		NutritionSeedAlias(
 			"leftover roast chicken",
 			CHICKEN_BREAST_DESCRIPTION,
@@ -491,7 +508,7 @@ internal object NutritionSeedAliasesPart2 {
 			CHICKEN_BREAST_DESCRIPTION,
 			CHICKEN_BREAST_FALLBACK_DESCRIPTION,
 		),
-		NutritionSeedAlias("runner bean", EDIBLE_PODDED_PEA_DESCRIPTION),
+		NutritionSeedAlias("runner bean", GREEN_BEAN_DESCRIPTION),
 		NutritionSeedAlias("russet potatoes", POTATO_DESCRIPTION),
 		NutritionSeedAlias("sake", RICE_WINE_DESCRIPTION),
 		NutritionSeedAlias("salt sprinkling", SALT_DESCRIPTION),
@@ -889,13 +906,13 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("frozen puff pastry one half", PUFF_PASTRY_DESCRIPTION),
 		NutritionSeedAlias(
 			"full fat cream cheese",
+			CREAM_CHEESE_DESCRIPTION,
 			CREAM_SOUR_DESCRIPTION,
-			CREAM_SOUR_FALLBACK_DESCRIPTION,
 		),
 		NutritionSeedAlias(
 			"full fat philadelphia cream cheese",
+			CREAM_CHEESE_DESCRIPTION,
 			CREAM_SOUR_DESCRIPTION,
-			CREAM_SOUR_FALLBACK_DESCRIPTION,
 		),
 		NutritionSeedAlias("full fat yoghurt", YOGURT_DESCRIPTION),
 		NutritionSeedAlias("garam masala palmful", CURRY_POWDER_DESCRIPTION, CUMIN_DESCRIPTION),
@@ -971,7 +988,7 @@ internal object NutritionSeedAliasesPart2 {
 			PEANUT_OIL_DESCRIPTION,
 			PEANUT_OIL_FALLBACK_DESCRIPTION,
 		),
-		NutritionSeedAlias("guajillo chiles seeds", ANCHO_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
+		NutritionSeedAlias("guajillo chiles", ANCHO_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
 		NutritionSeedAlias("guajillo chillies", ANCHO_DESCRIPTION, HOT_CHILI_RED_DESCRIPTION),
 		NutritionSeedAlias("guanciale pancetta", BACON_UNPREPARED_DESCRIPTION, BACON_DESCRIPTION),
 		NutritionSeedAlias("guinness extra stout beer", BEER_DESCRIPTION),
@@ -989,12 +1006,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("heaped stonemill paprika", PAPRIKA_DESCRIPTION),
 		NutritionSeedAlias("hispi cabbage", CABBAGE_GREEN_DESCRIPTION, CABBAGE_DESCRIPTION),
 		NutritionSeedAlias("hot italian sausage casings", PORK_SAUSAGE_DESCRIPTION),
-		NutritionSeedAlias(
-			"imported italian fontina cheese",
-			GRUYERE_DESCRIPTION,
-			GRUYERE_FALLBACK_DESCRIPTION,
-			CHEDDAR_DESCRIPTION,
-		),
+		NutritionSeedAlias("imported italian fontina cheese", FONTINA_DESCRIPTION),
 		NutritionSeedAlias("imported prosciutto", HAM_DESCRIPTION),
 		NutritionSeedAlias(
 			"instant espresso",
@@ -1028,7 +1040,7 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("ladle chicken stock", CHICKEN_BROTH_DESCRIPTION),
 		NutritionSeedAlias("lasagne sheet", PASTA_DESCRIPTION, EGG_NOODLE_DESCRIPTION),
 		NutritionSeedAlias("leek white light green part", LEEK_DESCRIPTION),
-		NutritionSeedAlias("leerdammer cheese", CHEDDAR_DESCRIPTION, GRUYERE_DESCRIPTION),
+		NutritionSeedAlias("leerdammer cheese", GOUDA_DESCRIPTION),
 		NutritionSeedAlias("lemon juice very ripe lemon", LEMON_JUICE_DESCRIPTION),
 		NutritionSeedAlias("lemongrass stalk pale white part segments", LEMONGRASS_DESCRIPTION),
 		NutritionSeedAlias(
@@ -1334,7 +1346,11 @@ internal object NutritionSeedAliasesPart2 {
 		NutritionSeedAlias("unsalted butter frozen", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("unsalted butter loaf", BUTTER_DESCRIPTION, BUTTER_FALLBACK_DESCRIPTION),
 		NutritionSeedAlias("unsalted white beans", CANNELLINI_DESCRIPTION),
-		NutritionSeedAlias("unsifted confectioners sugar", SUGAR_DESCRIPTION),
+		NutritionSeedAlias(
+			"unsifted confectioners sugar",
+			POWDERED_SUGAR_DESCRIPTION,
+			POWDERED_SUGAR_FALLBACK_DESCRIPTION,
+		),
 		NutritionSeedAlias("unsweetened full fat coconut milk", COCONUT_MILK_DESCRIPTION),
 		NutritionSeedAlias("unsweetened full fat coconut milk before use", COCONUT_MILK_DESCRIPTION),
 		NutritionSeedAlias("untoasted almonds half", ALMOND_DESCRIPTION),

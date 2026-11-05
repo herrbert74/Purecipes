@@ -18,6 +18,38 @@ internal object IngredientLinePhraseRewrites {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val mobDuplicatedCutPattern = Regex(
+		"""^(\d+(?:\.\d+)?)\s+(breast|breasts|thigh|thighs)\s+""" +
+			"""(?:skinless\s+|boneless\s+)?chicken(?:\s+(?:breasts?|thighs?))?\b(.*)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val allSpicePattern = Regex(
+		"""\ball\s+spice\b""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val tabascoSauceInlinePattern = Regex(
+		"""\btabasco(?:®|\(r\))?(?:\s+original)?\s+sauce\b""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val anotherFlourPattern = Regex(
+		"""\banother\s+flour(?:\s+of\s+your\s+choosing)?\b""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val lowSodiumChickenBrothPattern = Regex(
+		"""\b((?:store-bought\s+)?low-sodium\s+chicken)\b""" +
+			"""(?!\s+(?:breast|thigh|wing|drumstick|leg|meat|cutlet|stock|broth))""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val springGreensPattern = Regex(
+		"""\bspring\s+greens\b""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val slicedFruitPattern = Regex(
 		"""^(?:sliced\s+fruit(?:\s+of\s+your\s+choosing)?)$""",
 		RegexOption.IGNORE_CASE,
@@ -42,6 +74,11 @@ internal object IngredientLinePhraseRewrites {
 		pattern = """^(.*)[,;]\s+plus\s+(?:extra\b.*|a\s+(?:little\s+)?extra\b.*|a\s+drizzle\b.*|more\b.*|""" +
 			"""\d+\s*(?:tbsp|tsp|tablespoons?|teaspoons?)\s+(?:for|to)\b.*)$""",
 		options = setOf(RegexOption.IGNORE_CASE),
+	)
+
+	private val plusExtraEggPattern = Regex(
+		"""^(\d+)\s+((?:medium\s+|large\s+|small\s+)?eggs?)\b.*[,;]?\s+plus\s+an?\s+extra\s+egg\b.*""",
+		RegexOption.IGNORE_CASE,
 	)
 
 	private val punnetPattern = Regex(
@@ -134,13 +171,34 @@ internal object IngredientLinePhraseRewrites {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val citrusJuiceOfPattern = Regex(
+		"""^(?:fresh\s+)?juice(?:\s+and\s+(?:(?:finely\s+)?grated\s+)?zest)?\s+(?:of|if|from)\s+""" +
+			"""(½|1/2|¼|1/4|\d+|one|two|three)?\s*(?:large\s+|medium\s+|small\s+)?(lemon|lime|orange)s?\b.*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val citrusJuicePlusZestPattern = Regex(
+		"""^(?:fresh\s+)?juice\s+of\s+([½¼⅓\d/]+|\d+)\s+(lemon|lime|orange)s?[,;]?\s+plus\s+.*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val citrusParentheticalJuicePattern = Regex(
+		"""^(?:½|1/2|\d+(?:/\d+)?)\s*(?:a\s+)?(lemon|lime|orange)s?\s*\((.+?)\s+juice\)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val orangeJuiceAndZestMeasurePattern = Regex(
+		"""^(\d+/\d+|\d+(?:\.\d+)?)\s+(cup|tbsp|tsp)\s+fresh\s+juice\s+and\s+.*?(orange|lemon|lime).*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	private val gingerPiecePattern = Regex(
 		"""^thumb-sized piece of ginger.*$""",
 		RegexOption.IGNORE_CASE,
 	)
 
 	private val drizzleOliveOilPattern = Regex(
-		"""^drizzle\s+of\s+olive\s+oil$""",
+		"""^(?:drizzle|glug)\s+of\s+olive\s+oil$""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -167,6 +225,7 @@ internal object IngredientLinePhraseRewrites {
 	private val extraSpacesPattern = Regex("""\s+""")
 
 	private val noisePatterns = listOf(
+		Regex(""",?\s*each\s+(?:breast|fillet|piece|thigh)\b.*""", RegexOption.IGNORE_CASE),
 		Regex("""\bhigher-welfare\s+""", RegexOption.IGNORE_CASE),
 		Regex("""\bgood-quality\s+""", RegexOption.IGNORE_CASE),
 		Regex("""\bquality\s+""", RegexOption.IGNORE_CASE),
@@ -181,6 +240,27 @@ internal object IngredientLinePhraseRewrites {
 		Regex(""",?\s*bones\s+removed,?\s*skin\s+on\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*bone-in,?\s*skin\s+on\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*skin\s+on,?\s*scaled,?\s*pin-boned\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:stems?|ribs?)\s+and\s+seeds\s+removed\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:middle\s+)?ribs\s+removed\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*seeds\s+removed\b""", RegexOption.IGNORE_CASE),
+		Regex("""\s+from\s+a\s+jar\s+of\s+stem\s+ginger\b.*""", RegexOption.IGNORE_CASE),
+		Regex("""\bwith\s+added\s+vital\s+wheat\s+gluten\b""", RegexOption.IGNORE_CASE),
+		Regex(
+			"""(?:,\s*)?(?:preferably\s+|about\s+|at\s+least\s+)?(?:\d+\s+and\s+)?\d+%(?:\s+to\s+\d+%)?\s+cacao\b""",
+			RegexOption.IGNORE_CASE,
+		),
+		Regex("""\b(?:between\s+\d+\s+and\s+)?\d+%\s+cacao\b""", RegexOption.IGNORE_CASE),
+		Regex("""\b(?:at\s+least\s+)?\d+\s+percent\s+cacao\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*preferably\s+white\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*seasoning\s+packets?\s+(?:discarded|reserved)\b""", RegexOption.IGNORE_CASE),
+		Regex(
+			""",?\s*giblets\s+removed(?:,?\s*and\s+wing\s+tips\s+trimmed)?(?:\s+and\s+reserved\s+for\s+stock)?\b""",
+			RegexOption.IGNORE_CASE,
+		),
+		Regex("""\blow-fat\s+or\s+nonfat\s+""", RegexOption.IGNORE_CASE),
+		Regex("""\bfresh\s+or\s+frozen\s+""", RegexOption.IGNORE_CASE),
+		Regex("""\bfresh,\s*frozen,?\s*or\s+dried\s+""", RegexOption.IGNORE_CASE),
+		Regex("""\b(?:lacinato|curly)\s+or\s+(?:1\s+)?(?:lacinato|curly)\s+""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*roughly\s+chopped\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*washed\s+and\s+dried\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*leaves\s+picked\s+and\s+chopped\b""", RegexOption.IGNORE_CASE),
@@ -196,12 +276,75 @@ internal object IngredientLinePhraseRewrites {
 		Regex(""",?\s*plus\s+a\s+handful\s+for\s+serving\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*plus\s+a\s+block\s+for\s+grating\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*plus\s+a\s+little\s+extra\s+for\s+greasing\b""", RegexOption.IGNORE_CASE),
-		Regex(""",?\s*plus\s+more\s+for\s+greasing\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*plus\s+more\s+for\s+greasing(?:\s+(?:the\s+)?dish)?\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*brought\s+to\s+a\s+boil\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*shaken\s+(?:well\s+)?before\s+(?:use|using)\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*whisked\s+until\s+smooth\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*plus\s+extra\s+for\s+the\s+dish\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*plus\s+extra\s+for\s+dusting\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*plus\s+a\s+drizzle\b""", RegexOption.IGNORE_CASE),
 		Regex(""",?\s*for\s+grating\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*for\s+dredging\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*blitzed\s+to\s+a\s+pur[eé]e\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*seasoned\s+with\s+salt\s+and\s+(?:black\s+)?pepper\b""", RegexOption.IGNORE_CASE),
 		Regex("""\s*\(cold\)""", RegexOption.IGNORE_CASE),
+		Regex(
+			"""(?<=(?:lemon|lime|orange)\s+juice)\s*,?\s*from\s+(?:about\s+)?""" +
+				"""(?:[½¼⅓\d/]+|\d+|one|two|three)\s*(?:large\s+|medium\s+|small\s+)?(?:lime|lemonc?|orange)s?\b""",
+			RegexOption.IGNORE_CASE,
+		),
+		Regex(
+			""",\s*plus\s+[^,;]*?\b(?:for\s+serving|to\s+serve|for\s+garnish|to\s+garnish)\b.*$""",
+			RegexOption.IGNORE_CASE,
+		),
+		Regex(
+			pattern = """[,;]?\s*(?:\b(?:half\s+a|\d+/\d+|\d+|a\s+(?:couple\s+of\s+)?)\s*palm\s*ful(?:l)?s?""" +
+				"""|\bpalm\s*ful(?:l)?s?)\s*$""",
+			options = setOf(RegexOption.IGNORE_CASE),
+		),
+		Regex(""",?\s*stripped\s+and\s+finely\s+chopped\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*grated\s+on\s+a\s+rasp(?:,?\s*separated)?\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*[¼1/4]+″?\s*cut\s+off\s+tops?\s+to\s+expose\s+cloves\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*plus\s+a\s+pinch\s+for\s+the\s+eggwash\b""", RegexOption.IGNORE_CASE),
+		Regex("""\s+and\s+freshly\s+ground\s+peppe\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*bottoms\s+smashed\s+under\s+the\s+flat\s+side\s+of\s+a\s+knife\b""", RegexOption.IGNORE_CASE),
+		Regex("""\bwith\s+a\s+few\s+drops\s+of\s+lemon\s+juice\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*cracked\s+from\s+skin\s+and\s+split\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*roasted\s*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*seed(?:ed)?\s+and\s+chopped\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:remove\s+seeds|seeds\s+removed)\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:cored\s+and\s+)?thinly\s+sliced\s+into\s+long\s+strands\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:halved|sliced|cut)\s+[^,;]*?\bacross\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*blanched\s+for\s+[^,;]*?\b(?:minutes?|seconds?|mins?|secs?)\b""", RegexOption.IGNORE_CASE),
+		Regex("""\bmatchstick[\s-]+cut\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:washed\s+and\s+)?rinsed\s+well\s+of\s+grit\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:and\s+)?soaked\s+in\s+[^,;]*?\b(?:bowl|water)\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*beaten\s+to\s+blend\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*mixed\s+with\s+[^,;]*?\bwater\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*beaten\s+[^,;]*?\bwith\s+[^,;]*?\bwater(?:,?\s*for\s+egg\s+wash)?\b""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*for\s+egg\s+wash\b""", RegexOption.IGNORE_CASE),
+		Regex("""\s*\(pre[\s-]+soaked[^)]*\)""", RegexOption.IGNORE_CASE),
+		Regex("""(?i)\b(?:fat[\s-]+free|nonfat|low[\s-]+fat)\s+(?=half[\s-]+and[\s-]+half\b)"""),
+		Regex(""",?\s*(?:peeled\s+)?(?:but\s+)?left\s+whole\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*cracked\s+into\s+pieces\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*stems\s+and\s+caps\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*quartered\s+through\s+root\s+ends?\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*greens\s+included\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:thinly\s+)?sliced\s+cross-?wise\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(""",?\s*(?:unpeeled\s+and\s+)?scrubbed\s+clean\b.*$""", RegexOption.IGNORE_CASE),
+		Regex(
+			""",?\s*(?:peeled\s+and\s+)?cut\s+lengthwise\s+into\s+[^,;()]+(?:fries|sticks)\b.*$""",
+			RegexOption.IGNORE_CASE,
+		),
+		Regex(
+			""",?\s*(?:peeled\s+and\s+)?chopped\s+into\s+(?:big|large|small)\s+chunks\b.*$""",
+			RegexOption.IGNORE_CASE,
+		),
+		Regex(""",?\s*heated\s+to\s+\d+.*$""", RegexOption.IGNORE_CASE),
+		Regex(
+			""",?\s*plus\s+[^,;()]*\bdill\s+pickle\s+juice\b.*$""",
+			RegexOption.IGNORE_CASE,
+		),
 	)
 
 	private val mugWithGramsPattern = Regex(
@@ -429,15 +572,95 @@ internal object IngredientLinePhraseRewrites {
 		RegexOption.IGNORE_CASE,
 	)
 
+	private val zestOfLemoPattern = Regex(
+		"""^Finely grated zest of 1 lemo$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val raspberryMeshPattern = Regex(
+		"""^2 tsp the raspberry juice from about 1/2 cup frozen raspberries melted and pressed thru a mesh strainer$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val bulkSweetSausagePattern = Regex(
+		"""^(\d+.*?)\s+bulk\s+sweet$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val preSlicedMozzarellaPattern = Regex(
+		"""^5\s+ounces\s+pre[\s-]+sliced\s+thin.*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val tonsCilantroPattern = Regex(
+		"""^Tons\s+of\s+chopped\s+fresh\s+cilantro$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val persianLeeksPattern = Regex(
+		"""^4\s+1/2\s+ounces\s+\(125\s+g\)\s+fresh\s+Persian\s+leekschives.*$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val inclusionsChocolatePattern = Regex(
+		"""^200\s+g\s+Inclusions\s*\(milk\s+and\s+white\s+chocolate\s+chips\)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val inclusionsMixturePattern = Regex(
+		"""^300\s+g\s+Inclusions\s*mixture\s*\(.*chocolate\s+chips\)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val otherFieldCornPattern = Regex(
+		"""^60\s+grams\s+other\s+field\s+corn\s*\(rounded\s+1/2\s+cup\)$""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val otherVegetableSpinachPattern = Regex(
+		"""^470\s+grams\s+other\s+vegetable\s+like\s+spinach$""",
+		RegexOption.IGNORE_CASE,
+	)
+
 	fun rewrite(value: String): String? {
 		val trimmed = value.trim()
-		val cleaned = stripNoisePhrases(trimmed)
-		val target = cleaned ?: trimmed
+		val withBroth = if (lowSodiumChickenBrothPattern.containsMatchIn(trimmed)) {
+			lowSodiumChickenBrothPattern.replace(trimmed, "$1 broth")
+		} else {
+			trimmed
+		}
+		val withAllspice = if (allSpicePattern.containsMatchIn(withBroth)) {
+			allSpicePattern.replace(withBroth, "allspice")
+		} else {
+			withBroth
+		}
+		val withTabasco = if (tabascoSauceInlinePattern.containsMatchIn(withAllspice)) {
+			tabascoSauceInlinePattern.replace(withAllspice, "chili sauce")
+		} else {
+			withAllspice
+		}
+		val withAnotherFlour = if (anotherFlourPattern.containsMatchIn(withTabasco)) {
+			anotherFlourPattern.replace(withTabasco, "all-purpose flour")
+		} else {
+			withTabasco
+		}
+		val withSpringGreens = if (springGreensPattern.containsMatchIn(withAnotherFlour)) {
+			springGreensPattern.replace(withAnotherFlour, "cabbage")
+		} else {
+			withAnotherFlour
+		}
+		val withTypos = withSpringGreens
+			.replace(Regex("""\bckickpeas\b""", RegexOption.IGNORE_CASE), "chickpeas")
+			.replace(Regex("""\bcorainder\b""", RegexOption.IGNORE_CASE), "coriander")
+			.replace(Regex("""\bmaynnoaise\b""", RegexOption.IGNORE_CASE), "mayonnaise")
+			.replace(Regex("""\bParma\s+han\b""", RegexOption.IGNORE_CASE), "Parma ham")
+		val cleaned = stripNoisePhrases(withTypos)
+		val target = cleaned ?: withTypos
 		val rewritten = rewriteEarlyClauses(target)
 			?: rewritePrepNoise(target)
 			?: rewriteCountAndVolume(target)
 			?: rewriteBritishSpecialties(target)
-		return rewritten ?: cleaned
+		return rewritten ?: if (withTypos != trimmed) target else cleaned
 	}
 
 	private fun stripNoisePhrases(value: String): String? {
@@ -449,13 +672,30 @@ internal object IngredientLinePhraseRewrites {
 		return if (current != value) current else null
 	}
 
+	private fun rewritePlusExtraEgg(trimmed: String): String? {
+		val match = plusExtraEggPattern.matchEntire(trimmed) ?: return null
+		val count = (match.groupValues[REGEX_GROUP_FIRST].toIntOrNull() ?: 1) + 1
+		val eggNoun = match.groupValues[REGEX_GROUP_SECOND].trim()
+		val pluralEgg = if (count > 1 && !eggNoun.endsWith("s", ignoreCase = true)) "${eggNoun}s" else eggNoun
+		return "$count $pluralEgg"
+	}
+
 	private fun rewriteEarlyClauses(trimmed: String): String? {
+		val plusExtraEgg = rewritePlusExtraEgg(trimmed)
 		val instruction = leadingInstructionPattern.matchEntire(trimmed)
 		val sizeAlternative = sizeAlternativePattern.matchEntire(trimmed)
+		val mobDuplicatedCut = mobDuplicatedCutPattern.matchEntire(trimmed)
 		val slicedFruit = slicedFruitPattern.matchEntire(trimmed)
 		val perItemRewrite = countWithPerItemWeightPattern.matchEntire(trimmed)?.let { formatPerItemWeight(it) }
 		val extraTrailing = trailingPlusExtraPattern.matchEntire(trimmed)
 		return when {
+			trimmed == "500 g small new" -> "500 g small new potatoes"
+			trimmed == "1 medium head of green (about 2 lb. total)" ->
+				"1 medium head of green cabbage (about 2 lb. total)"
+
+			trimmed == "8 slices grilled" -> "8 slices challah bread"
+			trimmed == "250 g warmed in microwave" -> "250 g rotisserie chicken meat"
+			plusExtraEgg != null -> plusExtraEgg
 			plumsStonedPattern.matches(trimmed) -> "2 plums"
 			perItemRewrite != null -> perItemRewrite
 			countableJuniperBerriesPattern.matches(trimmed) -> "1 tsp juniper berries"
@@ -465,10 +705,21 @@ internal object IngredientLinePhraseRewrites {
 				sizeAlternative.groupValues[REGEX_GROUP_FIRST],
 				sizeAlternative.groupValues[REGEX_GROUP_SECOND].trim(),
 			).joinToString(" ")
+
+			mobDuplicatedCut != null -> {
+				val cutWord = mobDuplicatedCut.groupValues[REGEX_GROUP_SECOND].lowercase()
+				val pluralCut = if (cutWord.startsWith("thigh")) "chicken thighs" else "chicken breasts"
+				listOf(
+					mobDuplicatedCut.groupValues[REGEX_GROUP_FIRST],
+					pluralCut + mobDuplicatedCut.groupValues[REGEX_GROUP_THIRD],
+				).joinToString(" ").trim()
+			}
+
 			slicedFruit != null -> "1 cup $trimmed"
 			extraTrailing != null &&
 				NutritionNameNormalizer.hasMeaningfulFoodName(extraTrailing.groupValues[REGEX_GROUP_FIRST]) ->
 				extraTrailing.groupValues[REGEX_GROUP_FIRST].trim()
+
 			else -> null
 		}
 	}
@@ -485,6 +736,7 @@ internal object IngredientLinePhraseRewrites {
 				val count = punnet.groupValues[REGEX_GROUP_FIRST].toIntOrNull() ?: 1
 				"${count * GRAMS_PER_PUNNET} g ${punnet.groupValues[REGEX_GROUP_SECOND].trim()}"
 			}
+
 			cassiaBarkPattern.matches(trimmed) -> "1 piece cassia bark"
 			teabag != null -> "${teabag.groupValues[REGEX_GROUP_FIRST]} piece chamomile tea"
 			saltine != null -> "${saltine.groupValues[REGEX_GROUP_FIRST]} piece saltine crackers"
@@ -509,7 +761,14 @@ internal object IngredientLinePhraseRewrites {
 		val springOnions = springOnionsWhitesPattern.matchEntire(trimmed)
 		val parsnips = parsnipsBatonsPattern.matchEntire(trimmed)
 		val onion = onionCutPattern.matchEntire(trimmed)
+		val citrusJuiceOf = citrusJuiceOfPattern.matchEntire(trimmed)
+		val citrusJuicePlus = citrusJuicePlusZestPattern.matchEntire(trimmed)
+		val citrusParenJuice = citrusParentheticalJuicePattern.matchEntire(trimmed)
+		val orangeMeasureJuice = orangeJuiceAndZestMeasurePattern.matchEntire(trimmed)
+		val bulkSweet = bulkSweetSausagePattern.matchEntire(trimmed)
 		return when {
+			preSlicedMozzarellaPattern.matches(trimmed) -> "5 ounces pre-sliced thin mozzarella"
+			bulkSweet != null -> "${bulkSweet.groupValues[REGEX_GROUP_FIRST]} bulk sweet Italian sausage"
 			bakingPowder != null -> "${bakingPowder.groupValues[REGEX_GROUP_FIRST]} baking powder"
 			carrots != null -> "${carrots.groupValues[REGEX_GROUP_FIRST]} carrots"
 			whiteLeeks != null -> "${whiteLeeks.groupValues[REGEX_GROUP_FIRST]} leeks"
@@ -525,6 +784,37 @@ internal object IngredientLinePhraseRewrites {
 			parsnips != null -> "${parsnips.groupValues[REGEX_GROUP_FIRST]} parsnips"
 			onion != null -> onion.groupValues[REGEX_GROUP_FIRST]
 			neutralOilPattern.matches(trimmed) -> "1 tbsp neutral-tasting oil"
+			citrusJuicePlus != null -> listOf(
+				citrusJuicePlus.groupValues[REGEX_GROUP_FIRST],
+				citrusJuicePlus.groupValues[REGEX_GROUP_SECOND],
+				"juice",
+			).joinToString(" ")
+
+			citrusParenJuice != null -> listOf(
+				citrusParenJuice.groupValues[REGEX_GROUP_SECOND],
+				citrusParenJuice.groupValues[REGEX_GROUP_FIRST],
+				"juice",
+			).joinToString(" ")
+
+			orangeMeasureJuice != null ->
+				listOf(
+					orangeMeasureJuice.groupValues[REGEX_GROUP_FIRST],
+					orangeMeasureJuice.groupValues[REGEX_GROUP_SECOND],
+					orangeMeasureJuice.groupValues[REGEX_GROUP_THIRD],
+					"juice",
+				).joinToString(" ")
+
+			citrusJuiceOf != null -> {
+				val rawQty = citrusJuiceOf.groupValues[REGEX_GROUP_FIRST].lowercase()
+				val count = when (rawQty) {
+					"two" -> "2"
+					"three" -> "3"
+					"one", "" -> "1"
+					else -> citrusJuiceOf.groupValues[REGEX_GROUP_FIRST]
+				}
+				"$count ${citrusJuiceOf.groupValues[REGEX_GROUP_SECOND]} juice"
+			}
+
 			else -> null
 		}
 	}
@@ -544,27 +834,32 @@ internal object IngredientLinePhraseRewrites {
 				mug.groupValues[REGEX_GROUP_FOURTH],
 				mug.groupValues[REGEX_GROUP_SECOND].trim(),
 			).joinToString(" ")
+
 			bunch != null -> listOf(
 				bunch.groupValues[REGEX_GROUP_THIRD],
 				bunch.groupValues[REGEX_GROUP_FOURTH],
 				bunch.groupValues[REGEX_GROUP_SECOND].trim(),
 			).joinToString(" ")
+
 			weight != null -> listOf(
 				weight.groupValues[REGEX_GROUP_THIRD],
 				weight.groupValues[REGEX_GROUP_FOURTH],
 				weight.groupValues[REGEX_GROUP_SECOND].trim(),
 			).joinToString(" ")
+
 			cabbage != null -> listOf(
 				cabbage.groupValues[REGEX_GROUP_FIRST],
 				cabbage.groupValues[REGEX_GROUP_SECOND],
 				"red cabbage",
 			).joinToString(" ")
+
 			pack != null -> formatPackMultiplier(pack)
 			heaped != null -> listOf(
 				heaped.groupValues[REGEX_GROUP_FIRST],
 				"tsp",
 				heaped.groupValues[REGEX_GROUP_SECOND].trim(),
 			).joinToString(" ")
+
 			capers != null -> "${capers.groupValues[REGEX_GROUP_FIRST]} tbsp capers"
 			stock != null -> "${stock.groupValues[REGEX_GROUP_FIRST]} ml vegetable stock"
 			swigOfRumPattern.matches(trimmed) -> "1 tbsp rum"
@@ -593,7 +888,7 @@ internal object IngredientLinePhraseRewrites {
 			vinSantoBottlePattern.matches(trimmed) -> "750 ml Vin Santo"
 			biscottiPackPattern.matches(trimmed) -> "200 g biscotti"
 			sherryOrPortPattern.matches(trimmed) -> "60 ml sherry"
-			tabascoSaucePattern.matches(trimmed) -> "1 tsp Tabasco sauce"
+			tabascoSaucePattern.matches(trimmed) -> "1 tsp chili sauce"
 			prosciuttoHalvedPattern.matches(trimmed) -> "6 slices prosciutto"
 			bunchMarjoramLeavesPattern.matches(trimmed) -> "1 small bunch fresh marjoram"
 			basicRisottoRecipePattern.matches(trimmed) -> "400 g risotto rice"
@@ -606,6 +901,16 @@ internal object IngredientLinePhraseRewrites {
 				val qty = wineGlassesVermouthPattern.matchEntire(trimmed)?.groupValues?.getOrNull(1)
 				if (qty == "2") "300 ml dry vermouth" else "150 ml dry vermouth"
 			}
+
+			zestOfLemoPattern.matches(trimmed) -> "finely grated zest of 1 lemon"
+			raspberryMeshPattern.matches(trimmed) -> "2 tsp raspberry juice"
+			tonsCilantroPattern.matches(trimmed) -> "1 handful chopped fresh cilantro"
+			persianLeeksPattern.matches(trimmed) -> "4 1/2 ounces fresh Persian leeks"
+			inclusionsChocolatePattern.matches(trimmed) -> "200 g chocolate chips"
+			inclusionsMixturePattern.matches(trimmed) -> "300 g chocolate chips"
+			otherFieldCornPattern.matches(trimmed) -> "60 grams cornmeal"
+			otherVegetableSpinachPattern.matches(trimmed) -> "470 grams spinach"
+
 			else -> null
 		}
 	}
@@ -621,6 +926,7 @@ internal object IngredientLinePhraseRewrites {
 				"Fish Tales jack mackerel in sunflower oil",
 				ignoreCase = true,
 			) -> "mackerel in sunflower oil"
+
 			rawItem.equals("Fish Tales anchovies in olive oil", ignoreCase = true) -> "anchovies in olive oil"
 			rawItem.equals("Fish Tales tuna in olive oil", ignoreCase = true) -> "tuna in olive oil"
 			rawItem.equals("Jamie Oliver supergrains", ignoreCase = true) -> "grains"

@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: contextual-headings-v28
+// cache-bust: contextual-headings-v31
 
 data class IngredientTestCase(
 	val description: String,
@@ -51,6 +51,21 @@ fun runSplitTests(cases: List<SplitTestCase>) {
 }
 
 val sanitizeCases = listOf(
+	IngredientTestCase(
+		description = "normalizes glac é to glacé",
+		input = "225 g glac é pineapple",
+		expected = "225 g glacé pineapple",
+	),
+	IngredientTestCase(
+		description = "normalizes glac to glacé",
+		input = "225 g glac pineapple",
+		expected = "225 g glacé pineapple",
+	),
+	IngredientTestCase(
+		description = "normalizes ttbsp typo to tbsp",
+		input = "3 ttbsp finely-chopped crystallized ginger",
+		expected = "3 tbsp finely-chopped crystallized ginger",
+	),
 	IngredientTestCase(
 		description = "adds space between grams and quantity",
 		input = "60g Gruyère",
@@ -436,6 +451,11 @@ val alternativeCases = listOf(
 		expected = listOf("12 rashers smoked streaky bacon", "12 rashers pancetta"),
 	),
 	AlternativeTestCase(
+		description = "borrows shared meat prefix when alternative is a meat cut",
+		input = "1 pound lamb leg or shoulder, cut into 3/4-inch cubes",
+		expected = listOf("1 pound lamb leg", "1 pound lamb shoulder, cut into 3/4-inch cubes"),
+	),
+	AlternativeTestCase(
 		description = "appends shared cracker noun to first alternative",
 		input = "35-40 saltine or other salted crackers",
 		expected = listOf("35-40 saltine crackers", "35-40 other salted crackers"),
@@ -497,6 +517,17 @@ val alternativeCases = listOf(
 		input = "165 grams soft white whole wheat flour, or another flour of your choice",
 		expected = listOf("165 grams soft white whole wheat flour, or another flour of your choice"),
 	),
+	AlternativeTestCase(
+		description = "splits serial cheese alternatives with and/or",
+		input = "4 ounces (115 g) cheddar, provolone, Monterey Jack, " +
+			"and/or Muenster cheese, finely shredded (about 1 cup)",
+		expected = listOf(
+			"4 ounces (115 g) cheddar cheese",
+			"4 ounces provolone cheese",
+			"4 ounces Monterey Jack cheese",
+			"4 ounces Muenster cheese, finely shredded (about 1 cup)",
+		),
+	),
 )
 
 val normalizeTextCases = listOf(
@@ -549,6 +580,14 @@ val normalizeTextCases = listOf(
 
 val splitCases = listOf(
 	SplitTestCase(
+		description = "splits concatenated ingredients after parenthetical note",
+		input = "2 to 4 thick slices ripe tomato (see note)2 oil-packed anchovy fillets",
+		expected = listOf(
+			"2 to 4 thick slices ripe tomato (see note)",
+			"2 oil-packed anchovy fillets",
+		),
+	),
+	SplitTestCase(
 		description = "splits concatenated ingredients and adds spaces",
 		input = "flour60g butter2tbsp",
 		expected = listOf("flour", "60 g butter", "2 tbsp"),
@@ -559,6 +598,16 @@ val splitCases = listOf(
 		expected = listOf(
 			"1 pound melting cheese such as queso Chihuahua or Mozzarella, shredded",
 		),
+	),
+	SplitTestCase(
+		description = "splits salt and freshly ground black pepper",
+		input = "Salt and freshly ground black pepper",
+		expected = listOf("Salt", "freshly ground black pepper"),
+	),
+	SplitTestCase(
+		description = "splits kosher salt and black pepper to taste",
+		input = "Kosher salt and black pepper to taste",
+		expected = listOf("Kosher salt", "black pepper"),
 	),
 )
 
