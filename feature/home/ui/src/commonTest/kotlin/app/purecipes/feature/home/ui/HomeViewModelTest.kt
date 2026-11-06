@@ -443,6 +443,83 @@ class HomeViewModelTest {
 	}
 
 	@Test
+	fun `shelf scroll position is kept for the next visit`() = runViewModelTest {
+		val viewModel = homeViewModel(FakeHomeFeedRepository())
+		advanceUntilIdle()
+
+		viewModel.onShelfScrolled(
+			shelfKey = HomeShelfId.NEW.name,
+			firstVisibleItemIndex = 9,
+			firstVisibleItemScrollOffset = 36,
+		)
+
+		viewModel.shelfFirstVisibleItemIndex(HomeShelfId.NEW.name) shouldBe 9
+		viewModel.shelfFirstVisibleItemScrollOffset(HomeShelfId.NEW.name) shouldBe 36
+	}
+
+	@Test
+	fun `recipe details view preserves loaded shelf pages across refresh`() = runViewModelTest {
+		val firstPage = List(HOME_SHELF_PAGE_SIZE) { index ->
+			recipeSummary(id = index + 1, title = "Ready ${index + 1}")
+		}
+		val secondPage = listOf(
+			recipeSummary(id = HOME_SHELF_PAGE_SIZE + 1, title = "Ready ${HOME_SHELF_PAGE_SIZE + 1}"),
+			recipeSummary(id = HOME_SHELF_PAGE_SIZE + 2, title = "Ready ${HOME_SHELF_PAGE_SIZE + 2}"),
+		)
+		val newShelf = HomeShelf(
+			id = HomeShelfId.NEW,
+			title = "New",
+			recipes = firstPage,
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(HomeFeed(shelves = listOf(newShelf))),
+		)
+		homeFeedRepository.shelfPages = mapOf(
+			HomeShelfId.NEW to Ok(
+				SearchResultsPage(
+					items = secondPage,
+					pageNumber = 2,
+					pageSize = HOME_SHELF_PAGE_SIZE,
+					totalMatches = HOME_SHELF_PAGE_SIZE + secondPage.size,
+				),
+			),
+		)
+		val activity = FakeRecipeActivityRepository()
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			recipeActivityRepository = activity,
+			sessionKey = "user",
+		)
+		advanceUntilIdle()
+
+		val initialState = viewModel.shelfPagination.getValue(HomeShelfId.NEW.name)
+		initialState.requestPage(
+			initialPageKey = 1,
+			requestedPageKey = 2,
+			items = initialState.allItems,
+		)
+		advanceUntilIdle()
+		initialState.allItems.size shouldBe HOME_SHELF_PAGE_SIZE + secondPage.size
+
+		val openedRecipe = secondPage.last()
+		homeFeedRepository.result = Ok(
+			HomeFeed(
+				shelves = listOf(
+					newShelf,
+					recentlyViewedShelf(openedRecipe),
+				),
+			),
+		)
+		activity.record(openedRecipe.id, RecipeActivityEvent.OPEN)
+		advanceUntilIdle()
+
+		val refreshedState = viewModel.shelfPagination.getValue(HomeShelfId.NEW.name)
+		refreshedState.allItems.map { recipe -> recipe.id } shouldBe
+			(firstPage + secondPage).map { recipe -> recipe.id }
+		homeFeedRepository.shelfPageCalls shouldBe listOf(HomeShelfId.NEW)
+	}
+
+	@Test
 	fun `saving search filters refreshes home feed shelves`() = runViewModelTest {
 		val initialFeed = HomeFeed(
 			shelves = listOf(

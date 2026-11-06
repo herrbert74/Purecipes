@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +36,7 @@ import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
+internal const val HOME_SHELF_ROW_LIST_TAG_PREFIX = "homeShelfRowList:"
 internal const val HOME_SHELF_SEE_ALL_TAG_PREFIX = "homeShelfSeeAll:"
 
 private fun shelfEntryKey(entry: InlineFeedEntry<RecipeSummary>, index: Int): Any {
@@ -52,8 +55,10 @@ internal fun HomeShelfRow(
 	onSeeAll: () -> Unit,
 	modifier: Modifier = Modifier,
 	bannerAdViewModel: BannerAdViewModel? = null,
+	listState: LazyListState = rememberLazyListState(),
 ) {
 	val labelColor = ContainerTint.forIndex(shelfIndex).colorFamily().color
+	val shelfKey = shelf.shelfKey()
 	Column(
 		modifier = modifier.fillMaxWidth(),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
@@ -72,13 +77,15 @@ internal fun HomeShelfRow(
 			)
 			TextButton(
 				onClick = onSeeAll,
-				modifier = Modifier.testTag("$HOME_SHELF_SEE_ALL_TAG_PREFIX${shelf.shelfKey()}"),
+				modifier = Modifier.testTag("$HOME_SHELF_SEE_ALL_TAG_PREFIX$shelfKey"),
 			) {
 				Text(text = "See all")
 			}
 		}
 		PaginatedLazyRow(
 			paginationState = paginationState,
+			modifier = Modifier.testTag("$HOME_SHELF_ROW_LIST_TAG_PREFIX$shelfKey"),
+			state = listState,
 			requestInitialPageAutomatically = false,
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			verticalAlignment = Alignment.Top,

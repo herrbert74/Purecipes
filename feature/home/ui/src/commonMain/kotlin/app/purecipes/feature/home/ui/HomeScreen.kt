@@ -19,8 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.shared.domain.model.HomeShelf
+import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -50,6 +53,31 @@ fun HomeScreen(
 			viewModel.onHomeListScrolled(index, offset)
 		}
 	}
+	val shelfStateCache = remember(viewModel) { mutableMapOf<String, LazyListState>() }
+	val shelfKeys = remember(viewModel.homeFeed.shelves) {
+		viewModel.homeFeed.shelves.map { shelf -> shelf.shelfKey() }
+	}
+	val shelfListStates = remember(viewModel, shelfKeys) {
+		shelfKeys.associateWith { shelfKey ->
+			shelfStateCache.getOrPut(shelfKey) {
+				LazyListState(
+					firstVisibleItemIndex = viewModel.shelfFirstVisibleItemIndex(shelfKey),
+					firstVisibleItemScrollOffset = viewModel.shelfFirstVisibleItemScrollOffset(shelfKey),
+				)
+			}
+		}.toImmutableMap()
+	}
+	LaunchedEffect(viewModel, shelfListStates) {
+		shelfListStates.forEach { (shelfKey, state) ->
+			launch {
+				snapshotFlow {
+					state.firstVisibleItemIndex to state.firstVisibleItemScrollOffset
+				}.collect { (index, offset) ->
+					viewModel.onShelfScrolled(shelfKey, index, offset)
+				}
+			}
+		}
+	}
 	val statusBarColor = PurecipesTheme.colorScheme.surface
 	Box(modifier = modifier.fillMaxSize()) {
 		HomeFeedContent(
@@ -63,6 +91,7 @@ fun HomeScreen(
 			onRetry = viewModel.reloadHomeFeed,
 			bannerAdViewModel = bannerAdViewModel,
 			listState = homeListState,
+			shelfListStates = shelfListStates,
 			modifier = Modifier.fillMaxSize(),
 		)
 		Spacer(

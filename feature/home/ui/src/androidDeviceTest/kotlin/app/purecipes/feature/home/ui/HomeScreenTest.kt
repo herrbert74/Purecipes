@@ -27,10 +27,13 @@ import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseC
 import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
 import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
 import app.purecipes.shared.domain.model.Appliance
+import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
 import app.purecipes.shared.domain.model.HomeFeed
 import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
+import app.purecipes.shared.domain.model.RecipeActivityEvent
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
 import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
@@ -43,6 +46,7 @@ import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -173,16 +177,106 @@ class HomeScreenTest {
 		onAllNodesWithText(FIRST_SHELF_TITLE).assertCountEquals(0)
 	}
 
+	@Test
+	fun returningFromRecipeDetailsKeepsLaterShelfPositionVisible() = runRecompositionTrackingUiTest {
+		val firstPage = List(HOME_SHELF_PAGE_SIZE) { index ->
+			recipeSummary(id = index + 1, title = "Shelf card ${index + 1}")
+		}
+		val secondPage = List(4) { index ->
+			val number = HOME_SHELF_PAGE_SIZE + index + 1
+			recipeSummary(id = number, title = "Shelf card $number")
+		}
+		val targetRecipe = secondPage.last()
+		val newShelf = HomeShelf(
+			id = HomeShelfId.NEW,
+			title = FIRST_SHELF_TITLE,
+			recipes = firstPage,
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(HomeFeed(shelves = listOf(newShelf))),
+		)
+		homeFeedRepository.shelfPages = mapOf(
+			HomeShelfId.NEW to Ok(
+				SearchResultsPage(
+					items = secondPage,
+					pageNumber = 2,
+					pageSize = HOME_SHELF_PAGE_SIZE,
+					totalMatches = firstPage.size + secondPage.size,
+				),
+			),
+		)
+		val activityRepository = FakeRecipeActivityRepository()
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			recipeActivityRepository = activityRepository,
+			sessionKey = SESSION_KEY,
+		)
+		var showHome by mutableStateOf(true)
+		setTrackedContent {
+			PurecipesTheme {
+				if (showHome) {
+					HomeScreen(
+						onRecipeSelect = { recipeId, _ ->
+							homeFeedRepository.result = Ok(
+								HomeFeed(
+									shelves = listOf(
+										newShelf,
+										HomeShelf(
+											id = HomeShelfId.RECENTLY_VIEWED,
+											title = "Recently viewed",
+											recipes = listOf(targetRecipe),
+										),
+									),
+								),
+							)
+							runBlocking {
+								activityRepository.record(recipeId, RecipeActivityEvent.OPEN)
+							}
+							showHome = false
+						},
+						sessionKey = SESSION_KEY,
+						viewModel = viewModel,
+					)
+				} else {
+					Text(text = "Recipe details")
+				}
+			}
+		}
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText(firstPage.first().title).fetchSemanticsNodes().isNotEmpty()
+		}
+
+		val shelfRowTag = "$HOME_SHELF_ROW_LIST_TAG_PREFIX${HomeShelfId.NEW.name}"
+		onNodeWithTag(shelfRowTag).performScrollToNode(hasText(firstPage.last().title))
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			viewModel.shelfPagination.getValue(HomeShelfId.NEW.name).allItems.size ==
+				firstPage.size + secondPage.size
+		}
+		onNodeWithTag(shelfRowTag).performScrollToNode(hasText(targetRecipe.title))
+		onNodeWithText(targetRecipe.title).assertIsDisplayed()
+		onNodeWithText(targetRecipe.title).performClick()
+		onNodeWithText("Recipe details").assertIsDisplayed()
+
+		runOnIdle {
+			showHome = true
+		}
+
+		onNodeWithText(secondPage[2].title).assertIsDisplayed()
+		onAllNodesWithText(targetRecipe.title).assertCountEquals(2)
+		onAllNodesWithText(firstPage.first().title).assertCountEquals(0)
+	}
+
 	private fun homeViewModel(
 		homeFeedRepository: FakeHomeFeedRepository,
 		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		recipeActivityRepository: FakeRecipeActivityRepository = FakeRecipeActivityRepository(),
 		sessionKey: String? = null,
 	) = HomeViewModel(
 		getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
 		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
 		homeFeedRefresh = HomeFeedRefreshCoordinator(),
 		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
-		observeRecipeViews = ObserveRecipeViewsUseCase(FakeRecipeActivityRepository()),
+		observeRecipeViews = ObserveRecipeViewsUseCase(recipeActivityRepository),
 		observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(FakeRecipeSearchFilterRepository()),
 		searchReadiness = SearchReadinessCoordinator(),
 		sessionKey = sessionKey,
