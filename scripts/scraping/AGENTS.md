@@ -6,7 +6,7 @@ For a map of every file in this folder (main scraper vs `oneoff/` backfills vs `
 
 ## Rule: Recipe Scraper Schema Synchronization
 
-The backend database schema (`backend/src/main/kotlin/com/purecipes/db/SchemaSql.kt`) is the authoritative deployment source. However, schema changes can originate from either:
+The backend database schema (`backend/src/main/kotlin/app/purecipes/backend/db/SchemaSql.kt`) is the authoritative deployment source. However, schema changes can originate from either:
 - Backend API requirements (new fields needed by the API)
 - Scraper requirements (new recipe attributes to extract and store)
 
@@ -117,7 +117,8 @@ This is irreversible unless you have a backup or the JSON files under the scrape
 For scraper script changes:
 - **Detekt compliance**: Run `./gradlew detektAll` to verify linting rules pass
 - **Scraped ingredient line tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
-- **Ingredient text backfill (existing DB/JSON)**: `./scripts/scraping/oneoff/normalize_existing_ingredients.sh` — after normalization rule changes or legacy data; see [README](README.md#re-normalize-ingredient-text-normalize_existing_ingredients)
+- **Reproducible ingredient rebuild & snapshot diff**: Prefer `./gradlew rebuildIngredientData` followed by `./gradlew diffIngredientSnapshot` after changing `ScrapedIngredientLines.kt` (see [`../../backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md))
+- **Ingredient text backfill (existing DB/JSON)**: `./scripts/scraping/oneoff/normalize_existing_ingredients.sh` — legacy / JSON-only normalization; see [README](README.md#re-normalize-ingredient-text-normalize_existing_ingredients)
 - **Optional-flag backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts` — after optional-detection rule changes or legacy data; see [README](README.md#backfill-optional-ingredient-flags-backfill_ingredient_requirements)
 - **Alternative-group backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts` — after OR/alternative rule changes or legacy data; see [README](README.md#backfill-alternative-ingredient-groups-backfill_ingredient_alternatives)
 - **Merge over-split incomplete alternatives (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.main.kts` — after incomplete-first-side / join-continued-`or` guards; see [README](README.md#merge-over-split-incomplete-alternatives-backfill_merge_incomplete_alternatives)

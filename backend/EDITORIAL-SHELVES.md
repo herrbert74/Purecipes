@@ -9,7 +9,7 @@ Two kinds of shelf share one table:
 
 "This week" is just a title you choose. The app does not treat that name specially.
 
-Editors write the rows with the scripts in [`../../scripts/editorial/README.md`](../../scripts/editorial/README.md). The tables are created the next time the backend starts.
+Editors write the rows with the scripts in [`../scripts/editorial/README.md`](../scripts/editorial/README.md). The tables are created the next time the backend starts.
 
 ## When a shelf is on screen
 

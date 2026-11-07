@@ -2,8 +2,37 @@ package app.purecipes.shared.domain.ingredient
 
 internal object IngredientAlternativeParsing {
 
-	private const val ALTERNATIVE_SEPARATOR = " or "
-	private const val ALTERNATIVE_SEPARATOR_LENGTH = 4
+	private const val ALTERNATIVE_SEPARATOR_OR = " or "
+	private const val ALTERNATIVE_SEPARATOR_AND_OR = " and/or "
+
+	private fun matchAlternativeSeparatorLength(text: String, index: Int): Int = when {
+		text.regionMatches(
+			index,
+			ALTERNATIVE_SEPARATOR_AND_OR,
+			0,
+			ALTERNATIVE_SEPARATOR_AND_OR.length,
+			ignoreCase = true,
+		) -> ALTERNATIVE_SEPARATOR_AND_OR.length
+
+		text.regionMatches(
+			index,
+			ALTERNATIVE_SEPARATOR_OR,
+			0,
+			ALTERNATIVE_SEPARATOR_OR.length,
+			ignoreCase = true,
+		) -> ALTERNATIVE_SEPARATOR_OR.length
+
+		else -> 0
+	}
+
+	private val keepSinglePhrases = listOf(
+		"mortar and pestle",
+		"minced or pressed",
+		"cut or torn",
+		"grated or shredded",
+		"shredded with a knife",
+		"the equivalent of",
+	)
 
 	private val quantityPrefixRegex = Regex(
 		pattern = """^((?:\d+(?:\.\d+)?|\d+\s+\d+/\d+|\d+/\d+)(?:\s+\w+)?(?:\s+of)?\s+)""",
@@ -18,7 +47,7 @@ internal object IngredientAlternativeParsing {
 	)
 
 	fun splitAlternativeParts(text: String): List<String> {
-		if (!containsAlternativeSeparator(text)) {
+		if (!containsAlternativeSeparator(text) || keepSinglePhrases.any { text.contains(it, ignoreCase = true) }) {
 			return listOf(text)
 		}
 
@@ -33,20 +62,14 @@ internal object IngredientAlternativeParsing {
 					depth--
 				}
 			}
-			if (
-				depth == 0 &&
-					text.regionMatches(
-						index,
-						ALTERNATIVE_SEPARATOR,
-						0,
-						ALTERNATIVE_SEPARATOR_LENGTH,
-						ignoreCase = true,
-					)
-			) {
-				parts += text.substring(start, index).trim()
-				index += ALTERNATIVE_SEPARATOR_LENGTH
-				start = index
-				continue
+			if (depth == 0) {
+				val separatorLength = matchAlternativeSeparatorLength(text, index)
+				if (separatorLength > 0) {
+					parts += text.substring(start, index).trim()
+					index += separatorLength
+					start = index
+					continue
+				}
 			}
 			index++
 		}
@@ -90,16 +113,7 @@ internal object IngredientAlternativeParsing {
 					depth--
 				}
 			}
-			if (
-				depth == 0 &&
-					text.regionMatches(
-						index,
-						ALTERNATIVE_SEPARATOR,
-						0,
-						ALTERNATIVE_SEPARATOR_LENGTH,
-						ignoreCase = true,
-					)
-			) {
+			if (depth == 0 && matchAlternativeSeparatorLength(text, index) > 0) {
 				return true
 			}
 			index++

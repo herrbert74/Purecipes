@@ -5,16 +5,29 @@ import javax.sql.DataSource
 
 internal class NutritionLookupRepository(
 	private val dataSource: DataSource,
+	private val foodPinsProvider: () -> Map<String, NutritionFoodPin> = { emptyMap() },
 ) {
 
 	fun loadIndex(): NutritionLookupIndex {
 		val foods = loadFoods()
 		val aliases = loadAliases()
 		val measures = loadMeasures()
+		val foodIdBySourceKey = foods
+			.filter { food -> food.sourceName.isNotBlank() && food.sourceId.isNotBlank() }
+			.associate { food -> (food.sourceName to food.sourceId) to food.id }
+		val pinnedFoodIdByLookupName = buildMap {
+			foodPinsProvider().forEach { (lookupName, pin) ->
+				val foodId = foodIdBySourceKey[pin.fdcSource to pin.fdcId]
+				if (foodId != null && lookupName.isNotBlank()) {
+					put(lookupName, foodId)
+				}
+			}
+		}
 		return NutritionLookupIndex(
 			foodById = foods.associateBy { it.id },
 			foodIdByNormalizedAlias = NutritionSeedAliasIndex.merge(foods, aliases),
 			measuresByFoodId = NutritionSupplementalMeasures.overlayMeasures(foods, measures),
+			pinnedFoodIdByLookupName = pinnedFoodIdByLookupName,
 		)
 	}
 
@@ -27,6 +40,7 @@ internal class NutritionLookupRepository(
 					display_name,
 					normalized_name,
 					source_name,
+					source_id,
 					calories_per_100g,
 					protein_per_100g,
 					carbohydrates_per_100g,
@@ -48,6 +62,7 @@ internal class NutritionLookupRepository(
 									displayName = resultSet.getString("display_name"),
 									normalizedName = resultSet.getString("normalized_name"),
 									sourceName = resultSet.getString("source_name"),
+									sourceId = resultSet.getString("source_id")?.trim().orEmpty(),
 									nutrients = FdcNutrientsPer100g(
 										calories = calories,
 										protein = resultSet.getBigDecimal("protein_per_100g"),

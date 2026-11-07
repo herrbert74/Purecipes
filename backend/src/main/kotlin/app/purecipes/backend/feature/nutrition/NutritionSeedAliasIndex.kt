@@ -6,6 +6,12 @@ internal object NutritionSeedAliasIndex {
 		foods: Collection<NutritionFoodRecord>,
 		storedAliases: Map<String, Int>,
 	): Map<String, Int> {
+		val foodById = foods.associateBy(NutritionFoodRecord::id)
+		val validStoredAliases = storedAliases.filter { (alias, foodId) ->
+			val food = foodById[foodId] ?: return@filter false
+			food.sourceName != FDC_BRANDED_SOURCE_NAME &&
+				NutritionFoodNameScorer.score(alias, food.normalizedName) != null
+		}
 		val foodIdByDisplayName = foods.associate { food -> food.displayName to food.id }
 		val seedAliases = buildMap {
 			NutritionSeedAliases.aliases.forEach { seedAlias ->
@@ -18,6 +24,6 @@ internal object NutritionSeedAliasIndex {
 				}
 			}
 		}
-		return storedAliases + seedAliases
+		return validStoredAliases + seedAliases
 	}
 }

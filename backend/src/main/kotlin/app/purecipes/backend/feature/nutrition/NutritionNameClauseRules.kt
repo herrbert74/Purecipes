@@ -29,6 +29,10 @@ internal object NutritionNameClauseRules {
 
 	private val ideallyClause = Regex("""(?i),?\s+ideally\b.*$""")
 
+	private val orAnyCombinationClause = Regex("""(?i),?\s+or\s+(?:any|a)\s+(?:combination|mixture)\b.*$""")
+
+	private val dividedClause = Regex("""(?i),?\s+divided(?:\s+(?:in|into)\b.*)?$""")
+
 	private val forTheCrustClause = Regex("""(?i)\s+for\s+the\s+crust\b.*$""")
 
 	private val afterBakingPrefix = Regex("""(?i)^after\s+baking,?\s*""")
@@ -48,6 +52,8 @@ internal object NutritionNameClauseRules {
 		result = noNeedClause.replace(result, "")
 		result = yeastSourdoughClause.replace(result, "")
 		result = ideallyClause.replace(result, "")
+		result = orAnyCombinationClause.replace(result, "")
+		result = dividedClause.replace(result, "")
 		result = forTheCrustClause.replace(result, "")
 		result = afterBakingPrefix.replace(result, "")
 		result = deSeededPhrase.replace(result, "")

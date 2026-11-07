@@ -1,6 +1,6 @@
 # Purecipes database
 
-This is the product map of the PostgreSQL database the backend serves to the apps. It explains what each table is for and what each column means. It does not cover how to run SQL, how tables are created, or how the server is started — those live in [`README.md`](README.md). USDA import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches` live in [`NUTRITION.md`](NUTRITION.md).
+This is the product map of the PostgreSQL database the backend serves to the apps. It explains what each table is for and what each column means. It does not cover how to run SQL, how tables are created, or how the server is started — those live in [`README.md`](README.md). The reproducible ingredient pipeline (`names.tsv` pins, `lines.tsv` snapshots, `rebuildIngredientData`, and `suggestIngredientMatches`) lives in [`INGREDIENTS.md`](INGREDIENTS.md). USDA import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches` live in [`NUTRITION.md`](NUTRITION.md).
 
 The phones, iOS app, and web app never talk to this database directly. They call the backend HTTP API. The backend reads and writes these tables.
 
@@ -96,7 +96,7 @@ Two matching problems are easy to confuse:
 
 **Home shelves**
 
-- `home_collections`, `home_collection_recipes` — how editors write these is in [`editorial-shelves/README.md`](editorial-shelves/README.md)
+- `home_collections`, `home_collection_recipes` — how editors write these is in [`EDITORIAL-SHELVES.md`](EDITORIAL-SHELVES.md)
 
 ---
 
@@ -301,8 +301,8 @@ Which food we chose for a measurable line.
 | `unit` | Parsed unit copied onto the match. |
 | `parsed_name` | Name we tried to match. |
 | `food_id` | The chosen `nutrition_foods` row. Empty if we stored a match attempt without a food (current calculator deletes the row instead when there is no food). |
-| `confidence` | How sure the matcher was: `1.00` alias, `0.90` exact name, `0.80` whole-token overlap. |
-| `match_source` | `alias`, `name`, or `tokens`. |
+| `confidence` | How sure the matcher was: `1.00` pinned or alias, `0.90` exact name, `0.80` whole-token overlap. |
+| `match_source` | `pinned`, `alias`, `name`, or `tokens`. |
 | `updated_at` | When this match was last written. |
 
 If this row is missing, the line was not measurable or no food was found.
@@ -471,7 +471,8 @@ A name should not sit in both pantry and exclusions at once; the app keeps those
 ## Related reading
 
 - Running the backend: [`README.md`](README.md)
+- Reproducible ingredient pipeline, pins, and snapshots: [`INGREDIENTS.md`](INGREDIENTS.md)
 - USDA import, nutrition backfill, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md)
 - Scraping and ingredient-line cleanup: [`../scripts/scraping/README.md`](../scripts/scraping/README.md)
 - Filling cuisine / meal type / diet chips: [`../enrichment/README.md`](../enrichment/README.md)
-- Editorial home shelves: [`editorial-shelves/README.md`](editorial-shelves/README.md)
+- Editorial home shelves: [`EDITORIAL-SHELVES.md`](EDITORIAL-SHELVES.md)

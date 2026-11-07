@@ -4,7 +4,7 @@ Editors use these scripts to write home shelves. The app has no editor screen. E
 
 Run them from the repo root. The first run downloads one Kotlin library, so it needs a network connection. The tables exist after the backend has been started once.
 
-How a shelf gets onto Home, including dates, slugs, and filter JSON, is in [`../../backend/editorial-shelves/README.md`](../../backend/editorial-shelves/README.md).
+How a shelf gets onto Home, including dates, slugs, and filter JSON, is in [`../../backend/EDITORIAL-SHELVES.md`](../../backend/EDITORIAL-SHELVES.md).
 
 ## Connection
 

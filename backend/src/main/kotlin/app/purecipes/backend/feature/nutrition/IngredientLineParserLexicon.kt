@@ -254,6 +254,7 @@ internal object IngredientLineParserLexicon {
 		"kiwis",
 		"leek",
 		"leeks",
+		"leaves",
 		"lemon",
 		"lemons",
 		"lettuce",
@@ -365,13 +366,13 @@ internal object IngredientLineParserLexicon {
 	)
 
 	val defaultCupPantryTokens = setOf(
-		"flour",
-		"chickpeas",
-		"chickpea",
-		"beans",
 		"bean",
+		"beans",
+		"chickpea",
+		"chickpeas",
 		"cornmeal",
 		"cranberries",
+		"flour",
 		"levain",
 		"madre",
 		"peas",

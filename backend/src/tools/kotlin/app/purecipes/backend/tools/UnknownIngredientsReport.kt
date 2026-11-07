@@ -1,6 +1,9 @@
 package app.purecipes.backend.tools
 
 import app.purecipes.backend.db.Db
+import app.purecipes.backend.feature.nutrition.IngredientLineParser
+import app.purecipes.backend.feature.nutrition.IngredientPinsLoader
+import app.purecipes.backend.feature.nutrition.NutritionNameNormalizer
 import app.purecipes.backend.feature.search.IngredientVocabulary
 import app.purecipes.shared.domain.model.IngredientCatalogue
 
@@ -84,6 +87,8 @@ private fun collectUnknownIngredients(
 		}
 	}
 
+	val pantryPins = IngredientPinsLoader.loadDefaultPantryPins()
+
 	val unknownEntries = allRows.mapNotNull { row ->
 		val normalizedIngredient = row.ingredient.trim()
 		if (normalizedIngredient.isEmpty()) {
@@ -94,7 +99,11 @@ private fun collectUnknownIngredients(
 			return@mapNotNull null
 		}
 
-		val matchesAnyAllowed = IngredientVocabulary.matchesAnyIngredient(
+		val matchesAnyAllowed = matchesPinnedPantryItem(
+			ingredientLine = normalizedIngredient,
+			pantryPins = pantryPins,
+			allowedIngredients = allowedIngredients,
+		) || IngredientVocabulary.matchesAnyIngredient(
 			ingredientLine = normalizedIngredient,
 			ingredientNames = allowedIngredients,
 		) || IngredientVocabulary.isPantryIngredient(normalizedIngredient)
@@ -114,6 +123,21 @@ private fun collectUnknownIngredients(
 		.groupBy { RecipeKey(recipeId = it.recipeId, recipeTitle = it.recipeTitle) }
 		.mapValues { (_, entries) -> entries.map { it.ingredient }.toSet() }
 		.toSortedMap(compareBy<RecipeKey> { it.recipeId }.thenBy { it.recipeTitle })
+}
+
+private fun matchesPinnedPantryItem(
+	ingredientLine: String,
+	pantryPins: Map<String, String>,
+	allowedIngredients: Set<String>,
+): Boolean {
+	if (pantryPins.isEmpty()) {
+		return false
+	}
+	val parsedName = IngredientLineParser.parse(ingredientLine).parsedName
+	val lookupName = NutritionNameNormalizer.forLookup(parsedName).ifBlank {
+		NutritionNameNormalizer.normalize(parsedName)
+	}
+	return pantryPins[lookupName] in allowedIngredients
 }
 
 private fun loadAllowedIngredients(): Set<String> = IngredientCatalogue.allItems

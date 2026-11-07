@@ -4,7 +4,7 @@
 @file:Import("../ScrapedIngredientLines.kt")
 
 // Cache-bust when ScrapedIngredientLines.kt changes (invalidates kotlin-main-kts jars).
-// backfill-merge-incomplete-v12
+// backfill-merge-incomplete-v13
 
 import java.sql.Connection
 import java.sql.DriverManager
@@ -225,6 +225,7 @@ fun mergedReplacements(
 				alternativeGroupKey = null,
 			),
 		)
+
 		else -> expanded.map { item ->
 			ReplacementIngredient(
 				text = item.text,

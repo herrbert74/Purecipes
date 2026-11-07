@@ -28,7 +28,7 @@ class IngredientLookupTest {
 	@Test
 	fun `resolveCatalogueIngredient returns null for unknown ingredient`() {
 		IngredientLookup.resolveCatalogueIngredient(
-			query = "gochujang",
+			query = "unknown_ingredient",
 			catalogueItems = IngredientCatalogue.allItems,
 		) shouldBe null
 	}

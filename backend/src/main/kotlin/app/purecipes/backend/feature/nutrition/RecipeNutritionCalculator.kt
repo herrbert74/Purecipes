@@ -20,6 +20,7 @@ internal data class IngredientNutritionCalculationResult(
 
 internal class RecipeNutritionCalculator(
 	private val lookupIndex: NutritionLookupIndex,
+	private val lineOverrides: Map<IngredientLineOverrideKey, IngredientLineOverride> = emptyMap(),
 ) {
 
 	fun calculate(ingredients: List<RecipeIngredientRow>): RecipeNutritionCalculationResult {
@@ -29,9 +30,16 @@ internal class RecipeNutritionCalculator(
 			result.copy(countsTowardTotals = countsTowardTotalsByIndex[index])
 		}
 
-		val countableResults = flaggedResults.filter { result ->
+		val countableResults = flaggedResults.filterIndexed { index, result ->
+			val ingredient = ingredients[index]
+			val overrideKind = lineOverrideFor(ingredient)?.kind.orEmpty()
+			val isCountableLine = when (overrideKind) {
+				"heading", "note", "equipment" -> false
+				"ingredient" -> true
+				else -> !IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText)
+			}
 			result.countsTowardTotals &&
-				!IngredientVocabulary.isIgnorableIngredientLine(result.parsed.rawText) &&
+				isCountableLine &&
 				NutritionNameNormalizer.hasMeaningfulFoodName(result.parsed.parsedName)
 		}
 		if (countableResults.isEmpty()) {
@@ -85,8 +93,52 @@ internal class RecipeNutritionCalculator(
 		)
 	}
 
+	private fun lineOverrideFor(ingredient: RecipeIngredientRow): IngredientLineOverride? =
+		if (ingredient.sourceUrl.isBlank()) {
+			null
+		} else {
+			lineOverrides[IngredientLineOverrideKey(ingredient.sourceUrl, ingredient.rawText.trim())]
+		}
+
+	private fun applyLineOverride(
+		parsed: ParsedIngredientLine,
+		override: IngredientLineOverride?,
+	): ParsedIngredientLine =
+		when {
+			override == null -> parsed
+			override.kind in setOf("heading", "note", "equipment") -> parsed.copy(
+				quantity = null,
+				unit = null,
+				parsedName = "",
+				isMeasurable = false,
+			)
+
+			else -> {
+				val resolvedQty = override.quantity.toBigDecimalOrNull() ?: parsed.quantity
+				val resolvedUnit = override.unit.ifBlank { parsed.unit.orEmpty() }.ifBlank { null }
+				val resolvedName = override.lookupName
+					.takeIf(String::isNotBlank)
+					?.let(NutritionNameNormalizer::forLookup)
+					?: parsed.parsedName
+				val isMeasurable = parsed.isMeasurable ||
+					override.kind == "ingredient" ||
+					override.quantity.isNotBlank() ||
+					override.unit.isNotBlank() ||
+					override.lookupName.isNotBlank()
+				parsed.copy(
+					quantity = resolvedQty,
+					unit = resolvedUnit,
+					parsedName = resolvedName,
+					isMeasurable = isMeasurable,
+				)
+			}
+		}
+
 	private fun calculateIngredient(ingredient: RecipeIngredientRow): IngredientNutritionCalculationResult {
-		val parsed = IngredientLineParser.parse(ingredient.rawText)
+		val parsed = applyLineOverride(
+			parsed = IngredientLineParser.parse(ingredient.rawText),
+			override = lineOverrideFor(ingredient),
+		)
 		if (!parsed.isMeasurable) {
 			return IngredientNutritionCalculationResult(
 				ingredientId = ingredient.ingredientId,
