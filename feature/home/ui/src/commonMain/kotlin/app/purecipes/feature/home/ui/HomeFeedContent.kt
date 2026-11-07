@@ -36,6 +36,7 @@ import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 
 internal const val HOME_FEED_LIST_TAG = "homeFeedList"
@@ -54,6 +55,7 @@ internal fun HomeFeedContent(
 	modifier: Modifier = Modifier,
 	bannerAdViewModel: BannerAdViewModel? = null,
 	listState: LazyListState = rememberLazyListState(),
+	shelfListStates: ImmutableMap<String, LazyListState> = persistentMapOf(),
 ) {
 	val contentWindowInsets = WindowInsets.safeDrawing.exclude(WindowInsets.ime)
 	val listContentPadding = contentWindowInsets.asPaddingValues() + PaddingValues(
@@ -107,7 +109,8 @@ internal fun HomeFeedContent(
 				key = { index -> homeFeed.shelves[index].shelfKey() },
 			) { index ->
 				val shelf = homeFeed.shelves[index]
-				val paginationState = shelfPagination[shelf.shelfKey()]
+				val shelfKey = shelf.shelfKey()
+				val paginationState = shelfPagination[shelfKey]
 				Column {
 					if (paginationState != null) {
 						HomeShelfRow(
@@ -117,6 +120,7 @@ internal fun HomeFeedContent(
 							onRecipeSelect = onRecipeSelect,
 							onSeeAll = { onSeeAll(shelf) },
 							bannerAdViewModel = bannerAdViewModel,
+							listState = shelfListStates[shelfKey] ?: rememberLazyListState(),
 						)
 					}
 					if (index == 0) {

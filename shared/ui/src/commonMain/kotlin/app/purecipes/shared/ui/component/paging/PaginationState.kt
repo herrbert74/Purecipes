@@ -22,8 +22,16 @@ class PaginationState<KEY, T>(
 
 	private val pages = LinkedHashMap<KEY, List<T>>()
 
+	val loadedPageKeys: List<KEY>
+		get() = pages.keys.toList()
+
+	val isLastPage: Boolean
+		get() = (internalState.value as? PaginationInternalState.Loaded)?.isLastPage == true
+
 	val requestedPageKey: KEY?
 		get() = (internalState.value as? PaginationInternalState.IHasRequestedPageKey<KEY>)?.requestedPageKey
+
+	fun pageItems(pageKey: KEY): List<T>? = pages[pageKey]
 
 	val allItems: List<T>
 		get() = if (internalState.value.items == null) {

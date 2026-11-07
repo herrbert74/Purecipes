@@ -81,6 +81,8 @@ class HomeViewModel(
 	var homeListFirstVisibleItemScrollOffset by mutableIntStateOf(0)
 		private set
 
+	private val shelfFirstVisibleItemIndices = mutableMapOf<String, Int>()
+	private val shelfFirstVisibleItemScrollOffsets = mutableMapOf<String, Int>()
 	private var favoriteEventsJob: Job? = null
 	private var recipeViewsJob: Job? = null
 	private var loadedSessionKey: String? = null
@@ -128,6 +130,21 @@ class HomeViewModel(
 	fun onHomeListScrolled(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
 		homeListFirstVisibleItemIndex = firstVisibleItemIndex
 		homeListFirstVisibleItemScrollOffset = firstVisibleItemScrollOffset
+	}
+
+	fun shelfFirstVisibleItemIndex(shelfKey: String): Int =
+		shelfFirstVisibleItemIndices[shelfKey] ?: 0
+
+	fun shelfFirstVisibleItemScrollOffset(shelfKey: String): Int =
+		shelfFirstVisibleItemScrollOffsets[shelfKey] ?: 0
+
+	fun onShelfScrolled(
+		shelfKey: String,
+		firstVisibleItemIndex: Int,
+		firstVisibleItemScrollOffset: Int,
+	) {
+		shelfFirstVisibleItemIndices[shelfKey] = firstVisibleItemIndex
+		shelfFirstVisibleItemScrollOffsets[shelfKey] = firstVisibleItemScrollOffset
 	}
 
 	private fun startFavoriteEventsCollection(sessionKey: String?) {
@@ -226,12 +243,19 @@ class HomeViewModel(
 					}
 				},
 			)
-			state.appendPage(
-				pageKey = FIRST_PAGE_NUMBER,
-				items = remaining,
-				nextPageKey = FIRST_PAGE_NUMBER + 1,
-				isLastPage = true,
-			)
+			val loadedPageKeys = current.loadedPageKeys.ifEmpty { listOf(FIRST_PAGE_NUMBER) }
+			loadedPageKeys.forEachIndexed { index, pageKey ->
+				val items = current.pageItems(pageKey)
+					?.filter { recipe -> recipe.id != recipeId }
+					?: if (index == 0) remaining else emptyList()
+				val isLastLoadedPage = index == loadedPageKeys.lastIndex
+				state.appendPage(
+					pageKey = pageKey,
+					items = items,
+					nextPageKey = pageKey + 1,
+					isLastPage = if (isLastLoadedPage) current.isLastPage else false,
+				)
+			}
 			state
 		}
 	}
@@ -268,7 +292,12 @@ class HomeViewModel(
 	private suspend fun refreshHomeShelves() {
 		homeLoadMutex.withLock {
 			val feed = getHomeFeed().get() ?: return@withLock
-			applyFeed(feed)
+			val currentPagination = shelfPagination
+			shelfPagination = feed.shelves.associate { shelf ->
+				val key = shelf.shelfKey()
+				key to refreshedShelfPagination(shelf, currentPagination[key])
+			}.toImmutableMap()
+			homeFeed = feed
 		}
 	}
 
@@ -277,6 +306,113 @@ class HomeViewModel(
 			shelf.shelfKey() to newShelfPagination(shelf)
 		}.toImmutableMap()
 		homeFeed = feed
+	}
+
+	private suspend fun refreshedShelfPagination(
+		shelf: HomeShelf,
+		previous: PaginationState<Int, RecipeSummary>?,
+	): PaginationState<Int, RecipeSummary> {
+		val state = newShelfPagination(shelf)
+		val maxLoadedPage = previous?.let { existing ->
+			maxOf(
+				existing.loadedPageKeys.maxOrNull() ?: FIRST_PAGE_NUMBER,
+				existing.requestedPageKey ?: FIRST_PAGE_NUMBER,
+			)
+		} ?: FIRST_PAGE_NUMBER
+		if (
+			previous == null ||
+			shelf.recipes.size < HOME_SHELF_PAGE_SIZE ||
+			maxLoadedPage <= FIRST_PAGE_NUMBER
+		) {
+			return state
+		}
+		val extraPageNumbers = ((FIRST_PAGE_NUMBER + 1)..maxLoadedPage).toList()
+		val firstPageUnchanged =
+			previous.pageItems(FIRST_PAGE_NUMBER)?.map { recipe -> recipe.id } ==
+				shelf.recipes.map { recipe -> recipe.id }
+		if (firstPageUnchanged && previous.loadedPageKeys.containsAll(extraPageNumbers)) {
+			appendCachedShelfPages(state, previous, extraPageNumbers)
+		} else {
+			reloadExtraShelfPages(state, shelf, previous, extraPageNumbers)
+		}
+		return state
+	}
+
+	private fun appendCachedShelfPages(
+		state: PaginationState<Int, RecipeSummary>,
+		previous: PaginationState<Int, RecipeSummary>,
+		extraPageNumbers: List<Int>,
+	) {
+		extraPageNumbers.forEach { pageNumber ->
+			val cachedItems = previous.pageItems(pageNumber).orEmpty()
+			val isLastLoaded = pageNumber == extraPageNumbers.last()
+			state.appendPage(
+				pageKey = pageNumber,
+				items = cachedItems,
+				nextPageKey = pageNumber + 1,
+				isLastPage = if (isLastLoaded) previous.isLastPage else false,
+			)
+		}
+	}
+
+	private suspend fun reloadExtraShelfPages(
+		state: PaginationState<Int, RecipeSummary>,
+		shelf: HomeShelf,
+		previous: PaginationState<Int, RecipeSummary>,
+		extraPageNumbers: List<Int>,
+	) {
+		var shouldContinue = true
+		for (pageNumber in extraPageNumbers) {
+			if (shouldContinue) {
+				shouldContinue = reloadSingleExtraShelfPage(
+					state = state,
+					shelf = shelf,
+					previous = previous,
+					pageNumber = pageNumber,
+					isLastExtraPage = pageNumber == extraPageNumbers.last(),
+				)
+			}
+		}
+	}
+
+	private suspend fun reloadSingleExtraShelfPage(
+		state: PaginationState<Int, RecipeSummary>,
+		shelf: HomeShelf,
+		previous: PaginationState<Int, RecipeSummary>,
+		pageNumber: Int,
+		isLastExtraPage: Boolean,
+	): Boolean {
+		val page = getHomeShelfPage(
+			shelfId = shelf.id,
+			pageNumber = pageNumber,
+			pageSize = HOME_SHELF_PAGE_SIZE,
+			collectionSlug = shelf.collectionSlug,
+			habitCuisine = shelf.habitCuisine,
+		).get()
+		return if (page != null && (page.items.isNotEmpty() || page.totalMatches > 0)) {
+			val isLastPage = page.pageNumber * page.pageSize >= page.totalMatches
+			state.appendPage(
+				pageKey = page.pageNumber,
+				items = page.items,
+				nextPageKey = page.pageNumber + 1,
+				isLastPage = isLastPage,
+			)
+			!isLastPage
+		} else {
+			val existingIds = state.allItems.mapTo(mutableSetOf()) { recipe -> recipe.id }
+			val fallbackItems = previous.pageItems(pageNumber)
+				?.filter { recipe -> recipe.id !in existingIds }
+				.orEmpty()
+			if (fallbackItems.isNotEmpty()) {
+				state.appendPage(
+					pageKey = pageNumber,
+					items = fallbackItems,
+					nextPageKey = pageNumber + 1,
+					isLastPage = if (isLastExtraPage) previous.isLastPage else false,
+				)
+			}
+			fallbackItems.isNotEmpty()
+		}
 	}
 
 	private suspend fun refreshHomeFeatureRequest() {
@@ -313,7 +449,8 @@ class HomeViewModel(
 		collectionSlug: String?,
 		habitCuisine: String? = null,
 	) {
-		val state = shelfPagination[collectionSlug ?: habitCuisine ?: shelfId.name] ?: return
+		val key = collectionSlug ?: habitCuisine ?: shelfId.name
+		if (key !in shelfPagination) return
 		val outcome = getHomeShelfPage(
 			shelfId = shelfId,
 			pageNumber = pageNumber,
@@ -321,17 +458,18 @@ class HomeViewModel(
 			collectionSlug = collectionSlug,
 			habitCuisine = habitCuisine,
 		)
+		val state = shelfPagination[key] ?: return
 		val page = outcome.get()
 		if (page == null) {
 			state.setError(IllegalStateException(outcome.getError()?.message ?: "Couldn't load recipes"))
-			return
+		} else {
+			state.appendPage(
+				pageKey = page.pageNumber,
+				items = page.items,
+				nextPageKey = page.pageNumber + 1,
+				isLastPage = page.pageNumber * page.pageSize >= page.totalMatches,
+			)
 		}
-		state.appendPage(
-			pageKey = page.pageNumber,
-			items = page.items,
-			nextPageKey = page.pageNumber + 1,
-			isLastPage = page.pageNumber * page.pageSize >= page.totalMatches,
-		)
 	}
 
 	@AssistedFactory
