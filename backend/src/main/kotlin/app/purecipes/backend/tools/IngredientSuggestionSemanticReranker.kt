@@ -39,9 +39,14 @@ internal fun interface IngredientSuggestionReranker {
 	fun rerank(input: IngredientSemanticRerankInput): IngredientSemanticRerankDecision?
 }
 
+internal fun interface IngredientTextEmbedder {
+
+	fun encodeTexts(texts: List<String>): Array<FloatArray>?
+}
+
 internal class LocalEmbeddingIngredientReranker private constructor(
 	private val bundle: SavedModelBundle,
-) : IngredientSuggestionReranker, AutoCloseable {
+) : IngredientSuggestionReranker, IngredientTextEmbedder, AutoCloseable {
 
 	override fun rerank(input: IngredientSemanticRerankInput): IngredientSemanticRerankDecision? {
 		if (input.foodCandidates.isEmpty()) {
@@ -89,7 +94,7 @@ internal class LocalEmbeddingIngredientReranker private constructor(
 		}
 	}
 
-	fun encodeTexts(texts: List<String>): Array<FloatArray>? =
+	override fun encodeTexts(texts: List<String>): Array<FloatArray>? =
 		runCatching {
 			val inputData = NdArrays.vectorOfObjects(*texts.toTypedArray())
 			val input = TString.tensorOf(inputData)
@@ -147,21 +152,6 @@ internal class LocalEmbeddingIngredientReranker private constructor(
 			else -> error("Unexpected embedding tensor shape: ${dims.joinToString()}")
 		}
 
-	private fun cosineSimilarity(a: FloatArray, b: FloatArray): Double {
-		var dot = 0.0
-		var normA = 0.0
-		var normB = 0.0
-		for (i in a.indices) {
-			val av = a[i].toDouble()
-			val bv = b[i].toDouble()
-			dot += av * bv
-			normA += av * av
-			normB += bv * bv
-		}
-		val denom = Math.sqrt(normA) * Math.sqrt(normB)
-		return if (denom == 0.0) 0.0 else dot / denom
-	}
-
 	override fun close() {
 		bundle.close()
 	}
@@ -198,4 +188,19 @@ internal class LocalEmbeddingIngredientReranker private constructor(
 			}
 		}
 	}
+}
+
+internal fun cosineSimilarity(a: FloatArray, b: FloatArray): Double {
+	var dot = 0.0
+	var normA = 0.0
+	var normB = 0.0
+	for (i in a.indices) {
+		val av = a[i].toDouble()
+		val bv = b[i].toDouble()
+		dot += av * bv
+		normA += av * av
+		normB += bv * bv
+	}
+	val denom = Math.sqrt(normA) * Math.sqrt(normB)
+	return if (denom == 0.0) 0.0 else dot / denom
 }

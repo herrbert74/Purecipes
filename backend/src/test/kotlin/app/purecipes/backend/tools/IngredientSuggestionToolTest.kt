@@ -177,6 +177,66 @@ class IngredientSuggestionToolTest {
 			tempDir.toFile().deleteRecursively()
 		}
 	}
+
+	@Test
+	fun generateSuggestionsPrefersNearestPinnedNeighborAndTransfersPantryAndFood() {
+		val db = createInMemoryDb("ingredient_suggestions_pinned_neighbor")
+		val dataSource = db.dataSource
+		insertFood(
+			dataSource = dataSource,
+			sourceName = "fdc_foundation",
+			sourceId = "168421",
+			displayName = "Kale, raw",
+			normalizedName = "kale raw",
+		)
+		insertRecipeLine(
+			dataSource = dataSource,
+			title = "Winter Salad",
+			sourceUrl = "https://example.com/recipes/salad",
+			rawText = "1 bunch curly kale",
+		)
+
+		val snapshot = IngredientSnapshotData(
+			names = listOf(
+				IngredientNameSnapshotRow(
+					lookupName = "kale",
+					status = "pinned",
+					pantryItem = "Kale",
+					fdcSource = "fdc_foundation",
+					fdcId = "168421",
+					fdcDescription = "Kale, raw",
+					matchSource = "pinned",
+					lineCount = 10,
+				),
+				IngredientNameSnapshotRow(
+					lookupName = "curly kale",
+					status = "auto",
+					pantryItem = "",
+					fdcSource = "",
+					fdcId = "",
+					fdcDescription = "",
+					matchSource = "",
+					lineCount = 1,
+				),
+			),
+			lines = emptyList(),
+		)
+
+		val suggestions = IngredientSuggestionTool(dataSource).generateSuggestions(
+			snapshot = snapshot,
+			scope = IngredientSuggestionScope.UNPINNED,
+		)
+		suggestions shouldHaveSize 1
+		val suggestion = suggestions.first()
+		suggestion.lookupName shouldBe "curly kale"
+		suggestion.pantryItem shouldBe "Kale"
+		suggestion.fdcSource shouldBe "fdc_foundation"
+		suggestion.fdcId shouldBe "168421"
+		suggestion.fdcDescription shouldBe "Kale, raw"
+		suggestion.matchSource shouldBe "pinned_lexical"
+		suggestion.sampleRecipeTitle shouldBe "Winter Salad"
+		suggestion.sampleRawText shouldBe "1 bunch curly kale"
+	}
 }
 
 private fun insertFood(

@@ -31,6 +31,9 @@ private const val PREPARED_DISH_PENALTY = 0.30
 private const val TRIGRAM_SIZE = 3
 private const val SCORE_FORMAT_DECIMALS = "%.2f"
 private const val MAX_ALTERNATIVE_CANDIDATES = 3
+private const val MAX_ALTERNATIVE_NEIGHBORS = 2
+private const val MIN_PINNED_CANDIDATE_SCORE = 0.55
+private const val MIN_PANTRY_NEIGHBOR_SIMILARITY = 0.55
 private const val MIN_SUFFIX_TOKEN_COUNT = 1
 private const val MAX_SUFFIX_TOKEN_COUNT = 3
 private const val MAX_PREFIX_TOKEN_COUNT = 2
@@ -95,6 +98,7 @@ private object SuggestionColumnIndex {
 internal class IngredientSuggestionTool(
 	private val dataSource: DataSource,
 	private val reranker: IngredientSuggestionReranker? = null,
+	private val embedder: IngredientTextEmbedder? = (reranker as? IngredientTextEmbedder),
 ) {
 
 	fun generateSuggestions(
@@ -102,6 +106,7 @@ internal class IngredientSuggestionTool(
 		scope: IngredientSuggestionScope = IngredientSuggestionScope.UNMATCHED,
 		queryFilter: String = "",
 		limit: Int? = null,
+		pinnedIndex: PinnedIngredientIndex = PinnedIngredientIndex(snapshot.names, embedder),
 	): List<IngredientSuggestionRow> {
 		val lookupIndex = NutritionLookupRepository(dataSource).loadIndex()
 		val sampleContextByLookupName = loadSampleContextByLookupName()
@@ -114,6 +119,7 @@ internal class IngredientSuggestionTool(
 				row = row,
 				lookupIndex = lookupIndex,
 				sampleContext = sampleContextByLookupName[row.lookupName],
+				pinnedIndex = pinnedIndex,
 			)
 		}
 	}
@@ -142,9 +148,17 @@ internal class IngredientSuggestionTool(
 		row: IngredientNameSnapshotRow,
 		lookupIndex: NutritionLookupIndex,
 		sampleContext: SampleIngredientContext?,
+		pinnedIndex: PinnedIngredientIndex,
 	): IngredientSuggestionRow {
-		val candidates = IngredientCandidateScorer.rankFoodCandidates(row.lookupName, lookupIndex)
-		val suggestedPantry = suggestPantryItem(row.lookupName, row.pantryItem)
+		val pinnedNeighbors = pinnedIndex.findNearestNeighbors(row.lookupName)
+			.filterNot { it.row.lookupName.equals(row.lookupName, ignoreCase = true) }
+		val bestNeighbor = pinnedNeighbors.firstOrNull()
+		val suggestedPantry = suggestPantryItem(row.lookupName, row.pantryItem, bestNeighbor)
+		val candidates = rankCandidatesWithPinnedNeighbor(
+			lookupName = row.lookupName,
+			lookupIndex = lookupIndex,
+			bestNeighbor = bestNeighbor,
+		)
 		val sampleTitle = sampleContext?.recipeTitle.orEmpty()
 		val sampleRawText = sampleContext?.rawText.orEmpty()
 		val semanticDecision = reranker?.rerank(
@@ -161,16 +175,11 @@ internal class IngredientSuggestionTool(
 		val resolvedSource = semanticDecision?.fdcSource ?: topCandidate?.fdcSource.orEmpty()
 		val resolvedId = semanticDecision?.fdcId ?: topCandidate?.fdcId.orEmpty()
 		val resolvedDesc = semanticDecision?.fdcDescription ?: topCandidate?.fdcDescription.orEmpty()
-		val resolvedMethod = if (semanticDecision != null) "embedding" else topCandidate?.method.orEmpty()
+		val resolvedMethod = semanticDecision?.let { "embedding" } ?: topCandidate?.method.orEmpty()
 		val resolvedConfidence = semanticDecision?.confidence
 			?: topCandidate?.score?.let { String.format(Locale.ROOT, SCORE_FORMAT_DECIMALS, it) }.orEmpty()
 		val resolvedRationale = semanticDecision?.rationale ?: topCandidate?.rationale.orEmpty()
-		val runnerUps = candidates
-			.filterNot { it.fdcSource == resolvedSource && it.fdcId == resolvedId }
-			.take(MAX_ALTERNATIVE_CANDIDATES)
-			.joinToString(" | ") { candidate ->
-				"${candidate.fdcSource}:${candidate.fdcId} (${candidate.fdcDescription})"
-			}
+		val runnerUps = formatRunnerUps(candidates, pinnedNeighbors, resolvedSource, resolvedId)
 
 		return IngredientSuggestionRow(
 			lookupName = row.lookupName,
@@ -194,15 +203,70 @@ internal class IngredientSuggestionTool(
 		)
 	}
 
-	private fun suggestPantryItem(lookupName: String, currentPantryItem: String): String {
+	private fun rankCandidatesWithPinnedNeighbor(
+		lookupName: String,
+		lookupIndex: NutritionLookupIndex,
+		bestNeighbor: PinnedNeighborMatch?,
+	): List<SuggestedFoodCandidate> {
+		val baseCandidates = IngredientCandidateScorer.rankFoodCandidates(lookupName, lookupIndex)
+		if (bestNeighbor == null || bestNeighbor.row.fdcId.isBlank() ||
+			bestNeighbor.similarity < MIN_PINNED_CANDIDATE_SCORE
+		) {
+			return baseCandidates
+		}
+		val pinnedCandidate = SuggestedFoodCandidate(
+			fdcSource = bestNeighbor.row.fdcSource,
+			fdcId = bestNeighbor.row.fdcId,
+			fdcDescription = bestNeighbor.row.fdcDescription,
+			method = bestNeighbor.method,
+			score = bestNeighbor.similarity,
+			rationale = bestNeighbor.rationale,
+		)
+		val combined = ArrayList<SuggestedFoodCandidate>(baseCandidates.size + 1)
+		combined.add(pinnedCandidate)
+		for (c in baseCandidates) {
+			if (c.fdcSource != pinnedCandidate.fdcSource || c.fdcId != pinnedCandidate.fdcId) {
+				combined.add(c)
+			}
+		}
+		return combined.take(MAX_CANDIDATES_PER_NAME)
+	}
+
+	private fun formatRunnerUps(
+		candidates: List<SuggestedFoodCandidate>,
+		pinnedNeighbors: List<PinnedNeighborMatch>,
+		resolvedSource: String,
+		resolvedId: String,
+	): String {
+		val candidateRunnerUps = candidates
+			.filterNot { it.fdcSource == resolvedSource && it.fdcId == resolvedId }
+			.take(MAX_ALTERNATIVE_CANDIDATES)
+			.map { "${it.fdcSource}:${it.fdcId} (${it.fdcDescription})" }
+		val neighborRunnerUps = pinnedNeighbors
+			.filterNot { it.row.fdcSource == resolvedSource && it.row.fdcId == resolvedId }
+			.take(MAX_ALTERNATIVE_NEIGHBORS)
+			.map { "pinned:${it.row.lookupName} (${it.row.fdcSource}:${it.row.fdcId})" }
+		return (candidateRunnerUps + neighborRunnerUps).distinct().joinToString(" | ")
+	}
+
+	private fun suggestPantryItem(
+		lookupName: String,
+		currentPantryItem: String,
+		bestNeighbor: PinnedNeighborMatch?,
+	): String {
 		if (currentPantryItem.isNotBlank()) {
 			return currentPantryItem
 		}
-		val candidates = IngredientCandidateScorer.expandQueryVariants(lookupName)
-		return candidates.firstNotNullOfOrNull { variant ->
+		val neighborPantry = bestNeighbor?.row?.pantryItem.orEmpty()
+		return neighborPantry.takeIf {
+			it.isNotBlank() && (bestNeighbor?.similarity ?: 0.0) >= MIN_PANTRY_NEIGHBOR_SIMILARITY
+		} ?: resolvePantryFromVariants(lookupName)
+	}
+
+	private fun resolvePantryFromVariants(lookupName: String): String =
+		IngredientCandidateScorer.expandQueryVariants(lookupName).firstNotNullOfOrNull { variant ->
 			PantryItemResolver.resolve(variant).takeIf(String::isNotBlank)
 		}.orEmpty()
-	}
 
 	private fun loadSampleContextByLookupName(): Map<String, SampleIngredientContext> =
 		dataSource.connection.use { connection ->
@@ -360,7 +424,7 @@ internal class IngredientSuggestionTool(
 
 internal object IngredientCandidateScorer {
 
-	private val tokenSynonyms = mapOf(
+	internal val tokenSynonyms = mapOf(
 		"aubergine" to "eggplant",
 		"aubergines" to "eggplant",
 		"broth" to "soup",
