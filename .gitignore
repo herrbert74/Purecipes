@@ -31,3 +31,6 @@ xcuserdata
 # project specific
 .use_v4
 /backend/data/ingredients/
+/backend/uploads/
+/uploads/
+

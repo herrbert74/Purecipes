@@ -1,6 +1,6 @@
 # USDA FoodData Central and recipe nutrition
 
-How to load USDA foods, calculate recipe nutrition, and inspect food-table match gaps. Table and column meanings live in [`DATABASE.md`](DATABASE.md).
+How to load USDA foods, calculate recipe nutrition, and inspect food-table match gaps. For the end-to-end reproducible ingredient pipeline (`names.tsv` pins, `lines.tsv` snapshots, `rebuildIngredientData`, and `suggestIngredientMatches`), see [`INGREDIENTS.md`](INGREDIENTS.md). Table and column meanings live in [`DATABASE.md`](DATABASE.md).
 
 ## Licence decision (feature 14)
 
@@ -86,7 +86,7 @@ Explicit subset:
 ./gradlew calculateRecipeNutrition -Pnutrition.recipeIds=1,2,3
 ```
 
-The calculator writes `ingredient_measurements`, `ingredient_nutrition_matches`, and upserts `nutrition` when at least one ingredient matched. Backfill output lists recipes with partial or missing totals and aggregates unmatched parsed ingredient names so aliases and measures can be improved.
+The calculator reads pinned matches from `backend/data/ingredients/names.tsv` (top precedence), handwritten aliases, and USDA names/tokens, then writes `ingredient_measurements`, `ingredient_nutrition_matches`, `ingredient_nutrition_contributions`, and upserts `nutrition` when at least one ingredient matched. Backfill output lists recipes with partial or missing totals and aggregates unmatched parsed ingredient names. To suggest and pin new matches reproducibly, use `./gradlew suggestIngredientMatches` and `./gradlew diffIngredientSnapshot` as documented in [`INGREDIENTS.md`](INGREDIENTS.md).
 
 New scraped recipes are calculated automatically when using the recipe scraper with default `--calculate-nutrition true` (see [`../scripts/scraping/README.md`](../scripts/scraping/README.md)).
 

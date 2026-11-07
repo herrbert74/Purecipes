@@ -2,7 +2,7 @@
 
 Kotlin scripts for importing recipes from external websites into the Purecipes PostgreSQL database. Implements [Feature 001](../../docs/features/001_recipe-website-scraping.md).
 
-Agent maintenance rules (schema sync, site patterns, validation) live in [`AGENTS.md`](AGENTS.md).
+Agent maintenance rules (schema sync, site patterns, validation) live in [`AGENTS.md`](AGENTS.md). End-to-end ingredient rebuilding, snapshots (`names.tsv` / `lines.tsv`), and USDA/pantry pinning live in [`../../backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md).
 
 ---
 
@@ -115,7 +115,8 @@ Real-world OR example: BBC Good Food (`parsley or tarragon` style lines).
 | Optional/required flags on import | Same library + main scraper DB insert | New rows get `requirement` automatically. | `optional: …` → `OPTIONAL` |
 | OR groups on import | Same library + main scraper DB insert | New rows get `ALTERNATIVE` + `alternative_group_key`. | `parsley or tarragon` → two linked rows |
 | Appliance extraction on import | `ScrapedAppliances.kt` (via main scraper) | Always applied at import time; saved to JSON and DB `recipes.appliances`. | `preheat oven to 180°C` → `OVEN` |
-| Fix *old* or *out-of-date* ingredient text | `oneoff/normalize_existing_ingredients.main.kts` | Re-run when **normalization rules** change, not only for ancient imports. | After improving fraction or unit spacing logic |
+| Recompute all derived ingredient rows + nutrition from saved JSON + DB | `./gradlew rebuildIngredientData` | Preferred reproducible rebuild after changing `ScrapedIngredientLines.kt` or `line-overrides.tsv`; preserves `recipes.id`. See [`backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md). | Re-splits lines, applies overrides, and recalculates nutrition |
+| Fix *old* or *out-of-date* ingredient text | `oneoff/normalize_existing_ingredients.main.kts` | Legacy script; prefer `./gradlew rebuildIngredientData` unless targeting JSON files only. | After improving fraction or unit spacing logic |
 | Fix *old* or *out-of-date* optional flags | `oneoff/backfill_ingredient_requirements.main.kts` | DB only; does not touch JSON files. | After new garnish/`(optional)` detection rules |
 | Fix *old* or *out-of-date* OR groups | `oneoff/backfill_ingredient_alternatives.main.kts` | DB only; splits combined `or` lines. | After first deploy of alternative-ingredient support |
 | Fix *over-split* incomplete OR groups | `oneoff/backfill_merge_incomplete_alternatives.main.kts` | DB only; rejoins clusters that current rules keep as one line. | After incomplete-first-side / join-continued-`or` guards |
