@@ -5,142 +5,184 @@ description: Review, match, pin, and override ingredient lines and names using t
 
 # Skill: Ingredient Matching & Pipeline Maintenance
 
-Use this skill when auditing ingredient matches, fixing misclassified ingredient lines or headings, resolving false pantry/food matches, or processing new scrape batches.
+Use this skill whenever you need to:
+1. Match or pin unmatched/new recipe ingredients (`names.tsv` / `suggestions.tsv`).
+2. Fix a wrong pantry item (`IngredientCatalogue`) or wrong USDA food match (`fdc_id`).
+3. Fix a misclassified recipe line (section heading, note, equipment) or broken line parse (`line-overrides.tsv`).
+4. Modify scraper or parser rules (`ScrapedIngredientLines.kt`, `IngredientLineParser.kt`) and verify zero regressions across the corpus.
 
-## Core Principle: "Pin Before Rule"
+For architecture background, see [`../../../backend/INGREDIENTS.md`](../../../backend/INGREDIENTS.md).
+For detailed domain rulings, batch review steps, and error recovery, read:
+- [`references/review-rules.md`](references/review-rules.md) — **Mandatory culinary & parser rules** (read before editing pins or parser rules)
+- [`references/batch-review.md`](references/batch-review.md) — Step-by-step batch review workflow
+- [`references/troubleshooting.md`](references/troubleshooting.md) — Fixing `diffIngredientSnapshot` failures and TSV corruption
 
-In Purecipes, ingredient matching and classification must be reproducible and regression-safe:
+---
 
-1. **Specific beats general:** A reviewed decision belongs in a committed data file, not in global heuristic code.
-2. **Blast radius awareness:** Every change to a global regex, normalizer token, or alias dictionary risks silently breaking hundreds of unrelated ingredients across other recipes.
-3. **ML suggests, humans or agents decide:** The offline suggestion tool and local ML models draft candidates into `suggestions.tsv`. Only reviewed and accepted rows become pins in `names.tsv`.
+## Step 0: Choose the Right Action (Decision Tree)
 
-### Decision Hierarchy
+Follow this strict order (**Pin Before Rule**):
 
-When addressing an ingredient matching or parsing issue, follow this order:
-
+```text
+What are you fixing?
+│
+├── 1. ONE recipe has a bad line (e.g. "Chimichurri" is a heading, or one weird line won't parse)
+│     └──► Edit backend/data/ingredients/line-overrides.tsv (DO NOT edit Kotlin code)
+│          Jump to Playbook 3.
+│
+├── 2. An ingredient lookup_name has a missing or wrong pantry_item or USDA food match
+│     └──► Pin the row in backend/data/ingredients/names.tsv (status = pinned)
+│          Jump to Playbook 1 (single name) or Playbook 2 (batch suggestions).
+│
+└── 3. A general formatting/parsing bug affects MANY recipes (e.g. dangling prep words)
+      └──► First read references/review-rules.md, edit Kotlin rules + unit tests,
+           then run rebuildIngredientData + diffIngredientSnapshot.
+           Jump to Playbook 4.
 ```
-Is the issue specific to ONE idiosyncratic recipe line?
-├── YES ──► Add row to line-overrides.tsv (override kind, group_name, quantity, unit, or lookup_name)
-└── NO
-     ├── Does a specific food name need a USDA food match or pantry category?
-     │    └── YES ──► Pin the lookup_name in names.tsv (status = pinned)
-     └── Is there a truly general linguistic pattern across multiple unrelated recipes?
-          └── YES ──► Update parser/normalizer rules in code, add comprehensive unit tests, and verify diff
-```
 
 ---
 
-## Data Files (`backend/data/ingredients/`)
+## Hard Constraints (NEVER Violate These)
 
-All files are UTF-8 tab-separated values (TSV) with headers, sorted by their primary key.
-
-| File | Purpose | Primary Key |
-|---|---|---|
-| [`names.tsv`](file:///Users/zsoltbertalan/git/Purecipes/backend/data/ingredients/names.tsv) | Master snapshot of all lookup names. Rows with `status = pinned` override rules with top priority. | `lookup_name` |
-| [`line-overrides.tsv`](file:///Users/zsoltbertalan/git/Purecipes/backend/data/ingredients/line-overrides.tsv) | Per-line overrides for lines rules should not try to generalize. | `source_url` + `raw_text` |
-| [`suggestions.tsv`](file:///Users/zsoltbertalan/git/Purecipes/backend/data/ingredients/suggestions.tsv) | Ephemeral candidate matches generated offline for review. | `lookup_name` |
-| [`lines.tsv`](file:///Users/zsoltbertalan/git/Purecipes/backend/data/ingredients/lines.tsv) | Full snapshot of parsed lines and group assignments across the database. | `source_url` + `group_index` + `line_index` |
-
----
-
-## Agent Playbooks
-
-### Playbook 1: Fixing a False Food or Pantry Match
-
-**Symptom:** An ingredient is matched to the wrong USDA food or wrong pantry category (e.g. `"beer"` matched `"root beer"`, or `"45 g butter, divided in three parts"` matched `"butter three"`).
-
-1. **Find the lookup name:**
-   Search for the ingredient in `names.tsv`:
-   ```bash
-   grep -P "^<lookup_name>\t" backend/data/ingredients/names.tsv
-   ```
-2. **Determine the correct USDA match and pantry category:**
-   - Run suggestion search:
-     ```bash
-     ./gradlew suggestIngredientMatches -Psuggest.query="<keyword>"
-     ```
-   - Or query the local Postgres database directly for USDA candidates:
-     ```sql
-     SELECT source_name, source_id, display_name
-     FROM nutrition_foods
-     WHERE normalized_name LIKE '%<keyword>%'
-     ORDER BY source_name ASC LIMIT 10;
-     ```
-3. **Pin the correct match in `names.tsv`:**
-   Set `status` to `pinned`, set `pantry_item` to the exact title-cased `IngredientCatalogue` item (or leave empty if no valid pantry item), and set `fdc_source` and `fdc_id`:
-   ```tsv
-   butter	pinned	Butter	fdc_foundation	789828	Butter, stick, unsalted	pinned	12
-   ```
-4. **Verify the change:**
-   ```bash
-   ./gradlew diffIngredientSnapshot
-   ```
-   Confirm the diff shows only the targeted `~` changes and zero unexpected regressions.
+1. **NEVER put `"pinned"` or `"internal"` in the `fdc_source` column of `names.tsv`.**
+   - Column 4 (`fdc_source`) **MUST** be the exact `nutrition_foods.source_name` from PostgreSQL (`fdc_foundation` or `fdc_sr_legacy`, or empty `""` for zero-calorie non-foods like `ice`).
+   - Column 2 (`status`) and Column 7 (`match_source`) are `"pinned"`.
+2. **NEVER use internal `nutrition_foods.id` in `names.tsv`.**
+   - Column 5 (`fdc_id`) **MUST** be the external USDA `nutrition_foods.source_id` (e.g. `789828` or `171705`).
+3. **NEVER wrap TSV fields in CSV quotes (`"..."`).**
+   - `IngredientSnapshotExporter` replaces ASCII `"` with Unicode double prime `″` (`\u2033`) and writes raw tab-separated columns. If you use Python's `csv.writer`, it will wrap fields containing `"` in `"..."` and break `./gradlew diffIngredientSnapshot`.
+4. **NEVER use `grep -P` or `sudo` in shell commands.**
+   - macOS BSD `grep` does not support `-P`. Use `awk -F'\t'` or `grep -E`.
+   - Connect to PostgreSQL with `PGPASSWORD=postgres psql -h localhost -U postgres -d purecipes`.
+5. **NEVER finish a task until `./gradlew diffIngredientSnapshot` exits `0` with `+0 added, -0 removed, ~0 changed`.**
 
 ---
 
-### Playbook 2: Generating & Reviewing Candidate Matches
+## TSV Schema Reference (`backend/data/ingredients/names.tsv`)
 
-**Symptom:** Unmatched ingredients or weakly matched lines (`match_source = tokens`) need review.
+Every row in `names.tsv` has **8 tab-separated columns**:
 
-1. **Generate suggestions:**
+| Col # | Column Name | Allowed Values when Pinned | Example |
+|-------|-------------|----------------------------|---------|
+| 1 | `lookup_name` | Lowercase normalized name (sorted lexicographically) | `olive oil` |
+| 2 | `status` | `pinned` | `pinned` |
+| 3 | `pantry_item` | Exact `IngredientCatalogue` title-cased name, or empty `""` | `Olive Oil` |
+| 4 | `fdc_source` | `fdc_foundation`, `fdc_sr_legacy`, or empty `""` | `fdc_foundation` |
+| 5 | `fdc_id` | External `nutrition_foods.source_id` integer, or empty `""` | `748608` |
+| 6 | `fdc_description` | Exact `nutrition_foods.display_name` with `"` replaced by `″` | `Oil, olive, extra virgin` |
+| 7 | `match_source` | `pinned` | `pinned` |
+| 8 | `line_count` | Integer count of lines using this `lookup_name` | `412` |
+
+---
+
+## Playbooks
+
+### Playbook 1: Pin or Fix Specific Lookup Names in `names.tsv`
+
+1. **Inspect current row(s) in `names.tsv`:**
    ```bash
-   # Generate for all unmatched ingredients (uses local .use_v4 model automatically):
-   ./gradlew suggestIngredientMatches
-
-   # Or target token-guessed matches:
-   ./gradlew suggestIngredientMatches -Psuggest.scope=tokens
-
-   # Or filter by query:
-   ./gradlew suggestIngredientMatches -Psuggest.query=vinegar
+   awk -F'\t' 'NR==1 || $1 == "olive oil"' backend/data/ingredients/names.tsv
    ```
-2. **Review `suggestions.tsv`:**
-   Open `backend/data/ingredients/suggestions.tsv`. For each candidate:
-   - Check `sample_recipe_title` and `sample_raw_text` to understand the true culinary context.
-   - If the candidate `fdc_description` and `pantry_item` are correct: change `status` from `suggested` to `pinned`.
-   - If the candidate is slightly off but `alternative_candidates` contains the right match: copy the alternative FDC source and ID into `fdc_source` and `fdc_id`, and set `status` to `pinned`.
-   - If no valid match exists: leave `status` as `suggested` (or remove the row).
-3. **Promote accepted pins:**
+2. **Look up the exact USDA food in PostgreSQL (`source_name`, `source_id`, `display_name`):**
    ```bash
-   ./gradlew suggestIngredientMatches -Psuggest.accept=true
+   PGPASSWORD=postgres psql -h localhost -U postgres -d purecipes -c "
+   SELECT source_name, source_id, REPLACE(display_name, '\"', '″') AS display_name
+   FROM nutrition_foods
+   WHERE display_name ILIKE '%olive%'
+   ORDER BY source_name ASC, display_name ASC
+   LIMIT 15;
+   "
    ```
-   This merges all rows with `status = pinned` into `names.tsv` while preserving alphabetical sorting.
-4. **Verify the diff:**
+   *(Or run `PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.query="olive oil"` and inspect `backend/data/ingredients/suggestions.tsv`.)*
+3. **Verify the `pantry_item` spelling** against `shared/domain/src/commonMain/kotlin/app/purecipes/shared/domain/ingredient/IngredientCatalogue.kt` (or leave `pantry_item` empty `""` if no catalogue chip applies).
+4. **Update `names.tsv`** (keeping rows sorted by `lookup_name` and replacing any `"` with `″`).
+5. **Apply to the database and verify 0 diff:**
    ```bash
-   ./gradlew diffIngredientSnapshot
+   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   PGPASSWORD=postgres ./gradlew snapshotIngredients
+   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
    ```
 
 ---
 
-### Playbook 3: Handling Misclassified Headings or Idiosyncratic Lines
+### Playbook 2: Generate & Review Candidate Suggestions (`suggestions.tsv`)
 
-**Symptom:** A recipe instruction or non-ingredient line (e.g. `"Chimichurri"` or `"For the glaze"`) was stored as an ingredient, or an author wrote an unusual composite line that the parser cannot parse.
-
-1. **Check if it is a general heading pattern:**
-   - If the line is clearly a section heading (ends with `:`, or matches existing patterns like `"For the <group>"`), check if `isSharedSectionHeadingOrNote` in `ScrapedIngredientLines.kt` should recognize it.
-   - If so, update the shared rules, run `./gradlew :backend:test`, and check `diffIngredientSnapshot`.
-2. **If it is idiosyncratic to a specific recipe:**
-   Add an override to `backend/data/ingredients/line-overrides.tsv`:
-   ```tsv
-   source_url	raw_text	kind	group_name	quantity	unit	lookup_name
-   https://example.com/recipe	Chimichurri	heading	Chimichurri			
-   https://example.com/recipe	Special Chef Equipment	equipment				
-   ```
-3. **Rebuild derived data:**
+1. **Generate suggestions** (uses the Pinned Nearest-Neighbor `PinnedIngredientIndex` + `.use_v4` semantic reranker automatically):
    ```bash
-   ./gradlew rebuildIngredientData
-   ./gradlew diffIngredientSnapshot
+   # Unmatched lookup names only:
+   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.scope=unmatched
+
+   # Or token-guessed lookup names:
+   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.scope=tokens
+   ```
+2. **Read `backend/data/ingredients/suggestions.tsv` and apply [`references/review-rules.md`](references/review-rules.md):**
+   - Check `sample_recipe_title`, `sample_raw_text`, `rationale` (e.g. `pinned-neighbor:<name>`), and `alternative_candidates`.
+   - If the proposed `pantry_item`, `fdc_source`, `fdc_id`, and `fdc_description` are accurate: change column 2 (`status`) from `suggested` to `pinned`, and set column 7 (`match_source`) to `pinned`.
+   - If an entry in `alternative_candidates` is better: look up its exact `source_name`, `source_id`, and `display_name` in `nutrition_foods`, write them into columns 4–6, and set `status = pinned` and `match_source = pinned`.
+3. **Promote accepted pins into `names.tsv`:**
+   ```bash
+   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.accept=true
+   ```
+4. **Recalculate nutrition, refresh line counts, and verify 0 diff:**
+   ```bash
+   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   PGPASSWORD=postgres ./gradlew snapshotIngredients
+   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
    ```
 
 ---
 
-## Validation Checklist
+### Playbook 3: Override an Idiosyncratic Recipe Line (`line-overrides.tsv`)
 
-Before finishing any ingredient matching or pipeline task, the agent must ensure:
+Use when a single recipe has a section heading (`Chimichurri`), note, equipment line, or unparseable line that should **not** become a global rule:
 
-- [ ] All new pins in `names.tsv` use valid `fdc_source` and `fdc_id` from the database.
-- [ ] `./gradlew diffIngredientSnapshot` was executed and reported expected additions/improvements with no unintended regressions.
-- [ ] `./gradlew :backend:test` passes all backend unit tests.
-- [ ] `./gradlew detektAll` passes with 0 violations.
-- [ ] Code formatting complies with project standards (tabs for indentation, sorted imports, single trailing newline).
+1. **Find the exact `source_url` and `raw_text` in `lines.tsv`:**
+   ```bash
+   awk -F'\t' 'NR==1 || $4 ~ /Chimichurri/' backend/data/ingredients/lines.tsv
+   ```
+2. **Add a row to `backend/data/ingredients/line-overrides.tsv`:**
+   Columns: `source_url`, `raw_text`, `kind` (`ingredient`, `heading`, `note`, `equipment`), `group_name`, `quantity`, `unit`, `lookup_name`.
+3. **Rebuild changed lines, recalculate nutrition, and refresh snapshot:**
+   ```bash
+   PGPASSWORD=postgres ./gradlew rebuildIngredientData -Prebuild.onlyChangedLines=true
+   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   PGPASSWORD=postgres ./gradlew snapshotIngredients
+   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ```
+
+---
+
+### Playbook 4: Modify Global Scraper / Parser Rules Safely
+
+Before editing `scripts/scraping/ScrapedIngredientLines.kt`, `IngredientLineParser.kt`, or `IngredientLinePhraseRewrites.kt`, **read [`references/review-rules.md`](references/review-rules.md)**.
+
+1. **Make the minimal code change and add unit test cases** to `scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` or `IngredientLineParserTest.kt`.
+2. **Run fast offline tests & Detekt:**
+   ```bash
+   kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts
+   ./gradlew :backend:test :shared:domain:jvmTest detektAll
+   ```
+3. **Rebuild the database and inspect the corpus diff:**
+   ```bash
+   PGPASSWORD=postgres ./gradlew rebuildIngredientData
+   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot -Psnapshot.failOnDiff=false
+   ```
+4. **Inspect every changed `lookup_name`:**
+   - Any newly created `lookup_name` must be pinned in `names.tsv` (via Playbook 1 or 2).
+   - If the rule broke existing clean lines, revert or narrow the rule immediately.
+5. **Finalize snapshot and verify 0 diff:**
+   ```bash
+   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   PGPASSWORD=postgres ./gradlew snapshotIngredients
+   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ```
+
+---
+
+## Mandatory Completion Checklist
+
+Before reporting completion to the user, verify **all** of the following:
+
+- [ ] `PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true` reports `Partial estimates: 0`, `Without totals: 0`, `Ingredient issues: 0`.
+- [ ] `PGPASSWORD=postgres ./gradlew diffIngredientSnapshot` exits `0` with `Names: +0 added, -0 removed, ~0 changed` and `Lines: +0 added, -0 removed, ~0 changed`.
+- [ ] If Kotlin or Gradle files were touched, `./gradlew detektAll` and `./gradlew :backend:test` pass with 0 errors.
