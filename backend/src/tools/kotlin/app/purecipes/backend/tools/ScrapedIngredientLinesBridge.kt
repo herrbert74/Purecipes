@@ -1,8 +1,10 @@
+package app.purecipes.backend.tools
+
+import ProcessedScrapedIngredient
+import RecipeHeadingContext
+import ScrapedLineOverride
 import app.purecipes.backend.feature.nutrition.IngredientLineOverride
-import app.purecipes.backend.tools.ScrapedIngredientGroup
-import app.purecipes.backend.tools.ScrapedIngredientGroupProcessor
-import app.purecipes.backend.tools.ScrapedIngredientItem
-import app.purecipes.backend.tools.ScrapedRecipeProcessingContext
+import processRecipeScrapedIngredientGroups
 
 internal class ScrapedIngredientLinesBridge : ScrapedIngredientGroupProcessor {
 

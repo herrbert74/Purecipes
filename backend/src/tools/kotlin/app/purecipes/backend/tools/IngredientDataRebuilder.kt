@@ -65,9 +65,7 @@ internal fun interface ScrapedIngredientGroupProcessor {
 	companion object {
 
 		val default: ScrapedIngredientGroupProcessor by lazy {
-			Class.forName("ScrapedIngredientLinesBridge")
-				.getDeclaredConstructor()
-				.newInstance() as ScrapedIngredientGroupProcessor
+			ScrapedIngredientLinesBridge()
 		}
 	}
 }

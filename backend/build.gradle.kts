@@ -72,6 +72,10 @@ private fun Project.localFirebaseProjectNumber(): String {
 
 val generatedBackendResourcesDir = layout.buildDirectory.dir("generated/resources/backend")
 
+val toolsSourceSet = sourceSets.create("tools") {
+	kotlin.srcDir("src/tools/kotlin")
+}
+
 sourceSets {
 	main {
 		kotlin.srcDir(rootProject.file("scripts/scraping"))
@@ -94,6 +98,8 @@ kotlin {
 	jvmToolchain {
 		languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 	}
+	target.compilations.getByName("tools").associateWith(target.compilations.getByName("main"))
+	target.compilations.getByName("test").associateWith(target.compilations.getByName("tools"))
 }
 
 dependencies {
@@ -116,7 +122,7 @@ dependencies {
 	implementation(libs.ktor.serverStatusPages)
 
 	implementation(libs.postgresql)
-	implementation(libs.tensorflowJava)
+	"toolsImplementation"(libs.tensorflowJava)
 
 	testImplementation(kotlin("test"))
 	testImplementation(libs.h2)
@@ -166,7 +172,7 @@ tasks.register("jvmTest") {
 tasks.register<JavaExec>("reportUnknownIngredients") {
 	group = "verification"
 	description = "Reports recipe ingredients that do not match app ingredient options"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.UnknownIngredientsReportKt")
 	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
 }
@@ -174,7 +180,7 @@ tasks.register<JavaExec>("reportUnknownIngredients") {
 tasks.register<JavaExec>("reportRecipeVisibility") {
 	group = "verification"
 	description = "Reports recipe visibility buckets and source-domain breakdown"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.RecipeVisibilityAnalysisReportKt")
 	args = project.findProperty("report.output")?.toString()?.let { listOf("--output", it) }.orEmpty()
 }
@@ -182,7 +188,7 @@ tasks.register<JavaExec>("reportRecipeVisibility") {
 tasks.register<JavaExec>("reportIngredientFoodMatches") {
 	group = "verification"
 	description = "Reports ingredient lines missing food-table matches or gram weights"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.IngredientFoodMatchReportKt")
 	val extraArgs = buildList {
 		project.findProperty("report.output")?.toString()?.let {
@@ -199,7 +205,7 @@ tasks.register<JavaExec>("reportIngredientFoodMatches") {
 tasks.register<JavaExec>("snapshotIngredients") {
 	group = "verification"
 	description = "Exports names.tsv and lines.tsv ingredient snapshots from the database"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.IngredientSnapshotMainKt")
 	val snapshotDir = project.findProperty("snapshot.dir")?.toString().orEmpty()
 	val snapshotMode = project.findProperty("snapshot.mode")?.toString().orEmpty().ifBlank { "write" }
@@ -221,7 +227,7 @@ tasks.register<JavaExec>("snapshotIngredients") {
 tasks.register<JavaExec>("diffIngredientSnapshot") {
 	group = "verification"
 	description = "Diffs the database ingredient snapshot against committed names.tsv and lines.tsv"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.IngredientSnapshotMainKt")
 	val snapshotDir = project.findProperty("snapshot.dir")?.toString().orEmpty()
 	val failOnDiff = project.findProperty("snapshot.failOnDiff")?.toString() != "false"
@@ -243,7 +249,7 @@ tasks.register<JavaExec>("diffIngredientSnapshot") {
 tasks.register<JavaExec>("suggestIngredientMatches") {
 	group = "verification"
 	description = "Generates offline lexical/trigram and optional local ML-embedding suggestions into suggestions.tsv"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.IngredientSuggestionMainKt")
 	val suggestDir = project.findProperty("suggest.dir")?.toString().orEmpty()
 	val suggestScope = project.findProperty("suggest.scope")?.toString().orEmpty()
@@ -280,7 +286,7 @@ tasks.register<JavaExec>("suggestIngredientMatches") {
 tasks.register<JavaExec>("rebuildIngredientData") {
 	group = "application"
 	description = "Recomputes scraped ingredient groups, lines, measurements, and nutrition from DB and JSON archive"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.RebuildIngredientDataMainKt")
 	val jsonDir = project.findProperty("rebuild.jsonDir")?.toString().orEmpty()
 	val restoreLinesTsv = project.findProperty("rebuild.restoreLinesTsv")?.toString().orEmpty()
@@ -310,7 +316,7 @@ tasks.register<JavaExec>("rebuildIngredientData") {
 tasks.register<JavaExec>("calculateRecipeNutrition") {
 	group = "application"
 	description = "Calculates and stores recipe nutrition from parsed ingredients"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.CalculateRecipeNutritionMainKt")
 	val recipeId = project.findProperty("nutrition.recipeId")?.toString().orEmpty()
 	val recipeIds = project.findProperty("nutrition.recipeIds")?.toString().orEmpty()
@@ -336,7 +342,7 @@ tasks.register<JavaExec>("calculateRecipeNutrition") {
 tasks.register<JavaExec>("importNutritionSeed") {
 	group = "application"
 	description = "Imports USDA FoodData Central foundation foods into nutrition tables"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.NutritionSeedImporterMainKt")
 	val fdcJsonPath = project.findProperty("nutrition.fdcJson")?.toString().orEmpty()
 	val extraArgs = buildList {
@@ -360,7 +366,7 @@ tasks.register<JavaExec>("deleteAccount") {
 	group = "application"
 	description = "Deletes a user account for a verified email deletion request, dry run unless deleteAccount" +
 		".execute=true"
-	classpath = sourceSets.main.get().runtimeClasspath
+	classpath = toolsSourceSet.runtimeClasspath
 	mainClass.set("app.purecipes.backend.tools.DeleteAccountMainKt")
 	val userId = project.findProperty("deleteAccount.userId")?.toString().orEmpty()
 	val email = project.findProperty("deleteAccount.email")?.toString().orEmpty()
