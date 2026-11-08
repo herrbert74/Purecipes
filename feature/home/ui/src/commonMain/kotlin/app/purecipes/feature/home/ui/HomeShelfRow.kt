@@ -87,7 +87,7 @@ internal fun HomeShelfRow(
 			modifier = Modifier.testTag("$HOME_SHELF_ROW_LIST_TAG_PREFIX$shelfKey"),
 			state = listState,
 			requestInitialPageAutomatically = false,
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 			verticalAlignment = Alignment.Top,
 			contentPadding = PaddingValues(
 				horizontal = PurecipesTheme.space.m,

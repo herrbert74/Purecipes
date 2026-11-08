@@ -59,8 +59,8 @@ internal fun HomeFeatureRequestCard(
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				.padding(PurecipesTheme.space.s),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			Column(
