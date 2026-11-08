@@ -94,7 +94,6 @@ private fun MainScreenContent(
 					AuthenticationState.SignedOut -> null
 				}
 				val canManageFavorites = authenticationState is AuthenticationState.SignedIn
-				val listDetailSceneStrategy = rememberMainListDetailSceneStrategy()
 				NavigationBackHandler(
 					enabled = true,
 					backStackDepth = tabBackStack.size,
@@ -112,6 +111,9 @@ private fun MainScreenContent(
 					isNavBarVisible = isNavBarVisible,
 				) {
 					key(viewModel.selectedTab.stackId) {
+						val listDetailSceneStrategy = rememberMainListDetailSceneStrategy(
+							hasDetailPane = showsDetailPane(tabBackStack),
+						)
 						SharedTransitionLayout {
 							CompositionLocalProvider(LocalSharedTransitionScope provides this) {
 								NavDisplay(

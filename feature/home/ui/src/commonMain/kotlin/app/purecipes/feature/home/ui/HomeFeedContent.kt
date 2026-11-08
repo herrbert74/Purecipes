@@ -1,7 +1,6 @@
 package app.purecipes.feature.home.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -41,6 +40,19 @@ import kotlinx.collections.immutable.toImmutableMap
 
 internal const val HOME_FEED_LIST_TAG = "homeFeedList"
 internal const val HOME_TITLE_TAG = "homeTitle"
+internal const val HOME_FEATURE_REQUEST_AFTER_SHELF_COUNT = 4
+
+internal fun homeFeedFeatureRequestRow(shelfCount: Int): Int =
+	minOf(HOME_FEATURE_REQUEST_AFTER_SHELF_COUNT, shelfCount)
+
+internal fun homeFeedShelfIndex(row: Int, shelfCount: Int): Int? {
+	val featureRequestRow = homeFeedFeatureRequestRow(shelfCount)
+	return when {
+		row == featureRequestRow -> null
+		row < featureRequestRow -> row
+		else -> row - 1
+	}
+}
 
 @Composable
 internal fun HomeFeedContent(
@@ -90,7 +102,7 @@ internal fun HomeFeedContent(
 		else -> LazyColumn(
 			state = listState,
 			modifier = listModifier.testTag(HOME_FEED_LIST_TAG),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.l),
+			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = listContentPadding,
 		) {
 			item(key = HOME_TITLE_TAG) {
@@ -104,18 +116,26 @@ internal fun HomeFeedContent(
 					color = PurecipesTheme.colorScheme.onSurface,
 				)
 			}
+			val shelves = homeFeed.shelves
 			items(
-				count = homeFeed.shelves.size,
-				key = { index -> homeFeed.shelves[index].shelfKey() },
-			) { index ->
-				val shelf = homeFeed.shelves[index]
-				val shelfKey = shelf.shelfKey()
-				val paginationState = shelfPagination[shelfKey]
-				Column {
+				count = shelves.size + 1,
+				key = { row -> homeFeedRowKey(row, shelves) },
+			) { row ->
+				val shelfIndex = homeFeedShelfIndex(row, shelves.size)
+				if (shelfIndex == null) {
+					HomeFeatureRequestCard(
+						featureRequest = homeFeed.featureRequest,
+						onOpen = onFeatureRequestClick,
+						modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
+					)
+				} else {
+					val shelf = shelves[shelfIndex]
+					val shelfKey = shelf.shelfKey()
+					val paginationState = shelfPagination[shelfKey]
 					if (paginationState != null) {
 						HomeShelfRow(
 							shelf = shelf,
-							shelfIndex = index,
+							shelfIndex = shelfIndex,
 							paginationState = paginationState,
 							onRecipeSelect = onRecipeSelect,
 							onSeeAll = { onSeeAll(shelf) },
@@ -123,28 +143,15 @@ internal fun HomeFeedContent(
 							listState = shelfListStates[shelfKey] ?: rememberLazyListState(),
 						)
 					}
-					if (index == 0) {
-						HomeFeatureRequestCard(
-							featureRequest = homeFeed.featureRequest,
-							onOpen = onFeatureRequestClick,
-							modifier = Modifier
-								.padding(horizontal = PurecipesTheme.space.m)
-								.padding(top = PurecipesTheme.space.l),
-						)
-					}
-				}
-			}
-			if (homeFeed.shelves.isEmpty()) {
-				item(key = "feature-request") {
-					HomeFeatureRequestCard(
-						featureRequest = homeFeed.featureRequest,
-						onOpen = onFeatureRequestClick,
-						modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
-					)
 				}
 			}
 		}
 	}
+}
+
+private fun homeFeedRowKey(row: Int, shelves: List<HomeShelf>): Any {
+	val shelfIndex = homeFeedShelfIndex(row, shelves.size) ?: return "feature-request"
+	return shelves[shelfIndex].shelfKey()
 }
 
 @Preview(showBackground = true)

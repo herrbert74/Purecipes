@@ -76,6 +76,7 @@ internal fun RecipeDetailsHeaderImage(
 			modifier = Modifier
 				.fillMaxSize()
 				.recipeImageSharedElement(key = transitionKey)
+				.clipToBounds()
 				.graphicsLayer {
 					val offset = scrollOffset()
 					if (offset < 0f) {

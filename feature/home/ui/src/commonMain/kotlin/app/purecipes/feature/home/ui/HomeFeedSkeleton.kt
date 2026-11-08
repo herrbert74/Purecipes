@@ -56,7 +56,7 @@ internal fun HomeFeedSkeleton(
 			.fillMaxSize()
 			.testTag(HOME_FEED_SKELETON_TAG),
 		userScrollEnabled = false,
-		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.l),
+		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		contentPadding = contentPadding,
 	) {
 		item(key = HOME_TITLE_TAG) {
@@ -70,16 +70,17 @@ internal fun HomeFeedSkeleton(
 				color = PurecipesTheme.colorScheme.onSurface,
 			)
 		}
-		items(HOME_SKELETON_SHELF_COUNT) { index ->
-			Column {
+		val featureRequestRow = homeFeedFeatureRequestRow(HOME_SKELETON_SHELF_COUNT)
+		items(
+			count = HOME_SKELETON_SHELF_COUNT + 1,
+			key = { row -> if (row == featureRequestRow) "feature-request" else "shelf-$row" },
+		) { row ->
+			if (row == featureRequestRow) {
+				HomeFeatureRequestSkeleton(
+					modifier = Modifier.padding(horizontal = PurecipesTheme.space.m),
+				)
+			} else {
 				HomeShelfSkeleton()
-				if (index == 0) {
-					HomeFeatureRequestSkeleton(
-						modifier = Modifier
-							.padding(horizontal = PurecipesTheme.space.m)
-							.padding(top = PurecipesTheme.space.l),
-					)
-				}
 			}
 		}
 	}
@@ -114,7 +115,7 @@ private fun HomeShelfSkeleton() {
 		}
 		Row(
 			modifier = Modifier.padding(start = PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 		) {
 			repeat(HOME_SKELETON_CARDS_PER_SHELF) {
 				HomeShelfCardSkeleton()
@@ -190,8 +191,8 @@ private fun HomeFeatureRequestSkeleton(
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				.padding(PurecipesTheme.space.s),
+			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			verticalAlignment = Alignment.CenterVertically,
 		) {
 			Column(

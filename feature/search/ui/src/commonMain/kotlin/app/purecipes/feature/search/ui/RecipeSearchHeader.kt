@@ -3,7 +3,9 @@ package app.purecipes.feature.search.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.requestFocus
@@ -58,6 +62,9 @@ internal fun RecipeSearchHeader(
 	val searchFocusRequester = remember { FocusRequester() }
 	val filterFocusRequester = remember { FocusRequester() }
 	val hasAppliedInitialFocus = remember { mutableStateOf(false) }
+	val focusManager = LocalFocusManager.current
+	val imeWasShown = remember { mutableStateOf(false) }
+	val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
 	val searchPillShape = RoundedCornerShape(PurecipesTheme.space.l)
 	val pillFieldColors = OutlinedTextFieldDefaults.colors(
 		focusedContainerColor = Color.Transparent,
@@ -74,6 +81,13 @@ internal fun RecipeSearchHeader(
 		} else if (isSearchBarActive) {
 			searchFocusRequester.requestFocus()
 		}
+	}
+	LaunchedEffect(imeBottom) {
+		val imeShown = imeBottom > 0
+		if (imeWasShown.value && !imeShown) {
+			focusManager.clearFocus(force = true)
+		}
+		imeWasShown.value = imeShown
 	}
 	Row(
 		modifier = Modifier.fillMaxWidth(),
