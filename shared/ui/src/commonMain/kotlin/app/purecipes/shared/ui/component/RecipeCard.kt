@@ -87,7 +87,10 @@ fun RecipeCard(
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
-						.recipeImageSharedElement(key = transitionKey)
+						.recipeImageSharedElement(
+							key = transitionKey,
+							cornerRadius = PurecipesTheme.space.m,
+						)
 						.background(colors.color),
 					contentScale = ContentScale.Crop,
 				)

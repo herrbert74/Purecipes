@@ -69,7 +69,10 @@ internal fun RecipeShelfCard(
 					contentDescription = recipe.title,
 					modifier = Modifier
 						.fillMaxSize()
-						.recipeImageSharedElement(key = transitionKey)
+						.recipeImageSharedElement(
+							key = transitionKey,
+							cornerRadius = PurecipesTheme.space.m,
+						)
 						.background(PurecipesTheme.colorScheme.surfaceVariant),
 					contentScale = ContentScale.Crop,
 				)
