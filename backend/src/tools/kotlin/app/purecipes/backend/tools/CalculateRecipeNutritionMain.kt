@@ -25,9 +25,15 @@ fun main(args: Array<String>) {
 
 	val service = RecipeNutritionService(Db.create().dataSource)
 	val results = when {
-		allRecipes -> service.calculateAndPersistAll()
+		allRecipes -> service.calculateAndPersistAll(
+			onProgress = createNutritionProgressCallback(),
+		)
+
 		recipeId != null -> listOf(service.calculateAndPersist(recipeId))
-		else -> service.calculateAndPersistRecipeIds(recipeIds)
+		else -> service.calculateAndPersistRecipeIds(
+			recipeIds = recipeIds,
+			onProgress = createNutritionProgressCallback(),
+		)
 	}
 
 	printRecipeNutritionResults(

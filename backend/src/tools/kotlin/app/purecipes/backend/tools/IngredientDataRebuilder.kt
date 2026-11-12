@@ -110,7 +110,10 @@ internal class IngredientDataRebuilder(
 	private val dataSource: DataSource,
 	private val processor: ScrapedIngredientGroupProcessor = ScrapedIngredientGroupProcessor.default,
 	private val recalculateNutrition: (List<Int>) -> Unit = { recipeIds ->
-		RecipeNutritionService(dataSource).calculateAndPersistRecipeIds(recipeIds)
+		RecipeNutritionService(dataSource).calculateAndPersistRecipeIds(
+			recipeIds = recipeIds,
+			onProgress = createNutritionProgressCallback(),
+		)
 	},
 ) {
 
@@ -129,11 +132,16 @@ internal class IngredientDataRebuilder(
 	): IngredientDataRebuildSummary {
 		val jsonEntriesBySourceUrl = loadJsonEntriesBySourceUrl(jsonArchiveDir)
 		val scrapedRecipes = loadScrapedRecipes()
+		val progressLogger = ProgressLogger(
+			stepLabel = "Rebuilding ingredient lines",
+			total = scrapedRecipes.size,
+			startMessage = "Processing ingredient lines for ${scrapedRecipes.size} recipes...",
+		)
 		var matchedJsonCount = 0
 		var syncedJsonCount = 0
 		val updatedRecipeIds = mutableListOf<Int>()
 
-		scrapedRecipes.forEach { recipe ->
+		scrapedRecipes.forEachIndexed { index, recipe ->
 			val dbState = loadStoredDbGroups(recipe.id)
 			val jsonEntry = jsonEntriesBySourceUrl[recipe.sourceUrl]
 			if (jsonEntry != null) {
@@ -167,6 +175,7 @@ internal class IngredientDataRebuilder(
 					syncedJsonCount += 1
 				}
 			}
+			progressLogger.onItemProcessed(index + 1)
 		}
 
 		val nutritionRecipeIds = if (recalculateAllNutrition) {

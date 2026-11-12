@@ -45,16 +45,26 @@ internal class RecipeNutritionService(
 		)
 	}
 
-	fun calculateAndPersistAll(): List<RecipeNutritionPersistResult> =
-		calculateAndPersistRecipeIds(recipeNutritionRepository.listRecipeIds())
+	fun calculateAndPersistAll(
+		onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
+	): List<RecipeNutritionPersistResult> =
+		calculateAndPersistRecipeIds(recipeNutritionRepository.listRecipeIds(), onProgress)
 
-	fun calculateAndPersistRecipeIds(recipeIds: List<Int>): List<RecipeNutritionPersistResult> {
+	fun calculateAndPersistRecipeIds(
+		recipeIds: List<Int>,
+		onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
+	): List<RecipeNutritionPersistResult> {
 		if (recipeIds.isEmpty()) {
 			return emptyList()
 		}
 		val lookupIndex = lookupRepository.loadIndex()
 		val lineOverrides = lineOverridesProvider()
-		return recipeIds.map { recipeId -> calculateAndPersist(recipeId, lookupIndex, lineOverrides) }
+		val total = recipeIds.size
+		return recipeIds.mapIndexed { index, recipeId ->
+			val result = calculateAndPersist(recipeId, lookupIndex, lineOverrides)
+			onProgress(index + 1, total)
+			result
+		}
 	}
 
 	private fun persist(
