@@ -15,26 +15,18 @@ scripts/scraping/
 ├── recipe_site_scraper.main.kts       # primary scraper (ongoing)
 ├── recipe_site_scraper_ingredient_test.main.kts
 └── oneoff/
-    ├── normalize_existing_ingredients.main.kts   # text backfill (legacy / rule changes)
-    ├── normalize_existing_ingredients.sh         # wrapper for the above
-    ├── backfill_ingredient_requirements.main.kts # optional-flag backfill
-    ├── backfill_ingredient_alternatives.main.kts # OR-group backfill (legacy / rule changes)
-    ├── backfill_merge_incomplete_alternatives.main.kts # rejoin over-split OR groups
-    └── backfill_recipe_appliances.main.kts       # backfill appliances column for existing recipes
+    ├── backfill_recipe_appliances.main.kts               # backfill appliances column for existing recipes
+    └── backfill_scraped_nutrition_serving_totals.main.kts # rescale scraped whole-recipe nutrition to per-serving
 ```
 
 | File | Role | When to use | Examples |
 |------|------|-------------|----------|
 | [`ScrapedAppliances.kt`](ScrapedAppliances.kt) | **Shared library** — extract appliance names (`OVEN`, `AIR_FRYER`, `BLENDER`, etc.) from recipe instructions, titles, descriptions, and cooking methods | Not run directly. Imported by `recipe_site_scraper.main.kts` and `backfill_recipe_appliances.main.kts`. | `preheat oven to 180°C` → `OVEN`; `pulse in food processor` → `FOOD_PROCESSOR` |
-| [`ScrapedIngredientLines.kt`](ScrapedIngredientLines.kt) | **Shared library** — turn raw scraped ingredient strings into structured import rows (text cleanup, sanitization, optional/requirement detection, OR groups) | Not run directly. Imported by every `.main.kts` script below. | `60g Gruyère` → `60 g Gruyère`; `For the sauce:` → dropped; `parsley or tarragon` → two `ALTERNATIVE` rows |
+| [`ScrapedIngredientLines.kt`](ScrapedIngredientLines.kt) | **Shared library** — turn raw scraped ingredient strings into structured import rows (text cleanup, sanitization, optional/requirement detection, OR groups) | Not run directly. Imported by `recipe_site_scraper.main.kts`, `recipe_site_scraper_ingredient_test.main.kts`, and compiled into `:backend` tools (`./gradlew rebuildIngredientData`). | `60g Gruyère` → `60 g Gruyère`; `For the sauce:` → dropped; `parsley or tarragon` → two `ALTERNATIVE` rows |
 | [`recipe_site_scraper.main.kts`](recipe_site_scraper.main.kts) | **Primary scraper** — discover URLs, scrape sites, write JSON, import into Postgres | Normal day-to-day imports and re-imports. | `--mode web` + URL list; `--mode json` re-import from `{output}/recipes/` |
-| [`recipe_site_scraper_ingredient_test.main.kts`](recipe_site_scraper_ingredient_test.main.kts) | **Offline tests** for `ScrapedIngredientLines.kt` | After changing scraped-ingredient rules; before bulk imports or one-off backfills. | Asserts cases in that file (spacing, fractions, alternatives, splits) |
-| [`oneoff/normalize_existing_ingredients.main.kts`](oneoff/normalize_existing_ingredients.main.kts) | **One-off backfill** — re-apply *text* cleanup on existing DB rows and/or saved JSON | Legacy data **or** after normalization rule changes (see below). | `2tbsp paste` → `2 tbsp paste`; `0.666… cup flour` → `2/3 cup flour` |
-| [`oneoff/normalize_existing_ingredients.sh`](oneoff/normalize_existing_ingredients.sh) | Shell wrapper that clears the Kotlin script cache, then runs the script above | Same as above; avoids stale cached library code on macOS. | `./scripts/scraping/oneoff/normalize_existing_ingredients.sh --db-name purecipes --dry-run true` |
-| [`oneoff/backfill_ingredient_requirements.main.kts`](oneoff/backfill_ingredient_requirements.main.kts) | **One-off backfill** — set `ingredients.requirement` on existing DB rows | Legacy data **or** after optional-detection rule changes. | `optional: parsley, to garnish` → `OPTIONAL`; `(optional)` / `to serve` suffixes |
-| [`oneoff/backfill_ingredient_alternatives.main.kts`](oneoff/backfill_ingredient_alternatives.main.kts) | **One-off backfill** — split combined `or` lines into `ALTERNATIVE` rows | Legacy data **or** after alternative/OR rule changes. | `parsley or tarragon` → two rows + `alternative_group_key`; `2 tbsp parsley or fresh tarragon` → shared quantity on both |
-| [`oneoff/backfill_merge_incomplete_alternatives.main.kts`](oneoff/backfill_merge_incomplete_alternatives.main.kts) | **One-off backfill** — rejoin over-split `ALTERNATIVE` clusters, then re-expand with current OR rules | After incomplete-first-side / join-continued-`or` guards; fixes display rows without reimport. | `2 tablespoons mini` + `…regular chocolate chips` → one joined line |
+| [`recipe_site_scraper_ingredient_test.main.kts`](recipe_site_scraper_ingredient_test.main.kts) | **Offline tests** for `ScrapedIngredientLines.kt` | After changing scraped-ingredient rules; before running `./gradlew rebuildIngredientData`. | Asserts cases in that file (spacing, fractions, alternatives, splits) |
 | [`oneoff/backfill_recipe_appliances.main.kts`](oneoff/backfill_recipe_appliances.main.kts) | **One-off backfill** — populate `recipes.appliances` array from instructions and metadata | Legacy data or after appliance keyword rule changes. | Scans `instruction_steps` and updates `recipes.appliances` |
+| [`oneoff/backfill_scraped_nutrition_serving_totals.main.kts`](oneoff/backfill_scraped_nutrition_serving_totals.main.kts) | **One-off backfill** — rescale scraped `nutrition` rows that stored whole-recipe totals instead of per-serving values | Legacy scraped nutrition cleanup. | Divides `nutrition` columns by parsed serving count |
 
 ### `ScrapedAppliances.kt`
 
@@ -55,14 +47,7 @@ It extracts standard appliance identifiers from recipe instruction lines, instru
 
 ### `ScrapedIngredientLines.kt`
 
-This is the **single source of scraped-ingredient processing** for imports. It is `@file:Import`‑ed by:
-
-- `recipe_site_scraper.main.kts`
-- `recipe_site_scraper_ingredient_test.main.kts`
-- `oneoff/normalize_existing_ingredients.main.kts`
-- `oneoff/backfill_ingredient_requirements.main.kts`
-- `oneoff/backfill_ingredient_alternatives.main.kts`
-- `oneoff/backfill_merge_incomplete_alternatives.main.kts`
+This is the **single source of scraped-ingredient processing** for imports and rebuilds. It is `@file:Import`‑ed by `recipe_site_scraper.main.kts` and `recipe_site_scraper_ingredient_test.main.kts`, and compiled into `:backend`'s `tools` source set for `./gradlew rebuildIngredientData`.
 
 **Naming:** the old name `RecipeIngredientNormalization.kt` suggested text formatting only. The library also filters headings/equipment, splits concatenated lines, detects optional ingredients, and splits OR alternatives. `ScrapedIngredientLines` reflects that scope: raw **lines** from a scrape → `ProcessedScrapedIngredient` rows (display `text` + `requirement` + optional `alternative_group_key`).
 
@@ -111,19 +96,11 @@ Real-world OR example: BBC Good Food (`parsley or tarragon` style lines).
 | Concern | Handled by | Notes | Examples |
 |---------|------------|--------|----------|
 | Scrape + import recipes | `recipe_site_scraper.main.kts` | Default path for all new data. | Web scrape → JSON + Postgres |
-| Ingredient text cleanup on import | `ScrapedIngredientLines.kt` (via main scraper) | Always applied at import time. | `60g` → `60 g` on every new row |
-| Optional/required flags on import | Same library + main scraper DB insert | New rows get `requirement` automatically. | `optional: …` → `OPTIONAL` |
-| OR groups on import | Same library + main scraper DB insert | New rows get `ALTERNATIVE` + `alternative_group_key`. | `parsley or tarragon` → two linked rows |
+| Ingredient text cleanup, optional flags, and OR groups on import | `ScrapedIngredientLines.kt` (via main scraper) | Always applied at import time. | `60g` → `60 g`, `optional: …` → `OPTIONAL`, `parsley or tarragon` → two linked `ALTERNATIVE` rows |
 | Appliance extraction on import | `ScrapedAppliances.kt` (via main scraper) | Always applied at import time; saved to JSON and DB `recipes.appliances`. | `preheat oven to 180°C` → `OVEN` |
-| Recompute all derived ingredient rows + nutrition from saved JSON + DB | `./gradlew rebuildIngredientData` | Preferred reproducible rebuild after changing `ScrapedIngredientLines.kt` or `line-overrides.tsv`; preserves `recipes.id`. See [`backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md). | Re-splits lines, applies overrides, and recalculates nutrition |
-| Fix *old* or *out-of-date* ingredient text | `oneoff/normalize_existing_ingredients.main.kts` | Legacy script; prefer `./gradlew rebuildIngredientData` unless targeting JSON files only. | After improving fraction or unit spacing logic |
-| Fix *old* or *out-of-date* optional flags | `oneoff/backfill_ingredient_requirements.main.kts` | DB only; does not touch JSON files. | After new garnish/`(optional)` detection rules |
-| Fix *old* or *out-of-date* OR groups | `oneoff/backfill_ingredient_alternatives.main.kts` | DB only; splits combined `or` lines. | After first deploy of alternative-ingredient support |
-| Fix *over-split* incomplete OR groups | `oneoff/backfill_merge_incomplete_alternatives.main.kts` | DB only; rejoins clusters that current rules keep as one line. | After incomplete-first-side / join-continued-`or` guards |
+| Recompute all derived ingredient rows + nutrition from saved JSON + DB | `./gradlew rebuildIngredientData` | Reproducible rebuild after changing `ScrapedIngredientLines.kt` or `line-overrides.tsv`; syncs JSON and preserves `recipes.id`. See [`backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md). | Re-splits lines, applies overrides, and recalculates nutrition |
 | Fix *old* or *out-of-date* appliances | `oneoff/backfill_recipe_appliances.main.kts` | DB only; re-scans instructions and metadata to update `recipes.appliances` array. | After adding new appliance rules or keywords |
-| Verify scraped-ingredient rules | `recipe_site_scraper_ingredient_test.main.kts` | No database or network. | Run before bulk backfill or re-import |
-
-**One-off scripts are not only for “historical” data.** Use them whenever **existing** DB rows (or saved scrape JSON, for normalize) were produced under **older** `ScrapedIngredientLines` or `ScrapedAppliances` rules — for example after you ship better alternative parsing, optional detection, unit/fraction normalization, or new appliance keywords. Workflow: update rules and tests → dry-run backfill → apply → recalculate nutrition → run enrichment. Fresh scrapes after the rule change do not need backfill.
+| Verify scraped-ingredient rules | `recipe_site_scraper_ingredient_test.main.kts` | No database or network. | Run before `./gradlew rebuildIngredientData` or bulk imports |
 
 ---
 
@@ -273,62 +250,9 @@ Add cases to `recipe_site_scraper_ingredient_test.main.kts` when fixing new ingr
 
 ## One-off maintenance scripts
 
-Use scripts under [`oneoff/`](oneoff/) when **existing** database rows or saved JSON need to catch up with logic the main scraper already applies to **new** imports — including after you **change** normalization, optional, or alternative rules in `ScrapedIngredientLines.kt`. Always dry-run first, then apply, then recalculate nutrition and run enrichment (backfills do not do those steps).
+For any ingredient line, heading, optional-flag, or OR-alternative rule change in `ScrapedIngredientLines.kt`, use `./gradlew rebuildIngredientData` followed by `./gradlew diffIngredientSnapshot` (see [`backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md)).
 
-See [Ongoing workflow vs one-off scripts](#ongoing-workflow-vs-one-off-scripts) for which script matches which rule change.
-
-### Re-normalize ingredient text (`normalize_existing_ingredients`)
-
-Fixes quantity/unit spacing and fraction formatting in place. Can target PostgreSQL, saved scrape JSON, or both. Re-run when spacing or fraction rules improve (not only for pre-feature data).
-
-```bash
-./scripts/scraping/oneoff/normalize_existing_ingredients.sh \
-  --json-dir ~/documents/output/recipes \
-  --db-name purecipes \
-  --dry-run true \
-  --verbose true
-```
-
-The shell wrapper clears the Kotlin script cache first. If you run `kotlin scripts/scraping/oneoff/normalize_existing_ingredients.main.kts` directly, stale cached rules may cause zero updates; delete `~/Library/Caches/main.kts.compiled.cache/` when that happens.
-
-Remove `--dry-run true` to apply changes. Repeat `--json-dir` for multiple output folders. Database flags are optional; omit them to update JSON only.
-
-Does **not** recalculate nutrition or run enrichment.
-
-### Backfill optional ingredient flags (`backfill_ingredient_requirements`)
-
-Database-only. Re-parses `ingredients.ingredient` text and updates `ingredients.requirement` (and cleaned display text). Use after optional-ingredient schema deploy **or** when optional-detection heuristics change (prefix, `(optional)`, garnish/serve suffixes).
-
-```bash
-kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts \
-  --db-name purecipes \
-  --dry-run true \
-  --verbose true
-```
-
-### Backfill alternative ingredient groups (`backfill_ingredient_alternatives`)
-
-Database-only. Splits combined `parsley or tarragon` lines into multiple `ALTERNATIVE` rows sharing an `alternative_group_key`. Use after alternative-ingredient schema deploy **or** when OR parsing rules change (shared quantity, parenthetical suffixes, etc.).
-
-```bash
-kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts \
-  --db-name purecipes \
-  --dry-run true \
-  --verbose true
-```
-
-### Merge over-split incomplete alternatives (`backfill_merge_incomplete_alternatives`)
-
-Database-only. Finds existing `ALTERNATIVE` clusters, joins them with ` or `, and keeps the change only when current `ScrapedIngredientLines` rules collapse that join back to a single row (incomplete first side, optional keep-as-single, etc.). Genuine multi-side alternatives are left untouched. Recipe ids stay stable; recalculate nutrition for affected recipes afterward.
-
-```bash
-kotlin scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.main.kts \
-  --db-name purecipes \
-  --db-user postgres \
-  --db-password postgres \
-  --dry-run true \
-  --verbose true
-```
+The remaining scripts under [`oneoff/`](oneoff/) handle non-ingredient backfills:
 
 ### Backfill recipe appliances (`backfill_recipe_appliances`)
 
@@ -352,4 +276,4 @@ Remove `--dry-run true` to commit the updates to the database.
 - Use LF line endings in URL list files.
 - Check firewall/VPN if fetches fail.
 - Run with invalid args to print full usage from the script.
-- Ingredient rule changes not showing up: run the ingredient test script, then clear the Kotlin script cache (see normalize shell wrapper) before one-off backfills.
+- If `kotlin` script changes to `@file:Import` files do not show up, clear `~/Library/Caches/main.kts.compiled.cache/`.

@@ -117,10 +117,7 @@ This is irreversible unless you have a backup or the JSON files under the scrape
 For scraper script changes:
 - **Detekt compliance**: Run `./gradlew detektAll` to verify linting rules pass
 - **Scraped ingredient line tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
-- **Reproducible ingredient rebuild & snapshot diff**: Prefer `./gradlew rebuildIngredientData` followed by `./gradlew diffIngredientSnapshot` after changing `ScrapedIngredientLines.kt` (see [`../../backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md))
-- **Ingredient text backfill (existing DB/JSON)**: `./scripts/scraping/oneoff/normalize_existing_ingredients.sh` — legacy / JSON-only normalization; see [README](README.md#re-normalize-ingredient-text-normalize_existing_ingredients)
-- **Optional-flag backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_requirements.main.kts` — after optional-detection rule changes or legacy data; see [README](README.md#backfill-optional-ingredient-flags-backfill_ingredient_requirements)
-- **Alternative-group backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_ingredient_alternatives.main.kts` — after OR/alternative rule changes or legacy data; see [README](README.md#backfill-alternative-ingredient-groups-backfill_ingredient_alternatives)
-- **Merge over-split incomplete alternatives (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_merge_incomplete_alternatives.main.kts` — after incomplete-first-side / join-continued-`or` guards; see [README](README.md#merge-over-split-incomplete-alternatives-backfill_merge_incomplete_alternatives)
+- **Reproducible ingredient rebuild & snapshot diff**: Run `./gradlew rebuildIngredientData` followed by `./gradlew diffIngredientSnapshot` after changing `ScrapedIngredientLines.kt` (see [`../../backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md))
+- **Appliance backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_recipe_appliances.main.kts` — after changing `ScrapedAppliances.kt`; see [README](README.md#backfill-recipe-appliances-backfill_recipe_appliances)
 - **Functional testing**: Test changes against actual recipe websites (or use `--mode json` with previously saved files for offline testing)
 - **Schema alignment**: After backend schema changes, verify scraper schema and insertion logic still work end-to-end
