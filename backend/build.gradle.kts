@@ -313,6 +313,26 @@ tasks.register<JavaExec>("rebuildIngredientData") {
 	args = extraArgs
 }
 
+tasks.register<JavaExec>("importScrapedJson") {
+	group = "application"
+	description = "Imports scraped recipe JSON files into Postgres using the backend schema"
+	classpath = toolsSourceSet.runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.ImportScrapedJsonMainKt")
+	val jsonDir = project.findProperty("importJson.dir")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (jsonDir.isNotBlank()) {
+			add("--json-dir=$jsonDir")
+		}
+		if (project.findProperty("importJson.upsertExisting")?.toString() == "true") {
+			add("--upsert-existing")
+		}
+		if (project.findProperty("importJson.calculateNutrition")?.toString() == "true") {
+			add("--calculate-nutrition")
+		}
+	}
+	args = extraArgs
+}
+
 tasks.register<JavaExec>("calculateRecipeNutrition") {
 	group = "application"
 	description = "Calculates and stores recipe nutrition from parsed ingredients"

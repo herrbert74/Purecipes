@@ -63,21 +63,13 @@ With the SSH tunnel from Step 1 open and `PURECIPES_DB_*` exported in Terminal 2
 
 ## 4. Import New JSON Recipes
 
-Inserts newly scraped JSON files from your local archive while skipping recipes whose `source_url` already exists on release:
+Inserts newly scraped JSON files from your local archive (`~/Purecipes/recipeoutput/recipes`, walking all site subfolders) into the release database over the SSH tunnel while skipping recipes whose `source_url` already exists:
 
 ```bash
-kotlin scripts/scraping/recipe_site_scraper.main.kts allrecipes ~/Purecipes/recipeoutput/recipes \
-  --mode json \
-  --upsert-existing false \
-  --calculate-nutrition false \
-  --db-host localhost \
-  --db-port 15432 \
-  --db-name purecipes \
-  --db-user "$PURECIPES_DB_USER" \
-  --db-password "$PURECIPES_DB_PASSWORD"
+./gradlew importScrapedJson
 ```
 
-> **Note:** In `--mode json`, the script walks **every** site subfolder under `~/Purecipes/recipeoutput/recipes` regardless of the first positional site argument (`allrecipes`).
+*(Pass `-PimportJson.dir=/path/to/recipes` to override the default archive folder, or `-PimportJson.upsertExisting=true` to overwrite existing recipes).*
 
 ---
 

@@ -2073,6 +2073,37 @@ private fun collectExistingUrls(connection: Connection, urls: List<String>): Set
 }
 
 fun importJsonFilesToDb(config: Config, recipesDir: File) {
+	val repoRoot = findRepoRoot()
+	val gradlew = repoRoot?.resolve("gradlew")?.toFile()
+	if (repoRoot != null && gradlew != null && gradlew.exists()) {
+		println("Delegating JSON import to ./gradlew importScrapedJson...")
+		val command = buildList {
+			add(gradlew.absolutePath)
+			add("importScrapedJson")
+			add("-PimportJson.dir=${recipesDir.absolutePath}")
+			if (config.upsertExisting) {
+				add("-PimportJson.upsertExisting=true")
+			}
+			if (config.calculateNutrition) {
+				add("-PimportJson.calculateNutrition=true")
+			}
+			add("-q")
+		}
+		val process = ProcessBuilder(command)
+			.directory(repoRoot.toFile())
+			.redirectErrorStream(true)
+			.apply { environment().putAll(nutritionDatabaseEnvironment(config)) }
+			.start()
+		process.inputStream.bufferedReader().use { reader ->
+			reader.forEachLine(::println)
+		}
+		val exitCode = process.waitFor()
+		if (exitCode != 0) {
+			error("importScrapedJson failed with exit code $exitCode")
+		}
+		return
+	}
+
 	val jsonFiles = recipesDir.walkTopDown()
 		.filter { it.isFile && it.extension == "json" }
 		.toList()
