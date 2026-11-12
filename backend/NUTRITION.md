@@ -26,7 +26,7 @@ For the seed importer (feature 14, step 4), download from FoodData Central:
 
 Keep only MVP nutrients: calories, protein, carbohydrates, fat, fibre, sugar, and sodium. Normalize to canonical foods per 100 g.
 
-Downloads are not committed to the repository; the importer reads local JSON paths supplied at run time. The commands below use the files on this machine.
+Downloads are not committed to the repository; the importer reads local JSON paths supplied at run time.
 
 ## Seed import
 
@@ -35,9 +35,9 @@ Run against a Postgres database configured with the usual `PURECIPES_DB_*` envir
 The importer auto-detects `FoundationFoods`, `SRLegacyFoods`, `SurveyFoods`, or `BrandedFoods` from the JSON root key. Import **SR Legacy first**, then **Foundation**, then optional **Survey** (do not use `-Pnutrition.replace=true` after the first clear). Catalogue aliases are reseeded after each Foundation/SR/Survey import using all foods in the database; Foundation wins ties over SR Legacy, then Survey, then branded products.
 
 ```bash
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.replace=true
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_foundation_food_json_2026-04-30.json
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/surveyDownload.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.replace=true
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_foundation_food_json_2026-04-30.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/surveyDownload.json
 ```
 
 The first command clears nutrition seed tables. Later commands add foods and refresh aliases. Survey (FNDDS) is small enough to import in full; household measures are read from `portionDescription` values such as `1 cup` and `1 fl oz`.
@@ -45,7 +45,7 @@ The first command clears nutrition seed tables. Later commands add foods and ref
 After recipe nutrition has been calculated at least once, import only the branded foods needed to fill remaining unmatched measurable names. The 3 GB branded dump is streamed; the importer does not load every branded product. Each branded import first removes previous `fdc_branded` rows, then keeps only close name matches (description starts with the needed name, contiguous multi-word phrases, and few extra description tokens):
 
 ```bash
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_branded_food_json_2026-04-30.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_branded_food_json_2026-04-30.json
 ```
 
 Do **not** pass `-Pnutrition.replace=true` for branded import. Branded rows are stored as `fdc_branded` and used only when Foundation/SR Legacy cannot match a name. Matching recipe names are also written as aliases.
@@ -53,7 +53,7 @@ Do **not** pass `-Pnutrition.replace=true` for branded import. Branded rows are 
 Dry run (no database writes, prints match coverage):
 
 ```bash
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.dryRun=true
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.dryRun=true
 ```
 
 Skip alias seeding on a large import (`-Pnutrition.skipAliases=true` or `--skip-aliases`) if you will run another import immediately after.
@@ -104,14 +104,15 @@ The report counts countable measured ingredient lines (required, plus one option
 
 Run `calculateRecipeNutrition` first when you want the report to reflect a fresh matcher pass.
 
-## Typical local sequence
+## Typical local seed-import sequence
 
 ```bash
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.replace=true
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_foundation_food_json_2026-04-30.json
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/surveyDownload.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_sr_legacy_food_json_2018-04.json -Pnutrition.replace=true
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_foundation_food_json_2026-04-30.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/surveyDownload.json
 ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-./gradlew importNutritionSeed -Pnutrition.fdcJson=/Users/zsoltbertalan/Documents/purecipes/fooddata/FoodData_Central_branded_food_json_2026-04-30.json
+./gradlew importNutritionSeed -Pnutrition.fdcJson=~/Purecipes/fooddata/FoodData_Central_branded_food_json_2026-04-30.json
 ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-./gradlew reportIngredientFoodMatches -Preport.output=/tmp/ingredient-food-match-report.txt
 ```
+
+For the full end-to-end pipeline order after scraping or importing new recipes, see [`README.md#canonical-recipe-data-pipeline-order`](README.md#canonical-recipe-data-pipeline-order) and [`INGREDIENTS.md`](INGREDIENTS.md).

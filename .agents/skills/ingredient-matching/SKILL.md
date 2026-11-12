@@ -93,14 +93,14 @@ Every row in `names.tsv` has **8 tab-separated columns**:
    LIMIT 15;
    "
    ```
-   *(Or run `PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.query="olive oil"` and inspect `backend/data/ingredients/suggestions.tsv`.)*
+   *(Or run `./gradlew suggestIngredientMatches -Psuggest.query="olive oil"` and inspect `backend/data/ingredients/suggestions.tsv`.)*
 3. **Verify the `pantry_item` spelling** against `shared/domain/src/commonMain/kotlin/app/purecipes/shared/domain/ingredient/IngredientCatalogue.kt` (or leave `pantry_item` empty `""` if no catalogue chip applies).
 4. **Update `names.tsv`** (keeping rows sorted by `lookup_name` and replacing any `"` with `″`).
 5. **Apply to the database and verify 0 diff:**
    ```bash
-   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-   PGPASSWORD=postgres ./gradlew snapshotIngredients
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   ./gradlew snapshotIngredients
+   ./gradlew diffIngredientSnapshot
    ```
 
 ---
@@ -110,10 +110,10 @@ Every row in `names.tsv` has **8 tab-separated columns**:
 1. **Generate suggestions** (uses the Pinned Nearest-Neighbor `PinnedIngredientIndex` + `.use_v4` semantic reranker automatically):
    ```bash
    # Unmatched lookup names only:
-   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.scope=unmatched
+   ./gradlew suggestIngredientMatches -Psuggest.scope=unmatched
 
    # Or token-guessed lookup names:
-   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.scope=tokens
+   ./gradlew suggestIngredientMatches -Psuggest.scope=tokens
    ```
 2. **Read `backend/data/ingredients/suggestions.tsv` and apply [`references/review-rules.md`](references/review-rules.md):**
    - Check `sample_recipe_title`, `sample_raw_text`, `rationale` (e.g. `pinned-neighbor:<name>`), and `alternative_candidates`.
@@ -121,13 +121,13 @@ Every row in `names.tsv` has **8 tab-separated columns**:
    - If an entry in `alternative_candidates` is better: look up its exact `source_name`, `source_id`, and `display_name` in `nutrition_foods`, write them into columns 4–6, and set `status = pinned` and `match_source = pinned`.
 3. **Promote accepted pins into `names.tsv`:**
    ```bash
-   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.accept=true
+   ./gradlew suggestIngredientMatches -Psuggest.accept=true
    ```
 4. **Recalculate nutrition, refresh line counts, and verify 0 diff:**
    ```bash
-   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-   PGPASSWORD=postgres ./gradlew snapshotIngredients
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   ./gradlew snapshotIngredients
+   ./gradlew diffIngredientSnapshot
    ```
 
 ---
@@ -144,10 +144,10 @@ Use when a single recipe has a section heading (`Chimichurri`), note, equipment 
    Columns: `source_url`, `raw_text`, `kind` (`ingredient`, `heading`, `note`, `equipment`), `group_name`, `quantity`, `unit`, `lookup_name`.
 3. **Rebuild changed lines, recalculate nutrition, and refresh snapshot:**
    ```bash
-   PGPASSWORD=postgres ./gradlew rebuildIngredientData -Prebuild.onlyChangedLines=true
-   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-   PGPASSWORD=postgres ./gradlew snapshotIngredients
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ./gradlew rebuildIngredientData -Prebuild.onlyChangedLines=true
+   ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   ./gradlew snapshotIngredients
+   ./gradlew diffIngredientSnapshot
    ```
 
 ---
@@ -164,17 +164,17 @@ Before editing `scripts/scraping/ScrapedIngredientLines.kt`, `IngredientLinePars
    ```
 3. **Rebuild the database and inspect the corpus diff:**
    ```bash
-   PGPASSWORD=postgres ./gradlew rebuildIngredientData
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot -Psnapshot.failOnDiff=false
+   ./gradlew rebuildIngredientData
+   ./gradlew diffIngredientSnapshot -Psnapshot.failOnDiff=false
    ```
 4. **Inspect every changed `lookup_name`:**
    - Any newly created `lookup_name` must be pinned in `names.tsv` (via Playbook 1 or 2).
    - If the rule broke existing clean lines, revert or narrow the rule immediately.
 5. **Finalize snapshot and verify 0 diff:**
    ```bash
-   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-   PGPASSWORD=postgres ./gradlew snapshotIngredients
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   ./gradlew snapshotIngredients
+   ./gradlew diffIngredientSnapshot
    ```
 
 ---
@@ -183,6 +183,6 @@ Before editing `scripts/scraping/ScrapedIngredientLines.kt`, `IngredientLinePars
 
 Before reporting completion to the user, verify **all** of the following:
 
-- [ ] `PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true` reports `Partial estimates: 0`, `Without totals: 0`, `Ingredient issues: 0`.
-- [ ] `PGPASSWORD=postgres ./gradlew diffIngredientSnapshot` exits `0` with `Names: +0 added, -0 removed, ~0 changed` and `Lines: +0 added, -0 removed, ~0 changed`.
+- [ ] `./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true` reports `Partial estimates: 0`, `Without totals: 0`, `Ingredient issues: 0`.
+- [ ] `./gradlew diffIngredientSnapshot` exits `0` with `Names: +0 added, -0 removed, ~0 changed` and `Lines: +0 added, -0 removed, ~0 changed`.
 - [ ] If Kotlin or Gradle files were touched, `./gradlew detektAll` and `./gradlew :backend:test` pass with 0 errors.

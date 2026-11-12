@@ -3,7 +3,7 @@
 Plans for making Purecipes analytics usable for product and marketing decisions.
 Phases are ordered by analytical ROI and should be implemented one at a time under the repo serial-review rule.
 
-Related docs: [`analytics-strategy.md`](analytics-strategy.md), [`../../analytics-improvements-prd.md`](../../analytics-improvements-prd.md).
+Related docs: [`analytics-strategy.md`](analytics-strategy.md), [`analytics-improvements-prd.md`](analytics-improvements-prd.md).
 
 ## Shared conventions
 

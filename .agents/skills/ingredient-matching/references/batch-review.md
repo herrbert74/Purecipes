@@ -8,11 +8,11 @@ Follow this step-by-step recipe when reviewing a batch of new or unmatched ingre
 
 1. Make sure derived data reflects the latest JSON and overrides:
    ```bash
-   PGPASSWORD=postgres ./gradlew rebuildIngredientData
+   ./gradlew rebuildIngredientData
    ```
 2. Generate `suggestions.tsv` for unmatched lookup names:
    ```bash
-   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.scope=unmatched
+   ./gradlew suggestIngredientMatches -Psuggest.scope=unmatched
    ```
 3. Count how many rows are in `backend/data/ingredients/suggestions.tsv`:
    ```bash
@@ -60,13 +60,13 @@ Once a batch of rows in `suggestions.tsv` has verified `pantry_item`, `fdc_sourc
 1. Set column 2 (`status`) to `pinned` and column 7 (`match_source`) to `pinned` for the verified rows.
 2. Run:
    ```bash
-   PGPASSWORD=postgres ./gradlew suggestIngredientMatches -Psuggest.accept=true
+   ./gradlew suggestIngredientMatches -Psuggest.accept=true
    ```
 3. Recalculate nutrition, export the updated snapshot, and check the diff:
    ```bash
-   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-   PGPASSWORD=postgres ./gradlew snapshotIngredients
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   ./gradlew snapshotIngredients
+   ./gradlew diffIngredientSnapshot
    ```
 
 Repeat Steps 1–3 until `suggestIngredientMatches -Psuggest.scope=unmatched` produces 0 actionable unmatched rows and `diffIngredientSnapshot` exits `0`.

@@ -10,44 +10,12 @@ There is no separate “search index.” Search, pantry matching, and nutrition 
 
 ## How data gets here
 
-Four independent pipelines write into the same database.
+Four pipelines write into the same database (for commands and execution order, see [`README.md#documentation--pipeline-map`](README.md#documentation--pipeline-map)):
 
-### 1. Website scraping
-
-The scraper (`scripts/scraping/recipe_site_scraper.main.kts`) discovers recipe pages, extracts structured recipe data, cleans ingredient lines, and inserts:
-
-- the recipe itself (`recipes`)
-- ingredient groups and lines (`ingredient_groups`, `ingredients`)
-- cooking steps (`instruction_steps`)
-- nutrition numbers from the website when they exist (`nutrition`, marked as scraped)
-
-It does **not** match ingredients to the food catalogue or to pantry names. After each import batch it usually asks the backend to calculate nutrition (see below).
-
-### 2. Nutrition seed import
-
-A one-time / occasional import loads USDA FoodData Central foods into `nutrition_foods`, plus:
-
-- alternative names (`nutrition_food_aliases`)
-- household measures such as cup / tablespoon (`nutrition_food_measures`)
-
-This is the **food table**. Recipe ingredients are later matched *to* these rows. How to run the importer is in [`NUTRITION.md`](NUTRITION.md).
-
-### 3. Nutrition calculation
-
-`./gradlew calculateRecipeNutrition` (also run after scraping) parses each ingredient line, tries to find a food, converts the amount to grams, and stores:
-
-- the parse (`ingredient_measurements`)
-- the food match (`ingredient_nutrition_matches`)
-- per-ingredient calories (`ingredient_nutrition_contributions`)
-- recipe totals (`nutrition`), unless the recipe already has scraped website nutrition
-
-`./gradlew reportIngredientFoodMatches` reads those stored rows and prints a gap report to stdout. Pass `-Preport.output=/tmp/ingredient-food-match-report.txt` to also write a file. Commands are in [`NUTRITION.md`](NUTRITION.md).
-
-### 4. Users and enrichment
-
-- People create accounts, save favorites, cookbooks, pantry lists, and search filters through the app.
-- People can also upload their own recipes (those have an owner and can be private).
-- The enrichment tool fills empty recipe attributes such as cuisine, meal type, and difficulty. It never overwrites a value that is already set.
+1. **Website scraping & JSON import (`scripts/scraping/recipe_site_scraper.main.kts` / `./gradlew importScrapedJson`):** Discovers or reads saved recipe JSON, extracts structured recipe data, cleans ingredient lines, and writes `recipes`, `ingredient_groups`, `ingredients`, `instruction_steps`, and website-supplied `nutrition` (`calculation_source = scraped`).
+2. **USDA nutrition seed import & sync (`./gradlew importNutritionSeed` / `./gradlew syncNutritionCatalogue`):** Loads or syncs canonical USDA FoodData Central foods into `nutrition_foods`, `nutrition_food_aliases`, and `nutrition_food_measures` (see [`NUTRITION.md`](NUTRITION.md)).
+3. **Ingredient rebuild & nutrition calculation (`./gradlew rebuildIngredientData` / `./gradlew calculateRecipeNutrition`):** Recomputes ingredient groups/lines from saved JSON and `line-overrides.tsv`, parses measurements (`ingredient_measurements`), resolves `names.tsv` pins and food matches (`ingredient_nutrition_matches`), calculates per-ingredient grams/calories (`ingredient_nutrition_contributions`), and writes recipe totals (`nutrition`) unless already marked `scraped` (see [`INGREDIENTS.md`](INGREDIENTS.md)).
+4. **Users & recipe enrichment (`./gradlew enrichRecipes`):** App users create accounts, favorites, cookbooks, pantry lists, search filters, and user-owned recipes via the HTTP API. Offline enrichment fills empty `cuisine`, `meal_type`, `difficulty`, `cooking_method`, `calorie_range`, and `dietary_preferences` columns (see [`ENRICHMENT.md`](ENRICHMENT.md)).
 
 ---
 

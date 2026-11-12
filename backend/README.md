@@ -1,6 +1,28 @@
 # Purecipes Backend
 
-What each database table and column is for: [`DATABASE.md`](DATABASE.md). Reproducible ingredient pipeline, pins, snapshots, and `suggestIngredientMatches`: [`INGREDIENTS.md`](INGREDIENTS.md). USDA seed import, `calculateRecipeNutrition`, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md). Filling missing recipe attributes (`enrichRecipes`): [`ENRICHMENT.md`](ENRICHMENT.md). Publishing scraped recipes and nutrition data to release: [`RELEASE-DATA-SYNC.md`](RELEASE-DATA-SYNC.md). Editorial home shelves, and how editors write the lists: [`EDITORIAL-SHELVES.md`](EDITORIAL-SHELVES.md).
+## Documentation & Pipeline Map
+
+| I want to… | Read this | Primary command(s) |
+|------------|-----------|--------------------|
+| Understand database tables and columns | [`DATABASE.md`](DATABASE.md) | — |
+| Scrape recipes from external websites | [`../scripts/scraping/README.md`](../scripts/scraping/README.md) | `kotlin scripts/scraping/recipe_site_scraper.main.kts …` |
+| Import saved recipe JSON into Postgres | [`INGREDIENTS.md`](INGREDIENTS.md) | `./gradlew importScrapedJson` |
+| Rebuild ingredient lines, review suggestions, and pin matches | [`INGREDIENTS.md`](INGREDIENTS.md) | `./gradlew rebuildIngredientData`, `./gradlew suggestIngredientMatches`, `./gradlew snapshotIngredients`, `./gradlew diffIngredientSnapshot` |
+| Import USDA FoodData Central seed files or run nutrition reports | [`NUTRITION.md`](NUTRITION.md) | `./gradlew importNutritionSeed`, `./gradlew calculateRecipeNutrition`, `./gradlew reportIngredientFoodMatches` |
+| Fill missing `cuisine`, `meal_type`, `difficulty`, `cooking_method`, and `dietary_preferences` | [`ENRICHMENT.md`](ENRICHMENT.md) | `./gradlew enrichRecipes` |
+| Publish local scraped recipes, pins, and nutrition catalogue to release | [`RELEASE-DATA-SYNC.md`](RELEASE-DATA-SYNC.md) | `./gradlew syncNutritionCatalogue`, `./gradlew importScrapedJson`, `./gradlew rebuildIngredientData`, `./gradlew enrichRecipes` |
+| Manage editorial home shelves | [`EDITORIAL-SHELVES.md`](EDITORIAL-SHELVES.md), [`../scripts/editorial/README.md`](../scripts/editorial/README.md) | `kotlin scripts/editorial/session.main.kts` |
+
+### Canonical Recipe Data Pipeline Order
+
+```text
+1. Scrape web pages to JSON       (recipe_site_scraper.main.kts --mode web)
+2. Rebuild lines & nutrition      (./gradlew rebuildIngredientData)
+3. Suggest & pin new ingredients  (./gradlew suggestIngredientMatches -> review -> -Psuggest.accept=true)
+4. Recalculate & snapshot         (./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true && ./gradlew snapshotIngredients && ./gradlew diffIngredientSnapshot)
+5. Enrich recipe attributes       (./gradlew enrichRecipes)
+6. Sync to release DB             (see RELEASE-DATA-SYNC.md)
+```
 
 ## Gradle tasks: `run`, `build`, and `shadowJar`
 

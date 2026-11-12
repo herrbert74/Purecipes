@@ -17,7 +17,7 @@ When `./gradlew diffIngredientSnapshot` exits non-zero or `calculateRecipeNutrit
 **How to inspect the exact mismatch:**
 Look at the `~ lookup_name:` lines printed by:
 ```bash
-PGPASSWORD=postgres ./gradlew diffIngredientSnapshot -Psnapshot.failOnDiff=false
+./gradlew diffIngredientSnapshot -Psnapshot.failOnDiff=false
 ```
 It prints both the file value and the DB value:
 ```text
@@ -36,9 +36,9 @@ It prints both the file value and the DB value:
 2. Update `fdc_source`, `fdc_id`, and `fdc_description` in `names.tsv` (ensuring `status = pinned` and `match_source = pinned`).
 3. Re-run:
    ```bash
-   PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
-   PGPASSWORD=postgres ./gradlew snapshotIngredients
-   PGPASSWORD=postgres ./gradlew diffIngredientSnapshot
+   ./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true
+   ./gradlew snapshotIngredients
+   ./gradlew diffIngredientSnapshot
    ```
 
 ---
@@ -65,7 +65,7 @@ ORDER BY r.id, i.order_index;
 
 You can also run verbose calculation on a single recipe ID:
 ```bash
-PGPASSWORD=postgres ./gradlew calculateRecipeNutrition -Pnutrition.recipeId=42 -Pnutrition.verbose=true
+./gradlew calculateRecipeNutrition -Pnutrition.recipeId=42 -Pnutrition.verbose=true
 ```
 
 **Common causes and fixes:**
