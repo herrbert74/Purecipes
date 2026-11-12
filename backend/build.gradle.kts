@@ -362,6 +362,31 @@ tasks.register<JavaExec>("importNutritionSeed") {
 	args = extraArgs
 }
 
+tasks.register<JavaExec>("syncNutritionCatalogue") {
+	group = "application"
+	description = "Syncs nutrition_foods, nutrition_food_aliases, and nutrition_food_measures from source to target DB"
+	classpath = toolsSourceSet.runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.SyncNutritionCatalogueMainKt")
+	val sourceUrl = project.findProperty("nutritionSync.sourceUrl")?.toString().orEmpty()
+	val sourceUser = project.findProperty("nutritionSync.sourceUser")?.toString().orEmpty()
+	val sourcePassword = project.findProperty("nutritionSync.sourcePassword")?.toString().orEmpty()
+	val extraArgs = buildList {
+		if (sourceUrl.isNotBlank()) {
+			add("--source-url=$sourceUrl")
+		}
+		if (sourceUser.isNotBlank()) {
+			add("--source-user=$sourceUser")
+		}
+		if (sourcePassword.isNotBlank()) {
+			add("--source-password=$sourcePassword")
+		}
+		if (project.findProperty("nutritionSync.dryRun")?.toString() == "true") {
+			add("--dry-run")
+		}
+	}
+	args = extraArgs
+}
+
 tasks.register<JavaExec>("deleteAccount") {
 	group = "application"
 	description = "Deletes a user account for a verified email deletion request, dry run unless deleteAccount" +

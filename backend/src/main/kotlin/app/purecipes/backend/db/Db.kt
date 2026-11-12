@@ -17,11 +17,11 @@ class Db private constructor(
 			return Db(dataSource)
 		}
 
-		fun create(): Db {
-			val url = System.getenv("PURECIPES_DB_URL") ?: "jdbc:postgresql://localhost:5432/purecipes"
-			val user = System.getenv("PURECIPES_DB_USER") ?: "postgres"
-			val password = System.getenv("PURECIPES_DB_PASSWORD") ?: "postgres"
-
+		fun create(
+			url: String = System.getenv("PURECIPES_DB_URL") ?: "jdbc:postgresql://localhost:5432/purecipes",
+			user: String = System.getenv("PURECIPES_DB_USER") ?: "postgres",
+			password: String = System.getenv("PURECIPES_DB_PASSWORD") ?: "postgres",
+		): Db {
 			val config = HikariConfig().apply {
 				jdbcUrl = url
 				username = user
