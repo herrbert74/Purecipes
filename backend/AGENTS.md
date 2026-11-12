@@ -5,6 +5,7 @@ Backend-specific guidance for maintaining the Purecipes Ktor server, database la
 - Database schema and column documentation: [`DATABASE.md`](DATABASE.md)
 - Reproducible ingredient pipeline (`names.tsv`, `lines.tsv`, `rebuildIngredientData`, `suggestIngredientMatches`): [`INGREDIENTS.md`](INGREDIENTS.md)
 - USDA seed import and nutrition calculation: [`NUTRITION.md`](NUTRITION.md)
+- Release database sync (`syncNutritionCatalogue`, recipe import, rebuild): [`RELEASE-DATA-SYNC.md`](RELEASE-DATA-SYNC.md)
 - Editorial home shelves: [`EDITORIAL-SHELVES.md`](EDITORIAL-SHELVES.md)
 
 ## Rule: Source Sets (`main` vs `tools`)
@@ -12,7 +13,7 @@ Backend-specific guidance for maintaining the Purecipes Ktor server, database la
 `:backend` has two Kotlin source sets in [`build.gradle.kts`](build.gradle.kts):
 
 1. **`main` (`src/main/kotlin`)** — The production Ktor server packaged into `:backend:shadowJar`. Keep offline CLI utilities and heavy ML dependencies out of `main`.
-2. **`tools` (`src/tools/kotlin/app/purecipes/backend/tools/`)** — Offline CLI entry points and helpers (`rebuildIngredientData`, `snapshotIngredients`, `diffIngredientSnapshot`, `suggestIngredientMatches`, `calculateRecipeNutrition`, `importNutritionSeed`, `deleteAccount`, and report tasks) plus `"toolsImplementation"(libs.tensorflowJava)`.
+2. **`tools` (`src/tools/kotlin/app/purecipes/backend/tools/`)** — Offline CLI entry points and helpers (`rebuildIngredientData`, `snapshotIngredients`, `diffIngredientSnapshot`, `suggestIngredientMatches`, `calculateRecipeNutrition`, `importNutritionSeed`, `syncNutritionCatalogue`, `deleteAccount`, and report tasks) plus `"toolsImplementation"(libs.tensorflowJava)`.
 
 When adding or modifying offline CLI tools, place them under `src/tools/kotlin/app/purecipes/backend/tools/` so they are excluded from the production server JAR.
 

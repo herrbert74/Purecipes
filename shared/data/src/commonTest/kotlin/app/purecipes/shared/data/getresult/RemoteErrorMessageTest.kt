@@ -15,7 +15,7 @@ class RemoteErrorMessageTest {
 			<h1>FortiGuard Intrusion prevention</h1>
 			<h3>Web page blocked</h3>
 			<p>You have tried to access a web page which is in violation of your internet usage policy.</p>
-			<p>Url: http://185.132.41.132/google/auth</p>
+			<p>Url: http://203.0.113.10/google/auth</p>
 			</body>
 			</html>
 		""".trimIndent()
