@@ -1,5 +1,6 @@
-package app.purecipes.enrichment
+package app.purecipes.backend.tools
 
+import app.purecipes.backend.db.Db
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.Cuisine
@@ -9,19 +10,25 @@ import app.purecipes.shared.domain.model.MealType
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
-import java.sql.DriverManager
+import java.sql.PreparedStatement
 
+private const val ARG_MODEL_PATH_PREFIX = "--model-path="
+private const val DEFAULT_USE_MODEL_DIR = ".use_v4"
 private const val BATCH_SIZE = 32
 private const val CUISINE_THRESHOLD = 0.60f
 private const val DIETARY_THRESHOLD = 0.55f
 private const val LOW_CALORIE_THRESHOLD = 300.0
 private const val HIGH_CALORIE_THRESHOLD = 600.0
 
-fun main() {
-	val modelPath = resolveModelPath(requiredSetting("USE_MODEL_PATH"))
-	val dbUrl = requiredSetting("PURECIPES_DB_URL")
-	val dbUser = requiredSetting("PURECIPES_DB_USER")
-	val dbPassword = requiredSetting("PURECIPES_DB_PASSWORD")
+fun main(args: Array<String>) {
+	val configuredModelPath = args.firstOrNull { it.startsWith(ARG_MODEL_PATH_PREFIX) }
+		?.removePrefix(ARG_MODEL_PATH_PREFIX)
+		?.takeIf(String::isNotBlank)
+		?: System.getenv("USE_MODEL_PATH")?.takeIf(String::isNotBlank)
+		?: System.getProperty("USE_MODEL_PATH")?.takeIf(String::isNotBlank)
+		?: DEFAULT_USE_MODEL_DIR
+	val modelPath = resolveUseModelPath(configuredModelPath)
+	val dataSource = Db.create().dataSource
 
 	UseTextClassifier(modelPath).use { classifier ->
 		val cuisineCentroids = classifier.buildClassCentroids(SeedExamples.cuisine)
@@ -30,7 +37,7 @@ fun main() {
 		val cookingMethodCentroids = classifier.buildClassCentroids(SeedExamples.cookingMethod)
 		val dietaryPrefCentroids = classifier.buildClassCentroids(SeedExamples.dietaryPreference)
 
-		DriverManager.getConnection(dbUrl, dbUser, dbPassword).use { conn ->
+		dataSource.connection.use { conn ->
 			val recipes = loadRecipesToEnrich(conn)
 			println("Found ${recipes.size} recipes to enrich")
 
@@ -100,12 +107,7 @@ private data class RecipeRow(
 	val dietaryPreferences: String?,
 )
 
-private fun requiredSetting(name: String): String =
-	System.getenv(name)
-		?: System.getProperty(name)
-		?: error("Required setting $name is missing")
-
-private fun resolveModelPath(configuredPath: String): String {
+internal fun resolveUseModelPath(configuredPath: String): String {
 	val directCandidate = Path.of(configuredPath).toAbsolutePath().normalize()
 	val parentCandidate = Path.of("..").resolve(configuredPath).toAbsolutePath().normalize()
 	val candidate = sequenceOf(directCandidate, parentCandidate)
@@ -180,7 +182,7 @@ private fun loadRecipesToEnrich(conn: Connection): List<RecipeRow> {
 	}
 }
 
-private fun calorieRangeFromNutrition(totalCalories: Double?): CalorieRange? {
+internal fun calorieRangeFromNutrition(totalCalories: Double?): CalorieRange? {
 	totalCalories ?: return null
 	return when {
 		totalCalories < LOW_CALORIE_THRESHOLD -> CalorieRange.LOW
@@ -221,7 +223,7 @@ private fun updateRecipe(
 
 private data class RecipeFieldUpdate(
 	val setClause: String,
-	val bind: (java.sql.PreparedStatement, Int) -> Int,
+	val bind: (PreparedStatement, Int) -> Int,
 )
 
 private fun buildRecipeFieldUpdates(

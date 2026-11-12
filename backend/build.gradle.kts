@@ -387,6 +387,25 @@ tasks.register<JavaExec>("syncNutritionCatalogue") {
 	args = extraArgs
 }
 
+tasks.register<JavaExec>("enrichRecipes") {
+	group = "application"
+	description =
+		"Enriches missing recipe attributes (cuisine, meal_type, difficulty, cooking_method, dietary) via USE v4"
+	classpath = toolsSourceSet.runtimeClasspath
+	mainClass.set("app.purecipes.backend.tools.EnrichRecipesMainKt")
+	val modelPath = project.findProperty("enrich.modelPath")?.toString().orEmpty()
+		.ifBlank {
+			System.getenv("USE_MODEL_PATH")?.takeIf(String::isNotBlank)
+				?: rootProject.file(".use_v4").takeIf { it.isDirectory }?.absolutePath.orEmpty()
+		}
+	val extraArgs = buildList {
+		if (modelPath.isNotBlank()) {
+			add("--model-path=$modelPath")
+		}
+	}
+	args = extraArgs
+}
+
 tasks.register<JavaExec>("deleteAccount") {
 	group = "application"
 	description = "Deletes a user account for a verified email deletion request, dry run unless deleteAccount" +

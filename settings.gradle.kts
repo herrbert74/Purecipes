@@ -72,7 +72,6 @@ dependencyResolutionManagement {
 rootProject.name = "Purecipes"
 include(":app")
 include(":backend")
-include(":enrichment")
 include(":umbrella")
 include(":base:kotlin")
 include(":feature:ads:data")

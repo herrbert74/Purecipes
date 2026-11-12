@@ -1,4 +1,4 @@
-package app.purecipes.enrichment
+package app.purecipes.backend.tools
 
 import org.tensorflow.SavedModelBundle
 import org.tensorflow.ndarray.NdArrays
@@ -53,7 +53,7 @@ internal class UseTextClassifier(modelPath: String) : AutoCloseable {
 
 					else -> error(
 						"Unexpected USE embedding shape: " +
-							dims.joinToString(prefix = "[", postfix = "]")
+							dims.joinToString(prefix = "[", postfix = "]"),
 					)
 				}
 			}
@@ -115,6 +115,7 @@ internal class UseTextClassifier(modelPath: String) : AutoCloseable {
 	}
 
 	companion object {
+
 		const val EMBEDDING_DIM = 512
 		const val FIRST_DIMENSION = 0
 		const val SECOND_DIMENSION = 1

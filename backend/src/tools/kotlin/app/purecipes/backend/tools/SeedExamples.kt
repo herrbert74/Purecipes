@@ -1,4 +1,4 @@
-package app.purecipes.enrichment
+package app.purecipes.backend.tools
 
 import app.purecipes.shared.domain.model.CookingMethod
 import app.purecipes.shared.domain.model.Cuisine

@@ -106,7 +106,7 @@ Verify that the release database's ingredient names and parsed lines match your 
 Fills missing `cuisine`, `meal_type`, `difficulty`, `cooking_method`, `calorie_range`, and `dietary_preferences` on newly imported rows using the local Universal Sentence Encoder v4 model in `.use_v4`:
 
 ```bash
-USE_MODEL_PATH=.use_v4 ./gradlew :enrichment:run
+./gradlew enrichRecipes
 ```
 
 ---

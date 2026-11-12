@@ -474,5 +474,5 @@ A name should not sit in both pantry and exclusions at once; the app keeps those
 - Reproducible ingredient pipeline, pins, and snapshots: [`INGREDIENTS.md`](INGREDIENTS.md)
 - USDA import, nutrition backfill, and `reportIngredientFoodMatches`: [`NUTRITION.md`](NUTRITION.md)
 - Scraping and ingredient-line cleanup: [`../scripts/scraping/README.md`](../scripts/scraping/README.md)
-- Filling cuisine / meal type / diet chips: [`../enrichment/README.md`](../enrichment/README.md)
+- Filling cuisine / meal type / diet chips: [`ENRICHMENT.md`](ENRICHMENT.md)
 - Editorial home shelves: [`EDITORIAL-SHELVES.md`](EDITORIAL-SHELVES.md)
