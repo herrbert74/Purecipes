@@ -85,7 +85,7 @@ private val scrapedLeadingCountRegex = Regex(
 )
 
 private val imperialUnitRegex = Regex(
-	pattern = "(?<!\\p{L})(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|" +
+	pattern = "(?<!\\p{L})(cups?|ounces?|ounce|oz|" +
 		"pounds?|pound|lbs?|lb|fahrenheit|°f)\\b",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
