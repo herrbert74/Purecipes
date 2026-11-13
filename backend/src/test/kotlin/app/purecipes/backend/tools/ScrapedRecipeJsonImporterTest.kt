@@ -103,7 +103,7 @@ class ScrapedRecipeJsonImporterTest {
 					rs.getString("meal_type") shouldBe "DINNER"
 					rs.getString("difficulty") shouldBe "EASY"
 					rs.getString("cooking_method") shouldBe "ROAST"
-					rs.getString("measurement_system") shouldBe "MIXED"
+					rs.getString("measurement_system") shouldBe "METRIC"
 				}
 				statement.executeQuery(
 					"SELECT calories, protein, calculation_source, serving_count " +

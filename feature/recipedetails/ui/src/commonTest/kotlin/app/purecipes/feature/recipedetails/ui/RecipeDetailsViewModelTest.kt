@@ -51,7 +51,6 @@ import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
@@ -73,7 +72,7 @@ class RecipeDetailsViewModelTest {
 		val recipe = fakeRecipeDetails(
 			ingredientGroups = listOf(
 				IngredientGroup(
-					ingredients = recipeIngredients("2 cups flour"),
+					ingredients = recipeIngredients("2 cups flour", "1 tbsp sugar"),
 				),
 			),
 			measurementSystem = MeasurementSystem.IMPERIAL,
@@ -108,7 +107,10 @@ class RecipeDetailsViewModelTest {
 		)
 
 		advanceUntilIdle()
-		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single()?.text shouldBe "2 cups flour"
+		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.map { it.text } shouldBe listOf(
+			"2 cups flour",
+			"1 tbsp sugar",
+		)
 
 		measurementRepository.saveMeasurementPreferences(
 			MeasurementPreferences(
@@ -119,7 +121,10 @@ class RecipeDetailsViewModelTest {
 		advanceUntilIdle()
 
 		viewModel.isRecipeConverted shouldBe true
-		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.single()?.text.orEmpty() shouldContain "mL"
+		viewModel.recipeDetails?.ingredientGroups?.single()?.ingredients?.map { it.text } shouldBe listOf(
+			"473 mL flour",
+			"1 tbsp sugar",
+		)
 	}
 
 	@Test

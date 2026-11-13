@@ -2035,7 +2035,7 @@ fun openConnection(config: Config): Connection {
 
 val imperialUnitRegex = Regex(
 	pattern =
-		"(?<!\\p{L})(cups?|tbsp|tablespoons?|tsp|teaspoons?|ounces?|ounce|oz|" +
+		"(?<!\\p{L})(cups?|ounces?|ounce|oz|" +
 			"pounds?|pound|lbs?|lb|fahrenheit|°f)\\b",
 	options = setOf(RegexOption.IGNORE_CASE),
 )
