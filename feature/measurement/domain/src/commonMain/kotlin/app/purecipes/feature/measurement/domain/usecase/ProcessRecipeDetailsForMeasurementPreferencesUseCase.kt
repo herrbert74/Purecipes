@@ -108,7 +108,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 					?: return@forEach
 			val unitInfo = unitInfoFor(match.groups[SECOND_CAPTURE_GROUP]?.value ?: return@forEach)
 				?: return@forEach
-			if (unitInfo.system == targetSystem) return@forEach
+			if (unitInfo.system == targetSystem || unitInfo.system == MeasurementSystem.MIXED) return@forEach
 			val replacement = convertMeasurement(parsedValue, unitInfo, targetSystem) ?: return@forEach
 			convertedLine = convertedLine.replaceRange(match.range, replacement)
 		}
@@ -152,7 +152,7 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 		unitInfo: UnitInfo,
 		targetSystem: MeasurementSystem,
 	): String? {
-		if (targetSystem == MeasurementSystem.MIXED) return null
+		if (targetSystem == MeasurementSystem.MIXED || unitInfo.system == MeasurementSystem.MIXED) return null
 		val baseValue = value * unitInfo.toBaseFactor
 		return when (unitInfo.dimension) {
 			MeasurementDimension.WEIGHT -> if (targetSystem == MeasurementSystem.METRIC) {
@@ -355,13 +355,13 @@ class ProcessRecipeDetailsForMeasurementPreferencesUseCase {
 			),
 			UnitInfo(
 				aliases = setOf("tablespoon", "tablespoons", "tbsp"),
-				system = MeasurementSystem.IMPERIAL,
+				system = MeasurementSystem.MIXED,
 				dimension = MeasurementDimension.VOLUME,
 				toBaseFactor = MILLILITERS_PER_TABLESPOON,
 			),
 			UnitInfo(
 				aliases = setOf("teaspoon", "teaspoons", "tsp"),
-				system = MeasurementSystem.IMPERIAL,
+				system = MeasurementSystem.MIXED,
 				dimension = MeasurementDimension.VOLUME,
 				toBaseFactor = MILLILITERS_PER_TEASPOON,
 			),
