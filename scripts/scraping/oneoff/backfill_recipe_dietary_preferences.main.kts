@@ -5,6 +5,7 @@
 
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.PreparedStatement
 import java.sql.Types
 
 data class BackfillConfig(
@@ -158,9 +159,7 @@ fun backfillDietaryPreferences(connection: Connection, config: BackfillConfig) {
 	for (recipe in recipes) {
 		if (recipe.existingDietaryPreferences.isNotEmpty()) {
 			recipesWithPrefsBefore++
-			for (pref in recipe.existingDietaryPreferences) {
-				beforeCounts[pref] = (beforeCounts[pref] ?: 0) + 1
-			}
+			recordPreferenceCounts(beforeCounts, recipe.existingDietaryPreferences)
 		}
 
 		val extracted = extractScrapedDietaryPreferences(
@@ -171,9 +170,7 @@ fun backfillDietaryPreferences(connection: Connection, config: BackfillConfig) {
 
 		if (extracted.isNotEmpty()) {
 			recipesWithPrefsAfter++
-			for (pref in extracted) {
-				afterCounts[pref] = (afterCounts[pref] ?: 0) + 1
-			}
+			recordPreferenceCounts(afterCounts, extracted)
 		}
 
 		if (config.verbose && extracted != recipe.existingDietaryPreferences) {
@@ -181,33 +178,64 @@ fun backfillDietaryPreferences(connection: Connection, config: BackfillConfig) {
 		}
 
 		if (!config.dryRun && extracted != recipe.existingDietaryPreferences) {
-			if (extracted.isEmpty()) {
-				updateStmt.setNull(1, Types.ARRAY)
-			} else {
-				val array = connection.createArrayOf("text", extracted.toTypedArray())
-				updateStmt.setArray(1, array)
-			}
-			updateStmt.setInt(2, recipe.id)
-			updateStmt.executeUpdate()
+			updateRecipeDietaryPreferences(updateStmt, recipe.id, extracted)
 			updatedRows++
 		}
 	}
 
 	updateStmt.close()
 
+	printBackfillSummary(
+		totalRecipes = recipes.size,
+		recipesWithPrefsBefore = recipesWithPrefsBefore,
+		recipesWithPrefsAfter = recipesWithPrefsAfter,
+		updatedRows = updatedRows,
+		beforeCounts = beforeCounts,
+		afterCounts = afterCounts,
+		dryRun = config.dryRun,
+	)
+}
+
+private fun recordPreferenceCounts(counts: MutableMap<String, Int>, preferences: Set<String>) {
+	for (pref in preferences) {
+		counts[pref] = (counts[pref] ?: 0) + 1
+	}
+}
+
+private fun updateRecipeDietaryPreferences(
+	updateStmt: PreparedStatement,
+	recipeId: Int,
+	extracted: Set<String>,
+) {
+	if (extracted.isEmpty()) {
+		updateStmt.setNull(1, Types.ARRAY)
+	} else {
+		updateStmt.setArray(1, updateStmt.connection.createArrayOf("text", extracted.toTypedArray()))
+	}
+	updateStmt.setInt(2, recipeId)
+	updateStmt.executeUpdate()
+}
+
+private fun printBackfillSummary(
+	totalRecipes: Int,
+	recipesWithPrefsBefore: Int,
+	recipesWithPrefsAfter: Int,
+	updatedRows: Int,
+	beforeCounts: Map<String, Int>,
+	afterCounts: Map<String, Int>,
+	dryRun: Boolean,
+) {
 	println("\n--- Backfill Summary ---")
-	println("Total recipes: ${recipes.size}")
+	println("Total recipes: $totalRecipes")
 	println("Recipes with dietary preferences (before): $recipesWithPrefsBefore")
 	println("Recipes with dietary preferences (after): $recipesWithPrefsAfter")
 	println("Updated rows: $updatedRows")
 	println("\nBreakdown by dietary preference (before -> after):")
 	val allPrefs = (beforeCounts.keys + afterCounts.keys).sorted()
 	for (pref in allPrefs) {
-		val before = beforeCounts[pref] ?: 0
-		val after = afterCounts[pref] ?: 0
-		println("  $pref: $before -> $after")
+		println("  $pref: ${beforeCounts[pref] ?: 0} -> ${afterCounts[pref] ?: 0}")
 	}
-	if (config.dryRun) {
+	if (dryRun) {
 		println("\n(Dry run completed: no database rows were modified)")
 	} else {
 		println("\nDatabase updated successfully.")

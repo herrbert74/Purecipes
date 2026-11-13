@@ -795,7 +795,12 @@ private fun extractDietaryPreferencesFromRoot(
 private fun parseStringListFromRoot(root: JsonObject, key: String): List<String> =
 	when (val element = root[key]) {
 		is JsonArray -> element.mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.trim() }.filter { it.isNotBlank() }
-		is JsonPrimitive -> element.contentOrNull?.split(',', ';')?.map { it.trim() }?.filter { it.isNotBlank() }.orEmpty()
+		is JsonPrimitive ->
+			element.contentOrNull
+				?.split(',', ';')
+				?.map { it.trim() }
+				?.filter { it.isNotBlank() }
+				.orEmpty()
 		else -> emptyList()
 	}
 
