@@ -4,6 +4,7 @@ import ProcessedScrapedIngredient
 import RecipeHeadingContext
 import app.purecipes.backend.feature.nutrition.RecipeNutritionService
 import extractScrapedAppliances
+import extractScrapedDietaryPreferences
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -57,6 +58,7 @@ private data class ParsedScrapedJsonRecipe(
 	val sourceUrl: String,
 	val measurementSystem: String?,
 	val appliances: List<String>,
+	val dietaryPreferences: List<String>,
 )
 
 private data class ScrapedCategoryColumns(
@@ -343,6 +345,13 @@ internal class ScrapedRecipeJsonImporter(
 
 		val category = root["category"]?.jsonPrimitive?.contentOrNull
 		val categoryColumns = mapCategoryToColumns(category)
+		val dietaryPreferences = extractDietaryPreferencesFromRoot(
+			root = root,
+			title = title,
+			category = category,
+			ingredientGroups = ingredientGroups,
+			categoryDietaryPreferences = categoryColumns.dietaryPreferences,
+		)
 		val jsonAppliances = root["appliances"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }
 		val appliances = if (!jsonAppliances.isNullOrEmpty()) {
 			jsonAppliances
@@ -377,6 +386,7 @@ internal class ScrapedRecipeJsonImporter(
 				sourceUrl = sourceUrl,
 				measurementSystem = detectMeasurementSystem(ingredientGroups),
 				appliances = appliances,
+				dietaryPreferences = dietaryPreferences,
 			)
 		}
 	}
@@ -503,7 +513,7 @@ internal class ScrapedRecipeJsonImporter(
 			statement,
 			connection,
 			RecipeBindIndex.DIETARY_PREFERENCES,
-			recipe.categoryColumns.dietaryPreferences
+			recipe.dietaryPreferences,
 		)
 		setTextArrayOrNull(statement, connection, RecipeBindIndex.TAGS, recipe.categoryColumns.tags)
 		statement.setString(RecipeBindIndex.MEASUREMENT_SYSTEM, recipe.measurementSystem)
@@ -759,6 +769,35 @@ private fun mapCategoryToColumns(category: String?): ScrapedCategoryColumns {
 		tags = tags,
 	)
 }
+
+private fun extractDietaryPreferencesFromRoot(
+	root: JsonObject,
+	title: String,
+	category: String?,
+	ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>,
+	categoryDietaryPreferences: List<String>,
+): List<String> {
+	val explicitLabels = buildList {
+		addAll(categoryDietaryPreferences)
+		addAll(parseStringListFromRoot(root, "dietary_restrictions"))
+		addAll(parseStringListFromRoot(root, "keywords"))
+		addAll(parseStringListFromRoot(root, "dietary_preferences"))
+	}
+	val ingredientLines = ingredientGroups.flatMap { (_, items) -> items.map { it.text } }
+	return extractScrapedDietaryPreferences(
+		title = title,
+		category = category,
+		ingredients = ingredientLines,
+		explicitLabels = explicitLabels,
+	)
+}
+
+private fun parseStringListFromRoot(root: JsonObject, key: String): List<String> =
+	when (val element = root[key]) {
+		is JsonArray -> element.mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.trim() }.filter { it.isNotBlank() }
+		is JsonPrimitive -> element.contentOrNull?.split(',', ';')?.map { it.trim() }?.filter { it.isNotBlank() }.orEmpty()
+		else -> emptyList()
+	}
 
 private fun normalizeCategoryLabel(label: String): String = label.lowercase()
 	.replace("&", " and ")
