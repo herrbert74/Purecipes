@@ -19,6 +19,7 @@ fun SectionHeader(
 	titleStyle: TextStyle = PurecipesTheme.typography.titleMedium,
 	titleFontWeight: FontWeight = FontWeight.SemiBold,
 	subtitleStyle: TextStyle = PurecipesTheme.typography.bodySmall,
+	isPlaceholder: Boolean = false,
 ) {
 	Column(
 		modifier = modifier,
@@ -26,11 +27,13 @@ fun SectionHeader(
 	) {
 		Text(
 			text = title,
+			modifier = Modifier.purecipesPlaceholder(visible = isPlaceholder),
 			style = titleStyle,
 			fontWeight = titleFontWeight,
 		)
 		Text(
 			text = subtitle,
+			modifier = Modifier.purecipesPlaceholder(visible = isPlaceholder),
 			style = subtitleStyle,
 			color = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)

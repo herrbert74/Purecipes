@@ -11,7 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.ui.icon.appliance.icon
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
@@ -23,14 +22,13 @@ const val RECIPE_CARD_APPLIANCE_ICONS_TAG = "recipeCardApplianceIcons"
 const val RECIPE_CARD_APPLIANCE_ICON_PREFIX = "recipeCardApplianceIcon:"
 
 private const val MAX_DISPLAYED_CARD_APPLIANCES = 3
-private val DEFAULT_APPLIANCE_ICON_SIZE = 16.dp
 
 @Composable
 fun RecipeCardApplianceIcons(
 	appliances: ImmutableSet<Appliance>,
 	tint: Color,
 	modifier: Modifier = Modifier,
-	iconSize: Dp = DEFAULT_APPLIANCE_ICON_SIZE,
+	iconSize: Dp = PurecipesTheme.space.m,
 ) {
 	if (appliances.isEmpty()) return
 	Row(

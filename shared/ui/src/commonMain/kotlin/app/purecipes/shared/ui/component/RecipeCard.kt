@@ -14,7 +14,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +35,6 @@ const val RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX = "recipeCardDeleteButton:"
 const val RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX = "recipeCardEditButton:"
 const val RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX = "recipeCardFavoriteIcon:"
 
-private const val RECIPE_CARD_ASPECT_RATIO_WIDTH = 16f
-private const val RECIPE_CARD_ASPECT_RATIO_HEIGHT = 9f
 private const val PREP_TIME_UNKNOWN = "Prep time unknown"
 private const val QUICK_RECIPE_MAX_MINUTES = 30
 
@@ -79,7 +76,10 @@ fun RecipeCard(
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.aspectRatio(RECIPE_CARD_ASPECT_RATIO_WIDTH / RECIPE_CARD_ASPECT_RATIO_HEIGHT)
+					.aspectRatio(
+						RecipeCardDefaults.GridImageAspectRatioWidth /
+							RecipeCardDefaults.GridImageAspectRatioHeight,
+					)
 					.clip(RoundedCornerShape(PurecipesTheme.space.m)),
 			) {
 				AsyncImage(
@@ -100,10 +100,10 @@ fun RecipeCard(
 						verticalAlignment = Alignment.CenterVertically,
 					) {
 						if (recipe.isFavorite) {
-							Icon(
-								imageVector = AppIcons.Favorite,
+							FavoriteHeartIcon(
+								selected = true,
+								tint = PurecipesTheme.fixedColors.inverseOnSurfaceFixed,
 								contentDescription = "Favorited",
-								tint = Color.White,
 								modifier = Modifier
 									.padding(PurecipesTheme.space.s)
 									.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
@@ -139,9 +139,8 @@ fun RecipeCard(
 			Column(
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 			) {
-				Text(
+				FixedTitleText(
 					text = recipe.title,
-					style = PurecipesTheme.typography.titleMedium,
 					color = colors.onColorContainer,
 				)
 				Row(
@@ -149,9 +148,8 @@ fun RecipeCard(
 					horizontalArrangement = Arrangement.SpaceBetween,
 					verticalAlignment = Alignment.CenterVertically,
 				) {
-					Text(
+					FixedSubtitleText(
 						text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
-						style = PurecipesTheme.typography.bodyMedium,
 						color = colors.onColorContainer,
 					)
 					RecipeCardApplianceIcons(

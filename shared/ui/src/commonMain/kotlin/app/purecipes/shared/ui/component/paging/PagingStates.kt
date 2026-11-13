@@ -8,16 +8,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.EmptyStateContent
 import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.component.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.icon.AppIcons
+import app.purecipes.shared.ui.theme.PurecipesTheme
 
 /**
  * Copied from: [https://github.com/Ahmad-Hamwi/lazy-pagination-compose]
@@ -34,7 +34,7 @@ fun NewPageProgressIndicator(modifier: Modifier = Modifier) {
 	Box(
 		modifier = modifier
 			.fillMaxWidth()
-			.padding(vertical = 16.dp),
+			.padding(vertical = PurecipesTheme.space.m),
 		contentAlignment = Alignment.Center,
 	) {
 		LinearProgressIndicator()
@@ -80,11 +80,12 @@ fun NewPageErrorIndicator(
 				textAlign = TextAlign.Center,
 			)
 
-			Box(modifier = Modifier.width(32.dp))
+			Box(modifier = Modifier.width(PurecipesTheme.space.xl))
 
-			TextButton(onClick = onRetryClick) {
-				Text(text = "Retry")
-			}
+			PurecipesTextButton(
+				text = "Retry",
+				onClick = onRetryClick,
+			)
 		}
 	}
 }

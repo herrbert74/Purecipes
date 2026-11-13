@@ -15,6 +15,7 @@ fun RecipeStatChipsRow(
 	servings: String?,
 	difficulty: String?,
 	modifier: Modifier = Modifier,
+	isPlaceholder: Boolean = false,
 ) {
 	val chips = buildList {
 		totalTimeMinutes?.let { minutes ->
@@ -45,18 +46,24 @@ fun RecipeStatChipsRow(
 			)
 		}
 	}
-	if (chips.isEmpty()) return
+	val resolvedChips = if (chips.isEmpty() && isPlaceholder) {
+		placeholderStatChipSpecs
+	} else {
+		chips
+	}
+	if (resolvedChips.isEmpty()) return
 
 	Row(
 		modifier = modifier.fillMaxWidth(),
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		chips.forEach { chip ->
+		resolvedChips.forEach { chip ->
 			OutlinedStatChip(
 				label = chip.label,
 				value = chip.value,
 				tint = chip.tint,
 				modifier = Modifier.weight(1f),
+				isPlaceholder = isPlaceholder,
 			)
 		}
 	}
@@ -66,6 +73,24 @@ private data class StatChipSpec(
 	val label: String,
 	val value: String,
 	val tint: ContainerTint,
+)
+
+private val placeholderStatChipSpecs = listOf(
+	StatChipSpec(
+		label = "Cook time",
+		value = "25 min",
+		tint = ContainerTint.Primary,
+	),
+	StatChipSpec(
+		label = "Servings",
+		value = "4",
+		tint = ContainerTint.Secondary,
+	),
+	StatChipSpec(
+		label = "Difficulty",
+		value = "Easy",
+		tint = ContainerTint.Tertiary,
+	),
 )
 
 @Preview(showBackground = true)

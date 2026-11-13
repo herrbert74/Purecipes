@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -27,12 +26,25 @@ fun MetadataPillChip(
 	icon: ImageVector? = null,
 	tint: ContainerTint = ContainerTint.Primary,
 	filled: Boolean = false,
+	isPlaceholder: Boolean = false,
 	onClick: (() -> Unit)? = null,
 ) {
 	val colors = tint.colorFamily()
 	val background = if (filled) colors.color else colors.colorContainer
 	val contentColor = if (filled) colors.onColor else colors.onColorContainer
-	val chipModifier = modifier.testTag("$METADATA_PILL_CHIP_TAG_PREFIX$text")
+	val pillShape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner)
+	val chipModifier = modifier
+		.purecipesPlaceholder(
+			visible = isPlaceholder,
+			shape = pillShape,
+		)
+		.then(
+			if (isPlaceholder) {
+				Modifier
+			} else {
+				Modifier.testTag("$METADATA_PILL_CHIP_TAG_PREFIX$text")
+			},
+		)
 	val content: @Composable () -> Unit = {
 		Row(
 			verticalAlignment = Alignment.CenterVertically,
@@ -47,7 +59,7 @@ fun MetadataPillChip(
 					imageVector = icon,
 					contentDescription = null,
 					tint = contentColor,
-					modifier = Modifier.size(16.dp),
+					modifier = Modifier.size(PurecipesTheme.space.m),
 				)
 			}
 			Text(
@@ -57,18 +69,18 @@ fun MetadataPillChip(
 			)
 		}
 	}
-	if (onClick != null) {
+	if (onClick != null && !isPlaceholder) {
 		Surface(
 			onClick = onClick,
 			modifier = chipModifier,
-			shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
+			shape = pillShape,
 			color = background,
 			content = content,
 		)
 	} else {
 		Surface(
 			modifier = chipModifier,
-			shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
+			shape = pillShape,
 			color = background,
 			content = content,
 		)
@@ -80,5 +92,16 @@ fun MetadataPillChip(
 private fun MetadataPillChipPreview() {
 	PurecipesPreviewScaffold {
 		MetadataPillChip(text = "Gluten-Free")
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MetadataPillChipPlaceholderPreview() {
+	PurecipesPreviewScaffold {
+		MetadataPillChip(
+			text = "Gluten-Free",
+			isPlaceholder = true,
+		)
 	}
 }

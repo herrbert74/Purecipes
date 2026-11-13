@@ -13,8 +13,12 @@ import com.eygraber.compose.placeholder.material3.shimmer
 fun Modifier.purecipesPlaceholder(
 	visible: Boolean = true,
 	shape: Shape = RoundedCornerShape(PurecipesTheme.space.s),
-): Modifier = placeholder(
-	visible = visible,
-	shape = shape,
-	highlight = PlaceholderHighlight.shimmer(),
-)
+): Modifier = if (visible) {
+	placeholder(
+		visible = true,
+		shape = shape,
+		highlight = PlaceholderHighlight.shimmer(),
+	)
+} else {
+	this
+}

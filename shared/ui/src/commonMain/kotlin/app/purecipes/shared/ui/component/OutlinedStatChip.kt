@@ -26,17 +26,30 @@ fun OutlinedStatChip(
 	value: String,
 	tint: ContainerTint,
 	modifier: Modifier = Modifier,
+	isPlaceholder: Boolean = false,
 ) {
 	val colors = tint.colorFamily()
+	val chipShape = RoundedCornerShape(PurecipesTheme.space.s)
 	Surface(
 		modifier = modifier
-			.testTag("$OUTLINED_STAT_CHIP_TAG_PREFIX$label")
-			.border(
-				width = OUTLINED_STAT_CHIP_BORDER_WIDTH,
-				color = colors.color,
-				shape = RoundedCornerShape(PurecipesTheme.space.s),
+			.purecipesPlaceholder(
+				visible = isPlaceholder,
+				shape = chipShape,
+			)
+			.then(
+				if (isPlaceholder) {
+					Modifier
+				} else {
+					Modifier
+						.testTag("$OUTLINED_STAT_CHIP_TAG_PREFIX$label")
+						.border(
+							width = OUTLINED_STAT_CHIP_BORDER_WIDTH,
+							color = colors.color,
+							shape = chipShape,
+						)
+				},
 			),
-		shape = RoundedCornerShape(PurecipesTheme.space.s),
+		shape = chipShape,
 		color = PurecipesTheme.colorScheme.surface,
 	) {
 		Column(
@@ -69,6 +82,19 @@ private fun OutlinedStatChipPreview() {
 			label = "Cook time",
 			value = "25 min",
 			tint = ContainerTint.Primary,
+		)
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun OutlinedStatChipPlaceholderPreview() {
+	PurecipesPreviewScaffold {
+		OutlinedStatChip(
+			label = "Cook time",
+			value = "25 min",
+			tint = ContainerTint.Primary,
+			isPlaceholder = true,
 		)
 	}
 }

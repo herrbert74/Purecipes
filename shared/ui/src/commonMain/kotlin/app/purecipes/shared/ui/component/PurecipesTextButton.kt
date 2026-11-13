@@ -14,14 +14,16 @@ fun PurecipesTextButton(
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	enabled: Boolean = true,
+	isPlaceholder: Boolean = false,
 ) {
 	TextButton(
 		onClick = onClick,
-		enabled = enabled,
+		enabled = enabled && !isPlaceholder,
 		modifier = modifier,
 	) {
 		Text(
 			text = text,
+			modifier = Modifier.purecipesPlaceholder(visible = isPlaceholder),
 			style = PurecipesTheme.typography.labelLarge,
 		)
 	}

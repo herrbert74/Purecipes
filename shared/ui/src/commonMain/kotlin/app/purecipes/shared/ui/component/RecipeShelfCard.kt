@@ -13,26 +13,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
-import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.toImmutableSet
 
-private const val SHELF_TITLE_MAX_LINES = 2
 private const val PREP_TIME_UNKNOWN = "Prep time unknown"
 
 @Composable
@@ -81,10 +75,10 @@ internal fun RecipeShelfCard(
 						modifier = Modifier.align(Alignment.TopEnd),
 						verticalAlignment = Alignment.CenterVertically,
 					) {
-						Icon(
-							imageVector = AppIcons.Favorite,
+						FavoriteHeartIcon(
+							selected = true,
+							tint = PurecipesTheme.fixedColors.inverseOnSurfaceFixed,
 							contentDescription = "Favorited",
-							tint = Color.White,
 							modifier = Modifier
 								.padding(PurecipesTheme.space.s)
 								.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
@@ -95,23 +89,22 @@ internal fun RecipeShelfCard(
 			Column(
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 			) {
-				Text(
+				FixedTitleText(
 					text = recipe.title,
-					style = PurecipesTheme.typography.titleSmall,
 					color = PurecipesTheme.colorScheme.onSurface,
-					minLines = SHELF_TITLE_MAX_LINES,
-					maxLines = SHELF_TITLE_MAX_LINES,
-					overflow = TextOverflow.Ellipsis,
+					style = PurecipesTheme.typography.titleSmall,
+					minLines = RecipeCardDefaults.ShelfTitleLines,
+					maxLines = RecipeCardDefaults.ShelfTitleLines,
 				)
 				Row(
 					modifier = Modifier.fillMaxWidth(),
 					horizontalArrangement = Arrangement.SpaceBetween,
 					verticalAlignment = Alignment.CenterVertically,
 				) {
-					Text(
+					FixedSubtitleText(
 						text = recipe.totalTime?.let { minutes -> "$minutes min" } ?: PREP_TIME_UNKNOWN,
-						style = PurecipesTheme.typography.bodySmall,
 						color = PurecipesTheme.colorScheme.onSurface,
+						style = PurecipesTheme.typography.bodySmall,
 					)
 					RecipeCardApplianceIcons(
 						appliances = recipe.appliances.toImmutableSet(),

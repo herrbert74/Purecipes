@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,17 +18,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
-private const val RECIPE_CARD_ASPECT_RATIO_WIDTH = 16f
-private const val RECIPE_CARD_ASPECT_RATIO_HEIGHT = 9f
 private const val DEFAULT_SKELETON_COUNT = 6
 private const val TITLE_PLACEHOLDER_WIDTH_FRACTION = 0.75f
 private const val SUBTITLE_PLACEHOLDER_WIDTH_FRACTION = 0.4f
-private val CHIP_PLACEHOLDER_PRIMARY_WIDTH = 72.dp
-private val CHIP_PLACEHOLDER_SECONDARY_WIDTH = 56.dp
+private const val PRIMARY_CHIP_PLACEHOLDER_TEXT = "Italian"
+private const val SECONDARY_CHIP_PLACEHOLDER_TEXT = "Metric"
+private const val TITLE_PLACEHOLDER_TEXT = "Recipe title placeholder"
+private const val SUBTITLE_PLACEHOLDER_TEXT = "25 min"
 
 @Composable
 fun RecipeCardSkeleton(
@@ -38,7 +35,8 @@ fun RecipeCardSkeleton(
 	widthFraction: Float = RecipeCardDefaults.FullWidthFraction,
 	tintIndex: Int = 0,
 ) {
-	val colors = ContainerTint.forIndex(tintIndex).colorFamily()
+	val tint = ContainerTint.forIndex(tintIndex)
+	val colors = tint.colorFamily()
 	Card(
 		modifier = modifier.fillMaxWidth(widthFraction),
 		colors = CardDefaults.cardColors(containerColor = colors.colorContainer),
@@ -50,37 +48,41 @@ fun RecipeCardSkeleton(
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
 			Row(horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs)) {
-				Box(
-					modifier = Modifier
-						.width(CHIP_PLACEHOLDER_PRIMARY_WIDTH)
-						.height(PurecipesTheme.space.m)
-						.purecipesPlaceholder(shape = RoundedCornerShape(PurecipesTheme.space.l)),
+				MetadataPillChip(
+					text = PRIMARY_CHIP_PLACEHOLDER_TEXT,
+					tint = tint,
+					filled = true,
+					isPlaceholder = true,
 				)
-				Box(
-					modifier = Modifier
-						.width(CHIP_PLACEHOLDER_SECONDARY_WIDTH)
-						.height(PurecipesTheme.space.m)
-						.purecipesPlaceholder(shape = RoundedCornerShape(PurecipesTheme.space.l)),
+				MetadataPillChip(
+					text = SECONDARY_CHIP_PLACEHOLDER_TEXT,
+					tint = ContainerTint.Secondary,
+					filled = true,
+					isPlaceholder = true,
 				)
 			}
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.aspectRatio(RECIPE_CARD_ASPECT_RATIO_WIDTH / RECIPE_CARD_ASPECT_RATIO_HEIGHT)
+					.aspectRatio(
+						RecipeCardDefaults.GridImageAspectRatioWidth /
+							RecipeCardDefaults.GridImageAspectRatioHeight,
+					)
 					.purecipesPlaceholder(shape = RoundedCornerShape(PurecipesTheme.space.m)),
 			)
 			Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs)) {
-				Box(
-					modifier = Modifier
-						.fillMaxWidth(TITLE_PLACEHOLDER_WIDTH_FRACTION)
-						.height(PurecipesTheme.space.m)
-						.purecipesPlaceholder(),
+				FixedTitleText(
+					text = TITLE_PLACEHOLDER_TEXT,
+					modifier = Modifier.fillMaxWidth(TITLE_PLACEHOLDER_WIDTH_FRACTION),
+					color = colors.onColorContainer,
+					maxLines = 1,
+					isPlaceholder = true,
 				)
-				Box(
-					modifier = Modifier
-						.fillMaxWidth(SUBTITLE_PLACEHOLDER_WIDTH_FRACTION)
-						.height(PurecipesTheme.space.s)
-						.purecipesPlaceholder(),
+				FixedSubtitleText(
+					text = SUBTITLE_PLACEHOLDER_TEXT,
+					modifier = Modifier.fillMaxWidth(SUBTITLE_PLACEHOLDER_WIDTH_FRACTION),
+					color = colors.onColorContainer,
+					isPlaceholder = true,
 				)
 			}
 		}
