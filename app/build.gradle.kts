@@ -152,6 +152,7 @@ android {
 	}
 	experimentalProperties["android.experimental.enableScreenshotTest"] = true
 	testOptions {
+		unitTests.isIncludeAndroidResources = true
 		screenshotTests {
 			create("storeScreenshot") {
 				engineVersion = libs.versions.compose.screenshotTesting.get()
@@ -171,6 +172,23 @@ android {
 					implementation(libs.androidx.core)
 					implementation(libs.coil.compose)
 					implementation(libs.jetbrains.composeMaterial3AdaptiveNavigationSuite)
+					implementation(libs.kotlinx.collectionsImmutable)
+					implementation(libs.screenshot.validationApi)
+				}
+			}
+			create("componentScreenshot") {
+				engineVersion = libs.versions.compose.screenshotTesting.get()
+				targetVariants.add("debug")
+				dependencies {
+					val suiteDependencies = project.dependencies
+					implementation(suiteDependencies.project(mapOf("path" to ":shared:domain")))
+					implementation(suiteDependencies.project(mapOf("path" to ":shared:ui")))
+					implementation(suiteDependencies.platform(libs.androidx.composeBom))
+					implementation(libs.androidx.composeFoundation)
+					implementation(libs.androidx.composeMaterial3)
+					implementation(libs.androidx.composeUiTooling)
+					implementation(libs.androidx.core)
+					implementation(libs.coil.compose)
 					implementation(libs.kotlinx.collectionsImmutable)
 					implementation(libs.screenshot.validationApi)
 				}
