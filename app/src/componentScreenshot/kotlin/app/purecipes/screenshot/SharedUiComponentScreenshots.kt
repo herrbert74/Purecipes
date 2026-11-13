@@ -23,7 +23,6 @@ import app.purecipes.shared.ui.component.RecipeCardDefaults
 import app.purecipes.shared.ui.component.RecipeCardSkeleton
 import app.purecipes.shared.ui.component.SectionHeader
 import app.purecipes.shared.ui.icon.AppIcons
-import app.purecipes.shared.ui.icon.Favorite
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.android.tools.screenshot.PreviewTest
 
@@ -52,8 +51,8 @@ private val sampleNutrition = NutritionSummary(
 	fat = SAMPLE_FAT,
 	matchedIngredientCount = SAMPLE_MATCHED_INGREDIENTS,
 	totalIngredientCount = SAMPLE_TOTAL_INGREDIENTS,
-	calculationSource = NutritionCalculationSource.USDA_FNDDS,
-	confidence = NutritionConfidence.HIGH,
+	calculationSource = NutritionCalculationSource.CALCULATED,
+	confidence = NutritionConfidence.COMPLETE,
 	isComplete = true,
 )
 
