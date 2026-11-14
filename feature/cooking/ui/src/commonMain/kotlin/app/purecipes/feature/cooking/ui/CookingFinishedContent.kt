@@ -54,7 +54,6 @@ internal const val COOKING_ADD_TO_COOKBOOK_BUTTON_TAG = "cookingAddToCookbookBut
 private val CELEBRATION_EMOJIS = listOf("🍅", "🧄", "🌿", "🍋", "🧀")
 private val CELEBRATION_EMOJI_SIZE = 28.sp
 private val CELEBRATION_CIRCLE_SIZE = 56.dp
-private val CELEBRATION_OFFSET_Y = 8.dp
 
 @Composable
 internal fun CookingFinishedContent(
@@ -187,7 +186,7 @@ private fun CookingCelebrationEmojis() {
 		CELEBRATION_EMOJIS.forEachIndexed { index, emoji ->
 			val tint = ContainerTint.forIndex(index)
 			val colors = tint.colorFamily()
-			val baseOffset = if (index % 2 == 0) -CELEBRATION_OFFSET_Y else CELEBRATION_OFFSET_Y
+			val baseOffset = if (index % 2 == 0) -PurecipesTheme.space.s else PurecipesTheme.space.s
 			val animatedOffset = baseOffset * (0.65f + (0.35f * floatProgress))
 			Box(
 				modifier = Modifier

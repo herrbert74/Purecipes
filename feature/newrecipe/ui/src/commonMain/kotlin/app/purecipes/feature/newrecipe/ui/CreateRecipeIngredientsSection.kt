@@ -19,7 +19,6 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -29,7 +28,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +42,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -100,12 +100,11 @@ internal fun CreateRecipeIngredientsSection(
 				text = "Ingredients",
 				style = PurecipesTheme.typography.titleMedium,
 			)
-			TextButton(
+			PurecipesTextButton(
+				text = "Paste list",
 				onClick = onShowPasteDialog,
 				modifier = Modifier.testTag(INGREDIENTS_PASTE_BUTTON_TAG),
-			) {
-				Text(text = "Paste list")
-			}
+			)
 		}
 
 		Column(verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
@@ -316,9 +315,10 @@ private fun IngredientExpandedEditor(
 				},
 			)
 		}
-		TextButton(onClick = onAddAlternativeClick) {
-			Text(text = "Add alternative")
-		}
+		PurecipesTextButton(
+			text = "Add alternative",
+			onClick = onAddAlternativeClick,
+		)
 	}
 }
 
@@ -395,17 +395,17 @@ private fun PasteIngredientsDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
-			Button(
+			PurecipesButton(
+				text = "Paste",
 				onClick = { onConfirm(pasteText) },
 				enabled = pasteText.isNotBlank(),
-			) {
-				Text(text = "Paste")
-			}
+			)
 		},
 		dismissButton = {
-			TextButton(onClick = onDismiss) {
-				Text(text = "Cancel")
-			}
+			PurecipesTextButton(
+				text = "Cancel",
+				onClick = onDismiss,
+			)
 		},
 		title = { Text(text = "Paste ingredient list") },
 		text = {

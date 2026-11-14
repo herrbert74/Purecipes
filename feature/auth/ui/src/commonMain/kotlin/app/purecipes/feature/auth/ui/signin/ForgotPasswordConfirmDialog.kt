@@ -1,13 +1,13 @@
 package app.purecipes.feature.auth.ui.signin
 
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -20,20 +20,18 @@ internal fun ForgotPasswordConfirmDialog(
 		modifier = Modifier.testTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_TAG),
 		onDismissRequest = onDismiss,
 		confirmButton = {
-			Button(
+			PurecipesButton(
+				text = "Send email",
 				onClick = onConfirm,
 				modifier = Modifier.testTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_CONFIRM_TAG),
-			) {
-				Text(text = "Send email")
-			}
+			)
 		},
 		dismissButton = {
-			TextButton(
+			PurecipesTextButton(
+				text = "Cancel",
 				onClick = onDismiss,
 				modifier = Modifier.testTag(SIGN_IN_FORGOT_PASSWORD_DIALOG_DISMISS_TAG),
-			) {
-				Text(text = "Cancel")
-			}
+			)
 		},
 		title = { Text(text = "Reset password?") },
 		text = { Text(text = "Send a password reset email to $email?") },

@@ -15,7 +15,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -102,18 +101,15 @@ fun NutritionFactsDialog(
 					}
 				}
 
-				TextButton(
+				PurecipesTextButton(
+					text = if (showIngredients) {
+						"Show recipe totals"
+					} else {
+						"Show by ingredient"
+					},
 					onClick = { showIngredients = !showIngredients },
 					modifier = Modifier.align(Alignment.Start),
-				) {
-					Text(
-						text = if (showIngredients) {
-							"Show recipe totals"
-						} else {
-							"Show by ingredient"
-						},
-					)
-				}
+				)
 
 				if (showIngredients) {
 					IngredientNutritionList(ingredients = IngredientNutritionLines(nutrition.ingredients))

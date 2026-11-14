@@ -3,9 +3,7 @@ package app.purecipes.feature.analytics.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -14,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.analytics.domain.model.toDisplayText
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 
@@ -43,12 +42,10 @@ fun ConsentPreferencesScreen(
 				text = consentState.toDisplayText(),
 				style = PurecipesTheme.typography.bodyLarge,
 			)
-			Button(
+			PurecipesButton(
+				text = "Manage privacy settings",
 				onClick = viewModel::onManagePrivacySettingsClick,
-				modifier = Modifier.fillMaxWidth(),
-			) {
-				Text(text = "Manage privacy settings")
-			}
+			)
 		}
 	}
 }

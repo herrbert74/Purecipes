@@ -13,7 +13,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AuthProvider
 import app.purecipes.feature.auth.domain.model.AuthUser
+import app.purecipes.shared.ui.component.PurecipesButton
 import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -82,20 +82,20 @@ internal fun SignedInContent(
 			modifier = Modifier.testTag(DELETE_ACCOUNT_DIALOG_TAG),
 			onDismissRequest = { showDeleteAccountDialog = false },
 			confirmButton = {
-				Button(
+				PurecipesButton(
+					text = "Delete",
 					onClick = {
 						showDeleteAccountDialog = false
 						onDeleteAccount()
 					},
 					enabled = !isBusy,
-				) {
-					Text(text = "Delete")
-				}
+				)
 			},
 			dismissButton = {
-				TextButton(onClick = { showDeleteAccountDialog = false }) {
-					Text(text = "Cancel")
-				}
+				PurecipesTextButton(
+					text = "Cancel",
+					onClick = { showDeleteAccountDialog = false },
+				)
 			},
 			title = { Text(text = "Delete account?") },
 			text = {

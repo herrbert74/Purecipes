@@ -17,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.flow.drop
 
@@ -71,10 +70,8 @@ internal fun DenseOutlinedTextField(
 @Composable
 private fun denseOutlinedTextFieldPadding(): PaddingValues =
 	PaddingValues(
-		start = DENSE_TEXT_FIELD_HORIZONTAL_PADDING,
+		start = PurecipesTheme.space.sm,
 		top = PurecipesTheme.space.xs,
-		end = DENSE_TEXT_FIELD_HORIZONTAL_PADDING,
+		end = PurecipesTheme.space.sm,
 		bottom = PurecipesTheme.space.xs,
 	)
-
-private val DENSE_TEXT_FIELD_HORIZONTAL_PADDING = 12.dp

@@ -16,13 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.theme.PurecipesTheme
 
 private const val INDICATOR_ANIMATION_MILLIS = 300
 private const val INDICATOR_INACTIVE_ALPHA = 0.35f
 
-private val INDICATOR_DOT_SIZE = 8.dp
 private val INDICATOR_ACTIVE_DOT_WIDTH = 26.dp
-private val INDICATOR_DOT_GAP = 8.dp
 
 @Composable
 internal fun OnboardingPageIndicator(
@@ -33,12 +32,12 @@ internal fun OnboardingPageIndicator(
 ) {
 	Row(
 		modifier = modifier,
-		horizontalArrangement = Arrangement.spacedBy(INDICATOR_DOT_GAP),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
 		repeat(pageCount) { index ->
 			val isActive = index == currentPage
 			val dotWidth by animateDpAsState(
-				targetValue = if (isActive) INDICATOR_ACTIVE_DOT_WIDTH else INDICATOR_DOT_SIZE,
+				targetValue = if (isActive) INDICATOR_ACTIVE_DOT_WIDTH else PurecipesTheme.space.s,
 				animationSpec = tween(durationMillis = INDICATOR_ANIMATION_MILLIS),
 				label = "onboardingIndicatorWidth",
 			)
@@ -50,7 +49,7 @@ internal fun OnboardingPageIndicator(
 			Box(
 				modifier = Modifier
 					.width(dotWidth)
-					.height(INDICATOR_DOT_SIZE)
+					.height(PurecipesTheme.space.s)
 					.clip(CircleShape)
 					.background(dotColor),
 			)

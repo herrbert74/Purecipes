@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -35,9 +35,10 @@ internal fun RecipeDetailsMessageScreen(
 				style = PurecipesTheme.typography.bodyLarge,
 			)
 			Spacer(modifier = Modifier.height(PurecipesTheme.space.xs))
-			TextButton(onClick = onBack) {
-				Text(text = "Back to search")
-			}
+			PurecipesTextButton(
+				text = "Back to search",
+				onClick = onBack,
+			)
 		}
 	}
 }

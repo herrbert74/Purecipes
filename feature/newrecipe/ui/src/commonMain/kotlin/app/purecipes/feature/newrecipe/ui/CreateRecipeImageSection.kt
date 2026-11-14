@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +30,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
@@ -124,13 +124,12 @@ internal fun CreateRecipeImageSection(
 		)
 
 		if (!showUrlField) {
-			TextButton(
+			PurecipesTextButton(
+				text = "Paste image URL",
 				onClick = { showUrlField = true },
 				enabled = canInteract,
 				modifier = Modifier.testTag(IMAGE_URL_TOGGLE_TAG),
-			) {
-				Text(text = "Paste image URL")
-			}
+			)
 		} else {
 			OutlinedTextField(
 				value = imageUrlInput,
@@ -143,12 +142,11 @@ internal fun CreateRecipeImageSection(
 				enabled = canInteract,
 			)
 			if (imageUrlInput.isBlank()) {
-				TextButton(
+				PurecipesTextButton(
+					text = "Hide URL field",
 					onClick = { showUrlField = false },
 					enabled = canInteract,
-				) {
-					Text(text = "Hide URL field")
-				}
+				)
 			}
 		}
 

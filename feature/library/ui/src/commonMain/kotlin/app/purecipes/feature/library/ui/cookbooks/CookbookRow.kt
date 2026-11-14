@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,6 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.BodyText
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.component.TitleText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
@@ -75,13 +74,12 @@ internal fun CookbookRow(
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
-			TextButton(
+			PurecipesTextButton(
+				text = "Delete",
 				onClick = onDeleteCookbook,
 				enabled = !isDeletingCookbook && cookbook.recipeCount == 0,
 				modifier = Modifier.testTag("$DELETE_COOKBOOK_BUTTON_PREFIX${cookbook.id}"),
-			) {
-				Text(text = "Delete")
-			}
+			)
 		}
 	}
 }

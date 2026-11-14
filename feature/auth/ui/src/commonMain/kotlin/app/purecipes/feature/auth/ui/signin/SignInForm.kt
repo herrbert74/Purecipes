@@ -12,11 +12,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +28,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import app.purecipes.shared.ui.component.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -127,13 +127,12 @@ internal fun SignInForm(
 					}
 				},
 			)
-			TextButton(
-				modifier = Modifier.testTag(SIGN_IN_FORGOT_PASSWORD_TAG),
+			PurecipesTextButton(
+				text = "Forgot password?",
 				onClick = onForgotPassword,
 				enabled = !isBusy,
-			) {
-				Text(text = "Forgot password?")
-			}
+				modifier = Modifier.testTag(SIGN_IN_FORGOT_PASSWORD_TAG),
+			)
 			Button(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -151,15 +150,12 @@ internal fun SignInForm(
 				}
 			}
 			if (showResendVerificationEmail) {
-				OutlinedButton(
-					modifier = Modifier
-						.fillMaxWidth()
-						.testTag(SIGN_IN_RESEND_VERIFICATION_TAG),
+				PurecipesOutlinedButton(
+					text = "Resend verification email",
 					onClick = onResendVerificationEmail,
 					enabled = !isBusy,
-				) {
-					Text(text = "Resend verification email")
-				}
+					modifier = Modifier.testTag(SIGN_IN_RESEND_VERIFICATION_TAG),
+				)
 			}
 		}
 	}

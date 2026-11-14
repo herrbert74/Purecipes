@@ -1,5 +1,7 @@
 package app.purecipes.shared.ui.component
 
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,11 +17,13 @@ fun PurecipesTextButton(
 	modifier: Modifier = Modifier,
 	enabled: Boolean = true,
 	isPlaceholder: Boolean = false,
+	colors: ButtonColors = ButtonDefaults.textButtonColors(),
 ) {
 	TextButton(
 		onClick = onClick,
 		enabled = enabled && !isPlaceholder,
 		modifier = modifier,
+		colors = colors,
 	) {
 		Text(
 			text = text,

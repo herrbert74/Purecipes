@@ -11,11 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -29,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAd
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.component.ShowLoading
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -109,22 +109,25 @@ fun RecipeDetailsScreen(
 				AlertDialog(
 					onDismissRequest = viewModel::dismissMeasurementMismatchDialog,
 					confirmButton = {
-						Button(onClick = viewModel::convertCurrentRecipe) {
-							Text(text = "Convert recipe")
-						}
+						PurecipesButton(
+							text = "Convert recipe",
+							onClick = viewModel::convertCurrentRecipe,
+						)
 					},
 					dismissButton = {
-						TextButton(onClick = viewModel::dismissMeasurementMismatchDialog) {
-							Text(text = "Keep original")
-						}
+						PurecipesTextButton(
+							text = "Keep original",
+							onClick = viewModel::dismissMeasurementMismatchDialog,
+						)
 					},
 					title = { Text(text = "Measurement system mismatch") },
 					text = {
 						Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
 							Text(text = "This recipe uses measurements outside your preferred system.")
-							TextButton(onClick = onOpenMeasurementPreferences) {
-								Text(text = "Update my preferences")
-							}
+							PurecipesTextButton(
+								text = "Update my preferences",
+								onClick = onOpenMeasurementPreferences,
+							)
 						}
 					},
 				)

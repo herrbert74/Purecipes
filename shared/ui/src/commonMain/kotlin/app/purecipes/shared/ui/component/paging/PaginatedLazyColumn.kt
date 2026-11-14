@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.VerticalScrollbar
+import app.purecipes.shared.ui.theme.PurecipesTheme
 
 /**
  * Copied from: [https://github.com/Ahmad-Hamwi/lazy-pagination-compose]
@@ -32,7 +32,7 @@ fun <KEY, T> PaginatedLazyColumn(
 	newPageEmptyIndicator: @Composable () -> Unit = {},
 	requestInitialPageAutomatically: Boolean = true,
 	state: LazyListState = rememberLazyListState(),
-	contentPadding: PaddingValues = PaddingValues(0.dp),
+	contentPadding: PaddingValues = PaddingValues(PurecipesTheme.space.none),
 	reverseLayout: Boolean = false,
 	verticalArrangement: Arrangement.Vertical = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
 	horizontalAlignment: Alignment.Horizontal = Alignment.Start,

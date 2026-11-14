@@ -13,13 +13,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.delay
 
 private const val STAGGER_MAX_ITEMS = 8
 private const val STAGGER_ITEM_DELAY_MS = 45L
 private const val STAGGER_DURATION_MS = 320
-private val STAGGER_OFFSET = 12.dp
 
 @Composable
 fun Modifier.staggeredAppear(index: Int): Modifier {
@@ -43,7 +42,7 @@ fun Modifier.staggeredAppear(index: Int): Modifier {
 		label = "staggerAlpha",
 	)
 	val offsetY by animateDpAsState(
-		targetValue = if (visible) 0.dp else STAGGER_OFFSET,
+		targetValue = if (visible) PurecipesTheme.space.none else PurecipesTheme.space.sm,
 		animationSpec = tween(
 			durationMillis = STAGGER_DURATION_MS,
 			easing = FastOutSlowInEasing,

@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.DietaryPreference
@@ -67,7 +66,7 @@ internal fun RecipeDetailsContent(
 	onToggleFavorite: () -> Unit,
 	modifier: Modifier = Modifier,
 	transitionKey: String? = null,
-	bottomPadding: Dp = 0.dp,
+	bottomPadding: Dp = PurecipesTheme.space.none,
 	listState: LazyListState = rememberLazyListState(),
 ) {
 	val sections = if (showNutrition) {

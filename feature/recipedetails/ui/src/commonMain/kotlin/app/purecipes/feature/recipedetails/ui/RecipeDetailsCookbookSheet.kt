@@ -6,18 +6,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.library.domain.CookbookNameSuggestions
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,7 +75,8 @@ internal fun RecipeDetailsCookbookSheet(
 				singleLine = true,
 			)
 			sheetCookbooks.items.forEach { cookbook ->
-				TextButton(
+				PurecipesTextButton(
+					text = cookbook.name,
 					onClick = {
 						onAddToCookbook(cookbook.id) { err ->
 							if (err == null) {
@@ -84,12 +85,11 @@ internal fun RecipeDetailsCookbookSheet(
 						}
 					},
 					enabled = !isCookbookActionInFlight,
-				) {
-					Text(text = cookbook.name)
-				}
+				)
 			}
 			cookbookActionError?.let { ErrorText(text = it) }
-			Button(
+			PurecipesButton(
+				text = "Create and add",
 				onClick = {
 					onCreateCookbookAndAdd(newCookbookName) { err ->
 						if (err == null) {
@@ -98,9 +98,7 @@ internal fun RecipeDetailsCookbookSheet(
 					}
 				},
 				enabled = !isCookbookActionInFlight && newCookbookName.trim().isNotEmpty(),
-			) {
-				Text(text = "Create and add")
-			}
+			)
 		}
 	}
 }

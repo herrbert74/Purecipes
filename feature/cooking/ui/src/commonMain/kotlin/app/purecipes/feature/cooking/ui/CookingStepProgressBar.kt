@@ -22,7 +22,6 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 internal const val COOKING_STEP_PROGRESS_TAG = "cookingStepProgress"
 
 private val COOKING_STEP_PROGRESS_HEIGHT = 10.dp
-private val COOKING_STEP_PROGRESS_GAP = 4.dp
 private const val COOKING_STEP_PROGRESS_DURATION_MS = 280
 
 @Composable
@@ -36,7 +35,7 @@ internal fun CookingStepProgressBar(
 		modifier = modifier
 			.fillMaxWidth()
 			.testTag(COOKING_STEP_PROGRESS_TAG),
-		horizontalArrangement = Arrangement.spacedBy(COOKING_STEP_PROGRESS_GAP),
+		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 	) {
 		repeat(stepCount) { index ->
 			val filled = index <= currentPageIndex

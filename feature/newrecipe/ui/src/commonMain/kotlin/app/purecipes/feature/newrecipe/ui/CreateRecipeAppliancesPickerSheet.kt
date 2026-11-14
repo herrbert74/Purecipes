@@ -14,15 +14,14 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.Appliance
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.icon.appliance.icon
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
@@ -60,12 +59,11 @@ internal fun CreateRecipeAppliancesPickerSheet(
 				style = PurecipesTheme.typography.titleMedium,
 			)
 			if (selectedAppliances.isNotEmpty()) {
-				TextButton(
+				PurecipesTextButton(
+					text = "Clear all",
 					onClick = { onAppliancesChange(emptySet()) },
 					modifier = Modifier.testTag(CREATE_RECIPE_APPLIANCES_CLEAR_ALL_TAG),
-				) {
-					Text(text = "Clear all")
-				}
+				)
 			}
 		}
 		Column(
@@ -100,7 +98,7 @@ internal fun CreateRecipeAppliancesPickerSheet(
 						Icon(
 							imageVector = appliance.icon,
 							contentDescription = null,
-							modifier = Modifier.size(24.dp),
+							modifier = Modifier.size(PurecipesTheme.space.l),
 							tint = if (isSelected) {
 								PurecipesTheme.colorScheme.primary
 							} else {

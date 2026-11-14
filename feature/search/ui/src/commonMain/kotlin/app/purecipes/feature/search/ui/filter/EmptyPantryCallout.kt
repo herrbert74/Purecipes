@@ -10,13 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -58,12 +58,11 @@ internal fun EmptyPantryCallout(
 					style = PurecipesTheme.typography.bodyMedium,
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
-				TextButton(
+				PurecipesTextButton(
+					text = "Go to Pantry",
 					onClick = onGoToPantry,
 					modifier = Modifier.testTag(FILTER_KEY_INGREDIENTS_GO_TO_PANTRY_TAG),
-				) {
-					Text("Go to Pantry")
-				}
+				)
 			}
 		}
 	}
