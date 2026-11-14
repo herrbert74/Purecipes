@@ -13,11 +13,23 @@ import app.purecipes.shared.domain.model.NutritionCalculationSource
 import app.purecipes.shared.domain.model.NutritionConfidence
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchFilters
+import app.purecipes.shared.ui.component.atom.BodyText
 import app.purecipes.shared.ui.component.atom.ContainerTint
 import app.purecipes.shared.ui.component.atom.MetadataPillChip
+import app.purecipes.shared.ui.component.atom.OutlinedStatChip
 import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.TitleText
+import app.purecipes.shared.ui.component.molecule.BrowseTileGrid
 import app.purecipes.shared.ui.component.molecule.EmptyStateContent
+import app.purecipes.shared.ui.component.molecule.RecipeDetailsSection
+import app.purecipes.shared.ui.component.molecule.RecipeSectionSegmentedControl
 import app.purecipes.shared.ui.component.molecule.SectionHeader
+import app.purecipes.shared.ui.component.molecule.TintedFeatureCard
+import app.purecipes.shared.ui.component.molecule.browseTiles
+import app.purecipes.shared.ui.component.organism.BrandMomentHeader
 import app.purecipes.shared.ui.component.organism.NutritionSummaryCard
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.organism.RecipeCardDefaults
@@ -25,6 +37,7 @@ import app.purecipes.shared.ui.component.organism.RecipeCardSkeleton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.android.tools.screenshot.PreviewTest
+import kotlinx.collections.immutable.persistentListOf
 
 private const val SAMPLE_RECIPE_ID = 1
 private const val SAMPLE_TOTAL_TIME_MINUTES = 35
@@ -185,6 +198,94 @@ private fun EmptyStateContentLightScreenshot() {
 private fun RecipeCardSkeletonLightScreenshot() {
 	ScreenshotSurface(darkTheme = false) {
 		RecipeCardSkeleton()
+	}
+}
+
+@PreviewTest
+@Preview(name = "brand_moment_header_light", showBackground = true)
+@Composable
+private fun BrandMomentHeaderLightScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		BrandMomentHeader(
+			icon = AppIcons.Favorite,
+			iconContentDescription = "Account",
+			title = "Your kitchen, saved",
+			description = "Sign in to keep favorites, cookbooks, and uploads with you.",
+		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "browse_tile_grid_light", showBackground = true)
+@Composable
+private fun BrowseTileGridLightScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		BrowseTileGrid(
+			tiles = browseTiles(SearchFilters()),
+			onTileClick = {},
+		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "recipe_section_segmented_control_light", showBackground = true)
+@Composable
+private fun RecipeSectionSegmentedControlLightScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		RecipeSectionSegmentedControl(
+			sections = persistentListOf(
+				RecipeDetailsSection.Ingredients,
+				RecipeDetailsSection.Method,
+				RecipeDetailsSection.Nutrition,
+			),
+			selectedSection = RecipeDetailsSection.Ingredients,
+			onSectionChange = {},
+		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "tinted_feature_card_dark", showBackground = true)
+@Composable
+private fun TintedFeatureCardDarkScreenshot() {
+	ScreenshotSurface(darkTheme = true) {
+		TintedFeatureCard(
+			tint = ContainerTint.Primary,
+			label = "Featured",
+		) {
+			Column(
+				modifier = Modifier.padding(PurecipesTheme.space.m),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
+			) {
+				TitleText(text = "Seasonal Picks")
+				BodyText(text = "Fresh weeknight dinners curated from your saved preferences.")
+			}
+		}
+	}
+}
+
+@PreviewTest
+@Preview(name = "secondary_actions_and_stat_chips_light", showBackground = true)
+@Composable
+private fun SecondaryActionsAndStatChipsLightScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		Column(verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
+			PurecipesOutlinedButton(
+				text = "Send Test Notification",
+				onClick = {},
+			)
+			Row(horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s)) {
+				PurecipesTextButton(
+					text = "Add to cookbook",
+					onClick = {},
+				)
+				OutlinedStatChip(
+					label = "Prep",
+					value = "15 min",
+					tint = ContainerTint.Secondary,
+				)
+			}
+		}
 	}
 }
 
