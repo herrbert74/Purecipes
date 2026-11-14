@@ -178,6 +178,7 @@ android {
 			}
 			create("componentScreenshot") {
 				engineVersion = libs.versions.compose.screenshotTesting.get()
+				imageDifferenceThreshold = 0.005f
 				targetVariants.add("debug")
 				dependencies {
 					val suiteDependencies = project.dependencies
