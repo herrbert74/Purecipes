@@ -196,7 +196,7 @@ fun backfillDietaryPreferences(connection: Connection, config: BackfillConfig) {
 	)
 }
 
-private fun recordPreferenceCounts(counts: MutableMap<String, Int>, preferences: Set<String>) {
+private fun recordPreferenceCounts(counts: MutableMap<String, Int>, preferences: List<String>) {
 	for (pref in preferences) {
 		counts[pref] = (counts[pref] ?: 0) + 1
 	}
@@ -205,7 +205,7 @@ private fun recordPreferenceCounts(counts: MutableMap<String, Int>, preferences:
 private fun updateRecipeDietaryPreferences(
 	updateStmt: PreparedStatement,
 	recipeId: Int,
-	extracted: Set<String>,
+	extracted: List<String>,
 ) {
 	if (extracted.isEmpty()) {
 		updateStmt.setNull(1, Types.ARRAY)
