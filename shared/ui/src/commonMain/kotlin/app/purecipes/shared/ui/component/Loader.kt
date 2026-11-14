@@ -40,7 +40,7 @@ fun ShowLoading(
 			CircularProgressIndicator(
 				modifier = Modifier.size(56.dp),
 				color = PurecipesTheme.colorScheme.primary,
-				strokeWidth = 4.dp,
+				strokeWidth = PurecipesTheme.space.xs,
 			)
 			Text(
 				text = text,

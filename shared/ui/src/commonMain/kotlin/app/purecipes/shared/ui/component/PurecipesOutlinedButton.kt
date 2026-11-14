@@ -3,6 +3,8 @@ package app.purecipes.shared.ui.component
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,11 +19,13 @@ fun PurecipesOutlinedButton(
 	onClick: () -> Unit,
 	modifier: Modifier = Modifier,
 	enabled: Boolean = true,
+	colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
 ) {
 	OutlinedButton(
 		modifier = modifier.fillMaxWidth(),
 		onClick = onClick,
 		enabled = enabled,
+		colors = colors,
 		shape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner),
 		contentPadding = PaddingValues(vertical = PurecipesTheme.space.s),
 	) {

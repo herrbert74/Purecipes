@@ -35,7 +35,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -155,7 +154,7 @@ internal fun RecipeSearchHeader(
 								}
 							}
 						},
-						shape = RoundedCornerShape(0.dp),
+						shape = RoundedCornerShape(PurecipesTheme.space.none),
 						colors = pillFieldColors,
 					)
 				}

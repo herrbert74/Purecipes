@@ -35,7 +35,6 @@ private const val TEXT_TILT_DEGREES = -45f
 private const val TEXT_VISIBILITY_START = 0.2f
 
 private val ILLUSTRATION_TEXT_GAP = 40.dp
-private val TITLE_DESCRIPTION_GAP = 16.dp
 private val DESCRIPTION_HORIZONTAL_PADDING = 40.dp
 
 /**
@@ -125,7 +124,7 @@ internal fun OnboardingPageContent(
 						sweep = sheenSweep,
 					),
 				)
-				Spacer(modifier = Modifier.height(TITLE_DESCRIPTION_GAP))
+				Spacer(modifier = Modifier.height(PurecipesTheme.space.m))
 				Text(
 					text = page.description,
 					style = PurecipesTheme.typography.bodyLarge,

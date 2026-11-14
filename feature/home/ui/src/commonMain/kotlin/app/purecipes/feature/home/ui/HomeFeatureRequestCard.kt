@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestStatus
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -98,12 +98,11 @@ internal fun HomeFeatureRequestCard(
 					)
 				}
 			}
-			TextButton(
+			PurecipesTextButton(
+				text = actionLabel,
 				onClick = onOpen,
 				modifier = Modifier.testTag(actionTag),
-			) {
-				Text(text = actionLabel)
-			}
+			)
 		}
 	}
 }

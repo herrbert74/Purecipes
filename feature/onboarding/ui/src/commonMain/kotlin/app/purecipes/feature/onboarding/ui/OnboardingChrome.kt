@@ -19,7 +19,6 @@ import kotlinx.collections.immutable.ImmutableList
 
 internal const val ONBOARDING_SKIP_TAG = "onboardingSkip"
 
-private val CHROME_PADDING = 8.dp
 private val INDICATOR_BOTTOM_PADDING = 72.dp
 
 /**
@@ -38,7 +37,7 @@ internal fun OnboardingChrome(
 		modifier = modifier
 			.fillMaxSize()
 			.safeDrawingPadding()
-			.padding(CHROME_PADDING),
+			.padding(PurecipesTheme.space.s),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.SpaceBetween,
 	) {

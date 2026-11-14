@@ -4,15 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SAVE_BUTTON_TAG = "createRecipeSaveButton"
@@ -36,22 +35,18 @@ internal fun CreateRecipeSaveBar(
 			horizontalAlignment = Alignment.CenterHorizontally,
 		) {
 			HorizontalDivider()
-			Button(
+			PurecipesButton(
+				text = if (isEditing) "Update recipe" else "Upload recipe",
 				onClick = onSaveClick,
 				enabled = !isSaving && !isImportingImage,
-				modifier = Modifier
-					.fillMaxWidth()
-					.testTag(SAVE_BUTTON_TAG),
-			) {
-				Text(text = if (isEditing) "Update recipe" else "Upload recipe")
-			}
-			TextButton(
+				modifier = Modifier.testTag(SAVE_BUTTON_TAG),
+			)
+			PurecipesTextButton(
+				text = if (isEditing) "Start new" else "Clear form",
 				onClick = onClearClick,
 				enabled = !isSaving && !isImportingImage,
 				modifier = Modifier.testTag(CLEAR_BUTTON_TAG),
-			) {
-				Text(text = if (isEditing) "Start new" else "Clear form")
-			}
+			)
 		}
 	}
 }

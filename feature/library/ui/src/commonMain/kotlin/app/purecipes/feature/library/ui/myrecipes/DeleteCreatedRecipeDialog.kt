@@ -1,12 +1,12 @@
 package app.purecipes.feature.library.ui.myrecipes
 
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 
 internal const val DELETE_CREATED_RECIPE_DIALOG_CONFIRM_TAG = "deleteCreatedRecipeDialogConfirm"
 
@@ -19,17 +19,17 @@ internal fun DeleteCreatedRecipeDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
-			Button(
+			PurecipesButton(
+				text = "Delete",
 				onClick = onConfirm,
 				modifier = Modifier.testTag(DELETE_CREATED_RECIPE_DIALOG_CONFIRM_TAG),
-			) {
-				Text(text = "Delete")
-			}
+			)
 		},
 		dismissButton = {
-			TextButton(onClick = onDismiss) {
-				Text(text = "Cancel")
-			}
+			PurecipesTextButton(
+				text = "Cancel",
+				onClick = onDismiss,
+			)
 		},
 		title = { Text(text = "Delete recipe?") },
 		text = { Text(text = "Are you sure you want to delete $recipeName?") },

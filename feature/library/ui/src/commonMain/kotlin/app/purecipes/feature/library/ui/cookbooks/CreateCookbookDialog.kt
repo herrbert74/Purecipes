@@ -7,19 +7,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import app.purecipes.feature.library.domain.CookbookNameSuggestions
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 
@@ -48,17 +47,17 @@ internal fun CreateCookbookDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
-			Button(
+			PurecipesButton(
+				text = "Create",
 				onClick = { onConfirm(name) },
 				enabled = !isLoading && name.trim().isNotEmpty(),
-			) {
-				Text(text = "Create")
-			}
+			)
 		},
 		dismissButton = {
-			TextButton(onClick = onDismiss) {
-				Text(text = "Cancel")
-			}
+			PurecipesTextButton(
+				text = "Cancel",
+				onClick = onDismiss,
+			)
 		},
 		title = { Text(text = "New cookbook") },
 		text = {
@@ -86,7 +85,7 @@ internal fun CreateCookbookDialog(
 				)
 				errorMessage?.let { ErrorText(text = it) }
 				if (isLoading) {
-					CircularProgressIndicator(modifier = Modifier.size(24.dp))
+					CircularProgressIndicator(modifier = Modifier.size(PurecipesTheme.space.l))
 				}
 			}
 		},

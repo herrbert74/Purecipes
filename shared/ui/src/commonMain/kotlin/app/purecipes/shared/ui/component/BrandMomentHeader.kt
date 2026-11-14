@@ -35,7 +35,7 @@ fun BrandMomentHeader(
 	val illustrationIconSize = if (compact) {
 		BrandMomentHeaderDefaults.CompactIllustrationIconSize
 	} else {
-		BrandMomentHeaderDefaults.IllustrationIconSize
+		PurecipesTheme.space.xxl
 	}
 	val titleStyle = if (compact) {
 		PurecipesTheme.typography.headlineSmall
@@ -80,7 +80,6 @@ fun BrandMomentHeader(
 object BrandMomentHeaderDefaults {
 
 	val IllustrationSize = 96.dp
-	val IllustrationIconSize = 48.dp
 	val CompactIllustrationSize = 56.dp
 	val CompactIllustrationIconSize = 28.dp
 }

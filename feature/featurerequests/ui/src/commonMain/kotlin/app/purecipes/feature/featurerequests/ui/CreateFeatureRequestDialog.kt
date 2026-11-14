@@ -5,11 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,15 +15,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CREATE_FEATURE_REQUEST_TITLE_INPUT_TAG = "createFeatureRequestTitleInput"
 
 internal const val CREATE_FEATURE_REQUEST_DESCRIPTION_INPUT_TAG = "createFeatureRequestDescriptionInput"
-
-private val CREATE_FEATURE_REQUEST_PROGRESS_SIZE = 24.dp
 
 private const val CREATE_FEATURE_REQUEST_DESCRIPTION_LINES = 4
 
@@ -41,17 +38,17 @@ internal fun CreateFeatureRequestDialog(
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		confirmButton = {
-			Button(
+			PurecipesButton(
+				text = "Submit",
 				onClick = { onConfirm(titleField, descriptionField) },
 				enabled = !isLoading && titleField.trim().isNotEmpty() && descriptionField.trim().isNotEmpty(),
-			) {
-				Text(text = "Submit")
-			}
+			)
 		},
 		dismissButton = {
-			TextButton(onClick = onDismiss) {
-				Text(text = "Cancel")
-			}
+			PurecipesTextButton(
+				text = "Cancel",
+				onClick = onDismiss,
+			)
 		},
 		title = { Text(text = "Request a feature") },
 		text = {
@@ -77,7 +74,7 @@ internal fun CreateFeatureRequestDialog(
 				errorMessage?.let { ErrorText(text = it) }
 				if (isLoading) {
 					CircularProgressIndicator(
-						modifier = Modifier.size(CREATE_FEATURE_REQUEST_PROGRESS_SIZE),
+						modifier = Modifier.size(PurecipesTheme.space.l),
 					)
 				}
 			}

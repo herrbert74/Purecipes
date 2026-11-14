@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -31,6 +29,8 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
 import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesOutlinedButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -181,12 +181,11 @@ private fun EmptyPlansContent(
 			text = "Subscription plans are unavailable.",
 			style = PurecipesTheme.typography.bodyLarge,
 		)
-		Button(
+		PurecipesButton(
+			text = "Try again",
 			onClick = onRetryLoadPlans,
 			modifier = Modifier.padding(top = PurecipesTheme.space.m),
-		) {
-			Text(text = "Try again")
-		}
+		)
 	}
 }
 
@@ -221,15 +220,12 @@ private fun PlansContent(
 				onPurchase = onPurchase,
 			)
 		}
-		OutlinedButton(
+		PurecipesOutlinedButton(
+			text = if (isRestoring) "Restoring..." else "Restore purchases",
 			onClick = onRestorePurchases,
 			enabled = !isPurchasing && !isRestoring,
-			modifier = Modifier
-				.fillMaxWidth()
-				.testTag(PAYWALL_RESTORE_BUTTON_TAG),
-		) {
-			Text(text = if (isRestoring) "Restoring..." else "Restore purchases")
-		}
+			modifier = Modifier.testTag(PAYWALL_RESTORE_BUTTON_TAG),
+		)
 	}
 }
 
@@ -261,13 +257,11 @@ private fun SubscriptionPlanCard(
 				text = "${plan.price} / ${plan.duration.lowercase()}",
 				style = PurecipesTheme.typography.bodyLarge,
 			)
-			Button(
+			PurecipesButton(
+				text = "Subscribe",
 				onClick = { onPurchase(plan.packageIdentifier) },
 				enabled = enabled,
-				modifier = Modifier.fillMaxWidth(),
-			) {
-				Text(text = "Subscribe")
-			}
+			)
 		}
 	}
 }

@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +25,8 @@ import app.purecipes.shared.domain.ingredient.IngredientLookup
 import app.purecipes.shared.domain.model.IngredientCatalogue
 import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.LikelyIngredientMatch
+import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
@@ -102,14 +102,13 @@ internal fun YourIngredientsSection(
 						}
 					}
 				}
-				Button(
+				PurecipesButton(
+					text = "Add ingredient",
 					onClick = { showAddDialog = true },
 					modifier = Modifier
 						.padding(horizontal = PurecipesTheme.space.m)
 						.testTag(FILTER_ADD_INGREDIENT_BUTTON_TAG),
-				) {
-					Text(text = "Add ingredient")
-				}
+				)
 			}
 		}
 	}
@@ -180,12 +179,11 @@ internal fun AddIngredientDialog(
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
 					if (catalogueMatch !in pantryIngredients && catalogueMatch !in excludedIngredients) {
-						TextButton(
+						PurecipesTextButton(
+							text = "Use $catalogueMatch",
 							onClick = { onAdd(catalogueMatch) },
 							modifier = Modifier.testTag(ADD_INGREDIENT_USE_CATALOGUE_BUTTON_TAG),
-						) {
-							Text(text = "Use $catalogueMatch")
-						}
+						)
 					}
 				}
 				when {
@@ -215,26 +213,27 @@ internal fun AddIngredientDialog(
 								ingredientMatchCountLabel(match.recipeCount),
 							style = PurecipesTheme.typography.bodyMedium,
 						)
-						TextButton(onClick = { onAdd(match.ingredient) }) {
-							Text(text = "Use ${match.ingredient}")
-						}
+						PurecipesTextButton(
+							text = "Use ${match.ingredient}",
+							onClick = { onAdd(match.ingredient) },
+						)
 					}
 				}
 			}
 		},
 		confirmButton = {
-			Button(
+			PurecipesButton(
+				text = confirmButtonLabel,
 				onClick = { onAdd(trimmedQuery) },
 				enabled = trimmedQuery.isNotEmpty(),
 				modifier = Modifier.testTag(ADD_INGREDIENT_CONFIRM_BUTTON_TAG),
-			) {
-				Text(text = confirmButtonLabel)
-			}
+			)
 		},
 		dismissButton = {
-			TextButton(onClick = onDismiss) {
-				Text(text = "Cancel")
-			}
+			PurecipesTextButton(
+				text = "Cancel",
+				onClick = onDismiss,
+			)
 		},
 	)
 }

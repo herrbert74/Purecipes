@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.shelfKey
 import app.purecipes.shared.ui.component.ContainerTint
+import app.purecipes.shared.ui.component.PurecipesTextButton
 import app.purecipes.shared.ui.component.RecipeCard
 import app.purecipes.shared.ui.component.RecipeCardDefaults
 import app.purecipes.shared.ui.component.colorFamily
@@ -75,12 +75,11 @@ internal fun HomeShelfRow(
 				style = PurecipesTheme.typography.titleMedium,
 				color = labelColor,
 			)
-			TextButton(
+			PurecipesTextButton(
+				text = "See all",
 				onClick = onSeeAll,
 				modifier = Modifier.testTag("$HOME_SHELF_SEE_ALL_TAG_PREFIX$shelfKey"),
-			) {
-				Text(text = "See all")
-			}
+			)
 		}
 		PaginatedLazyRow(
 			paginationState = paginationState,
@@ -98,9 +97,10 @@ internal fun HomeShelfRow(
 				)
 			},
 			newPageErrorIndicator = { _ ->
-				TextButton(onClick = paginationState::retryLastFailedRequest) {
-					Text(text = "Retry")
-				}
+				PurecipesTextButton(
+					text = "Retry",
+					onClick = paginationState::retryLastFailedRequest,
+				)
 			},
 		) {
 			val entries = inlineFeedEntries(
