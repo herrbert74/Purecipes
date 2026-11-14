@@ -368,10 +368,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3",
-            "artifactVersion": "1.5.0-beta01",
+            "artifactVersion": "1.5.0-rc01",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-rc01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -393,10 +393,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-ripple",
-            "artifactVersion": "1.5.0-beta01",
+            "artifactVersion": "1.5.0-rc01",
             "name": "Compose Material3 Ripple",
             "description": "Building block APIs to build ripples that follow a Material 3 specification.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-beta01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-rc01",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1638,10 +1638,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-runtime",
-            "artifactVersion": "1.1.7",
+            "artifactVersion": "1.2.0",
             "name": "Androidx Navigation 3 Runtime",
             "description": "Provides the building blocks for a Compose first Navigation solution that easily supports extensions.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.7",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.2.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1663,10 +1663,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.1.7",
+            "artifactVersion": "1.2.0",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.1.7",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.2.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1688,10 +1688,10 @@
         },
         {
             "uniqueId": "androidx.navigationevent:navigationevent",
-            "artifactVersion": "1.1.2",
+            "artifactVersion": "1.1.1",
             "name": "Navigation Event",
             "description": "Provides APIs to easily intercept platform navigation events, including swipes and clicks, to provide a consistent API surface for handling these events.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.1.2",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.1.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1713,10 +1713,10 @@
         },
         {
             "uniqueId": "androidx.navigationevent:navigationevent-compose",
-            "artifactVersion": "1.1.2",
+            "artifactVersion": "1.1.1",
             "name": "NavigationEvent Compose",
             "description": "Compose integration with NavigationEvent",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.1.2",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigationevent#1.1.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2752,7 +2752,7 @@
         },
         {
             "uniqueId": "com.squareup.okhttp3:okhttp",
-            "artifactVersion": "5.5.0",
+            "artifactVersion": "5.5.1",
             "name": "okhttp",
             "description": "Square\u2019s meticulous HTTP client for Java and Kotlin.",
             "website": "https://lysine.dev/okhttp/",
@@ -2890,7 +2890,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel",
-            "artifactVersion": "1.4.5",
+            "artifactVersion": "1.5.2",
             "name": "Metrox ViewModel",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -2913,7 +2913,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-compose",
-            "artifactVersion": "1.4.5",
+            "artifactVersion": "1.5.2",
             "name": "Metrox ViewModel Compose",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -2936,7 +2936,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:runtime",
-            "artifactVersion": "1.4.5",
+            "artifactVersion": "1.5.2",
             "name": "Metro Runtime",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -3051,7 +3051,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-core",
-            "artifactVersion": "2.0.1",
+            "artifactVersion": "2.0.2",
             "name": "KMPNotifier Core",
             "description": "Core module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -3073,7 +3073,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-local",
-            "artifactVersion": "2.0.1",
+            "artifactVersion": "2.0.2",
             "name": "KMPNotifier Local",
             "description": "Local notifications module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -3095,7 +3095,7 @@
         },
         {
             "uniqueId": "io.github.mirzemehdi:kmpnotifier-push-firebase",
-            "artifactVersion": "2.0.1",
+            "artifactVersion": "2.0.2",
             "name": "KMPNotifier Push Firebase",
             "description": "Firebase push notifications module of KMPNotifier, Kotlin Multiplatform Notification Library",
             "website": "https://github.com/mirzemehdi/KMPNotifier/",
@@ -3117,7 +3117,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-cio",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-cio",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3139,7 +3139,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-content-negotiation",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-content-negotiation",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3161,7 +3161,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-core",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-core",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3183,7 +3183,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-darwin",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-darwin",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3227,7 +3227,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-js",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-js",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3249,7 +3249,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-logging",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-logging",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3271,7 +3271,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-client-okhttp",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-client-okhttp",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3293,7 +3293,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-events",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-events",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3315,7 +3315,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-http",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-http",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3337,7 +3337,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-http-cio",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-http-cio",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3359,7 +3359,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-io",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-io",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3381,7 +3381,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-network",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-network",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3403,7 +3403,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-network-tls",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-network-tls",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3425,7 +3425,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-openapi-schema",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-openapi-schema",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3447,7 +3447,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-serialization",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-serialization",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3469,7 +3469,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-serialization-kotlinx",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-serialization-kotlinx",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3491,7 +3491,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-serialization-kotlinx-json",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-serialization-kotlinx-json",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3513,7 +3513,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-sse",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-sse",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3535,7 +3535,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-utils",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-utils",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3557,7 +3557,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-websocket-serialization",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-websocket-serialization",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3579,7 +3579,7 @@
         },
         {
             "uniqueId": "io.ktor:ktor-websockets",
-            "artifactVersion": "3.6.0",
+            "artifactVersion": "3.6.1",
             "name": "ktor-websockets",
             "description": "Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.",
             "website": "https://github.com/ktorio/ktor",
@@ -3819,7 +3819,7 @@
         },
         {
             "uniqueId": "org.jetbrains.androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.1.2",
+            "artifactVersion": "1.2.0",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
             "website": "https://github.com/JetBrains/compose-multiplatform",
@@ -4985,7 +4985,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-bom",
-            "artifactVersion": "1.11.0",
+            "artifactVersion": "1.12.0",
             "name": "kotlinx-serialization-bom",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -5007,7 +5007,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-core",
-            "artifactVersion": "1.11.0",
+            "artifactVersion": "1.12.0",
             "name": "kotlinx-serialization-core",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -5029,7 +5029,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-json",
-            "artifactVersion": "1.11.0",
+            "artifactVersion": "1.12.0",
             "name": "kotlinx-serialization-json",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -5051,7 +5051,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-json-io",
-            "artifactVersion": "1.11.0",
+            "artifactVersion": "1.12.0",
             "name": "kotlinx-serialization-json-io",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",

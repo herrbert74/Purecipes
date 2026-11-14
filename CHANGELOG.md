@@ -4,6 +4,19 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.17.0] - 2026-11-14
+
+### Changed
+
+- Home feed has a denser layout and shows required appliance icons on Recently Viewed, Favorites, and Editorial shelves.
+- Expanded dietary labels across recipes for more accurate filtering.
+
+### Fixed
+
+- Tablespoons and teaspoons stay as spoon measures when converting between Metric and Imperial.
+- Home shelves keep their horizontal scroll position when navigating back.
+- Recipe images stay smoothly clipped when transitioning from a card to recipe details.
+
 ## [0.16.0] - 2026-10-22
 
 ### Added

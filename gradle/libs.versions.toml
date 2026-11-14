@@ -2,8 +2,8 @@
 
 #common configuration
 
-versionCode = "21"
-versionName = "0.16.0"
+versionCode = "22"
+versionName = "0.17.0"
 minSdkVersion = "24"
 compileSdkVersion = "37"
 targetSdkVersion = "37"
