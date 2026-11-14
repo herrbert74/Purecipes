@@ -38,13 +38,13 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
-import app.purecipes.shared.ui.component.ContainerTint
-import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.FavoriteHeartIcon
-import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
-import app.purecipes.shared.ui.component.PurecipesOutlinedButton
-import app.purecipes.shared.ui.component.colorFamily
+import app.purecipes.shared.ui.component.atom.ContainerTint
+import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.FavoriteHeartIcon
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.atom.colorFamily
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 

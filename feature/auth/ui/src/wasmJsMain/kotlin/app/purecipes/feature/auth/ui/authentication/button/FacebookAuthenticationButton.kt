@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
 import com.mmk.kmpauth.uihelper.facebook.FacebookSignInButton
 
 @Composable

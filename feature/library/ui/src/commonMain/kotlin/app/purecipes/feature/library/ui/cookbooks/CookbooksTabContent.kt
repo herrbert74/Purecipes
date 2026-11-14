@@ -13,10 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.shared.domain.model.CookbookSummary
-import app.purecipes.shared.ui.component.EmptyStateContent
-import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.molecule.EmptyStateContent
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.icon.AppIcons

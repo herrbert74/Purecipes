@@ -22,9 +22,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.CookbookSummary
-import app.purecipes.shared.ui.component.BodyText
-import app.purecipes.shared.ui.component.PurecipesTextButton
-import app.purecipes.shared.ui.component.TitleText
+import app.purecipes.shared.ui.component.atom.BodyText
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.TitleText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 

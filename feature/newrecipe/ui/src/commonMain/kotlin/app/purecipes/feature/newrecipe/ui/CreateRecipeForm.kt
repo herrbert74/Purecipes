@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.NutritionSummary
-import app.purecipes.shared.ui.component.NutritionSummaryCard
+import app.purecipes.shared.ui.component.organism.NutritionSummaryCard
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf

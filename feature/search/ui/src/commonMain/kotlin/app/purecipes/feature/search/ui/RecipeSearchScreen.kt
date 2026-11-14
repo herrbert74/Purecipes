@@ -26,8 +26,8 @@ import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
-import app.purecipes.shared.ui.component.browseTiles
-import app.purecipes.shared.ui.component.toggleBrowseTile
+import app.purecipes.shared.ui.component.molecule.browseTiles
+import app.purecipes.shared.ui.component.molecule.toggleBrowseTile
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.persistentListOf

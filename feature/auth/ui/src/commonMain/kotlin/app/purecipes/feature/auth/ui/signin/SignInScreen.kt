@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
 import app.purecipes.shared.domain.model.REGISTRATION_SUCCESS_MESSAGE
-import app.purecipes.shared.ui.component.BrandMomentHeader
+import app.purecipes.shared.ui.component.organism.BrandMomentHeader
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel

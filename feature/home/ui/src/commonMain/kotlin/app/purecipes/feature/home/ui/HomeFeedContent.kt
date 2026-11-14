@@ -28,8 +28,8 @@ import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.shelfKey
-import app.purecipes.shared.ui.component.EmptyStateContent
-import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.molecule.EmptyStateContent
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold

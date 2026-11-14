@@ -40,7 +40,7 @@ import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestHome
-import app.purecipes.shared.ui.component.RECIPE_CARD_APPLIANCE_ICON_PREFIX
+import app.purecipes.shared.ui.component.molecule.RECIPE_CARD_APPLIANCE_ICON_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.runRecompositionTrackingUiTest

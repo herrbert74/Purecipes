@@ -11,7 +11,7 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
-import app.purecipes.shared.ui.component.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable

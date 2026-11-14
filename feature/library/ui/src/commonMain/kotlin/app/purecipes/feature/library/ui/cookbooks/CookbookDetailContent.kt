@@ -30,9 +30,9 @@ import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.RecipeSummary
-import app.purecipes.shared.ui.component.BackNavigationButton
-import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.RecipeCard
+import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme

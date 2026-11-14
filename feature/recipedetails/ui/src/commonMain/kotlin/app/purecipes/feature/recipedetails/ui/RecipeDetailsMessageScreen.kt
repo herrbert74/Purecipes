@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.purecipes.shared.ui.component.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable

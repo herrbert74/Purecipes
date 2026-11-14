@@ -13,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.SearchFilters
-import app.purecipes.shared.ui.component.BrowseTileGrid
-import app.purecipes.shared.ui.component.BrowseTileItem
-import app.purecipes.shared.ui.component.FixedSubtitleText
-import app.purecipes.shared.ui.component.RecipeCardSkeleton
-import app.purecipes.shared.ui.component.browseTiles
+import app.purecipes.shared.ui.component.atom.FixedSubtitleText
+import app.purecipes.shared.ui.component.molecule.BrowseTileGrid
+import app.purecipes.shared.ui.component.molecule.BrowseTileItem
+import app.purecipes.shared.ui.component.molecule.browseTiles
+import app.purecipes.shared.ui.component.organism.RecipeCardSkeleton
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList

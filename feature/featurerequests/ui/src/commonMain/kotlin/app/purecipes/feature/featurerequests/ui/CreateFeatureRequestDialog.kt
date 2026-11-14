@@ -15,9 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val CREATE_FEATURE_REQUEST_TITLE_INPUT_TAG = "createFeatureRequestTitleInput"

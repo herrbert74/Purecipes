@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.search.domain.model.SearchPreferences
-import app.purecipes.shared.ui.component.SectionHeader
+import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SEARCH_PREFERENCES_RECIPE_FILTERS_SWITCH_TAG = "searchPreferencesRecipeFiltersSwitch"

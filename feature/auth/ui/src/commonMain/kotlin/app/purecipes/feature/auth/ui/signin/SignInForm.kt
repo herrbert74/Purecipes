@@ -28,8 +28,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import app.purecipes.shared.ui.component.PurecipesOutlinedButton
-import app.purecipes.shared.ui.component.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 

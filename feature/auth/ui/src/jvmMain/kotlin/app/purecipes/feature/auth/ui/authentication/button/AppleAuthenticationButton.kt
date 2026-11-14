@@ -7,7 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
 
 @Composable
 internal actual fun AppleAuthenticationButton(

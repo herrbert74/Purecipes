@@ -16,9 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestSort
 import app.purecipes.shared.domain.model.FeatureRequestStatus
-import app.purecipes.shared.ui.component.EmptyStateContent
-import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.PurecipesButton
+import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.molecule.EmptyStateContent
 import app.purecipes.shared.ui.component.paging.PaginatedLazyColumn
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.icon.AppIcons

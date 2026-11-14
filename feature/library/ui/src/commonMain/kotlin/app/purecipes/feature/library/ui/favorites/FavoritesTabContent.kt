@@ -15,9 +15,9 @@ import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.shared.domain.model.RecipeSummary
-import app.purecipes.shared.ui.component.EmptyStateContent
-import app.purecipes.shared.ui.component.ErrorText
-import app.purecipes.shared.ui.component.RecipeCard
+import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.molecule.EmptyStateContent
+import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.icon.AppIcons

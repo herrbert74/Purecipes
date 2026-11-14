@@ -22,8 +22,8 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.testfixtures.uitest.UiTestLibrary
-import app.purecipes.shared.ui.component.RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX
-import app.purecipes.shared.ui.component.RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX
+import app.purecipes.shared.ui.component.organism.RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX
+import app.purecipes.shared.ui.component.organism.RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent

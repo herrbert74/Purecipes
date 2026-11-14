@@ -41,8 +41,8 @@ import app.purecipes.shared.domain.model.IngredientMatchResponse
 import app.purecipes.shared.domain.model.MealType
 import app.purecipes.shared.domain.model.NutritionFilter
 import app.purecipes.shared.domain.model.SearchFilters
-import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.VerticalScrollbar
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.VerticalScrollbar
 import app.purecipes.shared.ui.icon.appliance.icon
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet

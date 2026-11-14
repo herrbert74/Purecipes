@@ -8,7 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.purecipes.shared.domain.model.NearMissRecipe
-import app.purecipes.shared.ui.component.RecipeCard
+import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList

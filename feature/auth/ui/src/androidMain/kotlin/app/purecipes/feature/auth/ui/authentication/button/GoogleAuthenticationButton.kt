@@ -10,7 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import com.mmk.kmpauth.google.rememberGoogleAuthState

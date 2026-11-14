@@ -10,8 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SAVE_BUTTON_TAG = "createRecipeSaveButton"

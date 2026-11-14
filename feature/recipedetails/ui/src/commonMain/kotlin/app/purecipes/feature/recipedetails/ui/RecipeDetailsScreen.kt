@@ -27,9 +27,9 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAd
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
-import app.purecipes.shared.ui.component.PurecipesButton
-import app.purecipes.shared.ui.component.PurecipesTextButton
-import app.purecipes.shared.ui.component.ShowLoading
+import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.ShowLoading
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 

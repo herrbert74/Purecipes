@@ -35,11 +35,11 @@ import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.domain.model.RecipeNutrition
-import app.purecipes.shared.ui.component.ContainerTint
-import app.purecipes.shared.ui.component.MetadataPillChip
-import app.purecipes.shared.ui.component.RecipeDetailsSection
-import app.purecipes.shared.ui.component.RecipeSectionSegmentedControl
-import app.purecipes.shared.ui.component.RecipeStatChipsRow
+import app.purecipes.shared.ui.component.atom.ContainerTint
+import app.purecipes.shared.ui.component.atom.MetadataPillChip
+import app.purecipes.shared.ui.component.molecule.RecipeDetailsSection
+import app.purecipes.shared.ui.component.molecule.RecipeSectionSegmentedControl
+import app.purecipes.shared.ui.component.molecule.RecipeStatChipsRow
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList

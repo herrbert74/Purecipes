@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.sharing.ui.ShareIconButton
-import app.purecipes.shared.ui.component.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 const val RECIPE_DETAILS_TOP_BAR_TAG = "recipeDetailsTopBar"
