@@ -3,8 +3,9 @@
 @file:DependsOn("org.postgresql:postgresql:42.7.14")
 @file:Import("ScrapedIngredientLines.kt")
 @file:Import("ScrapedAppliances.kt")
+@file:Import("ScrapedDietaryPreferences.kt")
 
-// cache-bust: alt-or-incomplete-v27
+// cache-bust: alt-or-incomplete-v28
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -146,6 +147,7 @@ data class RecipeData(
 	val links: Map<String, String?>,
 	val sourceUrl: String,
 	val appliances: List<String> = emptyList(),
+	val dietaryPreferences: List<String> = emptyList(),
 ) {
 
 	fun toJsonObject(): JsonObject = buildRecipeJsonObject(this)
@@ -211,6 +213,12 @@ private fun buildRecipeJsonObject(recipe: RecipeData): JsonObject {
 			"appliances",
 			buildJsonArray {
 				recipe.appliances.forEach { add(JsonPrimitive(it)) }
+			},
+		)
+		put(
+			"dietary_preferences",
+			buildJsonArray {
+				recipe.dietaryPreferences.forEach { add(JsonPrimitive(it)) }
 			},
 		)
 	}
@@ -943,6 +951,16 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 
 		cuisine = safe("cuisine")
 		category = safe("category")
+		raw_dietary = safe("dietary_restrictions", []) or []
+		if isinstance(raw_dietary, str):
+			dietary_restrictions = [x.strip() for x in raw_dietary.split(",") if x.strip()]
+		else:
+			dietary_restrictions = [str(x).strip() for x in raw_dietary if str(x).strip()]
+		raw_keywords = safe("keywords", []) or []
+		if isinstance(raw_keywords, str):
+			keywords = [x.strip() for x in raw_keywords.split(",") if x.strip()]
+		else:
+			keywords = [str(x).strip() for x in raw_keywords if str(x).strip()]
 
 		if not ingredient_groups:
 			print("__SCRAPE_NO_DATA__:missing ingredients")
@@ -965,6 +983,8 @@ fun scrapeRecipeWithPython(url: String): RecipeData? {
 			"language": safe("language", "en"),
 			"cuisine": cuisine,
 			"category": category,
+			"dietary_restrictions": dietary_restrictions,
+			"keywords": keywords,
 			"links": {"canonical": safe("canonical_url") or url},
 			"source_url": url
 		}
@@ -1135,6 +1155,13 @@ fun parseRecipe(rawJson: String): RecipeData? {
 	val jsonAppliances = root["appliances"]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }
 	val category = root["category"]?.jsonPrimitive?.contentOrNull
 	val categoryColumns = mapCategoryToColumns(category)
+	val dietaryPreferences = extractDietaryPreferencesFromRoot(
+		root = root,
+		title = title,
+		category = category,
+		ingredientGroups = ingredientGroups,
+		categoryDietaryPreferences = categoryColumns.dietaryPreferences,
+	)
 	val appliances = if (!jsonAppliances.isNullOrEmpty()) {
 		jsonAppliances
 	} else {
@@ -1167,9 +1194,44 @@ fun parseRecipe(rawJson: String): RecipeData? {
 			links = links,
 			sourceUrl = root["source_url"]?.jsonPrimitive?.contentOrNull.orEmpty(),
 			appliances = appliances,
+			dietaryPreferences = dietaryPreferences,
 		)
 	}
 }
+
+private fun extractDietaryPreferencesFromRoot(
+	root: JsonObject,
+	title: String,
+	category: String?,
+	ingredientGroups: List<Pair<String?, List<ProcessedScrapedIngredient>>>,
+	categoryDietaryPreferences: List<String>,
+): List<String> {
+	val explicitLabels = buildList {
+		addAll(categoryDietaryPreferences)
+		addAll(parseStringListFromRoot(root, "dietary_restrictions"))
+		addAll(parseStringListFromRoot(root, "keywords"))
+		addAll(parseStringListFromRoot(root, "dietary_preferences"))
+	}
+	val ingredientLines = ingredientGroups.flatMap { (_, items) -> items.map { it.text } }
+	return extractScrapedDietaryPreferences(
+		title = title,
+		category = category,
+		ingredients = ingredientLines,
+		explicitLabels = explicitLabels,
+	)
+}
+
+private fun parseStringListFromRoot(root: JsonObject, key: String): List<String> =
+	when (val element = root[key]) {
+		is JsonArray -> element.mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.trim() }.filter { it.isNotBlank() }
+		is JsonPrimitive ->
+			element.contentOrNull
+				?.split(',', ';')
+				?.map { it.trim() }
+				?.filter { it.isNotBlank() }
+				.orEmpty()
+		else -> emptyList()
+	}
 
 private fun parseIngredientGroupsFromRoot(
 	root: JsonObject,
@@ -1728,13 +1790,25 @@ private fun updateRecipeRecord(
 		ps.setString(10, categoryColumns.mealType)
 		ps.setString(11, categoryColumns.difficulty)
 		ps.setString(12, categoryColumns.cookingMethod)
-		setTextArrayOrNull(ps, connection, 13, categoryColumns.dietaryPreferences)
+		setTextArrayOrNull(ps, connection, 13, resolveDietaryPreferences(recipe, categoryColumns))
 		setTextArrayOrNull(ps, connection, 14, categoryColumns.tags)
 		ps.setString(15, measurementSystem)
 		setTextArrayOrNull(ps, connection, 16, recipe.appliances)
 		ps.setInt(17, recipeId)
 		ps.executeUpdate()
 	}
+}
+
+private fun resolveDietaryPreferences(
+	recipe: RecipeData,
+	categoryColumns: ScrapedCategoryColumns,
+): List<String> = recipe.dietaryPreferences.ifEmpty {
+	extractScrapedDietaryPreferences(
+		title = recipe.title,
+		category = recipe.category,
+		ingredients = recipe.ingredientGroups.flatMap { (_, items) -> items.map { it.text } },
+		explicitLabels = categoryColumns.dietaryPreferences,
+	)
 }
 
 private fun deleteRecipeDerivedRowsForUpsert(connection: Connection, recipeId: Int) {
@@ -1790,7 +1864,7 @@ private fun insertRecipeRecord(
 	ps.setString(10, categoryColumns.mealType)
 	ps.setString(11, categoryColumns.difficulty)
 	ps.setString(12, categoryColumns.cookingMethod)
-	setTextArrayOrNull(ps, connection, 13, categoryColumns.dietaryPreferences)
+	setTextArrayOrNull(ps, connection, 13, resolveDietaryPreferences(recipe, categoryColumns))
 	setTextArrayOrNull(ps, connection, 14, categoryColumns.tags)
 	ps.setString(15, recipe.sourceUrl)
 	ps.setString(16, measurementSystem)
