@@ -23,8 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
-import app.purecipes.shared.ui.component.BackNavigationButton
-import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.collections.immutable.toImmutableSet

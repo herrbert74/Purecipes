@@ -22,12 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.shared.ui.component.FixedSubtitleText
-import app.purecipes.shared.ui.component.FixedTitleText
-import app.purecipes.shared.ui.component.PurecipesTextButton
-import app.purecipes.shared.ui.component.RecipeCardDefaults
-import app.purecipes.shared.ui.component.SectionHeader
-import app.purecipes.shared.ui.component.purecipesPlaceholder
+import app.purecipes.shared.ui.component.atom.FixedSubtitleText
+import app.purecipes.shared.ui.component.atom.FixedTitleText
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.purecipesPlaceholder
+import app.purecipes.shared.ui.component.molecule.SectionHeader
+import app.purecipes.shared.ui.component.organism.RecipeCardDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val HOME_FEED_SKELETON_TAG = "homeFeedSkeleton"

@@ -7,8 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Appliance
-import app.purecipes.shared.ui.component.ContainerTint
-import app.purecipes.shared.ui.component.MetadataPillChip
+import app.purecipes.shared.ui.component.atom.ContainerTint
+import app.purecipes.shared.ui.component.atom.MetadataPillChip
 import app.purecipes.shared.ui.icon.appliance.icon
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme

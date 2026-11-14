@@ -1,7 +1,7 @@
 package app.purecipes.feature.home.ui
 
 import androidx.compose.runtime.Composable
-import app.purecipes.shared.ui.component.CenteredMessageContent
+import app.purecipes.shared.ui.component.molecule.CenteredMessageContent
 
 @Composable
 fun HomeListDetailPlaceholder() {

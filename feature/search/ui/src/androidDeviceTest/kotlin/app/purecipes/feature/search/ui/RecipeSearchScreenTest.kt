@@ -87,9 +87,9 @@ import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsReposit
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestSearch
-import app.purecipes.shared.ui.component.BROWSE_TILE_TAG_PREFIX
-import app.purecipes.shared.ui.component.RECIPE_CARD_APPLIANCE_ICON_PREFIX
-import app.purecipes.shared.ui.component.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
+import app.purecipes.shared.ui.component.molecule.BROWSE_TILE_TAG_PREFIX
+import app.purecipes.shared.ui.component.molecule.RECIPE_CARD_APPLIANCE_ICON_PREFIX
+import app.purecipes.shared.ui.component.organism.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
 import dejavu.assertStable

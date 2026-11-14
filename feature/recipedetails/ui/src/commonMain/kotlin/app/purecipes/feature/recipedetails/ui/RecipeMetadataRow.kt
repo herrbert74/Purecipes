@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeDetails
-import app.purecipes.shared.ui.component.ContainerTint
-import app.purecipes.shared.ui.component.MetadataPillChip
+import app.purecipes.shared.ui.component.atom.ContainerTint
+import app.purecipes.shared.ui.component.atom.MetadataPillChip
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @OptIn(ExperimentalLayoutApi::class)

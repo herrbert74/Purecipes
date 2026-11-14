@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.purecipes.shared.ui.component.VerticalScrollbar
+import app.purecipes.shared.ui.component.atom.VerticalScrollbar
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 /**

@@ -16,7 +16,7 @@ import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.profile.PrivacySettingsContent
-import app.purecipes.shared.ui.component.BrandMomentHeader
+import app.purecipes.shared.ui.component.organism.BrandMomentHeader
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 

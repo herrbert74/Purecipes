@@ -29,9 +29,9 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
-import app.purecipes.shared.ui.component.BackNavigationButton
-import app.purecipes.shared.ui.component.CenteredMessageContent
-import app.purecipes.shared.ui.component.ShowLoading
+import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.ShowLoading
+import app.purecipes.shared.ui.component.molecule.CenteredMessageContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.toImmutableSet

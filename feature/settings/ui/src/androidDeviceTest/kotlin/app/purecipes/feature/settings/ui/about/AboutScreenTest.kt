@@ -14,7 +14,7 @@ import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestSettings
-import app.purecipes.shared.ui.component.USDA_NUTRITION_ATTRIBUTION
+import app.purecipes.shared.ui.component.organism.USDA_NUTRITION_ATTRIBUTION
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent

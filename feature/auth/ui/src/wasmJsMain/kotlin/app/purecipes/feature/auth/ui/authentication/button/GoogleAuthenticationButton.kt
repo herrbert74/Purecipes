@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 import com.mmk.kmpauth.google.rememberGoogleSignInState

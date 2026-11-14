@@ -8,7 +8,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable

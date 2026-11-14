@@ -7,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.domain.model.RecipeNutrition
-import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
-import app.purecipes.shared.ui.component.NutritionSummaryCard
-import app.purecipes.shared.ui.component.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.organism.NUTRITION_FACTS_BUTTON_TAG
+import app.purecipes.shared.ui.component.organism.NutritionSummaryCard
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable

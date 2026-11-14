@@ -27,7 +27,7 @@ import app.purecipes.feature.featurerequests.ui.FeatureRequestDetailUiState
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestStatus
-import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.atom.ErrorText
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.auth.domain.model.AppleAuthenticationProfile
-import app.purecipes.shared.ui.component.PurecipesButtonDefaults
+import app.purecipes.shared.ui.component.atom.PurecipesButtonDefaults
 import com.mmk.kmpauth.apple.rememberAppleAuthState
 import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
 import kotlinx.coroutines.launch

@@ -21,8 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.RecipeFormatHandling
-import app.purecipes.shared.ui.component.PurecipesOutlinedButton
-import app.purecipes.shared.ui.component.SectionHeader
+import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable

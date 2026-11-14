@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.testTag
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
-import app.purecipes.shared.ui.component.browseTiles
+import app.purecipes.shared.ui.component.molecule.browseTiles
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList

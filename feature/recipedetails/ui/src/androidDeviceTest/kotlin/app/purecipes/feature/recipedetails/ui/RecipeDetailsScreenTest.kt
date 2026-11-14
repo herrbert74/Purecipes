@@ -45,8 +45,8 @@ import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestRecipeDetails
-import app.purecipes.shared.ui.component.NUTRITION_FACTS_BUTTON_TAG
-import app.purecipes.shared.ui.component.RecipeDetailsSection
+import app.purecipes.shared.ui.component.molecule.RecipeDetailsSection
+import app.purecipes.shared.ui.component.organism.NUTRITION_FACTS_BUTTON_TAG
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent

@@ -35,7 +35,7 @@ import app.purecipes.feature.library.ui.cookbooks.DeleteCookbookDialog
 import app.purecipes.feature.library.ui.favorites.FavoritesTabContent
 import app.purecipes.feature.library.ui.myrecipes.MyRecipesTabContent
 import app.purecipes.shared.domain.model.CookbookSummary
-import app.purecipes.shared.ui.component.ErrorText
+import app.purecipes.shared.ui.component.atom.ErrorText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.toImmutableList

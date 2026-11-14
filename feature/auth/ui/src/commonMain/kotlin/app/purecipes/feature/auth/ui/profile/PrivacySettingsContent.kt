@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import app.purecipes.feature.analytics.domain.model.ConsentState
 import app.purecipes.feature.analytics.domain.model.toDisplayText
-import app.purecipes.shared.ui.component.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable

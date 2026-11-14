@@ -26,11 +26,11 @@ import app.purecipes.shared.domain.model.HomeShelf
 import app.purecipes.shared.domain.model.HomeShelfId
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.shelfKey
-import app.purecipes.shared.ui.component.ContainerTint
-import app.purecipes.shared.ui.component.PurecipesTextButton
-import app.purecipes.shared.ui.component.RecipeCard
-import app.purecipes.shared.ui.component.RecipeCardDefaults
-import app.purecipes.shared.ui.component.colorFamily
+import app.purecipes.shared.ui.component.atom.ContainerTint
+import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.colorFamily
+import app.purecipes.shared.ui.component.organism.RecipeCard
+import app.purecipes.shared.ui.component.organism.RecipeCardDefaults
 import app.purecipes.shared.ui.component.paging.PaginatedLazyRow
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold

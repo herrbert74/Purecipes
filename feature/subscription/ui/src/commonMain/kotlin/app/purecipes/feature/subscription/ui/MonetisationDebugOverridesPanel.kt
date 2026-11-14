@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.subscription.domain.model.AdsDisplayOverride
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
 import app.purecipes.feature.subscription.domain.model.PremiumStatusOverride
-import app.purecipes.shared.ui.component.SectionHeader
+import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val MONETISATION_DEBUG_OVERRIDES_PANEL_TAG = "monetisationDebugOverridesPanel"

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import app.purecipes.shared.ui.component.FavoriteHeartIcon
+import app.purecipes.shared.ui.component.atom.FavoriteHeartIcon
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PreviewScreenSizes
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold

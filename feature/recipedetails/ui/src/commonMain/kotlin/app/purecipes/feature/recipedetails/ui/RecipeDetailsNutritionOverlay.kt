@@ -2,7 +2,7 @@ package app.purecipes.feature.recipedetails.ui
 
 import androidx.compose.runtime.Composable
 import app.purecipes.shared.domain.model.RecipeNutrition
-import app.purecipes.shared.ui.component.NutritionFactsDialog
+import app.purecipes.shared.ui.component.organism.NutritionFactsDialog
 
 @Composable
 internal fun RecipeDetailsNutritionOverlay(
