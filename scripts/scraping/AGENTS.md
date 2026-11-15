@@ -119,5 +119,7 @@ For scraper script changes:
 - **Scraped ingredient line tests**: Run `kotlin scripts/scraping/recipe_site_scraper_ingredient_test.main.kts` from the repo root
 - **Reproducible ingredient rebuild & snapshot diff**: Run `./gradlew rebuildIngredientData` followed by `./gradlew diffIngredientSnapshot` after changing `ScrapedIngredientLines.kt` (see [`../../backend/INGREDIENTS.md`](../../backend/INGREDIENTS.md))
 - **Appliance backfill (existing DB)**: `kotlin scripts/scraping/oneoff/backfill_recipe_appliances.main.kts` — after changing `ScrapedAppliances.kt`; see [README](README.md#backfill-recipe-appliances-backfill_recipe_appliances)
+- **Execute every edited `.main.kts` script**: `./gradlew detektAll` lints Kotlin scripts but does **not** compile them, so type errors survive Detekt. After any edit to a script (including Detekt-driven refactors), run it once, for example with `--dry-run true` for backfills, before finishing.
+- **Release database**: backfills only update the database they connect to. When a change needs existing data updated, also run the backfill against the release database over the SSH tunnel described in [`../../backend/RELEASE-DATA-SYNC.md`](../../backend/RELEASE-DATA-SYNC.md) (`--db-dsn jdbc:postgresql://localhost:15432/purecipes`), and tell the user it is required.
 - **Functional testing**: Test changes against actual recipe websites (or use `--mode json` with previously saved files for offline testing)
 - **Schema alignment**: After backend schema changes, verify scraper schema and insertion logic still work end-to-end

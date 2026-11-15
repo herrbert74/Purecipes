@@ -23,6 +23,15 @@ Purecipes uses AGP Compose Preview Screenshot Testing configured in `app/build.g
 ./gradlew :app:updateDebugStoreScreenshotDefaultTestSuite
 ```
 
+Run the `update...` and `test...` tasks in **separate** `./gradlew` invocations (for example chained with
+`&&`). Passing both in one command fails under Gradle 9, because the test task implicitly consumes the
+reference directory the update task writes.
+
+The `componentScreenshot` suite sets `imageDifferenceThreshold` in `app/build.gradle.kts` to absorb
+small font and emoji rendering differences between macOS (where baselines are usually generated) and
+Linux CI. If CI fails with a tiny difference, check whether the diff is a real change before regenerating
+baselines or raising the threshold.
+
 ## Writing component screenshot tests
 
 - Annotate test composables with `@PreviewTest` (`com.android.tools.screenshot.PreviewTest`) and

@@ -26,6 +26,8 @@ For iOS TestFlight / store preparation, also follow [`.agents/instructions/ios-r
 
 For selective Android UI tests (tags, PR labels, local `-PuiTestTags`), also follow [`.agents/instructions/ui-test-tags.md`](.agents/instructions/ui-test-tags.md).
 
+For Compose preview screenshot tests (component and Play Store suites), also follow [`.agents/instructions/screenshot-testing.md`](.agents/instructions/screenshot-testing.md).
+
 For scraping, PostgreSQL maintenance, and deleting imported recipes by site, also follow [`scripts/scraping/AGENTS.md`](scripts/scraping/AGENTS.md) (including local `psql` via `sudo -u postgres`).
 
 ---
@@ -98,6 +100,10 @@ For issues, pull requests, checks, releases, and other GitHub tasks, use the Git
 
 * **Branch naming:** Always prefix ticket branches with the GitHub issue number and an underscore (`<issue-number>_<short-slug>`, for example `389_home-shelves-appliances` or `358_appliances`). Do **not** use subfolder prefixes such as `fix/`, `bugfix/`, or `feature/`, even for bug fixes. (Release branches use the release skill convention `release/vX.Y.Z-changelog`.)
 * **Commit messages:** Prefix commits that close a ticket (or the final commit on a multi-commit issue branch) with `Fix #<issue-number>` so GitHub closes the issue automatically when the PR is merged (for example `Fix #389 Include recipe appliances in Recently Viewed, Favorites, and Editorial home shelves`).
+
+## Rule: Git worktrees
+
+Do not leave extra git worktrees behind. A branch checked out in a worktree cannot be checked out anywhere else, which blocks the user from switching to it. If a worktree is needed for parallel work, remove it with `git worktree remove` (and `git worktree prune`) as soon as its branch is committed or pushed, and never leave branches locked in agent-created worktrees when finishing a task.
 
 ## Rule: Use kotlin-result library
 
