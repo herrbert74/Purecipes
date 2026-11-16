@@ -33,9 +33,11 @@ import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestMain
+import app.purecipes.shared.testfixtures.uitest.enablePurecipesAccessibilityChecks
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,6 +49,11 @@ class MainScreenScreenViewTrackingTest {
 
 	@get:Rule
 	val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+	@Before
+	fun enableAccessibilityChecks() {
+		composeRule.enablePurecipesAccessibilityChecks()
+	}
 
 	@Test
 	fun navigatingAndReturningEmitsScreenViewsIncludingResurface() {

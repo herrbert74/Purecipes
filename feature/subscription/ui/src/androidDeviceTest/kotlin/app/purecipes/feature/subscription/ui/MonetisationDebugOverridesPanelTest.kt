@@ -13,8 +13,8 @@ import app.purecipes.feature.subscription.domain.model.AdsDisplayOverride
 import app.purecipes.feature.subscription.domain.model.MonetisationDebugOverrides
 import app.purecipes.feature.subscription.domain.model.PremiumStatusOverride
 import app.purecipes.shared.testfixtures.uitest.UiTestSubscription
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import org.junit.Assert.assertEquals
 import org.junit.Test

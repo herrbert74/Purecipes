@@ -289,6 +289,75 @@ private fun SecondaryActionsAndStatChipsLightScreenshot() {
 	}
 }
 
+@PreviewTest
+@Preview(name = "recipe_card_light_font_scale_2", showBackground = true, fontScale = 2f)
+@Composable
+private fun RecipeCardLightFontScaleScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		ScreenshotCoilPreview {
+			RecipeCard(
+				recipe = sampleRecipe,
+				onClick = {},
+			)
+		}
+	}
+}
+
+@PreviewTest
+@Preview(name = "metadata_pill_chip_font_scale_2", showBackground = true, fontScale = 2f)
+@Composable
+private fun MetadataPillChipFontScaleScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		MetadataPillChip(
+			text = "Italian",
+			icon = AppIcons.Favorite,
+			tint = ContainerTint.Primary,
+		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "outlined_stat_chip_font_scale_2", showBackground = true, fontScale = 2f)
+@Composable
+private fun OutlinedStatChipFontScaleScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		OutlinedStatChip(
+			label = "Prep",
+			value = "15 min",
+			tint = ContainerTint.Secondary,
+		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "browse_tile_grid_font_scale_2", showBackground = true, fontScale = 2f)
+@Composable
+private fun BrowseTileGridFontScaleScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		BrowseTileGrid(
+			tiles = browseTiles(SearchFilters()),
+			onTileClick = {},
+		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "recipe_section_segmented_control_font_scale_2", showBackground = true, fontScale = 2f)
+@Composable
+private fun RecipeSectionSegmentedControlFontScaleScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		RecipeSectionSegmentedControl(
+			sections = persistentListOf(
+				RecipeDetailsSection.Ingredients,
+				RecipeDetailsSection.Method,
+				RecipeDetailsSection.Nutrition,
+			),
+			selectedSection = RecipeDetailsSection.Ingredients,
+			onSectionChange = {},
+		)
+	}
+}
+
 @Composable
 private fun ScreenshotSurface(
 	darkTheme: Boolean,

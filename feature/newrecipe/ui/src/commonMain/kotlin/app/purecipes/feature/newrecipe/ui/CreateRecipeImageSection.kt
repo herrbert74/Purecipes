@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.atom.PurecipesTextButton
@@ -178,6 +180,13 @@ private fun EmptyImageDropzone(
 			)
 			.background(PurecipesTheme.colorScheme.surfaceContainerHighest)
 			.testTag(IMAGE_PICK_BUTTON_TAG)
+			.semantics {
+				contentDescription = if (enabled) {
+					"Add a photo"
+				} else {
+					"Photo picker unavailable"
+				}
+			}
 			.clickable(enabled = enabled, onClick = onClick),
 		contentAlignment = Alignment.Center,
 	) {

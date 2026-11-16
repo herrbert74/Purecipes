@@ -16,8 +16,8 @@ import app.purecipes.shared.testfixtures.fake.FakeFeatureRequestsRepository
 import app.purecipes.shared.testfixtures.fake.fakeFeatureRequest
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestFeatureRequests
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import org.junit.Test
 import org.junit.runner.RunWith

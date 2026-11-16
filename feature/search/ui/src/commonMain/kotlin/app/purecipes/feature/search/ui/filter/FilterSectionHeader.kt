@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -17,8 +18,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+
+private val FILTER_SECTION_HEADER_MIN_HEIGHT = 48.dp
 
 internal fun filterSectionSubtitleTag(title: String): String =
 	"filterSectionSubtitle${title.filter(Char::isLetterOrDigit)}"
@@ -41,7 +45,13 @@ internal fun FilterSectionHeader(
 		modifier = modifier
 			.fillMaxWidth()
 			.then(
-				if (onToggleCollapse != null) Modifier.clickable(onClick = onToggleCollapse) else Modifier,
+				if (onToggleCollapse != null) {
+					Modifier
+						.defaultMinSize(minHeight = FILTER_SECTION_HEADER_MIN_HEIGHT)
+						.clickable(onClick = onToggleCollapse)
+				} else {
+					Modifier
+				},
 			)
 			.padding(
 				start = PurecipesTheme.space.m,

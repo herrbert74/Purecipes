@@ -29,9 +29,9 @@ import app.purecipes.shared.testfixtures.fake.FakeAuthenticationRepository
 import app.purecipes.shared.testfixtures.fake.FakeCrashRepository
 import app.purecipes.shared.testfixtures.uitest.UiTestAuth
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import org.junit.Assert.assertEquals
 import org.junit.Test
