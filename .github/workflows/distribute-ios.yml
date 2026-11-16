@@ -355,9 +355,11 @@ jobs:
           KEY_DIR="${HOME}/.appstoreconnect/private_keys"
           mkdir -p "${KEY_DIR}"
           cp "${APP_STORE_CONNECT_API_KEY_PATH}" "${KEY_DIR}/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
+          # Xcode 26 altool fails lookup with "Cannot determine the Apple ID from Bundle ID" (19).
           xcrun altool --upload-app --type ios --file "${IPA_PATH}" \
             --apiKey "${APP_STORE_CONNECT_API_KEY_ID}" \
-            --apiIssuer "${APP_STORE_CONNECT_ISSUER_ID}"
+            --apiIssuer "${APP_STORE_CONNECT_ISSUER_ID}" \
+            --use-old-altool
 
       - name: Upload IPA to Firebase App Distribution
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_firebase != true }}
