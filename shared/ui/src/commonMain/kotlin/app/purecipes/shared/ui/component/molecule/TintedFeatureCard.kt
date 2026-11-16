@@ -7,6 +7,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.atom.BodyText
 import app.purecipes.shared.ui.component.atom.ContainerTint
@@ -26,6 +27,15 @@ fun TintedFeatureCard(
 ) {
 	val colors = tint.colorFamily()
 	val cardColors = CardDefaults.cardColors(containerColor = colors.colorContainer)
+	val cardModifier = modifier
+		.fillMaxWidth()
+		.then(
+			if (onClick != null) {
+				Modifier.semantics(mergeDescendants = true) {}
+			} else {
+				Modifier
+			},
+		)
 	val cardContent: @Composable ColumnScope.() -> Unit = {
 		label?.let { chipLabel ->
 			MetadataPillChip(
@@ -39,13 +49,13 @@ fun TintedFeatureCard(
 	if (onClick != null) {
 		Card(
 			onClick = onClick,
-			modifier = modifier.fillMaxWidth(),
+			modifier = cardModifier,
 			colors = cardColors,
 			content = cardContent,
 		)
 	} else {
 		Card(
-			modifier = modifier.fillMaxWidth(),
+			modifier = cardModifier,
 			colors = cardColors,
 			content = cardContent,
 		)

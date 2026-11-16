@@ -1,3 +1,10 @@
 <resources>
+	<string name="account">Account</string>
+	<string name="close_nutrition_facts">Close nutrition facts</string>
+	<string name="delete_recipe">Delete recipe</string>
+	<string name="edit_recipe">Edit recipe</string>
+	<string name="favorites">Favorites</string>
+	<string name="favorited">Favorited</string>
 	<string name="loading">Loading</string>
+	<string name="navigate_up">Navigate up</string>
 </resources>

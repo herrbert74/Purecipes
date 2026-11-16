@@ -12,12 +12,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.molecule.BrandMomentIllustration
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.account
 
 @Composable
 fun BrandMomentHeader(
@@ -65,9 +70,13 @@ fun BrandMomentHeader(
 		)
 		Text(
 			text = title,
-			style = titleStyle,
-			color = PurecipesTheme.colorScheme.onPrimaryContainer,
-			textAlign = TextAlign.Center,
+			modifier = Modifier.headingSemantics(),
+			style = titleStyle.merge(
+				TextStyle(
+					color = PurecipesTheme.colorScheme.onPrimaryContainer,
+					textAlign = TextAlign.Center,
+				),
+			),
 		)
 		Text(
 			text = description,
@@ -92,7 +101,7 @@ private fun BrandMomentHeaderLightPreview() {
 		Surface {
 			BrandMomentHeader(
 				icon = AppIcons.Favorite,
-				iconContentDescription = "Account",
+				iconContentDescription = stringResource(Res.string.account),
 				title = "Your kitchen, saved",
 				description = "Sign in to keep favorites, cookbooks, and uploads with you.",
 			)
@@ -107,7 +116,7 @@ private fun BrandMomentHeaderDarkPreview() {
 		Surface {
 			BrandMomentHeader(
 				icon = AppIcons.Favorite,
-				iconContentDescription = "Account",
+				iconContentDescription = stringResource(Res.string.account),
 				title = "Your kitchen, saved",
 				description = "Sign in to keep favorites, cookbooks, and uploads with you.",
 			)

@@ -13,6 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -33,7 +36,13 @@ fun MetadataPillChip(
 	val background = if (filled) colors.color else colors.colorContainer
 	val contentColor = if (filled) colors.onColor else colors.onColorContainer
 	val pillShape = RoundedCornerShape(PurecipesButtonDefaults.pillCorner)
+	val interactiveModifier = if (onClick != null && !isPlaceholder) {
+		Modifier.semantics { role = Role.Button }
+	} else {
+		Modifier
+	}
 	val chipModifier = modifier
+		.then(interactiveModifier)
 		.purecipesPlaceholder(
 			visible = isPlaceholder,
 			shape = pillShape,

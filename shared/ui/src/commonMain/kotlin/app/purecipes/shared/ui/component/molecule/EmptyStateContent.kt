@@ -13,11 +13,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.favorites
 
 @Composable
 fun EmptyStateContent(
@@ -46,9 +51,13 @@ fun EmptyStateContent(
 			)
 			Text(
 				text = title,
-				style = PurecipesTheme.typography.headlineLarge,
-				color = PurecipesTheme.colorScheme.onPrimaryContainer,
-				textAlign = TextAlign.Center,
+				modifier = Modifier.headingSemantics(),
+				style = PurecipesTheme.typography.headlineLarge.merge(
+					TextStyle(
+						color = PurecipesTheme.colorScheme.onPrimaryContainer,
+						textAlign = TextAlign.Center,
+					),
+				),
 			)
 			Text(
 				text = description,
@@ -68,7 +77,7 @@ private fun EmptyStateContentLightPreview() {
 		Surface {
 			EmptyStateContent(
 				icon = AppIcons.Favorite,
-				iconContentDescription = "Favorites",
+				iconContentDescription = stringResource(Res.string.favorites),
 				title = "No favorites yet",
 				description = "Add recipes from the details screen and they will appear here.",
 			)
@@ -83,7 +92,7 @@ private fun EmptyStateContentDarkPreview() {
 		Surface {
 			EmptyStateContent(
 				icon = AppIcons.Favorite,
-				iconContentDescription = "Favorites",
+				iconContentDescription = stringResource(Res.string.favorites),
 				title = "No favorites yet",
 				description = "Add recipes from the details screen and they will appear here.",
 			)
@@ -98,7 +107,7 @@ private fun EmptyStateContentWithActionPreview() {
 		Surface {
 			EmptyStateContent(
 				icon = AppIcons.Favorite,
-				iconContentDescription = "Favorites",
+				iconContentDescription = stringResource(Res.string.favorites),
 				title = "Sign in to view favorites",
 				description = "Favorites are tied to your session, so each account keeps its own saved recipes.",
 				action = {

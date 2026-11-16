@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.purecipesPlaceholder
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -26,12 +27,20 @@ fun SectionHeader(
 		modifier = modifier,
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 	) {
-		Text(
-			text = title,
-			modifier = Modifier.purecipesPlaceholder(visible = isPlaceholder),
-			style = titleStyle,
-			fontWeight = titleFontWeight,
-		)
+		if (isPlaceholder) {
+			Text(
+				text = title,
+				modifier = Modifier.purecipesPlaceholder(visible = true),
+				style = titleStyle,
+				fontWeight = titleFontWeight,
+			)
+		} else {
+			Text(
+				text = title,
+				modifier = Modifier.headingSemantics(),
+				style = titleStyle.merge(TextStyle(fontWeight = titleFontWeight)),
+			)
+		}
 		Text(
 			text = subtitle,
 			modifier = Modifier.purecipesPlaceholder(visible = isPlaceholder),

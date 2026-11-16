@@ -18,17 +18,28 @@ fun FixedTitleText(
 	style: TextStyle = PurecipesTheme.typography.titleMedium,
 	minLines: Int = 1,
 	maxLines: Int = 2,
+	isHeading: Boolean = false,
 	isPlaceholder: Boolean = false,
 ) {
-	Text(
-		text = text,
-		modifier = modifier.purecipesPlaceholder(visible = isPlaceholder),
-		style = style,
-		color = color,
-		minLines = minLines,
-		maxLines = maxLines,
-		overflow = TextOverflow.Ellipsis,
-	)
+	if (isHeading && !isPlaceholder) {
+		Text(
+			text = text,
+			modifier = modifier.headingSemantics(),
+			maxLines = maxLines,
+			overflow = TextOverflow.Ellipsis,
+			style = style.merge(TextStyle(color = color)),
+		)
+	} else {
+		Text(
+			text = text,
+			modifier = modifier.purecipesPlaceholder(visible = isPlaceholder),
+			style = style,
+			color = color,
+			minLines = minLines,
+			maxLines = maxLines,
+			overflow = TextOverflow.Ellipsis,
+		)
+	}
 }
 
 @Preview

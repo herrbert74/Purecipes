@@ -31,6 +31,8 @@ import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.component.atom.ShowLoading
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.CenteredMessageContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -71,7 +73,13 @@ fun StepByStepCookingRoute(
 			modifier = Modifier.fillMaxSize(),
 			topBar = {
 				TopAppBar(
-					title = { Text(text = viewModel.recipeDetails?.title.orEmpty()) },
+					modifier = Modifier.includeInParentAccessibilityContainer(),
+					title = {
+						Text(
+							text = viewModel.recipeDetails?.title.orEmpty(),
+							modifier = Modifier.headingSemantics(),
+						)
+					},
 					navigationIcon = {
 						BackNavigationButton(onBack = onBack)
 					},

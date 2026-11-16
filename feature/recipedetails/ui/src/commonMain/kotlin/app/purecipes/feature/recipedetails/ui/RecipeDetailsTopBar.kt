@@ -21,6 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 const val RECIPE_DETAILS_TOP_BAR_TAG = "recipeDetailsTopBar"
@@ -64,9 +66,9 @@ internal fun RecipeDetailsTopBar(
 				if (titleAlpha > 0f) {
 					Text(
 						text = title,
+						modifier = Modifier.alpha(titleAlpha).headingSemantics(),
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,
-						modifier = Modifier.alpha(titleAlpha),
 					)
 				}
 			},
@@ -94,7 +96,9 @@ internal fun RecipeDetailsTopBar(
 			colors = TopAppBarDefaults.topAppBarColors(
 				containerColor = containerColor,
 			),
-			modifier = Modifier.testTag(RECIPE_DETAILS_TOP_BAR_TAG),
+			modifier = Modifier
+				.testTag(RECIPE_DETAILS_TOP_BAR_TAG)
+				.includeInParentAccessibilityContainer(),
 		)
 	}
 }

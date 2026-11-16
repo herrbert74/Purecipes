@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.toImmutableList
@@ -57,10 +59,11 @@ fun FeatureRequestsScreen(
 			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
+				modifier = Modifier.includeInParentAccessibilityContainer(),
 				title = {
 					Text(
 						text = "Feature requests",
-						modifier = Modifier.testTag(FEATURE_REQUESTS_TITLE_TAG),
+						modifier = Modifier.testTag(FEATURE_REQUESTS_TITLE_TAG).headingSemantics(),
 					)
 				},
 				scrollBehavior = topAppBarScrollBehavior,

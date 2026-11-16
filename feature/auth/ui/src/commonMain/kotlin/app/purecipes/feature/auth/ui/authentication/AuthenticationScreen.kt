@@ -26,6 +26,8 @@ import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.InitializeGoogleAuthenticationProvider
 import app.purecipes.feature.auth.ui.profile.SignedInContent
 import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -69,7 +71,13 @@ fun AuthenticationScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Account", modifier = Modifier.testTag(AUTH_SCREEN_TITLE_TAG)) },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = {
+					Text(
+						text = "Account",
+						modifier = Modifier.testTag(AUTH_SCREEN_TITLE_TAG).headingSemantics(),
+					)
+				},
 				actions = {
 					IconButton(onClick = onOpenSettings) {
 						Icon(
@@ -86,6 +94,7 @@ fun AuthenticationScreen(
 				modifier = Modifier
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
+					.includeInParentAccessibilityContainer()
 					.padding(innerPadding)
 					.padding(
 						start = PurecipesTheme.space.l,
@@ -141,13 +150,17 @@ private fun AuthenticationScreenErrorPreview() {
 		Scaffold(
 			modifier = Modifier.fillMaxSize(),
 			topBar = {
-				TopAppBar(title = { Text(text = "Account") })
+				TopAppBar(
+					modifier = Modifier.includeInParentAccessibilityContainer(),
+					title = { Text(text = "Account", modifier = Modifier.headingSemantics()) },
+				)
 			},
 		) { innerPadding ->
 			Column(
 				modifier = Modifier
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
+					.includeInParentAccessibilityContainer()
 					.padding(innerPadding)
 					.padding(PurecipesTheme.space.l),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),

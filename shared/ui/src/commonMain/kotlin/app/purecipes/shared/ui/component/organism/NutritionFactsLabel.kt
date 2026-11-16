@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -32,8 +33,13 @@ import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeNutrition
 import app.purecipes.shared.domain.model.hasMacroNutrients
 import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.close_nutrition_facts
 import kotlin.math.roundToInt
 
 const val NUTRITION_FACTS_DIALOG_TAG = "nutritionFactsDialog"
@@ -77,7 +83,8 @@ fun NutritionFactsDialog(
 				modifier = Modifier
 					.fillMaxWidth()
 					.padding(PurecipesTheme.space.m)
-					.verticalScroll(rememberScrollState()),
+					.verticalScroll(rememberScrollState())
+					.includeInParentAccessibilityContainer(),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			) {
 				Row(
@@ -91,13 +98,15 @@ fun NutritionFactsDialog(
 						} else {
 							"Nutrition Facts"
 						},
-						style = PurecipesTheme.typography.headlineMedium,
-						fontWeight = FontWeight.Bold,
+						modifier = Modifier.headingSemantics(),
+						style = PurecipesTheme.typography.headlineMedium.merge(
+							TextStyle(fontWeight = FontWeight.Bold),
+						),
 					)
 					IconButton(onClick = onDismiss) {
 						Icon(
 							imageVector = AppIcons.Close,
-							contentDescription = "Close nutrition facts",
+							contentDescription = stringResource(Res.string.close_nutrition_facts),
 						)
 					}
 				}

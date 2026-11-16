@@ -25,6 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.collections.immutable.toImmutableSet
@@ -105,6 +107,7 @@ fun CreateRecipeScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
+				modifier = Modifier.includeInParentAccessibilityContainer(),
 				title = {
 					Text(
 						text = if (recipeId != null || viewModel.isEditing) {
@@ -112,6 +115,7 @@ fun CreateRecipeScreen(
 						} else {
 							"Create recipe"
 						},
+						modifier = Modifier.headingSemantics(),
 					)
 				},
 				navigationIcon = {
@@ -164,6 +168,7 @@ fun CreateRecipeScreen(
 						.fillMaxWidth()
 						.imePadding()
 						.verticalScroll(scrollState)
+						.includeInParentAccessibilityContainer()
 						.padding(
 							start = PurecipesTheme.space.m,
 							top = PurecipesTheme.space.m,
@@ -305,7 +310,8 @@ private fun CreateRecipeSignedOutScaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Create recipe") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { Text(text = "Create recipe", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					if (onBack != null) {
 						BackNavigationButton(onBack = onBack)

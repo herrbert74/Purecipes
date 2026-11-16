@@ -27,6 +27,7 @@ import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.BrowseTileGrid
 import app.purecipes.shared.ui.component.molecule.BrowseTileItem
 import app.purecipes.shared.ui.component.molecule.EmptyStateContent
@@ -84,7 +85,9 @@ internal fun SearchResultsContent(
 			requestInitialPageAutomatically = false,
 			state = resultsListState,
 			modifier = modifier.fillMaxWidth(),
-			lazyModifier = Modifier.testTag(SEARCH_RESULTS_LIST_TAG),
+			lazyModifier = Modifier
+				.testTag(SEARCH_RESULTS_LIST_TAG)
+				.includeInParentAccessibilityContainer(),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 			contentPadding = PaddingValues(

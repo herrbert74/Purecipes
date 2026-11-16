@@ -29,6 +29,8 @@ import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NotificationPreferences
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -89,7 +91,8 @@ fun SettingsScreen(
 			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Settings") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { Text(text = "Settings", modifier = Modifier.headingSemantics()) },
 				scrollBehavior = topAppBarScrollBehavior,
 				navigationIcon = {
 					IconButton(onClick = onBack) {
@@ -106,6 +109,7 @@ fun SettingsScreen(
 			modifier = Modifier
 				.fillMaxSize()
 				.verticalScroll(scrollState)
+				.includeInParentAccessibilityContainer()
 				.padding(innerPadding)
 				.padding(
 					start = PurecipesTheme.space.m,

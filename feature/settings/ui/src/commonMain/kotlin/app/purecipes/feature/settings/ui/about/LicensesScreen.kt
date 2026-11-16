@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 
 @Composable
@@ -20,7 +22,8 @@ fun LicensesScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Open Source Licenses") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { Text(text = "Open Source Licenses", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(

@@ -31,6 +31,8 @@ import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdenti
 import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
 import app.purecipes.shared.ui.component.atom.PurecipesButton
 import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -73,7 +75,8 @@ fun PaywallScreen(
 			.testTag(PAYWALL_SCREEN_TAG),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Go Premium") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { Text(text = "Go Premium", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(

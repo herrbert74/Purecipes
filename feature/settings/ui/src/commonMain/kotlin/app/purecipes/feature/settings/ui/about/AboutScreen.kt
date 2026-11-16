@@ -28,6 +28,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.component.organism.USDA_NUTRITION_ATTRIBUTION
 import app.purecipes.shared.ui.icon.AppIcons
@@ -52,7 +54,8 @@ fun AboutScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "About") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { Text(text = "About", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
@@ -96,7 +99,9 @@ internal fun AboutScreenContent(
 	modifier: Modifier = Modifier,
 ) {
 	Column(
-		modifier = modifier.verticalScroll(rememberScrollState()),
+		modifier = modifier
+			.verticalScroll(rememberScrollState())
+			.includeInParentAccessibilityContainer(),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
 		Surface(

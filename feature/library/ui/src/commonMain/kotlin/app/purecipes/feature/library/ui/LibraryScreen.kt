@@ -36,6 +36,8 @@ import app.purecipes.feature.library.ui.favorites.FavoritesTabContent
 import app.purecipes.feature.library.ui.myrecipes.MyRecipesTabContent
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.headingSemantics
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.toImmutableList
@@ -101,7 +103,13 @@ fun LibraryScreen(
 			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Library", modifier = Modifier.testTag(LIBRARY_TITLE_TAG)) },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = {
+					Text(
+						text = "Library",
+						modifier = Modifier.testTag(LIBRARY_TITLE_TAG).headingSemantics(),
+					)
+				},
 				scrollBehavior = topAppBarScrollBehavior,
 			)
 		},
