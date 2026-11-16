@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
@@ -31,8 +33,9 @@ import app.purecipes.shared.ui.component.recipeImageSharedElement
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.toImmutableSet
-
-private const val PREP_TIME_UNKNOWN = "Prep time unknown"
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.favorited
 
 @Composable
 internal fun RecipeShelfCard(
@@ -41,9 +44,18 @@ internal fun RecipeShelfCard(
 	modifier: Modifier = Modifier,
 	transitionKey: String? = null,
 ) {
+	val description = recipeCardContentDescription(
+		recipe = recipe,
+		favoritedLabel = stringResource(Res.string.favorited),
+		includeLabels = false,
+	)
 	Card(
 		onClick = onClick,
-		modifier = modifier.width(RecipeCardDefaults.ShelfCardWidth),
+		modifier = modifier
+			.width(RecipeCardDefaults.ShelfCardWidth)
+			.semantics(mergeDescendants = true) {
+				contentDescription = description
+			},
 		colors = CardDefaults.cardColors(
 			containerColor = PurecipesTheme.colorScheme.surface,
 		),
@@ -65,7 +77,7 @@ internal fun RecipeShelfCard(
 			) {
 				AsyncImage(
 					model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
-					contentDescription = recipe.title,
+					contentDescription = null,
 					modifier = Modifier
 						.fillMaxSize()
 						.recipeImageSharedElement(
@@ -83,7 +95,7 @@ internal fun RecipeShelfCard(
 						FavoriteHeartIcon(
 							selected = true,
 							tint = PurecipesTheme.fixedColors.inverseOnSurfaceFixed,
-							contentDescription = "Favorited",
+							contentDescription = null,
 							modifier = Modifier
 								.padding(PurecipesTheme.space.s)
 								.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
@@ -114,6 +126,7 @@ internal fun RecipeShelfCard(
 					RecipeCardApplianceIcons(
 						appliances = recipe.appliances.toImmutableSet(),
 						tint = PurecipesTheme.colorScheme.onSurfaceVariant,
+						decorative = true,
 					)
 				}
 			}

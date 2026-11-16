@@ -17,6 +17,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.atom.ContainerTint
 import app.purecipes.shared.ui.component.atom.FixedSubtitleText
@@ -26,6 +28,9 @@ import app.purecipes.shared.ui.component.atom.colorFamily
 import app.purecipes.shared.ui.component.atom.purecipesPlaceholder
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.loading
 
 private const val DEFAULT_SKELETON_COUNT = 6
 private const val TITLE_PLACEHOLDER_WIDTH_FRACTION = 0.75f
@@ -43,8 +48,13 @@ fun RecipeCardSkeleton(
 ) {
 	val tint = ContainerTint.forIndex(tintIndex)
 	val colors = tint.colorFamily()
+	val loadingDescription = stringResource(Res.string.loading)
 	Card(
-		modifier = modifier.fillMaxWidth(widthFraction),
+		modifier = modifier
+			.fillMaxWidth(widthFraction)
+			.clearAndSetSemantics {
+				contentDescription = loadingDescription
+			},
 		colors = CardDefaults.cardColors(containerColor = colors.colorContainer),
 	) {
 		Column(
@@ -100,9 +110,14 @@ fun RecipeCardSkeletonGrid(
 	modifier: Modifier = Modifier,
 	itemCount: Int = DEFAULT_SKELETON_COUNT,
 ) {
+	val loadingDescription = stringResource(Res.string.loading)
 	LazyVerticalGrid(
 		columns = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
-		modifier = modifier.fillMaxSize(),
+		modifier = modifier
+			.fillMaxSize()
+			.clearAndSetSemantics {
+				contentDescription = loadingDescription
+			},
 		contentPadding = PaddingValues(PurecipesTheme.space.m),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),

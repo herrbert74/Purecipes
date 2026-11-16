@@ -37,6 +37,7 @@ import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.domain.model.RecipeNutrition
 import app.purecipes.shared.ui.component.atom.ContainerTint
 import app.purecipes.shared.ui.component.atom.MetadataPillChip
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.RecipeDetailsSection
 import app.purecipes.shared.ui.component.molecule.RecipeSectionSegmentedControl
 import app.purecipes.shared.ui.component.molecule.RecipeStatChipsRow
@@ -90,7 +91,8 @@ internal fun RecipeDetailsContent(
 	LazyColumn(
 		modifier = modifier
 			.fillMaxSize()
-			.testTag(RECIPE_DETAILS_CONTENT_TAG),
+			.testTag(RECIPE_DETAILS_CONTENT_TAG)
+			.includeInParentAccessibilityContainer(),
 		state = listState,
 		contentPadding = PaddingValues(
 			bottom = bottomPadding + PurecipesTheme.space.l + PurecipesTheme.bottomBarPadding,

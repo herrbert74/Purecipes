@@ -29,6 +29,8 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
@@ -56,9 +58,10 @@ internal fun HomeShelfContent(
 			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
+				modifier = Modifier.includeInParentAccessibilityContainer(),
 				scrollBehavior = topAppBarScrollBehavior,
 				title = {
-					Text(
+					HeadingText(
 						text = title,
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,

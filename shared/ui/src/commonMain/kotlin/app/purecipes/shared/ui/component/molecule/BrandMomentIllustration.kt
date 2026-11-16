@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.organism.BrandMomentDefaults
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.favorites
 
 @Composable
 fun BrandMomentIllustration(
@@ -50,7 +53,7 @@ private fun BrandMomentIllustrationLightPreview() {
 		Surface(color = PurecipesTheme.colorScheme.primaryContainer) {
 			BrandMomentIllustration(
 				icon = AppIcons.Favorite,
-				contentDescription = "Favorites",
+				contentDescription = stringResource(Res.string.favorites),
 			)
 		}
 	}
@@ -63,7 +66,7 @@ private fun BrandMomentIllustrationDarkPreview() {
 		Surface(color = PurecipesTheme.colorScheme.primaryContainer) {
 			BrandMomentIllustration(
 				icon = AppIcons.Favorite,
-				contentDescription = "Favorites",
+				contentDescription = stringResource(Res.string.favorites),
 			)
 		}
 	}

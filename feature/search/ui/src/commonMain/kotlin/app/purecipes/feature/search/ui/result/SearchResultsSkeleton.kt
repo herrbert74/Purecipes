@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.atom.FixedSubtitleText
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.BrowseTileGrid
 import app.purecipes.shared.ui.component.molecule.BrowseTileItem
 import app.purecipes.shared.ui.component.molecule.browseTiles
@@ -34,7 +35,9 @@ internal fun SearchResultsSkeleton(
 ) {
 	LazyVerticalGrid(
 		columns = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
-		modifier = modifier.fillMaxSize(),
+		modifier = modifier
+			.fillMaxSize()
+			.includeInParentAccessibilityContainer(),
 		userScrollEnabled = false,
 		contentPadding = PaddingValues(
 			start = PurecipesTheme.space.m,

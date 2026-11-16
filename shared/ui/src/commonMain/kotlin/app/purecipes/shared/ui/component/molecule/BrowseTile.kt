@@ -15,11 +15,17 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.purecipes.shared.ui.component.atom.ContainerTint
+import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.colorFamily
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -53,6 +59,10 @@ fun BrowseTile(
 		modifier = modifier
 			.width(BROWSE_TILE_WIDTH)
 			.aspectRatio(BROWSE_TILE_ASPECT_RATIO)
+			.semantics {
+				role = Role.Button
+				selected = item.selected
+			}
 			.testTag("$BROWSE_TILE_TAG_PREFIX${item.id}"),
 		shape = RoundedCornerShape(PurecipesTheme.space.m),
 		color = if (item.selected) {
@@ -71,6 +81,7 @@ fun BrowseTile(
 		) {
 			Text(
 				text = item.illustration,
+				modifier = Modifier.clearAndSetSemantics {},
 				fontSize = BROWSE_TILE_ILLUSTRATION_SIZE,
 				textAlign = TextAlign.Center,
 			)
@@ -98,7 +109,7 @@ fun BrowseTileGrid(
 		modifier = modifier.fillMaxWidth(),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		Text(
+		HeadingText(
 			text = "Browse",
 			style = PurecipesTheme.typography.titleMedium,
 		)

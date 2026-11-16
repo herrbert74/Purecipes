@@ -21,6 +21,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
@@ -38,13 +40,15 @@ import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlinx.collections.immutable.toImmutableSet
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.delete_recipe
+import purecipes.shared.ui.generated.resources.edit_recipe
+import purecipes.shared.ui.generated.resources.favorited
 
 const val RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX = "recipeCardDeleteButton:"
 const val RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX = "recipeCardEditButton:"
 const val RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX = "recipeCardFavoriteIcon:"
-
-private const val PREP_TIME_UNKNOWN = "Prep time unknown"
-private const val QUICK_RECIPE_MAX_MINUTES = 30
 
 @Composable
 fun RecipeCard(
@@ -56,7 +60,7 @@ fun RecipeCard(
 	layout: RecipeCardDefaults.Layout = RecipeCardDefaults.Layout.GRID,
 	onEditClick: (() -> Unit)? = null,
 	onDeleteClick: (() -> Unit)? = null,
-	deleteContentDescription: String = "Delete recipe",
+	deleteContentDescription: String? = null,
 ) {
 	if (layout == RecipeCardDefaults.Layout.SHELF) {
 		RecipeShelfCard(
@@ -69,9 +73,18 @@ fun RecipeCard(
 	}
 	val tint = ContainerTint.forIndex(recipe.id)
 	val colors = tint.colorFamily()
+	val description = recipeCardContentDescription(
+		recipe = recipe,
+		favoritedLabel = stringResource(Res.string.favorited),
+		includeLabels = true,
+	)
 	Card(
 		onClick = onClick,
-		modifier = modifier.fillMaxWidth(widthFraction),
+		modifier = modifier
+			.fillMaxWidth(widthFraction)
+			.semantics(mergeDescendants = true) {
+				contentDescription = description
+			},
 		colors = CardDefaults.cardColors(containerColor = colors.colorContainer),
 	) {
 		Column(
@@ -92,7 +105,7 @@ fun RecipeCard(
 			) {
 				AsyncImage(
 					model = recipe.imageUrl?.trim()?.takeIf { it.isNotEmpty() },
-					contentDescription = recipe.title,
+					contentDescription = null,
 					modifier = Modifier
 						.fillMaxSize()
 						.recipeImageSharedElement(
@@ -111,7 +124,7 @@ fun RecipeCard(
 							FavoriteHeartIcon(
 								selected = true,
 								tint = PurecipesTheme.fixedColors.inverseOnSurfaceFixed,
-								contentDescription = "Favorited",
+								contentDescription = null,
 								modifier = Modifier
 									.padding(PurecipesTheme.space.s)
 									.testTag("$RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX${recipe.id}"),
@@ -124,7 +137,7 @@ fun RecipeCard(
 							) {
 								Icon(
 									imageVector = AppIcons.Edit,
-									contentDescription = "Edit recipe",
+									contentDescription = stringResource(Res.string.edit_recipe),
 									tint = Color.White,
 								)
 							}
@@ -136,7 +149,8 @@ fun RecipeCard(
 							) {
 								Icon(
 									imageVector = AppIcons.Delete,
-									contentDescription = deleteContentDescription,
+									contentDescription = deleteContentDescription
+										?: stringResource(Res.string.delete_recipe),
 									tint = Color.White,
 								)
 							}
@@ -163,6 +177,7 @@ fun RecipeCard(
 					RecipeCardApplianceIcons(
 						appliances = recipe.appliances.toImmutableSet(),
 						tint = colors.onColorContainer,
+						decorative = true,
 					)
 				}
 			}
@@ -181,7 +196,7 @@ private fun RecipeCardLabels(
 			?.let { add("Quick" to ContainerTint.Tertiary) }
 		recipe.cuisine?.displayName?.let { add(it to tint) }
 		recipe.measurementSystem?.let { system ->
-			add(system.displayName() to ContainerTint.Secondary)
+			add(system.recipeCardLabel() to ContainerTint.Secondary)
 		}
 		if (recipe.isPrivate) {
 			add("Private" to ContainerTint.Secondary)
@@ -199,12 +214,6 @@ private fun RecipeCardLabels(
 			)
 		}
 	}
-}
-
-private fun MeasurementSystem.displayName(): String = when (this) {
-	MeasurementSystem.IMPERIAL -> "Imperial"
-	MeasurementSystem.METRIC -> "Metric"
-	MeasurementSystem.MIXED -> "Mixed"
 }
 
 private val previewRecipeCardSample = RecipeSummary(

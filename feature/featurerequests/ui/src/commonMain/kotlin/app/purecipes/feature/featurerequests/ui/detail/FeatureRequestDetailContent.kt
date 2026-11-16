@@ -28,6 +28,8 @@ import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.ui.component.atom.ErrorText
+import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -48,7 +50,8 @@ internal fun FeatureRequestDetailContent(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Feature request") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { HeadingText(text = "Feature request") },
 				navigationIcon = {
 					IconButton(onClick = callbacks.onBack) {
 						Icon(

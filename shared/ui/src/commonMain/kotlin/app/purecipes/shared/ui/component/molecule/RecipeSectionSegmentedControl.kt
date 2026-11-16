@@ -8,6 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import kotlinx.collections.immutable.ImmutableList
@@ -26,7 +30,12 @@ fun RecipeSectionSegmentedControl(
 				selected = selectedSection == section,
 				onClick = { onSectionChange(section) },
 				shape = SegmentedButtonDefaults.itemShape(index = index, count = sections.size),
-				modifier = Modifier.testTag(section.testTag),
+				modifier = Modifier
+					.semantics {
+						role = Role.Tab
+						selected = selectedSection == section
+					}
+					.testTag(section.testTag),
 				icon = {},
 				label = { Text(text = section.label) },
 			)

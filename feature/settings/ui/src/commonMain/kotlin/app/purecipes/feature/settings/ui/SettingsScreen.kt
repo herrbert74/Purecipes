@@ -10,7 +10,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -29,6 +28,8 @@ import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NotificationPreferences
+import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -89,7 +90,8 @@ fun SettingsScreen(
 			.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
 		topBar = {
 			TopAppBar(
-				title = { Text(text = "Settings") },
+				modifier = Modifier.includeInParentAccessibilityContainer(),
+				title = { HeadingText(text = "Settings") },
 				scrollBehavior = topAppBarScrollBehavior,
 				navigationIcon = {
 					IconButton(onClick = onBack) {
@@ -106,6 +108,7 @@ fun SettingsScreen(
 			modifier = Modifier
 				.fillMaxSize()
 				.verticalScroll(scrollState)
+				.includeInParentAccessibilityContainer()
 				.padding(innerPadding)
 				.padding(
 					start = PurecipesTheme.space.m,

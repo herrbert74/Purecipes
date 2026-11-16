@@ -29,6 +29,7 @@ fun RecipeCardApplianceIcons(
 	tint: Color,
 	modifier: Modifier = Modifier,
 	iconSize: Dp = PurecipesTheme.space.m,
+	decorative: Boolean = false,
 ) {
 	if (appliances.isEmpty()) return
 	Row(
@@ -39,7 +40,11 @@ fun RecipeCardApplianceIcons(
 		appliances.take(MAX_DISPLAYED_CARD_APPLIANCES).forEach { appliance ->
 			Icon(
 				imageVector = appliance.icon,
-				contentDescription = appliance.displayName,
+				contentDescription = if (decorative) {
+					null
+				} else {
+					appliance.displayName
+				},
 				tint = tint,
 				modifier = Modifier
 					.size(iconSize)

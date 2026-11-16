@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +29,9 @@ import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeIngredient
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.ShowLoading
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.CenteredMessageContent
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -71,7 +72,8 @@ fun StepByStepCookingRoute(
 			modifier = Modifier.fillMaxSize(),
 			topBar = {
 				TopAppBar(
-					title = { Text(text = viewModel.recipeDetails?.title.orEmpty()) },
+					modifier = Modifier.includeInParentAccessibilityContainer(),
+					title = { HeadingText(text = viewModel.recipeDetails?.title.orEmpty()) },
 					navigationIcon = {
 						BackNavigationButton(onBack = onBack)
 					},

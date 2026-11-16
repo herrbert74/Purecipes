@@ -10,11 +10,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.organism.BrandMomentHeader
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -31,8 +32,9 @@ fun RegistrationScreen(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			TopAppBar(
+				modifier = Modifier.includeInParentAccessibilityContainer(),
 				title = {
-					Text(
+					HeadingText(
 						text = "Create account",
 						modifier = Modifier.testTag(REGISTRATION_SCREEN_TITLE_TAG),
 					)
@@ -53,6 +55,7 @@ fun RegistrationScreen(
 				modifier = Modifier
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
+					.includeInParentAccessibilityContainer()
 					.padding(innerPadding)
 					.padding(PurecipesTheme.space.l),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),

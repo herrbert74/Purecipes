@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import app.purecipes.shared.domain.model.NutritionSummary
+import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlin.math.roundToInt
 
@@ -35,7 +36,7 @@ fun NutritionSummaryCard(
 				.padding(PurecipesTheme.space.m),
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 		) {
-			Text(
+			HeadingText(
 				text = "Nutrition estimate",
 				style = PurecipesTheme.typography.titleMedium,
 			)
