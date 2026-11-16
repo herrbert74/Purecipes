@@ -75,14 +75,11 @@ fun runRecompositionTrackingUiTest(
 private fun purecipesAccessibilityValidator(
 	suppressions: List<AccessibilityCheckSuppression>,
 ): AccessibilityValidator {
-	val validator = AccessibilityValidator().apply {
+	return AccessibilityValidator().apply {
 		setRunChecksFromRootView(true)
 		setThrowExceptionFor(AccessibilityCheckResultType.ERROR)
-		if (suppressions.isNotEmpty()) {
-			setSuppressingResultMatcher(AccessibilitySuppressionMatcher(suppressions))
-		}
+		setSuppressingResultMatcher(AccessibilitySuppressionMatcher(suppressions))
 	}
-	return validator
 }
 
 private class AccessibilitySuppressionMatcher(
@@ -94,11 +91,15 @@ private class AccessibilitySuppressionMatcher(
 	}
 
 	override fun matchesSafely(result: AccessibilityViewCheckResult): Boolean {
-		val checkClassName = result.sourceCheckClass.simpleName ?: return false
+		val checkClassName = result.sourceCheckClass.simpleName
+		val visibleHeightPx = result.element?.boundsInScreen?.height
 		val message = result.message?.toString().orEmpty()
 		val hierarchyDescription = result.toString()
-		return suppressions.any { suppression ->
+		val matchesConfiguredSuppression = checkClassName != null && suppressions.any { suppression ->
 			suppression.matches(checkClassName, message, hierarchyDescription)
 		}
+		val matchesClippedSpeakableText = checkClassName != null &&
+			shouldSuppressClippedSpeakableText(checkClassName, visibleHeightPx)
+		return matchesClippedSpeakableText || matchesConfiguredSuppression
 	}
 }
