@@ -7,7 +7,6 @@ on:
       - 'umbrella/**'
       - 'feature/ads/**'
       - 'scripts/ios/**'
-      - 'gradle/libs.versions.toml'
       - '.github/workflows/build-ios.yml'
   workflow_dispatch:
 

@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.SectionHeader
@@ -39,6 +41,8 @@ import kotlinx.coroutines.launch
 
 internal const val ABOUT_VERSION_ROW_TAG = "about_version_row"
 internal const val ABOUT_OSS_ROW_TAG = "about_oss_row"
+
+private val ABOUT_ROW_MIN_HEIGHT = 48.dp
 
 @Composable
 fun AboutScreen(
@@ -123,6 +127,7 @@ internal fun AboutScreenContent(
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					modifier = Modifier
 						.fillMaxWidth()
+						.defaultMinSize(minHeight = ABOUT_ROW_MIN_HEIGHT)
 						.clickable(
 							interactionSource = remember { MutableInteractionSource() },
 							indication = null,
@@ -169,6 +174,7 @@ private fun AboutRow(
 	val rowModifier = if (onClick != null) {
 		modifier
 			.fillMaxWidth()
+			.defaultMinSize(minHeight = ABOUT_ROW_MIN_HEIGHT)
 			.clickable(onClick = onClick)
 			.padding(vertical = PurecipesTheme.space.xs)
 	} else {
