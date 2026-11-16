@@ -36,7 +36,7 @@ import app.purecipes.feature.library.ui.favorites.FavoritesTabContent
 import app.purecipes.feature.library.ui.myrecipes.MyRecipesTabContent
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.atom.ErrorText
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
@@ -105,9 +105,9 @@ fun LibraryScreen(
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
 				title = {
-					HeadingText(
+					Text(
 						text = "Library",
-						modifier = Modifier.testTag(LIBRARY_TITLE_TAG),
+						modifier = Modifier.testTag(LIBRARY_TITLE_TAG).headingSemantics(),
 					)
 				},
 				scrollBehavior = topAppBarScrollBehavior,

@@ -25,8 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.purecipes.shared.ui.component.atom.ContainerTint
-import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.colorFamily
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -109,8 +109,9 @@ fun BrowseTileGrid(
 		modifier = modifier.fillMaxWidth(),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
-		HeadingText(
+		Text(
 			text = "Browse",
+			modifier = Modifier.headingSemantics(),
 			style = PurecipesTheme.typography.titleMedium,
 		)
 		LazyRow(

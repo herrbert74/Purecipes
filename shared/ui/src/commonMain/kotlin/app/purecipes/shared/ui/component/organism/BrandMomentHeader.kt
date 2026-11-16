@@ -16,7 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.molecule.BrandMomentIllustration
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -68,8 +68,9 @@ fun BrandMomentHeader(
 			size = illustrationSize,
 			iconSize = illustrationIconSize,
 		)
-		HeadingText(
+		Text(
 			text = title,
+			modifier = Modifier.headingSemantics(),
 			style = titleStyle.merge(
 				TextStyle(
 					color = PurecipesTheme.colorScheme.onPrimaryContainer,

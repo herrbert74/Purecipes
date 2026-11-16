@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.component.organism.USDA_NUTRITION_ATTRIBUTION
@@ -55,7 +55,7 @@ fun AboutScreen(
 		topBar = {
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
-				title = { HeadingText(text = "About") },
+				title = { Text(text = "About", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(

@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -28,7 +29,7 @@ import app.purecipes.feature.subscription.ui.MonetisationDebugOverridesPanel
 import app.purecipes.shared.domain.model.MeasurementPreferences
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NotificationPreferences
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -91,7 +92,7 @@ fun SettingsScreen(
 		topBar = {
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
-				title = { HeadingText(text = "Settings") },
+				title = { Text(text = "Settings", modifier = Modifier.headingSemantics()) },
 				scrollBehavior = topAppBarScrollBehavior,
 				navigationIcon = {
 					IconButton(onClick = onBack) {

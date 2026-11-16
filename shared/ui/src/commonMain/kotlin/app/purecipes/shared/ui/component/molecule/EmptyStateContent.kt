@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import org.jetbrains.compose.resources.stringResource
@@ -49,8 +49,9 @@ fun EmptyStateContent(
 				icon = icon,
 				contentDescription = iconContentDescription,
 			)
-			HeadingText(
+			Text(
 				text = title,
+				modifier = Modifier.headingSemantics(),
 				style = PurecipesTheme.typography.headlineLarge.merge(
 					TextStyle(
 						color = PurecipesTheme.colorScheme.onPrimaryContainer,

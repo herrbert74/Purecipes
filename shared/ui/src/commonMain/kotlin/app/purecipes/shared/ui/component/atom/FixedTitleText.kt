@@ -22,9 +22,9 @@ fun FixedTitleText(
 	isPlaceholder: Boolean = false,
 ) {
 	if (isHeading && !isPlaceholder) {
-		HeadingText(
+		Text(
 			text = text,
-			modifier = modifier,
+			modifier = modifier.headingSemantics(),
 			maxLines = maxLines,
 			overflow = TextOverflow.Ellipsis,
 			style = style.merge(TextStyle(color = color)),

@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,7 +26,7 @@ import app.purecipes.feature.auth.domain.model.GoogleAuthenticationProfile
 import app.purecipes.feature.auth.ui.authentication.button.InitializeGoogleAuthenticationProvider
 import app.purecipes.feature.auth.ui.profile.SignedInContent
 import app.purecipes.shared.ui.component.atom.ErrorText
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -72,9 +73,9 @@ fun AuthenticationScreen(
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
 				title = {
-					HeadingText(
+					Text(
 						text = "Account",
-						modifier = Modifier.testTag(AUTH_SCREEN_TITLE_TAG),
+						modifier = Modifier.testTag(AUTH_SCREEN_TITLE_TAG).headingSemantics(),
 					)
 				},
 				actions = {
@@ -151,7 +152,7 @@ private fun AuthenticationScreenErrorPreview() {
 			topBar = {
 				TopAppBar(
 					modifier = Modifier.includeInParentAccessibilityContainer(),
-					title = { HeadingText(text = "Account") },
+					title = { Text(text = "Account", modifier = Modifier.headingSemantics()) },
 				)
 			},
 		) { innerPadding ->

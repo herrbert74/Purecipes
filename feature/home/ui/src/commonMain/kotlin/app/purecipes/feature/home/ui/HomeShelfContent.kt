@@ -29,7 +29,7 @@ import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.component.atom.ErrorText
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
@@ -61,8 +61,9 @@ internal fun HomeShelfContent(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
 				scrollBehavior = topAppBarScrollBehavior,
 				title = {
-					HeadingText(
+					Text(
 						text = title,
+						modifier = Modifier.headingSemantics(),
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis,
 					)

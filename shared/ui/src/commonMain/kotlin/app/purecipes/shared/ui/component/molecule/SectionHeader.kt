@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.purecipesPlaceholder
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -35,8 +35,9 @@ fun SectionHeader(
 				fontWeight = titleFontWeight,
 			)
 		} else {
-			HeadingText(
+			Text(
 				text = title,
+				modifier = Modifier.headingSemantics(),
 				style = titleStyle.merge(TextStyle(fontWeight = titleFontWeight)),
 			)
 		}

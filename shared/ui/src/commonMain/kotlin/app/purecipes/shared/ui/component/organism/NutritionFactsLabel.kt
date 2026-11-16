@@ -32,8 +32,8 @@ import app.purecipes.shared.domain.model.IngredientNutritionLine
 import app.purecipes.shared.domain.model.NutritionSummary
 import app.purecipes.shared.domain.model.RecipeNutrition
 import app.purecipes.shared.domain.model.hasMacroNutrients
-import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.PurecipesTextButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -92,12 +92,13 @@ fun NutritionFactsDialog(
 					horizontalArrangement = Arrangement.SpaceBetween,
 					verticalAlignment = Alignment.CenterVertically,
 				) {
-					HeadingText(
+					Text(
 						text = if (showIngredients) {
 							"Nutrition by ingredient"
 						} else {
 							"Nutrition Facts"
 						},
+						modifier = Modifier.headingSemantics(),
 						style = PurecipesTheme.typography.headlineMedium.merge(
 							TextStyle(fontWeight = FontWeight.Bold),
 						),

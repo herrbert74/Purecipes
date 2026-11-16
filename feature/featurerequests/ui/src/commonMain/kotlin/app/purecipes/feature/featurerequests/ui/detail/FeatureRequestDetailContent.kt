@@ -28,7 +28,7 @@ import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestComment
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.ui.component.atom.ErrorText
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -51,7 +51,7 @@ internal fun FeatureRequestDetailContent(
 		topBar = {
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
-				title = { HeadingText(text = "Feature request") },
+				title = { Text(text = "Feature request", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = callbacks.onBack) {
 						Icon(

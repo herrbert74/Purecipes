@@ -32,7 +32,7 @@ import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.component.atom.ErrorText
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
@@ -82,8 +82,9 @@ internal fun CookbookDetailContent(
 								.background(PurecipesTheme.colorScheme.secondaryContainer),
 							contentScale = ContentScale.Crop,
 						)
-						HeadingText(
+						Text(
 							text = title,
+							modifier = Modifier.headingSemantics(),
 							maxLines = 1,
 							overflow = TextOverflow.Ellipsis,
 						)

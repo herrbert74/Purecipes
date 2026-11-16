@@ -29,9 +29,9 @@ import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.analytics.domain.model.AnalyticsPremiumFeature
 import app.purecipes.feature.subscription.domain.model.SubscriptionPackageIdentifier
 import app.purecipes.feature.subscription.domain.model.SubscriptionPlan
-import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.PurecipesButton
 import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -76,7 +76,7 @@ fun PaywallScreen(
 		topBar = {
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
-				title = { HeadingText(text = "Go Premium") },
+				title = { Text(text = "Go Premium", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(

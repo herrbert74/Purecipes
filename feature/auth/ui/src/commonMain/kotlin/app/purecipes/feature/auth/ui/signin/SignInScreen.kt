@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.PASSWORD_RESET_EMAIL_SENT_MESSAGE
 import app.purecipes.shared.domain.model.REGISTRATION_SUCCESS_MESSAGE
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.component.organism.BrandMomentHeader
 import app.purecipes.shared.ui.icon.AppIcons
@@ -87,9 +87,9 @@ internal fun SignInScreenContent(
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
 				title = {
-					HeadingText(
+					Text(
 						text = "Sign in",
-						modifier = Modifier.testTag(SIGN_IN_SCREEN_TITLE_TAG),
+						modifier = Modifier.testTag(SIGN_IN_SCREEN_TITLE_TAG).headingSemantics(),
 					)
 				},
 				navigationIcon = {

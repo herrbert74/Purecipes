@@ -5,10 +5,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import app.purecipes.shared.ui.component.atom.HeadingText
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
 
@@ -22,7 +23,7 @@ fun LicensesScreen(
 		topBar = {
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
-				title = { HeadingText(text = "Open Source Licenses") },
+				title = { Text(text = "Open Source Licenses", modifier = Modifier.headingSemantics()) },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(

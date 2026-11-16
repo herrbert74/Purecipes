@@ -12,8 +12,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import app.purecipes.feature.analytics.domain.model.toDisplayText
-import app.purecipes.shared.ui.component.atom.HeadingText
 import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -30,7 +30,7 @@ fun ConsentPreferencesScreen(
 		topBar = {
 			TopAppBar(
 				modifier = Modifier.includeInParentAccessibilityContainer(),
-				title = { HeadingText(text = "Privacy") },
+				title = { Text(text = "Privacy", modifier = Modifier.headingSemantics()) },
 			)
 		},
 	) { innerPadding ->
