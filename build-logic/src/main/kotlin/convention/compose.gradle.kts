@@ -33,6 +33,8 @@ extensions.configure<KotlinMultiplatformExtension> {
 		matching { it.name == "androidDeviceTest" }.all {
 			dependencies {
 				implementation(libs.androidx.composeUiTestManifestAndroid)
+				implementation(libs.androidx.composeUiTestAccessibility)
+				implementation(libs.androidx.composeUiTestJunit4Accessibility)
 				implementation(libs.androidx.composeUiTestJunit4Android)
 				implementation(libs.androidx.testEspresso.core)
 				implementation(libs.androidx.testExtJUnit)

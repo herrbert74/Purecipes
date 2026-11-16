@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -14,11 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SETTINGS_ABOUT_ROW_TAG = "settings_about_row"
+
+private val SETTINGS_ROW_MIN_HEIGHT = 48.dp
 
 @Composable
 internal fun AboutSettingsPanel(
@@ -41,6 +45,7 @@ internal fun AboutSettingsPanel(
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
+					.defaultMinSize(minHeight = SETTINGS_ROW_MIN_HEIGHT)
 					.clickable(onClick = onOpenAbout)
 					.padding(vertical = PurecipesTheme.space.xs)
 					.testTag(SETTINGS_ABOUT_ROW_TAG),

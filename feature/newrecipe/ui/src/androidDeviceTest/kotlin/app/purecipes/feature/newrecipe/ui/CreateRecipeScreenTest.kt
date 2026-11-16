@@ -37,12 +37,16 @@ import app.purecipes.shared.testfixtures.fake.FakeMeasurementPreferencesReposito
 import app.purecipes.shared.testfixtures.fake.FakeMonetisationDebugOverridesRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeNutritionEstimateRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
+import app.purecipes.shared.testfixtures.uitest.AccessibilityCheckSuppression
+import app.purecipes.shared.testfixtures.uitest.PurecipesAccessibilityChecks
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestNewRecipe
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import io.kotest.matchers.shouldBe
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -55,6 +59,23 @@ private const val STEP_REORDER_DRAG_FRAME_DELAY_MILLIS = 16L
 @OptIn(ExperimentalTestApi::class)
 @UiTestNewRecipe
 class CreateRecipeScreenTest {
+
+	@Before
+	fun suppressSegmentedSectionTouchTargets() {
+		CreateRecipeSection.entries.forEach { section ->
+			PurecipesAccessibilityChecks.suppress(
+				AccessibilityCheckSuppression(
+					checkClassName = "TouchTargetSizeCheck",
+					hierarchyContains = section.testTag,
+				),
+			)
+		}
+	}
+
+	@After
+	fun clearAccessibilitySuppressions() {
+		PurecipesAccessibilityChecks.clearSuppressions()
+	}
 
 	@Test
 	@UiTestEssential

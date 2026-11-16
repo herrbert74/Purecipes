@@ -36,9 +36,11 @@ import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
 import app.purecipes.shared.testfixtures.fake.FakeRecipeDetailsRepository
 import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.uitest.UiTestMain
+import app.purecipes.shared.testfixtures.uitest.enablePurecipesAccessibilityChecks
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,6 +52,11 @@ class MainScreenHomeRestorationTest {
 
 	@get:Rule
 	val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+	@Before
+	fun enableAccessibilityChecks() {
+		composeRule.enablePurecipesAccessibilityChecks()
+	}
 
 	@Test
 	fun removingAFavoriteOnRecipeDetailsUpdatesTheHomeShelf() {

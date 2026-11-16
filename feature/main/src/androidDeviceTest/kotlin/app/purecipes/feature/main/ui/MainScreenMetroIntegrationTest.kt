@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.data.runtime.AnalyticsAndroidRuntime
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestMain
+import app.purecipes.shared.testfixtures.uitest.enablePurecipesAccessibilityChecks
 import dev.zacsweers.metro.createGraph
 import org.junit.Before
 import org.junit.Rule
@@ -24,6 +25,7 @@ class MainScreenMetroIntegrationTest {
 
 	@Before
 	fun setUp() {
+		composeRule.enablePurecipesAccessibilityChecks()
 		AnalyticsAndroidRuntime.initialize(composeRule.activity.application)
 	}
 

@@ -11,9 +11,9 @@ import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestSort
 import app.purecipes.shared.domain.model.FeatureRequestStatus
 import app.purecipes.shared.testfixtures.uitest.UiTestFeatureRequests
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import kotlinx.collections.immutable.persistentListOf
 import org.junit.Assert.assertEquals

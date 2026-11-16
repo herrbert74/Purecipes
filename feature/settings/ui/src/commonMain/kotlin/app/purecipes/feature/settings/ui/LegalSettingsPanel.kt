@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -14,12 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.molecule.SectionHeader
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 internal const val SETTINGS_PRIVACY_POLICY_ROW_TAG = "settings_privacy_policy_row"
 internal const val SETTINGS_TERMS_OF_SERVICE_ROW_TAG = "settings_terms_of_service_row"
+
+private val SETTINGS_ROW_MIN_HEIGHT = 48.dp
 
 @Composable
 internal fun LegalSettingsPanel(
@@ -64,6 +68,7 @@ private fun LegalSettingsRow(
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
+			.defaultMinSize(minHeight = SETTINGS_ROW_MIN_HEIGHT)
 			.clickable(onClick = onClick)
 			.padding(vertical = PurecipesTheme.space.xs)
 			.testTag(testTag),

@@ -8,6 +8,15 @@ kotlin {
 	}
 
 	sourceSets {
+		androidMain {
+			dependencies {
+				implementation(libs.androidx.composeUiTest)
+				implementation(libs.androidx.composeUiTestAccessibilityAndroid)
+				implementation(libs.androidx.composeUiTestJunit4AccessibilityAndroid)
+				implementation(libs.dejavu)
+				compileOnly(libs.hamcrest)
+			}
+		}
 		commonMain {
 			dependencies {
 				api(project(":base:kotlin"))

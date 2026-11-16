@@ -46,10 +46,10 @@ import app.purecipes.shared.testfixtures.fake.fakeRecipeDetails
 import app.purecipes.shared.testfixtures.fake.recipeIngredients
 import app.purecipes.shared.testfixtures.uitest.UiTestCooking
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.assertRecompositions
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
 import org.junit.Assert.assertTrue
 import org.junit.Test

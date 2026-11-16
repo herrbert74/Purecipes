@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.FeatureRequest
 import app.purecipes.shared.domain.model.FeatureRequestStatus
@@ -36,11 +38,15 @@ internal fun HomeFeatureRequestCard(
 	onOpen: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
+	val title = featureRequest?.title ?: HOME_SUGGEST_FEATURE_TITLE
 	Card(
 		onClick = onOpen,
 		modifier = modifier
 			.fillMaxWidth()
-			.testTag(HOME_FEATURE_REQUEST_CARD_TAG),
+			.testTag(HOME_FEATURE_REQUEST_CARD_TAG)
+			.semantics {
+				contentDescription = title
+			},
 		colors = CardDefaults.cardColors(
 			containerColor = PurecipesTheme.colorScheme.surfaceContainerLow,
 		),
@@ -69,7 +75,7 @@ internal fun HomeFeatureRequestCard(
 			) {
 				if (featureRequest == null) {
 					Text(
-						text = HOME_SUGGEST_FEATURE_TITLE,
+						text = title,
 						style = PurecipesTheme.typography.titleMedium,
 						color = PurecipesTheme.colorScheme.onSurface,
 					)
@@ -80,7 +86,7 @@ internal fun HomeFeatureRequestCard(
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
 					Text(
-						text = featureRequest.title,
+						text = title,
 						style = PurecipesTheme.typography.titleMedium,
 						color = PurecipesTheme.colorScheme.onSurface,
 					)

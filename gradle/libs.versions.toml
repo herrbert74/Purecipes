@@ -60,6 +60,7 @@ diamondedge-logging = "2.1.2"
 essenty = "2.5.0"
 eygraber-composePlaceholder = "1.0.12"
 h2 = "2.5.252"
+hamcrest = "2.2"
 #facebook = "16.1.2"
 firebaseBom = "35.1.0"
 firebaseIosSdk = "12.17.0"
@@ -138,6 +139,10 @@ androidx-composeUiToolingPreview = { group = "androidx.compose.ui", name = "ui-t
 androidx-composeUiUnit = { group = "androidx.compose.ui", name = "ui-unit" }
 
 #Not in BOM as of 2023.10.01 !!!
+androidx-composeUiTestAccessibility = { group = "androidx.compose.ui", name = "ui-test-accessibility", version.ref = "androidx-composeUiAndroidTest" }
+androidx-composeUiTestAccessibilityAndroid = { group = "androidx.compose.ui", name = "ui-test-accessibility-android", version.ref = "androidx-composeUiAndroidTest" }
+androidx-composeUiTestJunit4Accessibility = { group = "androidx.compose.ui", name = "ui-test-junit4-accessibility", version.ref = "androidx-composeUiAndroidTest" }
+androidx-composeUiTestJunit4AccessibilityAndroid = { group = "androidx.compose.ui", name = "ui-test-junit4-accessibility-android", version.ref = "androidx-composeUiAndroidTest" }
 androidx-composeUiTestJunit4Android = { group = "androidx.compose.ui", name = "ui-test-junit4-android", version.ref = "androidx-composeUiAndroidTest" }
 androidx-composeUiTestManifestAndroid = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "androidx-composeUiAndroidTest" }
 
@@ -264,6 +269,7 @@ firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 gitlive-firebaseAuth = { module = "dev.gitlive:firebase-auth", version.ref = "gitlive-firebase" }
 
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 
 hikariCp = { module = "com.zaxxer:HikariCP", version.ref = "hikariCp" }
 

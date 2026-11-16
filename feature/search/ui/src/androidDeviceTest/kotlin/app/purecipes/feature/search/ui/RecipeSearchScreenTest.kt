@@ -85,17 +85,21 @@ import app.purecipes.shared.testfixtures.fake.FakeSearchPreferencesRepository
 import app.purecipes.shared.testfixtures.fake.FakeSubscriptionRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserExcludedIngredientsRepository
 import app.purecipes.shared.testfixtures.fake.FakeUserPantryRepository
+import app.purecipes.shared.testfixtures.uitest.AccessibilityCheckSuppression
+import app.purecipes.shared.testfixtures.uitest.PurecipesAccessibilityChecks
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestSearch
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.component.molecule.BROWSE_TILE_TAG_PREFIX
 import app.purecipes.shared.ui.component.molecule.RECIPE_CARD_APPLIANCE_ICON_PREFIX
 import app.purecipes.shared.ui.component.organism.RECIPE_CARD_FAVORITE_ICON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
 import dejavu.assertStable
-import dejavu.runRecompositionTrackingUiTest
 import dejavu.setTrackedContent
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -103,6 +107,27 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalTestApi::class)
 @UiTestSearch
 class RecipeSearchScreenTest {
+
+	@Before
+	fun suppressFilterTabTouchTargetFalsePositive() {
+		PurecipesAccessibilityChecks.suppress(
+			AccessibilityCheckSuppression(
+				checkClassName = "TouchTargetSizeCheck",
+				hierarchyContains = FILTER_BOTTOM_SHEET_PANTRY_TAB_TAG,
+			),
+		)
+		PurecipesAccessibilityChecks.suppress(
+			AccessibilityCheckSuppression(
+				checkClassName = "TouchTargetSizeCheck",
+				hierarchyContains = FILTER_BOTTOM_SHEET_RECIPE_FILTERS_TAB_TAG,
+			),
+		)
+	}
+
+	@After
+	fun clearAccessibilitySuppressions() {
+		PurecipesAccessibilityChecks.clearSuppressions()
+	}
 
 	@Test
 	fun searchScreenTypingDoesNotRecomposeResults() = runRecompositionTrackingUiTest {

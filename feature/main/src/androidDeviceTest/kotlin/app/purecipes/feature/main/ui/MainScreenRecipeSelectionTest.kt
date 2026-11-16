@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -24,19 +25,27 @@ import app.purecipes.feature.search.ui.RecipeSearchScreen
 import app.purecipes.feature.search.ui.SearchListDetailPlaceholder
 import app.purecipes.feature.search.ui.navigation.SearchDestination
 import app.purecipes.shared.testfixtures.uitest.UiTestMain
+import app.purecipes.shared.testfixtures.uitest.enablePurecipesAccessibilityChecks
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
 @UiTestMain
 class MainScreenRecipeSelectionTest {
 
 	@get:Rule
 	val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+	@Before
+	fun enableAccessibilityChecks() {
+		composeRule.enablePurecipesAccessibilityChecks()
+	}
 
 	@Test
 	fun selectingTwoDifferentRecipesShowsCorrectDetailsForEach() {

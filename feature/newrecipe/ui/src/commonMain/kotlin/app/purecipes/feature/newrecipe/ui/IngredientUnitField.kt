@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import app.purecipes.shared.domain.ingredient.IngredientUnitTokens
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -69,6 +71,7 @@ internal fun IngredientUnitField(
 						Modifier
 					},
 				)
+				.semantics { contentDescription = "Unit" }
 				.clickable { expanded = true },
 		)
 		DropdownMenu(

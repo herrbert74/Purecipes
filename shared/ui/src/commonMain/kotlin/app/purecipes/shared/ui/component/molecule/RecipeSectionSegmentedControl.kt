@@ -12,6 +12,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import kotlinx.collections.immutable.ImmutableList
@@ -37,7 +38,14 @@ fun RecipeSectionSegmentedControl(
 					}
 					.testTag(section.testTag),
 				icon = {},
-				label = { Text(text = section.label) },
+				label = {
+					Text(
+						text = section.label,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+						softWrap = false,
+					)
+				},
 			)
 		}
 	}

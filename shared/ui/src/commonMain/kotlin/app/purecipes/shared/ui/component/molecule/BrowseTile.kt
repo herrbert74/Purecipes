@@ -2,7 +2,7 @@ package app.purecipes.shared.ui.component.molecule
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -21,9 +22,9 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.purecipes.shared.ui.component.atom.ContainerTint
 import app.purecipes.shared.ui.component.atom.colorFamily
 import app.purecipes.shared.ui.component.atom.headingSemantics
@@ -34,9 +35,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 const val BROWSE_TILE_TAG_PREFIX = "browseTile:"
 
-private const val BROWSE_TILE_ASPECT_RATIO = 1f
 private val BROWSE_TILE_WIDTH = 88.dp
-private val BROWSE_TILE_ILLUSTRATION_SIZE = 28.sp
+private val BROWSE_TILE_ILLUSTRATION_SIZE = 28.dp
 
 @Immutable
 data class BrowseTileItem(
@@ -54,11 +54,12 @@ fun BrowseTile(
 	modifier: Modifier = Modifier,
 ) {
 	val colors = item.tint.colorFamily()
+	val illustrationSize = with(LocalDensity.current) { BROWSE_TILE_ILLUSTRATION_SIZE.toSp() }
 	Surface(
 		onClick = onClick,
 		modifier = modifier
 			.width(BROWSE_TILE_WIDTH)
-			.aspectRatio(BROWSE_TILE_ASPECT_RATIO)
+			.defaultMinSize(minHeight = BROWSE_TILE_WIDTH)
 			.semantics {
 				role = Role.Button
 				selected = item.selected
@@ -82,7 +83,7 @@ fun BrowseTile(
 			Text(
 				text = item.illustration,
 				modifier = Modifier.clearAndSetSemantics {},
-				fontSize = BROWSE_TILE_ILLUSTRATION_SIZE,
+				fontSize = illustrationSize,
 				textAlign = TextAlign.Center,
 			)
 			Text(
@@ -94,6 +95,9 @@ fun BrowseTile(
 					colors.onColorContainer
 				},
 				textAlign = TextAlign.Center,
+				maxLines = 1,
+				overflow = TextOverflow.Ellipsis,
+				softWrap = false,
 			)
 		}
 	}
