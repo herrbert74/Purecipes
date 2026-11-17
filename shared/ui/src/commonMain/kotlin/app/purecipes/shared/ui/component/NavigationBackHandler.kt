@@ -6,8 +6,12 @@ import androidx.compose.runtime.Composable
 fun NavigationBackHandler(
 	enabled: Boolean,
 	backStackDepth: Int,
+	screenChangeKey: Any = backStackDepth,
 	onBack: () -> Unit,
 ) {
-	PlatformNavigationHistorySync(backStackDepth)
+	PlatformNavigationHistorySync(
+		backStackDepth = backStackDepth,
+		screenChangeKey = screenChangeKey,
+	)
 	HandleSystemBack(enabled = enabled, onBack = onBack)
 }

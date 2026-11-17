@@ -18,4 +18,8 @@ Browser forward is not wired: there is no `Navigator.forward()`. In-app toolbar 
 
 ## iOS
 
-`HandleSystemBack` is a no-op. Swipe-from-edge and navigation bar back are provided by the hosting `ComposeUIViewController` / UIKit integration with the Compose navigation stack.
+`HandleSystemBack` registers a Compose `NavigationBackHandler` so VoiceOver’s escape gesture (two-finger Z), Full Keyboard Access Escape, and the UIKit start-edge pan all invoke the same `onBack` path as Android.
+
+Material sheets and dialogs already dismiss through the same `NavigationEvent` dispatcher (`dismissOnBackPress`). App-level `NavigationBackHandler` runs after those handlers when they are not enabled.
+
+`PlatformNavigationHistorySync` posts `UIAccessibilityScreenChangedNotification` when `screenChangeKey` changes (tab + back-stack depth from `MainScreen`) so VoiceOver focus can move to the destination screen instead of staying on a dismissed element or previous tab.

@@ -24,6 +24,8 @@ Agents should treat those files as extensions of this document when the task mat
 
 For iOS TestFlight / store preparation, also follow [`.agents/instructions/ios-release.md`](.agents/instructions/ios-release.md) and [`docs/releases/ios-app-distribution.md`](docs/releases/ios-app-distribution.md).
 
+For iOS VoiceOver / Dynamic Type platform bridges, also follow [`.agents/instructions/ios-accessibility-platform.md`](.agents/instructions/ios-accessibility-platform.md).
+
 For selective Android UI tests (tags, PR labels, local `-PuiTestTags`), also follow [`.agents/instructions/ui-test-tags.md`](.agents/instructions/ui-test-tags.md).
 
 For Compose preview screenshot tests (component and Play Store suites), also follow [`.agents/instructions/screenshot-testing.md`](.agents/instructions/screenshot-testing.md).

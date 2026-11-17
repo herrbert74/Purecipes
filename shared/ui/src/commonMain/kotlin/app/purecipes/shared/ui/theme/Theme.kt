@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.component.ProvideDynamicTypeFontScale
 
 private const val FIXED_SCRIM_END_ALPHA = 0.99f
 
@@ -342,7 +343,7 @@ object PurecipesTheme {
 				LocalPurecipesSpace provides Space(),
 				LocalFixedColors provides defaultFixedColors,
 			) {
-				content()
+				ProvideDynamicTypeFontScale(content = content)
 			}
 		}
 	}
