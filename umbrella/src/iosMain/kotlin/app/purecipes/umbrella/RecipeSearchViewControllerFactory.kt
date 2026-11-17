@@ -13,7 +13,7 @@ class RecipeSearchViewControllerFactory {
 		return ComposeUIViewController(
 			configure = {
 				enforceStrictPlistSanityCheck = false
-			}
+			},
 		) {
 			MainScreen(
 				metroViewModelFactory = graph.metroViewModelFactory,

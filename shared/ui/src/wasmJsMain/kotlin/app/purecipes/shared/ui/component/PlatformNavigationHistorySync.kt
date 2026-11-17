@@ -11,7 +11,10 @@ import kotlin.js.ExperimentalWasmJsInterop
 
 @OptIn(ExperimentalWasmJsInterop::class)
 @Composable
-internal actual fun PlatformNavigationHistorySync(backStackDepth: Int) {
+internal actual fun PlatformNavigationHistorySync(
+	backStackDepth: Int,
+	screenChangeKey: Any,
+) {
 	var previousDepth by remember { mutableIntStateOf(backStackDepth) }
 	LaunchedEffect(backStackDepth) {
 		if (backStackDepth > previousDepth) {

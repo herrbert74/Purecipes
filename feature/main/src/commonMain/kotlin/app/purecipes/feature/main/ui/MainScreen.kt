@@ -97,6 +97,7 @@ private fun MainScreenContent(
 				NavigationBackHandler(
 					enabled = true,
 					backStackDepth = tabBackStack.size,
+					screenChangeKey = viewModel.selectedTab to tabBackStack.size,
 					onBack = {
 						if (!viewModel.onBack() && viewModel.shouldExit()) {
 							onExitRequest()

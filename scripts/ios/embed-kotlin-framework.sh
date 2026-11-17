@@ -65,5 +65,4 @@ export JAVA_HOME="$JAVA_HOME_CANDIDATE"
 export PATH="$JAVA_HOME/bin:$PATH"
 java -version
 cd "$REPO_ROOT"
-./gradlew --stop
 ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" -Ppurecipes.buildType="$PURECIPES_BUILD_TYPE_VALUE" :umbrella:embedAndSignAppleFrameworkForXcode --stacktrace
