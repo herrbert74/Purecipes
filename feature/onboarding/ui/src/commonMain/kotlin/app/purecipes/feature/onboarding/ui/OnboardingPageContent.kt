@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlin.math.absoluteValue
 
@@ -52,6 +53,7 @@ internal fun OnboardingPageContent(
 	sheenSweep: () -> Float,
 	modifier: Modifier = Modifier,
 ) {
+	val reducedMotion = LocalReducedMotion.current
 	val displayStyle = PurecipesTheme.typography.displaySmall
 	val titleStyle = remember(page, displayStyle) {
 		displayStyle.copy(
@@ -68,14 +70,20 @@ internal fun OnboardingPageContent(
 			modifier = Modifier
 				.fillMaxSize()
 				.background(page.backgroundColor)
-				.graphicsLayer {
-					val offset = pageOffset()
-					val settle = FastOutSlowInEasing.transform(
-						1f - offset.absoluteValue.coerceIn(0f, 1f),
-					)
-					val drift = size.width * (1f - settle) * BACKGROUND_PARALLAX_FRACTION
-					translationX = if (offset <= 0f) drift else -drift
-				},
+				.then(
+					if (reducedMotion) {
+						Modifier
+					} else {
+						Modifier.graphicsLayer {
+							val offset = pageOffset()
+							val settle = FastOutSlowInEasing.transform(
+								1f - offset.absoluteValue.coerceIn(0f, 1f),
+							)
+							val drift = size.width * (1f - settle) * BACKGROUND_PARALLAX_FRACTION
+							translationX = if (offset <= 0f) drift else -drift
+						}
+					},
+				),
 		)
 		Column(
 			modifier = Modifier
@@ -87,33 +95,43 @@ internal fun OnboardingPageContent(
 			OnboardingIllustration(
 				page = page,
 				sparkleTime = sparkleTime,
-				modifier = Modifier.graphicsLayer {
-					val offset = pageOffset()
-					val progress = offset.absoluteValue.coerceIn(0f, 1f)
-					val scale = 1f - progress * ILLUSTRATION_SCALE_DECAY
-					scaleX = scale
-					scaleY = scale
-					rotationZ = offset * ILLUSTRATION_TWIST_DEGREES
-					translationX = offset * size.width * ILLUSTRATION_DRIFT_FRACTION * (1f - progress)
-					alpha = 1f - progress * ILLUSTRATION_FADE_DEPTH
+				modifier = if (reducedMotion) {
+					Modifier
+				} else {
+					Modifier.graphicsLayer {
+						val offset = pageOffset()
+						val progress = offset.absoluteValue.coerceIn(0f, 1f)
+						val scale = 1f - progress * ILLUSTRATION_SCALE_DECAY
+						scaleX = scale
+						scaleY = scale
+						rotationZ = offset * ILLUSTRATION_TWIST_DEGREES
+						translationX = offset * size.width * ILLUSTRATION_DRIFT_FRACTION * (1f - progress)
+						alpha = 1f - progress * ILLUSTRATION_FADE_DEPTH
+					}
 				},
 			)
 			Spacer(modifier = Modifier.height(ILLUSTRATION_TEXT_GAP))
 			Column(
 				modifier = Modifier
 					.fillMaxWidth()
-					.graphicsLayer {
-						val offset = pageOffset()
-						val progress = offset.absoluteValue.coerceIn(0f, 1f)
-						val scale = 1f - progress * TEXT_SCALE_DECAY
-						scaleX = scale
-						scaleY = scale
-						translationX = -offset * size.width * TEXT_COUNTER_PARALLAX_FRACTION
-						translationY = progress * TEXT_GRAVITY_DROP
-						rotationX = progress * TEXT_TILT_DEGREES
-						alpha = ((1f - progress) - TEXT_VISIBILITY_START).coerceIn(0f, 1f) /
-							(1f - TEXT_VISIBILITY_START)
-					},
+					.then(
+						if (reducedMotion) {
+							Modifier
+						} else {
+							Modifier.graphicsLayer {
+								val offset = pageOffset()
+								val progress = offset.absoluteValue.coerceIn(0f, 1f)
+								val scale = 1f - progress * TEXT_SCALE_DECAY
+								scaleX = scale
+								scaleY = scale
+								translationX = -offset * size.width * TEXT_COUNTER_PARALLAX_FRACTION
+								translationY = progress * TEXT_GRAVITY_DROP
+								rotationX = progress * TEXT_TILT_DEGREES
+								alpha = ((1f - progress) - TEXT_VISIBILITY_START).coerceIn(0f, 1f) /
+									(1f - TEXT_VISIBILITY_START)
+							}
+						},
+					),
 				horizontalAlignment = Alignment.CenterHorizontally,
 			) {
 				Text(

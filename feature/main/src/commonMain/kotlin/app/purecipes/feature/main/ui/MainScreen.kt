@@ -1,6 +1,9 @@
 package app.purecipes.feature.main.ui
 
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -15,6 +18,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.defaultPopTransitionSpec
+import androidx.navigation3.ui.defaultPredictivePopTransitionSpec
+import androidx.navigation3.ui.defaultTransitionSpec
 import app.purecipes.feature.analytics.domain.model.AnalyticsOrigin
 import app.purecipes.feature.auth.domain.model.AuthenticationState
 import app.purecipes.feature.auth.ui.navigation.installAuthFlow
@@ -39,6 +45,7 @@ import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.LocalSharedTransitionScope
 import app.purecipes.shared.ui.component.NavigationBackHandler
 import app.purecipes.shared.ui.navigation.PostLoginAction
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.MetroViewModelFactory
@@ -115,12 +122,30 @@ private fun MainScreenContent(
 						val listDetailSceneStrategy = rememberMainListDetailSceneStrategy(
 							hasDetailPane = showsDetailPane(tabBackStack),
 						)
+						val reducedMotion = LocalReducedMotion.current
 						SharedTransitionLayout {
-							CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+							CompositionLocalProvider(
+								LocalSharedTransitionScope provides if (reducedMotion) null else this,
+							) {
 								NavDisplay(
 									backStack = tabBackStack,
 									modifier = Modifier.fillMaxSize(),
 									sceneStrategies = listOf(listDetailSceneStrategy),
+									transitionSpec = if (reducedMotion) {
+										{ fadeIn() togetherWith fadeOut() }
+									} else {
+										defaultTransitionSpec()
+									},
+									popTransitionSpec = if (reducedMotion) {
+										{ fadeIn() togetherWith fadeOut() }
+									} else {
+										defaultPopTransitionSpec()
+									},
+									predictivePopTransitionSpec = if (reducedMotion) {
+										{ _ -> fadeIn() togetherWith fadeOut() }
+									} else {
+										defaultPredictivePopTransitionSpec()
+									},
 									entryProvider = entryProvider {
 										installHomeFlow(
 											sessionKey = sessionKey,

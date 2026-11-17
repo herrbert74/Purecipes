@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Cuisine
@@ -35,6 +36,7 @@ import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.organism.RecipeCardDefaults
 import app.purecipes.shared.ui.component.organism.RecipeCardSkeleton
 import app.purecipes.shared.ui.icon.AppIcons
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.android.tools.screenshot.PreviewTest
 import kotlinx.collections.immutable.persistentListOf
@@ -355,6 +357,17 @@ private fun RecipeSectionSegmentedControlFontScaleScreenshot() {
 			selectedSection = RecipeDetailsSection.Ingredients,
 			onSectionChange = {},
 		)
+	}
+}
+
+@PreviewTest
+@Preview(name = "recipe_card_skeleton_reduced_motion", showBackground = true)
+@Composable
+private fun RecipeCardSkeletonReducedMotionScreenshot() {
+	ScreenshotSurface(darkTheme = false) {
+		CompositionLocalProvider(LocalReducedMotion provides true) {
+			RecipeCardSkeleton()
+		}
 	}
 }
 
