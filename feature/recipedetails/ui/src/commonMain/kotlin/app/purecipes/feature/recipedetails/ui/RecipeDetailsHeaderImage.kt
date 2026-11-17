@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.component.recipeImageSharedElement
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
 import kotlin.math.roundToInt
@@ -40,6 +41,7 @@ internal fun RecipeDetailsHeaderImage(
 	scrollOffset: () -> Float = { 0f },
 ) {
 	val density = LocalDensity.current
+	val reducedMotion = LocalReducedMotion.current
 	val initialHeightPx = with(density) { height.toPx() }
 	val minHeightPx = with(density) { RECIPE_DETAILS_MIN_HEADER_HEIGHT.toPx() }
 	val shrinkRangePx = with(density) { HEADER_SHRINK_RANGE.toPx() }
@@ -77,23 +79,29 @@ internal fun RecipeDetailsHeaderImage(
 				.fillMaxSize()
 				.recipeImageSharedElement(key = transitionKey)
 				.clipToBounds()
-				.graphicsLayer {
-					val offset = scrollOffset()
-					if (offset < 0f) {
-						val scale = INITIAL_IMAGE_SCALE + (-offset / initialHeightPx)
-						scaleX = scale
-						scaleY = scale
-						transformOrigin = TransformOrigin(HALF_FACTOR, 0f)
-						translationY = 0f
+				.then(
+					if (reducedMotion) {
+						Modifier
 					} else {
-						val progress = (offset / shrinkRangePx).coerceIn(0f, 1f)
-						val scale = INITIAL_IMAGE_SCALE - (INITIAL_IMAGE_SCALE - FINAL_IMAGE_SCALE) * progress
-						scaleX = scale
-						scaleY = scale
-						transformOrigin = TransformOrigin(HALF_FACTOR, IMAGE_ORIGIN_Y)
-						translationY = progress * parallaxOffsetPx
-					}
-				},
+						Modifier.graphicsLayer {
+							val offset = scrollOffset()
+							if (offset < 0f) {
+								val scale = INITIAL_IMAGE_SCALE + (-offset / initialHeightPx)
+								scaleX = scale
+								scaleY = scale
+								transformOrigin = TransformOrigin(HALF_FACTOR, 0f)
+								translationY = 0f
+							} else {
+								val progress = (offset / shrinkRangePx).coerceIn(0f, 1f)
+								val scale = INITIAL_IMAGE_SCALE - (INITIAL_IMAGE_SCALE - FINAL_IMAGE_SCALE) * progress
+								scaleX = scale
+								scaleY = scale
+								transformOrigin = TransformOrigin(HALF_FACTOR, IMAGE_ORIGIN_Y)
+								translationY = progress * parallaxOffsetPx
+							}
+						}
+					},
+				),
 			contentScale = ContentScale.Crop,
 		)
 	}

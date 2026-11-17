@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { null }
 
@@ -21,23 +22,36 @@ fun Modifier.recipeImageSharedElement(
 	cornerRadius: Dp = 0.dp,
 ): Modifier {
 	val sharedTransitionScope = LocalSharedTransitionScope.current
-	if (key.isNullOrBlank() || sharedTransitionScope == null) {
+	val reducedMotion = LocalReducedMotion.current
+	if (!shouldUseSharedElement(
+			key = key,
+			hasSharedTransitionScope = sharedTransitionScope != null,
+			reducedMotion = reducedMotion
+		)
+	) {
 		return this
 	}
+	val scope = checkNotNull(sharedTransitionScope)
 	val animatedVisibilityScope: AnimatedVisibilityScope = LocalNavAnimatedContentScope.current
-	val overlayClip = remember(sharedTransitionScope, cornerRadius) {
-		with(sharedTransitionScope) {
+	val overlayClip = remember(scope, cornerRadius) {
+		with(scope) {
 			OverlayClip(recipeImageOverlayShape(cornerRadius))
 		}
 	}
-	return with(sharedTransitionScope) {
+	return with(scope) {
 		this@recipeImageSharedElement.sharedElement(
-			sharedContentState = rememberSharedContentState(key = key),
+			sharedContentState = rememberSharedContentState(key = checkNotNull(key)),
 			animatedVisibilityScope = animatedVisibilityScope,
 			clipInOverlayDuringTransition = overlayClip,
 		)
 	}
 }
+
+internal fun shouldUseSharedElement(
+	key: String?,
+	hasSharedTransitionScope: Boolean,
+	reducedMotion: Boolean,
+): Boolean = !reducedMotion && !key.isNullOrBlank() && hasSharedTransitionScope
 
 private fun recipeImageOverlayShape(cornerRadius: Dp): Shape = if (cornerRadius == 0.dp) {
 	RectangleShape

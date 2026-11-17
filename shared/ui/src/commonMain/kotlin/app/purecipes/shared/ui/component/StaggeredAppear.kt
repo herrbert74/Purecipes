@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.delay
 
@@ -22,7 +23,11 @@ private const val STAGGER_DURATION_MS = 320
 
 @Composable
 fun Modifier.staggeredAppear(index: Int): Modifier {
-	val shouldAnimate = index < STAGGER_MAX_ITEMS
+	val reducedMotion = LocalReducedMotion.current
+	if (reducedMotion) {
+		return this
+	}
+	val shouldAnimate = shouldAnimateStaggeredAppear(index = index, reducedMotion = false)
 	var visible by remember(index) { mutableStateOf(!shouldAnimate) }
 	LaunchedEffect(index) {
 		if (!shouldAnimate) {
@@ -53,3 +58,8 @@ fun Modifier.staggeredAppear(index: Int): Modifier {
 		.graphicsLayer { this.alpha = alpha }
 		.offset(y = offsetY)
 }
+
+internal fun shouldAnimateStaggeredAppear(
+	index: Int,
+	reducedMotion: Boolean,
+): Boolean = !reducedMotion && index < STAGGER_MAX_ITEMS

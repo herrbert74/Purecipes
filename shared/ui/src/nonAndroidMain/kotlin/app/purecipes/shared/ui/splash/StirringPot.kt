@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import org.jetbrains.compose.resources.vectorResource
 import purecipes.shared.ui.generated.resources.Res
 import purecipes.shared.ui.generated.resources.splash_pot_bg
@@ -81,16 +82,21 @@ fun StirringPot(modifier: Modifier = Modifier) {
 	val fgPainter = rememberVectorPainter(fg)
 	val layerDrawSize = Size(bg.viewportWidth, bg.viewportHeight)
 
-	val transition = rememberInfiniteTransition(label = "stir")
-	val phase by transition.animateFloat(
-		initialValue = 0f,
-		targetValue = 1f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(durationMillis = SplashTimings.STIR_PERIOD_MILLIS, easing = LinearEasing),
-			repeatMode = RepeatMode.Restart,
-		),
-		label = "stirPhase",
-	)
+	val phase = if (LocalReducedMotion.current) {
+		0f
+	} else {
+		val transition = rememberInfiniteTransition(label = "stir")
+		val animatedPhase by transition.animateFloat(
+			initialValue = 0f,
+			targetValue = 1f,
+			animationSpec = infiniteRepeatable(
+				animation = tween(durationMillis = SplashTimings.STIR_PERIOD_MILLIS, easing = LinearEasing),
+				repeatMode = RepeatMode.Restart,
+			),
+			label = "stirPhase",
+		)
+		animatedPhase
+	}
 
 	val angle = phase * FULL_TURN_RADIANS
 	val dx = STIR_RADIUS_X * cos(angle)

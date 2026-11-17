@@ -323,6 +323,7 @@ object PurecipesTheme {
 	@Composable
 	operator fun invoke(
 		darkTheme: Boolean = isSystemInDarkTheme(),
+		reducedMotion: Boolean = rememberReducedMotion(),
 		content: @Composable () -> Unit,
 	) {
 		val colorScheme = when {
@@ -341,6 +342,7 @@ object PurecipesTheme {
 				LocalPurecipesShapes provides MaterialTheme.shapes,
 				LocalPurecipesSpace provides Space(),
 				LocalFixedColors provides defaultFixedColors,
+				LocalReducedMotion provides reducedMotion,
 			) {
 				content()
 			}

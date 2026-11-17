@@ -9,6 +9,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldState
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldValue
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.theme.LocalPurecipesSpace
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -43,11 +45,13 @@ internal fun MainNavigationSuiteScaffold(
 	val scaffoldState = rememberNavigationSuiteScaffoldState()
 	val scope = rememberCoroutineScope()
 	val canChangeVisibility = rememberUpdatedState(isNavBarVisible)
+	val reducedMotion = rememberUpdatedState(LocalReducedMotion.current)
 	val scrollConnection = remember(scaffoldState, scope) {
 		TabBarScrollConnection(
 			scope = scope,
 			scaffoldState = scaffoldState,
 			canChangeVisibility = { canChangeVisibility.value },
+			isReducedMotion = { reducedMotion.value },
 		)
 	}
 	LaunchedEffect(isNavBarVisible, selectedTab.stackId) {
@@ -96,6 +100,7 @@ private class TabBarScrollConnection(
 	private val scope: CoroutineScope,
 	private val scaffoldState: NavigationSuiteScaffoldState,
 	private val canChangeVisibility: () -> Boolean,
+	private val isReducedMotion: () -> Boolean,
 ) : NestedScrollConnection {
 
 	private var visibilityJob: Job? = null
@@ -159,7 +164,15 @@ private class TabBarScrollConnection(
 		tabBarVisible = visible
 		visibilityJob?.cancel()
 		visibilityJob = scope.launch {
-			if (visible) {
+			if (isReducedMotion()) {
+				scaffoldState.snapTo(
+					if (visible) {
+						NavigationSuiteScaffoldValue.Visible
+					} else {
+						NavigationSuiteScaffoldValue.Hidden
+					},
+				)
+			} else if (visible) {
 				scaffoldState.show()
 			} else {
 				scaffoldState.hide()

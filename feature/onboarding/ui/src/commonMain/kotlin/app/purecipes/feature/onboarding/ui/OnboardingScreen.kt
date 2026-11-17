@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.zIndex
 import app.purecipes.shared.ui.component.HandleSystemBack
+import app.purecipes.shared.ui.theme.LocalReducedMotion
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
@@ -51,33 +52,49 @@ fun OnboardingScreen(
 	val pagerState = rememberPagerState(pageCount = { pages.size })
 	val coroutineScope = rememberCoroutineScope()
 	val currentOnFinish by rememberUpdatedState(onFinish)
+	val reducedMotion = LocalReducedMotion.current
 	var viewportWidth by remember { mutableFloatStateOf(0f) }
 	var viewportHeight by remember { mutableFloatStateOf(0f) }
 
-	val decorations = rememberInfiniteTransition(label = "onboardingDecorations")
-	val sparkleTime = decorations.animateFloat(
-		initialValue = 0f,
-		targetValue = SPARKLE_CYCLE,
-		animationSpec = infiniteRepeatable(
-			animation = tween(durationMillis = SPARKLE_DURATION_MILLIS, easing = LinearEasing),
-			repeatMode = RepeatMode.Restart,
-		),
-		label = "onboardingSparkleTime",
-	)
-	val sheenSweep = decorations.animateFloat(
-		initialValue = 0f,
-		targetValue = 1f,
-		animationSpec = infiniteRepeatable(
-			animation = tween(durationMillis = SHEEN_DURATION_MILLIS, easing = LinearEasing),
-			repeatMode = RepeatMode.Restart,
-		),
-		label = "onboardingSheenSweep",
-	)
+	val sparkleTimeValue: () -> Float
+	val sheenSweepValue: () -> Float
+	if (reducedMotion) {
+		sparkleTimeValue = { 0f }
+		sheenSweepValue = { 0f }
+	} else {
+		val decorations = rememberInfiniteTransition(label = "onboardingDecorations")
+		val sparkleTime = decorations.animateFloat(
+			initialValue = 0f,
+			targetValue = SPARKLE_CYCLE,
+			animationSpec = infiniteRepeatable(
+				animation = tween(durationMillis = SPARKLE_DURATION_MILLIS, easing = LinearEasing),
+				repeatMode = RepeatMode.Restart,
+			),
+			label = "onboardingSparkleTime",
+		)
+		val sheenSweep = decorations.animateFloat(
+			initialValue = 0f,
+			targetValue = 1f,
+			animationSpec = infiniteRepeatable(
+				animation = tween(durationMillis = SHEEN_DURATION_MILLIS, easing = LinearEasing),
+				repeatMode = RepeatMode.Restart,
+			),
+			label = "onboardingSheenSweep",
+		)
+		sparkleTimeValue = { sparkleTime.value }
+		sheenSweepValue = { sheenSweep.value }
+	}
 
 	HandleSystemBack(enabled = true) {
 		val target = pagerState.currentPage - 1
 		if (target >= 0) {
-			coroutineScope.launch { pagerState.animateScrollToPage(target) }
+			coroutineScope.launch {
+				if (reducedMotion) {
+					pagerState.scrollToPage(target)
+				} else {
+					pagerState.animateScrollToPage(target)
+				}
+			}
 		}
 	}
 
@@ -97,24 +114,37 @@ fun OnboardingScreen(
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
-					.zIndex(if (isArriving) ARRIVING_PAGE_Z_INDEX else 0f)
-					.graphicsLayer { translationX = pagerState.offsetForPage(page) * size.width },
+					.then(
+						if (reducedMotion) {
+							Modifier
+						} else {
+							Modifier
+								.zIndex(if (isArriving) ARRIVING_PAGE_Z_INDEX else 0f)
+								.graphicsLayer { translationX = pagerState.offsetForPage(page) * size.width }
+						},
+					),
 			) {
 				Box(
 					modifier = Modifier
 						.fillMaxSize()
-						.liquidSwipeClip(
-							pagerState = pagerState,
-							page = page,
-							buttonSize = ONBOARDING_NEXT_BUTTON_SIZE,
-							bottomPadding = ONBOARDING_NEXT_BUTTON_BOTTOM_PADDING,
+						.then(
+							if (reducedMotion) {
+								Modifier
+							} else {
+								Modifier.liquidSwipeClip(
+									pagerState = pagerState,
+									page = page,
+									buttonSize = ONBOARDING_NEXT_BUTTON_SIZE,
+									bottomPadding = ONBOARDING_NEXT_BUTTON_BOTTOM_PADDING,
+								)
+							},
 						),
 				) {
 					OnboardingPageContent(
 						page = pages[page],
 						pageOffset = { pagerState.offsetForPage(page) },
-						sparkleTime = { sparkleTime.value },
-						sheenSweep = { sheenSweep.value },
+						sparkleTime = sparkleTimeValue,
+						sheenSweep = sheenSweepValue,
 					)
 				}
 				OnboardingNextButton(
@@ -131,13 +161,17 @@ fun OnboardingScreen(
 							currentOnFinish(pages.outcome(page, skipped = false))
 						} else {
 							coroutineScope.launch {
-								pagerState.animateScrollToPage(
-									page = page + 1,
-									animationSpec = spring(
-										dampingRatio = 1f,
-										stiffness = NEXT_PAGE_STIFFNESS,
-									),
-								)
+								if (reducedMotion) {
+									pagerState.scrollToPage(page + 1)
+								} else {
+									pagerState.animateScrollToPage(
+										page = page + 1,
+										animationSpec = spring(
+											dampingRatio = 1f,
+											stiffness = NEXT_PAGE_STIFFNESS,
+										),
+									)
+								}
 							}
 						}
 					},
