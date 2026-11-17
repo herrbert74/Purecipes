@@ -13,6 +13,10 @@ on:
         required: false
         default: "UiTestAll"
 
+concurrency:
+  group: build-test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build
