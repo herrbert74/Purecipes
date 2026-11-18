@@ -49,6 +49,24 @@ object IngredientNameMatching {
 		}
 	}
 
+	fun compileMatcher(ingredientNames: Collection<String>): CompiledIngredientMatcher {
+		val root = PrefixTrieNode()
+		var hasAnyVariant = false
+		val seenVariants = HashSet<String>()
+		ingredientNames.forEach { ingredientName ->
+			ingredientVariants(ingredientName).forEach { variant ->
+				if (variant.isNotBlank() && seenVariants.add(variant)) {
+					val words = variant.split(' ').filter(String::isNotBlank)
+					if (words.isNotEmpty()) {
+						hasAnyVariant = true
+						insertVariantIntoTrie(root, words)
+					}
+				}
+			}
+		}
+		return CompiledIngredientMatcher(root = root, isEmpty = !hasAnyVariant)
+	}
+
 	fun matchesAnyIngredient(
 		ingredientLine: String,
 		ingredientNames: Collection<String>,
@@ -80,27 +98,48 @@ object IngredientNameMatching {
 		return normalizedIngredientLine.isBlank() || matchedAvailableIngredient
 	}
 
-	fun normalizeIngredientName(value: String): String =
-		normalizeWhitespace(stripDiacritics(value.lowercase()).replace(Regex("[^a-z0-9]+"), " "))
+	fun normalizeIngredientName(value: String): String = normalizeAlphanumericTokens(value)
 
-	fun normalizeIngredientText(value: String): String =
-		normalizeWhitespace(stripDiacritics(value.lowercase()).replace(Regex("[^a-z0-9]+"), " "))
+	fun normalizeIngredientText(value: String): String = normalizeAlphanumericTokens(value)
 
-	private fun stripDiacritics(value: String): String = buildString(value.length) {
-		for (char in value) {
-			append(
-				when (char) {
-					'á', 'à', 'ä', 'â', 'ã', 'å', 'ā' -> 'a'
-					'é', 'è', 'ë', 'ê', 'ē' -> 'e'
-					'í', 'ì', 'ï', 'î', 'ī' -> 'i'
-					'ó', 'ò', 'ö', 'ô', 'õ', 'ø', 'ō' -> 'o'
-					'ú', 'ù', 'ü', 'û', 'ū' -> 'u'
-					'ñ' -> 'n'
-					'ç' -> 'c'
-					'ý', 'ÿ' -> 'y'
-					else -> char
-				},
-			)
+	private fun normalizeAlphanumericTokens(value: String): String = buildString(value.length) {
+		var pendingSpace = false
+		for (rawChar in value) {
+			val mapped = mapNormalizedChar(rawChar.lowercaseChar())
+			if (mapped in 'a'..'z' || mapped in '0'..'9') {
+				if (pendingSpace && isNotEmpty()) {
+					append(' ')
+				}
+				pendingSpace = false
+				append(mapped)
+			} else {
+				pendingSpace = true
+			}
+		}
+	}
+
+	private fun mapNormalizedChar(char: Char): Char = when (char) {
+		'á', 'à', 'ä', 'â', 'ã', 'å', 'ā' -> 'a'
+		'é', 'è', 'ë', 'ê', 'ē' -> 'e'
+		'í', 'ì', 'ï', 'î', 'ī' -> 'i'
+		'ó', 'ò', 'ö', 'ô', 'õ', 'ø', 'ō' -> 'o'
+		'ú', 'ù', 'ü', 'û', 'ū' -> 'u'
+		'ñ' -> 'n'
+		'ç' -> 'c'
+		'ý', 'ÿ' -> 'y'
+		else -> char
+	}
+
+	private fun insertVariantIntoTrie(root: PrefixTrieNode, words: List<String>) {
+		var node = root
+		for (char in words[0]) {
+			node = node.children.getOrPut(char) { PrefixTrieNode() }
+		}
+		if (words.size == 1) {
+			node.matchesSingleWord = true
+		} else {
+			val tails = node.multiWordTails ?: mutableListOf<List<String>>().also { node.multiWordTails = it }
+			tails.add(words.drop(1))
 		}
 	}
 
@@ -132,25 +171,46 @@ object IngredientNameMatching {
 	private fun containsSearchPhrase(
 		normalizedIngredientLine: String,
 		normalizedPhrase: String,
-	): Boolean {
-		val exactMatch = containsExactIngredientPhrase(normalizedIngredientLine, normalizedPhrase)
-		val ingredientWords = normalizedIngredientLine.split(' ').filter(String::isNotBlank)
-		val phraseWords = normalizedPhrase.split(' ').filter(String::isNotBlank)
-		val prefixMatch = ingredientWords.size >= phraseWords.size && phraseWords.isNotEmpty() &&
-			ingredientWords.windowed(size = phraseWords.size, step = 1).any { window ->
-				window.zip(phraseWords).all { (ingredientWord, phraseWord) ->
-					wordMatchesSearchPhraseWord(ingredientWord, phraseWord)
+	): Boolean = when {
+		normalizedPhrase.isBlank() -> false
+		containsExactIngredientPhrase(normalizedIngredientLine, normalizedPhrase) -> true
+		else -> {
+			val ingredientWords = normalizedIngredientLine.split(' ').filter(String::isNotBlank)
+			val phraseWords = normalizedPhrase.split(' ').filter(String::isNotBlank)
+			ingredientWords.size >= phraseWords.size && phraseWords.isNotEmpty() &&
+				ingredientWords.windowed(size = phraseWords.size, step = 1).any { window ->
+					window.zip(phraseWords).all { (ingredientWord, phraseWord) ->
+						wordMatchesSearchPhraseWord(ingredientWord, phraseWord)
+					}
 				}
-			}
-
-		return normalizedPhrase.isNotBlank() && (exactMatch || prefixMatch)
+		}
 	}
 
 	private fun wordMatchesSearchPhraseWord(ingredientWord: String, phraseWord: String): Boolean {
-		val singularWord = singularizeLastWord(ingredientWord)
-		return ingredientWord.startsWith(phraseWord) ||
-			singularWord == phraseWord ||
-			singularWord.startsWith(phraseWord)
+		if (ingredientWord.startsWith(phraseWord)) {
+			return true
+		}
+		val singularWord = singularizeWord(ingredientWord)
+		return singularWord.startsWith(phraseWord)
+	}
+
+	internal fun singularizeWord(word: String): String = when {
+		word.endsWith("ies") && word.length > IES_SUFFIX_LENGTH ->
+			word.dropLast(IES_SUFFIX_LENGTH) + "y"
+
+		word.endsWith("ses") && word.length > IES_SUFFIX_LENGTH ->
+			word.dropLast(SES_DROP_LENGTH)
+
+		word.endsWith("oes") && word.length > IES_SUFFIX_LENGTH ->
+			word.dropLast(IES_SUFFIX_LENGTH) + "o"
+
+		word.endsWith("ves") && word.length > IES_SUFFIX_LENGTH ->
+			word.dropLast(IES_SUFFIX_LENGTH) + "f"
+
+		word.endsWith("s") && !word.endsWith("ss") && word.length > S_SUFFIX_LENGTH ->
+			word.dropLast(S_SUFFIX_LENGTH)
+
+		else -> word
 	}
 
 	private fun singularizeLastWord(value: String): String {
@@ -158,30 +218,6 @@ object IngredientNameMatching {
 		if (words.isEmpty()) {
 			return value
 		}
-
-		val lastWord = words.last()
-		val singularLastWord = when {
-			lastWord.endsWith("ies") && lastWord.length > IES_SUFFIX_LENGTH ->
-				lastWord.dropLast(IES_SUFFIX_LENGTH) + "y"
-
-			lastWord.endsWith("ses") && lastWord.length > IES_SUFFIX_LENGTH ->
-				lastWord.dropLast(SES_DROP_LENGTH)
-
-			lastWord.endsWith("oes") && lastWord.length > IES_SUFFIX_LENGTH ->
-				lastWord.dropLast(IES_SUFFIX_LENGTH) + "o"
-
-			lastWord.endsWith("ves") && lastWord.length > IES_SUFFIX_LENGTH ->
-				lastWord.dropLast(IES_SUFFIX_LENGTH) + "f"
-
-			lastWord.endsWith("s") && !lastWord.endsWith("ss") && lastWord.length > S_SUFFIX_LENGTH ->
-				lastWord.dropLast(S_SUFFIX_LENGTH)
-
-			else -> lastWord
-		}
-
-		return (words.dropLast(1) + singularLastWord).joinToString(separator = " ")
+		return (words.dropLast(1) + singularizeWord(words.last())).joinToString(separator = " ")
 	}
-
-	private fun normalizeWhitespace(value: String): String =
-		value.trim().replace(Regex("\\s+"), " ")
 }

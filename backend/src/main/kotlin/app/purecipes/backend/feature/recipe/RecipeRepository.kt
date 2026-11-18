@@ -1,9 +1,5 @@
 package app.purecipes.backend.feature.recipe
 
-import app.purecipes.backend.feature.search.IngredientVocabulary
-import app.purecipes.shared.domain.ingredient.ingredientSlots
-import app.purecipes.shared.domain.ingredient.singleMissingIngredientLabel
-import app.purecipes.shared.domain.ingredient.slotIsOptional
 import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.domain.model.CalorieRange
 import app.purecipes.shared.domain.model.CookingMethod
@@ -23,6 +19,8 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
 import javax.sql.DataSource
+
+private const val INGREDIENT_BATCH_SIZE = 1000
 
 class RecipeRepository(
 	internal val dataSource: DataSource,
@@ -205,6 +203,53 @@ class RecipeRepository(
 			it.setInt(1, recipeId)
 		},
 	)
+
+	internal fun loadIngredientGroupsForRecipes(
+		conn: java.sql.Connection,
+		recipeIds: List<Int>,
+	): Map<Int, List<IngredientGroup>> {
+		if (recipeIds.isEmpty()) {
+			return emptyMap()
+		}
+		val result = mutableMapOf<Int, List<IngredientGroup>>()
+		recipeIds.chunked(INGREDIENT_BATCH_SIZE).forEach { chunk ->
+			val placeholders = chunk.joinToString(",") { "?" }
+			val sql = """
+				SELECT g.recipe_id, g.id AS group_id, g.name AS group_name, i.ingredient, i.requirement,
+					i.alternative_group_key
+				FROM ingredient_groups g
+				LEFT JOIN ingredients i ON i.ingredient_group_id = g.id
+				WHERE g.recipe_id IN ($placeholders)
+				ORDER BY g.recipe_id ASC, g.order_index ASC, i.order_index ASC
+			""".trimIndent()
+			conn.prepareStatement(sql).use { ps ->
+				chunk.forEachIndexed { index, recipeId ->
+					ps.setInt(index + 1, recipeId)
+				}
+				ps.executeQuery().use { rs ->
+					val groupsByRecipe = mutableMapOf<Int, LinkedHashMap<Int, IngredientGroupAccumulator>>()
+					while (rs.next()) {
+						val recipeId = rs.getInt("recipe_id")
+						val groupId = rs.getInt("group_id")
+						val recipeGroups = groupsByRecipe.getOrPut(recipeId) { linkedMapOf() }
+						val group = recipeGroups.getOrPut(groupId) {
+							IngredientGroupAccumulator(name = rs.getNullableString("group_name"))
+						}
+						readRecipeIngredient(rs)?.let(group.ingredients::add)
+					}
+					groupsByRecipe.forEach { (recipeId, groupsById) ->
+						result[recipeId] = groupsById.values.map { accumulator ->
+							IngredientGroup(
+								name = accumulator.name,
+								ingredients = accumulator.ingredients,
+							)
+						}
+					}
+				}
+			}
+		}
+		return result
+	}
 
 	internal fun loadIngredientGroups(ps: PreparedStatement): List<IngredientGroup> = ps.use { statement ->
 		statement.executeQuery().use { rs ->
@@ -583,8 +628,7 @@ internal fun RecipeRepository.querySearchWithFiltersRecipes(
 			r.created_at
 		FROM recipes r
 		${query.whereClause}
-		GROUP BY r.id
-		${searchRecipeOrderBySql(query.order)}
+		${searchRecipeOrderBySql(query.order, query.randomSeed)}
 		$limitAndOffsetClause
 	""".trimIndent()
 
@@ -614,170 +658,6 @@ internal fun countSearchWithFiltersRecipes(
 		ps.executeQuery().use { rs ->
 			rs.next()
 			rs.getInt(1)
-		}
-	}
-}
-
-internal data class PantryCoverage(
-	val coveredSlots: Int,
-	val totalRequiredSlots: Int,
-) {
-
-	val missingSlots: Int
-		get() = (totalRequiredSlots - coveredSlots).coerceAtLeast(0)
-}
-
-internal fun isRecipeCoveredByAvailableIngredients(
-	recipeId: Int,
-	availableIngredients: List<String>,
-	loadIngredientGroups: (Int) -> List<IngredientGroup>,
-): Boolean {
-	return pantryCoverageForRecipe(
-		recipeId = recipeId,
-		availableIngredients = availableIngredients,
-		loadIngredientGroups = loadIngredientGroups,
-	).missingSlots == 0
-}
-
-internal fun pantryCoverageForRecipe(
-	recipeId: Int,
-	availableIngredients: List<String>,
-	loadIngredientGroups: (Int) -> List<IngredientGroup>,
-): PantryCoverage {
-	val requiredSlots = loadIngredientGroups(recipeId)
-		.flatMap { group -> ingredientSlots(group.ingredients) }
-		.filterNot { slot -> slotIsOptional(slot) }
-	val coveredSlots = requiredSlots.count { slot ->
-		isIngredientSlotCoveredByPantry(slot, availableIngredients)
-	}
-	return PantryCoverage(
-		coveredSlots = coveredSlots,
-		totalRequiredSlots = requiredSlots.size,
-	)
-}
-
-internal fun singleMissingPantryIngredientLabel(
-	recipeId: Int,
-	availableIngredients: List<String>,
-	loadIngredientGroups: (Int) -> List<IngredientGroup>,
-): String? {
-	return singleMissingIngredientLabel(loadIngredientGroups(recipeId)) { slot ->
-		isIngredientSlotCoveredByPantry(slot, availableIngredients)
-	}
-}
-
-internal fun recipeContainsExcludedIngredient(
-	recipeId: Int,
-	excludedIngredients: List<String>,
-	loadIngredientGroups: (Int) -> List<IngredientGroup>,
-): Boolean {
-	if (excludedIngredients.isEmpty()) {
-		return false
-	}
-
-	return loadIngredientGroups(recipeId).any { group ->
-		ingredientSlots(group.ingredients).any { slot ->
-			isIngredientSlotExcluded(slot, excludedIngredients)
-		}
-	}
-}
-
-internal fun recipeContainsAllKeyIngredients(
-	recipeId: Int,
-	keyIngredients: List<String>,
-	loadIngredientGroups: (Int) -> List<IngredientGroup>,
-): Boolean {
-	if (keyIngredients.isEmpty()) {
-		return true
-	}
-
-	return keyIngredients.all { keyIngredient ->
-		loadIngredientGroups(recipeId).any { group ->
-			ingredientSlots(group.ingredients).any { slot ->
-				isIngredientSlotMatchingKeyIngredient(slot, listOf(keyIngredient))
-			}
-		}
-	}
-}
-
-internal fun isIngredientSlotCoveredByPantry(
-	slot: List<RecipeIngredient>,
-	availableIngredients: List<String>,
-): Boolean {
-	if (slotIsOptional(slot)) {
-		return true
-	}
-	val requiredMembers = slot.filter { ingredient -> ingredient.requirement != IngredientRequirement.OPTIONAL }
-	return if (requiredMembers.isEmpty()) {
-		true
-	} else if (requiredMembers.any { ingredient -> ingredient.requirement == IngredientRequirement.ALTERNATIVE }) {
-		requiredMembers.any { ingredient ->
-			IngredientVocabulary.isCoveredByAvailableIngredients(
-				ingredientLine = ingredient.text,
-				availableIngredients = availableIngredients,
-			)
-		}
-	} else {
-		requiredMembers.all { ingredient ->
-			IngredientVocabulary.isCoveredByAvailableIngredients(
-				ingredientLine = ingredient.text,
-				availableIngredients = availableIngredients,
-			)
-		}
-	}
-}
-
-internal fun isIngredientSlotExcluded(
-	slot: List<RecipeIngredient>,
-	excludedIngredients: List<String>,
-): Boolean {
-	if (excludedIngredients.isEmpty()) {
-		return false
-	}
-	val alternativeMembers = slot.filter { ingredient ->
-		ingredient.requirement == IngredientRequirement.ALTERNATIVE
-	}
-	return if (alternativeMembers.size > 1) {
-		alternativeMembers.all { ingredient ->
-			IngredientVocabulary.matchesAnyIngredient(
-				ingredientLine = ingredient.text,
-				ingredientNames = excludedIngredients,
-			)
-		}
-	} else {
-		slot.any { ingredient ->
-			IngredientVocabulary.matchesAnyIngredient(
-				ingredientLine = ingredient.text,
-				ingredientNames = excludedIngredients,
-			)
-		}
-	}
-}
-
-internal fun isIngredientSlotMatchingKeyIngredient(
-	slot: List<RecipeIngredient>,
-	keyIngredients: List<String>,
-): Boolean {
-	if (keyIngredients.isEmpty() || slotIsOptional(slot)) {
-		return false
-	}
-	val alternativeMembers = slot.filter { ingredient ->
-		ingredient.requirement == IngredientRequirement.ALTERNATIVE
-	}
-	return if (alternativeMembers.size > 1) {
-		alternativeMembers.any { ingredient ->
-			IngredientVocabulary.matchesAnyIngredient(
-				ingredientLine = ingredient.text,
-				ingredientNames = keyIngredients,
-			)
-		}
-	} else {
-		slot.any { ingredient ->
-			ingredient.requirement != IngredientRequirement.OPTIONAL &&
-				IngredientVocabulary.matchesAnyIngredient(
-					ingredientLine = ingredient.text,
-					ingredientNames = keyIngredients,
-				)
 		}
 	}
 }

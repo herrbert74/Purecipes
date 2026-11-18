@@ -206,6 +206,21 @@ internal const val INSTRUCTION_STEPS_TABLE_SQL = """
 	)
 """
 
+internal const val INGREDIENT_GROUPS_RECIPE_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_ingredient_groups_recipe_id
+	ON ingredient_groups (recipe_id)
+"""
+
+internal const val INGREDIENTS_GROUP_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_ingredients_ingredient_group_id
+	ON ingredients (ingredient_group_id)
+"""
+
+internal const val INSTRUCTION_STEPS_RECIPE_INDEX_SQL = """
+	CREATE INDEX IF NOT EXISTS idx_instruction_steps_recipe_id
+	ON instruction_steps (recipe_id)
+"""
+
 internal const val FAVORITES_USER_CREATED_AT_INDEX_SQL = """
 	CREATE INDEX IF NOT EXISTS idx_favorites_user_created_at
 	ON favorites (user_id, created_at DESC)

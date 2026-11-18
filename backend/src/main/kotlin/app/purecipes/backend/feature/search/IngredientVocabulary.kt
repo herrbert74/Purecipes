@@ -1,6 +1,7 @@
 package app.purecipes.backend.feature.search
 
 import app.purecipes.backend.feature.nutrition.NutritionNameNormalizer
+import app.purecipes.shared.domain.ingredient.CompiledIngredientMatcher
 import app.purecipes.shared.domain.ingredient.IngredientNameMatching
 
 internal object IngredientVocabulary {
@@ -358,36 +359,57 @@ internal object IngredientVocabulary {
 		"bicarbonate of soda",
 	)
 
+	private val defaultPantryMatcher: CompiledIngredientMatcher =
+		IngredientNameMatching.compileMatcher(defaultPantryIngredients)
+
+	private val equipmentRoots: Set<String> = ignorableEquipmentKeywords
+		.flatMap { keyword ->
+			keyword.split(' ').filter { part -> part.isNotEmpty() }.flatMap { part ->
+				listOf(part, "${part}s", "${part}es")
+			}
+		}
+		.toSet()
+
 	fun isPantryIngredient(ingredientLine: String): Boolean =
-		IngredientNameMatching.matchesAnyIngredient(
-			ingredientLine = ingredientLine,
-			ingredientNames = defaultPantryIngredients,
-		)
+		defaultPantryMatcher.matchesIngredientLine(ingredientLine)
 
 	fun isCoveredByAvailableIngredients(
 		ingredientLine: String,
 		availableIngredients: Collection<String>,
 	): Boolean {
-		return isIgnorableIngredientLine(ingredientLine) ||
-			isPantryIngredient(ingredientLine) ||
+		return isPantryIngredient(ingredientLine) ||
 			IngredientNameMatching.isCoveredByAvailableIngredients(
 				ingredientLine = ingredientLine,
 				availableIngredients = availableIngredients,
-			)
+			) ||
+			isIgnorableIngredientLine(ingredientLine)
+	}
+
+	fun isCoveredByAvailableIngredients(
+		ingredientLine: String,
+		availableMatcher: CompiledIngredientMatcher,
+	): Boolean {
+		return defaultPantryMatcher.matchesIngredientLine(ingredientLine) ||
+			availableMatcher.isCoveredByAvailable(ingredientLine) ||
+			isIgnorableIngredientLine(ingredientLine)
 	}
 
 	fun matchesAnyIngredient(
 		ingredientLine: String,
 		ingredientNames: Collection<String>,
 	): Boolean {
-		if (isIgnorableIngredientLine(ingredientLine)) {
-			return false
-		}
-
 		return IngredientNameMatching.matchesAnyIngredient(
 			ingredientLine = ingredientLine,
 			ingredientNames = ingredientNames,
-		)
+		) && !isIgnorableIngredientLine(ingredientLine)
+	}
+
+	fun matchesAnyIngredient(
+		ingredientLine: String,
+		ingredientMatcher: CompiledIngredientMatcher,
+	): Boolean {
+		return ingredientMatcher.matchesIngredientLine(ingredientLine) &&
+			!isIgnorableIngredientLine(ingredientLine)
 	}
 
 	private val sectionHeadingExactFilters = setOf(
@@ -462,19 +484,15 @@ internal object IngredientVocabulary {
 
 	fun isIgnorableIngredientLine(ingredientLine: String): Boolean {
 		val trimmed = ingredientLine.trim().removePrefix("-").removePrefix("*").trim()
-		if (trimmed.isBlank()) {
-			return true
-		}
-
 		val lower = trimmed.lowercase()
-		val headingLike = isHeadingOrInstructionLike(lower, trimmed)
-		val normalized = IngredientNameMatching.normalizeIngredientText(trimmed)
-		val equipment = isEquipmentLine(ingredientLine)
-		val orphanOnly = isOrphanModifierOnlyLine(lower)
-		val quantityOnly = isQuantityOnlyMeasureLine(lower)
-		val nonFoodLike = isIgnorableNonFoodLine(lower, normalized)
-
-		return headingLike || equipment || orphanOnly || quantityOnly || nonFoodLike
+		return when {
+			trimmed.isBlank() -> true
+			isHeadingOrInstructionLike(lower, trimmed) -> true
+			isEquipmentLine(ingredientLine) -> true
+			isOrphanModifierOnlyLine(lower) -> true
+			isQuantityOnlyMeasureLine(lower) -> true
+			else -> isIgnorableNonFoodLine(lower, IngredientNameMatching.normalizeIngredientText(trimmed))
+		}
 	}
 
 	private fun isIgnorableNonFoodLine(lower: String, normalized: String): Boolean {
@@ -540,13 +558,6 @@ internal object IngredientVocabulary {
 	}
 
 	private fun isEquipmentOnlyLine(normalizedTokens: Set<String>): Boolean {
-		val equipmentRoots = ignorableEquipmentKeywords
-			.flatMap { keyword ->
-				keyword.split(' ').filter { part -> part.isNotEmpty() }.flatMap { part ->
-					listOf(part, "${part}s", "${part}es")
-				}
-			}
-			.toSet()
 		val remaining = normalizedTokens.filterNot { token ->
 			token.all(Char::isDigit) || token in equipmentLineFillerTokens
 		}
