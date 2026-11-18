@@ -1,19 +1,17 @@
 package app.purecipes.feature.search.ui
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
@@ -41,13 +39,12 @@ fun RecipeSearchScreenContent(
 				.fillMaxSize()
 				.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)),
 		) {
-			Column(
+			Box(
 				modifier = Modifier.padding(
 					start = PurecipesTheme.space.m,
 					top = PurecipesTheme.space.m,
 					end = PurecipesTheme.space.m,
 				),
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 			) {
 				RecipeSearchHeader(
 					isSearchBarActive = isSearchExpanded,
@@ -60,21 +57,6 @@ fun RecipeSearchScreenContent(
 					onSearchImeSearch = {},
 					onClearSearchText = {},
 				)
-				if (isSearchExpanded) {
-					Text(
-						text = RECIPE_SEARCH_HELPER,
-						style = PurecipesTheme.typography.labelMedium,
-						color = PurecipesTheme.colorScheme.onSurfaceVariant,
-					)
-				}
-				searchFilterNote?.let { note ->
-					Text(
-						text = note,
-						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-						style = PurecipesTheme.typography.bodyMedium,
-						color = PurecipesTheme.colorScheme.onSurfaceVariant,
-					)
-				}
 			}
 			val recipeList = remember(recipes) {
 				mutableStateListOf<RecipeSummary>().apply { addAll(recipes) }
@@ -96,6 +78,8 @@ fun RecipeSearchScreenContent(
 				paginationState = paginationState,
 				recipes = recipeList,
 				onRecipeSelect = { _, _ -> },
+				searchInstructions = if (isSearchExpanded) RECIPE_SEARCH_HELPER else null,
+				searchFilterNote = searchFilterNote,
 				browseTiles = browseTiles(SearchFilters.default()),
 				modifier = Modifier
 					.weight(1f)

@@ -11,6 +11,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -195,6 +196,38 @@ class RecipeSearchScreenTest {
 
 		onNodeWithTag(SEARCH_FILTER_NOTE_TAG).assertIsDisplayed()
 		onNodeWithText("Showing recipes you can make with your pantry.").assertIsDisplayed()
+	}
+
+	@Test
+	fun searchInstructionsScrollAwayWithContent() = runRecompositionTrackingUiTest {
+		val searchRepository = FakeRecipeSearchRepository(
+			result = com.github.michaelbull.result.Ok(
+				(1..20).map { index ->
+					RecipeSummary(
+						id = index,
+						title = "Recipe $index",
+						cuisine = Cuisine.ITALIAN,
+						imageUrl = null,
+						totalTime = 20,
+					)
+				},
+			),
+		)
+
+		val viewModel = recipeSearchViewModelForTest(searchRepository = searchRepository)
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeSearchScreen(
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		onNodeWithText(RECIPE_SEARCH_HELPER).assertIsDisplayed()
+
+		onNodeWithTag(SEARCH_RESULTS_LIST_TAG).performScrollToNode(hasText("Recipe 20"))
+
+		onNodeWithText(RECIPE_SEARCH_HELPER).assertIsNotDisplayed()
 	}
 
 	@Test
