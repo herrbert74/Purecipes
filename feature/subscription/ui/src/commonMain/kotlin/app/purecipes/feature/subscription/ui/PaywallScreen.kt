@@ -39,6 +39,9 @@ import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.back
 
 internal const val PAYWALL_SCREEN_TAG = "paywallScreen"
 internal const val PAYWALL_PREMIUM_MESSAGE_TAG = "paywallPremiumMessage"
@@ -81,7 +84,7 @@ fun PaywallScreen(
 					IconButton(onClick = onBack) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Back",
+							contentDescription = stringResource(Res.string.back),
 						)
 					}
 				},

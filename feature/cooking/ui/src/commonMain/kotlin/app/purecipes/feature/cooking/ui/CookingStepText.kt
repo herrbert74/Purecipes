@@ -6,6 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -16,6 +19,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.start_timer_action
 
 @Composable
 internal fun CookingStepText(
@@ -68,11 +74,27 @@ internal fun CookingStepText(
 			}
 		}
 	}
+	val durationHighlights = highlights.filterIsInstance<CookingStepHighlight.Duration>()
+	val durationActions = durationHighlights.map { duration ->
+		CustomAccessibilityAction(
+			label = stringResource(Res.string.start_timer_action, duration.text),
+		) {
+			onDurationClick(duration)
+			true
+		}
+	}
 	Text(
 		text = annotated,
 		modifier = modifier
 			.fillMaxWidth()
-			.testTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG),
+			.testTag(STEP_BY_STEP_CURRENT_STEP_TEXT_TAG)
+			.then(
+				if (durationActions.isNotEmpty()) {
+					Modifier.semantics { customActions = durationActions }
+				} else {
+					Modifier
+				},
+			),
 		style = PurecipesTheme.typography.headlineSmall,
 		color = PurecipesTheme.colorScheme.onSurface,
 	)

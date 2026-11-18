@@ -2,8 +2,8 @@ package app.purecipes.feature.auth.ui.authentication
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +17,7 @@ internal fun PreviewAuthenticationProviderButtons() {
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight),
+				.defaultMinSize(minHeight = PurecipesButtonDefaults.providerButtonHeight),
 			onClick = {},
 			enabled = false,
 		) {
@@ -26,7 +26,7 @@ internal fun PreviewAuthenticationProviderButtons() {
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight),
+				.defaultMinSize(minHeight = PurecipesButtonDefaults.providerButtonHeight),
 			onClick = {},
 			enabled = false,
 		) {
@@ -35,7 +35,7 @@ internal fun PreviewAuthenticationProviderButtons() {
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight),
+				.defaultMinSize(minHeight = PurecipesButtonDefaults.providerButtonHeight),
 			onClick = {},
 			enabled = false,
 		) {

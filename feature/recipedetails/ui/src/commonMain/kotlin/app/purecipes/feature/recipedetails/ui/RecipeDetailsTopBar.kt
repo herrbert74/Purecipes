@@ -24,6 +24,9 @@ import app.purecipes.shared.ui.component.atom.BackNavigationButton
 import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.share_recipe
 
 const val RECIPE_DETAILS_TOP_BAR_TAG = "recipeDetailsTopBar"
 private val STATUS_BAR_SCRIM_HEIGHT = 100.dp
@@ -86,7 +89,7 @@ internal fun RecipeDetailsTopBar(
 				if (!isPrivate) {
 					ShareIconButton(
 						onShare = onShare,
-						contentDescription = "Share recipe",
+						contentDescription = stringResource(Res.string.share_recipe),
 						modifier = Modifier
 							.clip(CircleShape)
 							.background(PurecipesTheme.colorScheme.surface.copy(alpha = buttonAlpha)),

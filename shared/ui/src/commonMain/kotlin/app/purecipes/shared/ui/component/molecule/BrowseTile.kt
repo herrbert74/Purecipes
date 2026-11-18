@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
@@ -58,7 +58,7 @@ fun BrowseTile(
 	Surface(
 		onClick = onClick,
 		modifier = modifier
-			.width(BROWSE_TILE_WIDTH)
+			.widthIn(min = BROWSE_TILE_WIDTH)
 			.defaultMinSize(minHeight = BROWSE_TILE_WIDTH)
 			.semantics {
 				role = Role.Button
@@ -95,9 +95,8 @@ fun BrowseTile(
 					colors.onColorContainer
 				},
 				textAlign = TextAlign.Center,
-				maxLines = 1,
+				maxLines = 2,
 				overflow = TextOverflow.Ellipsis,
-				softWrap = false,
 			)
 		}
 	}

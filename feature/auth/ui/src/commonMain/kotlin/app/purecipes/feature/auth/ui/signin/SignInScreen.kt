@@ -26,6 +26,9 @@ import app.purecipes.shared.ui.component.organism.BrandMomentHeader
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.assistedMetroViewModel
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.back
 
 @Composable
 fun SignInScreen(
@@ -96,7 +99,7 @@ internal fun SignInScreenContent(
 					IconButton(onClick = onBack) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Back",
+							contentDescription = stringResource(Res.string.back),
 						)
 					}
 				},

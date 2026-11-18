@@ -39,6 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -373,6 +375,11 @@ private fun IngredientPartFields(
 				onValueChange = { onPartChange(part.copy(name = it)) },
 				modifier = Modifier
 					.weight(1f)
+					.semantics {
+						if (nameError != null) {
+							error(nameError)
+						}
+					}
 					.testTag(nameTestTag),
 				label = { Text(text = "Ingredient") },
 				isError = nameError != null,

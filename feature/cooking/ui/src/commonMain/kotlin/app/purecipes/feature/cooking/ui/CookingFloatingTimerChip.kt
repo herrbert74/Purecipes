@@ -23,11 +23,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.dismiss_timer
+import purecipes.shared.ui.generated.resources.timer_done_label
 
 internal const val COOKING_FLOATING_TIMER_TAG = "cookingFloatingTimer"
 
@@ -54,7 +61,15 @@ internal fun CookingFloatingTimerChip(
 		label = "timerContent",
 	)
 	Surface(
-		modifier = modifier.testTag(COOKING_FLOATING_TIMER_TAG),
+		modifier = modifier
+			.testTag(COOKING_FLOATING_TIMER_TAG)
+			.then(
+				if (timer.isComplete) {
+					Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+				} else {
+					Modifier
+				},
+			),
 		shape = RoundedCornerShape(PurecipesTheme.space.l),
 		color = containerColor,
 		shadowElevation = PurecipesTheme.space.xs,
@@ -93,7 +108,7 @@ internal fun CookingFloatingTimerChip(
 			}
 			Text(
 				text = if (timer.isComplete) {
-					"Done · ${timer.label}"
+					stringResource(Res.string.timer_done_label, timer.label)
 				} else {
 					"${timer.displayTime} · ${timer.label}"
 				},
@@ -103,7 +118,7 @@ internal fun CookingFloatingTimerChip(
 			IconButton(onClick = onDismiss) {
 				Icon(
 					imageVector = AppIcons.Close,
-					contentDescription = "Dismiss timer",
+					contentDescription = stringResource(Res.string.dismiss_timer),
 					tint = contentColor,
 				)
 			}

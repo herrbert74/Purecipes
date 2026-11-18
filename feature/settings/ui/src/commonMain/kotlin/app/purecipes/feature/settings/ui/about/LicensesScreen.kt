@@ -12,6 +12,9 @@ import androidx.compose.ui.Modifier
 import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.icon.AppIcons
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.back
 
 @Composable
 fun LicensesScreen(
@@ -28,7 +31,7 @@ fun LicensesScreen(
 					IconButton(onClick = onBack) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Back",
+							contentDescription = stringResource(Res.string.back),
 						)
 					}
 				},

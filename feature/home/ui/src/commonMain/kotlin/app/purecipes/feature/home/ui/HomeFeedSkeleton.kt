@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.component.atom.FixedSubtitleText
@@ -92,7 +93,9 @@ internal fun HomeFeedSkeleton(
 @Composable
 private fun HomeShelfSkeleton() {
 	Column(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = Modifier
+			.fillMaxWidth()
+			.clearAndSetSemantics {},
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
 	) {
 		Row(
@@ -175,7 +178,9 @@ private fun HomeFeatureRequestSkeleton(
 	modifier: Modifier = Modifier,
 ) {
 	Card(
-		modifier = modifier.fillMaxWidth(),
+		modifier = modifier
+			.fillMaxWidth()
+			.clearAndSetSemantics {},
 		colors = CardDefaults.cardColors(
 			containerColor = PurecipesTheme.colorScheme.surfaceContainerLow,
 		),
