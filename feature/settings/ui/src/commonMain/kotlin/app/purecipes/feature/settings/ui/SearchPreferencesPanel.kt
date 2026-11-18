@@ -4,12 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.feature.search.domain.model.SearchPreferences
@@ -32,6 +34,16 @@ internal fun SearchPreferencesPanel(
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
+				.testTag(SEARCH_PREFERENCES_RECIPE_FILTERS_SWITCH_TAG)
+				.toggleable(
+					value = preferences.applyRecipeFiltersToTitleSearch,
+					role = Role.Switch,
+					onValueChange = { checked ->
+						onPreferencesChange(
+							preferences.copy(applyRecipeFiltersToTitleSearch = checked),
+						)
+					},
+				)
 				.padding(PurecipesTheme.space.m),
 			verticalAlignment = Alignment.CenterVertically,
 			horizontalArrangement = Arrangement.SpaceBetween,
@@ -43,12 +55,7 @@ internal fun SearchPreferencesPanel(
 			)
 			Switch(
 				checked = preferences.applyRecipeFiltersToTitleSearch,
-				onCheckedChange = { checked ->
-					onPreferencesChange(
-						preferences.copy(applyRecipeFiltersToTitleSearch = checked),
-					)
-				},
-				modifier = Modifier.testTag(SEARCH_PREFERENCES_RECIPE_FILTERS_SWITCH_TAG),
+				onCheckedChange = null,
 			)
 		}
 	}

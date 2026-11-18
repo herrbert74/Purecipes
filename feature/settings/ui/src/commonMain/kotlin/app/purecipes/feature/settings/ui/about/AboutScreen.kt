@@ -38,6 +38,9 @@ import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.back
 
 internal const val ABOUT_VERSION_ROW_TAG = "about_version_row"
 internal const val ABOUT_OSS_ROW_TAG = "about_oss_row"
@@ -64,7 +67,7 @@ fun AboutScreen(
 					IconButton(onClick = onBack) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Back",
+							contentDescription = stringResource(Res.string.back),
 						)
 					}
 				},

@@ -2,8 +2,8 @@ package app.purecipes.feature.auth.ui.registration
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,12 +25,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import app.purecipes.shared.domain.model.PASSWORD_POLICY_SUPPORTING_TEXT
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.hide_confirm_password
+import purecipes.shared.ui.generated.resources.hide_password
+import purecipes.shared.ui.generated.resources.show_confirm_password
+import purecipes.shared.ui.generated.resources.show_password
 
 @Composable
 internal fun RegistrationForm(
@@ -80,6 +88,7 @@ internal fun RegistrationForm(
 				modifier = Modifier
 					.fillMaxWidth()
 					.focusRequester(emailFocusRequester)
+					.fieldErrorSemantics(emailError)
 					.testTag(REGISTRATION_EMAIL_FIELD_TAG),
 				label = { Text("Email") },
 				singleLine = true,
@@ -103,6 +112,7 @@ internal fun RegistrationForm(
 				modifier = Modifier
 					.fillMaxWidth()
 					.focusRequester(passwordFocusRequester)
+					.fieldErrorSemantics(passwordError)
 					.testTag(REGISTRATION_PASSWORD_FIELD_TAG),
 				label = { Text("Password") },
 				singleLine = true,
@@ -143,11 +153,13 @@ internal fun RegistrationForm(
 							} else {
 								AppIcons.Visibility
 							},
-							contentDescription = if (isPasswordVisible) {
-								"Hide password"
-							} else {
-								"Show password"
-							},
+							contentDescription = stringResource(
+								if (isPasswordVisible) {
+									Res.string.hide_password
+								} else {
+									Res.string.show_password
+								},
+							),
 						)
 					}
 				},
@@ -158,6 +170,7 @@ internal fun RegistrationForm(
 				modifier = Modifier
 					.fillMaxWidth()
 					.focusRequester(confirmPasswordFocusRequester)
+					.fieldErrorSemantics(confirmPasswordError)
 					.testTag(REGISTRATION_CONFIRM_PASSWORD_FIELD_TAG),
 				label = { Text("Confirm password") },
 				singleLine = true,
@@ -187,11 +200,13 @@ internal fun RegistrationForm(
 							} else {
 								AppIcons.Visibility
 							},
-							contentDescription = if (isConfirmPasswordVisible) {
-								"Hide confirm password"
-							} else {
-								"Show confirm password"
-							},
+							contentDescription = stringResource(
+								if (isConfirmPasswordVisible) {
+									Res.string.hide_confirm_password
+								} else {
+									Res.string.show_confirm_password
+								},
+							),
 						)
 					}
 				},
@@ -199,7 +214,7 @@ internal fun RegistrationForm(
 			Button(
 				modifier = Modifier
 					.fillMaxWidth()
-					.height(PurecipesTheme.space.xxl)
+					.defaultMinSize(minHeight = PurecipesTheme.space.xxl)
 					.testTag(REGISTRATION_SUBMIT_TAG),
 				onClick = onSubmit,
 				enabled = !isBusy,
@@ -216,3 +231,10 @@ internal fun RegistrationForm(
 		}
 	}
 }
+
+private fun Modifier.fieldErrorSemantics(errorMessage: String?): Modifier =
+	if (errorMessage != null) {
+		semantics { error(errorMessage) }
+	} else {
+		this
+	}

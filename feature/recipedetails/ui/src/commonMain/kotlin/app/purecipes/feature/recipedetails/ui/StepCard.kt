@@ -14,7 +14,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.step_card_description
 
 @Composable
 internal fun StepCard(
@@ -22,8 +27,13 @@ internal fun StepCard(
 	step: String,
 	modifier: Modifier = Modifier,
 ) {
+	val stepDescription = stringResource(Res.string.step_card_description, stepNumber, step)
 	Card(
-		modifier = modifier.fillMaxWidth(),
+		modifier = modifier
+			.fillMaxWidth()
+			.semantics(mergeDescendants = true) {
+				contentDescription = stepDescription
+			},
 		colors = CardDefaults.cardColors(containerColor = PurecipesTheme.colorScheme.surfaceContainerLow),
 	) {
 		Row(

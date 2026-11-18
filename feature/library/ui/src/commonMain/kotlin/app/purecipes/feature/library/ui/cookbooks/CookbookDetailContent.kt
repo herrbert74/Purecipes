@@ -39,6 +39,9 @@ import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.share_cookbook
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +101,7 @@ internal fun CookbookDetailContent(
 				actions = {
 					ShareIconButton(
 						onShare = onShare,
-						contentDescription = "Share cookbook",
+						contentDescription = stringResource(Res.string.share_cookbook),
 					)
 				},
 			)

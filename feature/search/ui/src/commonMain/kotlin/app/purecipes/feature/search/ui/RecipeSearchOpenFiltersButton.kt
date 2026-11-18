@@ -11,6 +11,9 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.open_filters
 
 internal const val RECIPE_SEARCH_OPEN_FILTERS_BUTTON_TAG = "recipeSearchOpenFiltersButton"
 
@@ -26,7 +29,7 @@ internal fun RecipeSearchOpenFiltersButton(
 	) {
 		Icon(
 			imageVector = AppIcons.FilterList,
-			contentDescription = "Open filters",
+			contentDescription = stringResource(Res.string.open_filters),
 			tint = if (hasActiveFilters) {
 				PurecipesTheme.colorScheme.primary
 			} else {

@@ -37,6 +37,9 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.back
 
 private const val PRIVACY_POLICY_URL = "https://purecipes.app/privacy"
 private const val TERMS_OF_SERVICE_URL = "https://purecipes.app/terms"
@@ -98,7 +101,7 @@ fun SettingsScreen(
 					IconButton(onClick = onBack) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Back",
+							contentDescription = stringResource(Res.string.back),
 						)
 					}
 				},

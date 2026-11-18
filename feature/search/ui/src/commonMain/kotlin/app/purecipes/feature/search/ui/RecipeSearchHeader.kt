@@ -37,6 +37,10 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.back
+import purecipes.shared.ui.generated.resources.clear_search_text
 
 internal const val RECIPE_SEARCH_INPUT_TAG = "recipeSearchInput"
 internal const val RECIPE_SEARCH_COLLAPSED_BAR_TAG = "recipeSearchCollapsedBar"
@@ -118,7 +122,7 @@ internal fun RecipeSearchHeader(
 					) {
 						Icon(
 							imageVector = AppIcons.ArrowBack,
-							contentDescription = "Back",
+							contentDescription = stringResource(Res.string.back),
 						)
 					}
 					OutlinedTextField(
@@ -128,7 +132,7 @@ internal fun RecipeSearchHeader(
 							.weight(1f)
 							.focusRequester(searchFocusRequester)
 							.testTag(RECIPE_SEARCH_INPUT_TAG)
-							.semantics(mergeDescendants = true) {
+							.semantics {
 								contentDescription = RECIPE_SEARCH_TITLE
 								requestFocus { false }
 							},
@@ -149,7 +153,7 @@ internal fun RecipeSearchHeader(
 								IconButton(onClick = onClearSearchText) {
 									Icon(
 										imageVector = AppIcons.Clear,
-										contentDescription = "Clear search text",
+										contentDescription = stringResource(Res.string.clear_search_text),
 									)
 								}
 							}

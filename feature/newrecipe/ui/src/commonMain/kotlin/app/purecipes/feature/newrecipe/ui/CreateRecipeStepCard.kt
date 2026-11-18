@@ -39,10 +39,23 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.collapse_step
+import purecipes.shared.ui.generated.resources.expand_step
+import purecipes.shared.ui.generated.resources.move_step_down
+import purecipes.shared.ui.generated.resources.move_step_up
+import purecipes.shared.ui.generated.resources.remove_step
+import purecipes.shared.ui.generated.resources.reorder_step
+import purecipes.shared.ui.generated.resources.step_description_label
 
 internal const val STEP_FIELD_TAG_PREFIX = "createRecipeStepField"
 internal const val STEP_REORDER_BUTTON_TAG_PREFIX = "createRecipeReorderStepButton"
@@ -84,6 +97,39 @@ internal fun CreateRecipeStepCard(
 	val stepEditorBringIntoViewRequester = remember { BringIntoViewRequester() }
 	val isLastStep = index == itemCount - 1
 	val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
+	val moveUpLabel = stringResource(Res.string.move_step_up, stepNumber)
+	val moveDownLabel = stringResource(Res.string.move_step_down, stepNumber)
+	val removeLabel = stringResource(Res.string.remove_step, stepNumber)
+	val collapseLabel = stringResource(Res.string.collapse_step, stepNumber)
+	val expandLabel = stringResource(Res.string.expand_step, stepNumber)
+	val reorderLabel = stringResource(Res.string.reorder_step, stepNumber)
+	val stepFieldLabel = stringResource(Res.string.step_description_label, stepNumber)
+	val stepCustomActions = buildList {
+		if (canMoveUp) {
+			add(
+				CustomAccessibilityAction(label = moveUpLabel) {
+					onMoveUpClick()
+					true
+				},
+			)
+		}
+		if (canMoveDown) {
+			add(
+				CustomAccessibilityAction(label = moveDownLabel) {
+					onMoveDownClick()
+					true
+				},
+			)
+		}
+		if (canRemove) {
+			add(
+				CustomAccessibilityAction(label = removeLabel) {
+					onRemoveClick()
+					true
+				},
+			)
+		}
+	}
 
 	LaunchedEffect(isStepFieldFocused, imeBottom) {
 		if (isStepFieldFocused) {
@@ -97,16 +143,22 @@ internal fun CreateRecipeStepCard(
 			SegmentedListItem(
 				onClick = onExpandToggle,
 				shapes = shapes,
+				modifier = if (stepCustomActions.isNotEmpty()) {
+					Modifier.semantics { customActions = stepCustomActions }
+				} else {
+					Modifier
+				},
 				colors = colors,
 				leadingContent = { StepNumberBadge(stepNumber = stepNumber) },
 				trailingContent = {
 					Row(verticalAlignment = Alignment.CenterVertically) {
 						Icon(
 							imageVector = AppIcons.ExpandLess,
-							contentDescription = "Collapse step $stepNumber",
+							contentDescription = collapseLabel,
 						)
 						StepDragHandle(
 							index = index,
+							contentDescription = reorderLabel,
 							onDragStart = onDragStart,
 							onDrag = onDrag,
 							onDragEnd = onDragEnd,
@@ -118,7 +170,7 @@ internal fun CreateRecipeStepCard(
 							) {
 								Icon(
 									imageVector = AppIcons.Delete,
-									contentDescription = "Remove step $stepNumber",
+									contentDescription = removeLabel,
 								)
 							}
 						}
@@ -142,7 +194,7 @@ internal fun CreateRecipeStepCard(
 					) {
 						Icon(
 							imageVector = AppIcons.KeyboardArrowUp,
-							contentDescription = "Move step $stepNumber up",
+							contentDescription = moveUpLabel,
 						)
 					}
 					IconButton(
@@ -152,7 +204,7 @@ internal fun CreateRecipeStepCard(
 					) {
 						Icon(
 							imageVector = AppIcons.KeyboardArrowDown,
-							contentDescription = "Move step $stepNumber down",
+							contentDescription = moveDownLabel,
 						)
 					}
 				}
@@ -172,7 +224,13 @@ internal fun CreateRecipeStepCard(
 									onLastStepFieldFocusChange?.invoke(focusState.isFocused)
 								}
 							}
+							.semantics {
+								if (errorMessage != null) {
+									error(errorMessage)
+								}
+							}
 							.testTag("$STEP_FIELD_TAG_PREFIX$index"),
+						label = { Text(text = stepFieldLabel) },
 						placeholder = { Text(text = "Describe this step") },
 						isError = errorMessage != null,
 						supportingText = errorMessage?.let { message ->
@@ -195,17 +253,24 @@ internal fun CreateRecipeStepCard(
 		SegmentedListItem(
 			onClick = onExpandToggle,
 			shapes = shapes,
-			modifier = modifier,
+			modifier = modifier.then(
+				if (stepCustomActions.isNotEmpty()) {
+					Modifier.semantics { customActions = stepCustomActions }
+				} else {
+					Modifier
+				},
+			),
 			colors = colors,
 			leadingContent = { StepNumberBadge(stepNumber = stepNumber) },
 			trailingContent = {
 				Row(verticalAlignment = Alignment.CenterVertically) {
 					Icon(
 						imageVector = AppIcons.ExpandMore,
-						contentDescription = "Expand step $stepNumber",
+						contentDescription = expandLabel,
 					)
 					StepDragHandle(
 						index = index,
+						contentDescription = reorderLabel,
 						onDragStart = onDragStart,
 						onDrag = onDrag,
 						onDragEnd = onDragEnd,
@@ -217,7 +282,7 @@ internal fun CreateRecipeStepCard(
 						) {
 							Icon(
 								imageVector = AppIcons.Delete,
-								contentDescription = "Remove step $stepNumber",
+								contentDescription = removeLabel,
 							)
 						}
 					}
@@ -307,6 +372,7 @@ private fun StepNumberBadge(stepNumber: Int) {
 @Composable
 private fun StepDragHandle(
 	index: Int,
+	contentDescription: String,
 	onDragStart: () -> Unit,
 	onDrag: (Float) -> Unit,
 	onDragEnd: () -> Unit,
@@ -336,7 +402,7 @@ private fun StepDragHandle(
 		)
 		Icon(
 			imageVector = AppIcons.DragHandle,
-			contentDescription = "Reorder step ${index + 1}",
+			contentDescription = contentDescription,
 			tint = PurecipesTheme.colorScheme.onSurfaceVariant,
 		)
 	}

@@ -9,8 +9,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.ingredient_state_excluded
+import purecipes.shared.ui.generated.resources.ingredient_state_included
+import purecipes.shared.ui.generated.resources.ingredient_state_neutral
+import purecipes.shared.ui.generated.resources.remove_ingredient
 
 internal const val CUSTOM_INGREDIENT_REMOVE_BUTTON_TAG_PREFIX = "customIngredientRemove"
 internal const val CUSTOM_INGREDIENT_CHIP_TAG_PREFIX = "customIngredientChip"
@@ -30,6 +38,11 @@ internal fun CustomIngredientChip(
 	modifier: Modifier = Modifier,
 ) {
 	val isExcluded = state == IngredientChipState.EXCLUDED
+	val chipStateDescription = when (state) {
+		IngredientChipState.NEUTRAL -> stringResource(Res.string.ingredient_state_neutral)
+		IngredientChipState.SELECTED -> stringResource(Res.string.ingredient_state_included)
+		IngredientChipState.EXCLUDED -> stringResource(Res.string.ingredient_state_excluded)
+	}
 	val chipColors = if (isExcluded) {
 		InputChipDefaults.inputChipColors(
 			selectedContainerColor = PurecipesTheme.colorScheme.errorContainer,
@@ -43,7 +56,7 @@ internal fun CustomIngredientChip(
 	InputChip(
 		selected = state != IngredientChipState.NEUTRAL,
 		onClick = onToggle,
-		modifier = modifier,
+		modifier = modifier.semantics { stateDescription = chipStateDescription },
 		label = { Text(item) },
 		trailingIcon = {
 			IconButton(
@@ -54,7 +67,7 @@ internal fun CustomIngredientChip(
 			) {
 				Icon(
 					imageVector = AppIcons.Close,
-					contentDescription = "Remove $item",
+					contentDescription = stringResource(Res.string.remove_ingredient, item),
 					modifier = Modifier.size(InputChipDefaults.IconSize),
 				)
 			}

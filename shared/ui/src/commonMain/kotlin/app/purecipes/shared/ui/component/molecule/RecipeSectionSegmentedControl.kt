@@ -41,9 +41,8 @@ fun RecipeSectionSegmentedControl(
 				label = {
 					Text(
 						text = section.label,
-						maxLines = 1,
+						maxLines = 2,
 						overflow = TextOverflow.Ellipsis,
-						softWrap = false,
 					)
 				},
 			)
