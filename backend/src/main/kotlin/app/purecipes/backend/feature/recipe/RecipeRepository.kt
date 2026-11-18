@@ -24,6 +24,8 @@ import java.sql.ResultSet
 import java.sql.Statement
 import javax.sql.DataSource
 
+private const val INGREDIENT_BATCH_SIZE = 1000
+
 class RecipeRepository(
 	internal val dataSource: DataSource,
 ) {
@@ -205,6 +207,53 @@ class RecipeRepository(
 			it.setInt(1, recipeId)
 		},
 	)
+
+	internal fun loadIngredientGroupsForRecipes(
+		conn: java.sql.Connection,
+		recipeIds: List<Int>,
+	): Map<Int, List<IngredientGroup>> {
+		if (recipeIds.isEmpty()) {
+			return emptyMap()
+		}
+		val result = mutableMapOf<Int, List<IngredientGroup>>()
+		recipeIds.chunked(INGREDIENT_BATCH_SIZE).forEach { chunk ->
+			val placeholders = chunk.joinToString(",") { "?" }
+			val sql = """
+				SELECT g.recipe_id, g.id AS group_id, g.name AS group_name, i.ingredient, i.requirement,
+					i.alternative_group_key
+				FROM ingredient_groups g
+				LEFT JOIN ingredients i ON i.ingredient_group_id = g.id
+				WHERE g.recipe_id IN ($placeholders)
+				ORDER BY g.recipe_id ASC, g.order_index ASC, i.order_index ASC
+			""".trimIndent()
+			conn.prepareStatement(sql).use { ps ->
+				chunk.forEachIndexed { index, recipeId ->
+					ps.setInt(index + 1, recipeId)
+				}
+				ps.executeQuery().use { rs ->
+					val groupsByRecipe = mutableMapOf<Int, LinkedHashMap<Int, IngredientGroupAccumulator>>()
+					while (rs.next()) {
+						val recipeId = rs.getInt("recipe_id")
+						val groupId = rs.getInt("group_id")
+						val recipeGroups = groupsByRecipe.getOrPut(recipeId) { linkedMapOf() }
+						val group = recipeGroups.getOrPut(groupId) {
+							IngredientGroupAccumulator(name = rs.getNullableString("group_name"))
+						}
+						readRecipeIngredient(rs)?.let(group.ingredients::add)
+					}
+					groupsByRecipe.forEach { (recipeId, groupsById) ->
+						result[recipeId] = groupsById.values.map { accumulator ->
+							IngredientGroup(
+								name = accumulator.name,
+								ingredients = accumulator.ingredients,
+							)
+						}
+					}
+				}
+			}
+		}
+		return result
+	}
 
 	internal fun loadIngredientGroups(ps: PreparedStatement): List<IngredientGroup> = ps.use { statement ->
 		statement.executeQuery().use { rs ->

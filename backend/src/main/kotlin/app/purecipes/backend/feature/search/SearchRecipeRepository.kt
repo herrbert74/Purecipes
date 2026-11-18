@@ -212,8 +212,12 @@ class SearchRecipeRepository(
 				randomSeed = randomSeed,
 			),
 		)
+		val ingredientGroupsByRecipeId = recipeRepository.loadIngredientGroupsForRecipes(
+			conn = conn,
+			recipeIds = candidates.map { candidate -> candidate.summary.id },
+		)
 		val loadIngredientGroups = { recipeId: Int ->
-			recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
+			ingredientGroupsByRecipeId[recipeId].orEmpty()
 		}
 		val eligible = candidates.filter { candidate ->
 			passesExclusionAndKeyIngredientFilters(
