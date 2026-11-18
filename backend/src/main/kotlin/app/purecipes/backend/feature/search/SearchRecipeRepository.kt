@@ -12,9 +12,11 @@ import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
 import app.purecipes.backend.feature.recipe.pantryCoverageForRecipe
 import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
-import app.purecipes.backend.feature.recipe.recipeContainsAllKeyIngredients
+import app.purecipes.backend.feature.recipe.recipeContainsAllKeyIngredientMatchers
 import app.purecipes.backend.feature.recipe.recipeContainsExcludedIngredient
 import app.purecipes.backend.feature.recipe.singleMissingPantryIngredientLabel
+import app.purecipes.shared.domain.ingredient.CompiledIngredientMatcher
+import app.purecipes.shared.domain.ingredient.IngredientNameMatching
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -219,11 +221,16 @@ class SearchRecipeRepository(
 		val loadIngredientGroups = { recipeId: Int ->
 			ingredientGroupsByRecipeId[recipeId].orEmpty()
 		}
+		val availableMatcher = IngredientNameMatching.compileMatcher(availableIngredients)
+		val excludedMatcher = IngredientNameMatching.compileMatcher(excludedIngredients)
+		val keyMatchers = keyIngredients.map { keyIngredient ->
+			IngredientNameMatching.compileMatcher(listOf(keyIngredient))
+		}
 		val eligible = candidates.filter { candidate ->
 			passesExclusionAndKeyIngredientFilters(
 				summary = candidate.summary,
-				excludedIngredients = excludedIngredients,
-				keyIngredients = keyIngredients,
+				excludedMatcher = excludedMatcher,
+				keyMatchers = keyMatchers,
 				loadIngredientGroups = loadIngredientGroups,
 			)
 		}
@@ -231,7 +238,7 @@ class SearchRecipeRepository(
 			eligible.filter { candidate ->
 				isRecipeCoveredByAvailableIngredients(
 					recipeId = candidate.summary.id,
-					availableIngredients = availableIngredients,
+					availableMatcher = availableMatcher,
 					loadIngredientGroups = loadIngredientGroups,
 				)
 			}
@@ -241,7 +248,7 @@ class SearchRecipeRepository(
 		val orderedMatches = if (rankByPantryCoverage && availableIngredients.isNotEmpty()) {
 			rankRecipesByPantryCoverage(
 				candidates = matches,
-				availableIngredients = availableIngredients,
+				availableMatcher = availableMatcher,
 				loadIngredientGroups = loadIngredientGroups,
 			)
 		} else {
@@ -254,7 +261,8 @@ class SearchRecipeRepository(
 			nearMissRecipes = nearMissRecipesFor(
 				eligible = eligible.map { candidate -> candidate.summary },
 				orderedMatches = orderedSummaries,
-				availableIngredients = availableIngredients,
+				hasAvailableIngredients = availableIngredients.isNotEmpty(),
+				availableMatcher = availableMatcher,
 				rankByPantryCoverage = rankByPantryCoverage,
 				offset = offset,
 				loadIngredientGroups = loadIngredientGroups,
@@ -265,12 +273,13 @@ class SearchRecipeRepository(
 	private fun nearMissRecipesFor(
 		eligible: List<RecipeSummary>,
 		orderedMatches: List<RecipeSummary>,
-		availableIngredients: List<String>,
+		hasAvailableIngredients: Boolean,
+		availableMatcher: CompiledIngredientMatcher,
 		rankByPantryCoverage: Boolean,
 		offset: Int,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
 	): List<NearMissRecipe> {
-		val skipNearMiss = rankByPantryCoverage || availableIngredients.isEmpty()
+		val skipNearMiss = rankByPantryCoverage || !hasAvailableIngredients
 		if (skipNearMiss || offset != 0 || orderedMatches.size >= NEAR_MISS_MATCH_THRESHOLD) {
 			return emptyList()
 		}
@@ -280,7 +289,7 @@ class SearchRecipeRepository(
 			.mapNotNull { summary ->
 				singleMissingPantryIngredientLabel(
 					recipeId = summary.id,
-					availableIngredients = availableIngredients,
+					availableMatcher = availableMatcher,
 					loadIngredientGroups = loadIngredientGroups,
 				)?.let { missingIngredient ->
 					NearMissRecipe(
@@ -300,14 +309,14 @@ class SearchRecipeRepository(
 
 	private fun rankRecipesByPantryCoverage(
 		candidates: List<SearchRecipeCandidate>,
-		availableIngredients: List<String>,
+		availableMatcher: CompiledIngredientMatcher,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
 	): List<SearchRecipeCandidate> {
 		return candidates
 			.map { candidate ->
 				candidate to pantryCoverageForRecipe(
 					recipeId = candidate.summary.id,
-					availableIngredients = availableIngredients,
+					availableMatcher = availableMatcher,
 					loadIngredientGroups = loadIngredientGroups,
 				)
 			}
@@ -346,21 +355,23 @@ class SearchRecipeRepository(
 
 	private fun passesExclusionAndKeyIngredientFilters(
 		summary: RecipeSummary,
-		excludedIngredients: List<String>,
-		keyIngredients: List<String>,
+		excludedMatcher: CompiledIngredientMatcher,
+		keyMatchers: List<CompiledIngredientMatcher>,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
 	): Boolean {
 		val containsExcluded = recipeContainsExcludedIngredient(
 			recipeId = summary.id,
-			excludedIngredients = excludedIngredients,
+			excludedMatcher = excludedMatcher,
 			loadIngredientGroups = loadIngredientGroups,
 		)
-		val containsAllKeyIngredients = recipeContainsAllKeyIngredients(
+		if (containsExcluded) {
+			return false
+		}
+		return recipeContainsAllKeyIngredientMatchers(
 			recipeId = summary.id,
-			keyIngredients = keyIngredients,
+			keyMatchers = keyMatchers,
 			loadIngredientGroups = loadIngredientGroups,
 		)
-		return !containsExcluded && containsAllKeyIngredients
 	}
 
 	private fun searchByKeyword(
