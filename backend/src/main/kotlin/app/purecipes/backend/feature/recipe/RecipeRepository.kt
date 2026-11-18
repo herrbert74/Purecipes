@@ -583,8 +583,7 @@ internal fun RecipeRepository.querySearchWithFiltersRecipes(
 			r.created_at
 		FROM recipes r
 		${query.whereClause}
-		GROUP BY r.id
-		${searchRecipeOrderBySql(query.order)}
+		${searchRecipeOrderBySql(query.order, query.randomSeed)}
 		$limitAndOffsetClause
 	""".trimIndent()
 
