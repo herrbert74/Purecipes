@@ -16,8 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.zIndex
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.search.ui.filter.FilterBottomSheet
 import app.purecipes.feature.search.ui.navigation.SearchDestination
@@ -129,11 +131,13 @@ fun RecipeSearchScreen(
 			.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)),
 	) {
 		Box(
-			modifier = Modifier.padding(
-				start = PurecipesTheme.space.m,
-				top = PurecipesTheme.space.m,
-				end = PurecipesTheme.space.m,
-			),
+			modifier = Modifier
+				.zIndex(1f)
+				.padding(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+				),
 		) {
 			RecipeSearchHeader(
 				isSearchBarActive = viewModel.isSearchBarActive,
@@ -169,7 +173,8 @@ fun RecipeSearchScreen(
 			bannerAdViewModel = bannerAdViewModel,
 			modifier = Modifier
 				.weight(1f)
-				.padding(top = PurecipesTheme.space.s),
+				.padding(top = PurecipesTheme.space.s)
+				.clipToBounds(),
 		)
 	}
 }

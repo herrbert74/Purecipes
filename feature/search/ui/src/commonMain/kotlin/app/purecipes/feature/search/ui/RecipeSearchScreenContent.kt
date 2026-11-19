@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.zIndex
 import app.purecipes.feature.search.ui.result.SearchResultsContent
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.domain.model.SearchFilters
@@ -40,11 +42,13 @@ fun RecipeSearchScreenContent(
 				.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)),
 		) {
 			Box(
-				modifier = Modifier.padding(
-					start = PurecipesTheme.space.m,
-					top = PurecipesTheme.space.m,
-					end = PurecipesTheme.space.m,
-				),
+				modifier = Modifier
+					.zIndex(1f)
+					.padding(
+						start = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+					),
 			) {
 				RecipeSearchHeader(
 					isSearchBarActive = isSearchExpanded,
@@ -83,7 +87,8 @@ fun RecipeSearchScreenContent(
 				browseTiles = browseTiles(SearchFilters.default()),
 				modifier = Modifier
 					.weight(1f)
-					.padding(top = PurecipesTheme.space.s),
+					.padding(top = PurecipesTheme.space.s)
+					.clipToBounds(),
 			)
 		}
 	}
