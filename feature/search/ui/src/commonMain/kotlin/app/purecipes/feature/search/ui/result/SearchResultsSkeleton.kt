@@ -8,10 +8,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import app.purecipes.feature.search.ui.SEARCH_FILTER_NOTE_TAG
 import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.ui.component.atom.FixedSubtitleText
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
@@ -32,6 +35,8 @@ internal fun SearchResultsSkeleton(
 	browseTiles: ImmutableList<BrowseTileItem>,
 	onBrowseTileClick: (BrowseTileItem) -> Unit,
 	modifier: Modifier = Modifier,
+	searchInstructions: String? = null,
+	searchFilterNote: String? = null,
 ) {
 	LazyVerticalGrid(
 		columns = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
@@ -47,6 +52,25 @@ internal fun SearchResultsSkeleton(
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 		horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 	) {
+		if (searchInstructions != null) {
+			item(span = { GridItemSpan(maxLineSpan) }) {
+				Text(
+					text = searchInstructions,
+					style = PurecipesTheme.typography.labelMedium,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
+				)
+			}
+		}
+		if (searchFilterNote != null) {
+			item(span = { GridItemSpan(maxLineSpan) }) {
+				Text(
+					text = searchFilterNote,
+					modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+					style = PurecipesTheme.typography.bodyMedium,
+					color = PurecipesTheme.colorScheme.onSurfaceVariant,
+				)
+			}
+		}
 		if (browseTiles.isNotEmpty()) {
 			item(span = { GridItemSpan(maxLineSpan) }) {
 				BrowseTileGrid(

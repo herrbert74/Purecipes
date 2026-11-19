@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
+import app.purecipes.feature.search.ui.SEARCH_FILTER_NOTE_TAG
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.MeasurementSystem
 import app.purecipes.shared.domain.model.NearMissRecipe
@@ -52,6 +53,8 @@ internal fun SearchResultsContent(
 	recipes: SnapshotStateList<RecipeSummary>,
 	onRecipeSelect: (recipeId: Int, transitionKey: String?) -> Unit,
 	modifier: Modifier = Modifier,
+	searchInstructions: String? = null,
+	searchFilterNote: String? = null,
 	nearMissRecipes: ImmutableList<NearMissRecipe> = persistentListOf(),
 	browseTiles: ImmutableList<BrowseTileItem> = persistentListOf(),
 	onBrowseTileClick: (BrowseTileItem) -> Unit = {},
@@ -64,6 +67,8 @@ internal fun SearchResultsContent(
 			browseTiles = browseTiles,
 			onBrowseTileClick = onBrowseTileClick,
 			modifier = modifier,
+			searchInstructions = searchInstructions,
+			searchFilterNote = searchFilterNote,
 		)
 
 		errorMessage != null -> EmptyStateContent(
@@ -96,6 +101,25 @@ internal fun SearchResultsContent(
 				bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
 			),
 		) {
+			if (searchInstructions != null) {
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					Text(
+						text = searchInstructions,
+						style = PurecipesTheme.typography.labelMedium,
+						color = PurecipesTheme.colorScheme.onSurfaceVariant,
+					)
+				}
+			}
+			if (searchFilterNote != null) {
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					Text(
+						text = searchFilterNote,
+						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+						style = PurecipesTheme.typography.bodyMedium,
+						color = PurecipesTheme.colorScheme.onSurfaceVariant,
+					)
+				}
+			}
 			if (browseTiles.isNotEmpty()) {
 				item(span = { GridItemSpan(maxLineSpan) }) {
 					BrowseTileGrid(

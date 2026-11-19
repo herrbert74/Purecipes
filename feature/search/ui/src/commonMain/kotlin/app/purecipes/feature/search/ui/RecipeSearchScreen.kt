@@ -1,6 +1,6 @@
 package app.purecipes.feature.search.ui
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,9 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.zIndex
 import app.purecipes.feature.ads.ui.BannerAdViewModel
 import app.purecipes.feature.search.ui.filter.FilterBottomSheet
 import app.purecipes.feature.search.ui.navigation.SearchDestination
@@ -130,13 +130,14 @@ fun RecipeSearchScreen(
 			.fillMaxSize()
 			.windowInsetsPadding(TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)),
 	) {
-		Column(
-			modifier = Modifier.padding(
-				start = PurecipesTheme.space.m,
-				top = PurecipesTheme.space.m,
-				end = PurecipesTheme.space.m,
-			),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
+		Box(
+			modifier = Modifier
+				.zIndex(1f)
+				.padding(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+				),
 		) {
 			RecipeSearchHeader(
 				isSearchBarActive = viewModel.isSearchBarActive,
@@ -149,21 +150,6 @@ fun RecipeSearchScreen(
 				onSearchImeSearch = onSearchImeSearch,
 				onClearSearchText = onClearSearchText,
 			)
-			if (viewModel.isSearchBarActive) {
-				Text(
-					text = RECIPE_SEARCH_HELPER,
-					style = PurecipesTheme.typography.labelMedium,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
-			viewModel.searchFilterNote?.let { note ->
-				Text(
-					text = note,
-					modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-					style = PurecipesTheme.typography.bodyMedium,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
 		}
 		SearchResultsContent(
 			isSearching = viewModel.isSearching,
@@ -171,6 +157,8 @@ fun RecipeSearchScreen(
 			totalMatches = viewModel.totalMatches,
 			paginationState = viewModel.paginationState,
 			recipes = viewModel.recipes,
+			searchInstructions = if (viewModel.isSearchBarActive) RECIPE_SEARCH_HELPER else null,
+			searchFilterNote = viewModel.searchFilterNote,
 			nearMissRecipes = viewModel.nearMissRecipes.toImmutableList(),
 			browseTiles = browseTiles(viewModel.activeFilters),
 			onBrowseTileClick = { tile ->
@@ -185,7 +173,8 @@ fun RecipeSearchScreen(
 			bannerAdViewModel = bannerAdViewModel,
 			modifier = Modifier
 				.weight(1f)
-				.padding(top = PurecipesTheme.space.s),
+				.padding(top = PurecipesTheme.space.s)
+				.clipToBounds(),
 		)
 	}
 }
