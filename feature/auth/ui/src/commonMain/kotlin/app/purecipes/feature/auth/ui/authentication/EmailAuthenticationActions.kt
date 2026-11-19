@@ -3,8 +3,8 @@ package app.purecipes.feature.auth.ui.authentication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -40,7 +40,7 @@ internal fun EmailAuthenticationActions(
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight)
+				.defaultMinSize(minHeight = PurecipesButtonDefaults.providerButtonHeight)
 				.testTag(AUTH_SIGN_IN_WITH_EMAIL_TAG),
 			onClick = onSignInClick,
 		) {
@@ -49,7 +49,7 @@ internal fun EmailAuthenticationActions(
 		FilledTonalButton(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(PurecipesButtonDefaults.providerButtonHeight)
+				.defaultMinSize(minHeight = PurecipesButtonDefaults.providerButtonHeight)
 				.testTag(AUTH_CREATE_ACCOUNT_WITH_EMAIL_TAG),
 			onClick = onCreateAccountClick,
 		) {

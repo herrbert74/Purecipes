@@ -13,10 +13,16 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Appliance
 import app.purecipes.shared.ui.component.atom.PurecipesButton
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.cooking_step_header
+import purecipes.shared.ui.generated.resources.finish_cooking
+import purecipes.shared.ui.generated.resources.next_step
 
 @Composable
 internal fun CookingStepPage(
@@ -39,7 +45,8 @@ internal fun CookingStepPage(
 			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.xs),
 		) {
 			Text(
-				text = "Step $stepNumber of $stepCount",
+				text = stringResource(Res.string.cooking_step_header, stepNumber, stepCount),
+				modifier = Modifier.headingSemantics(),
 				style = PurecipesTheme.typography.titleMedium,
 				color = PurecipesTheme.colorScheme.primary,
 			)
@@ -66,7 +73,9 @@ internal fun CookingStepPage(
 			)
 		}
 		PurecipesButton(
-			text = if (isLastStep) "Finish cooking" else "Next",
+			text = stringResource(
+				if (isLastStep) Res.string.finish_cooking else Res.string.next_step,
+			),
 			onClick = onPrimaryAction,
 			modifier = if (isLastStep) {
 				Modifier.testTag(FINISH_COOKING_BUTTON_TAG)

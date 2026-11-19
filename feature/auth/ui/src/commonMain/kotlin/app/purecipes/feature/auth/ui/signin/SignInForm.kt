@@ -2,8 +2,8 @@ package app.purecipes.feature.auth.ui.signin
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,6 +25,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -32,6 +34,10 @@ import app.purecipes.shared.ui.component.atom.PurecipesOutlinedButton
 import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.hide_password
+import purecipes.shared.ui.generated.resources.show_password
 
 @Composable
 internal fun SignInForm(
@@ -66,6 +72,11 @@ internal fun SignInForm(
 				modifier = Modifier
 					.fillMaxWidth()
 					.focusRequester(emailFocusRequester)
+					.semantics {
+						if (emailError != null) {
+							error(emailError)
+						}
+					}
 					.testTag(SIGN_IN_EMAIL_FIELD_TAG),
 				label = { Text("Email") },
 				singleLine = true,
@@ -89,6 +100,11 @@ internal fun SignInForm(
 				modifier = Modifier
 					.fillMaxWidth()
 					.focusRequester(passwordFocusRequester)
+					.semantics {
+						if (passwordError != null) {
+							error(passwordError)
+						}
+					}
 					.testTag(SIGN_IN_PASSWORD_FIELD_TAG),
 				label = { Text("Password") },
 				singleLine = true,
@@ -118,11 +134,13 @@ internal fun SignInForm(
 							} else {
 								AppIcons.Visibility
 							},
-							contentDescription = if (isPasswordVisible) {
-								"Hide password"
-							} else {
-								"Show password"
-							},
+							contentDescription = stringResource(
+								if (isPasswordVisible) {
+									Res.string.hide_password
+								} else {
+									Res.string.show_password
+								},
+							),
 						)
 					}
 				},
@@ -136,7 +154,7 @@ internal fun SignInForm(
 			Button(
 				modifier = Modifier
 					.fillMaxWidth()
-					.height(PurecipesTheme.space.xxl),
+					.defaultMinSize(minHeight = PurecipesTheme.space.xxl),
 				onClick = onSubmit,
 				enabled = !isBusy,
 			) {

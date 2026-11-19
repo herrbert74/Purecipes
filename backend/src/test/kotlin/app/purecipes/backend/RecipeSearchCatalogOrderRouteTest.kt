@@ -2,6 +2,8 @@ package app.purecipes.backend
 
 import app.purecipes.backend.db.Db
 import app.purecipes.backend.fake.FakeSessionService
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -31,7 +33,7 @@ class RecipeSearchCatalogOrderRouteTest {
 			""".trimIndent(),
 		)
 
-		mainSearchItemTitles(responseBody) shouldBe catalogOrderTitles()
+		assertCatalogOrderTiers(mainSearchItemTitles(responseBody))
 	}
 
 	@Test
@@ -52,7 +54,7 @@ class RecipeSearchCatalogOrderRouteTest {
 			""".trimIndent(),
 		)
 
-		mainSearchItemTitles(responseBody) shouldBe catalogOrderTitles()
+		assertCatalogOrderTiers(mainSearchItemTitles(responseBody))
 	}
 
 	@Test
@@ -129,7 +131,7 @@ class RecipeSearchCatalogOrderRouteTest {
 			""".trimIndent(),
 		)
 
-		mainSearchItemTitles(responseBody) shouldBe titleSearchTitles()
+		assertTitleSearchTiers(mainSearchItemTitles(responseBody))
 	}
 
 	@Test
@@ -165,7 +167,7 @@ class RecipeSearchCatalogOrderRouteTest {
 			accessToken = sessionService.session.accessToken,
 		)
 
-		mainSearchItemTitles(responseBody) shouldBe titleSearchTitles()
+		assertTitleSearchTiers(mainSearchItemTitles(responseBody))
 	}
 
 	@Test
@@ -178,27 +180,118 @@ class RecipeSearchCatalogOrderRouteTest {
 		val response = client.get("/recipes/search?query=Soup")
 
 		response.status shouldBe HttpStatusCode.OK
-		mainSearchItemTitles(response.bodyAsText()) shouldBe titleSearchTitles()
+		assertTitleSearchTiers(mainSearchItemTitles(response.bodyAsText()))
+	}
+
+	@Test
+	fun `search results break ties randomly instead of newest first`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		(1..10).forEach { id ->
+			insertCatalogOrderRecipe(
+				db,
+				CatalogOrderRecipeSeed(
+					id = id,
+					title = "Recipe $id",
+					createdAt = "2024-01-${id.toString().padStart(2, '0')} 00:00:00",
+					imageUrl = PHOTO_URL,
+					description = "Ready to cook",
+					mealType = "DINNER",
+					totalTime = 20,
+					ingredients = listOf("Salt"),
+					step = "Cook",
+				),
+			)
+		}
+
+		application { module(db = db) }
+
+		val newestFirstOrder = (10 downTo 1).map { "Recipe $it" }
+		val observedOrders = (1..5).map {
+			mainSearchItemTitles(
+				searchWithFiltersForSearchRouteTest(
+					"""
+						{
+							"query": "",
+							"filters": {}
+						}
+					""".trimIndent(),
+				),
+			)
+		}
+
+		observedOrders.forEach { order ->
+			order shouldContainExactlyInAnyOrder newestFirstOrder
+		}
+		observedOrders.distinct().size shouldBeGreaterThan 1
+		observedOrders.any { order -> order != newestFirstOrder } shouldBe true
+	}
+
+	@Test
+	fun `paginating search results returns all recipes without duplicates`() = testApplication {
+		val db = createRecipeSearchRouteTestDb()
+		(1..6).forEach { id ->
+			insertCatalogOrderRecipe(
+				db,
+				CatalogOrderRecipeSeed(
+					id = id,
+					title = "Recipe $id",
+					createdAt = "2024-01-0$id 00:00:00",
+					imageUrl = PHOTO_URL,
+				),
+			)
+		}
+
+		application { module(db = db) }
+
+		val pageOne = mainSearchItemTitles(
+			searchWithFiltersForSearchRouteTest(
+				"""
+					{
+						"query": "",
+						"filters": {},
+						"pageNumber": 1,
+						"pageSize": 3
+					}
+				""".trimIndent(),
+			),
+		)
+		val pageTwo = mainSearchItemTitles(
+			searchWithFiltersForSearchRouteTest(
+				"""
+					{
+						"query": "",
+						"filters": {},
+						"pageNumber": 2,
+						"pageSize": 3
+					}
+				""".trimIndent(),
+			),
+		)
+
+		pageOne.size shouldBe 3
+		pageTwo.size shouldBe 3
+		(pageOne + pageTwo) shouldContainExactlyInAnyOrder (1..6).map { "Recipe $it" }
 	}
 }
 
-private fun catalogOrderTitles(): List<String> = listOf(
-	"Ranked First",
-	"Ranked Second",
-	"Full Score",
-	"Almost Complete",
-	"Photo And Steps",
-	"Newer Photo",
-	"Photo Only",
-	"Steps And Ingredients",
-	"Blank Photo",
-)
+private fun assertCatalogOrderTiers(titles: List<String>) {
+	titles.size shouldBe 9
+	titles.take(5) shouldBe listOf(
+		"Ranked First",
+		"Ranked Second",
+		"Full Score",
+		"Almost Complete",
+		"Photo And Steps",
+	)
+	titles.subList(5, 7) shouldContainExactlyInAnyOrder listOf("Newer Photo", "Photo Only")
+	titles.drop(7) shouldBe listOf("Steps And Ingredients", "Blank Photo")
+}
 
-private fun titleSearchTitles(): List<String> = listOf(
-	"Zucchini Soup",
-	"Apple Soup",
-	"Mango Soup",
-)
+private fun assertTitleSearchTiers(titles: List<String>) {
+	titles.size shouldBe 3
+	titles.first() shouldBe "Zucchini Soup"
+	titles.drop(1) shouldContainExactlyInAnyOrder listOf("Apple Soup", "Mango Soup")
+}
 
 private fun seedCatalogOrderRecipes(db: Db, includeOtherCuisine: Boolean = false) {
 	catalogOrderSeeds().forEach { seed ->

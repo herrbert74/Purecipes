@@ -10,9 +10,17 @@ internal const val CATALOG_INGREDIENT_SCORE = 2
 
 internal const val CATALOG_METADATA_SCORE = 1
 
+private const val RANDOM_HASH_MODULO = 104729L
+private const val RANDOM_HASH_BASE_MULTIPLIER = 2654435761L
+private const val RANDOM_MULTIPLIER_SPAN = 1_000_000L
+private const val RANDOM_SEED_LCG_MULTIPLIER = 6364136223846793005L
+private const val RANDOM_SEED_LCG_INCREMENT = 1442695040888963407L
+
 internal enum class SearchRecipeOrder {
 	CATALOG,
+	CATALOG_RANDOM,
 	TITLE,
+	TITLE_RANDOM,
 	NEWEST,
 }
 
@@ -22,6 +30,7 @@ internal data class SearchRecipeQuery(
 	val order: SearchRecipeOrder,
 	val limit: Int? = null,
 	val offset: Int? = null,
+	val randomSeed: Long? = null,
 )
 
 internal data class SearchRecipeCandidate(
@@ -57,16 +66,31 @@ internal fun recipeCompletenessScoreSql(recipeAlias: String): String {
 	""".trimIndent()
 }
 
-internal fun searchRecipeOrderBySql(order: SearchRecipeOrder): String {
+internal fun searchRecipeOrderBySql(order: SearchRecipeOrder, randomSeed: Long? = null): String {
 	val newestTieBreak = "r.created_at DESC, r.id DESC"
+	val randomTieBreak = randomOrderExpression(randomSeed)
 	return when (order) {
 		SearchRecipeOrder.CATALOG ->
 			"ORDER BY r.catalog_rank ASC NULLS LAST, completeness_score DESC, $newestTieBreak"
 
+		SearchRecipeOrder.CATALOG_RANDOM ->
+			"ORDER BY r.catalog_rank ASC NULLS LAST, completeness_score DESC, $randomTieBreak"
+
 		SearchRecipeOrder.TITLE ->
 			"ORDER BY completeness_score DESC, $newestTieBreak"
+
+		SearchRecipeOrder.TITLE_RANDOM ->
+			"ORDER BY completeness_score DESC, $randomTieBreak"
 
 		SearchRecipeOrder.NEWEST ->
 			"ORDER BY $newestTieBreak"
 	}
+}
+
+private fun randomOrderExpression(randomSeed: Long?): String {
+	val seed = randomSeed ?: 0L
+	val mixed = (seed * RANDOM_SEED_LCG_MULTIPLIER + RANDOM_SEED_LCG_INCREMENT) ushr 1
+	val multiplier = RANDOM_HASH_BASE_MULTIPLIER + (mixed % RANDOM_MULTIPLIER_SPAN) * 2L
+	val offset = mixed % RANDOM_HASH_MODULO
+	return "MOD(ABS(CAST(r.id AS BIGINT) * $multiplier + $offset), $RANDOM_HASH_MODULO), r.id DESC"
 }

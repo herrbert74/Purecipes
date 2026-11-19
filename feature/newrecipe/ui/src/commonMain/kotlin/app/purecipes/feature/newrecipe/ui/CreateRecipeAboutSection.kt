@@ -18,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.model.Appliance
@@ -90,6 +92,11 @@ internal fun CreateRecipeAboutSection(
 			onValueChange = onTitleChange,
 			modifier = Modifier
 				.fillMaxWidth()
+				.semantics {
+					if (titleError != null) {
+						error(titleError)
+					}
+				}
 				.testTag(TITLE_FIELD_TAG),
 			label = { Text(text = "Recipe title") },
 			isError = titleError != null,
@@ -103,6 +110,11 @@ internal fun CreateRecipeAboutSection(
 			onValueChange = onDescriptionChange,
 			modifier = Modifier
 				.fillMaxWidth()
+				.semantics {
+					if (descriptionError != null) {
+						error(descriptionError)
+					}
+				}
 				.testTag(DESCRIPTION_FIELD_TAG),
 			label = { Text(text = "Description") },
 			isError = descriptionError != null,
@@ -270,6 +282,11 @@ private fun ExpandableMetadataField(
 						end = PurecipesTheme.space.m,
 						bottom = PurecipesTheme.space.s,
 					)
+					.semantics {
+						if (errorMessage != null) {
+							error(errorMessage)
+						}
+					}
 					.testTag(fieldTestTag),
 				label = { Text(text = fieldLabel) },
 				isError = errorMessage != null,

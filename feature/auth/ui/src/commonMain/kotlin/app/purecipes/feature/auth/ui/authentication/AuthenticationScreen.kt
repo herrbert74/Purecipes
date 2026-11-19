@@ -31,6 +31,9 @@ import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContai
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.open_settings
 
 @Composable
 fun AuthenticationScreen(
@@ -82,7 +85,7 @@ fun AuthenticationScreen(
 					IconButton(onClick = onOpenSettings) {
 						Icon(
 							imageVector = AppIcons.Settings,
-							contentDescription = "Open settings",
+							contentDescription = stringResource(Res.string.open_settings),
 						)
 					}
 				},

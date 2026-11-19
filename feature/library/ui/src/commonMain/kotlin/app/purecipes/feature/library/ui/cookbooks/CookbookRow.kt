@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.domain.model.CookbookSummary
 import app.purecipes.shared.ui.component.atom.BodyText
@@ -27,6 +29,11 @@ import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.component.atom.TitleText
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import coil3.compose.AsyncImage
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.cookbook_recipe_count
+import purecipes.shared.ui.generated.resources.delete
+import purecipes.shared.ui.generated.resources.delete_cookbook
 
 internal const val DELETE_COOKBOOK_BUTTON_PREFIX = "deleteCookbookButton:"
 
@@ -43,6 +50,7 @@ internal fun CookbookRow(
 	LaunchedEffect(cookbook.id) {
 		requestCover()
 	}
+	val deleteDescription = stringResource(Res.string.delete_cookbook, cookbook.name)
 	Card(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -60,25 +68,31 @@ internal fun CookbookRow(
 		) {
 			AsyncImage(
 				model = coverUrl?.trim()?.takeIf { it.isNotEmpty() },
-				contentDescription = cookbook.name,
+				contentDescription = null,
 				modifier = Modifier
 					.size(56.dp)
 					.clip(RoundedCornerShape(PurecipesTheme.space.s))
 					.background(PurecipesTheme.colorScheme.secondaryContainer),
 				contentScale = ContentScale.Crop,
 			)
-			Column(modifier = Modifier.weight(1f)) {
+			Column(
+				modifier = Modifier
+					.weight(1f)
+					.semantics(mergeDescendants = true) {},
+			) {
 				TitleText(text = cookbook.name)
 				BodyText(
-					text = "${cookbook.recipeCount} recipes",
+					text = stringResource(Res.string.cookbook_recipe_count, cookbook.recipeCount),
 					color = PurecipesTheme.colorScheme.onSurfaceVariant,
 				)
 			}
 			PurecipesTextButton(
-				text = "Delete",
+				text = stringResource(Res.string.delete),
 				onClick = onDeleteCookbook,
 				enabled = !isDeletingCookbook && cookbook.recipeCount == 0,
-				modifier = Modifier.testTag("$DELETE_COOKBOOK_BUTTON_PREFIX${cookbook.id}"),
+				modifier = Modifier
+					.testTag("$DELETE_COOKBOOK_BUTTON_PREFIX${cookbook.id}")
+					.semantics { contentDescription = deleteDescription },
 			)
 		}
 	}

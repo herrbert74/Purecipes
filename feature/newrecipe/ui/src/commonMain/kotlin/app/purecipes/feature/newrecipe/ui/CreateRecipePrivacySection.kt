@@ -10,10 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
+import org.jetbrains.compose.resources.stringResource
+import purecipes.shared.ui.generated.resources.Res
+import purecipes.shared.ui.generated.resources.private_recipe_premium
+import purecipes.shared.ui.generated.resources.private_recipe_state_off
+import purecipes.shared.ui.generated.resources.private_recipe_state_on
 
 internal const val CREATE_RECIPE_PRIVACY_SWITCH_TAG = "createRecipePrivacySwitch"
 internal const val METADATA_GROUP_ITEM_COUNT = 5
@@ -27,6 +36,11 @@ internal fun CreateRecipePrivacySection(
 	onLockedClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
+	val privacyStateDescription = if (isPrivate) {
+		stringResource(Res.string.private_recipe_state_on)
+	} else {
+		stringResource(Res.string.private_recipe_state_off)
+	}
 	SegmentedListItem(
 		onClick = {
 			if (canMakePrivate) {
@@ -39,23 +53,30 @@ internal fun CreateRecipePrivacySection(
 			index = PRIVACY_METADATA_INDEX,
 			count = METADATA_GROUP_ITEM_COUNT,
 		),
-		modifier = modifier.testTag(CREATE_RECIPE_PRIVACY_SWITCH_TAG),
+		modifier = modifier
+			.testTag(CREATE_RECIPE_PRIVACY_SWITCH_TAG)
+			.then(
+				if (canMakePrivate) {
+					Modifier.semantics {
+						role = Role.Switch
+						stateDescription = privacyStateDescription
+					}
+				} else {
+					Modifier
+				},
+			),
 		colors = createRecipeSegmentedListColors(),
 		trailingContent = {
 			Row(verticalAlignment = Alignment.CenterVertically) {
 				if (!canMakePrivate) {
 					Icon(
 						imageVector = AppIcons.Lock,
-						contentDescription = "Private recipes are a premium feature",
+						contentDescription = stringResource(Res.string.private_recipe_premium),
 					)
 				}
 				Switch(
 					checked = isPrivate,
-					onCheckedChange = if (canMakePrivate) {
-						onIsPrivateChange
-					} else {
-						null
-					},
+					onCheckedChange = null,
 					enabled = canMakePrivate,
 				)
 			}

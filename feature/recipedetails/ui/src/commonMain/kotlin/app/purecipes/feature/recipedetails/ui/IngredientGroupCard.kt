@@ -13,6 +13,7 @@ import app.purecipes.shared.domain.ingredient.ingredientSlots
 import app.purecipes.shared.domain.ingredient.slotDisplayText
 import app.purecipes.shared.domain.ingredient.slotIsOptional
 import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @Composable
@@ -31,6 +32,7 @@ internal fun IngredientGroupCard(
 			group.name?.takeIf { it.isNotBlank() }?.let {
 				Text(
 					text = it,
+					modifier = Modifier.headingSemantics(),
 					style = PurecipesTheme.typography.titleMedium,
 				)
 			}

@@ -22,6 +22,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import app.purecipes.shared.domain.appliance.ApplianceExtractor
@@ -217,8 +219,14 @@ internal fun StepByStepCookingScreen(
 			state = pagerState,
 			modifier = Modifier
 				.fillMaxWidth()
-				.weight(1f),
+				.weight(1f)
+				.clipToBounds(),
 		) { page ->
+			val pageAccessibilityModifier = if (page != pagerState.currentPage) {
+				Modifier.clearAndSetSemantics {}
+			} else {
+				Modifier
+			}
 			if (page >= finishPageIndex) {
 				CookingFinishedContent(
 					recipe = recipe,
@@ -230,6 +238,7 @@ internal fun StepByStepCookingScreen(
 					onShowCookbookSheet = onShowCookbookSheet,
 					onDone = onDone,
 					onFindMoreRecipes = onFindMoreRecipes,
+					modifier = pageAccessibilityModifier,
 				)
 			} else {
 				val stepAppliances = remember(recipe.steps[page], recipe.appliances) {
@@ -257,6 +266,7 @@ internal fun StepByStepCookingScreen(
 							}
 						}
 					},
+					modifier = pageAccessibilityModifier,
 				)
 			}
 		}

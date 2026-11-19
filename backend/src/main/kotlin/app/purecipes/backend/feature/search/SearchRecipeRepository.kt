@@ -12,9 +12,11 @@ import app.purecipes.backend.feature.recipe.countSearchWithFiltersRecipes
 import app.purecipes.backend.feature.recipe.isRecipeCoveredByAvailableIngredients
 import app.purecipes.backend.feature.recipe.pantryCoverageForRecipe
 import app.purecipes.backend.feature.recipe.querySearchWithFiltersRecipes
-import app.purecipes.backend.feature.recipe.recipeContainsAllKeyIngredients
+import app.purecipes.backend.feature.recipe.recipeContainsAllKeyIngredientMatchers
 import app.purecipes.backend.feature.recipe.recipeContainsExcludedIngredient
 import app.purecipes.backend.feature.recipe.singleMissingPantryIngredientLabel
+import app.purecipes.shared.domain.ingredient.CompiledIngredientMatcher
+import app.purecipes.shared.domain.ingredient.IngredientNameMatching
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.NearMissRecipe
 import app.purecipes.shared.domain.model.RecipeSummary
@@ -22,7 +24,9 @@ import app.purecipes.shared.domain.model.SearchFilters
 import app.purecipes.shared.domain.model.SearchRequest
 import app.purecipes.shared.domain.model.SearchResultsPage
 import java.sql.Connection
+import java.util.Collections
 import javax.sql.DataSource
+import kotlin.random.Random
 
 class SearchRecipeRepository(
 	private val dataSource: DataSource,
@@ -44,7 +48,20 @@ class SearchRecipeRepository(
 				pageSize = normalizedPageSize,
 				totalMatches = 0,
 			)
-		val items = searchByKeyword(searchInput, userId)
+		val items = searchByKeyword(
+			searchInput = searchInput,
+			userId = userId,
+			randomSeed = SearchSeedCache.seedFor(
+				key = SearchSeedKey(
+					userId = userId,
+					query = keyword.trim(),
+					filters = SearchFilters(),
+					keyIngredients = emptySet(),
+					applyRecipeFilters = true,
+				),
+				pageNumber = searchInput.pageNumber,
+			),
+		)
 		val totalMatches = countRecipesByKeyword(dataSource, searchInput.like, userId)
 		return SearchResultsPage(
 			items = items,
@@ -61,6 +78,20 @@ class SearchRecipeRepository(
 		val isTitleSearch = request.query.isNotBlank()
 		val effectiveRequest = effectiveRequest(request, isTitleSearch)
 		val (whereClause, params) = buildSearchWhereClause(effectiveRequest, userId)
+		val normalizedKeyIngredients = effectiveRequest.keyIngredients
+			.map { it.trim() }
+			.filter { it.isNotEmpty() }
+			.distinct()
+		val randomSeed = SearchSeedCache.seedFor(
+			key = SearchSeedKey(
+				userId = userId,
+				query = effectiveRequest.query.trim(),
+				filters = effectiveRequest.filters,
+				keyIngredients = normalizedKeyIngredients.toSet(),
+				applyRecipeFilters = effectiveRequest.applyRecipeFilters,
+			),
+			pageNumber = normalizedPageNumber,
+		)
 
 		val result = dataSource.connection.use { conn ->
 			searchWithFiltersOnConnection(
@@ -70,11 +101,9 @@ class SearchRecipeRepository(
 				limit = normalizedPageSize,
 				offset = offset,
 				userId = userId,
-				keyIngredients = effectiveRequest.keyIngredients
-					.map { it.trim() }
-					.filter { it.isNotEmpty() }
-					.distinct(),
+				keyIngredients = normalizedKeyIngredients,
 				rankByPantryCoverage = isTitleSearch,
+				randomSeed = randomSeed,
 			)
 		}
 
@@ -121,6 +150,7 @@ class SearchRecipeRepository(
 		userId: Long?,
 		keyIngredients: List<String>,
 		rankByPantryCoverage: Boolean,
+		randomSeed: Long,
 	): FilteredSearchResult {
 		val availableIngredients =
 			if (userId != null) loadAvailableIngredientsForUser(conn, userId) else emptyList()
@@ -138,6 +168,7 @@ class SearchRecipeRepository(
 					order = searchRecipeOrder(rankByPantryCoverage),
 					limit = limit,
 					offset = offset,
+					randomSeed = randomSeed,
 				),
 			)
 			FilteredSearchResult(
@@ -156,6 +187,7 @@ class SearchRecipeRepository(
 				excludedIngredients = excludedIngredients,
 				keyIngredients = keyIngredients,
 				rankByPantryCoverage = rankByPantryCoverage,
+				randomSeed = randomSeed,
 			)
 		}
 		return markFavoriteRecipes(conn, userId, result)
@@ -171,6 +203,7 @@ class SearchRecipeRepository(
 		excludedIngredients: List<String>,
 		keyIngredients: List<String>,
 		rankByPantryCoverage: Boolean,
+		randomSeed: Long,
 	): FilteredSearchResult {
 		val candidates = recipeRepository.querySearchWithFiltersRecipes(
 			conn = conn,
@@ -178,16 +211,26 @@ class SearchRecipeRepository(
 				whereClause = whereClause,
 				params = params,
 				order = searchRecipeOrder(rankByPantryCoverage),
+				randomSeed = randomSeed,
 			),
 		)
+		val ingredientGroupsByRecipeId = recipeRepository.loadIngredientGroupsForRecipes(
+			conn = conn,
+			recipeIds = candidates.map { candidate -> candidate.summary.id },
+		)
 		val loadIngredientGroups = { recipeId: Int ->
-			recipeRepository.loadIngredientGroupsForRecipe(conn, recipeId)
+			ingredientGroupsByRecipeId[recipeId].orEmpty()
+		}
+		val availableMatcher = IngredientNameMatching.compileMatcher(availableIngredients)
+		val excludedMatcher = IngredientNameMatching.compileMatcher(excludedIngredients)
+		val keyMatchers = keyIngredients.map { keyIngredient ->
+			IngredientNameMatching.compileMatcher(listOf(keyIngredient))
 		}
 		val eligible = candidates.filter { candidate ->
 			passesExclusionAndKeyIngredientFilters(
 				summary = candidate.summary,
-				excludedIngredients = excludedIngredients,
-				keyIngredients = keyIngredients,
+				excludedMatcher = excludedMatcher,
+				keyMatchers = keyMatchers,
 				loadIngredientGroups = loadIngredientGroups,
 			)
 		}
@@ -195,7 +238,7 @@ class SearchRecipeRepository(
 			eligible.filter { candidate ->
 				isRecipeCoveredByAvailableIngredients(
 					recipeId = candidate.summary.id,
-					availableIngredients = availableIngredients,
+					availableMatcher = availableMatcher,
 					loadIngredientGroups = loadIngredientGroups,
 				)
 			}
@@ -205,7 +248,7 @@ class SearchRecipeRepository(
 		val orderedMatches = if (rankByPantryCoverage && availableIngredients.isNotEmpty()) {
 			rankRecipesByPantryCoverage(
 				candidates = matches,
-				availableIngredients = availableIngredients,
+				availableMatcher = availableMatcher,
 				loadIngredientGroups = loadIngredientGroups,
 			)
 		} else {
@@ -218,7 +261,8 @@ class SearchRecipeRepository(
 			nearMissRecipes = nearMissRecipesFor(
 				eligible = eligible.map { candidate -> candidate.summary },
 				orderedMatches = orderedSummaries,
-				availableIngredients = availableIngredients,
+				hasAvailableIngredients = availableIngredients.isNotEmpty(),
+				availableMatcher = availableMatcher,
 				rankByPantryCoverage = rankByPantryCoverage,
 				offset = offset,
 				loadIngredientGroups = loadIngredientGroups,
@@ -229,12 +273,13 @@ class SearchRecipeRepository(
 	private fun nearMissRecipesFor(
 		eligible: List<RecipeSummary>,
 		orderedMatches: List<RecipeSummary>,
-		availableIngredients: List<String>,
+		hasAvailableIngredients: Boolean,
+		availableMatcher: CompiledIngredientMatcher,
 		rankByPantryCoverage: Boolean,
 		offset: Int,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
 	): List<NearMissRecipe> {
-		val skipNearMiss = rankByPantryCoverage || availableIngredients.isEmpty()
+		val skipNearMiss = rankByPantryCoverage || !hasAvailableIngredients
 		if (skipNearMiss || offset != 0 || orderedMatches.size >= NEAR_MISS_MATCH_THRESHOLD) {
 			return emptyList()
 		}
@@ -244,7 +289,7 @@ class SearchRecipeRepository(
 			.mapNotNull { summary ->
 				singleMissingPantryIngredientLabel(
 					recipeId = summary.id,
-					availableIngredients = availableIngredients,
+					availableMatcher = availableMatcher,
 					loadIngredientGroups = loadIngredientGroups,
 				)?.let { missingIngredient ->
 					NearMissRecipe(
@@ -264,14 +309,14 @@ class SearchRecipeRepository(
 
 	private fun rankRecipesByPantryCoverage(
 		candidates: List<SearchRecipeCandidate>,
-		availableIngredients: List<String>,
+		availableMatcher: CompiledIngredientMatcher,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
 	): List<SearchRecipeCandidate> {
 		return candidates
 			.map { candidate ->
 				candidate to pantryCoverageForRecipe(
 					recipeId = candidate.summary.id,
-					availableIngredients = availableIngredients,
+					availableMatcher = availableMatcher,
 					loadIngredientGroups = loadIngredientGroups,
 				)
 			}
@@ -310,24 +355,30 @@ class SearchRecipeRepository(
 
 	private fun passesExclusionAndKeyIngredientFilters(
 		summary: RecipeSummary,
-		excludedIngredients: List<String>,
-		keyIngredients: List<String>,
+		excludedMatcher: CompiledIngredientMatcher,
+		keyMatchers: List<CompiledIngredientMatcher>,
 		loadIngredientGroups: (Int) -> List<IngredientGroup>,
 	): Boolean {
 		val containsExcluded = recipeContainsExcludedIngredient(
 			recipeId = summary.id,
-			excludedIngredients = excludedIngredients,
+			excludedMatcher = excludedMatcher,
 			loadIngredientGroups = loadIngredientGroups,
 		)
-		val containsAllKeyIngredients = recipeContainsAllKeyIngredients(
+		if (containsExcluded) {
+			return false
+		}
+		return recipeContainsAllKeyIngredientMatchers(
 			recipeId = summary.id,
-			keyIngredients = keyIngredients,
+			keyMatchers = keyMatchers,
 			loadIngredientGroups = loadIngredientGroups,
 		)
-		return !containsExcluded && containsAllKeyIngredients
 	}
 
-	private fun searchByKeyword(searchInput: KeywordSearchInput, userId: Long?): List<RecipeSummary> {
+	private fun searchByKeyword(
+		searchInput: KeywordSearchInput,
+		userId: Long?,
+		randomSeed: Long,
+	): List<RecipeSummary> {
 		val conditions = mutableListOf("(LOWER(r.title) LIKE ? OR LOWER(r.cuisine) LIKE ?)")
 		val params = mutableListOf<Any>(searchInput.like, searchInput.like)
 		addRecipeVisibilityCondition(conditions, params, userId)
@@ -337,9 +388,10 @@ class SearchRecipeRepository(
 				query = SearchRecipeQuery(
 					whereClause = "WHERE ${conditions.joinToString(" AND ")}",
 					params = params,
-					order = SearchRecipeOrder.TITLE,
+					order = SearchRecipeOrder.TITLE_RANDOM,
 					limit = searchInput.pageSize,
 					offset = searchInput.offset,
+					randomSeed = randomSeed,
 				),
 			).map { candidate -> candidate.summary }
 		}
@@ -363,6 +415,37 @@ class SearchRecipeRepository(
 
 private const val NEAR_MISS_MATCH_THRESHOLD = 10
 private const val MAX_NEAR_MISS_RECIPES = 30
+private const val MAX_CACHED_SEARCH_SEEDS = 1024
+private const val SEARCH_SEED_LOAD_FACTOR = 0.75f
+
+private data class SearchSeedKey(
+	val userId: Long?,
+	val query: String,
+	val filters: SearchFilters,
+	val keyIngredients: Set<String>,
+	val applyRecipeFilters: Boolean,
+)
+
+private object SearchSeedCache {
+
+	private val seeds: MutableMap<SearchSeedKey, Long> = Collections.synchronizedMap(
+		object : LinkedHashMap<SearchSeedKey, Long>(MAX_CACHED_SEARCH_SEEDS, SEARCH_SEED_LOAD_FACTOR, true) {
+			override fun removeEldestEntry(eldest: MutableMap.MutableEntry<SearchSeedKey, Long>): Boolean =
+				size > MAX_CACHED_SEARCH_SEEDS
+		},
+	)
+
+	fun seedFor(key: SearchSeedKey, pageNumber: Int): Long {
+		if (pageNumber <= 1) {
+			val seed = Random.nextLong()
+			seeds[key] = seed
+			return seed
+		}
+		return seeds[key] ?: Random.nextLong().also { generated ->
+			seeds[key] = generated
+		}
+	}
+}
 
 private val pantryCoverageComparator: Comparator<Pair<SearchRecipeCandidate, PantryCoverage>> =
 	compareBy<Pair<SearchRecipeCandidate, PantryCoverage>> { ranked -> ranked.second.missingSlots }
@@ -372,14 +455,12 @@ private val pantryCoverageComparator: Comparator<Pair<SearchRecipeCandidate, Pan
 			rightRatio.compareTo(leftRatio)
 		}
 		.thenByDescending { ranked -> ranked.first.completenessScore }
-		.thenByDescending { ranked -> ranked.first.createdAtMillis }
-		.thenByDescending { ranked -> ranked.first.summary.id }
 
 private fun searchRecipeOrder(rankByPantryCoverage: Boolean): SearchRecipeOrder =
 	if (rankByPantryCoverage) {
-		SearchRecipeOrder.TITLE
+		SearchRecipeOrder.TITLE_RANDOM
 	} else {
-		SearchRecipeOrder.CATALOG
+		SearchRecipeOrder.CATALOG_RANDOM
 	}
 
 private data class FilteredSearchResult(
