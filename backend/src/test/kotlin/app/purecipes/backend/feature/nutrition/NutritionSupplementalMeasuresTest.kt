@@ -259,4 +259,58 @@ class NutritionSupplementalMeasuresTest {
 		measures[32]?.get("piece") shouldBe BigDecimal("128")
 		measures[33]?.get("piece") shouldBe BigDecimal("20")
 	}
+
+	@Test
+	fun overlayMeasuresUsesRealisticPieceGramsForHotChiliesAndWhiteBreadSlice() {
+		val redChili = NutritionFoodRecord(
+			id = 40,
+			displayName = "Peppers, hot chili, red, raw",
+			normalizedName = "peppers hot chili red raw",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val greenChili = NutritionFoodRecord(
+			id = 41,
+			displayName = "Peppers, hot chili, green, raw",
+			normalizedName = "peppers hot chili green raw",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val whiteBread = NutritionFoodRecord(
+			id = 42,
+			displayName = "Bread, white, commercially prepared (includes soft bread crumbs)",
+			normalizedName = "bread white commercially prepared includes soft bread crumbs",
+			nutrients = FdcNutrientsPer100g(
+				calories = BigDecimal.ZERO,
+				protein = null,
+				carbohydrates = null,
+				fat = null,
+				fiber = null,
+				sugar = null,
+				sodium = null,
+			),
+		)
+		val measures = NutritionSupplementalMeasures.overlayMeasures(
+			foods = listOf(redChili, greenChili, whiteBread),
+			storedMeasures = emptyMap(),
+		)
+
+		measures[40]?.get("piece") shouldBe BigDecimal("15")
+		measures[41]?.get("piece") shouldBe BigDecimal("15")
+		measures[42]?.get("piece") shouldBe BigDecimal("30")
+	}
 }

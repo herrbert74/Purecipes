@@ -91,6 +91,21 @@ Verify that the release database's ingredient names and parsed lines match your 
 ```
 *Expected output: `Names: +0 added, -0 removed, ~0 changed` and `Lines: +0 added, -0 removed, ~0 changed`.*
 
+### Verify Nutrition Measures & Gram Resolution
+`diffIngredientSnapshot` validates parsed lines and matched USDA food IDs, not `nutrition_food_measures` or computed gram weights. Run two quick checks to make sure release is not falling back to water density (`density`) where local uses household measures (`measure`):
+
+```bash
+# Confirm no nutrition catalogue rows or measures are missing on release
+./gradlew syncNutritionCatalogue -PnutritionSync.dryRun=true
+
+# Compare grams_source counts on release vs local
+psql -h localhost -p 15432 -U "$PURECIPES_DB_USER" -d purecipes -c \
+  "SELECT grams_source, COUNT(*) FROM ingredient_nutrition_contributions GROUP BY grams_source ORDER BY grams_source;"
+PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d purecipes -c \
+  "SELECT grams_source, COUNT(*) FROM ingredient_nutrition_contributions GROUP BY grams_source ORDER BY grams_source;"
+```
+*Expected: `syncNutritionCatalogue` reports `+0 inserted, ~0 updated` for foods, aliases, and measures, and the `mass` / `measure` / `density` counts match local (if `measure` is lower and `density` is higher on release, re-run Step 3 and `./gradlew calculateRecipeNutrition -Pnutrition.allRecipes=true`).*
+
 ---
 
 ## 6. Enrich Missing Recipe Attributes
