@@ -8,6 +8,7 @@ import app.purecipes.feature.search.ui.RecipeSearchViewModel
 import app.purecipes.feature.subscription.ui.PaywallViewModel
 import dev.zacsweers.metro.createGraph
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 import kotlin.test.Test
 
 class CommonAppGraphMetroTest {
@@ -56,5 +57,11 @@ class CommonAppGraphMetroTest {
 			FeatureRequestDetailViewModel.Factory::class,
 		)
 		factoryProvider().shouldNotBeNull()
+	}
+
+	@Test
+	fun recipeSearchFilterRepositoryIsSingletonInAppScope() {
+		val graph = createGraph<TestAppGraph>()
+		graph.recipeSearchFilterRepository shouldBeSameInstanceAs graph.recipeSearchFilterRepository
 	}
 }

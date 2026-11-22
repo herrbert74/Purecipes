@@ -7,11 +7,13 @@ import com.github.michaelbull.result.getOr
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 @Inject
+@SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class RecipeSearchFilterAccessor(
 	private val remoteDataSource: RecipeSearchFilterDataSource.Remote,
