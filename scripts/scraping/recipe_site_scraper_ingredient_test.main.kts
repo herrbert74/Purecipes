@@ -2,7 +2,7 @@
 
 @file:Import("ScrapedIngredientLines.kt")
 
-// cache-bust: contextual-headings-v31
+// cache-bust: contextual-headings-v36
 
 data class IngredientTestCase(
 	val description: String,
@@ -528,6 +528,67 @@ val alternativeCases = listOf(
 			"4 ounces Muenster cheese, finely shredded (about 1 cup)",
 		),
 	),
+	AlternativeTestCase(
+		description = "keeps packaging can or jar butter beans together",
+		input = "400-500 g can or jar butter beans drained",
+		expected = listOf("400-500 g can or jar butter beans drained"),
+	),
+	AlternativeTestCase(
+		description = "keeps informal splash or two measurement together",
+		input = "Splash or two sesame oil",
+		expected = listOf("Splash or two sesame oil"),
+	),
+	AlternativeTestCase(
+		description = "splits second or after homemade or store-bought modifier",
+		input = "2 quarts homemade or store-bought low-sodium chicken stock or vegetable stock",
+		expected = listOf(
+			"2 quarts homemade or store-bought low-sodium chicken stock",
+			"2 quarts vegetable stock",
+		),
+	),
+	AlternativeTestCase(
+		description = "expands kaiser or bulkie roll without copying kaiser",
+		input = "1 kaiser or bulkie roll (see notes)",
+		expected = listOf(
+			"1 kaiser roll (see notes)",
+			"1 bulkie roll (see notes)",
+		),
+	),
+	AlternativeTestCase(
+		description = "splits toppings of your choice such as list into three alternatives",
+		input = "toppings of your choice, such as cooked bacon chocolate chips, blueberries or peanut butter and jam",
+		expected = listOf(
+			"cooked bacon chocolate chips",
+			"blueberries",
+			"peanut butter and jam",
+		),
+	),
+	AlternativeTestCase(
+		description = "splits toppings of your choice without comma into three alternatives",
+		input = "toppings of your choice such as chopped toasted pecans, small pretzels or crushed candy canes",
+		expected = listOf(
+			"chopped toasted pecans",
+			"small pretzels",
+			"crushed candy canes",
+		),
+	),
+	AlternativeTestCase(
+		description = "keeps prep clause after comma attached when splitting pasta alternative",
+		input = "1 pound (450 g) homemade fresh pasta dough, cut into 1- to 1 1/2–inch wide ribbons " +
+			"or store-bought fresh or dried pappardelle",
+		expected = listOf(
+			"1 pound (450 g) homemade fresh pasta dough, cut into 1- to 1 1/2–inch wide ribbons",
+			"1 pound store-bought fresh or dried pappardelle",
+		),
+	),
+	AlternativeTestCase(
+		description = "appends shared kale noun when cut or torn follows",
+		input = "6 ounces (170 g) lacinato or curly kale, stemmed and cut or torn into roughly 2-inch pieces",
+		expected = listOf(
+			"6 ounces (170 g) lacinato kale",
+			"6 ounces curly kale, stemmed and cut or torn into roughly 2-inch pieces",
+		),
+	),
 )
 
 val normalizeTextCases = listOf(
@@ -608,6 +669,15 @@ val splitCases = listOf(
 		description = "splits kosher salt and black pepper to taste",
 		input = "Kosher salt and black pepper to taste",
 		expected = listOf("Kosher salt", "black pepper"),
+	),
+	SplitTestCase(
+		description = "splits quantified plus clause containing alternatives on both sides",
+		input = "1 ounce (30 g) galangal or ginger, peeled and finely chopped, " +
+			"plus 1 ounce (30 g) galangal or ginger, cut into 2 pieces, divided (see notes)",
+		expected = listOf(
+			"1 ounce (30 g) galangal or ginger, peeled and finely chopped",
+			"1 ounce (30 g) galangal or ginger, cut into 2 pieces, divided (see notes)",
+		),
 	),
 )
 
@@ -736,6 +806,42 @@ fun runGroupProcessingTests() {
 	)
 	if (contextualRecipeGroups != expectedContextualGroups) {
 		error("Unexpected contextual groups: $contextualRecipeGroups")
+	}
+
+	val corruptedStored = listOf(
+		ProcessedScrapedIngredient("400-500 g can butter", requirement = "ALTERNATIVE", alternativeGroupKey = 1),
+		ProcessedScrapedIngredient(
+			"400-500 g jar butter beans drained",
+			requirement = "ALTERNATIVE",
+			alternativeGroupKey = 1
+		),
+		ProcessedScrapedIngredient("Splash oil", requirement = "ALTERNATIVE", alternativeGroupKey = 2),
+		ProcessedScrapedIngredient("two sesame oil", requirement = "ALTERNATIVE", alternativeGroupKey = 2),
+		ProcessedScrapedIngredient("2 quarts homemade stock", requirement = "ALTERNATIVE", alternativeGroupKey = 3),
+		ProcessedScrapedIngredient(
+			"2 store-bought low-sodium chicken stock",
+			requirement = "ALTERNATIVE",
+			alternativeGroupKey = 3
+		),
+		ProcessedScrapedIngredient("2 vegetable stock", requirement = "ALTERNATIVE", alternativeGroupKey = 3),
+	)
+	val repairedItems = processStoredScrapedIngredientGroups(null, corruptedStored).single().second
+	val expectedRepaired = listOf(
+		ProcessedScrapedIngredient("400-500 g can or jar butter beans drained"),
+		ProcessedScrapedIngredient("Splash or two sesame oil"),
+		ProcessedScrapedIngredient(
+			text = "2 quarts homemade or store-bought low-sodium chicken stock",
+			requirement = "ALTERNATIVE",
+			alternativeGroupKey = 1,
+		),
+		ProcessedScrapedIngredient(
+			text = "2 quarts vegetable stock",
+			requirement = "ALTERNATIVE",
+			alternativeGroupKey = 1,
+		),
+	)
+	if (repairedItems != expectedRepaired) {
+		error("Expected repaired corrupted clusters $expectedRepaired, got $repairedItems")
 	}
 }
 

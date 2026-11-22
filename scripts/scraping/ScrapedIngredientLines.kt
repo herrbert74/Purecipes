@@ -5,7 +5,7 @@ import kotlin.math.floor
 const val MAX_INGREDIENT_LENGTH = 255
 const val FRACTION_MATCH_TOLERANCE = 0.02
 const val WHOLE_NUMBER_ONE = 1
-const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "contextual-headings-v28"
+const val SCRAPED_INGREDIENT_RULES_CHECKSUM = "contextual-headings-v30"
 
 data class ScrapedLineOverride(
 	val kind: String = "",
@@ -309,6 +309,24 @@ fun splitCompoundSaltAndPepper(line: String): List<String>? {
 	return listOf(line1, line2)
 }
 
+private val quantifiedPlusAlternativeSplitRegex = Regex(
+	pattern = """\s*,\s*plus\s+(?=$ALTERNATIVE_LEADING_QUANTITY_PATTERN\s+)""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private fun splitQuantifiedPlusAlternativeLine(line: String): List<String> {
+	val match = quantifiedPlusAlternativeSplitRegex.find(line) ?: return listOf(line)
+	val left = line.substring(0, match.range.first).trim()
+	val right = line.substring(match.range.last + 1).trim()
+	val bothSidesPresent = left.isNotBlank() && right.isNotBlank()
+	val bothSidesHaveAlternatives = containsAlternativeSeparator(left) && containsAlternativeSeparator(right)
+	return if (bothSidesPresent && bothSidesHaveAlternatives) {
+		listOf(left, right)
+	} else {
+		listOf(line)
+	}
+}
+
 fun splitIngredientLine(raw: String): List<String> {
 	val normalized = raw.replace("\r\n", "\n").trim()
 	if (normalized.isBlank()) {
@@ -327,11 +345,12 @@ fun splitIngredientLine(raw: String): List<String> {
 			val shouldSplitConcatenated =
 				trimmedLine.length > MAX_INGREDIENT_LENGTH ||
 					concatenatedIngredientSplitRegex.findAll(trimmedLine).any { it.range.first > 0 }
-			if (shouldSplitConcatenated) {
+			val baseParts = if (shouldSplitConcatenated) {
 				splitConcatenatedIngredient(trimmedLine)
 			} else {
 				listOf(trimmedLine)
 			}
+			baseParts.flatMap(::splitQuantifiedPlusAlternativeLine)
 		}
 	}
 }
@@ -770,11 +789,47 @@ private const val ALTERNATIVE_LEADING_QUANTITY_PATTERN =
 		"""\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?(?:\s*[–-]\s*\d+(?:\.\d+)?)?)"""
 
 private const val ALTERNATIVE_LEADING_UNIT_PATTERN =
-	"""(?:g|kg|ml|l|oz|lbs?|tsps?|tbsps?|teaspoons?|tablespoons?|cups?|pinch(?:es)?|dash(?:es)?|""" +
+	"""(?:g|kg|ml|l|oz|lbs?|tsps?|tbsps?|teaspoons?|tablespoons?|cups?|pints?|quarts?|gallons?|""" +
+		"""pinch(?:es)?|dash(?:es)?|""" +
 		"""handfuls?|bags?|cans?|tins?|packs?|packages?|packets?|jars?|bottles?|slices?|rashers?|cloves?|""" +
 		"""glasses?|wine glasses?|mugs?|""" +
 		"""stalks?|sprigs?|heads?|bunch(?:es)?|pieces?|pounds?|ounces?|grams?|kilograms?|""" +
 		"""liters?|litres?|milliliters?|millilitres?)"""
+
+private const val PACKAGING_ALTERNATIVE_CONTAINER_PATTERN =
+	"""(?:can|cans|tin|tins|jar|jars|bottle|bottles|bag|bags|pack|packs|packet|packets|package|packages|""" +
+		"""box|boxes|carton|cartons|tub|tubs|pouch|pouches|block|blocks)"""
+
+private val nonAlternativeOrPhraseRegexes = listOf(
+	Regex(
+		pattern = """\b$PACKAGING_ALTERNATIVE_CONTAINER_PATTERN\s+or\s+$PACKAGING_ALTERNATIVE_CONTAINER_PATTERN\b""",
+		options = setOf(RegexOption.IGNORE_CASE),
+	),
+	Regex(
+		pattern = """\b(?:splash|pinch|dash|drop|drizzle|handful|glug|knob|sprig|slice|clove|squeeze|scoop|spoon|""" +
+			"""tbsp|tsp|tablespoon|teaspoon)\s+or\s+(?:two|2|three|3|so|more)\b""",
+		options = setOf(RegexOption.IGNORE_CASE),
+	),
+	Regex(
+		pattern = """\b(?:homemade\s+or\s+store-bought|homemade\s+or\s+low-sodium|canned\s+or\s+tinned|""" +
+			"""fresh\s+or\s+dried|fresh\s+or\s+frozen|cut\s+or\s+torn|""" +
+			"""grated\s+or\s+shredded|minced\s+or\s+pressed)\b""",
+		options = setOf(RegexOption.IGNORE_CASE),
+	),
+)
+
+private val toppingsOfYourChoiceSuchAsRegex = Regex(
+	pattern = """^toppings?\s+of\s+your\s+choice,?\s+such\s+as\s+(.+)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private fun findNonAlternativeOrRanges(text: String): List<IntRange> =
+	nonAlternativeOrPhraseRegexes.flatMap { regex ->
+		regex.findAll(text).map(MatchResult::range).toList()
+	}
+
+private fun isInsideAnyRange(index: Int, ranges: List<IntRange>): Boolean =
+	ranges.any { range -> index in range }
 
 private val alternativeQuantityPrefixRegex = Regex(
 	pattern = """^($ALTERNATIVE_LEADING_QUANTITY_PATTERN""" +
@@ -799,6 +854,13 @@ private fun stripSurroundingHyphens(value: String): String =
 		.removeSuffix("-")
 		.removeSuffix("–")
 		.trim()
+
+private val serialCommaPrepClauseRegex = Regex(
+	pattern = """^(?:cut|sliced|diced|chopped|torn|broken|crushed|shredded|grated|peeled|halved|quartered|""" +
+		"""trimmed|stemmed|seeded|pitted|drained|rinsed|divided|beaten|whisked|melted|softened)\s+""" +
+		"""(?:into|in|to|and|or|with|until|for)\b""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
 
 private fun splitSerialCommaParts(part: String): List<String> {
 	val trimmed = stripSurroundingHyphens(part)
@@ -828,7 +890,9 @@ private fun splitSerialCommaParts(part: String): List<String> {
 	if (lastSub.isNotBlank()) {
 		commaParts += lastSub
 	}
-	val isSerialList = commaParts.size > 1 && !commaParts.any(::isIncompleteAlternativeFoodName)
+	val isSerialList = commaParts.size > 1 &&
+		!commaParts.any(::isIncompleteAlternativeFoodName) &&
+		commaParts.drop(1).none { sub -> serialCommaPrepClauseRegex.containsMatchIn(sub) }
 	return if (isSerialList) {
 		commaParts
 	} else if (trimmed.isNotBlank()) {
@@ -843,6 +907,7 @@ private fun splitAlternativeParts(text: String): List<String> {
 		return listOf(text)
 	}
 
+	val ignoredRanges = findNonAlternativeOrRanges(text)
 	val parts = mutableListOf<String>()
 	var depth = 0
 	var start = 0
@@ -854,7 +919,7 @@ private fun splitAlternativeParts(text: String): List<String> {
 				depth--
 			}
 		}
-		if (depth == 0) {
+		if (depth == 0 && !isInsideAnyRange(index, ignoredRanges)) {
 			val separatorLength = matchAlternativeSeparatorLength(text, index)
 			if (separatorLength > 0) {
 				val rawPart = text.substring(start, index).trimEnd().removeSuffix(",")
@@ -878,6 +943,7 @@ private fun splitAlternativeParts(text: String): List<String> {
 }
 
 private fun containsAlternativeSeparator(text: String): Boolean {
+	val ignoredRanges = findNonAlternativeOrRanges(text)
 	var depth = 0
 	var index = 0
 	while (index < text.length) {
@@ -887,7 +953,7 @@ private fun containsAlternativeSeparator(text: String): Boolean {
 				depth--
 			}
 		}
-		if (depth == 0 && matchAlternativeSeparatorLength(text, index) > 0) {
+		if (depth == 0 && !isInsideAnyRange(index, ignoredRanges) && matchAlternativeSeparatorLength(text, index) > 0) {
 			return true
 		}
 		index++
@@ -982,14 +1048,24 @@ private val sharedAlternativeNounTokens = setOf(
 	"flour",
 	"honey",
 	"juice",
+	"kale",
 	"milk",
 	"oil",
+	"roll",
+	"rolls",
 	"salt",
 	"stock",
 	"sugar",
 	"vinegar",
 	"water",
 )
+
+private fun lastSharedAlternativeNoun(text: String): String? {
+	val beforeComma = text.substringBefore(',').trim()
+	val tokens = beforeComma.split(Regex("""[^a-zA-Z]+""")).filter(String::isNotBlank)
+	val lastToken = tokens.lastOrNull() ?: return null
+	return lastToken.takeIf { it in sharedAlternativeNounTokens }
+}
 
 private fun expandAlternativeParts(parts: List<String>): List<String> {
 	val cleanedParts = parts
@@ -1015,9 +1091,7 @@ private fun expandAlternativeParts(parts: List<String>): List<String> {
 	val firstHasNoun = firstTokens.any { token ->
 		sharedAlternativeNounTokens.any { noun -> token == noun || token.endsWith(noun) }
 	}
-	val lastNoun = lastLower
-		.split(Regex("""[^a-zA-Z]+"""))
-		.lastOrNull { it in sharedAlternativeNounTokens }
+	val lastNoun = lastSharedAlternativeNoun(lastLower)
 	val sharedNounSuffix = when {
 		isKosherSaltSuffix -> " kosher salt"
 		!firstHasNoun && lastNoun != null -> " $lastNoun"
@@ -1049,16 +1123,8 @@ private val keepSingleAlternativePhrases = listOf(
 	"a mixture",
 	"any combination",
 	"any mixture",
-	"canned or tinned",
-	"cut or torn",
-	"fresh or dried",
-	"fresh or frozen",
-	"grated or shredded",
-	"homemade or low-sodium",
-	"homemade or store-bought",
 	"ideally ",
 	"if you like",
-	"minced or pressed",
 	"more to taste",
 	"mortar and pestle",
 	"of your choice",
@@ -1084,15 +1150,25 @@ private fun shouldKeepAlternativeAsSingle(text: String, parts: List<String>): Bo
 		parts.any(::isIncompleteAlternativeFoodName)
 }
 
+private fun expandToppingsOfYourChoice(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient>? {
+	val toppingsTail = sanitized.takeIf { it.requirement != "OPTIONAL" }
+		?.let { toppingsOfYourChoiceSuchAsRegex.matchEntire(it.text)?.groupValues?.get(1)?.trim() }
+		?: return null
+	val toppingParts = splitAlternativeParts(toppingsTail)
+	val canSplit = toppingParts.size > 1 && !shouldKeepAlternativeAsSingle(toppingsTail, toppingParts)
+	val expandedToppings = if (canSplit) expandAlternativeParts(toppingParts) else emptyList()
+	return expandedToppings
+		.takeIf { it.size > 1 }
+		?.map { text -> ProcessedScrapedIngredient(text = text, requirement = "ALTERNATIVE") }
+}
+
 fun expandProcessedAlternatives(sanitized: ProcessedScrapedIngredient): List<ProcessedScrapedIngredient> {
+	expandToppingsOfYourChoice(sanitized)?.let { return it }
 	val parts = splitAlternativeParts(sanitized.text)
 	val keepAsSingle = sanitized.requirement == "OPTIONAL" ||
 		parts.size <= 1 ||
 		shouldKeepAlternativeAsSingle(sanitized.text, parts)
-	if (keepAsSingle) {
-		return listOf(sanitized)
-	}
-	val alternativeTexts = expandAlternativeParts(parts)
+	val alternativeTexts = if (keepAsSingle) emptyList() else expandAlternativeParts(parts)
 	return if (alternativeTexts.size <= 1) {
 		listOf(sanitized)
 	} else {
@@ -1107,16 +1183,28 @@ private val incompleteAlternativeTokens = setOf(
 	"any",
 	"available",
 	"baby",
+	"bag",
+	"bags",
 	"black",
 	"bleached",
+	"block",
+	"blocks",
 	"boiling",
 	"both",
+	"bottle",
 	"bottled",
+	"bottles",
 	"bought",
+	"box",
+	"boxes",
 	"broken",
 	"brown",
 	"buttered",
+	"can",
 	"canned",
+	"cans",
+	"carton",
+	"cartons",
 	"caster",
 	"chilled",
 	"choice",
@@ -1171,6 +1259,8 @@ private val incompleteAlternativeTokens = setOf(
 	"icing",
 	"inch",
 	"into",
+	"jar",
+	"jars",
 	"jumbo",
 	"knife",
 	"kosher",
@@ -1196,23 +1286,34 @@ private val incompleteAlternativeTokens = setOf(
 	"one",
 	"ones",
 	"organic",
+	"pack",
 	"package",
+	"packages",
+	"packet",
+	"packets",
+	"packs",
 	"peeled",
 	"pestle",
 	"pieces",
 	"pinch",
 	"pinches",
+	"pint",
+	"pints",
 	"plain",
 	"plum",
 	"poached",
+	"pouch",
+	"pouches",
 	"powder",
 	"powders",
 	"preferably",
 	"pressed",
 	"puree",
 	"pureed",
+	"quart",
 	"quartered",
 	"quarters",
+	"quarts",
 	"raw",
 	"red",
 	"regular",
@@ -1254,9 +1355,15 @@ private val incompleteAlternativeTokens = setOf(
 	"thick",
 	"thin",
 	"thinly",
+	"three",
+	"tin",
 	"tinned",
+	"tins",
 	"toasted",
 	"torn",
+	"tub",
+	"tubs",
+	"two",
 	"unbleached",
 	"unrefined",
 	"unsalted",
@@ -1416,6 +1523,127 @@ private fun storedAlternativeClusterAt(
 	}
 }
 
+private val corruptedPackagingFirstRegex = Regex(
+	pattern = """^(.*\b$PACKAGING_ALTERNATIVE_CONTAINER_PATTERN)\s+([a-zA-Z]+)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private val corruptedPackagingSecondRegex = Regex(
+	pattern = """^($PACKAGING_ALTERNATIVE_CONTAINER_PATTERN)\s+([a-zA-Z]+)\s+\S.*$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private val corruptedInformalFirstRegex = Regex(
+	pattern = """^(splash|pinch|dash|drop|drizzle|handful|glug|knob|sprig|slice|clove)\s+([a-zA-Z]+)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private val corruptedInformalSecondRegex = Regex(
+	pattern = """^(two|2|three|3|so|more)\s+(.+)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private val corruptedHomemadeFirstRegex = Regex(
+	pattern = """^($ALTERNATIVE_LEADING_QUANTITY_PATTERN)\s+([a-zA-Z]+)\s+homemade\s+([a-zA-Z]+)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private val corruptedStoreBoughtSecondRegex = Regex(
+	pattern = """^(?:$ALTERNATIVE_LEADING_QUANTITY_PATTERN\s+)?(store-bought\b.*)$""",
+	options = setOf(RegexOption.IGNORE_CASE),
+)
+
+private const val HOMEMADE_NOUN_GROUP_INDEX = 3
+
+private fun repairPackagingAlternativeCluster(
+	clusterSize: Int,
+	first: String,
+	secondWithoutPrefix: String,
+): String? {
+	if (clusterSize != 2) {
+		return null
+	}
+	val packagingFirst = corruptedPackagingFirstRegex.matchEntire(first)
+	val packagingSecond = corruptedPackagingSecondRegex.matchEntire(secondWithoutPrefix)
+	val copiedWordMatches = packagingFirst != null &&
+		packagingSecond != null &&
+		packagingFirst.groupValues[2].equals(packagingSecond.groupValues[2], ignoreCase = true)
+	return if (copiedWordMatches) {
+		"${packagingFirst.groupValues[1]} or $secondWithoutPrefix"
+	} else {
+		null
+	}
+}
+
+private fun repairInformalAlternativeCluster(
+	clusterSize: Int,
+	first: String,
+	second: String,
+): String? {
+	if (clusterSize != 2) {
+		return null
+	}
+	val informalFirst = corruptedInformalFirstRegex.matchEntire(first)
+	val informalSecond = corruptedInformalSecondRegex.matchEntire(second)
+	val suffixMatches = informalFirst != null &&
+		informalSecond != null &&
+		informalSecond.groupValues[2].lowercase(Locale.ROOT)
+			.endsWith(informalFirst.groupValues[2].lowercase(Locale.ROOT))
+	return if (suffixMatches) {
+		"${informalFirst.groupValues[1]} or $second"
+	} else {
+		null
+	}
+}
+
+private fun repairHomemadeAlternativeCluster(
+	cluster: List<ProcessedScrapedIngredient>,
+	first: String,
+	second: String,
+): String? {
+	val homemadeFirst = corruptedHomemadeFirstRegex.matchEntire(first)
+	val storeBoughtSecond = corruptedStoreBoughtSecondRegex.matchEntire(second)
+	val nounMatches = homemadeFirst != null &&
+		storeBoughtSecond != null &&
+		storeBoughtSecond.groupValues[1].lowercase(Locale.ROOT)
+			.endsWith(homemadeFirst.groupValues[HOMEMADE_NOUN_GROUP_INDEX].lowercase(Locale.ROOT))
+	if (!nounMatches) {
+		return null
+	}
+	val qty = homemadeFirst.groupValues[1]
+	val unit = homemadeFirst.groupValues[2]
+	val bareQtyPrefix = "$qty "
+	val restParts = cluster.drop(2).map { row ->
+		val text = row.text.trim()
+		if (text.startsWith(bareQtyPrefix, ignoreCase = true)) {
+			text.substring(bareQtyPrefix.length).trim()
+		} else {
+			text
+		}
+	}
+	return (listOf("$qty $unit homemade", storeBoughtSecond.groupValues[1].trim()) + restParts)
+		.joinToString(separator = " or ")
+}
+
+private fun repairCorruptedStoredAlternativeCluster(
+	cluster: List<ProcessedScrapedIngredient>,
+): String? {
+	if (cluster.size < 2) {
+		return null
+	}
+	val first = cluster.first().text.trim()
+	val second = cluster[1].text.trim()
+	val sharedPrefix = storedClusterQuantityPrefixRegex.find(first)?.value
+	val secondWithoutPrefix = if (sharedPrefix != null && second.startsWith(sharedPrefix, ignoreCase = true)) {
+		second.substring(sharedPrefix.length).trim()
+	} else {
+		second
+	}
+	return repairPackagingAlternativeCluster(cluster.size, first, secondWithoutPrefix)
+		?: repairInformalAlternativeCluster(cluster.size, first, second)
+		?: repairHomemadeAlternativeCluster(cluster, first, second)
+}
+
 fun rejoinStoredAlternativeClusters(
 	storedItems: List<ProcessedScrapedIngredient>,
 ): List<ProcessedScrapedIngredient> {
@@ -1427,12 +1655,17 @@ fun rejoinStoredAlternativeClusters(
 			result += storedItems[index]
 			index += 1
 		} else {
-			val joinedText = reconstructJoinedAlternativeClusterText(cluster)
-			val expanded = sanitizeIngredientLine(joinedText)?.let(::expandProcessedAlternatives)
-			if (expanded != null && expanded.size == 1) {
-				result += ProcessedScrapedIngredient(text = joinedText)
+			val repairedJoinedText = repairCorruptedStoredAlternativeCluster(cluster)
+			if (repairedJoinedText != null) {
+				result += ProcessedScrapedIngredient(text = repairedJoinedText)
 			} else {
-				result += cluster
+				val joinedText = reconstructJoinedAlternativeClusterText(cluster)
+				val expanded = sanitizeIngredientLine(joinedText)?.let(::expandProcessedAlternatives)
+				if (expanded != null && expanded.size == 1) {
+					result += ProcessedScrapedIngredient(text = joinedText)
+				} else {
+					result += cluster
+				}
 			}
 			index += cluster.size
 		}
