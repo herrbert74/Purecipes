@@ -81,17 +81,22 @@ internal object IngredientLineParser {
 	)
 
 	private val hyphenatedPackPattern = Regex(
-		"""^($QUANTITY_PATTERN)\s*-\s*(ounces?|oz|pounds?|lbs?)\b""",
+		"""^($QUANTITY_PATTERN)\s*-\s*(ounces?|oz|pounds?|lbs?)\b\.?""",
 		RegexOption.IGNORE_CASE,
 	)
 
 	private val rangedPackPattern = Regex(
-		"""^($QUANTITY_PATTERN)\s*-\s*to\s*($QUANTITY_PATTERN)\s*-?\s*(ounces?|oz|pounds?|lbs?)\b""",
+		"""^($QUANTITY_PATTERN)\s*-\s*to\s*($QUANTITY_PATTERN)\s*-?\s*(ounces?|oz|pounds?|lbs?)\b\.?""",
 		RegexOption.IGNORE_CASE,
 	)
 
 	private val spacedPackPattern = Regex(
-		"""^($QUANTITY_PATTERN)\s+(ounces?|oz|pounds?|lbs?)\b""",
+		"""^($QUANTITY_PATTERN)\s+(ounces?|oz|pounds?|lbs?)\b\.?""",
+		RegexOption.IGNORE_CASE,
+	)
+
+	private val optionalOrSmallCountSuffixPattern = Regex(
+		"""^or\s+(?:two|2|three|3|so)\b""",
 		RegexOption.IGNORE_CASE,
 	)
 
@@ -679,11 +684,14 @@ internal object IngredientLineParser {
 		val token = firstToken(value)
 		val unit = normalizeUnit(token)
 		return if (token.isNotEmpty() && unit != null && unit in IngredientLineParserLexicon.consumedUnits) {
-			unit to dropFirstWord(value)
+			unit to stripOptionalOrSmallCountSuffix(dropFirstWord(value))
 		} else {
 			null
 		}
 	}
+
+	private fun stripOptionalOrSmallCountSuffix(value: String): String =
+		optionalOrSmallCountSuffixPattern.replaceFirst(value.trim(), "").trim()
 
 	private fun stripLeadingOf(value: String): String {
 		val trimmed = value.trim()
@@ -775,6 +783,12 @@ internal object IngredientLineParser {
 			return withoutOrPack
 		}
 		var rest = dropFirstWord(withoutOrPack)
+		if (firstToken(rest).lowercase() == "or") {
+			val afterOr = dropFirstWord(rest)
+			if (firstToken(afterOr).lowercase() in IngredientLineParserLexicon.containerTokens) {
+				rest = dropFirstWord(afterOr)
+			}
+		}
 		if (firstToken(rest).lowercase() == "of") {
 			rest = dropFirstWord(rest)
 		}
@@ -1296,7 +1310,7 @@ internal object IngredientLineParser {
 		if (trimmed.isEmpty() || noun !in allCountNounTokens()) {
 			return null
 		}
-		var rest = dropFirstWord(trimmed)
+		var rest = stripOptionalOrSmallCountSuffix(dropFirstWord(trimmed))
 		if (firstToken(rest).lowercase() == "of") {
 			rest = dropFirstWord(rest)
 		}

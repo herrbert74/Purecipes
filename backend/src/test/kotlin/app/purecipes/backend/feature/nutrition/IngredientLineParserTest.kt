@@ -1525,4 +1525,31 @@ class IngredientLineParserTest {
 		val mozzThin = IngredientLineParser.parse("5 ounces pre sliced thin (see notes)")
 		NutritionNameNormalizer.forLookup(mozzThin.parsedName) shouldBe "mozzarella"
 	}
+
+	@Test
+	fun parseStripsTrailingDotsFromAbbreviatedPackUnitsAndHandlesOrTwoAndCanOrJar() {
+		val rigatoni = IngredientLineParser.parse("1 lb. mezze rigatoni")
+		rigatoni.quantity shouldBe BigDecimal.ONE
+		rigatoni.unit shouldBe "lb"
+		rigatoni.parsedName shouldBe "mezze rigatoni"
+		rigatoni.isMeasurable shouldBe true
+
+		val blackBeans = IngredientLineParser.parse("1 15.5-oz. can black beans, rinsed")
+		blackBeans.quantity shouldBe BigDecimal("15.5")
+		blackBeans.unit shouldBe "oz"
+		blackBeans.parsedName shouldBe "black beans, rinsed"
+		blackBeans.isMeasurable shouldBe true
+
+		val sesameOil = IngredientLineParser.parse("Splash or two sesame oil")
+		sesameOil.quantity shouldBe BigDecimal.ONE
+		sesameOil.unit shouldBe "tsp"
+		sesameOil.parsedName shouldBe "sesame oil"
+		sesameOil.isMeasurable shouldBe true
+
+		val butterBeans = IngredientLineParser.parse("400-500 g can or jar butter beans drained")
+		butterBeans.quantity shouldBe BigDecimal("400")
+		butterBeans.unit shouldBe "g"
+		butterBeans.parsedName shouldBe "butter beans drained"
+		butterBeans.isMeasurable shouldBe true
+	}
 }

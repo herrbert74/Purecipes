@@ -144,4 +144,50 @@ class IngredientLineParserTest {
 			"salt",
 		)
 	}
+
+	@Test
+	fun `keeps packaging and informal measurement alternatives on a single line`() {
+		IngredientLineParser.parseLine("400-500 g can or jar butter beans drained") shouldBe listOf(
+			RecipeIngredient(
+				text = "400-500 g can or jar butter beans drained",
+				requirement = IngredientRequirement.REQUIRED,
+			),
+		)
+		IngredientLineParser.parseLine("Splash or two sesame oil") shouldBe listOf(
+			RecipeIngredient(
+				text = "Splash or two sesame oil",
+				requirement = IngredientRequirement.REQUIRED,
+			),
+		)
+	}
+
+	@Test
+	fun `splits ingredient alternative after homemade or store-bought`() {
+		IngredientLineParser.parseLine(
+			"2 quarts homemade or store-bought low-sodium chicken stock or vegetable stock",
+		) shouldBe listOf(
+			RecipeIngredient(
+				text = "2 quarts homemade or store-bought low-sodium chicken stock",
+				requirement = IngredientRequirement.ALTERNATIVE,
+			),
+			RecipeIngredient(
+				text = "2 quarts vegetable stock",
+				requirement = IngredientRequirement.ALTERNATIVE,
+			),
+		)
+	}
+
+	@Test
+	fun `does not copy non-unit noun when expanding quantity prefix`() {
+		IngredientLineParser.parseLine("1 kaiser or bulkie roll (see notes)") shouldBe listOf(
+			RecipeIngredient(
+				text = "1 kaiser (see notes)",
+				requirement = IngredientRequirement.ALTERNATIVE,
+			),
+			RecipeIngredient(
+				text = "1 bulkie roll (see notes)",
+				requirement = IngredientRequirement.ALTERNATIVE,
+			),
+		)
+	}
 }
