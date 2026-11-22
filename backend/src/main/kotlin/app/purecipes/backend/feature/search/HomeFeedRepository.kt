@@ -88,14 +88,12 @@ class HomeFeedRepository(
 					connection = connection,
 					userId = userId,
 					window = window,
-					dietaryPreferences = dietaryPreferences,
 				)
 
 				HomeShelfId.RECENTLY_VIEWED -> recentlyViewedShelfPage(
 					connection = connection,
 					userId = userId,
 					window = window,
-					dietaryPreferences = dietaryPreferences,
 				)
 
 				HomeShelfId.HABIT -> habitShelfPage(
@@ -222,13 +220,12 @@ class HomeFeedRepository(
 				add(quick)
 			}
 			if (userId != null) {
-				val recentlyViewed = queryRecentlyViewedShelf(connection, userId, dietaryPreferences)
+				val recentlyViewed = queryRecentlyViewedShelf(connection, userId)
 				if (recentlyViewed.isNotEmpty()) {
 					add(
 						HomeShelf(
 							id = HomeShelfId.RECENTLY_VIEWED,
 							title = RECENTLY_VIEWED_SHELF_TITLE,
-							filters = SearchFilters(dietaryPreferences = dietaryPreferences),
 							recipes = recentlyViewed,
 						),
 					)
@@ -248,13 +245,12 @@ class HomeFeedRepository(
 						dietaryPreferences = dietaryPreferences,
 					),
 				)
-				val favorites = queryFavoriteShelf(connection, userId, dietaryPreferences)
+				val favorites = queryFavoriteShelf(connection, userId)
 				if (favorites.isNotEmpty()) {
 					add(
 						HomeShelf(
 							id = HomeShelfId.FAVORITES,
 							title = FAVORITES_SHELF_TITLE,
-							filters = SearchFilters(dietaryPreferences = dietaryPreferences),
 							recipes = favorites,
 						),
 					)
@@ -353,12 +349,9 @@ class HomeFeedRepository(
 	private fun queryFavoriteShelf(
 		connection: Connection,
 		userId: Long,
-		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 		limit: Int = HOME_SHELF_PAGE_SIZE,
 		offset: Int = 0,
 	): List<RecipeSummary> {
-		val extraConditions = dietaryConditions(dietaryPreferences)
-		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
 				r.appliances,
@@ -368,7 +361,6 @@ class HomeFeedRepository(
 			INNER JOIN favorites fav ON fav.recipe_id = r.id
 			WHERE fav.user_id = ?
 				AND (r.is_private = FALSE OR r.created_by_user_id = ?)
-				$extraWhere
 			ORDER BY fav.created_at DESC, r.id DESC
 			LIMIT ? OFFSET ?
 		""".trimIndent()
@@ -376,11 +368,8 @@ class HomeFeedRepository(
 			var paramIndex = 1
 			statement.setLong(paramIndex++, userId)
 			statement.setLong(paramIndex++, userId)
-			dietaryPreferences.forEach { pref ->
-				statement.setString(paramIndex++, pref.name)
-			}
 			statement.setInt(paramIndex++, limit)
-			statement.setInt(paramIndex++, offset)
+			statement.setInt(paramIndex, offset)
 			recipeRepository.readSearchRecipeCandidates(statement).map { candidate ->
 				candidate.summary.copy(isFavorite = true)
 			}
@@ -391,12 +380,9 @@ class HomeFeedRepository(
 	private fun queryRecentlyViewedShelf(
 		connection: Connection,
 		userId: Long,
-		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 		limit: Int = HOME_SHELF_PAGE_SIZE,
 		offset: Int = 0,
 	): List<RecipeSummary> {
-		val extraConditions = dietaryConditions(dietaryPreferences)
-		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT r.id, r.title, r.cuisine, r.image_url, r.total_time, r.measurement_system, r.is_private,
 				r.appliances,
@@ -410,7 +396,6 @@ class HomeFeedRepository(
 				GROUP BY recipe_id
 			) viewed ON viewed.recipe_id = r.id
 			WHERE (r.is_private = FALSE OR r.created_by_user_id = ?)
-				$extraWhere
 			ORDER BY viewed.viewed_at DESC, r.id DESC
 			LIMIT ? OFFSET ?
 		""".trimIndent()
@@ -419,11 +404,8 @@ class HomeFeedRepository(
 			statement.setLong(paramIndex++, userId)
 			statement.setString(paramIndex++, RecipeActivityEvent.OPEN.name)
 			statement.setLong(paramIndex++, userId)
-			dietaryPreferences.forEach { pref ->
-				statement.setString(paramIndex++, pref.name)
-			}
 			statement.setInt(paramIndex++, limit)
-			statement.setInt(paramIndex++, offset)
+			statement.setInt(paramIndex, offset)
 			recipeRepository.readSearchRecipeCandidates(statement).map { candidate -> candidate.summary }
 		}
 		return markFavorites(
@@ -634,16 +616,14 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		window: PageWindow,
-		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage {
-		val totalMatches = if (userId == null) 0 else countFavorites(connection, userId, dietaryPreferences)
+		val totalMatches = if (userId == null) 0 else countFavorites(connection, userId)
 		val recipes = if (userId == null) {
 			emptyList()
 		} else {
 			queryFavoriteShelf(
 				connection = connection,
 				userId = userId,
-				dietaryPreferences = dietaryPreferences,
 				limit = window.pageSize,
 				offset = window.offset,
 			)
@@ -660,16 +640,14 @@ class HomeFeedRepository(
 		connection: Connection,
 		userId: Long?,
 		window: PageWindow,
-		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): SearchResultsPage {
-		val totalMatches = if (userId == null) 0 else countRecentlyViewed(connection, userId, dietaryPreferences)
+		val totalMatches = if (userId == null) 0 else countRecentlyViewed(connection, userId)
 		val recipes = if (userId == null) {
 			emptyList()
 		} else {
 			queryRecentlyViewedShelf(
 				connection = connection,
 				userId = userId,
-				dietaryPreferences = dietaryPreferences,
 				limit = window.pageSize,
 				offset = window.offset,
 			)
@@ -735,10 +713,7 @@ class HomeFeedRepository(
 	private fun countRecentlyViewed(
 		connection: Connection,
 		userId: Long,
-		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): Int {
-		val extraConditions = dietaryConditions(dietaryPreferences)
-		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT COUNT(*)
 			FROM recipes r
@@ -749,16 +724,12 @@ class HomeFeedRepository(
 				GROUP BY recipe_id
 			) viewed ON viewed.recipe_id = r.id
 			WHERE (r.is_private = FALSE OR r.created_by_user_id = ?)
-				$extraWhere
 		""".trimIndent()
 		return connection.prepareStatement(sql).use { statement ->
 			var paramIndex = 1
 			statement.setLong(paramIndex++, userId)
 			statement.setString(paramIndex++, RecipeActivityEvent.OPEN.name)
-			statement.setLong(paramIndex++, userId)
-			dietaryPreferences.forEach { pref ->
-				statement.setString(paramIndex++, pref.name)
-			}
+			statement.setLong(paramIndex, userId)
 			statement.executeQuery().use { resultSet ->
 				if (resultSet.next()) resultSet.getInt(1) else 0
 			}
@@ -768,25 +739,18 @@ class HomeFeedRepository(
 	private fun countFavorites(
 		connection: Connection,
 		userId: Long,
-		dietaryPreferences: Set<DietaryPreference> = emptySet(),
 	): Int {
-		val extraConditions = dietaryConditions(dietaryPreferences)
-		val extraWhere = if (extraConditions.isEmpty()) "" else " AND " + extraConditions.joinToString(" AND ")
 		val sql = """
 			SELECT COUNT(*)
 			FROM recipes r
 			INNER JOIN favorites fav ON fav.recipe_id = r.id
 			WHERE fav.user_id = ?
 				AND (r.is_private = FALSE OR r.created_by_user_id = ?)
-				$extraWhere
 		""".trimIndent()
 		return connection.prepareStatement(sql).use { statement ->
 			var paramIndex = 1
 			statement.setLong(paramIndex++, userId)
-			statement.setLong(paramIndex++, userId)
-			dietaryPreferences.forEach { pref ->
-				statement.setString(paramIndex++, pref.name)
-			}
+			statement.setLong(paramIndex, userId)
 			statement.executeQuery().use { resultSet ->
 				if (resultSet.next()) resultSet.getInt(1) else 0
 			}

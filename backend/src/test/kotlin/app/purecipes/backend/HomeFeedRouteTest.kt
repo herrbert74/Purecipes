@@ -1337,9 +1337,14 @@ class HomeFeedRouteTest {
 		)
 
 		val authenticatedFeed = homeFeed(localHour = BREAKFAST_HOUR, accessToken = "session-token")
+		val unfilteredShelfIds = setOf(HomeShelfId.FAVORITES, HomeShelfId.RECENTLY_VIEWED)
 		authenticatedFeed.shelves.forEach { shelf ->
-			shelf.recipes.all { it.title != "Meat Breakfast" } shouldBe true
-			shelf.filters.dietaryPreferences shouldBe setOf(DietaryPreference.VEGAN)
+			if (shelf.id in unfilteredShelfIds) {
+				shelf.filters.dietaryPreferences shouldBe emptySet()
+			} else {
+				shelf.recipes.all { it.title != "Meat Breakfast" } shouldBe true
+				shelf.filters.dietaryPreferences shouldBe setOf(DietaryPreference.VEGAN)
+			}
 		}
 		authenticatedFeed.shelf(HomeShelfId.NEW).recipes.map { it.title } shouldContainExactly listOf(
 			"Vegan Breakfast 4",
@@ -1349,9 +1354,11 @@ class HomeFeedRouteTest {
 		)
 		authenticatedFeed.shelf(HomeShelfId.FAVORITES).recipes.map { it.title } shouldContainExactly listOf(
 			"Vegan Breakfast 2",
+			"Meat Breakfast",
 			"Vegan Breakfast 1",
 		)
 		authenticatedFeed.shelf(HomeShelfId.RECENTLY_VIEWED).recipes.map { it.title } shouldContainExactly listOf(
+			"Meat Breakfast",
 			"Vegan Breakfast 1",
 		)
 		authenticatedFeed.shelf(HomeShelfId.COLLECTION).recipes.map { it.title } shouldContainExactly listOf(
@@ -1434,16 +1441,18 @@ class HomeFeedRouteTest {
 			unauthenticatedFavorites.items shouldBe emptyList()
 
 			val authenticatedFavorites = shelfPage(HomeShelfId.FAVORITES, pageNumber = 1, accessToken = "session-token")
-			authenticatedFavorites.totalMatches shouldBe 2
+			authenticatedFavorites.totalMatches shouldBe 3
 			authenticatedFavorites.items.map { it.title } shouldContainExactly listOf(
 				"Vegan Breakfast 2",
+				"Meat Breakfast",
 				"Vegan Breakfast 1",
 			)
 
 			val authenticatedRecent =
 				shelfPage(HomeShelfId.RECENTLY_VIEWED, pageNumber = 1, accessToken = "session-token")
-			authenticatedRecent.totalMatches shouldBe 1
+			authenticatedRecent.totalMatches shouldBe 2
 			authenticatedRecent.items.map { it.title } shouldContainExactly listOf(
+				"Meat Breakfast",
 				"Vegan Breakfast 1",
 			)
 
