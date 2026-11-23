@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +29,7 @@ import app.purecipes.shared.ui.component.molecule.EmptyStateContent
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.organism.RecipeCardSkeletonGrid
 import app.purecipes.shared.ui.component.paging.AdaptiveGridDefaults
+import app.purecipes.shared.ui.component.paging.rememberLazyGridSelectedItemReveal
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -88,6 +89,7 @@ internal fun MyRecipesContent(
 					)
 				}
 				val gridState = rememberLazyGridState()
+				val revealSelectedItem = rememberLazyGridSelectedItemReveal(gridState)
 				Box(modifier = Modifier.weight(1f)) {
 					LazyVerticalGrid(
 						columns = GridCells.Adaptive(AdaptiveGridDefaults.MinItemWidth),
@@ -113,12 +115,15 @@ internal fun MyRecipesContent(
 								color = PurecipesTheme.colorScheme.onSurfaceVariant,
 							)
 						}
-						items(recipes, key = RecipeSummary::id) { recipe ->
+						itemsIndexed(recipes, key = { _, recipe -> recipe.id }) { index, recipe ->
 							val transitionKey = "myrecipes-${recipe.id}"
 							RecipeCard(
 								recipe = recipe,
 								transitionKey = transitionKey,
-								onClick = { onRecipeSelect(recipe.id, transitionKey) },
+								onClick = {
+									revealSelectedItem(recipe.id, index + 1)
+									onRecipeSelect(recipe.id, transitionKey)
+								},
 								onEditClick = { onEditRecipe(recipe.id) },
 								onDeleteClick = { pendingDeleteRecipe = recipe },
 							)

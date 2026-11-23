@@ -4,6 +4,7 @@
 	<string name="clear_all">Clear all</string>
 	<string name="clear_all_description">Clear all filters</string>
 	<string name="clear_search_text">Clear search text</string>
+	<string name="close">Close</string>
 	<string name="close_nutrition_facts">Close nutrition facts</string>
 	<string name="collapse_section">Collapse %1$s</string>
 	<string name="collapse_step">Collapse step %1$d</string>

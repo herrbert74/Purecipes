@@ -2,6 +2,7 @@ package app.purecipes.feature.main.ui
 
 import androidx.compose.material3.adaptive.Posture
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.PaneExpansionAnchor
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import app.purecipes.feature.home.ui.navigation.HomeDestination
@@ -45,6 +46,15 @@ class MainListDetailDirectiveTest {
 				CookbookDetailDestination(cookbookId = 2, name = "Weeknight"),
 			),
 		) shouldBe true
+	}
+
+	@Test
+	fun mainListDetailAnchorsUseProportionalSplits() {
+		mainListDetailAnchors() shouldBe listOf(
+			PaneExpansionAnchor.Proportion(0.35f),
+			PaneExpansionAnchor.Proportion(0.5f),
+			PaneExpansionAnchor.Proportion(0.65f),
+		)
 	}
 
 	private fun directive(widthDp: Int, heightDp: Int) = mainListDetailDirective(

@@ -33,6 +33,7 @@ import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.organism.RecipeCardDefaults
 import app.purecipes.shared.ui.component.paging.PaginatedLazyRow
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.paging.rememberLazyListSelectedItemReveal
 import app.purecipes.shared.ui.preview.PurecipesPreviewScaffold
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -59,6 +60,7 @@ internal fun HomeShelfRow(
 ) {
 	val labelColor = ContainerTint.forIndex(shelfIndex).colorFamily().color
 	val shelfKey = shelf.shelfKey()
+	val revealSelectedItem = rememberLazyListSelectedItemReveal(listState)
 	Column(
 		modifier = modifier.fillMaxWidth(),
 		verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.s),
@@ -117,7 +119,10 @@ internal fun HomeShelfRow(
 						val transitionKey = "home-${shelf.shelfKey()}-${entry.item.id}"
 						RecipeCard(
 							recipe = entry.item,
-							onClick = { onRecipeSelect(entry.item.id, transitionKey) },
+							onClick = {
+								revealSelectedItem(entry.item.id, index)
+								onRecipeSelect(entry.item.id, transitionKey)
+							},
 							transitionKey = transitionKey,
 							layout = RecipeCardDefaults.Layout.SHELF,
 						)

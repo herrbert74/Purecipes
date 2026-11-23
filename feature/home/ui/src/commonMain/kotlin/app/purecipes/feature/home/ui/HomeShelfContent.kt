@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -34,6 +35,7 @@ import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContai
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.paging.rememberLazyGridSelectedItemReveal
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,52 +96,60 @@ internal fun HomeShelfContent(
 				CircularProgressIndicator()
 			}
 
-			else -> PaginatedLazyVerticalGrid(
-				paginationState = paginationState,
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding),
-				requestInitialPageAutomatically = false,
-				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-				contentPadding = PaddingValues(
-					start = PurecipesTheme.space.m,
-					top = PurecipesTheme.space.m,
-					end = PurecipesTheme.space.m,
-					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
-				),
-				firstPageEmptyIndicator = {
-					Box(
-						modifier = Modifier
-							.fillMaxSize()
-							.padding(PurecipesTheme.space.l),
-						contentAlignment = Alignment.Center,
-					) {
-						Text(
-							text = "No recipes",
-							style = PurecipesTheme.typography.bodyMedium,
-							color = PurecipesTheme.colorScheme.onSurfaceVariant,
-							textAlign = TextAlign.Center,
-						)
-					}
-				},
-			) {
-				items(
-					count = recipes.size,
-					key = { index -> recipes[index].id },
-				) { index ->
-					val recipe = recipes[index]
-					InlineListBannerAdSlot(
-						contentIndex = index,
-						contentCount = recipes.size,
-						viewModel = bannerAdViewModel,
-					) {
-						val transitionKey = "shelf-${title.lowercase().replace(' ', '-')}-${recipe.id}"
-						RecipeCard(
-							recipe = recipe,
-							transitionKey = transitionKey,
-							onClick = { onRecipeSelect(recipe.id, transitionKey) },
-						)
+			else -> {
+				val gridState = rememberLazyGridState()
+				val revealSelectedItem = rememberLazyGridSelectedItemReveal(gridState)
+				PaginatedLazyVerticalGrid(
+					paginationState = paginationState,
+					state = gridState,
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(innerPadding),
+					requestInitialPageAutomatically = false,
+					verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+					horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+					contentPadding = PaddingValues(
+						start = PurecipesTheme.space.m,
+						top = PurecipesTheme.space.m,
+						end = PurecipesTheme.space.m,
+						bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+					),
+					firstPageEmptyIndicator = {
+						Box(
+							modifier = Modifier
+								.fillMaxSize()
+								.padding(PurecipesTheme.space.l),
+							contentAlignment = Alignment.Center,
+						) {
+							Text(
+								text = "No recipes",
+								style = PurecipesTheme.typography.bodyMedium,
+								color = PurecipesTheme.colorScheme.onSurfaceVariant,
+								textAlign = TextAlign.Center,
+							)
+						}
+					},
+				) {
+					items(
+						count = recipes.size,
+						key = { index -> recipes[index].id },
+					) { index ->
+						val recipe = recipes[index]
+						InlineListBannerAdSlot(
+							contentIndex = index,
+							contentCount = recipes.size,
+							viewModel = bannerAdViewModel,
+						) {
+							val transitionKey = "shelf-${title.lowercase().replace(' ', '-')}-${recipe.id}"
+							RecipeCard(
+								recipe = recipe,
+								transitionKey = transitionKey,
+								onClick = {
+									revealSelectedItem(recipe.id, index)
+									onRecipeSelect(recipe.id, transitionKey)
+								},
+							)
+						}
 					}
 				}
 			}

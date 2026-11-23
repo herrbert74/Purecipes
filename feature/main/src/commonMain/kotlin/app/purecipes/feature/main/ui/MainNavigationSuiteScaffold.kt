@@ -42,9 +42,17 @@ internal fun MainNavigationSuiteScaffold(
 	isNavBarVisible: Boolean = true,
 	content: @Composable () -> Unit,
 ) {
+	val adaptiveInfo = currentWindowAdaptiveInfo()
+	val navSuiteType = NavigationSuiteScaffoldDefaults.navigationSuiteType(adaptiveInfo)
+	val isBottomBar = isBottomBarNavigationSuite(navSuiteType)
 	val scaffoldState = rememberNavigationSuiteScaffoldState()
 	val scope = rememberCoroutineScope()
-	val canChangeVisibility = rememberUpdatedState(isNavBarVisible)
+	val canChangeVisibility = rememberUpdatedState(
+		shouldHideNavigationSuiteOnScroll(
+			isNavBarVisible = isNavBarVisible,
+			navSuiteType = navSuiteType,
+		),
+	)
 	val reducedMotion = rememberUpdatedState(LocalReducedMotion.current)
 	val scrollConnection = remember(scaffoldState, scope) {
 		TabBarScrollConnection(
@@ -54,14 +62,9 @@ internal fun MainNavigationSuiteScaffold(
 			isReducedMotion = { reducedMotion.value },
 		)
 	}
-	LaunchedEffect(isNavBarVisible, selectedTab.stackId) {
+	LaunchedEffect(isNavBarVisible, isBottomBar, selectedTab.stackId) {
 		scrollConnection.reset(visible = isNavBarVisible)
 	}
-	val adaptiveInfo = currentWindowAdaptiveInfo()
-	val navSuiteType = NavigationSuiteScaffoldDefaults.navigationSuiteType(adaptiveInfo)
-	val isBottomBar = navSuiteType == NavigationSuiteType.ShortNavigationBarCompact ||
-		navSuiteType == NavigationSuiteType.ShortNavigationBarMedium ||
-		navSuiteType == NavigationSuiteType.NavigationBar
 	val bottomBarPadding = if (isNavBarVisible && isBottomBar) 80.dp else 0.dp
 	CompositionLocalProvider(
 		LocalPurecipesSpace provides PurecipesTheme.space.copy(bottomBar = bottomBarPadding),
@@ -88,13 +91,30 @@ internal fun MainNavigationSuiteScaffold(
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
-					.nestedScroll(scrollConnection),
+					.then(
+						if (isBottomBar) {
+							Modifier.nestedScroll(scrollConnection)
+						} else {
+							Modifier
+						},
+					),
 			) {
 				content()
 			}
 		}
 	}
 }
+
+internal fun isBottomBarNavigationSuite(navSuiteType: NavigationSuiteType): Boolean {
+	return navSuiteType == NavigationSuiteType.ShortNavigationBarCompact ||
+		navSuiteType == NavigationSuiteType.ShortNavigationBarMedium ||
+		navSuiteType == NavigationSuiteType.NavigationBar
+}
+
+internal fun shouldHideNavigationSuiteOnScroll(
+	isNavBarVisible: Boolean,
+	navSuiteType: NavigationSuiteType,
+): Boolean = isNavBarVisible && isBottomBarNavigationSuite(navSuiteType)
 
 private class TabBarScrollConnection(
 	private val scope: CoroutineScope,

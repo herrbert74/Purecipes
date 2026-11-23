@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.CloseNavigationButton
 import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -76,12 +77,18 @@ internal fun RecipeDetailsTopBar(
 				}
 			},
 			navigationIcon = {
+				val buttonModifier = Modifier
+					.clip(CircleShape)
+					.background(PurecipesTheme.colorScheme.surface.copy(alpha = buttonAlpha))
 				if (showBackNavigation) {
 					BackNavigationButton(
 						onBack = onBack,
-						modifier = Modifier
-							.clip(CircleShape)
-							.background(PurecipesTheme.colorScheme.surface.copy(alpha = buttonAlpha)),
+						modifier = buttonModifier,
+					)
+				} else {
+					CloseNavigationButton(
+						onClose = onBack,
+						modifier = buttonModifier,
 					)
 				}
 			},
