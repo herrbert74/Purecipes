@@ -13,8 +13,10 @@
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": ["*"],
-      "allowedVersions": "!/(SNAPSHOT|\\+dev|\\+snapshot)/i"
+      "allowedVersions": "!/(SNAPSHOT|\\+dev|\\+snapshot)/i",
+      "matchPackageNames": [
+        "*"
+      ]
     },
     {
       "description": "Java is pinned to JDK 25 LTS; bump manually on the next LTS",
@@ -30,8 +32,10 @@
       "groupName": "All Minor & Patch Updates",
       "groupSlug": "all-minor-patch",
       "matchUpdateTypes": ["minor", "patch"],
-      "matchPackagePatterns": ["*"],
-      "labels": ["renovate"]
+      "labels": ["renovate"],
+      "matchPackageNames": [
+        "*"
+      ]
     },
     {
       "description": "iOS Firebase SwiftPM version follows kmpnotifier-push-firebase; bump via firebaseIosSdk in libs.versions.toml when kmpnotifier updates",
