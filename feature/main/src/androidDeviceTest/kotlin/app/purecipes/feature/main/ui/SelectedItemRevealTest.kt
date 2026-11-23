@@ -5,16 +5,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.Posture
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -26,12 +31,13 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.window.core.layout.WindowSizeClass
 import app.purecipes.feature.home.ui.HomeListDetailPlaceholder
 import app.purecipes.feature.home.ui.HomeScreen
 import app.purecipes.feature.home.ui.navigation.HomeDestination
@@ -60,11 +66,13 @@ class SelectedItemRevealTest {
 
 	@Test
 	fun lazyRowScrollsRightEdgeItemIntoViewWhenContainerShrinks() = runComposeUiTest {
-		lateinit var listState: androidx.compose.foundation.lazy.LazyListState
+		lateinit var listState: LazyListState
 		setContent {
 			PurecipesTheme {
 				var shrunk by remember { mutableStateOf(false) }
-				val width by animateDpAsState(targetValue = if (shrunk) 420.dp else 720.dp)
+				val width by animateDpAsState(
+					targetValue = if (shrunk) ROW_SHRUNK_WIDTH else ROW_INITIAL_WIDTH,
+				)
 				listState = rememberLazyListState()
 				val revealSelectedItem = rememberLazyListSelectedItemReveal(listState)
 				LazyRow(
@@ -76,7 +84,7 @@ class SelectedItemRevealTest {
 					items(count = 10, key = { it }) { index ->
 						Box(
 							modifier = Modifier
-								.size(width = 180.dp, height = 160.dp)
+								.size(width = 80.dp, height = 100.dp)
 								.clickable {
 									revealSelectedItem(index, index)
 									shrunk = true
@@ -89,13 +97,13 @@ class SelectedItemRevealTest {
 			}
 		}
 
-		onNodeWithText("Shelf item 3").performClick()
+		onNodeWithText("Shelf item 2").performClick()
 		waitForIdle()
 
 		val layoutInfo = listState.layoutInfo
 		val visibleEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
-		val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == 3 }
-		assertNotNull("Expected selected shelf item 3 to remain visible", item)
+		val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == 2 }
+		assertNotNull("Expected selected shelf item 2 to remain visible", item)
 		val visibleItem = requireNotNull(item)
 		assertTrue("Expected item start >= 0 but was ${visibleItem.offset}", visibleItem.offset >= 0)
 		assertTrue(
@@ -106,27 +114,29 @@ class SelectedItemRevealTest {
 
 	@Test
 	fun lazyGridScrollsBottomRightItemIntoViewWhenColumnsDrop() = runComposeUiTest {
-		lateinit var gridState: androidx.compose.foundation.lazy.grid.LazyGridState
+		lateinit var gridState: LazyGridState
 		setContent {
 			PurecipesTheme {
 				var shrunk by remember { mutableStateOf(false) }
-				val width by animateDpAsState(targetValue = if (shrunk) 440.dp else 680.dp)
+				val width by animateDpAsState(
+					targetValue = if (shrunk) GRID_SHRUNK_WIDTH else GRID_INITIAL_WIDTH,
+				)
 				gridState = rememberLazyGridState()
 				val revealSelectedItem = rememberLazyGridSelectedItemReveal(gridState)
 				LazyVerticalGrid(
-					columns = GridCells.Adaptive(200.dp),
+					columns = GridCells.Adaptive(85.dp),
 					state = gridState,
 					modifier = Modifier
 						.width(width)
-						.height(480.dp),
-					contentPadding = PaddingValues(16.dp),
-					verticalArrangement = Arrangement.spacedBy(12.dp),
-					horizontalArrangement = Arrangement.spacedBy(12.dp),
+						.height(240.dp),
+					contentPadding = PaddingValues(12.dp),
+					verticalArrangement = Arrangement.spacedBy(8.dp),
+					horizontalArrangement = Arrangement.spacedBy(8.dp),
 				) {
-					items(count = 15, key = { it }) { index ->
+					items(count = 12, key = { it }) { index ->
 						Box(
 							modifier = Modifier
-								.height(140.dp)
+								.height(70.dp)
 								.clickable {
 									revealSelectedItem(index, index)
 									shrunk = true
@@ -139,13 +149,13 @@ class SelectedItemRevealTest {
 			}
 		}
 
-		onNodeWithText("Grid item 8").performClick()
+		onNodeWithText("Grid item 5").performClick()
 		waitForIdle()
 
 		val layoutInfo = gridState.layoutInfo
 		val visibleEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
-		val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == 8 }
-		assertNotNull("Expected selected grid item 8 to remain visible", item)
+		val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == 5 }
+		assertNotNull("Expected selected grid item 5 to remain visible", item)
 		val visibleItem = requireNotNull(item)
 		assertTrue("Expected item top >= 0 but was ${visibleItem.offset.y}", visibleItem.offset.y >= 0)
 		assertTrue(
@@ -156,7 +166,7 @@ class SelectedItemRevealTest {
 
 	@Test
 	fun homeScreenShelfScrollsSelectedRightEdgeRecipeIntoViewInListDetail() = runComposeUiTest {
-		val recipes = (1..10).map { index ->
+		val recipes = (1..6).map { index ->
 			RecipeSummary(
 				id = index,
 				title = "Home Shelf Recipe $index",
@@ -180,52 +190,66 @@ class SelectedItemRevealTest {
 				),
 			),
 		)
+		val largeWindowAdaptiveInfo = WindowAdaptiveInfo(
+			windowSizeClass = WindowSizeClass(
+				minWidthDp = WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND,
+				minHeightDp = TEST_WINDOW_HEIGHT_DP,
+			),
+			windowPosture = Posture(),
+		)
 		setContent {
 			PurecipesTheme {
 				val backStack = remember { mutableStateListOf<NavKey>(HomeDestination) }
 				val listDetailSceneStrategy = rememberMainListDetailSceneStrategy(
 					hasDetailPane = showsDetailPane(backStack),
+					windowAdaptiveInfo = largeWindowAdaptiveInfo,
 				)
-				NavDisplay(
-					backStack = backStack,
-					modifier = Modifier.fillMaxSize(),
-					sceneStrategies = listOf(listDetailSceneStrategy),
-					entryProvider = entryProvider {
-						entry<HomeDestination>(
-							metadata = ListDetailSceneStrategy.listPane(
-								detailPlaceholder = { HomeListDetailPlaceholder() },
-							),
-						) {
-							HomeScreen(
-								modifier = Modifier.fillMaxSize(),
-								onRecipeSelect = { recipeId, _ ->
-									backStack.add(RecipeDetailsDestination(recipeId = recipeId))
-								},
-								viewModel = homeViewModel,
-							)
-						}
-						entry<RecipeDetailsDestination>(
-							metadata = ListDetailSceneStrategy.detailPane(),
-						) { destination ->
-							Text(text = "Detail for ${destination.recipeId}")
-						}
-					},
-				)
+				Box(
+					modifier = Modifier
+						.width(HOME_LIST_DETAIL_CONTAINER_WIDTH)
+						.fillMaxHeight(),
+				) {
+					NavDisplay(
+						backStack = backStack,
+						modifier = Modifier.fillMaxSize(),
+						sceneStrategies = listOf(listDetailSceneStrategy),
+						entryProvider = entryProvider {
+							entry<HomeDestination>(
+								metadata = ListDetailSceneStrategy.listPane(
+									detailPlaceholder = { HomeListDetailPlaceholder() },
+								),
+							) {
+								HomeScreen(
+									modifier = Modifier.fillMaxSize(),
+									onRecipeSelect = { recipeId, _ ->
+										backStack.add(RecipeDetailsDestination(recipeId = recipeId))
+									},
+									viewModel = homeViewModel,
+								)
+							}
+							entry<RecipeDetailsDestination>(
+								metadata = ListDetailSceneStrategy.detailPane(),
+							) { destination ->
+								Text(text = "Detail for ${destination.recipeId}")
+							}
+						},
+					)
+				}
 			}
 		}
 
-		waitUntil(timeoutMillis = 5_000L) {
+		waitUntil(timeoutMillis = WAIT_TIMEOUT_MS) {
 			runCatching {
-				onNodeWithText("Home Shelf Recipe 5").assertIsDisplayed()
+				onNodeWithText("Home Shelf Recipe 2").assertIsDisplayed()
 				true
 			}.getOrDefault(false)
 		}
 
-		onNodeWithText("Home Shelf Recipe 5").performClick()
+		onNodeWithText("Home Shelf Recipe 2").performClick()
 		waitForIdle()
-		waitUntil(timeoutMillis = 5_000L) {
+		waitUntil(timeoutMillis = WAIT_TIMEOUT_MS) {
 			runCatching {
-				onNodeWithText("Detail for 5").assertIsDisplayed()
+				onNodeWithText("Detail for 2").assertIsDisplayed()
 				true
 			}.getOrDefault(false)
 		}
@@ -243,4 +267,11 @@ class SelectedItemRevealTest {
 	}
 }
 
+private val ROW_INITIAL_WIDTH = 320.dp
+private val ROW_SHRUNK_WIDTH = 180.dp
+private val GRID_INITIAL_WIDTH = 320.dp
+private val GRID_SHRUNK_WIDTH = 210.dp
+private val HOME_LIST_DETAIL_CONTAINER_WIDTH = 400.dp
+private const val TEST_WINDOW_HEIGHT_DP = 800
+private const val WAIT_TIMEOUT_MS = 5_000L
 private const val REVEAL_SETTLE_WAIT_MS = 1_200L

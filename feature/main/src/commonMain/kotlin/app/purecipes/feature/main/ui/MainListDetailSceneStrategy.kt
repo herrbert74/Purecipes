@@ -41,8 +41,8 @@ fun rememberMainListDetailSceneStrategy(
 	hasDetailPane: Boolean = false,
 	preferredDetailAnchorIndex: Int = DEFAULT_DETAIL_ANCHOR_INDEX,
 	onPreferredDetailAnchorIndexChange: (Int) -> Unit = {},
+	windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfoV2(),
 ): ListDetailSceneStrategy<NavKey> {
-	val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
 	val widthDp = windowAdaptiveInfo.windowSizeClass.minWidthDp
 	val directive = remember(widthDp) {
 		mainListDetailDirective(windowAdaptiveInfo)
