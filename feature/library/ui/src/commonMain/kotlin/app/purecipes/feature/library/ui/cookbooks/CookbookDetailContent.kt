@@ -31,6 +31,7 @@ import app.purecipes.feature.ads.ui.InlineListBannerAdSlot
 import app.purecipes.feature.sharing.ui.ShareIconButton
 import app.purecipes.shared.domain.model.RecipeSummary
 import app.purecipes.shared.ui.component.atom.BackNavigationButton
+import app.purecipes.shared.ui.component.atom.CloseNavigationButton
 import app.purecipes.shared.ui.component.atom.ErrorText
 import app.purecipes.shared.ui.component.atom.headingSemantics
 import app.purecipes.shared.ui.component.atom.includeInParentAccessibilityContainer
@@ -96,6 +97,8 @@ internal fun CookbookDetailContent(
 				navigationIcon = {
 					if (showBackNavigation) {
 						BackNavigationButton(onBack = onBack)
+					} else {
+						CloseNavigationButton(onClose = onBack)
 					}
 				},
 				actions = {

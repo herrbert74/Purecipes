@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import app.purecipes.shared.ui.component.atom.PurecipesTextButton
 import app.purecipes.shared.ui.component.molecule.EmptyStateContent
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.paging.rememberLazyGridSelectedItemReveal
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -78,8 +80,11 @@ internal fun CookbooksTabContent(
 					.fillMaxWidth()
 					.padding(horizontal = PurecipesTheme.space.m, vertical = PurecipesTheme.space.s),
 			)
+			val gridState = rememberLazyGridState()
+			val revealSelectedItem = rememberLazyGridSelectedItemReveal(gridState)
 			PaginatedLazyVerticalGrid(
 				paginationState = paginationState,
+				state = gridState,
 				modifier = Modifier.weight(1f),
 				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
 				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
@@ -97,7 +102,10 @@ internal fun CookbooksTabContent(
 						onRequestCookbookCover = { onRequestCookbookCover(cookbook.id) },
 						isDeletingCookbook = isDeletingCookbook,
 						onDeleteCookbook = { onDeleteCookbook(cookbook) {} },
-						onClick = { onCookbookClick(cookbook) },
+						onClick = {
+							revealSelectedItem(cookbook.id, index)
+							onCookbookClick(cookbook)
+						},
 					)
 				}
 			}

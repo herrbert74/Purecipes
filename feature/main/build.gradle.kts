@@ -70,6 +70,7 @@ kotlin {
 				implementation(libs.jetbrains.composeMaterial3AdaptiveNavigation3)
 				implementation(libs.jetbrains.composeMaterial3AdaptiveNavigationSuite)
 				implementation(libs.kotlinx.serializationJson)
+				implementation(libs.multiplatformSettings.noargs)
 			}
 		}
 		commonTest {

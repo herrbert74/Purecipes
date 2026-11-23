@@ -12,8 +12,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
@@ -113,6 +115,11 @@ private fun MainScreenContent(
 				)
 
 				val isNavBarVisible = tabBackStack.lastOrNull() !is RecipeCookingDestination
+				val paneSplitPreferences = remember { ListDetailPaneSplitPreferences() }
+				val anchorCount = remember { mainListDetailAnchors().size }
+				var preferredDetailAnchorIndex by rememberSaveable {
+					mutableIntStateOf(paneSplitPreferences.preferredDetailAnchorIndex(anchorCount))
+				}
 				MainNavigationSuiteScaffold(
 					selectedTab = viewModel.selectedTab,
 					onTabSelect = viewModel::onTabSelected,
@@ -121,6 +128,11 @@ private fun MainScreenContent(
 					key(viewModel.selectedTab.stackId) {
 						val listDetailSceneStrategy = rememberMainListDetailSceneStrategy(
 							hasDetailPane = showsDetailPane(tabBackStack),
+							preferredDetailAnchorIndex = preferredDetailAnchorIndex,
+							onPreferredDetailAnchorIndexChange = { index ->
+								preferredDetailAnchorIndex = index
+								paneSplitPreferences.setPreferredDetailAnchorIndex(index, anchorCount)
+							},
 						)
 						val reducedMotion = LocalReducedMotion.current
 						SharedTransitionLayout {

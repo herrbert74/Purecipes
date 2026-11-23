@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -50,6 +51,7 @@ import app.purecipes.shared.ui.component.molecule.RecipeDetailsSection
 import app.purecipes.shared.ui.component.organism.NUTRITION_FACTS_BUTTON_TAG
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -142,6 +144,26 @@ class RecipeDetailsScreenTest {
 		onNodeWithTag(RECIPE_DETAILS_CONTENT_TAG)
 			.performScrollToNode(hasTestTag(NUTRITION_FACTS_BUTTON_TAG))
 		onNodeWithTag(NUTRITION_FACTS_BUTTON_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	@UiTestEssential
+	fun recipeDetailsTopBarShowsCloseButtonInTwoPaneMode() = runRecompositionTrackingUiTest {
+		var closed = false
+		setTrackedContent {
+			PurecipesTheme {
+				RecipeDetailsTopBar(
+					title = "Roasted Carrots",
+					showBackNavigation = false,
+					isPrivate = false,
+					onBack = { closed = true },
+					onShare = {},
+				)
+			}
+		}
+
+		onNodeWithContentDescription("Close").assertIsDisplayed().performClick()
+		assertTrue(closed)
 	}
 }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -20,6 +21,7 @@ import app.purecipes.shared.ui.component.molecule.EmptyStateContent
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.paging.rememberLazyGridSelectedItemReveal
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
 
@@ -51,38 +53,46 @@ internal fun FavoritesTabContent(
 			modifier = modifier,
 		)
 
-		else -> PaginatedLazyVerticalGrid(
-			paginationState = paginationState,
-			modifier = modifier.fillMaxSize(),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-			contentPadding = PaddingValues(
-				start = PurecipesTheme.space.m,
-				top = PurecipesTheme.space.m,
-				end = PurecipesTheme.space.m,
-				bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
-			),
-		) {
-			item(span = { GridItemSpan(maxLineSpan) }) {
-				Text(
-					text = "$totalMatches saved recipes",
-					style = PurecipesTheme.typography.labelMedium,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
-			items(recipes.size, key = { recipes[it].id }) { index ->
-				val recipe = recipes[index]
-				val transitionKey = "favorites-${recipe.id}"
-				InlineListBannerAdSlot(
-					contentIndex = index,
-					contentCount = recipes.size,
-					viewModel = bannerAdViewModel,
-				) {
-					RecipeCard(
-						recipe = recipe,
-						transitionKey = transitionKey,
-						onClick = { onRecipeSelect(recipe.id, transitionKey) },
+		else -> {
+			val gridState = rememberLazyGridState()
+			val revealSelectedItem = rememberLazyGridSelectedItemReveal(gridState)
+			PaginatedLazyVerticalGrid(
+				paginationState = paginationState,
+				state = gridState,
+				modifier = modifier.fillMaxSize(),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				contentPadding = PaddingValues(
+					start = PurecipesTheme.space.m,
+					top = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+				),
+			) {
+				item(span = { GridItemSpan(maxLineSpan) }) {
+					Text(
+						text = "$totalMatches saved recipes",
+						style = PurecipesTheme.typography.labelMedium,
+						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
+				}
+				items(recipes.size, key = { recipes[it].id }) { index ->
+					val recipe = recipes[index]
+					val transitionKey = "favorites-${recipe.id}"
+					InlineListBannerAdSlot(
+						contentIndex = index,
+						contentCount = recipes.size,
+						viewModel = bannerAdViewModel,
+					) {
+						RecipeCard(
+							recipe = recipe,
+							transitionKey = transitionKey,
+							onClick = {
+								revealSelectedItem(recipe.id, index + 1)
+								onRecipeSelect(recipe.id, transitionKey)
+							},
+						)
+					}
 				}
 			}
 		}

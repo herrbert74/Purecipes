@@ -36,6 +36,7 @@ import app.purecipes.shared.ui.component.molecule.browseTiles
 import app.purecipes.shared.ui.component.organism.RecipeCard
 import app.purecipes.shared.ui.component.paging.PaginatedLazyVerticalGrid
 import app.purecipes.shared.ui.component.paging.PaginationState
+import app.purecipes.shared.ui.component.paging.rememberLazyGridSelectedItemReveal
 import app.purecipes.shared.ui.component.staggeredAppear
 import app.purecipes.shared.ui.icon.AppIcons
 import app.purecipes.shared.ui.theme.PurecipesTheme
@@ -85,78 +86,88 @@ internal fun SearchResultsContent(
 			},
 		)
 
-		else -> PaginatedLazyVerticalGrid(
-			paginationState = paginationState,
-			requestInitialPageAutomatically = false,
-			state = resultsListState,
-			modifier = modifier.fillMaxWidth(),
-			lazyModifier = Modifier
-				.testTag(SEARCH_RESULTS_LIST_TAG)
-				.includeInParentAccessibilityContainer(),
-			verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-			horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
-			contentPadding = PaddingValues(
-				start = PurecipesTheme.space.m,
-				end = PurecipesTheme.space.m,
-				bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
-			),
-		) {
-			if (searchInstructions != null) {
+		else -> {
+			val revealSelectedItem = rememberLazyGridSelectedItemReveal(resultsListState)
+			val headerItemCount = (if (searchInstructions != null) 1 else 0) +
+				(if (searchFilterNote != null) 1 else 0) +
+				(if (browseTiles.isNotEmpty()) 1 else 0) +
+				1
+			PaginatedLazyVerticalGrid(
+				paginationState = paginationState,
+				requestInitialPageAutomatically = false,
+				state = resultsListState,
+				modifier = modifier.fillMaxWidth(),
+				lazyModifier = Modifier
+					.testTag(SEARCH_RESULTS_LIST_TAG)
+					.includeInParentAccessibilityContainer(),
+				verticalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				horizontalArrangement = Arrangement.spacedBy(PurecipesTheme.space.m),
+				contentPadding = PaddingValues(
+					start = PurecipesTheme.space.m,
+					end = PurecipesTheme.space.m,
+					bottom = PurecipesTheme.space.m + PurecipesTheme.bottomBarPadding,
+				),
+			) {
+				if (searchInstructions != null) {
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						Text(
+							text = searchInstructions,
+							style = PurecipesTheme.typography.labelMedium,
+							color = PurecipesTheme.colorScheme.onSurfaceVariant,
+						)
+					}
+				}
+				if (searchFilterNote != null) {
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						Text(
+							text = searchFilterNote,
+							modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
+							style = PurecipesTheme.typography.bodyMedium,
+							color = PurecipesTheme.colorScheme.onSurfaceVariant,
+						)
+					}
+				}
+				if (browseTiles.isNotEmpty()) {
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						BrowseTileGrid(
+							tiles = browseTiles,
+							onTileClick = onBrowseTileClick,
+						)
+					}
+				}
 				item(span = { GridItemSpan(maxLineSpan) }) {
 					Text(
-						text = searchInstructions,
+						text = "$totalMatches recipes found",
 						style = PurecipesTheme.typography.labelMedium,
 						color = PurecipesTheme.colorScheme.onSurfaceVariant,
 					)
 				}
-			}
-			if (searchFilterNote != null) {
-				item(span = { GridItemSpan(maxLineSpan) }) {
-					Text(
-						text = searchFilterNote,
-						modifier = Modifier.testTag(SEARCH_FILTER_NOTE_TAG),
-						style = PurecipesTheme.typography.bodyMedium,
-						color = PurecipesTheme.colorScheme.onSurfaceVariant,
-					)
+				items(recipes.size, key = { recipes[it].id }) { index ->
+					val recipe = recipes[index]
+					InlineListBannerAdSlot(
+						contentIndex = index,
+						contentCount = recipes.size,
+						viewModel = bannerAdViewModel,
+					) {
+						val transitionKey = "search-${recipe.id}"
+						RecipeCard(
+							recipe = recipe,
+							transitionKey = transitionKey,
+							onClick = {
+								revealSelectedItem(recipe.id, headerItemCount + index)
+								onRecipeSelect(recipe.id, transitionKey)
+							},
+							modifier = Modifier.staggeredAppear(index = index),
+						)
+					}
 				}
-			}
-			if (browseTiles.isNotEmpty()) {
-				item(span = { GridItemSpan(maxLineSpan) }) {
-					BrowseTileGrid(
-						tiles = browseTiles,
-						onTileClick = onBrowseTileClick,
-					)
-				}
-			}
-			item(span = { GridItemSpan(maxLineSpan) }) {
-				Text(
-					text = "$totalMatches recipes found",
-					style = PurecipesTheme.typography.labelMedium,
-					color = PurecipesTheme.colorScheme.onSurfaceVariant,
-				)
-			}
-			items(recipes.size, key = { recipes[it].id }) { index ->
-				val recipe = recipes[index]
-				InlineListBannerAdSlot(
-					contentIndex = index,
-					contentCount = recipes.size,
-					viewModel = bannerAdViewModel,
-				) {
-					val transitionKey = "search-${recipe.id}"
-					RecipeCard(
-						recipe = recipe,
-						transitionKey = transitionKey,
-						onClick = { onRecipeSelect(recipe.id, transitionKey) },
-						modifier = Modifier.staggeredAppear(index = index),
-					)
-				}
-			}
-			if (nearMissRecipes.isNotEmpty()) {
-				item(span = { GridItemSpan(maxLineSpan) }) {
-					NearMissSearchResults(
-						nearMissRecipes = nearMissRecipes,
-						onRecipeSelect = onRecipeSelect,
-					)
+				if (nearMissRecipes.isNotEmpty()) {
+					item(span = { GridItemSpan(maxLineSpan) }) {
+						NearMissSearchResults(
+							nearMissRecipes = nearMissRecipes,
+							onRecipeSelect = onRecipeSelect,
+						)
+					}
 				}
 			}
 		}
