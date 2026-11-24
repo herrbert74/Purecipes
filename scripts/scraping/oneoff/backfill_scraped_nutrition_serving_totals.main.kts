@@ -1,6 +1,6 @@
 #!/usr/bin/env kotlin
 
-@file:DependsOn("org.postgresql:postgresql:42.7.14")
+@file:DependsOn("org.postgresql:postgresql:42.7.15")
 
 import java.math.BigDecimal
 import java.math.RoundingMode
