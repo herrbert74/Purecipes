@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.newrecipe.domain.model.CreatedRecipeEvent
 import app.purecipes.feature.newrecipe.domain.usecase.DeleteCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.ObserveCreatedRecipeEventsUseCase
 import app.purecipes.shared.domain.model.RecipeDetails
 import app.purecipes.shared.domain.model.RecipeSummary
 import com.github.michaelbull.result.get
@@ -17,6 +19,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Inject
@@ -25,6 +28,7 @@ import kotlinx.coroutines.launch
 class MyRecipesViewModel(
 	private val getCreatedRecipes: GetCreatedRecipesUseCase,
 	private val deleteCreatedRecipe: DeleteCreatedRecipeUseCase,
+	private val observeCreatedRecipeEvents: ObserveCreatedRecipeEventsUseCase,
 	private val trackEvent: TrackEventUseCase,
 ) : ViewModel() {
 
@@ -35,9 +39,20 @@ class MyRecipesViewModel(
 	var recipes by mutableStateOf<List<RecipeSummary>>(emptyList())
 		private set
 	private var deleteInFlight = false
+	private var loadRecipesJob: Job? = null
 
 	init {
 		loadRecipes()
+		viewModelScope.launch {
+			observeCreatedRecipeEvents().collect { event ->
+				when (event) {
+					is CreatedRecipeEvent.Saved -> loadRecipes()
+					is CreatedRecipeEvent.Deleted -> {
+						recipes = recipes.filterNot { it.id == event.recipeId }
+					}
+				}
+			}
+		}
 	}
 
 	fun retry() {
@@ -76,7 +91,8 @@ class MyRecipesViewModel(
 	}
 
 	private fun loadRecipes() {
-		viewModelScope.launch {
+		loadRecipesJob?.cancel()
+		loadRecipesJob = viewModelScope.launch {
 			if (recipes.isEmpty()) {
 				isLoading = true
 			}

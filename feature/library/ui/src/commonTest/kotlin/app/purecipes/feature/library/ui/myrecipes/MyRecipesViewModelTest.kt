@@ -3,8 +3,10 @@ package app.purecipes.feature.library.ui.myrecipes
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.analytics.domain.model.AnalyticsEvent
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.DeleteCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.ObserveCreatedRecipeEventsUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
@@ -101,12 +103,73 @@ class MyRecipesViewModelTest {
 		analyticsRepository.trackedEvents shouldBe emptyList()
 	}
 
+	@Test
+	fun `creating a recipe refreshes my recipes list`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = createViewModel(repository = repository)
+		advanceUntilIdle()
+		viewModel.recipes shouldBe emptyList()
+
+		repository.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = "Pesto Gnocchi",
+				description = "Fast dinner.",
+				steps = listOf("Boil gnocchi", "Toss with pesto"),
+				cuisine = Cuisine.ITALIAN,
+				totalTime = 15,
+			),
+		)
+		advanceUntilIdle()
+
+		viewModel.isLoading shouldBe false
+		viewModel.errorMessage shouldBe null
+		viewModel.recipes.single().title shouldBe "Pesto Gnocchi"
+		viewModel.recipes.single().cuisine shouldBe Cuisine.ITALIAN
+		viewModel.recipes.single().totalTime shouldBe 15
+	}
+
+	@Test
+	fun `updating a recipe refreshes my recipes list`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleRecipe()))
+		val viewModel = createViewModel(repository = repository)
+		advanceUntilIdle()
+
+		repository.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				recipeId = 42,
+				title = "Creamy Tomato Pasta",
+				description = "Updated dinner.",
+				steps = listOf("Boil the pasta", "Add cream"),
+				cuisine = Cuisine.ITALIAN,
+				totalTime = 25,
+			),
+		)
+		advanceUntilIdle()
+
+		viewModel.recipes.single().id shouldBe 42
+		viewModel.recipes.single().title shouldBe "Creamy Tomato Pasta"
+		viewModel.recipes.single().totalTime shouldBe 25
+	}
+
+	@Test
+	fun `deleting a recipe via repository removes it from my recipes list`() = runViewModelTest {
+		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleRecipe()))
+		val viewModel = createViewModel(repository = repository)
+		advanceUntilIdle()
+
+		repository.deleteCreatedRecipe(recipeId = 42)
+		advanceUntilIdle()
+
+		viewModel.recipes shouldBe emptyList()
+	}
+
 	private fun createViewModel(
 		repository: FakeCreatedRecipeRepository,
 		analyticsRepository: FakeAnalyticsRepository = FakeAnalyticsRepository(),
 	): MyRecipesViewModel = MyRecipesViewModel(
 		getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 		deleteCreatedRecipe = DeleteCreatedRecipeUseCase(repository),
+		observeCreatedRecipeEvents = ObserveCreatedRecipeEventsUseCase(repository),
 		trackEvent = TrackEventUseCase(analyticsRepository),
 	)
 

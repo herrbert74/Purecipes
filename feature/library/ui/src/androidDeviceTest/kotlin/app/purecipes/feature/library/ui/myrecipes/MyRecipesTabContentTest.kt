@@ -12,8 +12,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.feature.newrecipe.domain.usecase.DeleteCreatedRecipeUseCase
 import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.ObserveCreatedRecipeEventsUseCase
 import app.purecipes.shared.domain.model.Cuisine
 import app.purecipes.shared.domain.model.IngredientGroup
 import app.purecipes.shared.domain.model.RecipeDetails
@@ -28,6 +30,7 @@ import app.purecipes.shared.ui.component.organism.RECIPE_CARD_EDIT_BUTTON_TAG_PR
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -99,6 +102,7 @@ class MyRecipesTabContentTest {
 		val viewModel = MyRecipesViewModel(
 			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
 			deleteCreatedRecipe = DeleteCreatedRecipeUseCase(repository),
+			observeCreatedRecipeEvents = ObserveCreatedRecipeEventsUseCase(repository),
 			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
 		)
 		setTrackedContent {
@@ -125,6 +129,43 @@ class MyRecipesTabContentTest {
 
 		onNodeWithText(RECIPE_TITLE).assertIsDisplayed()
 		assertEquals(callsAfterFirstLoad, repository.getCreatedRecipesCallCount)
+	}
+
+	@Test
+	fun newlyCreatedRecipeAppearsInMyRecipesTabWithoutRecreatingViewModel() = runRecompositionTrackingUiTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = MyRecipesViewModel(
+			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+			deleteCreatedRecipe = DeleteCreatedRecipeUseCase(repository),
+			observeCreatedRecipeEvents = ObserveCreatedRecipeEventsUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				MyRecipesTabContent(
+					onCreateRecipe = {},
+					onRecipeSelect = { _, _ -> },
+					onEditRecipe = {},
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		runBlocking {
+			repository.saveCreatedRecipe(
+				SaveCreatedRecipeRequest(
+					title = CREATED_RECIPE_TITLE,
+					description = "Freshly created.",
+					steps = listOf("Mix ingredients"),
+				),
+			)
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText(CREATED_RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText(CREATED_RECIPE_TITLE).assertIsDisplayed()
 	}
 
 	private fun sampleRecipe(): RecipeSummary = RecipeSummary(
@@ -155,5 +196,6 @@ class MyRecipesTabContentTest {
 
 		const val RECIPE_ID = 42
 		const val RECIPE_TITLE = "Tomato Pasta"
+		const val CREATED_RECIPE_TITLE = "Pesto Gnocchi"
 	}
 }
