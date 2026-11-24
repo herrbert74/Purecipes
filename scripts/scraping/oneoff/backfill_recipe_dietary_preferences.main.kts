@@ -1,6 +1,6 @@
 #!/usr/bin/env kotlin
 
-@file:DependsOn("org.postgresql:postgresql:42.7.14")
+@file:DependsOn("org.postgresql:postgresql:42.7.15")
 @file:Import("../ScrapedDietaryPreferences.kt")
 
 import java.sql.Connection
