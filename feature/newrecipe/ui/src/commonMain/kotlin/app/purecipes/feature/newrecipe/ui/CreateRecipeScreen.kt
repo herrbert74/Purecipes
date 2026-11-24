@@ -2,6 +2,8 @@ package app.purecipes.feature.newrecipe.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -96,6 +98,7 @@ fun CreateRecipeScreen(
 	val scrollState = rememberScrollState()
 	var isLastStepFieldFocused by remember { mutableStateOf(false) }
 	var showClearFormConfirmation by remember { mutableStateOf(false) }
+	val showSaveBar = showEditorChrome && !isLastStepFieldFocused
 	LaunchedEffect(viewModel.selectedSection) {
 		scrollState.scrollTo(0)
 		if (viewModel.selectedSection != CreateRecipeSection.Steps) {
@@ -126,7 +129,7 @@ fun CreateRecipeScreen(
 			)
 		},
 		bottomBar = {
-			if (showEditorChrome && !isLastStepFieldFocused) {
+			if (showSaveBar) {
 				CreateRecipeSaveBar(
 					isEditing = viewModel.isEditing,
 					isSaving = viewModel.isSaving,
@@ -152,7 +155,15 @@ fun CreateRecipeScreen(
 					.padding(PurecipesTheme.space.l),
 			)
 
-			else -> Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+			else -> Column(
+				modifier = Modifier
+					.padding(innerPadding)
+					.consumeSaveBarInsets(
+						consume = showSaveBar,
+						innerPadding = innerPadding,
+					)
+					.fillMaxSize(),
+			) {
 				CreateRecipeSectionSwitcher(
 					selectedSection = viewModel.selectedSection,
 					onSectionChange = { viewModel.selectedSection = it },
@@ -352,6 +363,11 @@ private fun CreateRecipeLoadErrorContent(
 		)
 	}
 }
+
+private fun Modifier.consumeSaveBarInsets(
+	consume: Boolean,
+	innerPadding: PaddingValues,
+): Modifier = if (consume) consumeWindowInsets(innerPadding) else this
 
 private fun isCreateRecipeLoading(
 	recipeId: Int?,

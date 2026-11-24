@@ -6,6 +6,7 @@ import app.purecipes.feature.newrecipe.data.datasource.CreatedRecipeRemoteDataSo
 import app.purecipes.feature.newrecipe.data.image.RecipeImagePathLoader
 import app.purecipes.feature.newrecipe.data.image.RecipeImageUpload
 import app.purecipes.feature.newrecipe.data.image.RecipeImageUploader
+import app.purecipes.feature.newrecipe.domain.model.CreatedRecipeEvent
 import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
 import app.purecipes.shared.datatestfixtures.fake.FakePurecipesApi
 import app.purecipes.shared.domain.model.Appliance
@@ -17,9 +18,15 @@ import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CreatedRecipeAccessorTest {
 
 	@Test
@@ -190,6 +197,53 @@ class CreatedRecipeAccessorTest {
 		deleteOutcome.getError() shouldBe null
 		storedRecipes shouldBe emptyList()
 		api.deletedRecipeIds.single() shouldBe savedRecipe.id
+	}
+
+	@Test
+	fun `saving a recipe emits saved event`() = runTest {
+		val accessor = CreatedRecipeAccessor(
+			remoteDataSource = CreatedRecipeRemoteDataSource(
+				api = FakePurecipesApi(),
+				imagePathLoader = FakeRecipeImagePathLoader(),
+				imageUploader = FakeRecipeImageUploader(),
+			),
+		)
+		val event = async { accessor.observeCreatedRecipeEvents().take(1).single() }
+		runCurrent()
+
+		val savedRecipe = accessor.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = "Tomato Pasta",
+				description = "Quick weeknight dinner.",
+				steps = listOf("Boil the pasta"),
+			),
+		).get().shouldNotBeNull()
+
+		event.await() shouldBe CreatedRecipeEvent.Saved(recipeId = savedRecipe.id)
+	}
+
+	@Test
+	fun `deleting a recipe emits deleted event`() = runTest {
+		val accessor = CreatedRecipeAccessor(
+			remoteDataSource = CreatedRecipeRemoteDataSource(
+				api = FakePurecipesApi(),
+				imagePathLoader = FakeRecipeImagePathLoader(),
+				imageUploader = FakeRecipeImageUploader(),
+			),
+		)
+		val savedRecipe = accessor.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = "Tomato Pasta",
+				description = "Quick weeknight dinner.",
+				steps = listOf("Boil the pasta"),
+			),
+		).get().shouldNotBeNull()
+		val event = async { accessor.observeCreatedRecipeEvents().take(1).single() }
+		runCurrent()
+
+		accessor.deleteCreatedRecipe(savedRecipe.id)
+
+		event.await() shouldBe CreatedRecipeEvent.Deleted(recipeId = savedRecipe.id)
 	}
 
 	private class FakeRecipeImagePathLoader(

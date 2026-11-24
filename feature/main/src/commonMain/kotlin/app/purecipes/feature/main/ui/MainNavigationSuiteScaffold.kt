@@ -1,7 +1,9 @@
 package app.purecipes.feature.main.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -23,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import app.purecipes.shared.ui.theme.LocalPurecipesSpace
@@ -45,11 +48,17 @@ internal fun MainNavigationSuiteScaffold(
 	val adaptiveInfo = currentWindowAdaptiveInfo()
 	val navSuiteType = NavigationSuiteScaffoldDefaults.navigationSuiteType(adaptiveInfo)
 	val isBottomBar = isBottomBarNavigationSuite(navSuiteType)
+	val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+	val effectiveNavBarVisible = isNavigationSuiteVisible(
+		isNavBarVisible = isNavBarVisible,
+		isImeVisible = isImeVisible,
+		navSuiteType = navSuiteType,
+	)
 	val scaffoldState = rememberNavigationSuiteScaffoldState()
 	val scope = rememberCoroutineScope()
 	val canChangeVisibility = rememberUpdatedState(
 		shouldHideNavigationSuiteOnScroll(
-			isNavBarVisible = isNavBarVisible,
+			isNavBarVisible = effectiveNavBarVisible,
 			navSuiteType = navSuiteType,
 		),
 	)
@@ -62,10 +71,10 @@ internal fun MainNavigationSuiteScaffold(
 			isReducedMotion = { reducedMotion.value },
 		)
 	}
-	LaunchedEffect(isNavBarVisible, isBottomBar, selectedTab.stackId) {
-		scrollConnection.reset(visible = isNavBarVisible)
+	LaunchedEffect(effectiveNavBarVisible, isBottomBar, selectedTab.stackId) {
+		scrollConnection.reset(visible = effectiveNavBarVisible)
 	}
-	val bottomBarPadding = if (isNavBarVisible && isBottomBar) 80.dp else 0.dp
+	val bottomBarPadding = if (effectiveNavBarVisible && isBottomBar) 80.dp else 0.dp
 	CompositionLocalProvider(
 		LocalPurecipesSpace provides PurecipesTheme.space.copy(bottomBar = bottomBarPadding),
 	) {
@@ -110,6 +119,12 @@ internal fun isBottomBarNavigationSuite(navSuiteType: NavigationSuiteType): Bool
 		navSuiteType == NavigationSuiteType.ShortNavigationBarMedium ||
 		navSuiteType == NavigationSuiteType.NavigationBar
 }
+
+internal fun isNavigationSuiteVisible(
+	isNavBarVisible: Boolean,
+	isImeVisible: Boolean,
+	navSuiteType: NavigationSuiteType,
+): Boolean = isNavBarVisible && !(isImeVisible && isBottomBarNavigationSuite(navSuiteType))
 
 internal fun shouldHideNavigationSuiteOnScroll(
 	isNavBarVisible: Boolean,

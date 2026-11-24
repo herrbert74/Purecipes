@@ -45,4 +45,28 @@ class MainNavigationSuiteScrollTest {
 			navSuiteType = NavigationSuiteType.NavigationDrawer,
 		) shouldBe false
 	}
+
+	@Test
+	fun bottomBarNavigationSuitesHideWhileKeyboardIsOpen() {
+		isNavigationSuiteVisible(
+			isNavBarVisible = true,
+			isImeVisible = true,
+			navSuiteType = NavigationSuiteType.NavigationBar,
+		) shouldBe false
+		isNavigationSuiteVisible(
+			isNavBarVisible = true,
+			isImeVisible = true,
+			navSuiteType = NavigationSuiteType.ShortNavigationBarCompact,
+		) shouldBe false
+		isNavigationSuiteVisible(
+			isNavBarVisible = true,
+			isImeVisible = false,
+			navSuiteType = NavigationSuiteType.NavigationBar,
+		) shouldBe true
+		isNavigationSuiteVisible(
+			isNavBarVisible = true,
+			isImeVisible = true,
+			navSuiteType = NavigationSuiteType.NavigationRail,
+		) shouldBe true
+	}
 }
