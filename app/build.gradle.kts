@@ -198,6 +198,12 @@ android {
 	}
 }
 
+androidComponents {
+	beforeVariants(selector().withBuildType("staging")) { variantBuilder ->
+		variantBuilder.enable = file("src/staging/google-services.json").exists()
+	}
+}
+
 dependencies {
 	implementation(project(":feature:ads:data"))
 	implementation(project(":feature:auth:data"))
