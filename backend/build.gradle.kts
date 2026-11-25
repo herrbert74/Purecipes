@@ -113,13 +113,13 @@ dependencies {
 	implementation(libs.ktor.clientCore)
 	implementation(libs.ktor.clientLogging)
 	implementation(libs.ktor.serializationKotlinxJson)
-
 	implementation(libs.ktor.serverCallLogging)
 	implementation(libs.ktor.serverContentNegotiation)
 	implementation(libs.ktor.serverCore)
 	implementation(libs.ktor.serverCors)
 	implementation(libs.ktor.serverNetty)
 	implementation(libs.ktor.serverStatusPages)
+	implementation(libs.ktor.utils)
 
 	implementation(libs.postgresql)
 	"toolsImplementation"(libs.tensorflowJava)

@@ -237,7 +237,6 @@ dependencies {
 	implementation(libs.androidx.core)
 	implementation(libs.androidx.lifecycleRuntime)
 	implementation(libs.androidx.activityCompose)
-	implementation(libs.androidx.fragment)
 	implementation(libs.androidx.splash)
 	implementation(libs.androidx.vectordrawableAnimated)
 	implementation(libs.kmpnotifier.push.firebase)

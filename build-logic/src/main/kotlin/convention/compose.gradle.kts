@@ -21,6 +21,7 @@ extensions.configure<KotlinMultiplatformExtension> {
 			}
 		}
 		commonMain.dependencies {
+			implementation(libs.androidx.navigation3Runtime)
 			implementation(libs.jetbrains.androidXLifecycleViewmodelCompose)
 			implementation(libs.jetbrains.composeFoundation)
 			implementation(libs.jetbrains.composeMaterial3)
