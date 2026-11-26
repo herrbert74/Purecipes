@@ -153,6 +153,9 @@ tasks.processResources {
 
 tasks.shadowJar {
 	archiveClassifier.set("")
+	filesMatching(listOf("META-INF/services/**", "META-INF/*.kotlin_module")) {
+		duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	}
 	mergeServiceFiles()
 }
 
