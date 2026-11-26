@@ -334,10 +334,10 @@
         },
         {
             "uniqueId": "androidx.collection:collection",
-            "artifactVersion": "1.6.0",
+            "artifactVersion": "1.5.0",
             "name": "collections",
             "description": "Standalone efficient collections.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.6.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.5.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -359,10 +359,10 @@
         },
         {
             "uniqueId": "androidx.collection:collection-ktx",
-            "artifactVersion": "1.6.0",
+            "artifactVersion": "1.5.0",
             "name": "Collections Kotlin Extensions",
             "description": "Kotlin extensions for 'collection' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.6.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/collection#1.5.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -584,10 +584,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3",
-            "artifactVersion": "1.5.0-rc01",
+            "artifactVersion": "1.5.0",
             "name": "Compose Material3 Components",
             "description": "Compose Material You Design Components library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-rc01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -609,10 +609,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-adaptive-navigation-suite",
-            "artifactVersion": "1.5.0-rc01",
+            "artifactVersion": "1.5.0",
             "name": "Material Adaptive Navigation Suite",
             "description": "Compose Material Design Adaptive Navigation Suite Library",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-rc01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -634,10 +634,10 @@
         },
         {
             "uniqueId": "androidx.compose.material3:material3-ripple",
-            "artifactVersion": "1.5.0-rc01",
+            "artifactVersion": "1.5.0",
             "name": "Compose Material3 Ripple",
             "description": "Building block APIs to build ripples that follow a Material 3 specification.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-rc01",
+            "website": "https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1686,18 +1686,15 @@
         },
         {
             "uniqueId": "androidx.fragment:fragment",
-            "artifactVersion": "1.9.1",
-            "name": "fragment",
+            "artifactVersion": "1.5.4",
+            "name": "Support fragment",
             "description": "The Support Library is a static library that you can add to your Android application in order to use APIs that are either not available for older platform versions or utility APIs that aren't a part of the framework APIs. Compatible on devices running API 14 or later.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.9.1",
+            "website": "https://developer.android.com/jetpack/androidx/releases/fragment#1.5.4",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
                 }
             ],
-            "organization": {
-                "name": "The Android Open Source Project"
-            },
             "scm": {
                 "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
                 "url": "https://cs.android.com/androidx/platform/frameworks/support"
@@ -1849,10 +1846,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-common",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle-Common",
             "description": "Android Lifecycle-Common",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1874,10 +1871,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-common-java8",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle-Common for Java 8",
             "description": "Android Lifecycle-Common for Java 8 Language",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1899,10 +1896,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-livedata",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle LiveData",
             "description": "Android Lifecycle LiveData",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1924,10 +1921,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-livedata-core",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle LiveData Core",
             "description": "Android Lifecycle LiveData Core",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1949,10 +1946,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-livedata-core-ktx",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "LiveData Core Kotlin Extensions",
             "description": "Kotlin extensions for 'livedata-core' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1974,10 +1971,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-process",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle Process",
             "description": "Android Lifecycle Process",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -1999,10 +1996,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-runtime",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle Runtime",
             "description": "Android Lifecycle Runtime",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2024,10 +2021,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-runtime-compose",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle Runtime Compose",
             "description": "Compose integration with Lifecycle",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2049,10 +2046,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-runtime-ktx",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle Kotlin Extensions",
             "description": "Kotlin extensions for 'lifecycle' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2074,10 +2071,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-service",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle Service",
             "description": "Android Lifecycle Service",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2099,10 +2096,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-viewmodel",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle ViewModel",
             "description": "Android Lifecycle ViewModel",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2124,10 +2121,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-viewmodel-compose",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle ViewModel Compose",
             "description": "Compose integration with Lifecycle ViewModel",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2149,10 +2146,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-viewmodel-ktx",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle ViewModel Kotlin Extensions",
             "description": "Kotlin extensions for 'viewmodel' artifact",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2174,10 +2171,10 @@
         },
         {
             "uniqueId": "androidx.lifecycle:lifecycle-viewmodel-savedstate",
-            "artifactVersion": "2.11.0",
+            "artifactVersion": "2.11.1",
             "name": "Lifecycle ViewModel with SavedState",
             "description": "Android Lifecycle ViewModel",
-            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/lifecycle#2.11.1",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2265,10 +2262,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-runtime",
-            "artifactVersion": "1.2.0",
+            "artifactVersion": "1.2.2",
             "name": "Androidx Navigation 3 Runtime",
             "description": "Provides the building blocks for a Compose first Navigation solution that easily supports extensions.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.2.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.2.2",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2290,10 +2287,10 @@
         },
         {
             "uniqueId": "androidx.navigation3:navigation3-ui",
-            "artifactVersion": "1.2.0",
+            "artifactVersion": "1.2.2",
             "name": "Androidx Navigation 3 UI",
             "description": "Provides a Navigation3 display that uses the building blocks from runtime to create a higher level solution.",
-            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.2.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/navigation3#1.2.2",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
@@ -2750,18 +2747,15 @@
         },
         {
             "uniqueId": "androidx.tracing:tracing",
-            "artifactVersion": "2.0.0",
-            "name": "Tracing",
+            "artifactVersion": "1.2.0",
+            "name": "Android Tracing",
             "description": "Android Tracing",
-            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#2.0.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#1.2.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
                 }
             ],
-            "organization": {
-                "name": "The Android Open Source Project"
-            },
             "scm": {
                 "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
                 "url": "https://cs.android.com/androidx/platform/frameworks/support"
@@ -2775,18 +2769,15 @@
         },
         {
             "uniqueId": "androidx.tracing:tracing-ktx",
-            "artifactVersion": "2.0.0",
-            "name": "Tracing Kotlin Extensions",
+            "artifactVersion": "1.2.0",
+            "name": "Android Tracing Runtime Kotlin Extensions",
             "description": "Android Tracing",
-            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#2.0.0",
+            "website": "https://developer.android.com/jetpack/androidx/releases/tracing#1.2.0",
             "developers": [
                 {
                     "name": "The Android Open Source Project"
                 }
             ],
-            "organization": {
-                "name": "The Android Open Source Project"
-            },
             "scm": {
                 "connection": "scm:git:https://android.googlesource.com/platform/frameworks/support",
                 "url": "https://cs.android.com/androidx/platform/frameworks/support"
@@ -4423,7 +4414,7 @@
         },
         {
             "uniqueId": "com.google.firebase:firebase-bom",
-            "artifactVersion": "35.1.0",
+            "artifactVersion": "35.2.0",
             "name": "com.google.firebase:firebase-bom",
             "description": "",
             "developers": [
@@ -4495,7 +4486,7 @@
         },
         {
             "uniqueId": "com.google.firebase:firebase-crashlytics",
-            "artifactVersion": "21.0.1",
+            "artifactVersion": "21.1.0",
             "name": "com.google.firebase:firebase-crashlytics",
             "description": "",
             "developers": [
@@ -4658,7 +4649,7 @@
         },
         {
             "uniqueId": "com.google.firebase:firebase-messaging",
-            "artifactVersion": "26.0.1",
+            "artifactVersion": "26.0.2",
             "name": "com.google.firebase:firebase-messaging",
             "description": "",
             "developers": [
@@ -4677,7 +4668,7 @@
         },
         {
             "uniqueId": "com.google.firebase:firebase-sessions",
-            "artifactVersion": "4.0.1",
+            "artifactVersion": "4.0.2",
             "name": "com.google.firebase:firebase-sessions",
             "description": "",
             "developers": [
@@ -4953,7 +4944,7 @@
         },
         {
             "uniqueId": "com.mixpanel.android:mixpanel-android",
-            "artifactVersion": "8.12.0",
+            "artifactVersion": "8.13.0",
             "name": "analytics",
             "description": "Official Mixpanel tracking library for Android http://mixpanel.com/",
             "website": "https://github.com/mixpanel/mixpanel-android",
@@ -4999,7 +4990,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases",
-            "artifactVersion": "11.0.1",
+            "artifactVersion": "11.3.0",
             "name": "purchases-android",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-android",
@@ -5022,7 +5013,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-core",
-            "artifactVersion": "4.1.0",
+            "artifactVersion": "4.2.0",
             "name": "purchases-kmp-(core)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -5045,7 +5036,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-mappings",
-            "artifactVersion": "4.1.0",
+            "artifactVersion": "4.2.0",
             "name": "purchases-kmp-(mappings)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -5068,7 +5059,7 @@
         },
         {
             "uniqueId": "com.revenuecat.purchases:purchases-kmp-models",
-            "artifactVersion": "4.1.0",
+            "artifactVersion": "4.2.0",
             "name": "purchases-kmp-(models)",
             "description": "Mobile subscriptions in hours, not months.",
             "website": "https://github.com/RevenueCat/purchases-kmp",
@@ -5202,7 +5193,7 @@
         },
         {
             "uniqueId": "com.usercentrics.sdk:usercentrics",
-            "artifactVersion": "2.34.0",
+            "artifactVersion": "2.35.0",
             "name": "usercentrics",
             "description": "Usercentrics Core SDK",
             "website": "https://github.com/usercentrics/android-sample-app",
@@ -5225,7 +5216,7 @@
         },
         {
             "uniqueId": "com.usercentrics.sdk:usercentrics-ui",
-            "artifactVersion": "2.34.0",
+            "artifactVersion": "2.35.0",
             "name": "usercentrics-ui",
             "description": "Consent Management Platform - UI Library",
             "website": "https://github.com/usercentrics/android-sample-app",
@@ -5455,7 +5446,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel",
-            "artifactVersion": "1.5.2",
+            "artifactVersion": "1.6.0",
             "name": "Metrox ViewModel",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -5478,7 +5469,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:metrox-viewmodel-compose",
-            "artifactVersion": "1.5.2",
+            "artifactVersion": "1.6.0",
             "name": "Metrox ViewModel Compose",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -5501,7 +5492,7 @@
         },
         {
             "uniqueId": "dev.zacsweers.metro:runtime",
-            "artifactVersion": "1.5.2",
+            "artifactVersion": "1.6.0",
             "name": "Metro Runtime",
             "description": "A multiplatform, compile-time injection framework for Kotlin.",
             "website": "https://github.com/ZacSweers/metro/",
@@ -7905,7 +7896,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-bom",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.13.0",
             "name": "kotlinx-serialization-bom",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -7927,7 +7918,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-core",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.13.0",
             "name": "kotlinx-serialization-core",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -7949,7 +7940,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-json",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.13.0",
             "name": "kotlinx-serialization-json",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -7971,7 +7962,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-json-io",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.13.0",
             "name": "kotlinx-serialization-json-io",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
@@ -7993,7 +7984,7 @@
         },
         {
             "uniqueId": "org.jetbrains.kotlinx:kotlinx-serialization-properties",
-            "artifactVersion": "1.12.0",
+            "artifactVersion": "1.13.0",
             "name": "kotlinx-serialization-properties",
             "description": "Kotlin multiplatform serialization runtime library",
             "website": "https://github.com/Kotlin/kotlinx.serialization",
