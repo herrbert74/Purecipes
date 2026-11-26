@@ -4,6 +4,19 @@ All notable changes to Purecipes are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.18.0] - 2026-11-26
+
+### Changed
+
+- Improved accessibility, large-text layouts, and respect for system reduced-motion settings.
+- Refined tablet list-detail layout and navigation rail behavior.
+- Search results now appear in a varied order, and search instructions scroll cleanly.
+
+### Fixed
+
+- Home feed refreshes right away on filter changes while keeping Favorites and Recently Viewed unfiltered.
+- My Recipes refreshes after recipe edits, and Create Recipe stays clear of the keyboard.
+
 ## [0.17.0] - 2026-11-14
 
 ### Changed
