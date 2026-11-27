@@ -90,7 +90,7 @@ playServicesAds = "25.5.0"
 postgresql = "42.7.15"
 revenueCat = "4.2.0"
 #retrofit = "2.11.0"
-#robolectric = "4.15.1"
+robolectric = "4.18.1"
 shadow = "9.6.1"
 #skie = "0.10.4"
 testcontainers = "2.0.5"
@@ -380,7 +380,7 @@ revenuecat-purchasesKmpCore = { module = "com.revenuecat.purchases:purchases-kmp
 #retrofit2-converterSimpleXml = { module = "com.squareup.retrofit2:converter-simplexml", version.ref = "retrofit" }
 #retrofit2-converterMoshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
 
-#robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 screenshot-validationApi = { module = "com.android.tools.screenshot:screenshot-validation-api", version.ref = "compose-screenshotTesting" }
 

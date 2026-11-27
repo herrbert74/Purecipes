@@ -12,24 +12,20 @@ import app.purecipes.shared.data.config.PurecipesBuildType
 import app.purecipes.shared.data.config.PurecipesConfig
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeOnboardingRepository
-import app.purecipes.shared.testfixtures.uitest.UiTestEssential
-import app.purecipes.shared.testfixtures.uitest.UiTestSettings
 import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.component.organism.USDA_NUTRITION_ATTRIBUTION
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
-@UiTestSettings
 class AboutScreenTest {
 
 	@Test
-	@UiTestEssential
 	fun aboutScreenShowsVersionText() = runRecompositionTrackingUiTest {
 		setTrackedContent {
 			PurecipesTheme {
@@ -61,7 +57,7 @@ class AboutScreenTest {
 
 		onNodeWithTag(ABOUT_OSS_ROW_TAG).performClick()
 
-		assertTrue(openedLicenses)
+		openedLicenses.shouldBeTrue()
 	}
 
 	@Test
@@ -81,12 +77,12 @@ class AboutScreenTest {
 			onNodeWithTag(ABOUT_VERSION_ROW_TAG).performClick()
 		}
 		waitForIdle()
-		assertEquals(0, onboardingRepository.resetOnboardingCallCount)
+		onboardingRepository.resetOnboardingCallCount shouldBe 0
 
 		onNodeWithTag(ABOUT_VERSION_ROW_TAG).performClick()
 		waitForIdle()
 
-		assertEquals(1, onboardingRepository.resetOnboardingCallCount)
+		onboardingRepository.resetOnboardingCallCount shouldBe 1
 		onNodeWithText("Onboarding will show the next time you open the app").assertIsDisplayed()
 	}
 

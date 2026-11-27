@@ -7,13 +7,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import app.purecipes.shared.testfixtures.uitest.UiTestEssential
-import app.purecipes.shared.testfixtures.uitest.UiTestOnboarding
 import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -21,11 +19,9 @@ private const val PAGE_SETTLE_MILLIS = 5_000L
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
-@UiTestOnboarding
 class OnboardingScreenTest {
 
 	@Test
-	@UiTestEssential
 	fun onboardingStartsOnTheFirstPage() = runRecompositionTrackingUiTest {
 		setOnboardingContent()
 
@@ -51,10 +47,7 @@ class OnboardingScreenTest {
 		onNodeWithTag(ONBOARDING_SKIP_TAG).performClick()
 		waitForIdle()
 
-		assertEquals(
-			OnboardingOutcome(skipped = true, lastPageIndex = 0, pageCount = onboardingPages.size),
-			outcome,
-		)
+		outcome shouldBe OnboardingOutcome(skipped = true, lastPageIndex = 0, pageCount = onboardingPages.size)
 	}
 
 	@Test
@@ -73,18 +66,15 @@ class OnboardingScreenTest {
 		setOnboardingContent { outcome = it }
 
 		repeat(onboardingPages.lastIndex) { advanceToNextPage() }
-		assertNull(outcome)
+		outcome.shouldBeNull()
 
 		onNodeWithTag(ONBOARDING_NEXT_BUTTON_TAG).performClick()
 		waitForIdle()
 
-		assertEquals(
-			OnboardingOutcome(
-				skipped = false,
-				lastPageIndex = onboardingPages.lastIndex,
-				pageCount = onboardingPages.size,
-			),
-			outcome,
+		outcome shouldBe OnboardingOutcome(
+			skipped = false,
+			lastPageIndex = onboardingPages.lastIndex,
+			pageCount = onboardingPages.size,
 		)
 	}
 }

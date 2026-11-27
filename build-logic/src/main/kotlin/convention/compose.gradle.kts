@@ -42,6 +42,17 @@ extensions.configure<KotlinMultiplatformExtension> {
 				implementation(libs.androidx.testRunner)
 			}
 		}
+
+		matching { it.name == "androidHostTest" }.all {
+			dependencies {
+				implementation(libs.androidx.composeUiTestManifestAndroid)
+				implementation(libs.androidx.composeUiTestJunit4Android)
+				implementation(libs.androidx.testEspresso.core)
+				implementation(libs.androidx.testExtJUnit)
+				implementation(libs.kotest.assertionsCore)
+				implementation(libs.robolectric)
+			}
+		}
 	}
 }
 

@@ -7,17 +7,15 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.purecipes.feature.search.domain.model.SearchPreferences
-import app.purecipes.shared.testfixtures.uitest.UiTestSettings
 import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
-import org.junit.Assert.assertEquals
+import io.kotest.matchers.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
-@UiTestSettings
 class SearchPreferencesPanelTest {
 
 	@Test
@@ -35,9 +33,6 @@ class SearchPreferencesPanelTest {
 		onNodeWithText("Search").assertIsDisplayed()
 		onNodeWithTag(SEARCH_PREFERENCES_RECIPE_FILTERS_SWITCH_TAG).performClick()
 
-		assertEquals(
-			SearchPreferences(applyRecipeFiltersToTitleSearch = false),
-			preferences,
-		)
+		preferences shouldBe SearchPreferences(applyRecipeFiltersToTitleSearch = false)
 	}
 }

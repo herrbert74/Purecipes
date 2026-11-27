@@ -6,11 +6,6 @@ plugins {
 kotlin {
 	android {
 		namespace = "app.purecipes.feature.onboarding.ui"
-		withDeviceTestBuilder {
-			sourceSetTreeName = "androidDeviceTest"
-		}.configure {
-			instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-		}
 	}
 
 	sourceSets {
@@ -19,7 +14,7 @@ kotlin {
 				implementation(libs.kotlinx.collectionsImmutable)
 			}
 		}
-		named("androidDeviceTest") {
+		named("androidHostTest") {
 			dependencies {
 				implementation(libs.dejavu)
 				implementation(project(":shared:testfixtures"))
