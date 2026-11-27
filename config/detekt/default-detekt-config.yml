@@ -151,7 +151,7 @@ complexity:
     ignoreStringsRegex: '$^'
   TooManyFunctions:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/androidDeviceTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/scripts/**', '**/dataTestFixtures/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/androidDeviceTest/**', '**/androidHostTest/**', '**/androidUiTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/scripts/**', '**/dataTestFixtures/**']
     allowedFunctionsPerFile: 11
     allowedFunctionsPerClass: 18
     allowedFunctionsPerInterface: 40

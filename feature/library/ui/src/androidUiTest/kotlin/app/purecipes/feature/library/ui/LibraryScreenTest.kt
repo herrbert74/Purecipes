@@ -44,6 +44,8 @@ import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.fake.unusedImportCookbookShareUseCase
+import app.purecipes.shared.testfixtures.fake.unusedShareCookbookUseCase
 import app.purecipes.shared.testfixtures.uitest.UiTestEssential
 import app.purecipes.shared.testfixtures.uitest.UiTestLibrary
 import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
@@ -52,10 +54,10 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Ok
 import dejavu.assertStable
 import dejavu.setTrackedContent
+import io.kotest.matchers.shouldBe
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -364,7 +366,7 @@ class LibraryScreenTest {
 		onNodeWithText("Create").performClick()
 
 		waitForIdle()
-		assertEquals(1, cookbooksRepo.createCookbookCallCount)
+		cookbooksRepo.createCookbookCallCount shouldBe 1
 	}
 
 	@Test
@@ -408,7 +410,7 @@ class LibraryScreenTest {
 		waitUntil(timeoutMillis = 5_000) {
 			cookbooksRepo.deleteCookbookCallCount == 1
 		}
-		assertEquals(1, cookbooksRepo.deleteCookbookCallCount)
+		cookbooksRepo.deleteCookbookCallCount shouldBe 1
 	}
 
 	@Test
@@ -523,7 +525,7 @@ class LibraryScreenTest {
 			cookbooksRepo.removeRecipeFromCookbookCallCount == 1 &&
 				onAllNodesWithText(TEST_RECIPE_TITLE).fetchSemanticsNodes().isEmpty()
 		}
-		assertEquals(1, cookbooksRepo.removeRecipeFromCookbookCallCount)
+		cookbooksRepo.removeRecipeFromCookbookCallCount shouldBe 1
 		onNodeWithText("0 recipes").assertIsDisplayed()
 	}
 

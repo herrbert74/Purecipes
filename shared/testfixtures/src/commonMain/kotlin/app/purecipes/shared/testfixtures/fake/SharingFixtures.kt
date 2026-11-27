@@ -1,4 +1,4 @@
-package app.purecipes.feature.library.ui
+package app.purecipes.shared.testfixtures.fake
 
 import app.purecipes.base.kotlin.result.Failure
 import app.purecipes.feature.sharing.domain.repository.CookbookShareRepository
@@ -8,10 +8,10 @@ import app.purecipes.feature.sharing.domain.usecase.ImportCookbookShareUseCase
 import app.purecipes.feature.sharing.domain.usecase.ShareCookbookUseCase
 import com.github.michaelbull.result.Err
 
-internal fun unusedImportCookbookShareUseCase(): ImportCookbookShareUseCase =
+fun unusedImportCookbookShareUseCase(): ImportCookbookShareUseCase =
 	ImportCookbookShareUseCase(unusedCookbookShareRepository())
 
-internal fun unusedShareCookbookUseCase(): ShareCookbookUseCase =
+fun unusedShareCookbookUseCase(): ShareCookbookUseCase =
 	ShareCookbookUseCase(
 		createCookbookShareUseCase = CreateCookbookShareUseCase(unusedCookbookShareRepository()),
 		shareRepository = unusedShareRepository(),

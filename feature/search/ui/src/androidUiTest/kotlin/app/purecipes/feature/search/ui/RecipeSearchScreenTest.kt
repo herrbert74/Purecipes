@@ -98,8 +98,8 @@ import app.purecipes.shared.ui.theme.PurecipesTheme
 import com.github.michaelbull.result.Err
 import dejavu.assertStable
 import dejavu.setTrackedContent
+import io.kotest.matchers.shouldBe
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -461,7 +461,7 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG).performClick()
 		waitForIdle()
 
-		assertEquals(1, loginRequestCount)
+		loginRequestCount shouldBe 1
 		onAllNodesWithTag(FILTER_BOTTOM_SHEET_GO_TO_ACCOUNT_BUTTON_TAG).assertCountEquals(0)
 	}
 
@@ -639,14 +639,14 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(ingredientTriStateChipTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
-			assertEquals(setOf("Chicken"), viewModel.pantryIngredients)
-			assertEquals(emptySet<String>(), viewModel.excludedIngredients)
+			viewModel.pantryIngredients shouldBe setOf("Chicken")
+			viewModel.excludedIngredients shouldBe emptySet<String>()
 		}
 		onNodeWithTag(ingredientTriStateChipTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
-			assertEquals(emptySet<String>(), viewModel.pantryIngredients)
-			assertEquals(setOf("Chicken"), viewModel.excludedIngredients)
+			viewModel.pantryIngredients shouldBe emptySet<String>()
+			viewModel.excludedIngredients shouldBe setOf("Chicken")
 		}
 	}
 
@@ -708,7 +708,7 @@ class RecipeSearchScreenTest {
 		}
 		onAllNodesWithText("gochujang").assertCountEquals(0)
 		runOnIdle {
-			assertEquals(emptySet<String>(), viewModel.pantryIngredients)
+			viewModel.pantryIngredients shouldBe emptySet<String>()
 		}
 	}
 
@@ -753,7 +753,7 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(filterSectionToggleTag("Key ingredients")).performClick()
 		waitForIdle()
 		runOnIdle {
-			assertEquals(true, openedPaywall)
+			openedPaywall shouldBe true
 		}
 	}
 
@@ -785,7 +785,7 @@ class RecipeSearchScreenTest {
 		onNodeWithTag(keyIngredientPantryQuickPickTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
-			assertEquals(setOf("Chicken"), viewModel.keyIngredients)
+			viewModel.keyIngredients shouldBe setOf("Chicken")
 		}
 		onNodeWithTag(keyIngredientChipTag("Chicken")).assertIsDisplayed()
 	}

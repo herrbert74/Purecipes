@@ -51,7 +51,7 @@ import app.purecipes.shared.ui.component.molecule.RecipeDetailsSection
 import app.purecipes.shared.ui.component.organism.NUTRITION_FACTS_BUTTON_TAG
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
-import org.junit.Assert.assertTrue
+import io.kotest.matchers.booleans.shouldBeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -163,7 +163,7 @@ class RecipeDetailsScreenTest {
 		}
 
 		onNodeWithContentDescription("Close").assertIsDisplayed().performClick()
-		assertTrue(closed)
+		closed.shouldBeTrue()
 	}
 }
 

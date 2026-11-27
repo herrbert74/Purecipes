@@ -29,10 +29,10 @@ import app.purecipes.shared.ui.component.organism.RECIPE_CARD_DELETE_BUTTON_TAG_
 import app.purecipes.shared.ui.component.organism.RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX
 import app.purecipes.shared.ui.theme.PurecipesTheme
 import dejavu.setTrackedContent
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -62,11 +62,11 @@ class MyRecipesTabContentTest {
 
 		onNodeWithText(RECIPE_TITLE).assertIsDisplayed()
 		onNodeWithTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX$RECIPE_ID").performClick()
-		assertEquals(RECIPE_ID, editedId)
-		assertNull(selectedId)
+		editedId shouldBe RECIPE_ID
+		selectedId.shouldBeNull()
 
 		onNodeWithText(RECIPE_TITLE).performClick()
-		assertEquals(RECIPE_ID, selectedId)
+		selectedId shouldBe RECIPE_ID
 	}
 
 	@Test
@@ -91,8 +91,8 @@ class MyRecipesTabContentTest {
 		onNodeWithText("Delete recipe?", useUnmergedTree = true).assertIsDisplayed()
 		onNodeWithTag(DELETE_CREATED_RECIPE_DIALOG_CONFIRM_TAG, useUnmergedTree = true).performClick()
 
-		assertEquals(RECIPE_ID, deletedRecipe?.id)
-		assertEquals(RECIPE_TITLE, deletedRecipe?.title)
+		deletedRecipe?.id shouldBe RECIPE_ID
+		deletedRecipe?.title shouldBe RECIPE_TITLE
 	}
 
 	@Test
@@ -128,7 +128,7 @@ class MyRecipesTabContentTest {
 		waitForIdle()
 
 		onNodeWithText(RECIPE_TITLE).assertIsDisplayed()
-		assertEquals(callsAfterFirstLoad, repository.getCreatedRecipesCallCount)
+		repository.getCreatedRecipesCallCount shouldBe callsAfterFirstLoad
 	}
 
 	@Test

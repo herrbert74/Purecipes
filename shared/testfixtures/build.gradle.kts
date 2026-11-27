@@ -29,6 +29,7 @@ kotlin {
 				api(project(":feature:recipedetails:domain"))
 				api(project(":feature:home:domain"))
 				api(project(":feature:search:domain"))
+				api(project(":feature:sharing:domain"))
 				api(project(":feature:subscription:domain"))
 				api(project(":feature:measurement:domain"))
 				api(project(":shared:domain"))
