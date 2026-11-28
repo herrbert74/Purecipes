@@ -17,6 +17,7 @@ import app.purecipes.shared.domain.model.SearchResultsPage
 import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
 import app.purecipes.shared.testfixtures.fake.FakeCookbooksRepository
 import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.fake.unusedShareCookbookUseCase
 import app.purecipes.shared.testfixtures.runViewModelTest
 import com.github.michaelbull.result.Ok
 import kotlinx.coroutines.ExperimentalCoroutinesApi

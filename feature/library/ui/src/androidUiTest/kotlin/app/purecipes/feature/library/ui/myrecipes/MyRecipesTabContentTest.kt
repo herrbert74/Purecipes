@@ -1,0 +1,198 @@
+package app.purecipes.feature.library.ui.myrecipes
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.analytics.domain.usecase.TrackEventUseCase
+import app.purecipes.feature.newrecipe.domain.model.SaveCreatedRecipeRequest
+import app.purecipes.feature.newrecipe.domain.usecase.DeleteCreatedRecipeUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.GetCreatedRecipesUseCase
+import app.purecipes.feature.newrecipe.domain.usecase.ObserveCreatedRecipeEventsUseCase
+import app.purecipes.shared.domain.model.Cuisine
+import app.purecipes.shared.domain.model.IngredientGroup
+import app.purecipes.shared.domain.model.RecipeDetails
+import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.testfixtures.fake.FakeAnalyticsRepository
+import app.purecipes.shared.testfixtures.fake.FakeCreatedRecipeRepository
+import app.purecipes.shared.testfixtures.fake.recipeIngredients
+import app.purecipes.shared.testfixtures.uitest.UiTestLibrary
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
+import app.purecipes.shared.ui.component.organism.RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX
+import app.purecipes.shared.ui.component.organism.RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX
+import app.purecipes.shared.ui.theme.PurecipesTheme
+import dejavu.setTrackedContent
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
+import kotlinx.collections.immutable.persistentListOf
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
+@UiTestLibrary
+class MyRecipesTabContentTest {
+
+	@Test
+	fun recipeCardClickSelectsRecipeAndEditButtonOpensEditor() = runRecompositionTrackingUiTest {
+		var selectedId: Int? = null
+		var editedId: Int? = null
+		setTrackedContent {
+			PurecipesTheme {
+				MyRecipesContent(
+					isLoading = false,
+					errorMessage = null,
+					recipes = persistentListOf(sampleRecipe()),
+					onCreateRecipe = {},
+					onRecipeSelect = { id, _ -> selectedId = id },
+					onEditRecipe = { editedId = it },
+					onDeleteRecipe = {},
+					onRetry = {},
+				)
+			}
+		}
+
+		onNodeWithText(RECIPE_TITLE).assertIsDisplayed()
+		onNodeWithTag("$RECIPE_CARD_EDIT_BUTTON_TAG_PREFIX$RECIPE_ID").performClick()
+		editedId shouldBe RECIPE_ID
+		selectedId.shouldBeNull()
+
+		onNodeWithText(RECIPE_TITLE).performClick()
+		selectedId shouldBe RECIPE_ID
+	}
+
+	@Test
+	fun deleteRequiresConfirmationAndInvokesDeleteCallback() = runRecompositionTrackingUiTest {
+		var deletedRecipe: RecipeSummary? = null
+		setTrackedContent {
+			PurecipesTheme {
+				MyRecipesContent(
+					isLoading = false,
+					errorMessage = null,
+					recipes = persistentListOf(sampleRecipe()),
+					onCreateRecipe = {},
+					onRecipeSelect = { _, _ -> },
+					onEditRecipe = {},
+					onDeleteRecipe = { deletedRecipe = it },
+					onRetry = {},
+				)
+			}
+		}
+
+		onNodeWithTag("$RECIPE_CARD_DELETE_BUTTON_TAG_PREFIX$RECIPE_ID").performClick()
+		onNodeWithText("Delete recipe?", useUnmergedTree = true).assertIsDisplayed()
+		onNodeWithTag(DELETE_CREATED_RECIPE_DIALOG_CONFIRM_TAG, useUnmergedTree = true).performClick()
+
+		deletedRecipe?.id shouldBe RECIPE_ID
+		deletedRecipe?.title shouldBe RECIPE_TITLE
+	}
+
+	@Test
+	fun myRecipesTabRetainsListAfterConfigurationChange() = runRecompositionTrackingUiTest {
+		var compositionGeneration by mutableIntStateOf(0)
+		val repository = FakeCreatedRecipeRepository(initialRecipes = listOf(sampleRecipeDetails()))
+		val viewModel = MyRecipesViewModel(
+			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+			deleteCreatedRecipe = DeleteCreatedRecipeUseCase(repository),
+			observeCreatedRecipeEvents = ObserveCreatedRecipeEventsUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				key(compositionGeneration) {
+					MyRecipesTabContent(
+						onCreateRecipe = {},
+						onRecipeSelect = { _, _ -> },
+						onEditRecipe = {},
+						viewModel = viewModel,
+					)
+				}
+			}
+		}
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText(RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText(RECIPE_TITLE).assertIsDisplayed()
+		val callsAfterFirstLoad = repository.getCreatedRecipesCallCount
+
+		compositionGeneration += 1
+		waitForIdle()
+
+		onNodeWithText(RECIPE_TITLE).assertIsDisplayed()
+		repository.getCreatedRecipesCallCount shouldBe callsAfterFirstLoad
+	}
+
+	@Test
+	fun newlyCreatedRecipeAppearsInMyRecipesTabWithoutRecreatingViewModel() = runRecompositionTrackingUiTest {
+		val repository = FakeCreatedRecipeRepository()
+		val viewModel = MyRecipesViewModel(
+			getCreatedRecipes = GetCreatedRecipesUseCase(repository),
+			deleteCreatedRecipe = DeleteCreatedRecipeUseCase(repository),
+			observeCreatedRecipeEvents = ObserveCreatedRecipeEventsUseCase(repository),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				MyRecipesTabContent(
+					onCreateRecipe = {},
+					onRecipeSelect = { _, _ -> },
+					onEditRecipe = {},
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitForIdle()
+		repository.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = CREATED_RECIPE_TITLE,
+				description = "Freshly created.",
+				steps = listOf("Mix ingredients"),
+			),
+		)
+
+		waitUntil(timeoutMillis = 5_000) {
+			onAllNodesWithText(CREATED_RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()
+		}
+		onNodeWithText(CREATED_RECIPE_TITLE).assertIsDisplayed()
+	}
+
+	private fun sampleRecipe(): RecipeSummary = RecipeSummary(
+		id = RECIPE_ID,
+		title = RECIPE_TITLE,
+		cuisine = Cuisine.ITALIAN,
+		imageUrl = null,
+		totalTime = 25,
+	)
+
+	private fun sampleRecipeDetails(): RecipeDetails = RecipeDetails(
+		id = RECIPE_ID,
+		title = RECIPE_TITLE,
+		description = "Quick weeknight dinner.",
+		imageUrl = null,
+		ingredientGroups = listOf(
+			IngredientGroup(
+				ingredients = recipeIngredients("200 g pasta"),
+			),
+		),
+		steps = listOf("Boil the pasta"),
+		totalTime = 25,
+		yields = "2 servings",
+		cuisine = Cuisine.ITALIAN,
+	)
+
+	private companion object {
+
+		const val RECIPE_ID = 42
+		const val RECIPE_TITLE = "Tomato Pasta"
+		const val CREATED_RECIPE_TITLE = "Pesto Gnocchi"
+	}
+}

@@ -40,6 +40,25 @@ extensions.configure<KotlinMultiplatformExtension> {
 				implementation(libs.androidx.testEspresso.core)
 				implementation(libs.androidx.testExtJUnit)
 				implementation(libs.androidx.testRunner)
+				implementation(libs.kotest.assertionsCore)
+			}
+		}
+
+		matching { it.name == "androidDeviceTest" || it.name == "androidHostTest" }.all {
+			val sharedUiTestDir = project.file("src/androidUiTest/kotlin")
+			if (sharedUiTestDir.exists()) {
+				kotlin.srcDir(sharedUiTestDir)
+			}
+		}
+
+		matching { it.name == "androidHostTest" }.all {
+			dependencies {
+				implementation(libs.androidx.composeUiTestManifestAndroid)
+				implementation(libs.androidx.composeUiTestJunit4Android)
+				implementation(libs.androidx.testEspresso.core)
+				implementation(libs.androidx.testExtJUnit)
+				implementation(libs.kotest.assertionsCore)
+				implementation(libs.robolectric)
 			}
 		}
 	}

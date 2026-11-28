@@ -25,5 +25,11 @@ kotlin {
 				implementation(project(":shared:testfixtures"))
 			}
 		}
+		named("androidHostTest") {
+			dependencies {
+				implementation(libs.dejavu)
+				implementation(project(":shared:testfixtures"))
+			}
+		}
 	}
 }

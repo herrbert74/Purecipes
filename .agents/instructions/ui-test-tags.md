@@ -1,6 +1,14 @@
 # Selective Android UI tests
 
-Instrumented UI tests under `**/androidDeviceTest` are tagged with marker annotations in
+UI tests live in `src/androidUiTest/kotlin` of each feature UI module. The same sources are compiled
+into both the Robolectric host tests (`./gradlew testAndroidHostTest`, runs every test, no emulator)
+and the instrumented device tests (`connectedAndroidTest`, filtered by the tags below). Tests that
+only make sense on a device can stay under `src/androidDeviceTest`.
+
+Host tests do not enforce the accessibility checks from `enablePurecipesAccessibilityChecks`, so every
+feature keeps at least one `@UiTestEssential` test that runs on a device.
+
+Instrumented UI tests are tagged with marker annotations in
 `app.purecipes.shared.testfixtures.uitest` so local runs and CI can execute a subset.
 
 ## Annotations and PR labels
@@ -52,7 +60,7 @@ Tag each test class with its feature annotation. Mark a small smoke method (or c
 
 Workflow: `.github/workflows/build-test-androidtest.yml`
 
-- Push to `main`: `UiTestAll`
+- Push to `main`: `UiTestEssential` (all tests already run as host tests in the `test` job)
 - Pull request with no `UiTest*` labels: `UiTestEssential`
 - Pull request with `UiTest*` labels: those labels (Essential is unioned in unless `UiTestAll`)
 - `workflow_dispatch` input `ui_test_tags`: defaults to `UiTestAll`

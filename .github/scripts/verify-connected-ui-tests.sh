@@ -1,23 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-UI_TEST_MODULES=(
-	feature/auth/ui
-	feature/cooking/ui
-	feature/featurerequests/ui
-	feature/home/ui
-	feature/library/ui
-	feature/main
-	feature/newrecipe/ui
-	feature/onboarding/ui
-	feature/recipedetails/ui
-	feature/search/ui
-	feature/settings/ui
-	feature/subscription/ui
-)
+DEFAULT_UI_TEST_MODULES="feature/auth/ui feature/cooking/ui feature/featurerequests/ui feature/home/ui feature/library/ui feature/main feature/newrecipe/ui feature/onboarding/ui feature/recipedetails/ui feature/search/ui feature/settings/ui feature/subscription/ui"
+read -r -a UI_TEST_MODULES <<<"${UI_TEST_MODULES:-${DEFAULT_UI_TEST_MODULES}}"
 
 UI_TEST_TAGS="${UI_TEST_TAGS:-UiTestAll}"
-expected_test_count="$(python3 .github/scripts/count-ui-tests-for-tags.py "${UI_TEST_TAGS}")"
+expected_test_count="$(python3 .github/scripts/count-ui-tests-for-tags.py "${UI_TEST_TAGS}" "${UI_TEST_MODULES[@]}")"
 executed_test_count=0
 failure_count=0
 error_count=0

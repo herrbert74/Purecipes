@@ -63,6 +63,21 @@ jobs:
       - name: Run JVM Tests
         run: ./gradlew jvmTest --continue
 
+      - name: Run Android host tests (Robolectric)
+        run: >-
+          ./gradlew --continue
+          :feature:auth:ui:testAndroidHostTest
+          :feature:cooking:ui:testAndroidHostTest
+          :feature:featurerequests:ui:testAndroidHostTest
+          :feature:home:ui:testAndroidHostTest
+          :feature:library:ui:testAndroidHostTest
+          :feature:newrecipe:ui:testAndroidHostTest
+          :feature:onboarding:ui:testAndroidHostTest
+          :feature:recipedetails:ui:testAndroidHostTest
+          :feature:search:ui:testAndroidHostTest
+          :feature:settings:ui:testAndroidHostTest
+          :feature:subscription:ui:testAndroidHostTest
+
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -74,12 +89,23 @@ jobs:
   # https://github.com/ReactiveCircus/android-emulator-runner/issues/350
   # https://github.com/actions/runner-images/issues/9460
   android-test:
-    name: UI tests
+    name: UI tests (${{ matrix.api-level }}, ${{ matrix.group.name }})
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         api-level: [28, 34]
+        group:
+          - name: newrecipe-search
+            modules: feature/newrecipe/ui feature/search/ui
+            tasks: :feature:newrecipe:ui:connectedAndroidDeviceTest :feature:search:ui:connectedAndroidDeviceTest
+          - name: auth-main-home
+            modules: feature/auth/ui feature/main feature/home/ui
+            tasks: :feature:auth:ui:connectedAndroidDeviceTest :feature:main:connectedAndroidDeviceTest :feature:home:ui:connectedAndroidDeviceTest
+          - name: others
+            modules: feature/library/ui feature/featurerequests/ui feature/recipedetails/ui feature/cooking/ui feature/onboarding/ui feature/settings/ui feature/subscription/ui
+            tasks: :feature:library:ui:connectedAndroidDeviceTest :feature:featurerequests:ui:connectedAndroidDeviceTest :feature:recipedetails:ui:connectedAndroidDeviceTest :feature:cooking:ui:connectedAndroidDeviceTest :feature:onboarding:ui:connectedAndroidDeviceTest :feature:settings:ui:connectedAndroidDeviceTest :feature:subscription:ui:connectedAndroidDeviceTest
 
     steps:
       - uses: actions/checkout@v7
@@ -129,7 +155,7 @@ jobs:
               selected="UiTestEssential"
             fi
           else
-            selected="UiTestAll"
+            selected="UiTestEssential"
           fi
           echo "tags=${selected}" >> "${GITHUB_OUTPUT}"
           echo "Resolved UI test tags: ${selected}"
@@ -171,7 +197,7 @@ jobs:
           disable-animations: true
           script: |
             gradle_status=0
-            ./gradlew --max-workers=2 --no-parallel --no-build-cache --no-configuration-cache -Pkotlin.native.enableKlibsCrossCompilation=false -Pkotlin.native.ignoreDisabledTargets=true "-PuiTestTags=${{ steps.ui-test-tags.outputs.tags }}" "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC" "-Dkotlin.daemon.jvmargs=-Xmx4g -XX:+UseParallelGC" connectedAndroidTest || gradle_status=$?
+            ./gradlew --max-workers=2 --no-parallel --no-configuration-cache -Pkotlin.native.enableKlibsCrossCompilation=false -Pkotlin.native.ignoreDisabledTargets=true "-PuiTestTags=${{ steps.ui-test-tags.outputs.tags }}" "-Dorg.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:+UseParallelGC" "-Dkotlin.daemon.jvmargs=-Xmx4g -XX:+UseParallelGC" ${{ matrix.group.tasks }} || gradle_status=$?
             killall -INT crashpad_handler || true
             exit $gradle_status
 
@@ -179,13 +205,14 @@ jobs:
         if: success() || failure()
         env:
           UI_TEST_TAGS: ${{ steps.ui-test-tags.outputs.tags }}
+          UI_TEST_MODULES: ${{ matrix.group.modules }}
         run: ./.github/scripts/verify-connected-ui-tests.sh
 
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: android-test-report-${{ matrix.api-level }}
+          name: android-test-report-${{ matrix.api-level }}-${{ matrix.group.name }}
           path: '**/build/reports/androidTests/connected/'
 
   static-analysis:

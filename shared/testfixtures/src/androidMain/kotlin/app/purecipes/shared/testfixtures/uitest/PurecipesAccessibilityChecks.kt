@@ -5,8 +5,6 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.accessibility.enableAccessibilityChecks
 import androidx.compose.ui.test.junit4.ComposeTestRule
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator
@@ -43,7 +41,6 @@ fun ComposeUiTest.enablePurecipesAccessibilityChecks(
 	)
 }
 
-@OptIn(ExperimentalTestApi::class)
 fun ComposeTestRule.enablePurecipesAccessibilityChecks(
 	extraSuppressions: List<AccessibilityCheckSuppression> = emptyList(),
 ) {
@@ -53,14 +50,6 @@ fun ComposeTestRule.enablePurecipesAccessibilityChecks(
 	enableRuleAccessibilityChecks(
 		purecipesAccessibilityValidator(PurecipesAccessibilityChecks.snapshot() + extraSuppressions),
 	)
-}
-
-@OptIn(ExperimentalTestApi::class)
-fun ComposeUiTest.tryPerformPurecipesAccessibilityChecks() {
-	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-		return
-	}
-	onRoot().tryPerformAccessibilityChecks()
 }
 
 @OptIn(ExperimentalTestApi::class)

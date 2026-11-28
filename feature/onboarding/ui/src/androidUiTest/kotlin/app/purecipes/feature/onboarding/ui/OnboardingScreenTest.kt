@@ -1,0 +1,107 @@
+package app.purecipes.feature.onboarding.ui
+
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestOnboarding
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
+import app.purecipes.shared.ui.theme.PurecipesTheme
+import dejavu.setTrackedContent
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
+import org.junit.Test
+import org.junit.runner.RunWith
+
+private const val PAGE_SETTLE_MILLIS = 5_000L
+
+@RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
+@UiTestOnboarding
+class OnboardingScreenTest {
+
+	@Test
+	@UiTestEssential
+	fun onboardingStartsOnTheFirstPage() = runRecompositionTrackingUiTest {
+		setOnboardingContent()
+
+		onNodeWithText(onboardingPages.first().title).assertIsDisplayed()
+		onNodeWithText(onboardingPages.first().description).assertIsDisplayed()
+		onNodeWithTag(ONBOARDING_SKIP_TAG).assertIsDisplayed()
+	}
+
+	@Test
+	@UiTestEssential
+	fun nextButtonAdvancesToTheFollowingPage() = runRecompositionTrackingUiTest {
+		setOnboardingContent()
+
+		advanceToNextPage()
+
+		onNodeWithText(onboardingPages[1].title).assertIsDisplayed()
+	}
+
+	@Test
+	fun skipReportsASkippedOutcome() = runRecompositionTrackingUiTest {
+		var outcome: OnboardingOutcome? = null
+		setOnboardingContent { outcome = it }
+
+		onNodeWithTag(ONBOARDING_SKIP_TAG).performClick()
+		waitForIdle()
+
+		outcome shouldBe OnboardingOutcome(skipped = true, lastPageIndex = 0, pageCount = onboardingPages.size)
+	}
+
+	@Test
+	fun skipIsGoneOnTheLastPage() = runRecompositionTrackingUiTest {
+		setOnboardingContent()
+
+		repeat(onboardingPages.lastIndex) { advanceToNextPage() }
+
+		onNodeWithText(onboardingPages.last().title).assertIsDisplayed()
+		onNodeWithTag(ONBOARDING_SKIP_TAG).assertDoesNotExist()
+	}
+
+	@Test
+	fun finishingTheLastPageReportsACompletedOutcome() = runRecompositionTrackingUiTest {
+		var outcome: OnboardingOutcome? = null
+		setOnboardingContent { outcome = it }
+
+		repeat(onboardingPages.lastIndex) { advanceToNextPage() }
+		outcome.shouldBeNull()
+
+		onNodeWithTag(ONBOARDING_NEXT_BUTTON_TAG).performClick()
+		waitForIdle()
+
+		outcome shouldBe OnboardingOutcome(
+			skipped = false,
+			lastPageIndex = onboardingPages.lastIndex,
+			pageCount = onboardingPages.size,
+		)
+	}
+}
+
+/**
+ * The sparkle and sheen animations never end, so the clock is driven manually to keep
+ * `waitForIdle` from blocking on them.
+ */
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.setOnboardingContent(onFinish: (OnboardingOutcome) -> Unit = {}) {
+	mainClock.autoAdvance = false
+	setTrackedContent {
+		PurecipesTheme {
+			OnboardingScreen(onFinish = onFinish)
+		}
+	}
+	waitForIdle()
+}
+
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.advanceToNextPage() {
+	onNodeWithTag(ONBOARDING_NEXT_BUTTON_TAG).performClick()
+	mainClock.advanceTimeBy(PAGE_SETTLE_MILLIS)
+	waitForIdle()
+}

@@ -12,6 +12,8 @@ extensions.configure<KotlinMultiplatformExtension> {
 		the Gradle build file.
 		This creates two tasks for each module, so it's not ideal. */
 		withHostTestBuilder {
+		}.configure {
+			isIncludeAndroidResources = true
 		}
 	}
 }

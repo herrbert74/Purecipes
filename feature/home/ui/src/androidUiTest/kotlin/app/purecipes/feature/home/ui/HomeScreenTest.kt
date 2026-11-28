@@ -1,0 +1,366 @@
+package app.purecipes.feature.home.ui
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.unit.dp
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.purecipes.feature.home.domain.readiness.HomeFeedRefreshCoordinator
+import app.purecipes.feature.home.domain.usecase.GetHomeFeedUseCase
+import app.purecipes.feature.home.domain.usecase.GetHomeShelfPageUseCase
+import app.purecipes.feature.library.domain.model.FavoriteEvent
+import app.purecipes.feature.library.domain.usecase.ObserveFavoriteEventsUseCase
+import app.purecipes.feature.recipedetails.domain.usecase.ObserveRecipeViewsUseCase
+import app.purecipes.feature.search.domain.usecase.ObserveSearchFilterChangesUseCase
+import app.purecipes.shared.data.readiness.SearchReadinessCoordinator
+import app.purecipes.shared.domain.model.Appliance
+import app.purecipes.shared.domain.model.HOME_SHELF_PAGE_SIZE
+import app.purecipes.shared.domain.model.HomeFeed
+import app.purecipes.shared.domain.model.HomeShelf
+import app.purecipes.shared.domain.model.HomeShelfId
+import app.purecipes.shared.domain.model.RecipeActivityEvent
+import app.purecipes.shared.domain.model.RecipeSummary
+import app.purecipes.shared.domain.model.SearchResultsPage
+import app.purecipes.shared.testfixtures.fake.FakeFavoritesRepository
+import app.purecipes.shared.testfixtures.fake.FakeHomeFeedRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeActivityRepository
+import app.purecipes.shared.testfixtures.fake.FakeRecipeSearchFilterRepository
+import app.purecipes.shared.testfixtures.uitest.UiTestEssential
+import app.purecipes.shared.testfixtures.uitest.UiTestHome
+import app.purecipes.shared.testfixtures.uitest.runRecompositionTrackingUiTest
+import app.purecipes.shared.ui.component.molecule.RECIPE_CARD_APPLIANCE_ICON_PREFIX
+import app.purecipes.shared.ui.theme.PurecipesTheme
+import com.github.michaelbull.result.Ok
+import dejavu.setTrackedContent
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.runBlocking
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalTestApi::class)
+@UiTestHome
+class HomeScreenTest {
+
+	@Test
+	@UiTestEssential
+	fun loadingHomeShowsShelfSkeleton() = runRecompositionTrackingUiTest {
+		setTrackedContent {
+			PurecipesTheme {
+				HomeFeedContent(
+					isLoading = true,
+					errorMessage = null,
+					homeFeed = HomeFeed(),
+					shelfPagination = persistentMapOf(),
+					onRecipeSelect = { _, _ -> },
+					onSeeAll = {},
+					onFeatureRequestClick = {},
+					onRetry = {},
+				)
+			}
+		}
+
+		onNodeWithTag(HOME_FEED_SKELETON_TAG).assertIsDisplayed()
+		onNodeWithTag(HOME_TITLE_TAG).assertIsDisplayed()
+		onNodeWithText("Purecipes").assertIsDisplayed()
+	}
+
+	@Test
+	@UiTestEssential
+	fun removingAFavoriteDropsItFromTheFavoritesShelf() = runRecompositionTrackingUiTest {
+		val kept = recipeSummary(id = 1, title = KEPT_RECIPE_TITLE)
+		val removed = recipeSummary(id = 2, title = REMOVED_RECIPE_TITLE)
+		val favorites = FakeFavoritesRepository()
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(
+				HomeFeed(
+					shelves = listOf(
+						HomeShelf(
+							id = HomeShelfId.FAVORITES,
+							title = "Your favorites",
+							recipes = listOf(kept, removed),
+						),
+					),
+				),
+			),
+		)
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			favoritesRepository = favorites,
+			sessionKey = SESSION_KEY,
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				HomeScreen(
+					sessionKey = SESSION_KEY,
+					viewModel = viewModel,
+				)
+			}
+		}
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText(KEPT_RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()
+		}
+
+		onNodeWithTag(HOME_TITLE_TAG).assertIsDisplayed()
+		onNodeWithText(KEPT_RECIPE_TITLE).assertIsDisplayed()
+		onNodeWithText(REMOVED_RECIPE_TITLE).assertIsDisplayed()
+		homeFeedRepository.result = Ok(
+			HomeFeed(
+				shelves = listOf(
+					HomeShelf(
+						id = HomeShelfId.FAVORITES,
+						title = "Your favorites",
+						recipes = listOf(kept),
+					),
+				),
+			),
+		)
+		favorites.emitFavoriteEvent(FavoriteEvent.Removed(removed.id))
+		waitForIdle()
+
+		onNodeWithText(KEPT_RECIPE_TITLE).assertIsDisplayed()
+		onNodeWithText(REMOVED_RECIPE_TITLE).assertDoesNotExist()
+	}
+
+	@Test
+	fun returningToHomeKeepsTheScrolledShelfVisible() = runRecompositionTrackingUiTest {
+		val viewModel = homeViewModel(
+			homeFeedRepository = FakeHomeFeedRepository(
+				result = Ok(HomeFeed(shelves = scrollableShelves())),
+			),
+		)
+		var showHome by mutableStateOf(true)
+		setTrackedContent {
+			PurecipesTheme {
+				if (showHome) {
+					HomeScreen(
+						onOpenShelf = {
+							showHome = false
+						},
+						viewModel = viewModel,
+						modifier = Modifier
+							.fillMaxWidth()
+							.height(HOME_LIST_VIEWPORT_HEIGHT),
+					)
+				} else {
+					Text(text = "Favorites list")
+				}
+			}
+		}
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText(FIRST_SHELF_TITLE).fetchSemanticsNodes().isNotEmpty()
+		}
+
+		onNodeWithText(FIRST_SHELF_TITLE).assertIsDisplayed()
+		onAllNodesWithText(LAST_SHELF_TITLE).assertCountEquals(0)
+		onNodeWithTag(HOME_FEED_LIST_TAG).performScrollToNode(hasText(LAST_SHELF_TITLE))
+		onNodeWithText(LAST_SHELF_TITLE).assertIsDisplayed()
+		onNodeWithTag("$HOME_SHELF_SEE_ALL_TAG_PREFIX${HomeShelfId.HABIT.name}").performClick()
+		onNodeWithText("Favorites list").assertIsDisplayed()
+		runOnIdle {
+			showHome = true
+		}
+
+		onNodeWithText(LAST_SHELF_TITLE).assertIsDisplayed()
+		onAllNodesWithText(FIRST_SHELF_TITLE).assertCountEquals(0)
+	}
+
+	@Test
+	fun returningFromRecipeDetailsKeepsLaterShelfPositionVisible() = runRecompositionTrackingUiTest {
+		val firstPage = List(HOME_SHELF_PAGE_SIZE) { index ->
+			recipeSummary(id = index + 1, title = "Shelf card ${index + 1}")
+		}
+		val secondPage = List(4) { index ->
+			val number = HOME_SHELF_PAGE_SIZE + index + 1
+			recipeSummary(id = number, title = "Shelf card $number")
+		}
+		val targetRecipe = secondPage.last()
+		val newShelf = HomeShelf(
+			id = HomeShelfId.NEW,
+			title = FIRST_SHELF_TITLE,
+			recipes = firstPage,
+		)
+		val homeFeedRepository = FakeHomeFeedRepository(
+			result = Ok(HomeFeed(shelves = listOf(newShelf))),
+		)
+		homeFeedRepository.shelfPages = mapOf(
+			HomeShelfId.NEW to Ok(
+				SearchResultsPage(
+					items = secondPage,
+					pageNumber = 2,
+					pageSize = HOME_SHELF_PAGE_SIZE,
+					totalMatches = firstPage.size + secondPage.size,
+				),
+			),
+		)
+		val activityRepository = FakeRecipeActivityRepository()
+		val viewModel = homeViewModel(
+			homeFeedRepository = homeFeedRepository,
+			recipeActivityRepository = activityRepository,
+			sessionKey = SESSION_KEY,
+		)
+		var showHome by mutableStateOf(true)
+		setTrackedContent {
+			PurecipesTheme {
+				if (showHome) {
+					HomeScreen(
+						onRecipeSelect = { recipeId, _ ->
+							homeFeedRepository.result = Ok(
+								HomeFeed(
+									shelves = listOf(
+										newShelf,
+										HomeShelf(
+											id = HomeShelfId.RECENTLY_VIEWED,
+											title = "Recently viewed",
+											recipes = listOf(targetRecipe),
+										),
+									),
+								),
+							)
+							runBlocking {
+								activityRepository.record(recipeId, RecipeActivityEvent.OPEN)
+							}
+							showHome = false
+						},
+						sessionKey = SESSION_KEY,
+						viewModel = viewModel,
+					)
+				} else {
+					Text(text = "Recipe details")
+				}
+			}
+		}
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText(firstPage.first().title).fetchSemanticsNodes().isNotEmpty()
+		}
+
+		val shelfRowTag = "$HOME_SHELF_ROW_LIST_TAG_PREFIX${HomeShelfId.NEW.name}"
+		onNodeWithTag(shelfRowTag).performScrollToNode(hasText(firstPage.last().title))
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			viewModel.shelfPagination.getValue(HomeShelfId.NEW.name).allItems.size ==
+				firstPage.size + secondPage.size
+		}
+		onNodeWithTag(shelfRowTag).performScrollToNode(hasText(targetRecipe.title))
+		onNodeWithText(targetRecipe.title).assertIsDisplayed()
+		onNodeWithText(targetRecipe.title).performClick()
+		onNodeWithText("Recipe details").assertIsDisplayed()
+
+		runOnIdle {
+			showHome = true
+		}
+
+		onNodeWithText(secondPage[2].title).assertIsDisplayed()
+		onAllNodesWithText(targetRecipe.title).assertCountEquals(2)
+		onAllNodesWithText(firstPage.first().title).assertCountEquals(0)
+	}
+
+	private fun homeViewModel(
+		homeFeedRepository: FakeHomeFeedRepository,
+		favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
+		recipeActivityRepository: FakeRecipeActivityRepository = FakeRecipeActivityRepository(),
+		sessionKey: String? = null,
+	) = HomeViewModel(
+		getHomeFeed = GetHomeFeedUseCase(homeFeedRepository),
+		getHomeShelfPage = GetHomeShelfPageUseCase(homeFeedRepository),
+		homeFeedRefresh = HomeFeedRefreshCoordinator(),
+		observeFavoriteEvents = ObserveFavoriteEventsUseCase(favoritesRepository),
+		observeRecipeViews = ObserveRecipeViewsUseCase(recipeActivityRepository),
+		observeSearchFilterChanges = ObserveSearchFilterChangesUseCase(FakeRecipeSearchFilterRepository()),
+		searchReadiness = SearchReadinessCoordinator(),
+		sessionKey = sessionKey,
+	)
+
+	@Test
+	fun homeCardDisplaysApplianceIconsWhenPresent() = runRecompositionTrackingUiTest {
+		val recipeWithAppliance = recipeSummary(id = 10, title = "Air Fried Chicken").copy(
+			appliances = setOf(Appliance.AIR_FRYER),
+		)
+		val viewModel = homeViewModel(
+			homeFeedRepository = FakeHomeFeedRepository(
+				result = Ok(
+					HomeFeed(
+						shelves = listOf(
+							HomeShelf(
+								id = HomeShelfId.FAVORITES,
+								title = "Your favorites",
+								recipes = listOf(recipeWithAppliance),
+							),
+						),
+					),
+				),
+			),
+			sessionKey = "home-appliance-test",
+		)
+		setTrackedContent {
+			PurecipesTheme {
+				HomeScreen(
+					sessionKey = "home-appliance-test",
+					viewModel = viewModel,
+				)
+			}
+		}
+
+		waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
+			onAllNodesWithText("Air Fried Chicken").fetchSemanticsNodes().isNotEmpty()
+		}
+
+		onNodeWithTag(
+			testTag = "$RECIPE_CARD_APPLIANCE_ICON_PREFIX${Appliance.AIR_FRYER.name}",
+			useUnmergedTree = true,
+		).assertIsDisplayed()
+	}
+
+	private fun scrollableShelves(): List<HomeShelf> = listOf(
+		shelf(id = HomeShelfId.NEW, title = FIRST_SHELF_TITLE, recipeId = 11),
+		shelf(id = HomeShelfId.RIGHT_NOW, title = "Right now shelf", recipeId = 12),
+		shelf(id = HomeShelfId.QUICK, title = "Quick shelf", recipeId = 13),
+		shelf(id = HomeShelfId.FAVORITES, title = "Favorites shelf", recipeId = 14),
+		shelf(id = HomeShelfId.HABIT, title = LAST_SHELF_TITLE, recipeId = 15),
+	)
+
+	private fun shelf(
+		id: HomeShelfId,
+		title: String,
+		recipeId: Int,
+	) = HomeShelf(
+		id = id,
+		title = title,
+		recipes = listOf(recipeSummary(id = recipeId, title = "Card $recipeId")),
+	)
+
+	private fun recipeSummary(
+		id: Int,
+		title: String,
+	) = RecipeSummary(
+		id = id,
+		title = title,
+		cuisine = null,
+		imageUrl = null,
+		totalTime = 20,
+		isFavorite = true,
+	)
+
+	private companion object {
+
+		const val SESSION_KEY = "home-screen-test"
+		const val KEPT_RECIPE_TITLE = "Kept pasta"
+		const val REMOVED_RECIPE_TITLE = "Removed pasta"
+		const val FIRST_SHELF_TITLE = "New shelf"
+		const val LAST_SHELF_TITLE = "Habit shelf"
+		const val HOME_CONTENT_TIMEOUT_MILLIS = 5_000L
+		val HOME_LIST_VIEWPORT_HEIGHT = 220.dp
+	}
+}
