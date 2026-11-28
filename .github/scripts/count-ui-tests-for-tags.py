@@ -35,7 +35,9 @@ def tags_in(block: str) -> set[str]:
 
 def count_matching_tests(tag_filter: set[str] | None) -> int:
 	total = 0
-	for path in sorted(ROOT.glob("**/src/androidDeviceTest/**/*Test.kt")):
+	paths = set(ROOT.glob("**/src/androidDeviceTest/**/*Test.kt"))
+	paths |= set(ROOT.glob("**/src/androidUiTest/**/*Test.kt"))
+	for path in sorted(paths):
 		text = path.read_text(encoding="utf-8")
 		classes = [
 			(match.start(), tags_in(match.group("ann")))

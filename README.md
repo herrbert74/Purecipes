@@ -83,6 +83,15 @@ Let's take a look in each major part of the application:
 * **shared** - **Shared** domain, UI and data modules specific to this app.
 * **base** - Kotlin and Android base classes, reusable in any apps, but not extracted to separate library yet.
 
+## 🧪 Testing
+
+- Compose screen tests live once in each feature's `src/androidUiTest` and run in two ways:
+  - **Robolectric** (`./gradlew :feature:<name>:ui:testAndroidHostTest`): every test, fast, on every pull request.
+  - **Device or emulator** (`./gradlew connectedAndroidTest`): only the tests selected by tag, such as `@UiTestEssential`.
+- Accessibility checks are enforced on a device only, not under Robolectric.
+- Navigation and Metro integration tests stay device-only in `feature/main`.
+- Tags, CI behaviour and local `-PuiTestTags` usage: [`.agents/instructions/ui-test-tags.md`](.agents/instructions/ui-test-tags.md).
+
 ## 📈 Analytics and consent
 
 The app reads analytics configuration from the platform-specific build config layer:

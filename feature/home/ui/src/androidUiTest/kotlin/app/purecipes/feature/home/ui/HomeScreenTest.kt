@@ -79,6 +79,7 @@ class HomeScreenTest {
 	}
 
 	@Test
+	@UiTestEssential
 	fun removingAFavoriteDropsItFromTheFavoritesShelf() = runRecompositionTrackingUiTest {
 		val kept = recipeSummary(id = 1, title = KEPT_RECIPE_TITLE)
 		val removed = recipeSummary(id = 2, title = REMOVED_RECIPE_TITLE)

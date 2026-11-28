@@ -63,6 +63,21 @@ jobs:
       - name: Run JVM Tests
         run: ./gradlew jvmTest --continue
 
+      - name: Run Android host tests (Robolectric)
+        run: >-
+          ./gradlew --continue
+          :feature:auth:ui:testAndroidHostTest
+          :feature:cooking:ui:testAndroidHostTest
+          :feature:featurerequests:ui:testAndroidHostTest
+          :feature:home:ui:testAndroidHostTest
+          :feature:library:ui:testAndroidHostTest
+          :feature:newrecipe:ui:testAndroidHostTest
+          :feature:onboarding:ui:testAndroidHostTest
+          :feature:recipedetails:ui:testAndroidHostTest
+          :feature:search:ui:testAndroidHostTest
+          :feature:settings:ui:testAndroidHostTest
+          :feature:subscription:ui:testAndroidHostTest
+
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -129,7 +144,7 @@ jobs:
               selected="UiTestEssential"
             fi
           else
-            selected="UiTestAll"
+            selected="UiTestEssential"
           fi
           echo "tags=${selected}" >> "${GITHUB_OUTPUT}"
           echo "Resolved UI test tags: ${selected}"
