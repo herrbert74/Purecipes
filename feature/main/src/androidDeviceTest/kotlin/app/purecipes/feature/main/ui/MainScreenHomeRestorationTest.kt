@@ -77,8 +77,6 @@ class MainScreenHomeRestorationTest {
 		setUpHarness(
 			homeFeedRepository = homeFeedRepository,
 			favoritesRepository = favorites,
-			sessionKey = SESSION_KEY,
-			removedRecipeTitle = REMOVED_RECIPE_TITLE,
 		)
 
 		composeRule.waitUntil(timeoutMillis = HOME_CONTENT_TIMEOUT_MILLIS) {
@@ -110,14 +108,12 @@ class MainScreenHomeRestorationTest {
 	private fun setUpHarness(
 		homeFeedRepository: FakeHomeFeedRepository,
 		favoritesRepository: FakeFavoritesRepository,
-		sessionKey: String?,
-		removedRecipeTitle: String,
 	) {
 		val mainViewModel = mainViewModelForDeviceTest()
 		val homeViewModel = homeViewModelForDeviceTest(
 			homeFeedRepository = homeFeedRepository,
 			favoritesRepository = favoritesRepository,
-			sessionKey = sessionKey,
+			sessionKey = SESSION_KEY,
 		)
 		val searchViewModel = recipeSearchViewModelForDeviceTest()
 		val recipeDetailsViewModel = recipeDetailsViewModelForDeviceTest(
@@ -125,12 +121,12 @@ class MainScreenHomeRestorationTest {
 			recipeDetailsRepository = FakeRecipeDetailsRepository(
 				fakeRecipeDetails(
 					id = REMOVED_RECIPE_ID,
-					title = removedRecipeTitle,
+					title = REMOVED_RECIPE_TITLE,
 					description = "A saved recipe.",
 				).copy(isFavorite = true),
 			),
 			favoritesRepository = favoritesRepository,
-			sessionKey = sessionKey,
+			sessionKey = SESSION_KEY,
 		)
 		composeRule.setContent {
 			PurecipesTheme {
@@ -159,7 +155,7 @@ class MainScreenHomeRestorationTest {
 									modifier = Modifier.fillMaxSize(),
 									onRecipeSelect = mainViewModel::onRecipeSelected,
 									onOpenShelf = { _ -> },
-									sessionKey = sessionKey,
+									sessionKey = SESSION_KEY,
 									viewModel = homeViewModel,
 								)
 							}
@@ -185,7 +181,7 @@ class MainScreenHomeRestorationTest {
 									onOpenMeasurementPreferences = {},
 									onBack = { mainViewModel.onBack() },
 									onStartCooking = {},
-									sessionKey = sessionKey,
+									sessionKey = SESSION_KEY,
 									viewModel = recipeDetailsViewModel,
 								)
 							}

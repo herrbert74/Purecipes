@@ -32,7 +32,6 @@ import dejavu.setTrackedContent
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -152,15 +151,13 @@ class MyRecipesTabContentTest {
 		}
 
 		waitForIdle()
-		runBlocking {
-			repository.saveCreatedRecipe(
-				SaveCreatedRecipeRequest(
-					title = CREATED_RECIPE_TITLE,
-					description = "Freshly created.",
-					steps = listOf("Mix ingredients"),
-				),
-			)
-		}
+		repository.saveCreatedRecipe(
+			SaveCreatedRecipeRequest(
+				title = CREATED_RECIPE_TITLE,
+				description = "Freshly created.",
+				steps = listOf("Mix ingredients"),
+			),
+		)
 
 		waitUntil(timeoutMillis = 5_000) {
 			onAllNodesWithText(CREATED_RECIPE_TITLE).fetchSemanticsNodes().isNotEmpty()

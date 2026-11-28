@@ -640,12 +640,12 @@ class RecipeSearchScreenTest {
 		waitForIdle()
 		runOnIdle {
 			viewModel.pantryIngredients shouldBe setOf("Chicken")
-			viewModel.excludedIngredients shouldBe emptySet<String>()
+			viewModel.excludedIngredients shouldBe emptySet()
 		}
 		onNodeWithTag(ingredientTriStateChipTag("Chicken")).performClick()
 		waitForIdle()
 		runOnIdle {
-			viewModel.pantryIngredients shouldBe emptySet<String>()
+			viewModel.pantryIngredients shouldBe emptySet()
 			viewModel.excludedIngredients shouldBe setOf("Chicken")
 		}
 	}
@@ -708,7 +708,7 @@ class RecipeSearchScreenTest {
 		}
 		onAllNodesWithText("gochujang").assertCountEquals(0)
 		runOnIdle {
-			viewModel.pantryIngredients shouldBe emptySet<String>()
+			viewModel.pantryIngredients shouldBe emptySet()
 		}
 	}
 

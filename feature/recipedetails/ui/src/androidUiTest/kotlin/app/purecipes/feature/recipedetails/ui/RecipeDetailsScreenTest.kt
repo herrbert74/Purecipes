@@ -55,6 +55,9 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
+private const val RECIPE_ID = 7
+private const val SESSION_KEY = "user-7"
+
 @RunWith(AndroidJUnit4::class)
 @OptIn(ExperimentalTestApi::class)
 @UiTestRecipeDetails
@@ -69,13 +72,12 @@ class RecipeDetailsScreenTest {
 		setTrackedContent {
 			PurecipesTheme {
 				RecipeDetailsScreen(
-					recipeId = 7,
+					recipeId = RECIPE_ID,
 					canManageFavorites = true,
 					onOpenMeasurementPreferences = {},
 					onBack = {},
 					onStartCooking = {},
 					viewModel = recipeDetailsViewModelForTest(
-						recipeId = 7,
 						favoritesRepository = favoritesRepository,
 						cookbooksRepository = cookbooksRepository,
 						measurementRepository = measurementRepository,
@@ -103,7 +105,6 @@ class RecipeDetailsScreenTest {
 								),
 							),
 						),
-						sessionKey = "user-7",
 					),
 				)
 			}
@@ -168,12 +169,10 @@ class RecipeDetailsScreenTest {
 }
 
 private fun recipeDetailsViewModelForTest(
-	recipeId: Int,
 	favoritesRepository: FakeFavoritesRepository = FakeFavoritesRepository(),
 	cookbooksRepository: FakeCookbooksRepository = FakeCookbooksRepository(),
 	measurementRepository: FakeMeasurementPreferencesRepository = FakeMeasurementPreferencesRepository(),
 	recipeDetailsRepository: FakeRecipeDetailsRepository = FakeRecipeDetailsRepository(fakeRecipeDetails()),
-	sessionKey: String? = null,
 ): RecipeDetailsViewModel = RecipeDetailsViewModel(
 	addFavoriteRecipe = AddFavoriteRecipeUseCase(favoritesRepository),
 	getRecipeDetails = GetRecipeDetailsUseCase(recipeDetailsRepository),
@@ -196,7 +195,7 @@ private fun recipeDetailsViewModelForTest(
 		},
 	),
 	recordRecipeActivity = RecordRecipeActivityUseCase(FakeRecipeActivityRepository()),
-	recipeId = recipeId,
-	sessionKey = sessionKey,
+	recipeId = RECIPE_ID,
+	sessionKey = SESSION_KEY,
 	origin = AnalyticsOrigin.SEARCH.value,
 )

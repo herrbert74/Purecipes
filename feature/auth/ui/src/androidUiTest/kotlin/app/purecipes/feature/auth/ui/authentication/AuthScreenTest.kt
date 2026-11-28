@@ -206,6 +206,19 @@ class AuthScreenTest {
 	) {
 		val authRepo = FakeAuthenticationRepository(AuthenticationState.SignedOut)
 		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
+		val authenticationViewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+			signInWithApple = SignInWithAppleUseCase(authRepo),
+			signInWithFacebook = SignInWithFacebookUseCase(authRepo),
+			signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+			deleteAccount = DeleteAccountUseCase(authRepo),
+			signOut = SignOutUseCase(authRepo),
+			observeConsentState = ObserveConsentStateUseCase(consentRepo),
+			showConsentForm = ShowConsentFormUseCase(consentRepo),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+		)
 		setTrackedContent {
 			PurecipesTheme {
 				AuthenticationScreen(
@@ -213,19 +226,7 @@ class AuthScreenTest {
 					onNavigateToEmailRegistration = onNavigateToEmailRegistration,
 					onNavigateToSignIn = onNavigateToSignIn,
 					googleWebClientId = null,
-					viewModel = AuthenticationViewModel(
-						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-						signInWithApple = SignInWithAppleUseCase(authRepo),
-						signInWithFacebook = SignInWithFacebookUseCase(authRepo),
-						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
-						deleteAccount = DeleteAccountUseCase(authRepo),
-						signOut = SignOutUseCase(authRepo),
-						observeConsentState = ObserveConsentStateUseCase(consentRepo),
-						showConsentForm = ShowConsentFormUseCase(consentRepo),
-						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
-						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
-					),
+					viewModel = authenticationViewModel,
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _ -> },
 				)
@@ -238,6 +239,19 @@ class AuthScreenTest {
 			AuthenticationState.SignedIn(fakeAuthUser()),
 		)
 		val consentRepo = FakeConsentRepository(ConsentState.OBTAINED)
+		val authenticationViewModel = AuthenticationViewModel(
+			observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
+			signInWithApple = SignInWithAppleUseCase(authRepo),
+			signInWithFacebook = SignInWithFacebookUseCase(authRepo),
+			signInWithGoogle = SignInWithGoogleUseCase(authRepo),
+			deleteAccount = DeleteAccountUseCase(authRepo),
+			signOut = SignOutUseCase(authRepo),
+			observeConsentState = ObserveConsentStateUseCase(consentRepo),
+			showConsentForm = ShowConsentFormUseCase(consentRepo),
+			trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
+			logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
+			sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
+		)
 		setTrackedContent {
 			PurecipesTheme {
 				AuthenticationScreen(
@@ -245,19 +259,7 @@ class AuthScreenTest {
 					onNavigateToEmailRegistration = {},
 					onNavigateToSignIn = {},
 					googleWebClientId = null,
-					viewModel = AuthenticationViewModel(
-						observeAuthenticationState = ObserveAuthenticationStateUseCase(authRepo),
-						signInWithApple = SignInWithAppleUseCase(authRepo),
-						signInWithFacebook = SignInWithFacebookUseCase(authRepo),
-						signInWithGoogle = SignInWithGoogleUseCase(authRepo),
-						deleteAccount = DeleteAccountUseCase(authRepo),
-						signOut = SignOutUseCase(authRepo),
-						observeConsentState = ObserveConsentStateUseCase(consentRepo),
-						showConsentForm = ShowConsentFormUseCase(consentRepo),
-						trackEvent = TrackEventUseCase(FakeAnalyticsRepository()),
-						logBreadcrumb = LogBreadcrumbUseCase(FakeCrashRepository()),
-						sendHandledException = SendHandledExceptionUseCase(FakeCrashRepository()),
-					),
+					viewModel = authenticationViewModel,
 					initializeGoogleAuthenticationProvider = {},
 					authenticationProviderButtons = { _, _, _, _, _ -> },
 				)
