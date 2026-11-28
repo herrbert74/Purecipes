@@ -33,10 +33,13 @@ def tags_in(block: str) -> set[str]:
 	return {match.group("name") for match in TAG_RE.finditer(block)}
 
 
-def count_matching_tests(tag_filter: set[str] | None) -> int:
+def count_matching_tests(tag_filter: set[str] | None, modules: list[str]) -> int:
 	total = 0
 	paths = set(ROOT.glob("**/src/androidDeviceTest/**/*Test.kt"))
 	paths |= set(ROOT.glob("**/src/androidUiTest/**/*Test.kt"))
+	if modules:
+		prefixes = tuple(f"{module.strip('/')}/" for module in modules)
+		paths = {path for path in paths if path.relative_to(ROOT).as_posix().startswith(prefixes)}
 	for path in sorted(paths):
 		text = path.read_text(encoding="utf-8")
 		classes = [
@@ -61,7 +64,7 @@ def count_matching_tests(tag_filter: set[str] | None) -> int:
 
 def main() -> int:
 	raw = sys.argv[1] if len(sys.argv) > 1 else "UiTestAll"
-	print(count_matching_tests(parse_requested_tags(raw)))
+	print(count_matching_tests(parse_requested_tags(raw), sys.argv[2:]))
 	return 0
 
 
